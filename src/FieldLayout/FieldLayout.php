@@ -30,7 +30,6 @@ use craft\fieldlayoutelements\LineBreak;
 use craft\fieldlayoutelements\Markdown;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
-use craft\models\FieldLayoutForm;
 use craft\models\FieldLayoutFormTab;
 use craft\models\FieldLayoutTab;
 use craft\validators\HandleValidator;
@@ -42,8 +41,10 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use Deprecated;
 use Generator;
 use Illuminate\Support\Collection;
+use Override;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -299,7 +300,7 @@ class FieldLayout extends Model
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function init(): void
     {
         parent::init();
@@ -329,7 +330,7 @@ class FieldLayout extends Model
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -1117,7 +1118,7 @@ class FieldLayout extends Model
      *
      * @since 5.0.0
      */
-    #[\Deprecated(message: 'in 5.9.6. [[hasThumbField()]] or [[getThumbHtmlForElement()]] should be used instead.')]
+    #[Deprecated(message: 'in 5.9.6. [[hasThumbField()]] or [[getThumbHtmlForElement()]] should be used instead.')]
     public function getThumbField(): ?BaseField
     {
         if (! isset($this->thumbField)) {
@@ -1219,7 +1220,7 @@ class FieldLayout extends Model
      *
      * @since 5.0.0
      */
-    #[\Deprecated(message: 'in 5.9.0')]
+    #[Deprecated(message: 'in 5.9.0')]
     public function getCardBodyFields(?ElementInterface $element): array
     {
         $cardViewItems = array_flip($this->getCardView());
@@ -1237,7 +1238,7 @@ class FieldLayout extends Model
      *
      * @since 5.5.0
      */
-    #[\Deprecated(message: 'in 5.9.0')]
+    #[Deprecated(message: 'in 5.9.0')]
     public function getCardBodyAttributes(): array
     {
         $cardViewItems = array_flip($this->getCardView());

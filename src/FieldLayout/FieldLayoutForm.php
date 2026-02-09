@@ -1,23 +1,22 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\models;
+namespace CraftCms\Cms\FieldLayout;
 
 use Craft;
 use craft\base\FieldLayoutComponent;
 use craft\base\Model;
+use craft\models\FieldLayoutFormTab;
 use CraftCms\Cms\Support\Html;
 
-/**
- * FieldLayoutForm model class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.5.0
- */
 class FieldLayoutForm extends Model
 {
     /**
@@ -32,14 +31,13 @@ class FieldLayoutForm extends Model
 
     /**
      * @var string|null The prefix that should be used for the data-error-key attribute
+     *
      * @since 5.0.0
      */
     public ?string $errorKeyPrefix = null;
 
     /**
      * Returns the tab menu config.
-     *
-     * @return array
      */
     public function getTabMenu(): array
     {
@@ -53,14 +51,14 @@ class FieldLayoutForm extends Model
                 'class' => $tab->hasErrors ? 'error' : null,
             ];
         }
+
         return $menu;
     }
 
     /**
      * Renders the form content.
      *
-     * @param bool $showFirst Whether the first tab should be shown initially
-     * @return string
+     * @param  bool  $showFirst  Whether the first tab should be shown initially
      */
     public function render(bool $showFirst = true): string
     {
@@ -74,7 +72,7 @@ class FieldLayoutForm extends Model
                 'id' => $id,
                 'class' => array_filter([
                     'flex-fields',
-                    !$show ? 'hidden' : null,
+                    ! $show ? 'hidden' : null,
                 ]),
                 'data' => [
                     'id' => $id,
@@ -86,24 +84,21 @@ class FieldLayoutForm extends Model
                 ],
             ]);
         }
+
         return implode("\n", $html);
     }
 
     /**
      * Returns a tab’s prefixed HTML ID.
-     *
-     * @param string $tabId
-     * @return string
      */
     private function _tabId(string $tabId): string
     {
-        return ($this->tabIdPrefix ? "$this->tabIdPrefix-" : '') . $tabId;
+        return ($this->tabIdPrefix ? "$this->tabIdPrefix-" : '').$tabId;
     }
 
     /**
      * Returns lists of visible layout elements’ UUIDs, indexed by their tabs’ UUIDs.
      *
-     * @return array
      * @since 4.0.0
      */
     public function getVisibleElements(): array
@@ -134,7 +129,6 @@ class FieldLayoutForm extends Model
     /**
      * Returns lists of visible but static layout elements’ UUIDs, indexed by their tabs’ UUIDs.
      *
-     * @return array
      * @since 5.9.0
      */
     public function getStaticElements(): array
