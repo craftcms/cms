@@ -1,7 +1,9 @@
 import {html, LitElement, css, nothing} from 'lit';
 import {styleMap} from 'lit/directives/style-map.js';
 import {property, state} from 'lit/decorators.js';
+import '../badge-indicator/badge-indicator';
 import styles from './nav-item.styles';
+import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
 
 /**
  *
@@ -75,7 +77,7 @@ export default class CraftNavItem extends LitElement {
                   ></craft-icon>`
                 : html` <span class="active-indicator"></span> `}
             </slot>
-            ${this.indicator ? html`<span class="indicator"></span>` : nothing}
+            ${this.indicator ? html`<craft-badge-indicator altText="${t('Has Notifications')}" />` : nothing}
           </slot>
         </span>
 
@@ -125,9 +127,9 @@ export default class CraftNavItem extends LitElement {
                     name="${this.icon}"
                     class="nav-icon"
                   ></craft-icon>`
-                : html` <span class="active-indicator"></span> `}
+                : html` <span class="active-indicator" ></span> `}
             </slot>
-            ${this.indicator ? html`<span class="indicator"></span>` : nothing}
+            ${this.indicator ? html`<craft-badge-indicator altText="${t('Has Notifications')}" />` : nothing}
           </slot>
         </span>
         <slot></slot>

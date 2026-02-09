@@ -44,6 +44,7 @@ export default class CraftBadgeIndicator extends LitElement {
     if (this.badgeCount > 99) {
       return '99+';
     } else {
+      // @ts-ignore we're already checking that badgeCount is not null in showCount
       return this.badgeCount.toString();
     }
   }
@@ -73,6 +74,7 @@ export default class CraftBadgeIndicator extends LitElement {
   override render() {
     return html`
       <div 
+        part="badge"
         id=${this.id}
         class="${classMap({
           'secondary': this.variant === 'secondary',
