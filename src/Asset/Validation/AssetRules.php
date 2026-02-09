@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Validation;
 
-use CraftCms\Cms\FieldLayout\LayoutElements\assets\AltField;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\Rules\AssetLocationRule;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\FieldLayout\LayoutElements\assets\AltField;
 use CraftCms\Cms\Validation\Rules\DisallowMb4;
 use Illuminate\Validation\Rule;
 use Override;

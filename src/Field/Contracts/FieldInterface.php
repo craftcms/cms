@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Contracts;
 
 use craft\base\ElementInterface;
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use craft\models\GqlSchema;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use DateTime;
 use GraphQL\Type\Definition\Type;

@@ -13,8 +13,8 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
 use Craft;
 use craft\base\ElementInterface;
-use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;

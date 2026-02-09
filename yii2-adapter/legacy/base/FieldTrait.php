@@ -7,8 +7,8 @@
 
 namespace craft\base;
 
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use DateTime;
 
 /**

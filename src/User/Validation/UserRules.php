@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Validation;
 
-use CraftCms\Cms\FieldLayout\LayoutElements\users\FullNameField;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\FieldLayout\LayoutElements\users\FullNameField;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Validation\Rules\UsernameRule;
 use CraftCms\Cms\User\Validation\Rules\UserPasswordRule;

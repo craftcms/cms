@@ -12,10 +12,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements\assets;
 
 use craft\base\ElementInterface;
-use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use yii\base\InvalidArgumentException;
 
 /**

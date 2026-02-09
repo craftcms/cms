@@ -12,11 +12,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements\entries;
 
 use craft\base\ElementInterface;
-use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use CraftCms\Cms\Support\Arr;
 use yii\base\InvalidArgumentException;
 

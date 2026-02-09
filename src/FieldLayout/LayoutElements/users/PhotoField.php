@@ -13,8 +13,8 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
 use Craft;
 use craft\base\ElementInterface;
-use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use craft\web\assets\userphoto\UserPhotoAsset;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;

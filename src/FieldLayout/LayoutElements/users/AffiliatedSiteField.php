@@ -12,8 +12,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
 use craft\base\ElementInterface;
-use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use craft\helpers\Cp;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;

@@ -9,7 +9,6 @@ namespace craft\test\fixtures;
 
 use Craft;
 use craft\base\ModelInterface;
-use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use craft\helpers\Component;
 use craft\test\DbFixtureTrait;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use PDO;
