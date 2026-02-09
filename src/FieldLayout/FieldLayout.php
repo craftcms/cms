@@ -30,7 +30,6 @@ use craft\fieldlayoutelements\LineBreak;
 use craft\fieldlayoutelements\Markdown;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
-use craft\models\FieldLayoutFormTab;
 use craft\models\FieldLayoutTab;
 use craft\validators\HandleValidator;
 use CraftCms\Cms\Field\ContentBlock;

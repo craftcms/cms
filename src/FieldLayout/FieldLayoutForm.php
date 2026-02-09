@@ -14,7 +14,6 @@ namespace CraftCms\Cms\FieldLayout;
 use Craft;
 use craft\base\FieldLayoutComponent;
 use craft\base\Model;
-use craft\models\FieldLayoutFormTab;
 use CraftCms\Cms\Support\Html;
 
 class FieldLayoutForm extends Model

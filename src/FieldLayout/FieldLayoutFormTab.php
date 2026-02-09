@@ -1,16 +1,22 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\models;
+namespace CraftCms\Cms\FieldLayout;
 
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use craft\base\Model;
+use craft\models\FieldLayoutTab;
 use CraftCms\Cms\Support\Html;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -19,13 +25,14 @@ use function CraftCms\Cms\t;
  * @property-read string $name The tab’s name
  * @property-read string $id The tab’s HTML ID
  * @property-read string $content The tab’s HTML content
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.5.0
  */
 class FieldLayoutFormTab extends Model
 {
     /**
-     * @var FieldLayoutTab
      * @since 4.0.0
      */
     public FieldLayoutTab $layoutTab;
@@ -37,13 +44,15 @@ class FieldLayoutFormTab extends Model
 
     /**
      * @var array{0:FieldLayoutElement,1:bool,2:string|false,3:bool}[] The tab’s elements, whether they’re conditional,
-     * their HTML form HTML, and whether they were rendered statically.
+     *                                                                 their HTML form HTML, and whether they were rendered statically.
+     *
      * @since 4.0.0
      */
     public array $elements;
 
     /**
      * @var bool Whether the tab should be shown.
+     *
      * @since 4.0.0
      */
     public bool $visible;
@@ -51,12 +60,11 @@ class FieldLayoutFormTab extends Model
     /**
      * Returns the tab’s name.
      *
-     * @return string
      * @since 4.0.0
      */
     public function getName(): string
     {
-        if (!isset($this->layoutTab->name)) {
+        if (! isset($this->layoutTab->name)) {
             return '';
         }
 
@@ -66,7 +74,6 @@ class FieldLayoutFormTab extends Model
     /**
      * Returns the tab anchor’s HTML ID.
      *
-     * @return string
      * @since 4.0.0
      */
     public function getTabId(): string
@@ -77,7 +84,6 @@ class FieldLayoutFormTab extends Model
     /**
      * Returns the content container’s HTML ID.
      *
-     * @return string
      * @since 4.0.0
      */
     public function getId(): string
@@ -88,7 +94,6 @@ class FieldLayoutFormTab extends Model
     /**
      * Returns the tab’s UUID.
      *
-     * @return string|null
      * @since 4.0.0
      */
     public function getUid(): ?string
@@ -99,7 +104,6 @@ class FieldLayoutFormTab extends Model
     /**
      * Returns the tab’s HTML content.
      *
-     * @return string
      * @since 4.0.0
      */
     public function getContent(): string
