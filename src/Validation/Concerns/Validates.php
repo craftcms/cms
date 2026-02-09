@@ -24,13 +24,9 @@ trait Validates
         return [];
     }
 
-    protected function getValidator(?array $attributeNames = null, bool $fresh = false): Validator
+    protected function getValidator(?array $attributeNames = null): Validator
     {
-        if ($fresh || ! isset($this->validator)) {
-            $this->validator = ValidatorFacade::make([], []);
-        }
-
-        return $this->validator
+        return ValidatorFacade::make([], [])
             ->setData($this->getAttributes())
             ->setCustomMessages(static::getMessages())
             ->setAttributeNames($this->attributeLabels())

@@ -14,9 +14,9 @@ use Illuminate\Validation\Validator;
  */
 trait InteractsWithValidator
 {
-    private ?Validator $validator = null;
+    private ?MessageBag $errors = null;
 
-    abstract protected function getValidator(): Validator;
+    abstract protected function getValidator(?array $attributeNames = null): Validator;
 
     public function beforeValidate(): bool
     {
@@ -36,7 +36,7 @@ trait InteractsWithValidator
 
     public function errors(): MessageBag
     {
-        return $this->getValidator()->errors();
+        return $this->errors ??= new MessageBag;
     }
 
     /**
@@ -48,19 +48,20 @@ trait InteractsWithValidator
      */
     public function validate($attributeNames = null, $clearErrors = true): bool
     {
-        $previousErrors = ! $clearErrors && isset($this->validator)
-            ? $this->errors()->getMessages()
-            : [];
+        if ($clearErrors) {
+            $this->errors = new MessageBag;
+        }
 
         if ($this instanceof ValidatableWithRuleset) {
             $this->getRuleset()->prepareForValidation($attributeNames);
         }
 
-        $result = $this->getValidator($attributeNames, fresh: $clearErrors)
-            ->after(fn ($validator) => $this->afterValidate($validator))
-            ->passes();
+        $validator = $this->getValidator($attributeNames)
+            ->after(fn ($validator) => $this->afterValidate($validator));
 
-        $this->errors()->merge($previousErrors);
+        $result = $validator->passes();
+
+        $this->errors()->merge($validator->errors()->getMessages());
 
         return $result && $this->errors()->isEmpty();
     }
