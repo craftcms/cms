@@ -14,6 +14,7 @@
 - Fixed a bug where `craft\models\Volume::getSubpath()` could return `/` instead of an empty string, if the subpath was set to an environment variable set to an empty string. ([#18379](https://github.com/craftcms/cms/issues/18379))
 - Fixed a bug where it wasn’t possible to set assets’ `alt` text via GraphQL mutations. ([#18381](https://github.com/craftcms/cms/issues/18381))
 - Fixed a bug where dragging a field from a field layout designer’s “Add” HUD, and then dropping it back on itself, would result in the field getting selected in a hidden state. ([#18382](https://github.com/craftcms/cms/issues/18382))
+- Fixed a bug where custom entry index pages were getting included in the global nav, even if they only contained sources that weren’t available to the current user. ([#18391](https://github.com/craftcms/cms/issues/18391))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-fvwq-45qv-xvhv)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-vg3j-hpm9-8v5v)
 

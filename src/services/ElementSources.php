@@ -254,11 +254,19 @@ class ElementSources extends Component
             }
         }
 
-        // Remove pages that only have disabled sources
-        $pages = array_filter(
-            $pages,
-            fn(array $sources) => ArrayHelper::contains($sources, fn(array $source) => !($source['disabled'] ?? false)),
-        );
+        // Remove pages that only have headings, disabled sources, and sources not available for the user
+        $pages = array_filter($pages, fn(array $sources) => ArrayHelper::contains($sources, function(array $source) {
+            if ($source['type'] === self::TYPE_HEADING) {
+                return false;
+            }
+            if ($source['disabled'] ?? false) {
+                return false;
+            }
+            if (!$this->_showCustomSource($source)) {
+                return false;
+            }
+            return true;
+        }));
 
         return array_keys($pages);
     }
