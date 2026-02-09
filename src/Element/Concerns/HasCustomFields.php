@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use craft\errors\InvalidFieldException;
-use craft\models\FieldLayout;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use UnitEnum;
@@ -25,7 +25,7 @@ use yii\base\InvalidConfigException;
  * @property array $serializedFieldValues Array of the element's serialized custom field values, indexed by their handles
  * @property array $fieldValues The element's normalized custom field values, indexed by their handles
  * @property string $fieldContext The field context this element's content uses
- * @property FieldLayout|null $fieldLayout The field layout used by this element
+ * @property \CraftCms\Cms\FieldLayout\FieldLayout|null $fieldLayout The field layout used by this element
  * @property array $fieldParamNamespace The namespace used by custom field params on the request
  *
  * @internal

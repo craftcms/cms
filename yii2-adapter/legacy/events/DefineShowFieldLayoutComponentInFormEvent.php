@@ -9,7 +9,7 @@ namespace craft\events;
 
 use craft\base\ElementInterface;
 use craft\base\Event;
-use craft\models\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
  * DefineShowFieldLayoutComponentInFormEvent event class.
@@ -20,7 +20,7 @@ use craft\models\FieldLayout;
 class DefineShowFieldLayoutComponentInFormEvent extends Event
 {
     /**
-     * @var FieldLayout The field layout being rendered.
+     * @var \CraftCms\Cms\FieldLayout\FieldLayout The field layout being rendered.
      */
     public FieldLayout $fieldLayout;
 

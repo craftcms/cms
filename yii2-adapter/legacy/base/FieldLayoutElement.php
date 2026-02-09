@@ -7,7 +7,7 @@
 
 namespace craft\base;
 
-use craft\models\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use DateTime;
 
 /**

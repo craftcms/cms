@@ -13,7 +13,7 @@ use CraftCms\Cms\Support\Arr;
 /**
  * BaseNativeField is the base class for native fields that can be included in field layouts.
  *
- * Native fields can be registered using [[\craft\models\FieldLayout::EVENT_DEFINE_NATIVE_FIELDS]].
+ * Native fields can be registered using [[\CraftCms\Cms\FieldLayout\FieldLayout::EVENT_DEFINE_NATIVE_FIELDS]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

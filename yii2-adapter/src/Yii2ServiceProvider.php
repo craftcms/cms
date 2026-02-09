@@ -47,7 +47,6 @@ use craft\gql\queries\Tag as TagQuery;
 use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\TagRelation;
 use craft\models\CategoryGroup;
-use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\services\Addresses;
 use craft\services\Auth;
@@ -91,6 +90,7 @@ use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
@@ -967,7 +967,7 @@ class Yii2ServiceProvider extends ServiceProvider
             FieldLayout::class,
             FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
             function(DefineFieldLayoutFieldsEvent $event) {
-                /** @var FieldLayout $fieldLayout */
+                /** @var \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout */
                 $fieldLayout = $event->sender;
                 switch ($fieldLayout->type) {
                     case Category::class:

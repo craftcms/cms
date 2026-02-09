@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use craft\fieldlayoutelements\users\FullNameField;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Validation\UserRules;

@@ -39,7 +39,7 @@ use craft\markdown\GithubMarkdown;
 use craft\markdown\Markdown;
 use craft\markdown\MarkdownExtra;
 use craft\markdown\PreEncodedMarkdown;
-use craft\models\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
 use craft\services\Addresses;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Contracts\Database\Query\Expression;

@@ -8,7 +8,6 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\models\FieldLayout;
 
 /**
  * RegisterElementFieldLayoutsEvent class.
@@ -25,7 +24,7 @@ class RegisterElementFieldLayoutsEvent extends Event
     public ?string $source = null;
 
     /**
-     * @var FieldLayout[] List of all of the field layouts associated with elements from the given source
+     * @var \CraftCms\Cms\FieldLayout\FieldLayout[] List of all of the field layouts associated with elements from the given source
      */
     public array $fieldLayouts = [];
 }

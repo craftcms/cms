@@ -24,7 +24,6 @@ use craft\events\PopulateElementEvent;
 use craft\events\PopulateElementsEvent;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Element;
@@ -2623,7 +2622,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Returns the field layouts whose custom fields should be returned by [[customFields()]].
      *
-     * @return FieldLayout[]
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout[]
      * @since 5.0.0
      */
     protected function fieldLayouts(): array

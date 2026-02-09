@@ -19,7 +19,6 @@ use craft\events\DefineElementInnerHtmlEvent;
 use craft\events\RegisterCpAlertsEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
-use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
@@ -43,6 +42,7 @@ use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -2776,8 +2776,9 @@ JS, [
     /**
      * Renders a card view designer.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      * @param array $config
+     *
      * @return string
      * @since 5.5.0
      */
@@ -2844,7 +2845,8 @@ JS, [
     /**
      * Returns an array of available card preview options for the given field layout.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
+     *
      * @return array{label:string,value:string}[]
      * @since 5.9.0
      */
@@ -2915,7 +2917,8 @@ JS, [
     /**
      * Returns an array of available card thumbnail options for the given field layout.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
+     *
      * @return array{label:string,value:string}[]
      * @since 5.9.6
      */
@@ -2967,8 +2970,9 @@ JS, [
     /**
      * Return HTML for managing thumbnail provider and position.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      * @param array $config
+     *
      * @return string
      * @throws TemplateLoaderException
      */
@@ -3050,9 +3054,10 @@ JS, [
     /**
      * Returns HTML for the card preview based on selected fields and attributes.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      * @param array $cardElements (deprecated)
      * @param bool|null $showThumb
+     *
      * @return string
      * @throws Throwable
      */
@@ -3133,8 +3138,9 @@ JS, [
     /**
      * Renders a field layout designer.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      * @param array $config
+     *
      * @return string
      * @since 4.0.0
      */
@@ -3330,7 +3336,7 @@ JS;
 
     /**
      * @param FieldLayoutElement[] $elements
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      */
     private static function _setLayoutOnElements(array $elements, FieldLayout $fieldLayout): void
     {
@@ -3432,7 +3438,8 @@ JS;
     /**
      * @param string $groupName
      * @param BaseField[] $groupFields
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
+     *
      * @return string
      */
     private static function _fldFieldSelectorsHtml(string $groupName, array $groupFields, FieldLayout $fieldLayout): string
@@ -3485,8 +3492,9 @@ JS;
     /**
      * Renders a Generated Fields table for a field layout
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      * @param array $config
+     *
      * @return string
      */
     public static function generatedFieldsTableHtml(FieldLayout $fieldLayout, array $config = []): string

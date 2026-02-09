@@ -12,12 +12,12 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
@@ -452,7 +452,7 @@ final class ElementSources
      * Returns all the field layouts available for the given element source.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @return Collection<FieldLayout>
+     * @return Collection<\CraftCms\Cms\FieldLayout\FieldLayout>
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): Collection
     {
@@ -526,7 +526,7 @@ final class ElementSources
      * Returns additional sort options that should be available for an element index source that includes the given
      * field layouts.
      *
-     * @param  FieldLayout[]|Collection<FieldLayout>  $fieldLayouts
+     * @param  \CraftCms\Cms\FieldLayout\FieldLayout[]|Collection<\CraftCms\Cms\FieldLayout\FieldLayout>  $fieldLayouts
      * @return Collection<array>
      */
     public function getSortOptionsForFieldLayouts(array|Collection $fieldLayouts): Collection

@@ -15,7 +15,6 @@ use craft\helpers\AdminTable;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db as DbHelper;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
@@ -42,6 +41,7 @@ use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Field\Table as TableField;
 use CraftCms\Cms\Field\Users as UsersField;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -80,7 +80,7 @@ final class Fields
     private ?MemoizableArray $_fields = null;
 
     /**
-     * @var MemoizableArray<FieldLayout>|null
+     * @var MemoizableArray<\CraftCms\Cms\FieldLayout\FieldLayout>|null
      *
      * @see _layouts()
      */
@@ -826,7 +826,7 @@ final class Fields
     /**
      * Returns a memoizable array of all field layouts.
      *
-     * @return MemoizableArray<FieldLayout>
+     * @return MemoizableArray<\CraftCms\Cms\FieldLayout\FieldLayout>
      */
     private function _layouts(): MemoizableArray
     {
@@ -841,8 +841,8 @@ final class Fields
         }
 
         /**
-         * @var MemoizableArray<FieldLayout> $layouts
-         * @var FieldLayout[] $layoutConfigs
+         * @var MemoizableArray<\CraftCms\Cms\FieldLayout\FieldLayout> $layouts
+         * @var \CraftCms\Cms\FieldLayout\FieldLayout[] $layoutConfigs
          */
         $layouts = new MemoizableArray(
             elements: $layoutConfigs,
@@ -878,7 +878,7 @@ final class Fields
      *
      * @param  int  $layoutId  The field layout’s ID
      * @param  bool  $withTrashed  Whether to return the field layout even if it’s soft-deleted
-     * @return FieldLayout|null The field layout, or null if it doesn’t exist
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutById(int $layoutId, bool $withTrashed = false): ?FieldLayout
     {
@@ -898,7 +898,7 @@ final class Fields
      * Returns a field layout by its UUID.
      *
      * @param  string  $uid  The field layout’s UUID
-     * @return FieldLayout|null The field layout, or null if it doesn’t exist
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutByUid(string $uid): ?FieldLayout
     {
@@ -921,7 +921,7 @@ final class Fields
      *
      * @param  class-string<ElementInterface>  $type  The associated element type
      * @param  bool  $create  Whether to create a field layout if one doesn’t exist
-     * @return FieldLayout|null The field layout
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null The field layout
      */
     public function getLayoutByType(string $type, bool $create = true): ?FieldLayout
     {
@@ -984,7 +984,7 @@ final class Fields
      * Assembles a field layout from post data.
      *
      * @param  string|null  $namespace  The namespace that the form data was posted in, if any
-     * @return FieldLayout The field layout
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout The field layout
      */
     public function assembleLayoutFromPost(?string $namespace = null): FieldLayout
     {
@@ -1009,7 +1009,7 @@ final class Fields
     /**
      * Saves a field layout.
      *
-     * @param  FieldLayout  $layout  The field layout
+     * @param  \CraftCms\Cms\FieldLayout\FieldLayout  $layout  The field layout
      * @param  bool  $runValidation  Whether the layout should be validated
      * @return bool Whether the field layout was saved successfully
      *
@@ -1092,7 +1092,7 @@ final class Fields
     /**
      * Deletes a field layout.
      *
-     * @param  FieldLayout  $layout  The field layout
+     * @param  \CraftCms\Cms\FieldLayout\FieldLayout  $layout  The field layout
      * @return bool Whether the field layout was deleted successfully
      */
     public function deleteLayout(FieldLayout $layout): bool

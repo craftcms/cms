@@ -55,7 +55,6 @@ use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use CraftCms\Cms\Cms;
@@ -64,6 +63,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Models\GqlSchema as GqlSchemaModel;
 use CraftCms\Cms\Gql\Models\GqlToken as GqlTokenModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -1219,7 +1219,7 @@ class Gql extends Component
      * Returns the content arguments for a given element type and field layouts.
      *
      * @param class-string<BaseElementInterface> $elementType
-     * @param FieldLayout[] $fieldLayouts
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout[] $fieldLayouts
      *
      * @return array
      * @since 5.0.0

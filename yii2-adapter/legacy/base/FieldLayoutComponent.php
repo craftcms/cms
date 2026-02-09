@@ -13,7 +13,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\events\DefineShowFieldLayoutComponentInFormEvent;
 use craft\helpers\Cp;
-use craft\models\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;

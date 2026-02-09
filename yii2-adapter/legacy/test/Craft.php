@@ -16,7 +16,6 @@ use craft\base\ElementInterface;
 use craft\config\DbConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\errors\ElementNotFoundException;
-use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\web\Application as WebApplication;
@@ -25,6 +24,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -638,7 +638,8 @@ class Craft extends Yii2
 
     /**
      * @param string $fieldHandle
-     * @return FieldLayout|null
+     *
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null
      */
     public function getFieldLayoutByFieldHandle(string $fieldHandle): ?FieldLayout
     {
