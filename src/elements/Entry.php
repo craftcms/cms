@@ -20,6 +20,7 @@ use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
+use craft\controllers\ElementsController;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
@@ -2338,6 +2339,32 @@ JS, [
     JS, [
                     $view->namespaceInputId($sectionEditId),
                     ['sectionId' => $this->sectionId],
+                ]);
+            }
+
+            // Field settings
+            if (
+                !empty($this->fieldId) &&
+                Craft::$app->controller instanceof ElementsController &&
+                Craft::$app->controller->element === $this
+            ) {
+                $fieldEditId = sprintf('edit-field-%s', mt_rand());
+                $actions[] = [
+                    'id' => $fieldEditId,
+                    'icon' => 'gear',
+                    'label' => Craft::t('app', 'Field settings'),
+                ];
+
+                $view = Craft::$app->getView();
+                $view->registerJsWithVars(fn($id, $params) => <<<JS
+    (() => {
+      $('#' + $id).on('activate', function() {
+        new Craft.CpScreenSlideout('fields/edit-field', {params: $params});
+      });
+    })();
+    JS, [
+                    $view->namespaceInputId($fieldEditId),
+                    ['fieldId' => $this->fieldId],
                 ]);
             }
         }

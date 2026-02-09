@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Nested entries’ edit screens now have a “Field settings” action menu item.
 - GraphQL API requests no longer get cache response headers; only no-cache headers, and only if the request had a `X-Craft-Gql-Cache: no-cache` header, or if the request contained any mutations. ([#18348](https://github.com/craftcms/cms/issues/18348))
 - Legacy entry index URLs now redirect `content/<page-name>`.
 - The `create()` Twig function now allows `craft\helpers\` classes to be created. ([#18376](https://github.com/craftcms/cms/discussions/18376))
