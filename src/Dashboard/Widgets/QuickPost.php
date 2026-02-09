@@ -92,7 +92,7 @@ final class QuickPost extends Widget
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [
             'section' => ['required', 'integer'],

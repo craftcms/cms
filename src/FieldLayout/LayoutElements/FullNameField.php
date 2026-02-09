@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
@@ -16,6 +9,7 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Html as HtmlHelper;
 use Illuminate\Support\Facades\Auth;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -56,7 +50,7 @@ class FullNameField extends TextField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();
@@ -73,7 +67,7 @@ class FullNameField extends TextField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (
@@ -141,7 +135,7 @@ class FullNameField extends TextField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function settingsHtml(): ?string
     {
         if (Cms::config()->showFirstAndLastNameFields) {

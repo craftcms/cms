@@ -2,18 +2,12 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -50,7 +44,7 @@ class Heading extends BaseUiElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function hasSettings()
     {
         return true;

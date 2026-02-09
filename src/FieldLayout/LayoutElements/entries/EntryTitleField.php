@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements\entries;
 
 use craft\base\ElementInterface;
@@ -18,6 +11,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use CraftCms\Cms\Support\Arr;
+use Override;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -52,7 +46,7 @@ class EntryTitleField extends TitleField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();
@@ -65,7 +59,7 @@ class EntryTitleField extends TitleField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         if (! $element instanceof Entry) {
@@ -90,7 +84,7 @@ class EntryTitleField extends TitleField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (! $element instanceof Entry) {

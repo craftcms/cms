@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
@@ -22,6 +15,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -98,7 +92,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();
@@ -382,7 +376,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function hasCustomWidth(): bool
     {
         return true;
@@ -391,7 +385,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function hasSettings()
     {
         return true;
@@ -644,7 +638,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return Arr::merge(parent::containerAttributes($element, $static), [

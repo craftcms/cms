@@ -13,14 +13,14 @@ interface Validatable
      *
      * @return array<string, mixed>
      */
-    public static function getRules(): array;
+    public function getRules(): array;
 
     /**
      * Returns custom error messages for validation rules.
      *
      * @return array<string, string>
      */
-    public static function getMessages(): array;
+    public function getMessages(): array;
 
     // /**
     //  * This method is invoked before validation starts.

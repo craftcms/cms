@@ -2,18 +2,12 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\FullNameField as BaseFullNameField;
 use CraftCms\Cms\User\Elements\User;
+use Override;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -33,7 +27,7 @@ class FullNameField extends BaseFullNameField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         if (! $element instanceof User) {

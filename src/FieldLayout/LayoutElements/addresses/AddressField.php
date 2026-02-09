@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements\addresses;
 
 use Craft;
@@ -18,6 +11,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Support\Html;
+use Override;
 use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
@@ -42,7 +36,7 @@ class AddressField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function mandatory(): bool
     {
         return true;
@@ -51,7 +45,7 @@ class AddressField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function hasCustomWidth(): bool
     {
         return false;
@@ -60,7 +54,7 @@ class AddressField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewable(): bool
     {
         return true;
@@ -69,7 +63,7 @@ class AddressField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewHtml(ElementInterface $element): string
     {
         /** @var Address $element */
@@ -81,7 +75,7 @@ class AddressField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function showLabel(): bool
     {
         return false;
@@ -99,7 +93,7 @@ class AddressField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function selectorLabel(): ?string
     {
         return t('Address');
@@ -108,7 +102,7 @@ class AddressField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (! $element instanceof Address) {
@@ -230,7 +224,7 @@ class AddressField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if ($element instanceof Address) {

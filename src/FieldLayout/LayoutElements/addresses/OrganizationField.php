@@ -2,17 +2,11 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements\addresses;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -53,7 +47,7 @@ class OrganizationField extends TextField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();
@@ -70,7 +64,7 @@ class OrganizationField extends TextField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewable(): bool
     {
         return true;

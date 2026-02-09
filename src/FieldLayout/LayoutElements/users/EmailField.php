@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
 use Craft;
@@ -18,6 +11,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
+use Override;
 use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
@@ -73,7 +67,7 @@ class EmailField extends TextField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();
@@ -101,7 +95,7 @@ class EmailField extends TextField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function warning(?ElementInterface $element = null, bool $static = false): ?string
     {
         /** @var User $element */
@@ -120,7 +114,7 @@ class EmailField extends TextField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element) {
@@ -149,7 +143,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         if (! $element instanceof User) {
@@ -165,7 +159,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function fieldErrors(?ElementInterface $element = null): array
     {
         if (! $element) {

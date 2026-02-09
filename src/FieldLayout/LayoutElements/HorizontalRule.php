@@ -2,19 +2,13 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -30,7 +24,7 @@ class HorizontalRule extends FieldLayoutElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function isMultiInstance(): bool
     {
         return true;

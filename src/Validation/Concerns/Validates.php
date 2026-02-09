@@ -14,12 +14,12 @@ trait Validates
 {
     use InteractsWithValidator;
 
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [];
     }
 
-    public static function getMessages(): array
+    public function getMessages(): array
     {
         return [];
     }
@@ -32,11 +32,11 @@ trait Validates
 
         return $this->validator
             ->setData($this->getAttributes())
-            ->setCustomMessages(static::getMessages())
+            ->setCustomMessages($this->getMessages())
             ->setAttributeNames($this->attributeLabels())
             ->setRules(is_null($attributeNames)
-                ? static::getRules()
-                : Arr::only(static::getRules(), $attributeNames)
+                ? $this->getRules()
+                : Arr::only($this->getRules(), $attributeNames)
             );
     }
 

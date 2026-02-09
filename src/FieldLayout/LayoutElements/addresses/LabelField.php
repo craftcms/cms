@@ -2,18 +2,12 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements\addresses;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use CraftCms\Cms\Support\Arr;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -49,7 +43,7 @@ class LabelField extends TitleField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();
@@ -62,7 +56,7 @@ class LabelField extends TitleField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Label');

@@ -235,7 +235,7 @@ final class Assets extends BaseRelationField
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'restrictFiles' => 'boolean',
@@ -299,7 +299,7 @@ final class Assets extends BaseRelationField
         }
     }
 
-    #[\Override]
+    #[Override]
     public function getElementRules(ElementInterface $element): array
     {
         $rules = parent::getElementRules($element);

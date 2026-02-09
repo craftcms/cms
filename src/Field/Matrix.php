@@ -353,7 +353,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'entryTypes' => ['array', 'min:1'],

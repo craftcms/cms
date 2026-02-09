@@ -2,17 +2,11 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Support\Arr;
+use Override;
 
 /**
  * BaseNativeField is the base class for native fields that can be included in field layouts.
@@ -83,7 +77,7 @@ abstract class BaseNativeField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function mandatory(): bool
     {
         return $this->mandatory;
@@ -92,7 +86,7 @@ abstract class BaseNativeField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function requirable(): bool
     {
         return $this->requirable;
@@ -101,7 +95,7 @@ abstract class BaseNativeField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function id(): string
     {
         return $this->id ?? parent::id();
@@ -110,7 +104,7 @@ abstract class BaseNativeField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         $attributes = parent::containerAttributes($element, $static);
@@ -121,7 +115,7 @@ abstract class BaseNativeField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputContainerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return $this->inputContainerAttributes;
@@ -130,7 +124,7 @@ abstract class BaseNativeField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function labelAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return $this->labelAttributes;
@@ -139,7 +133,7 @@ abstract class BaseNativeField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function orientation(?ElementInterface $element = null, bool $static = false): string
     {
         return $this->orientation ?? parent::orientation($element, $static);
@@ -148,7 +142,7 @@ abstract class BaseNativeField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         return $this->translatable;

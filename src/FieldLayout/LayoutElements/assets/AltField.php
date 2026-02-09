@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements\assets;
 
 use craft\base\ElementInterface;
@@ -18,6 +11,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextareaField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use Override;
 use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
@@ -61,7 +55,7 @@ class AltField extends TextareaField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();
@@ -78,7 +72,7 @@ class AltField extends TextareaField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewable(): bool
     {
         return true;
@@ -87,7 +81,7 @@ class AltField extends TextareaField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewHtml(ElementInterface $element): string
     {
         return Html::tag('div', parent::previewHtml($element), [
@@ -100,7 +94,7 @@ class AltField extends TextareaField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
     {
         return Arr::merge(parent::inputTemplateVariables($element, $static), [
@@ -119,7 +113,7 @@ class AltField extends TextareaField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         if (! $element instanceof Asset) {
@@ -144,7 +138,7 @@ class AltField extends TextareaField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function isCrossSiteCopyable(ElementInterface $element): bool
     {
         return true;

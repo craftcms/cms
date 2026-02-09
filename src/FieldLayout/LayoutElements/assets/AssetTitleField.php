@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements\assets;
 
 use craft\base\ElementInterface;
@@ -16,6 +9,7 @@ use craft\helpers\ElementHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
+use Override;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -30,7 +24,7 @@ class AssetTitleField extends TitleField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         if (! $element instanceof Asset) {

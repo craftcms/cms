@@ -2,18 +2,12 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
 use craft\base\ElementInterface;
 use Illuminate\Support\Facades\Auth;
+use Override;
 
 /**
  * TextField represents a text field that can be included in field layouts.
@@ -122,7 +116,7 @@ class TextField extends BaseNativeField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();
@@ -179,7 +173,7 @@ class TextField extends BaseNativeField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function baseInputName(): string
     {
         return $this->name ?? parent::baseInputName();
@@ -188,7 +182,7 @@ class TextField extends BaseNativeField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function errorKey(): string
     {
         return $this->name ?? parent::errorKey();
@@ -197,7 +191,7 @@ class TextField extends BaseNativeField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
         $items = [];

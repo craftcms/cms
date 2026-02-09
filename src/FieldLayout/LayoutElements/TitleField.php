@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
@@ -16,6 +9,7 @@ use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -79,7 +73,7 @@ class TitleField extends TextField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();
@@ -106,7 +100,7 @@ class TitleField extends TextField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (
@@ -143,7 +137,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function isCrossSiteCopyable(ElementInterface $element): bool
     {
         return true;
@@ -152,7 +146,7 @@ JS, [
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
         $items = [];

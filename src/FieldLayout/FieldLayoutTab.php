@@ -2,21 +2,13 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
-use craft\errors\FieldNotFoundException;
 use craft\helpers\Cp;
+use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -301,12 +293,14 @@ class FieldLayoutTab extends FieldLayoutComponent
             if (is_array($layoutElement)) {
                 try {
                     $layoutElement = $fieldsService->createLayoutElement($layoutElement);
+                    /** @phpstan-ignore catch.neverThrown */
                 } catch (FieldNotFoundException) {
                     // Skip quietly
                     continue;
-                } catch (InvalidArgumentException|InvalidConfigException $e) {
+                    /** @phpstan-ignore catch.neverThrown */
+                } catch (InvalidArgumentException $e) {
                     Log::warning('Invalid field layout element config: '.$e->getMessage(), [__METHOD__]);
-                    Craft::$app->getErrorHandler()->logException($e);
+                    report($e);
 
                     continue;
                 }

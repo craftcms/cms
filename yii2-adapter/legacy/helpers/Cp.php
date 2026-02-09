@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\Indicative;
 use craft\base\NestedElementInterface;
-use craft\errors\FieldNotFoundException;
 use craft\events\DefineElementHtmlEvent;
 use craft\events\DefineElementInnerHtmlEvent;
 use craft\events\RegisterCpAlertsEvent;
@@ -38,6 +37,7 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Field\ContentBlock;
+use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
@@ -3101,7 +3101,7 @@ JS, [
         $cardElements = $fieldLayout->getCardBodyElements();
 
         foreach ($cardElements as $cardElement) {
-            $previewHtml .= Html::tag('div', $cardElement['html'], [
+            $previewHtml .= Html::tag('div', $cardElement, [
                 'class' => 'card-attribute-preview',
             ]);
         }

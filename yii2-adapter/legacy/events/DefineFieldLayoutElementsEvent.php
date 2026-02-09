@@ -15,6 +15,7 @@ use craft\base\FieldLayoutElement;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\FieldLayout\Events\DefineUIElements} instead.
  */
 class DefineFieldLayoutElementsEvent extends Event
 {

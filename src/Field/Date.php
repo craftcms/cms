@@ -173,7 +173,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'showDate' => 'boolean',

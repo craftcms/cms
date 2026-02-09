@@ -2,20 +2,12 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
-use craft\errors\FieldNotFoundException;
 use craft\helpers\Cp;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -24,6 +16,7 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
+use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -31,6 +24,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Override;
 use Throwable;
 use yii\base\InvalidConfigException;
 
@@ -128,7 +122,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function isMultiInstance(): bool
     {
         try {
@@ -161,7 +155,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function key(): string
     {
         try {
@@ -179,7 +173,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function showAttribute(): bool
     {
         return true;
@@ -190,7 +184,7 @@ class CustomField extends BaseField
      *
      * @since 3.5.2
      */
-    #[\Override]
+    #[Override]
     protected function value(?ElementInterface $element = null): mixed
     {
         if ($element === null) {
@@ -209,7 +203,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function requirable(): bool
     {
         try {
@@ -224,7 +218,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function thumbable(): bool
     {
         try {
@@ -239,7 +233,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewable(): bool
     {
         try {
@@ -254,7 +248,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getPreviewOptions(): ?array
     {
         try {
@@ -292,7 +286,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getThumbOptions(): ?array
     {
         try {
@@ -348,7 +342,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewHtml(ElementInterface $element): string
     {
         try {
@@ -367,7 +361,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function keywords(): array
     {
         $fieldTypeKeyword = [];
@@ -456,7 +450,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function hasConditions(): bool
     {
         if (parent::hasConditions()) {
@@ -535,7 +529,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         return [
@@ -549,7 +543,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function selectorAttributes(): array
     {
         $attributes = parent::selectorAttributes();
@@ -570,7 +564,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function settingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/fld/custom-field-settings.twig', [
@@ -585,7 +579,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         $attributes = parent::containerAttributes($element, $static);
@@ -619,7 +613,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function showLabel(): bool
     {
         // Does the field have a custom label?
@@ -654,7 +648,7 @@ class CustomField extends BaseField
         return $field::icon();
     }
 
-    #[\Override]
+    #[Override]
     protected function selectorIndicators(): array
     {
         $indicators = parent::selectorIndicators();
@@ -681,7 +675,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function showStatus(): bool
     {
         try {
@@ -696,7 +690,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element === null) {
@@ -717,7 +711,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function statusLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element === null) {
@@ -746,7 +740,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function conditionalSettingsHtml(): string
     {
         $html = (string) parent::conditionalSettingsHtml();
@@ -821,7 +815,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $view = Craft::$app->getView();
@@ -840,7 +834,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function useFieldset(): bool
     {
         try {
@@ -855,7 +849,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function id(): string
     {
         try {
@@ -870,7 +864,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function labelId(): string
     {
         try {
@@ -917,7 +911,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function orientation(?ElementInterface $element = null, bool $static = false): string
     {
         try {
@@ -932,7 +926,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         try {
@@ -961,7 +955,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function isCrossSiteCopyable(ElementInterface $element): bool
     {
         try {
@@ -976,7 +970,7 @@ class CustomField extends BaseField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
         try {

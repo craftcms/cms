@@ -873,7 +873,7 @@ JS, [
         $cardElements = $this->getFieldLayout()?->getCardBodyElements($this) ?? [];
 
         foreach ($cardElements as $item) {
-            $html .= Html::tag('div', $item['html'], [
+            $html .= Html::tag('div', $item, [
                 'class' => 'card-attribute-preview',
             ]);
         }

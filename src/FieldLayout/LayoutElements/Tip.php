@@ -2,19 +2,13 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
+use Override;
 use yii\helpers\Markdown;
 
 use function CraftCms\Cms\t;
@@ -75,7 +69,7 @@ class Tip extends BaseUiElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function hasSettings()
     {
         return true;

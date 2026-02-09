@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
@@ -18,6 +11,7 @@ use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\View;
 use CraftCms\Cms\Support\Html;
+use Override;
 use Throwable;
 
 use function CraftCms\Cms\t;
@@ -78,7 +72,7 @@ class Template extends BaseUiElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function selectorLabelAttributes(): array
     {
         $attr = parent::selectorLabelAttributes();
@@ -92,7 +86,7 @@ class Template extends BaseUiElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function hasCustomWidth(): bool
     {
         return true;
@@ -101,7 +95,7 @@ class Template extends BaseUiElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function hasSettings()
     {
         return true;
@@ -161,7 +155,7 @@ class Template extends BaseUiElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function alwaysRefresh(): bool
     {
         return true;

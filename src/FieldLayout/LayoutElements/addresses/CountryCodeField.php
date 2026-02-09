@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements\addresses;
 
 use CommerceGuys\Addressing\Country\Country;
@@ -19,6 +12,7 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
+use Override;
 use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
@@ -66,7 +60,7 @@ class CountryCodeField extends BaseNativeField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();
@@ -84,7 +78,7 @@ class CountryCodeField extends BaseNativeField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewable(): bool
     {
         return true;
@@ -129,7 +123,7 @@ class CountryCodeField extends BaseNativeField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
@@ -147,7 +141,7 @@ class CountryCodeField extends BaseNativeField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
         $items = [];

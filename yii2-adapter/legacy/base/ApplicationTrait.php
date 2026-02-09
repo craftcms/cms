@@ -1378,9 +1378,6 @@ trait ApplicationTrait
      */
     private function _postInit(): void
     {
-        // Register field layout listeners
-        $this->_registerFieldLayoutListener();
-
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
@@ -1422,47 +1419,6 @@ trait ApplicationTrait
 
         // Default to the source language.
         return $this->sourceLanguage;
-    }
-
-    /**
-     * Register event listeners for field layouts.
-     */
-    private function _registerFieldLayoutListener(): void
-    {
-        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function (DefineFieldLayoutFieldsEvent $event) {
-            /** @var FieldLayout $fieldLayout */
-            $fieldLayout = $event->sender;
-
-            switch ($fieldLayout->type) {
-                case Address::class:
-                    $event->fields[] = LabelField::class;
-                    $event->fields[] = OrganizationField::class;
-                    $event->fields[] = OrganizationTaxIdField::class;
-                    $event->fields[] = FullNameField::class;
-                    $event->fields[] = CountryCodeField::class;
-                    $event->fields[] = AddressField::class;
-                    $event->fields[] = LatLongField::class;
-                    break;
-                case Asset::class:
-                    $event->fields[] = AssetTitleField::class;
-                    $event->fields[] = AltField::class;
-                    break;
-                case Entry::class:
-                    $event->fields[] = EntryTitleField::class;
-                    break;
-                case User::class:
-                    if (! Cms::config()->useEmailAsUsername) {
-                        $event->fields[] = UsernameField::class;
-                    }
-                    $event->fields[] = UserFullNameField::class;
-                    $event->fields[] = PhotoField::class;
-                    $event->fields[] = EmailField::class;
-                    if (\CraftCms\Cms\Support\Facades\Sites::isMultiSite()) {
-                        $event->fields[] = AffiliatedSiteField::class;
-                    }
-                    break;
-            }
-        });
     }
 
     /**

@@ -11,7 +11,6 @@ use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
-use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DefineGqlArgumentsEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -26,7 +25,6 @@ use craft\events\RegisterGqlTypesEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
-use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\linktypes\Category as CategoryLinkType;
 use craft\fields\Tags as TagsField;
@@ -90,7 +88,8 @@ use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\Field;
-use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
+use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
@@ -963,20 +962,14 @@ class Yii2ServiceProvider extends ServiceProvider
             Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
         }
 
-        YiiEvent::on(
-            FieldLayout::class,
-            FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
-            function(DefineFieldLayoutFieldsEvent $event) {
-                /** @var \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout */
-                $fieldLayout = $event->sender;
-                switch ($fieldLayout->type) {
-                    case Category::class:
-                    case Tag::class:
-                        $event->fields[] = TitleField::class;
-                        break;
-                }
-            },
-        );
+        Event::listen(function(DefineNativeFields $event) {
+            switch ($event->fieldLayout->type) {
+                case Category::class:
+                case Tag::class:
+                    $event->fields[] = TitleField::class;
+                    break;
+            }
+        });
 
         if (self::supportsTags()) {
             app(ProjectConfig::class)

@@ -2,19 +2,13 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use Override;
 use yii\helpers\Markdown as MarkdownHelper;
 
 use function CraftCms\Cms\t;
@@ -57,7 +51,7 @@ class Markdown extends BaseUiElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function selectorLabelAttributes(): array
     {
         $attr = parent::selectorLabelAttributes();
@@ -71,7 +65,7 @@ class Markdown extends BaseUiElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function hasCustomWidth(): bool
     {
         return true;
@@ -80,7 +74,7 @@ class Markdown extends BaseUiElement
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function hasSettings()
     {
         return true;
