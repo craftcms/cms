@@ -1,6 +1,10 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -15,7 +19,9 @@ use DateTime;
  * FieldLayoutElement is the base class for classes representing field layout elements in terms of objects.
  *
  * @property FieldLayout $layout The layout this element belongs to
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.5.0
  */
 abstract class FieldLayoutElement extends FieldLayoutComponent
@@ -27,18 +33,20 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
 
     /**
      * @var DateTime|null The date that the element was added to the field layout.
+     *
      * @since 5.3.0
      */
     public ?DateTime $dateAdded = null;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function fields(): array
     {
         $fields = parent::fields();
 
-        if (!$this->hasCustomWidth()) {
+        if (! $this->hasCustomWidth()) {
             unset($fields['width']);
         }
 
@@ -48,7 +56,6 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
     /**
      * Returns whether the element can be included multiple times.
      *
-     * @return bool
      * @since 5.0.0
      */
     public function isMultiInstance(): bool
@@ -58,8 +65,6 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
 
     /**
      * Returns whether the element can have a custom width.
-     *
-     * @return bool
      */
     public function hasCustomWidth(): bool
     {
@@ -68,8 +73,6 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
 
     /**
      * Returns the selector HTML that should be displayed within field layout designers.
-     *
-     * @return string
      */
     abstract public function selectorHtml(): string;
 
@@ -78,16 +81,14 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      *
      * Return `null` if the element should not be present within the form.
      *
-     * @param ElementInterface|null $element The element the form is being rendered for
-     * @param bool $static Whether the form should be static (non-interactive)
-     * @return string|null
+     * @param  ElementInterface|null  $element  The element the form is being rendered for
+     * @param  bool  $static  Whether the form should be static (non-interactive)
      */
     abstract public function formHtml(?ElementInterface $element = null, bool $static = false): ?string;
 
     /**
      * Returns whether the layout element should always be re-rendered, even if it’s already included in the form.
      *
-     * @return bool
      * @since 5.7.0
      */
     public function alwaysRefresh(): bool
@@ -98,16 +99,16 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
     /**
      * Returns the element container HTML attributes.
      *
-     * @param ElementInterface|null $element The element the form is being rendered for
-     * @param bool $static Whether the form should be static (non-interactive)
-     * @return array
+     * @param  ElementInterface|null  $element  The element the form is being rendered for
+     * @param  bool  $static  Whether the form should be static (non-interactive)
      */
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         $attributes = [];
         if ($this->hasCustomWidth()) {
-            $attributes['class'][] = 'width-' . ($this->width ?? 100);
+            $attributes['class'][] = 'width-'.($this->width ?? 100);
         }
+
         return $attributes;
     }
 }
