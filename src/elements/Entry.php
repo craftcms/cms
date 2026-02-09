@@ -1089,10 +1089,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                         'num' => $section->maxAuthors,
                     ]));
                 }
-                foreach ($authors as $author) {
-                    if (!$author->can(sprintf("viewEntries:%s", $this->getSection()->uid))) {
-                        $this->addError($attribute, Craft::t('app', 'This user doesn’t have permission to author entries in this section.'));
-                        break;
+                if (isset($this->_oldAuthorIds)) {
+                    foreach ($authors as $author) {
+                        if (
+                            !in_array($author->id, $this->_oldAuthorIds) &&
+                            !$author->can(sprintf("viewEntries:%s", $this->getSection()->uid))
+                        ) {
+                            $this->addError($attribute, Craft::t('app', 'This user doesn’t have permission to author entries in this section.'));
+                            break;
+                        }
                     }
                 }
             },
@@ -1126,10 +1131,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             isset($this->sectionId)
         ) {
             $authorIds = $this->normalizeAuthorIds($authorIds ?? $authorId);
+            $oldAuthorIds = $this->getAuthorIds();
             if (
-                $authorIds !== $this->getAuthorIds() &&
+                $authorIds !== $oldAuthorIds &&
                 $this->canChangeAuthor()
             ) {
+                $this->_oldAuthorIds = $oldAuthorIds;
                 $this->setAuthorIds($authorIds);
             }
         }
