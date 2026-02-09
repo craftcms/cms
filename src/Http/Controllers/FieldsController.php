@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use craft\helpers\Component;
 use craft\helpers\Cp;
@@ -24,6 +23,7 @@ use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -239,7 +239,7 @@ final class FieldsController
         $tab = $this->fieldLayoutComponent($request);
 
         return new JsonResponse([
-            'config' => $tab->toArray(),
+            'config' => $tab->getAttributes(),
             'labelHtml' => $tab->labelHtml(),
         ]);
     }
@@ -276,7 +276,7 @@ final class FieldsController
         $selectorHtml = Cp::layoutElementSelectorHtml($element);
 
         return new JsonResponse([
-            'config' => ['type' => $element::class] + $element->toArray(),
+            'config' => ['type' => $element::class] + $element->getAttributes(),
             'selectorHtml' => $selectorHtml,
         ]);
     }

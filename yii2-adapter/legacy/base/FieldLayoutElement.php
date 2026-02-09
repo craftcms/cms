@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use DateTime;
 
 /**

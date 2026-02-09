@@ -7,9 +7,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
-use craft\events\DefineFieldActionsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -28,14 +28,6 @@ use function CraftCms\Cms\t;
  */
 abstract class BaseField extends FieldLayoutElement
 {
-    /**
-     * @event DefineFieldActionsEvent The event that is triggered when defining action menu items.
-     *
-     * @see actionMenuItems()
-     * @since 5.9.0
-     */
-    public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
-
     /**
      * @var string|null The field’s label
      */
@@ -64,7 +56,6 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @var bool Whether this field should be used to define element thumbnails.
      *
-     * @since 5.0.0
      * @deprecated in 5.9.0
      */
     public bool $providesThumbs = false;
@@ -72,7 +63,6 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @var bool Whether this field’s contents should be included in element cards.
      *
-     * @since 5.0.0
      * @deprecated in 5.9.0
      */
     public bool $includeInCards = false;
@@ -108,8 +98,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the key for this field.
-     *
-     * @since 5.9.0
      */
     public function key(): string
     {
@@ -120,8 +108,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns whether the attribute should be shown for admin users with “Show field handles in edit forms” enabled.
-     *
-     * @since 4.5.4
      */
     public function showAttribute(): bool
     {
@@ -168,8 +154,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns whether the field can be chosen as elements’ thumbnail provider.
-     *
-     * @since 5.0.0
      */
     public function thumbable(): bool
     {
@@ -178,8 +162,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns whether the field can be included in element cards.
-     *
-     * @since 5.0.0
      */
     public function previewable(): bool
     {
@@ -188,8 +170,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the card preview options supplied by this field.
-     *
-     * @since 5.9.0
      */
     public function getPreviewOptions(): ?array
     {
@@ -207,8 +187,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the card thumbnail options supplied by this field.
-     *
-     * @since 5.9.6
      */
     public function getThumbOptions(): ?array
     {
@@ -306,8 +284,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the selector label.
-     *
-     * @since 4.0.0
      */
     protected function selectorLabel(): ?string
     {
@@ -321,8 +297,6 @@ abstract class BaseField extends FieldLayoutElement
      * the path to an SVG file, or raw SVG markup.
      *
      * System icons can be found in `src/icons/solid/`.
-     *
-     * @since 5.0.0
      */
     protected function selectorIcon(): ?string
     {
@@ -331,8 +305,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the indicators that should be shown within the selector.
-     *
-     * @since 5.0.0
      */
     protected function selectorIndicators(): array
     {
@@ -386,7 +358,7 @@ abstract class BaseField extends FieldLayoutElement
      * {@inheritdoc}
      */
     #[Override]
-    public function hasSettings()
+    public function hasSettings(): bool
     {
         return true;
     }
@@ -423,15 +395,8 @@ abstract class BaseField extends FieldLayoutElement
         $translatable = $this->translatable($element, $static);
         $actionMenuItems = $this->actionMenuItems($element, $static);
 
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-            $event = new DefineFieldActionsEvent([
-                'element' => $element,
-                'static' => $static,
-                'items' => $actionMenuItems,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
-            $actionMenuItems = $event->items;
-        }
+        event($event = new DefineActionMenuItems($element, $actionMenuItems, $static));
+        $actionMenuItems = $event->items;
 
         if (
             $this->uid &&
@@ -537,8 +502,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns whether the element’s form HTML should use a `<fieldset>` + `<legend>` instead of a `<div>` + `<label>`.
-     *
-     * @since 3.6.0
      */
     protected function useFieldset(): bool
     {
@@ -555,8 +518,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the `id` of the field label.
-     *
-     * @since 4.1.0
      */
     protected function labelId(): string
     {
@@ -565,8 +526,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the `id` of the field instructions.
-     *
-     * @since 3.7.24
      */
     protected function instructionsId(): string
     {
@@ -575,8 +534,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the `id` of the field tip.
-     *
-     * @since 3.7.24
      */
     protected function tipId(): string
     {
@@ -585,8 +542,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the `id` of the field warning.
-     *
-     * @since 3.7.24
      */
     protected function warningId(): string
     {
@@ -595,8 +550,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the `id` of the field errors.
-     *
-     * @since 3.7.24
      */
     protected function errorsId(): string
     {
@@ -605,8 +558,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the `id` if the field status message.
-     *
-     * @since 3.7.29
      */
     protected function statusId(): string
     {
@@ -620,7 +571,6 @@ abstract class BaseField extends FieldLayoutElement
      * @param  bool  $static  Whether the form should be static (non-interactive)
      *
      * @see inputHtml()
-     * @since 3.7.24
      */
     protected function describedBy(?ElementInterface $element = null, bool $static = false): ?string
     {
@@ -651,8 +601,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the base input name for the field (sans namespace).
-     *
-     * @since 5.0.0
      */
     protected function baseInputName(): string
     {
@@ -661,8 +609,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns the error key this field should be associated with.
-     *
-     * @since 5.0.0
      */
     protected function errorKey(): string
     {
@@ -716,8 +662,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns whether the label should be shown in form inputs.
-     *
-     * @since 3.5.6
      */
     protected function showLabel(): bool
     {
@@ -726,8 +670,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns whether the field should show a status indicator when modified.
-     *
-     * @since 5.8.0
      */
     protected function showStatus(): bool
     {
@@ -769,8 +711,6 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
-     *
-     * @since 3.7.24
      */
     protected function instructions(?ElementInterface $element = null, bool $static = false): ?string
     {
@@ -878,8 +818,6 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
-     *
-     * @since 5.6.0
      */
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
@@ -888,8 +826,6 @@ abstract class BaseField extends FieldLayoutElement
 
     /**
      * Returns a “Copy field handle” action menu item definition for [[actionMenuItems()]].
-     *
-     * @since 5.9.0
      */
     protected function copyAttributeAction(array $config = []): array
     {
@@ -928,8 +864,6 @@ JS, [
     /**
      * Return the HTML that should be shown for the native field in the card preview.
      * It can be used outside an element context, e.g. in a card view designer.
-     *
-     * @since 5.5.0
      */
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {

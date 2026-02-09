@@ -45,7 +45,7 @@ class Heading extends BaseUiElement
      * {@inheritdoc}
      */
     #[Override]
-    public function hasSettings()
+    public function hasSettings(): bool
     {
         return true;
     }

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
 use craft\helpers\Component;
+use CraftCms\Cms\Component\Concerns\ConfigConstructor;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
@@ -13,7 +14,6 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use Illuminate\Support\Traits\Macroable;
 use Override;
@@ -24,25 +24,13 @@ use RuntimeException;
  */
 abstract class Widget implements WidgetInterface
 {
+    use ConfigConstructor;
     use ConfigurableComponent;
     use Macroable;
     use SavableComponent;
     use Validates;
 
     public ?int $colspan = null;
-
-    public function __construct(array $config = [])
-    {
-        Typecast::properties(static::class, $config);
-
-        foreach ($config as $name => $value) {
-            if (! property_exists($this, $name)) {
-                continue;
-            }
-
-            $this->$name = $value;
-        }
-    }
 
     /**
      * {@inheritdoc}

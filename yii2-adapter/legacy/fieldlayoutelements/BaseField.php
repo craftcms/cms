@@ -9,19 +9,43 @@
 
 namespace craft\fieldlayoutelements;
 
-/** @phpstan-ignore-next-line */
-if (false) {
+use craft\base\Event as YiiEvent;
+use craft\events\DefineFieldActionsEvent;
+use CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems;
+use Illuminate\Support\Facades\Event;
+
+/**
+ * BaseField is the base class for native and custom fields that can be included in field layouts.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
+ * @since 3.5.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\BaseField} instead.
+ */
+abstract class BaseField extends \CraftCms\Cms\FieldLayout\LayoutElements\BaseField
+{
     /**
-     * BaseField is the base class for native and custom fields that can be included in field layouts.
+     * @event DefineFieldActionsEvent The event that is triggered when defining action menu items.
      *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     *
-     * @since 3.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\BaseField} instead.
+     * @see actionMenuItems()
+     * @since 5.9.0
      */
-    class BaseField
+    public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
+
+    public static function registerEvents(): void
     {
+        Event::listen(function(DefineActionMenuItems $event) {
+            if (YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+                $yiiEvent = new DefineFieldActionsEvent([
+                    'element' => $event->element,
+                    'static' => $event->static,
+                    'items' => $event->items,
+                ]);
+
+                YiiEvent::trigger(self::class, self::EVENT_DEFINE_ACTION_MENU_ITEMS, $yiiEvent);
+
+                $event->items = $yiiEvent->items;
+            }
+        });
     }
 }
-
-class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\BaseField::class, BaseField::class);

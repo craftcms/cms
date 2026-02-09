@@ -8,6 +8,7 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
+use CraftCms\Cms\Component\Concerns\ConfigConstructor;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -15,6 +16,9 @@ use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\Data\FieldLayoutForm;
+use CraftCms\Cms\FieldLayout\Data\FieldLayoutFormElement;
+use CraftCms\Cms\FieldLayout\Data\FieldLayoutFormTab;
 use CraftCms\Cms\FieldLayout\Events\CreateFieldLayoutForm;
 use CraftCms\Cms\FieldLayout\Events\DefineCustomFields;
 use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
@@ -31,7 +35,6 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -45,6 +48,9 @@ use function CraftCms\Cms\t;
 
 class FieldLayout implements Validatable
 {
+    use ConfigConstructor {
+        __construct as private __configConstruct;
+    }
     use Validates {
         getAttributes as traitGetAttributes;
     }
@@ -161,15 +167,7 @@ class FieldLayout implements Validatable
     public function __construct(
         array $config = [],
     ) {
-        Typecast::properties(self::class, $config);
-
-        foreach ($config as $name => $value) {
-            if (! property_exists($this, $name)) {
-                continue;
-            }
-
-            $this->$name = $value;
-        }
+        $this->__configConstruct($config);
 
         if (! isset($this->uid)) {
             $this->uid = Str::uuid()->toString();
@@ -1161,7 +1159,7 @@ class FieldLayout implements Validatable
         $visibleElements = Arr::pull($config, 'visibleElements');
         $staticElements = Arr::pull($config, 'staticElements');
 
-        $form = new FieldLayoutForm($config);
+        $form = FieldLayoutForm::from($config);
         $tabs = $this->getTabs();
 
         event($event = new CreateFieldLayoutForm(
@@ -1199,7 +1197,7 @@ class FieldLayout implements Validatable
                             ($staticElements === null || $isStatic === in_array($layoutElement->uid, $staticElements[$tab->uid] ?? []))
                         ))
                     ) {
-                        $layoutElements[] = [$layoutElement, $isConditional, true, $isStatic];
+                        $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, true, $isStatic);
                         $hasVisibleFields = true;
                     } else {
                         $html = $view->namespaceInputs(fn () => $layoutElement->formHtml($element, $isStatic) ?? '', $namespace);
@@ -1226,19 +1224,19 @@ class FieldLayout implements Validatable
                                 ],
                             ]);
 
-                            $layoutElements[] = [$layoutElement, $isConditional, $html, $isStatic];
+                            $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, $html, $isStatic);
                             $hasVisibleFields = true;
                         } else {
-                            $layoutElements[] = [$layoutElement, $isConditional, false, false];
+                            $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, false, false);
                         }
                     }
                 } else {
-                    $layoutElements[] = [$layoutElement, $isConditional, false, false];
+                    $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, false, false);
                 }
             }
 
             if ($hasVisibleFields) {
-                $form->tabs[] = new FieldLayoutFormTab([
+                $form->tabs[] = FieldLayoutFormTab::from([
                     'layoutTab' => $tab,
                     'hasErrors' => $element && $tab->elementHasErrors($element),
                     'elements' => $layoutElements,

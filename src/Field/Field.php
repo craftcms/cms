@@ -14,6 +14,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Concerns\ConfigConstructor;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\HasComponentEvents;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
@@ -42,7 +43,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTime;
@@ -65,6 +65,9 @@ use function CraftCms\Cms\t;
 
 abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, Stringable
 {
+    use ConfigConstructor {
+        __construct as private __configConstruct;
+    }
     use ConfigurableComponent;
     use HasComponentEvents;
     use Macroable;
@@ -352,21 +355,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
      */
     public function __construct($config = [])
     {
-        Typecast::properties(static::class, $config);
-
-        foreach ($config as $name => $value) {
-            if (! property_exists($this, $name)) {
-                if (method_exists($this, $method = 'set'.Str::studly($name))) {
-                    $this->$method($value);
-
-                    continue;
-                }
-
-                continue;
-            }
-
-            $this->$name = $value;
-        }
+        $this->__configConstruct($config);
 
         // Validate the translation method
         $supportedTranslationMethods = static::supportedTranslationMethods() ?: [self::TRANSLATION_METHOD_NONE];

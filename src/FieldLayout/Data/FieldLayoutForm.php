@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\FieldLayout;
+namespace CraftCms\Cms\FieldLayout\Data;
 
 use Craft;
-use craft\base\FieldLayoutComponent;
-use craft\base\Model;
+use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\Support\Html;
+use Spatie\LaravelData\Dto;
 
-class FieldLayoutForm extends Model
+class FieldLayoutForm extends Dto
 {
     /**
      * @var FieldLayoutFormTab[] The form’s tabs.
@@ -23,17 +23,13 @@ class FieldLayoutForm extends Model
 
     /**
      * @var string|null The prefix that should be used for the data-error-key attribute
-     *
-     * @since 5.0.0
      */
     public ?string $errorKeyPrefix = null;
 
-    /**
-     * Returns the tab menu config.
-     */
     public function getTabMenu(): array
     {
         $menu = [];
+
         foreach ($this->tabs as $tab) {
             $containerId = $this->_tabId($tab->getId());
             $menu[$containerId] = [
@@ -57,6 +53,7 @@ class FieldLayoutForm extends Model
         $html = [];
         $hasMultipleTabs = count($this->tabs) > 1;
         $view = Craft::$app->getView();
+
         foreach ($this->tabs as $i => $tab) {
             $show = $showFirst && $i === 0;
             $id = $this->_tabId($tab->getId());
@@ -90,8 +87,6 @@ class FieldLayoutForm extends Model
 
     /**
      * Returns lists of visible layout elements’ UUIDs, indexed by their tabs’ UUIDs.
-     *
-     * @since 4.0.0
      */
     public function getVisibleElements(): array
     {
@@ -120,8 +115,6 @@ class FieldLayoutForm extends Model
 
     /**
      * Returns lists of visible but static layout elements’ UUIDs, indexed by their tabs’ UUIDs.
-     *
-     * @since 5.9.0
      */
     public function getStaticElements(): array
     {

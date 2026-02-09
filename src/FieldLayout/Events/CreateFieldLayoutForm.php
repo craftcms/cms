@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\FieldLayout\Data\FieldLayoutForm;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 
 /**
@@ -51,7 +51,7 @@ final class CreateFieldLayoutForm
         public FieldLayout $fieldLayout,
 
         /**
-         * @var FieldLayoutForm The field layout form being created
+         * @var \CraftCms\Cms\FieldLayout\Data\FieldLayoutForm The field layout form being created
          */
         public FieldLayoutForm $form,
 

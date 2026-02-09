@@ -11,7 +11,7 @@ use craft\base\ElementInterface;
  *
  * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::getActionMenuItems()}
  */
-final class DefineActionMenuItems
+class DefineActionMenuItems
 {
     public function __construct(
         public ElementInterface $element,

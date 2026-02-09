@@ -4,6 +4,7 @@ namespace CraftCms\Yii2Adapter;
 
 use Craft;
 use craft\base\Event as YiiEvent;
+use craft\base\FieldLayoutComponent;
 use craft\console\controllers\HelpController;
 use craft\controllers\UsersController;
 use craft\elements\Asset;
@@ -25,6 +26,7 @@ use craft\events\RegisterGqlTypesEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\fieldlayoutelements\BaseField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\linktypes\Category as CategoryLinkType;
 use craft\fields\Tags as TagsField;
@@ -45,6 +47,7 @@ use craft\gql\queries\Tag as TagQuery;
 use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\TagRelation;
 use craft\models\CategoryGroup;
+use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\services\Addresses;
 use craft\services\Auth;
@@ -489,6 +492,13 @@ class Yii2ServiceProvider extends ServiceProvider
         Asset::registerEvents();
         Entry::registerEvents();
         \craft\elements\User::registerEvents();
+
+        /**
+         * FieldLayouts
+         */
+        BaseField::registerEvents();
+        FieldLayout::registerEvents();
+        FieldLayoutComponent::registerEvents();
 
         /**
          * Services

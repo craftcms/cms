@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use craft\helpers\Cp;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
@@ -38,8 +37,6 @@ class FieldLayoutTab extends FieldLayoutComponent
 {
     /**
      * Creates a new field layout tab from the given config.
-     *
-     * @since 3.5.0
      */
     public static function createFromConfig(array $config): self
     {
@@ -50,8 +47,6 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     /**
      * Returns the label HTML that should be displayed within field layout designers.
-     *
-     * @since 5.1.0
      */
     public function labelHtml(): string
     {
@@ -68,8 +63,6 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     /**
      * Updates a field layout tab’s config to the new format.
-     *
-     * @since 3.5.0
      */
     public static function updateConfig(array &$config): void
     {
@@ -155,25 +148,21 @@ class FieldLayoutTab extends FieldLayoutComponent
         return $fields;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    protected function defineRules(): array
+    public function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['id', 'layoutId'], 'number', 'integerOnly' => true];
-        $rules[] = [['name'], 'string', 'max' => 255];
-        $rules[] = [['sortOrder'], 'string', 'max' => 4];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'id' => ['nullable', 'integer'],
+            'layoutId' => ['nullable', 'integer'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'sortOrder' => ['nullable', 'string', 'max:4'],
+        ]);
     }
 
     /**
      * {@inheritdoc}
      */
     #[Override]
-    public function hasSettings()
+    public function hasSettings(): bool
     {
         return true;
     }
@@ -193,8 +182,6 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     /**
      * Returns the field layout tab’s config.
-     *
-     * @since 3.5.0
      */
     public function getConfig(): array
     {
@@ -202,7 +189,7 @@ class FieldLayoutTab extends FieldLayoutComponent
             $this->uid = Str::uuid()->toString();
         }
 
-        $config = $this->toArray(['name', 'uid', 'userCondition', 'elementCondition']);
+        $config = Arr::only($this->getAttributes(), ['name', 'uid', 'userCondition', 'elementCondition']);
         $config['elements'] = $this->getElementConfigs();
 
         return $config;
@@ -212,17 +199,16 @@ class FieldLayoutTab extends FieldLayoutComponent
      * Returns the tab’s elements’ configs.
      *
      * @return array[]
-     *
-     * @since 3.5.0
      */
     public function getElementConfigs(): array
     {
         $elementConfigs = [];
+
         foreach ($this->getElements() as $layoutElement) {
             if (! isset($layoutElement->uid)) {
                 $layoutElement->uid = Str::uuid()->toString();
             }
-            $elementConfigs[] = ['type' => $layoutElement::class] + $layoutElement->toArray();
+            $elementConfigs[] = ['type' => $layoutElement::class] + $layoutElement->getAttributes();
         }
 
         return $elementConfigs;
@@ -268,8 +254,6 @@ class FieldLayoutTab extends FieldLayoutComponent
      * Returns the tab’s layout elements.
      *
      * @return FieldLayoutElement[]
-     *
-     * @since 4.0.0
      */
     public function getElements(): array
     {
@@ -280,8 +264,6 @@ class FieldLayoutTab extends FieldLayoutComponent
      * Sets the tab’s layout elements.
      *
      * @phpstan-param array<FieldLayoutElement|array{type:class-string<FieldLayoutElement>}> $elements
-     *
-     * @since 4.0.0
      */
     public function setElements(array $elements): void
     {
@@ -340,8 +322,6 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     /**
      * Returns whether the given element has any validation errors for the custom fields included in this tab.
-     *
-     * @since 3.4.0
      */
     public function elementHasErrors(ElementInterface $element): bool
     {

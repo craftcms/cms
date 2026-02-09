@@ -8,6 +8,7 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Component\Concerns\ConfigConstructor;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -16,7 +17,6 @@ use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
@@ -88,6 +88,9 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     use Concerns\QueriesStructures;
     use Concerns\QueriesUniqueElements;
     use Concerns\SearchesElements;
+    use ConfigConstructor {
+        ConfigConstructor::__construct as configConstructor;
+    }
     use ForwardsCalls;
 
     /**
@@ -222,11 +225,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         public string $elementType = Element::class,
         protected array $config = [],
     ) {
-        Typecast::properties(static::class, $config);
-
-        foreach ($config as $key => $value) {
-            $this->{$key} = $value;
-        }
+        $this->configConstructor($config);
 
         $this->query = DB::query()
             ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.id', 'subquery.siteSettingsId')

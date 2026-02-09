@@ -9,7 +9,7 @@ namespace craft\events;
 
 use craft\base\ElementInterface;
 use craft\base\Event;
-use CraftCms\Cms\FieldLayout\FieldLayoutForm;
+use CraftCms\Cms\FieldLayout\Data\FieldLayoutForm;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 
 /**
@@ -22,7 +22,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 class CreateFieldLayoutFormEvent extends Event
 {
     /**
-     * @var FieldLayoutForm The field layout form being created
+     * @var \CraftCms\Cms\FieldLayout\Data\FieldLayoutForm The field layout form being created
      */
     public FieldLayoutForm $form;
 
