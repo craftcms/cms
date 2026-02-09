@@ -5,19 +5,13 @@ declare(strict_types=1);
 namespace craft\base;
 
 use craft\base\Event as YiiEvent;
-use craft\elements\conditions\ElementConditionInterface;
-use craft\elements\conditions\users\UserCondition;
 use craft\events\DefineShowFieldLayoutComponentInFormEvent;
 use CraftCms\Cms\FieldLayout\Events\DefineShowInForm;
-use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Support\Facades\Event;
 
 /**
  * FieldLayoutComponent is the base class for classes representing field layout components (tabs or elements) in terms of objects.
  *
- * @property ElementConditionInterface|null $elementCondition The element condition for this layout element
- * @property UserCondition|null $userCondition The user condition for this layout element
- * @property FieldLayout $layout The layout this element belongs to
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\FieldLayoutComponent} instead.

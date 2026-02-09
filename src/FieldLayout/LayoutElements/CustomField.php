@@ -36,10 +36,6 @@ use function CraftCms\Cms\t;
  * @property FieldInterface $field The custom field this layout field is based on
  * @property string $fieldUid The UID of the field this layout field is based on
  * @property UserCondition|null $editCondition The user condition which determines who can edit this field
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.5.0
  */
 class CustomField extends BaseField
 {
@@ -416,8 +412,6 @@ class CustomField extends BaseField
         $this->_field->name = $this->label ?? $this->_field->name;
         $this->_field->handle = $this->handle ?? $this->_field->handle;
         $this->_field->instructions = $this->instructions ?? $this->_field->instructions;
-        /** @phpstan-ignore-next-line */
-        $this->_field->required = $this->required;
     }
 
     /**

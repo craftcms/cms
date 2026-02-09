@@ -7,7 +7,7 @@ namespace CraftCms\Cms\FieldLayout;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use CraftCms\Cms\Component\Concerns\ConfigConstructor;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -42,11 +42,8 @@ use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
-class FieldLayout implements Validatable
+class FieldLayout extends Component implements Validatable
 {
-    use ConfigConstructor {
-        __construct as private __configConstruct;
-    }
     use Validates {
         getAttributes as traitGetAttributes;
     }
@@ -163,7 +160,7 @@ class FieldLayout implements Validatable
     public function __construct(
         array $config = [],
     ) {
-        $this->__configConstruct($config);
+        parent::__construct($config);
 
         if (! isset($this->uid)) {
             $this->uid = Str::uuid()->toString();
@@ -1232,7 +1229,7 @@ class FieldLayout implements Validatable
             }
 
             if ($hasVisibleFields) {
-                $form->tabs[] = FieldLayoutFormTab::from([
+                $form->tabs[] = new FieldLayoutFormTab([
                     'layoutTab' => $tab,
                     'hasErrors' => $element && $tab->elementHasErrors($element),
                     'elements' => $layoutElements,

@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
 use craft\helpers\Component;
-use CraftCms\Cms\Component\Concerns\ConfigConstructor;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
@@ -22,9 +21,8 @@ use RuntimeException;
 /**
  * Provides a base implementation for dashboard widgets.
  */
-abstract class Widget implements WidgetInterface
+abstract class Widget extends \CraftCms\Cms\Component\Component implements WidgetInterface
 {
-    use ConfigConstructor;
     use ConfigurableComponent;
     use Macroable;
     use SavableComponent;

@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use Craft;
-use CraftCms\Cms\Component\Concerns\ConfigConstructor;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Support\Html;
 
-class FieldLayoutForm
+class FieldLayoutForm extends Component
 {
-    use ConfigConstructor;
-
     /**
      * @var FieldLayoutFormTab[] The form’s tabs.
      */

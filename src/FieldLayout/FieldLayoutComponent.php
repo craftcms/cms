@@ -10,21 +10,23 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\helpers\Cp;
-use CraftCms\Cms\Component\Concerns\ConfigConstructor;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\FieldLayout\Events\DefineShowInForm;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Support\Facades\Auth;
-use Yiisoft\Arrays\ArrayableTrait;
 
 use function CraftCms\Cms\t;
 
-abstract class FieldLayoutComponent implements Validatable
+/**
+ * @property ?ElementConditionInterface $elementCondition The element condition for this layout element
+ * @property ?UserCondition $userCondition The user condition for this layout element
+ * @property FieldLayout $layout The layout this element belongs to
+ */
+abstract class FieldLayoutComponent extends Component implements Validatable
 {
-    use ArrayableTrait;
-    use ConfigConstructor;
     use Validates;
 
     private static UserCondition $defaultUserCondition;
@@ -33,27 +35,6 @@ abstract class FieldLayoutComponent implements Validatable
      * @var ElementConditionInterface[]
      */
     private static array $defaultElementConditions = [];
-
-    public ?ElementConditionInterface $elementCondition {
-        get => $this->getElementCondition();
-        set(ElementConditionInterface|string|array|null $value) {
-            $this->setElementCondition($value);
-        }
-    }
-
-    public ?UserCondition $userCondition {
-        get => $this->getUserCondition();
-        set(UserCondition|string|array|null $value) {
-            $this->setUserCondition($value);
-        }
-    }
-
-    public ?FieldLayout $layout {
-        get => $this->getLayout();
-        set {
-            $this->setLayout($value);
-        }
-    }
 
     /**
      * @var string|null The UUID of the layout element.
@@ -204,7 +185,7 @@ abstract class FieldLayoutComponent implements Validatable
 
     public function fields(): array
     {
-        $fields = $this->getAttributes();
+        $fields = parent::fields();
         unset($fields['elementType']);
         $fields['userCondition'] = fn () => $this->getUserCondition()?->getConfig();
         $fields['elementCondition'] = fn () => $this->getElementCondition()?->getConfig();

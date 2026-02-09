@@ -14,7 +14,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Component\Concerns\ConfigConstructor;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\HasComponentEvents;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
@@ -63,11 +63,8 @@ use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\t;
 
-abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, Stringable
+abstract class Field extends Component implements Actionable, FieldInterface, Iconic, Stringable
 {
-    use ConfigConstructor {
-        __construct as private __configConstruct;
-    }
     use ConfigurableComponent;
     use HasComponentEvents;
     use Macroable;
@@ -355,7 +352,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
      */
     public function __construct($config = [])
     {
-        $this->__configConstruct($config);
+        parent::__construct($config);
 
         // Validate the translation method
         $supportedTranslationMethods = static::supportedTranslationMethods() ?: [self::TRANSLATION_METHOD_NONE];
@@ -1291,21 +1288,6 @@ JS, [
     public static function isSelectable(): bool
     {
         return true;
-    }
-
-    public function toArray(): array
-    {
-        return collect($this->attributes())->mapWithKeys(function (string $attribute) {
-            if (property_exists($this, $attribute)) {
-                return [$attribute => $this->$attribute];
-            }
-
-            if (method_exists($this, $method = 'get'.Str::studly($attribute))) {
-                return [$attribute => $this->$method()];
-            }
-
-            return '__invalid__';
-        })->reject(fn ($value) => $value === '__invalid__')->all();
     }
 
     /**

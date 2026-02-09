@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout;
 
-use CraftCms\Cms\Component\Concerns\ConfigConstructor;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Support\Html;
-use Spatie\LaravelData\Dto;
 
 use function CraftCms\Cms\t;
 
-class FieldLayoutFormTab extends Dto
+class FieldLayoutFormTab extends Component
 {
-    use ConfigConstructor;
-
     public FieldLayoutTab $layoutTab;
 
     /**
