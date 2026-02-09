@@ -3,6 +3,7 @@ import {property} from 'lit/decorators.js';
 import styles from './badge-indicator.styles.js';
 import {classMap} from 'lit/directives/class-map.js';
 import '@shoelace-style/shoelace/dist/components/visually-hidden/visually-hidden.js';
+import '../nav-list';
 
 /**
  * @summary A badge indicator component. Used in various places to indicate that 
