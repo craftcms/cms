@@ -8,10 +8,10 @@
 namespace craft\behaviors;
 
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutProviderInterface;
 use craft\models\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;

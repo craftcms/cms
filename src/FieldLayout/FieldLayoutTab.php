@@ -16,16 +16,17 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use craft\errors\FieldNotFoundException;
-use LayoutElements\BaseField;
-use LayoutElements\CustomField;
 use craft\helpers\Cp;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Override;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -153,7 +154,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();
@@ -165,7 +166,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -179,7 +180,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function hasSettings()
     {
         return true;
@@ -242,7 +243,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      *
      * @throws InvalidConfigException if [[layoutId]] is set but invalid
      */
-    #[\Override]
+    #[Override]
     public function getLayout(): FieldLayout
     {
         if (isset($this->_layout)) {
@@ -265,7 +266,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      *
      * @param  FieldLayout  $layout  The tab’s layout.
      */
-    #[\Override]
+    #[Override]
     public function setLayout(FieldLayout $layout): void
     {
         $this->_layout = $layout;

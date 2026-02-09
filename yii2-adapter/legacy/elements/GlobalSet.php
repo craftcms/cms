@@ -7,7 +7,6 @@
 
 namespace craft\elements;
 
-use craft\base\FieldLayoutProviderInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\db\GlobalSetQuery;
 use craft\helpers\UrlHelper;
@@ -16,6 +15,7 @@ use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Log;
