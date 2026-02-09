@@ -14,11 +14,11 @@ if (false) {
      * @property-read string $content The tab’s HTML content
      * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
      * @since 3.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\Data\FieldLayoutFormTab} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\FieldLayoutFormTab} instead.
      */
     class FieldLayoutFormTab
     {
     }
 }
 
-class_alias(\CraftCms\Cms\FieldLayout\Data\FieldLayoutFormTab::class, FieldLayoutFormTab::class);
+class_alias(\CraftCms\Cms\FieldLayout\FieldLayoutFormTab::class, FieldLayoutFormTab::class);

@@ -239,7 +239,7 @@ final class FieldsController
         $tab = $this->fieldLayoutComponent($request);
 
         return new JsonResponse([
-            'config' => $tab->getAttributes(),
+            'config' => $tab->toArray(),
             'labelHtml' => $tab->labelHtml(),
         ]);
     }
@@ -276,7 +276,7 @@ final class FieldsController
         $selectorHtml = Cp::layoutElementSelectorHtml($element);
 
         return new JsonResponse([
-            'config' => ['type' => $element::class] + $element->getAttributes(),
+            'config' => ['type' => $element::class] + $element->toArray(),
             'selectorHtml' => $selectorHtml,
         ]);
     }

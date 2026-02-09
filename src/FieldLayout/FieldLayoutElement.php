@@ -6,6 +6,7 @@ namespace CraftCms\Cms\FieldLayout;
 
 use craft\base\ElementInterface;
 use DateTime;
+use Override;
 
 /**
  * FieldLayoutElement is the base class for classes representing field layout elements in terms of objects.
@@ -22,17 +23,10 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      */
     public ?DateTime $dateAdded = null;
 
-    public FieldLayout $layout {
-        get => $this->getLayout();
-        set {
-            $this->setLayout($value);
-        }
-    }
-
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function fields(): array
     {
         $fields = parent::fields();

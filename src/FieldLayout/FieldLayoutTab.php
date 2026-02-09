@@ -188,7 +188,7 @@ class FieldLayoutTab extends FieldLayoutComponent
             $this->uid = Str::uuid()->toString();
         }
 
-        $config = Arr::only($this->getAttributes(), ['name', 'uid', 'userCondition', 'elementCondition']);
+        $config = $this->toArray(['name', 'uid', 'userCondition', 'elementCondition']);
         $config['elements'] = $this->getElementConfigs();
 
         return $config;
@@ -207,7 +207,7 @@ class FieldLayoutTab extends FieldLayoutComponent
             if (! isset($layoutElement->uid)) {
                 $layoutElement->uid = Str::uuid()->toString();
             }
-            $elementConfigs[] = ['type' => $layoutElement::class] + $layoutElement->getAttributes();
+            $elementConfigs[] = ['type' => $layoutElement::class] + $layoutElement->toArray();
         }
 
         return $elementConfigs;

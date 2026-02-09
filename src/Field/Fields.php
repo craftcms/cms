@@ -950,9 +950,9 @@ final class Fields
      */
     public function createLayout(array $config): FieldLayout
     {
-        $config['class'] = FieldLayout::class;
+        unset($config['class']);
 
-        return Craft::createObject($config);
+        return new FieldLayout($config);
     }
 
     /**
@@ -974,10 +974,8 @@ final class Fields
             throw new InvalidArgumentException("Invalid field layout element class: $type");
         }
 
-        $config['class'] = $type;
-
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return Craft::createObject($config);
+        return new $type(config: $config);
     }
 
     /**

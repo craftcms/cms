@@ -17,11 +17,13 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Support\Facades\Auth;
+use Yiisoft\Arrays\ArrayableTrait;
 
 use function CraftCms\Cms\t;
 
 abstract class FieldLayoutComponent implements Validatable
 {
+    use ArrayableTrait;
     use ConfigConstructor;
     use Validates;
 
@@ -46,7 +48,7 @@ abstract class FieldLayoutComponent implements Validatable
         }
     }
 
-    public FieldLayout $layout {
+    public ?FieldLayout $layout {
         get => $this->getLayout();
         set {
             $this->setLayout($value);
@@ -69,7 +71,7 @@ abstract class FieldLayoutComponent implements Validatable
      * @see getLayout()
      * @see setLayout()
      */
-    private FieldLayout $_layout;
+    private ?FieldLayout $_layout = null;
 
     /**
      * @var UserCondition|class-string<UserCondition>|array|null
@@ -104,7 +106,7 @@ abstract class FieldLayoutComponent implements Validatable
         return self::$defaultElementConditions[$elementType] ??= $elementType::createCondition();
     }
 
-    public function getLayout(): FieldLayout
+    public function getLayout(): ?FieldLayout
     {
         return $this->_layout;
     }

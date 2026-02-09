@@ -3424,7 +3424,7 @@ JS;
             ]),
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,
-                'config' => $forLibrary ? ['type' => get_class($element)] + $element->getAttributes() : false,
+                'config' => $forLibrary ? ['type' => get_class($element)] + $element->toArray() : false,
                 'ui-label' => $forLibrary && $element instanceof CustomField ? $element->getField()->getUiLabel() : false,
                 'is-multi-instance' => $element->isMultiInstance(),
                 'has-custom-width' => $element->hasCustomWidth(),

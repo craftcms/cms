@@ -15,9 +15,6 @@ use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
-use CraftCms\Cms\FieldLayout\Data\FieldLayoutForm;
-use CraftCms\Cms\FieldLayout\Data\FieldLayoutFormElement;
-use CraftCms\Cms\FieldLayout\Data\FieldLayoutFormTab;
 use CraftCms\Cms\FieldLayout\Events\CreateFieldLayoutForm;
 use CraftCms\Cms\FieldLayout\Events\DefineCustomFields;
 use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
@@ -1158,7 +1155,7 @@ class FieldLayout implements Validatable
         $visibleElements = Arr::pull($config, 'visibleElements');
         $staticElements = Arr::pull($config, 'staticElements');
 
-        $form = FieldLayoutForm::from($config);
+        $form = new FieldLayoutForm($config);
         $tabs = $this->getTabs();
 
         event($event = new CreateFieldLayoutForm(

@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\FieldLayout\Data;
+namespace CraftCms\Cms\FieldLayout;
 
-use CraftCms\Cms\FieldLayout\FieldLayoutElement;
-use Spatie\LaravelData\Dto;
+use CraftCms\Cms\Component\Concerns\ConfigConstructor;
 
-final class FieldLayoutFormElement extends Dto
+final class FieldLayoutFormElement
 {
+    use ConfigConstructor;
+
     public function __construct(
         public FieldLayoutElement $layoutElement,
         public bool $isConditional,
