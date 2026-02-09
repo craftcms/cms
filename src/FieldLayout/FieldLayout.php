@@ -187,7 +187,7 @@ class FieldLayout extends Component implements Validatable
     public function getRules(): array
     {
         return [
-            'id' => ['integer'],
+            'id' => ['nullable', 'integer'],
             'customFields' => [function (string $attribute, array $value, Closure $fail) {
                 $this->validateFields($value, $fail);
             }],

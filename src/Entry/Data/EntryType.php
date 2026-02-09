@@ -33,11 +33,14 @@ use Spatie\LaravelData\Attributes\WithCastable;
 use Spatie\LaravelData\Dto;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 use Stringable;
+use Yiisoft\Arrays\ArrayableInterface;
+use Yiisoft\Arrays\ArrayableTrait;
 
 use function CraftCms\Cms\t;
 
-final class EntryType extends Dto implements Actionable, Chippable, Colorable, CpEditable, Describable, FieldLayoutProviderInterface, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
+final class EntryType extends Dto implements Actionable, ArrayableInterface, Chippable, Colorable, CpEditable, Describable, FieldLayoutProviderInterface, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
 {
+    use ArrayableTrait;
     use HasFieldLayout;
 
     public function __construct(
