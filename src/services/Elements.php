@@ -4198,6 +4198,14 @@ class Elements extends Component
                     $element->on(Element::EVENT_AFTER_PROPAGATE, function() use ($generatedFields, $siteElements, $siteSettingsRecords) {
                         foreach ($siteElements as $siteId => $siteElement) {
                             $siteSettingsRecord = $siteSettingsRecords[$siteId];
+                            // this will be the case if we're creating a new entry
+                            // see PR #18392 for details
+                            if ($siteSettingsRecord === null) {
+                                $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
+                                    'id' => $siteElement->siteSettingsId,
+                                    'siteId' => $siteElement->siteId,
+                                ]);
+                            }
                             $content = $siteSettingsRecord->content ?? [];
                             if (is_string($content)) {
                                 $content = $content !== '' ? Json::decode($content) : [];
