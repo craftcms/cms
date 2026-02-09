@@ -11,6 +11,7 @@ import DeprecationErrors from '@/components/utilities/DeprecationErrors/Deprecat
 import ClearCaches from '@/components/utilities/ClearCaches/ClearCaches.vue';
 import FindReplace from '@/components/utilities/FindReplace/FindReplace.vue';
 import DatabaseBackup from '@/components/utilities/DatabaseBackup.vue';
+import Migrations from '@/components/utilities/Migrations.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -86,6 +87,7 @@ const Craft = {
         app.component('ClearCaches', ClearCaches);
         app.component('FindReplace', FindReplace);
         app.component('DatabaseBackup', DatabaseBackup);
+        app.component('Migrations', Migrations);
 
         app.mount(el);
       },

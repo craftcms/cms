@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utility;
@@ -68,9 +67,9 @@ final class Migrations extends Utility
             $migrator->getPendingMigrations(),
         );
 
-        return Craft::$app->getView()->renderTemplate('_components/utilities/Migrations.twig', [
+        return view('c::utilities.migrations.content', [
             'migrationHistory' => $migrationHistory,
             'newMigrations' => $newMigrations,
-        ]);
+        ])->toHtml();
     }
 }

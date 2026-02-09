@@ -14,6 +14,7 @@
   import RetryJobButton from '@/components/utilities/QueueManager/RetryJobButton.vue';
   import ReleaseJobButton from '@/components/utilities/QueueManager/ReleaseJobButton.vue';
   import {show} from '@routes/cp/utilities';
+  import Empty from '@/components/Empty.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -121,17 +122,7 @@
     </Pane>
   </template>
   <template v-else>
-    <div class="py-20">
-      <div
-        class="w-[60ch] mx-auto text-center grid gap-3 justify-items-center text-gray-500"
-      >
-        <craft-icon
-          name="play"
-          style="font-size: calc(48rem / 16)"
-        ></craft-icon>
-        <p>{{ t('There are no jobs in the queue') }}</p>
-      </div>
-    </div>
+    <Empty icon="play" :label="t('There are no jobs in the queue')" />
   </template>
 </template>
 
