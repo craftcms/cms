@@ -4199,7 +4199,7 @@ class Elements extends Component
                         foreach ($siteElements as $siteId => $siteElement) {
                             $siteSettingsRecord = $siteSettingsRecords[$siteId];
                             // this will be the case if we're creating a new entry
-                            // see PR #18392 for details
+                            // see PR #18393 for details
                             if ($siteSettingsRecord === null) {
                                 $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
                                     'id' => $siteElement->siteSettingsId,
