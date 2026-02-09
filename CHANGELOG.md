@@ -7,6 +7,7 @@
 - Legacy entry index URLs now redirect `content/<page-name>`.
 - The `create()` Twig function now allows `craft\helpers\` classes to be created. ([#18376](https://github.com/craftcms/cms/discussions/18376))
 - `yii\base\Event` is now allowed in its entirety within sandboxed Twig environments.
+- Added `craft\helpers\ElementHelper::elementRevisionsUrl()`.
 - Fixed a bug where Dashboard columns weren’t getting refreshed when the window was resized. ([#18389](https://github.com/craftcms/cms/issues/18389))
 - Fixed a bug where `craft\web\View::renderSandboxedObjectTemplate()` and `renderSandboxedString()` weren’t properly sandboxing templates rendered from the control panel.
 - Fixed a bug where element queries with `draftOf` set to `false` were omitting canonical elements that were duplicated for an owner draft.
