@@ -375,11 +375,12 @@ class View extends \yii\web\View
     /**
      * Returns the Twig environment.
      *
+     * @param string|null $templateMode
      * @return Environment
      */
-    public function getTwig(): Environment
+    public function getTwig(?string $templateMode = null): Environment
     {
-        return $this->_templateMode === self::TEMPLATE_MODE_CP
+        return ($templateMode ?? $this->_templateMode) === self::TEMPLATE_MODE_CP
             ? $this->_cpTwig ?? ($this->_cpTwig = $this->createTwig())
             : $this->_siteTwig ?? ($this->_siteTwig = $this->createTwig());
     }
@@ -581,7 +582,7 @@ class View extends \yii\web\View
      */
     public function renderSandboxedTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
-        return $this->sandbox(fn() => $this->renderTemplate($template, $variables, $templateMode));
+        return $this->sandbox(fn() => $this->renderTemplate($template, $variables, $templateMode), $templateMode);
     }
 
     /**
@@ -693,7 +694,7 @@ class View extends \yii\web\View
      */
     public function renderSandboxedString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE, bool $escapeHtml = false): string
     {
-        return $this->sandbox(fn() => $this->renderString($template, $variables, $templateMode, $escapeHtml));
+        return $this->sandbox(fn() => $this->renderString($template, $variables, $templateMode, $escapeHtml), $templateMode);
     }
 
     /**
@@ -807,7 +808,7 @@ class View extends \yii\web\View
         array $variables = [],
         string $templateMode = self::TEMPLATE_MODE_SITE,
     ): string {
-        return $this->sandbox(fn() => $this->renderObjectTemplate($template, $object, $variables, $templateMode));
+        return $this->sandbox(fn() => $this->renderObjectTemplate($template, $object, $variables, $templateMode), $templateMode);
     }
 
     /**
@@ -2172,13 +2173,13 @@ JS;
         }
     }
 
-    private function sandbox(callable $callback): string
+    private function sandbox(callable $callback, ?string $templateMode): string
     {
         if (!Craft::$app->getConfig()->getGeneral()->enableTwigSandbox) {
             return $callback();
         }
 
-        $extension = $this->getTwig()->getExtension(SandboxExtension::class);
+        $extension = $this->getTwig($templateMode)->getExtension(SandboxExtension::class);
 
         if ($extension->isSandboxed()) {
             return $callback();
