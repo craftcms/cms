@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\models;
+namespace CraftCms\Cms\FieldLayout;
 
 use Craft;
 use craft\base\ElementInterface;
@@ -16,7 +20,6 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -25,6 +28,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Log;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -32,7 +36,9 @@ use function CraftCms\Cms\t;
  *
  * @property FieldLayoutElement[]|null $elements The tab’s layout elements
  * @property FieldLayout|null $layout The tab’s layout
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class FieldLayoutTab extends FieldLayoutComponent
@@ -40,20 +46,18 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * Creates a new field layout tab from the given config.
      *
-     * @param array $config
-     * @return self
      * @since 3.5.0
      */
     public static function createFromConfig(array $config): self
     {
         static::updateConfig($config);
+
         return new self($config);
     }
 
     /**
      * Returns the label HTML that should be displayed within field layout designers.
      *
-     * @return string
      * @since 5.1.0
      */
     public function labelHtml(): string
@@ -61,7 +65,7 @@ class FieldLayoutTab extends FieldLayoutComponent
         return
             Html::tag('h3', Html::encode($this->name), [
                 'class' => 'fld-tab__name',
-            ]) .
+            ]).
             ($this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
                 'class' => array_filter(array_merge(['cp-icon', 'puny', 'orange'])),
                 'title' => t('This tab is conditional'),
@@ -72,12 +76,11 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * Updates a field layout tab’s config to the new format.
      *
-     * @param array $config
      * @since 3.5.0
      */
     public static function updateConfig(array &$config): void
     {
-        if (!array_key_exists('fields', $config)) {
+        if (! array_key_exists('fields', $config)) {
             return;
         }
 
@@ -88,7 +91,7 @@ class FieldLayoutTab extends FieldLayoutComponent
             $config['elements'][] = [
                 'type' => CustomField::class,
                 'fieldUid' => $fieldUid,
-                'required' => (bool)$fieldConfig['required'],
+                'required' => (bool) $fieldConfig['required'],
             ];
         }
 
@@ -116,7 +119,6 @@ class FieldLayoutTab extends FieldLayoutComponent
     public ?int $sortOrder = null;
 
     /**
-     * @var FieldLayout
      * @see getLayout()
      * @see setLayout()
      */
@@ -124,13 +126,14 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     /**
      * @var FieldLayoutElement[] The tab’s layout elements
+     *
      * @see getElements()
      * @see setElements()
      */
     private array $_elements = [];
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __construct($config = [])
     {
@@ -139,7 +142,7 @@ class FieldLayoutTab extends FieldLayoutComponent
             if (is_string($config['elements'])) {
                 $config['elements'] = Json::decode($config['elements']);
             }
-            if (!is_array($config['elements'])) {
+            if (! is_array($config['elements'])) {
                 unset($config['elements']);
             }
         }
@@ -148,37 +151,42 @@ class FieldLayoutTab extends FieldLayoutComponent
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function fields(): array
     {
         $fields = parent::fields();
         unset($fields['sortOrder']);
+
         return $fields;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'layoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['sortOrder'], 'string', 'max' => 4];
+
         return $rules;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function hasSettings()
     {
         return true;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function settingsHtml(): ?string
     {
@@ -193,17 +201,17 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * Returns the field layout tab’s config.
      *
-     * @return array
      * @since 3.5.0
      */
     public function getConfig(): array
     {
-        if (!isset($this->uid)) {
+        if (! isset($this->uid)) {
             $this->uid = Str::uuid()->toString();
         }
 
         $config = $this->toArray(['name', 'uid', 'userCondition', 'elementCondition']);
         $config['elements'] = $this->getElementConfigs();
+
         return $config;
     }
 
@@ -211,17 +219,19 @@ class FieldLayoutTab extends FieldLayoutComponent
      * Returns the tab’s elements’ configs.
      *
      * @return array[]
+     *
      * @since 3.5.0
      */
     public function getElementConfigs(): array
     {
         $elementConfigs = [];
         foreach ($this->getElements() as $layoutElement) {
-            if (!isset($layoutElement->uid)) {
+            if (! isset($layoutElement->uid)) {
                 $layoutElement->uid = Str::uuid()->toString();
             }
-            $elementConfigs[] = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
+            $elementConfigs[] = ['type' => $layoutElement::class] + $layoutElement->toArray();
         }
+
         return $elementConfigs;
     }
 
@@ -229,20 +239,22 @@ class FieldLayoutTab extends FieldLayoutComponent
      * Returns the tab’s layout.
      *
      * @return FieldLayout The tab’s layout.
+     *
      * @throws InvalidConfigException if [[layoutId]] is set but invalid
      */
+    #[\Override]
     public function getLayout(): FieldLayout
     {
         if (isset($this->_layout)) {
             return $this->_layout;
         }
 
-        if (!$this->layoutId) {
+        if (! $this->layoutId) {
             throw new InvalidConfigException('Field layout tab is missing its field layout.');
         }
 
         if (($this->_layout = app(Fields::class)->getLayoutById($this->layoutId)) === null) {
-            throw new InvalidConfigException('Invalid layout ID: ' . $this->layoutId);
+            throw new InvalidConfigException('Invalid layout ID: '.$this->layoutId);
         }
 
         return $this->_layout;
@@ -251,8 +263,9 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * Sets the tab’s layout.
      *
-     * @param FieldLayout $layout The tab’s layout.
+     * @param  FieldLayout  $layout  The tab’s layout.
      */
+    #[\Override]
     public function setLayout(FieldLayout $layout): void
     {
         $this->_layout = $layout;
@@ -262,6 +275,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      * Returns the tab’s layout elements.
      *
      * @return FieldLayoutElement[]
+     *
      * @since 4.0.0
      */
     public function getElements(): array
@@ -272,8 +286,8 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * Sets the tab’s layout elements.
      *
-     * @param array $elements
      * @phpstan-param array<FieldLayoutElement|array{type:class-string<FieldLayoutElement>}> $elements
+     *
      * @since 4.0.0
      */
     public function setElements(array $elements): void
@@ -290,8 +304,9 @@ class FieldLayoutTab extends FieldLayoutComponent
                     // Skip quietly
                     continue;
                 } catch (InvalidArgumentException|InvalidConfigException $e) {
-                    Log::warning('Invalid field layout element config: ' . $e->getMessage(), [__METHOD__]);
+                    Log::warning('Invalid field layout element config: '.$e->getMessage(), [__METHOD__]);
                     Craft::$app->getErrorHandler()->logException($e);
+
                     continue;
                 }
             }
@@ -312,8 +327,6 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     /**
      * Returns the tab’s HTML ID.
-     *
-     * @return string
      */
     public function getHtmlId(): string
     {
@@ -321,7 +334,7 @@ class FieldLayoutTab extends FieldLayoutComponent
 
         if ($asciiName === '') {
             // Use md5() as a fallback
-            $asciiName = sprintf('tab-%s', md5($this->name));
+            $asciiName = sprintf('tab-%s', md5((string) $this->name));
         }
 
         // ensure unique tab id even if there are multiple tabs with the same name
@@ -333,8 +346,6 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * Returns whether the given element has any validation errors for the custom fields included in this tab.
      *
-     * @param ElementInterface $element
-     * @return bool
      * @since 3.4.0
      */
     public function elementHasErrors(ElementInterface $element): bool
@@ -343,12 +354,6 @@ class FieldLayoutTab extends FieldLayoutComponent
             return false;
         }
 
-        foreach ($this->getElements() as $layoutElement) {
-            if ($layoutElement instanceof BaseField && $element->errors()->has($layoutElement->attribute() . '.*')) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->getElements(), fn ($layoutElement) => $layoutElement instanceof BaseField && $element->errors()->has($layoutElement->attribute().'.*'));
     }
 }

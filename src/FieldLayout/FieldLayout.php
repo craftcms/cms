@@ -30,7 +30,6 @@ use craft\fieldlayoutelements\LineBreak;
 use craft\fieldlayoutelements\Markdown;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
-use craft\models\FieldLayoutTab;
 use craft\validators\HandleValidator;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -143,7 +142,7 @@ class FieldLayout extends Model
      * use craft\fieldlayoutelements\StandardTextField;
      * use craft\fieldlayoutelements\Template;
      * use CraftCms\Cms\FieldLayout\FieldLayout;
-     * use craft\models\FieldLayoutTab;
+     * use CraftCms\Cms\FieldLayout\FieldLayoutTab;
      * use yii\base\Event;
      *
      * Event::on(

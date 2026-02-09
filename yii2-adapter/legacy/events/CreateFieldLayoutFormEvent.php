@@ -9,7 +9,6 @@ namespace craft\events;
 
 use craft\base\ElementInterface;
 use craft\base\Event;
-use craft\models\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 
 /**
@@ -36,7 +35,7 @@ class CreateFieldLayoutFormEvent extends Event
     public bool $static = false;
 
     /**
-     * @var FieldLayoutTab[] The field layout tabs that will be displayed in the form.
+     * @var \CraftCms\Cms\FieldLayout\FieldLayoutTab[] The field layout tabs that will be displayed in the form.
      */
     public array $tabs;
 }

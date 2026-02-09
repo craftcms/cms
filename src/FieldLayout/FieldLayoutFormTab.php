@@ -14,7 +14,6 @@ namespace CraftCms\Cms\FieldLayout;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use craft\base\Model;
-use craft\models\FieldLayoutTab;
 use CraftCms\Cms\Support\Html;
 
 use function CraftCms\Cms\t;
