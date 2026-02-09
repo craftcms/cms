@@ -9,7 +9,7 @@ namespace crafttests\unit\helpers;
 
 use craft\base\FieldLayoutElement;
 use craft\errors\MissingComponentException;
-use craft\fieldlayoutelements\HorizontalRule;
+use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\test\mockclasses\components\ComponentExample;

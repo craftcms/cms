@@ -7,7 +7,7 @@
 
 namespace craft\base;
 
-use craft\fieldlayoutelements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Field\Field;
 use DateTime;
 
@@ -89,7 +89,7 @@ trait FieldTrait
 
     /**
      * @var bool|null Whether the field is required in the field layout it was fetched from
-     * @deprecated in 4.1.4. [[\craft\fieldlayoutelements\BaseField::$required]] should be used instead
+     * @deprecated in 4.1.4. [[\CraftCms\Cms\FieldLayout\LayoutElements\BaseField::$required]] should be used instead
      */
     public ?bool $required = null;
 

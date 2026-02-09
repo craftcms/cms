@@ -9,7 +9,7 @@ declare(strict_types=1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements;
+namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;

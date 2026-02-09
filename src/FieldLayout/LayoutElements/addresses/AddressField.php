@@ -9,11 +9,11 @@ declare(strict_types=1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements\addresses;
+namespace CraftCms\Cms\FieldLayout\LayoutElements\addresses;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\fieldlayoutelements\BaseField;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use craft\helpers\Cp;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;

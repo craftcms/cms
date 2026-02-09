@@ -9,7 +9,7 @@ namespace crafttests\unit\test;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\fieldlayoutelements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use craft\test\TestCase;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;

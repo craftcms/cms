@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Contracts;
 
 use craft\base\ElementInterface;
-use craft\fieldlayoutelements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use craft\models\GqlSchema;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;

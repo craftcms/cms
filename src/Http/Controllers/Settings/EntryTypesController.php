@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use Craft;
 use craft\base\FieldLayoutElement;
-use craft\fieldlayoutelements\entries\EntryTitleField;
+use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;

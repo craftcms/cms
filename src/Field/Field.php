@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Serializable;
-use craft\fieldlayoutelements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;

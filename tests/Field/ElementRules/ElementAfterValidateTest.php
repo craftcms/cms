@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\fieldlayoutelements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Email;

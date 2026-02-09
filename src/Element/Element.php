@@ -8,7 +8,7 @@ use ArrayIterator;
 use BadMethodCallException;
 use craft\base\Component;
 use craft\base\ElementInterface;
-use craft\fieldlayoutelements\BaseField;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Validation\ElementRules;

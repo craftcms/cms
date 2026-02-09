@@ -9,10 +9,10 @@ declare(strict_types=1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements\users;
+namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
 use craft\base\ElementInterface;
-use craft\fieldlayoutelements\TextField;
+use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidArgumentException;

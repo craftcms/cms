@@ -6,7 +6,7 @@
  */
 
 use craft\elements\GlobalSet;
-use craft\fieldlayoutelements\entries\EntryTitleField;
+use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Color;

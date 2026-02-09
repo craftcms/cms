@@ -9,10 +9,10 @@ declare(strict_types=1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements\entries;
+namespace CraftCms\Cms\FieldLayout\LayoutElements\entries;
 
 use craft\base\ElementInterface;
-use craft\fieldlayoutelements\TitleField;
+use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Entry\Elements\Entry;

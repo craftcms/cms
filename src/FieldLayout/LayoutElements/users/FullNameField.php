@@ -9,10 +9,10 @@ declare(strict_types=1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements\users;
+namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
 use craft\base\ElementInterface;
-use craft\fieldlayoutelements\FullNameField as BaseFullNameField;
+use CraftCms\Cms\FieldLayout\LayoutElements\FullNameField as BaseFullNameField;
 use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidArgumentException;
 

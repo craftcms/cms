@@ -9,11 +9,11 @@ declare(strict_types=1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements\users;
+namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\fieldlayoutelements\TextField;
+use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;

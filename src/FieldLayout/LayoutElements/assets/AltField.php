@@ -9,10 +9,10 @@ declare(strict_types=1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements\assets;
+namespace CraftCms\Cms\FieldLayout\LayoutElements\assets;
 
 use craft\base\ElementInterface;
-use craft\fieldlayoutelements\TextareaField;
+use CraftCms\Cms\FieldLayout\LayoutElements\TextareaField;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Field\Field;

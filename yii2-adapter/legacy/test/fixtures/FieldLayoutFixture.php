@@ -9,7 +9,7 @@ namespace craft\test\fixtures;
 
 use Craft;
 use craft\base\ModelInterface;
-use craft\fieldlayoutelements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use craft\helpers\Component;
 use craft\test\DbFixtureTrait;
 use CraftCms\Cms\Field\Contracts\FieldInterface;

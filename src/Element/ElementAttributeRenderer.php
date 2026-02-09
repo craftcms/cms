@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Element;
 use craft\base\ElementInterface;
 use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidFieldException;
-use craft\fieldlayoutelements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;

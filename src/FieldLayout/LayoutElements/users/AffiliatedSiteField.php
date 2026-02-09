@@ -9,10 +9,10 @@ declare(strict_types=1);
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\fieldlayoutelements\users;
+namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
 use craft\base\ElementInterface;
-use craft\fieldlayoutelements\BaseNativeField;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use craft\helpers\Cp;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;

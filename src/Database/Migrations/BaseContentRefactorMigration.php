@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Migrations;
 
 use craft\base\ElementInterface;
-use craft\fieldlayoutelements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\fieldlayoutelements\users\FullNameField;
+use CraftCms\Cms\FieldLayout\LayoutElements\users\FullNameField;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\FieldLayout\FieldLayout;
