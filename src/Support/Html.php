@@ -403,7 +403,7 @@ final class Html
      * @param  array  $attributes  The attributes to be added to the tag.
      * @return string The modified HTML tag.
      *
-     * @throws \yii\base\InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
+     * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
      */
     public static function modifyTagAttributes(string $tag, array $attributes): string
     {
