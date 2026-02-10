@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
-use craft\events\RegisterElementExportersEvent;
+use CraftCms\Cms\Element\Events\RegisterExporters;
 use CraftCms\Cms\Entry\Elements\Entry;
-use yii\base\Event;
+use Illuminate\Support\Facades\Event;
 
 describe('exporters', function () {
     test('returns default exporters', function () {
@@ -27,8 +27,7 @@ describe('exporters', function () {
         ]);
     });
 
-    test('triggers registerExporters event', function () {
-        $eventTriggered = false;
+    test('RegisterExporters event allows adding custom exporters', function () {
         $customExporter = new class
         {
             public static function displayName(): string
@@ -37,72 +36,52 @@ describe('exporters', function () {
             }
         };
 
-        Event::on(
-            Entry::class,
-            Entry::EVENT_REGISTER_EXPORTERS,
-            function (RegisterElementExportersEvent $event) use (&$eventTriggered, $customExporter) {
-                $eventTriggered = true;
+        Event::listen(function (RegisterExporters $event) use ($customExporter) {
+            if ($event->elementType === Entry::class) {
                 $event->exporters[] = $customExporter::class;
             }
-        );
+        });
 
         $exporters = Entry::exporters('*');
 
-        expect($eventTriggered)->toBeTrue();
         expect($exporters)->toContain(Raw::class);
         expect($exporters)->toContain(Expanded::class);
         expect($exporters)->toContain($customExporter::class);
-
-        Event::off(Entry::class, Entry::EVENT_REGISTER_EXPORTERS);
     });
 
     test('event provides source key', function () {
         $capturedSource = null;
 
-        Event::on(
-            Entry::class,
-            Entry::EVENT_REGISTER_EXPORTERS,
-            function (RegisterElementExportersEvent $event) use (&$capturedSource) {
-                $capturedSource = $event->source;
-            }
-        );
+        Event::listen(function (RegisterExporters $event) use (&$capturedSource) {
+            $capturedSource = $event->source;
+        });
 
         Entry::exporters('section:my-section');
 
         expect($capturedSource)->toBe('section:my-section');
-
-        Event::off(Entry::class, Entry::EVENT_REGISTER_EXPORTERS);
     });
 
     test('event can modify exporters', function () {
-        Event::on(
-            Entry::class,
-            Entry::EVENT_REGISTER_EXPORTERS,
-            function (RegisterElementExportersEvent $event) {
+        Event::listen(function (RegisterExporters $event) {
+            if ($event->elementType === Entry::class) {
                 $event->exporters = [Raw::class];
             }
-        );
+        });
 
         $exporters = Entry::exporters('*');
 
         expect($exporters)->toBe([Raw::class]);
-
-        Event::off(Entry::class, Entry::EVENT_REGISTER_EXPORTERS);
     });
 
     test('event can remove all exporters', function () {
-        Event::on(
-            Entry::class,
-            Entry::EVENT_REGISTER_EXPORTERS,
-            function (RegisterElementExportersEvent $event) {
+        Event::listen(function (RegisterExporters $event) {
+            if ($event->elementType === Entry::class) {
                 $event->exporters = [];
             }
-        );
+        });
 
         $exporters = Entry::exporters('*');
 
         expect($exporters)->toBe([]);
-
-        Event::off(Entry::class, Entry::EVENT_REGISTER_EXPORTERS);
     });
 });

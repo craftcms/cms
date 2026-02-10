@@ -2,11 +2,17 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\AfterDelete;
+use CraftCms\Cms\Element\Events\AfterPropagate;
+use CraftCms\Cms\Element\Events\AfterRestore;
+use CraftCms\Cms\Element\Events\AfterSave;
+use CraftCms\Cms\Element\Events\BeforeDelete;
+use CraftCms\Cms\Element\Events\BeforeRestore;
+use CraftCms\Cms\Element\Events\BeforeSave;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
-use yii\base\Event;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -17,41 +23,144 @@ beforeEach(function () {
 });
 
 test('beforeSave triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_BEFORE_SAVE, fn () => $this->entry->beforeSave(false));
-});
-
-test('afterSave triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_AFTER_SAVE, fn () => $this->entry->afterSave(false));
-});
-
-test('afterPropagate triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_AFTER_PROPAGATE, fn () => $this->entry->afterPropagate(false));
-});
-
-test('beforeDelete triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_BEFORE_DELETE, fn () => $this->entry->beforeDelete());
-});
-
-test('afterDelete triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_AFTER_DELETE, fn () => $this->entry->afterDelete());
-});
-
-test('beforeRestore triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_BEFORE_RESTORE, fn () => $this->entry->beforeRestore());
-});
-
-test('afterRestore triggers event', function () {
-    expectEvent(Entry::class, Element::EVENT_AFTER_RESTORE, fn () => $this->entry->afterRestore());
-});
-
-function expectEvent(string $class, string $eventName, callable $action): void
-{
     $triggered = false;
-    Event::on($class, $eventName, function () use (&$triggered) {
+    Event::listen(function (BeforeSave $event) use (&$triggered) {
         $triggered = true;
     });
 
-    $action();
+    $this->entry->beforeSave(false);
 
     expect($triggered)->toBeTrue();
-}
+});
+
+test('beforeSave event can prevent save', function () {
+    Event::listen(function (BeforeSave $event) {
+        $event->isValid = false;
+    });
+
+    // Prevent revision
+    $this->entry->id = null;
+
+    $result = $this->entry->beforeSave(false);
+
+    expect($result)->toBeFalse();
+});
+
+test('beforeSave event receives isNew parameter', function () {
+    $receivedIsNew = [];
+    Event::listen(function (BeforeSave $event) use (&$receivedIsNew) {
+        $receivedIsNew[] = $event->isNew;
+    });
+
+    $this->entry->beforeSave(true);
+
+    expect(count($receivedIsNew))->toBeGreaterThan(0);
+});
+
+test('afterSave triggers event', function () {
+    $triggered = false;
+    Event::listen(function (AfterSave $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->afterSave(false);
+
+    expect($triggered)->toBeTrue();
+});
+
+test('afterSave event receives isNew parameter', function () {
+    $receivedIsNew = null;
+    Event::listen(function (AfterSave $event) use (&$receivedIsNew) {
+        $receivedIsNew = $event->isNew;
+    });
+
+    $this->entry->afterSave(false);
+
+    expect($receivedIsNew)->toBeFalse();
+});
+
+test('afterPropagate triggers event', function () {
+    $triggered = false;
+    Event::listen(function (AfterPropagate $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->afterPropagate(false);
+
+    expect($triggered)->toBeTrue();
+});
+
+test('afterPropagate event receives isNew parameter', function () {
+    $receivedIsNew = [];
+    Event::listen(function (AfterPropagate $event) use (&$receivedIsNew) {
+        $receivedIsNew[] = $event->isNew;
+    });
+
+    $this->entry->afterPropagate(false);
+
+    expect(count($receivedIsNew))->toBeGreaterThan(0);
+});
+
+test('beforeDelete triggers event', function () {
+    $triggered = false;
+    Event::listen(function (BeforeDelete $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->beforeDelete();
+
+    expect($triggered)->toBeTrue();
+});
+
+test('beforeDelete event can prevent delete', function () {
+    Event::listen(function (BeforeDelete $event) {
+        $event->isValid = false;
+    });
+
+    $result = $this->entry->beforeDelete();
+
+    expect($result)->toBeFalse();
+});
+
+test('afterDelete triggers event', function () {
+    $triggered = false;
+    Event::listen(function (AfterDelete $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->afterDelete();
+
+    expect($triggered)->toBeTrue();
+});
+
+test('beforeRestore triggers event', function () {
+    $triggered = false;
+    Event::listen(function (BeforeRestore $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->beforeRestore();
+
+    expect($triggered)->toBeTrue();
+});
+
+test('beforeRestore event can prevent restore', function () {
+    Event::listen(function (BeforeRestore $event) {
+        $event->isValid = false;
+    });
+
+    $result = $this->entry->beforeRestore();
+
+    expect($result)->toBeFalse();
+});
+
+test('afterRestore triggers event', function () {
+    $triggered = false;
+    Event::listen(function (AfterRestore $event) use (&$triggered) {
+        $triggered = true;
+    });
+
+    $this->entry->afterRestore();
+
+    expect($triggered)->toBeTrue();
+});

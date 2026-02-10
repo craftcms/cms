@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use Craft;
-use craft\events\RegisterPreviewTargetsEvent;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Collection;
 
@@ -23,13 +23,6 @@ use function CraftCms\Cms\t;
 trait HasPreviewTargets
 {
     /**
-     * @event RegisterPreviewTargetsEvent The event that is triggered when registering the element's preview targets.
-     *
-     * @since 3.2.0
-     */
-    public const EVENT_REGISTER_PREVIEW_TARGETS = 'registerPreviewTargets';
-
-    /**
      * @var bool Whether the element is currently being previewed.
      *
      * @since 3.2.0
@@ -43,17 +36,10 @@ trait HasPreviewTargets
      */
     public function getPreviewTargets(): array
     {
-        $previewTargets = $this->previewTargets();
-
-        // Fire a 'registerPreviewTargets' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_TARGETS)) {
-            $event = new RegisterPreviewTargetsEvent(['previewTargets' => $previewTargets]);
-            $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
-            $previewTargets = $event->previewTargets;
-        }
+        event($event = new RegisterPreviewTargets($this, $this->previewTargets()));
 
         // Normalize the targets
-        return new Collection($previewTargets)
+        return new Collection($event->previewTargets)
             ->map(function (array $previewTarget) {
                 if (isset($previewTarget['urlFormat'])) {
                     $url = trim(Craft::$app->getView()->renderObjectTemplate(Env::parse($previewTarget['urlFormat']), $this));

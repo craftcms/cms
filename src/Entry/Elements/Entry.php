@@ -26,9 +26,6 @@ use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\entries\SectionConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\db\EagerLoadPlan;
-use craft\events\DefineEntryTypesEvent;
-use craft\events\DefineMetaFields;
-use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\helpers\Cp;
@@ -50,6 +47,8 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Events\DefineEntryTypes;
+use CraftCms\Cms\Entry\Events\DefineParentSelectionCriteria;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Validation\EntryRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -100,7 +99,7 @@ use function CraftCms\Cms\t;
  * @property int[] $authorIds the entry authors’ IDs
  */
 #[Ruleset(EntryRules::class)]
-final class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface
+class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface
 {
     use NestedElementTrait {
         eagerLoadingMap as traitEagerLoadingMap;
@@ -114,30 +113,6 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
     public const string STATUS_PENDING = 'pending';
 
     public const string STATUS_EXPIRED = 'expired';
-
-    /**
-     * @event DefineEntryTypesEvent The event that is triggered when defining the available entry types for the entry
-     *
-     * @see getAvailableEntryTypes()
-     * @since 3.6.0
-     */
-    public const string EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
-
-    /**
-     * @event ElementCriteriaEvent The event that is triggered when defining the parent selection criteria.
-     *
-     * @see _parentOptionCriteria()
-     * @since 4.4.0
-     */
-    public const string EVENT_DEFINE_PARENT_SELECTION_CRITERIA = 'defineParentSelectionCriteria';
-
-    /**
-     * @event DefineMetaFields The event that is triggered when defining the meta fields.
-     *
-     * @see metaFieldsHtml()
-     * @since 5.9.0
-     */
-    public const string EVENT_DEFINE_META_FIELDS = 'defineEntryMetaFields';
 
     /**
      * {@inheritdoc}
@@ -1672,11 +1647,10 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
             throw new InvalidConfigException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
         }
 
-        // Fire a 'defineEntryTypes' event
-        if ($triggerEvent && $this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
-            $event = new DefineEntryTypesEvent(['entryTypes' => $entryTypes]);
-            $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
-            $entryTypes = $event->entryTypes;
+        if ($triggerEvent) {
+            event($event = new DefineEntryTypes($this, $entryTypes));
+
+            return $event->entryTypes;
         }
 
         return $entryTypes;
@@ -2446,18 +2420,9 @@ JS, [
 
         $fields[] = parent::metaFieldsHtml($static);
 
-        // Fire a 'defineEntryMetaFields' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_META_FIELDS)) {
-            $event = new DefineMetaFields([
-                'element' => $this,
-                'static' => $static,
-                'fields' => $fields,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_META_FIELDS, $event);
-            $fields = $event->fields;
-        }
+        event($event = new \CraftCms\Cms\Entry\Events\DefineMetaFields($this, $static, $fields));
 
-        return implode("\n", $fields);
+        return implode("\n", $event->fields);
     }
 
     /**
@@ -2572,15 +2537,9 @@ JS;
             $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
         }
 
-        // Fire a 'defineParentSelectionCriteria' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA)) {
-            $event = new ElementCriteriaEvent(['criteria' => $parentOptionCriteria]);
-            $this->trigger(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA, $event);
+        event($event = new DefineParentSelectionCriteria($this, $parentOptionCriteria));
 
-            return $event->criteria;
-        }
-
-        return $parentOptionCriteria;
+        return $event->criteria;
     }
 
     /**

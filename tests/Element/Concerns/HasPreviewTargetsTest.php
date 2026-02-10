@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-use craft\events\RegisterPreviewTargetsEvent;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
 use CraftCms\Cms\Support\Facades\Sites;
-use yii\base\Event;
 
 class TestPreviewTargetsElement extends Element
 {
@@ -48,10 +47,6 @@ class TestPreviewTargetsElement extends Element
 
 beforeEach(function () {
     $this->primarySiteId = Sites::getPrimarySite()->id;
-});
-
-afterEach(function () {
-    Event::off(TestPreviewTargetsElement::class, Element::EVENT_REGISTER_PREVIEW_TARGETS);
 });
 
 describe('getPreviewTargets', function () {
@@ -164,21 +159,19 @@ describe('getPreviewTargets', function () {
         expect($targets[0]['refresh'])->toBeFalse();
     });
 
-    test('EVENT_REGISTER_PREVIEW_TARGETS can add targets', function () {
+    test('RegisterPreviewTargets event can add targets', function () {
         $element = new TestPreviewTargetsElement;
         $element->siteId = $this->primarySiteId;
         $element->setElementUrl('https://example.com/original');
 
-        Event::on(
-            TestPreviewTargetsElement::class,
-            Element::EVENT_REGISTER_PREVIEW_TARGETS,
-            function (RegisterPreviewTargetsEvent $event) {
+        \Illuminate\Support\Facades\Event::listen(function (RegisterPreviewTargets $event) {
+            if ($event->element instanceof TestPreviewTargetsElement) {
                 $event->previewTargets[] = [
                     'label' => 'Added by Event',
                     'url' => 'https://example.com/event-added',
                 ];
             }
-        );
+        });
 
         $targets = $element->getPreviewTargets();
 
@@ -186,7 +179,7 @@ describe('getPreviewTargets', function () {
         expect($targets[1]['label'])->toBe('Added by Event');
     });
 
-    test('EVENT_REGISTER_PREVIEW_TARGETS can modify existing targets', function () {
+    test('RegisterPreviewTargets event can modify existing targets', function () {
         $element = new TestPreviewTargetsElement;
         $element->siteId = $this->primarySiteId;
         $element->setCustomPreviewTargets([
@@ -196,13 +189,11 @@ describe('getPreviewTargets', function () {
             ],
         ]);
 
-        Event::on(
-            TestPreviewTargetsElement::class,
-            Element::EVENT_REGISTER_PREVIEW_TARGETS,
-            function (RegisterPreviewTargetsEvent $event) {
+        \Illuminate\Support\Facades\Event::listen(function (RegisterPreviewTargets $event) {
+            if ($event->element instanceof TestPreviewTargetsElement) {
                 $event->previewTargets[0]['label'] = 'Modified by Event';
             }
-        );
+        });
 
         $targets = $element->getPreviewTargets();
 

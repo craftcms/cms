@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-use craft\events\RegisterElementDefaultCardAttributesEvent;
-use craft\events\RegisterElementDefaultTableAttributesEvent;
-use craft\events\RegisterElementSortOptionsEvent;
-use craft\events\RegisterElementTableAttributesEvent;
-use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\RegisterDefaultCardAttributes;
+use CraftCms\Cms\Element\Events\RegisterDefaultTableAttributes;
+use CraftCms\Cms\Element\Events\RegisterSortOptions;
+use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
-use yii\base\Event;
+use Illuminate\Support\Facades\Event;
 
 /**
  * Test Entry class that exposes protected methods from DisplayedInIndex trait
@@ -559,82 +558,66 @@ describe('events', function () {
         $eventTriggered = false;
         $capturedAttributes = null;
 
-        Event::on(
-            Entry::class,
-            Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
-            function (RegisterElementTableAttributesEvent $event) use (&$eventTriggered, &$capturedAttributes) {
-                $eventTriggered = true;
-                $capturedAttributes = $event->tableAttributes;
+        Event::listen(function (RegisterTableAttributes $event) use (&$eventTriggered, &$capturedAttributes) {
+            if ($event->elementType !== Entry::class) {
+                return;
             }
-        );
+            $eventTriggered = true;
+            $capturedAttributes = $event->tableAttributes;
+        });
 
         $attributes = Entry::tableAttributes();
 
         expect($eventTriggered)->toBeTrue();
         expect($capturedAttributes)->toBeArray();
         expect($capturedAttributes)->toEqual($attributes);
-
-        // Clean up
-        Event::off(Entry::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES);
     });
 
     test('registerSortOptions event is triggered', function () {
         $eventTriggered = false;
 
-        Event::on(
-            Entry::class,
-            Element::EVENT_REGISTER_SORT_OPTIONS,
-            function (RegisterElementSortOptionsEvent $event) use (&$eventTriggered) {
-                $eventTriggered = true;
+        Event::listen(function (RegisterSortOptions $event) use (&$eventTriggered) {
+            if ($event->elementType !== Entry::class) {
+                return;
             }
-        );
+            $eventTriggered = true;
+        });
 
         Entry::sortOptions();
 
         expect($eventTriggered)->toBeTrue();
-
-        // Clean up
-        Event::off(Entry::class, Element::EVENT_REGISTER_SORT_OPTIONS);
     });
 
     test('registerDefaultTableAttributes event is triggered', function () {
         $eventTriggered = false;
         $capturedSource = null;
 
-        Event::on(
-            Entry::class,
-            Element::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES,
-            function (RegisterElementDefaultTableAttributesEvent $event) use (&$eventTriggered, &$capturedSource) {
-                $eventTriggered = true;
-                $capturedSource = $event->source;
+        Event::listen(function (RegisterDefaultTableAttributes $event) use (&$eventTriggered, &$capturedSource) {
+            if ($event->elementType !== Entry::class) {
+                return;
             }
-        );
+            $eventTriggered = true;
+            $capturedSource = $event->source;
+        });
 
         Entry::defaultTableAttributes('*');
 
         expect($eventTriggered)->toBeTrue();
         expect($capturedSource)->toBe('*');
-
-        // Clean up
-        Event::off(Entry::class, Element::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES);
     });
 
     test('registerDefaultCardAttributes event is triggered', function () {
         $eventTriggered = false;
 
-        Event::on(
-            Entry::class,
-            Element::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES,
-            function (RegisterElementDefaultCardAttributesEvent $event) use (&$eventTriggered) {
-                $eventTriggered = true;
+        Event::listen(function (RegisterDefaultCardAttributes $event) use (&$eventTriggered) {
+            if ($event->elementType !== Entry::class) {
+                return;
             }
-        );
+            $eventTriggered = true;
+        });
 
         Entry::defaultCardAttributes();
 
         expect($eventTriggered)->toBeTrue();
-
-        // Clean up
-        Event::off(Entry::class, Element::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES);
     });
 });

@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-use craft\events\DefineUrlEvent;
-use craft\events\SetElementRouteEvent;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\BeforeDefineUrl;
+use CraftCms\Cms\Element\Events\DefineUrl;
+use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Event;
 use Twig\Markup;
-use yii\base\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -53,12 +54,6 @@ beforeEach(function () {
     $this->primarySiteId = Sites::getPrimarySite()->id;
 });
 
-afterEach(function () {
-    Event::off(TestRoutableElement::class, Element::EVENT_SET_ROUTE);
-    Event::off(TestRoutableElement::class, Element::EVENT_BEFORE_DEFINE_URL);
-    Event::off(TestRoutableElement::class, Element::EVENT_DEFINE_URL);
-});
-
 describe('getUriFormat', function () {
     test('returns null by default', function () {
         $element = new TestRoutableElement;
@@ -86,33 +81,25 @@ describe('getRoute', function () {
         expect($element->getRoute())->toBe('my/custom/route');
     });
 
-    test('EVENT_SET_ROUTE event can override route', function () {
+    test('SetRoute event can override route', function () {
         $element = new TestRoutableElement;
         $element->setCustomRoute('original-route');
 
-        Event::on(
-            TestRoutableElement::class,
-            Element::EVENT_SET_ROUTE,
-            function (SetElementRouteEvent $event) {
-                $event->route = 'event-override-route';
-            }
-        );
+        Event::listen(function (SetRoute $event) {
+            $event->route = 'event-override-route';
+        });
 
         expect($element->getRoute())->toBe('event-override-route');
     });
 
-    test('EVENT_SET_ROUTE event can return null with handled flag', function () {
+    test('SetRoute event can return null with handled flag', function () {
         $element = new TestRoutableElement;
         $element->setCustomRoute('original-route');
 
-        Event::on(
-            TestRoutableElement::class,
-            Element::EVENT_SET_ROUTE,
-            function (SetElementRouteEvent $event) {
-                $event->route = null;
-                $event->handled = true;
-            }
-        );
+        Event::listen(function (SetRoute $event) {
+            $event->route = null;
+            $event->handled = true;
+        });
 
         expect($element->getRoute())->toBeNull();
     });
@@ -160,34 +147,26 @@ describe('getUrl', function () {
         expect($url)->not->toContain(Element::HOMEPAGE_URI);
     });
 
-    test('EVENT_BEFORE_DEFINE_URL can set custom URL', function () {
+    test('BeforeDefineUrl event can set custom URL', function () {
         $element = new TestRoutableElement;
         $element->siteId = $this->primarySiteId;
         $element->uri = 'test-path';
 
-        Event::on(
-            TestRoutableElement::class,
-            Element::EVENT_BEFORE_DEFINE_URL,
-            function (DefineUrlEvent $event) {
-                $event->url = 'https://custom-url.com/path';
-            }
-        );
+        Event::listen(function (BeforeDefineUrl $event) {
+            $event->url = 'https://custom-url.com/path';
+        });
 
         expect($element->getUrl())->toBe('https://custom-url.com/path');
     });
 
-    test('EVENT_DEFINE_URL can modify URL', function () {
+    test('DefineUrl event can modify URL', function () {
         $element = new TestRoutableElement;
         $element->siteId = $this->primarySiteId;
         $element->uri = 'test-path';
 
-        Event::on(
-            TestRoutableElement::class,
-            Element::EVENT_DEFINE_URL,
-            function (DefineUrlEvent $event) {
-                $event->url = $event->url.'?modified=true';
-            }
-        );
+        Event::listen(function (DefineUrl $event) {
+            $event->url = $event->url.'?modified=true';
+        });
 
         $url = $element->getUrl();
 

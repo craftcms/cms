@@ -16,6 +16,7 @@ use craft\elements\db\EagerLoadPlan;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\SetEagerLoadedElements} instead.
  */
 class SetEagerLoadedElementsEvent extends Event
 {

@@ -7,15 +7,18 @@ namespace CraftCms\Cms\Element\Concerns;
 use Craft;
 use craft\base\NestedElementInterface;
 use craft\controllers\ElementsController;
-use craft\events\DefineAltActionsEvent;
-use craft\events\DefineAttributeHtmlEvent;
-use craft\events\DefineHtmlEvent;
-use craft\events\DefineMenuItemsEvent;
-use craft\events\DefineMetadataEvent;
-use craft\events\RegisterElementHtmlAttributesEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
+use CraftCms\Cms\Element\Events\DefineActionMenuItems;
+use CraftCms\Cms\Element\Events\DefineAdditionalButtons;
+use CraftCms\Cms\Element\Events\DefineAltActions;
+use CraftCms\Cms\Element\Events\DefineAttributeHtml;
+use CraftCms\Cms\Element\Events\DefineInlineAttributeInputHtml;
+use CraftCms\Cms\Element\Events\DefineMetadata;
+use CraftCms\Cms\Element\Events\DefineMetaFieldsHtml;
+use CraftCms\Cms\Element\Events\DefineSidebarHtml;
+use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -36,81 +39,12 @@ use function CraftCms\Cms\t;
  * including edit URLs, sidebar HTML, metadata, action menus, and attribute rendering.
  *
  * @property string|null $ref The reference string to this element
- * @property array $htmlAttributes Any attributes that should be included in the element’s DOM representation in the control panel
+ * @property array $htmlAttributes Any attributes that should be included in the element's DOM representation in the control panel
  *
  * @internal
  */
 trait HasControlPanelUI
 {
-    /**
-     * @event DefineHtmlEvent The event that is triggered when defining additional buttons that should be shown at the top of the element's edit page.
-     *
-     * @see getAdditionalButtons()
-     * @since 4.0.0
-     */
-    public const EVENT_DEFINE_ADDITIONAL_BUTTONS = 'defineAdditionalButtons';
-
-    /**
-     * @event DefineAltActionsEvent The event that is triggered when defining alternative form actions for the element.
-     *
-     * @see getAltActions()
-     * @since 5.6.0
-     */
-    public const EVENT_DEFINE_ALT_ACTIONS = 'defineAltActions';
-
-    /**
-     * @event DefineMenuItemsEvent The event that is triggered when defining action menu items..
-     *
-     * @see getActionMenuItems()
-     * @since 5.0.0
-     */
-    public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
-
-    /**
-     * @event DefineHtmlEvent The event that is triggered when defining the HTML for the editor sidebar.
-     *
-     * @see getSidebarHtml()
-     * @since 3.7.0
-     */
-    public const EVENT_DEFINE_SIDEBAR_HTML = 'defineSidebarHtml';
-
-    /**
-     * @event DefineHtmlEvent The event that is triggered when defining the HTML for meta fields within the editor sidebar.
-     *
-     * @see metaFieldsHtml()
-     * @since 3.7.0
-     */
-    public const EVENT_DEFINE_META_FIELDS_HTML = 'defineMetaFieldsHtml';
-
-    /**
-     * @event DefineMetadataEvent The event that is triggered when defining the element's metadata info.
-     *
-     * @see getMetadata()
-     * @since 3.7.0
-     */
-    public const EVENT_DEFINE_METADATA = 'defineMetadata';
-
-    /**
-     * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element's DOM representation in the control panel.
-     */
-    public const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
-
-    /**
-     * @event DefineAttributeHtmlEvent The event that is triggered when defining an attribute's HTML for table and card views.
-     *
-     * @see getAttributeHtml()
-     * @since 5.0.0
-     */
-    public const EVENT_DEFINE_ATTRIBUTE_HTML = 'defineAttributeHtml';
-
-    /**
-     * @event DefineAttributeHtmlEvent The event that is triggered when defining an attribute's inline input HTML.
-     *
-     * @see getInlineAttributeInputHtml()
-     * @since 5.0.0
-     */
-    public const EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML = 'defineInlineAttributeInputHtml';
-
     /**
      * @see getUiLabel()
      * @see setUiLabel()
@@ -135,12 +69,7 @@ trait HasControlPanelUI
      */
     public function getAdditionalButtons(): string|Stringable
     {
-        if (! $this->hasEventHandlers(self::EVENT_DEFINE_ADDITIONAL_BUTTONS)) {
-            return '';
-        }
-
-        $event = new DefineHtmlEvent;
-        $this->trigger(self::EVENT_DEFINE_ADDITIONAL_BUTTONS, $event);
+        event($event = new DefineAdditionalButtons($this));
 
         return $event->html;
     }
@@ -206,14 +135,7 @@ trait HasControlPanelUI
             }
         }
 
-        if (! $this->hasEventHandlers(self::EVENT_DEFINE_ALT_ACTIONS)) {
-            return $altActions;
-        }
-
-        $event = new DefineAltActionsEvent([
-            'altActions' => $altActions,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_ALT_ACTIONS, $event);
+        event($event = new DefineAltActions($this, $altActions));
 
         return $event->altActions;
     }
@@ -228,12 +150,7 @@ trait HasControlPanelUI
             ...array_map(fn (array $item) => $item + ['destructive' => true], $this->destructiveActionMenuItems()),
         ];
 
-        if (! $this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-            return $items;
-        }
-
-        $event = new DefineMenuItemsEvent(['items' => $items]);
-        $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
+        event($event = new DefineActionMenuItems($this, $items));
 
         return $event->items;
     }
@@ -510,15 +427,9 @@ JS, [
             ],
         ]);
 
-        // Fire a 'registerHtmlAttributes' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_HTML_ATTRIBUTES)) {
-            $event = new RegisterElementHtmlAttributesEvent(['htmlAttributes' => $htmlAttributes]);
-            $this->trigger(self::EVENT_REGISTER_HTML_ATTRIBUTES, $event);
+        event($event = new RegisterHtmlAttributes($this, $context, $htmlAttributes));
 
-            return $event->htmlAttributes;
-        }
-
-        return $htmlAttributes;
+        return $event->htmlAttributes;
     }
 
     /**
@@ -538,18 +449,9 @@ JS, [
      */
     public function getAttributeHtml(string $attribute): string|Stringable
     {
-        // Fire a 'defineAttributeHtml' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_ATTRIBUTE_HTML)) {
-            $event = new DefineAttributeHtmlEvent([
-                'attribute' => $attribute,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_ATTRIBUTE_HTML, $event);
-            if (isset($event->html)) {
-                return $event->html;
-            }
-        }
+        event($event = new DefineAttributeHtml($this, $attribute));
 
-        return $this->attributeHtml($attribute);
+        return $event->html ?? $this->attributeHtml($attribute);
     }
 
     /**
@@ -557,16 +459,9 @@ JS, [
      */
     public function getInlineAttributeInputHtml(string $attribute): string|Stringable
     {
-        // Fire a 'defineInlineAttributeInputHtml' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML)) {
-            $event = new DefineAttributeHtmlEvent(['attribute' => $attribute]);
-            $this->trigger(self::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $event);
-            if (isset($event->html)) {
-                return $event->html;
-            }
-        }
+        event($event = new DefineInlineAttributeInputHtml($this, $attribute));
 
-        return $this->inlineAttributeInputHtml($attribute);
+        return $event->html ?? $this->inlineAttributeInputHtml($attribute);
     }
 
     /**
@@ -641,12 +536,7 @@ JS, [
 
         $html = implode("\n", $components);
 
-        if (! $this->hasEventHandlers(self::EVENT_DEFINE_SIDEBAR_HTML)) {
-            return $html;
-        }
-
-        $event = new DefineHtmlEvent(['html' => $html]);
-        $this->trigger(self::EVENT_DEFINE_SIDEBAR_HTML, $event);
+        event($event = new DefineSidebarHtml($this, $static, $html));
 
         return $event->html;
     }
@@ -660,12 +550,7 @@ JS, [
      */
     protected function metaFieldsHtml(bool $static): string|Stringable
     {
-        if (! $this->hasEventHandlers(self::EVENT_DEFINE_META_FIELDS_HTML)) {
-            return '';
-        }
-
-        $event = new DefineHtmlEvent(['static' => $static]);
-        $this->trigger(self::EVENT_DEFINE_META_FIELDS_HTML, $event);
+        event($event = new DefineMetaFieldsHtml($this, $static));
 
         return $event->html;
     }
@@ -808,12 +693,8 @@ JS, [
     {
         $metadata = $this->metadata();
 
-        // Fire a 'defineMetadata' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_METADATA)) {
-            $event = new DefineMetadataEvent(['metadata' => $metadata]);
-            $this->trigger(self::EVENT_DEFINE_METADATA, $event);
-            $metadata = $event->metadata;
-        }
+        event($event = new DefineMetadata($this, $metadata));
+        $metadata = $event->metadata;
 
         $formatter = I18N::getFormatter();
 

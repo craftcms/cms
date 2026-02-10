@@ -48,6 +48,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
@@ -76,6 +77,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -4229,7 +4231,11 @@ class Elements extends Component
                     $siteElements[$element->siteId] = $element;
                     $siteSettingsRecords[$element->siteId] = $siteSettingsRecord;
 
-                    $element->on(Element::EVENT_AFTER_PROPAGATE, function() use ($generatedFields, $siteElements, $siteSettingsRecords) {
+                    Event::listen(function(AfterPropagate $event) use ($element, $generatedFields, $siteElements, $siteSettingsRecords) {
+                        if ($event->element->id !== $element->id) {
+                            return;
+                        }
+
                         foreach ($siteElements as $siteId => $siteElement) {
                             $siteSettingsRecord = $siteSettingsRecords[$siteId];
                             $content = $siteSettingsRecord->content ?? [];

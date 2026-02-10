@@ -9,18 +9,18 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\db\Connection;
 use craft\db\ExcludeDescendantIdsExpression;
-use craft\events\ElementIndexTableAttributeEvent;
-use craft\events\RegisterElementCardAttributesEvent;
-use craft\events\RegisterElementDefaultCardAttributesEvent;
-use craft\events\RegisterElementDefaultTableAttributesEvent;
-use craft\events\RegisterElementSearchableAttributesEvent;
-use craft\events\RegisterElementSortOptionsEvent;
-use craft\events\RegisterElementTableAttributesEvent;
 use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Events\PrepQueryForTableAttribute;
+use CraftCms\Cms\Element\Events\RegisterCardAttributes;
+use CraftCms\Cms\Element\Events\RegisterDefaultCardAttributes;
+use CraftCms\Cms\Element\Events\RegisterDefaultTableAttributes;
+use CraftCms\Cms\Element\Events\RegisterSearchableAttributes;
+use CraftCms\Cms\Element\Events\RegisterSortOptions;
+use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Arr;
@@ -33,7 +33,6 @@ use Illuminate\Contracts\Database\Query\Expression as ExpressionInterface;
 use Illuminate\Support\Facades\DB;
 use Stringable;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
-use yii\base\Event;
 use yii\db\Expression;
 
 use function CraftCms\Cms\t;
@@ -49,94 +48,6 @@ use function CraftCms\Cms\t;
 trait DisplayedInIndex
 {
     /**
-     * @event RegisterElementSortOptionsEvent The event that is triggered when registering the sort options for the element type.
-     */
-    public const EVENT_REGISTER_SORT_OPTIONS = 'registerSortOptions';
-
-    /**
-     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
-     */
-    public const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
-
-    /**
-     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
-     */
-    public const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
-
-    /**
-     * @event ElementIndexTableAttributeEvent The event that is triggered when preparing an element query for an element index, for each
-     * attribute present in the table.
-     *
-     * Paired with [[EVENT_REGISTER_TABLE_ATTRIBUTES]] and [[EVENT_DEFINE_ATTRIBUTE_HTML]], this allows optimization of queries on element indexes.
-     *
-     * ```php
-     * use CraftCms\Cms\Element\Element;
-     * use CraftCms\Cms\Entry\Elements\Entry;
-     * use craft\events\DefineAttributeHtmlEvent;
-     * use craft\events\ElementIndexTableAttributeEvent;
-     * use craft\events\RegisterElementTableAttributesEvent;
-     * use craft\helpers\Cp;
-     * use yii\base\Event;
-     *
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
-     *     function(RegisterElementTableAttributesEvent $e) {
-     *         $e->tableAttributes['authorExpertise'] = ['label' => 'Author Expertise'];
-     *     }
-     * );
-     *
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE,
-     *     function(ElementIndexTableAttributeEvent $e) {
-     *         $query = $e->query;
-     *         $attr = $e->attribute;
-     *
-     *         if ($attr === 'authorExpertise') {
-     *             $query->andWith(['author.areasOfExpertiseCategoryField']);
-     *         }
-     *     }
-     * );
-     *
-     * Event::on(
-     *     Entry::class,
-     *     Element::EVENT_DEFINE_ATTRIBUTE_HTML,
-     *     function(DefineAttributeHtmlEvent $e) {
-     *         $attribute = $e->attribute;
-     *
-     *         if ($attribute !== 'authorExpertise') {
-     *             return;
-     *         }
-     *
-     *         // The field data is eager-loaded!
-     *         $author = $e->sender->getAuthor();
-     *         $categories = $author->areasOfExpertiseCategoryField;
-     *
-     *         $e->html = Cp::elementPreviewHtml($categories);
-     *     }
-     * );
-     * ```
-     *
-     * @since 3.7.14
-     */
-    public const EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE = 'prepQueryForTableAttribute';
-
-    /**
-     * @event RegisterElementCardAttributesEvent The event that is triggered when registering the card attributes for the element type.
-     *
-     * @since 5.5.0
-     */
-    public const EVENT_REGISTER_CARD_ATTRIBUTES = 'registerCardAttributes';
-
-    /**
-     * @event RegisterElementCardAttributesEvent The event that is triggered when registering the card attributes for the element type.
-     *
-     * @since 5.5.0
-     */
-    public const EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES = 'registerDefaultCardAttributes';
-
-    /**
      * @var string|null The view mode used to show this element (e.g. `structure`, `table`, `thumbs`, `cards`).
      *
      * @since 5.6.0
@@ -150,17 +61,12 @@ trait DisplayedInIndex
      */
     public static function searchableAttributes(): array
     {
-        $attributes = static::defineSearchableAttributes();
+        event($event = new RegisterSearchableAttributes(
+            elementType: static::class,
+            attributes: static::defineSearchableAttributes(),
+        ));
 
-        // Fire a 'registerSearchableAttributes' event
-        if (Event::hasHandlers(static::class, Element::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES)) {
-            $event = new RegisterElementSearchableAttributesEvent(['attributes' => $attributes]);
-            Event::trigger(static::class, Element::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $event);
-
-            return $event->attributes;
-        }
-
-        return $attributes;
+        return $event->attributes;
     }
 
     /**
@@ -285,18 +191,15 @@ trait DisplayedInIndex
             );
 
             // Prepare the element query for each of the table attributes
-            $hasHandlers = Event::hasHandlers(static::class, Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE);
             foreach ($variables['attributes'] as $attribute) {
-                if ($hasHandlers) {
-                    // Fire a 'prepQueryForTableAttribute' event
-                    $event = new ElementIndexTableAttributeEvent([
-                        'query' => $elementQuery,
-                        'attribute' => $attribute[0],
-                    ]);
-                    Event::trigger(static::class, Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $event);
-                    if ($event->handled) {
-                        continue;
-                    }
+                event($event = new PrepQueryForTableAttribute(
+                    elementType: static::class,
+                    query: $elementQuery,
+                    attribute: $attribute[0],
+                ));
+
+                if ($event->handled) {
+                    continue;
                 }
 
                 static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
@@ -498,15 +401,12 @@ trait DisplayedInIndex
             ...Arr::except($sortOptions, 'id'),
         ];
 
-        // Fire a 'registerSortOptions' event
-        if (Event::hasHandlers(static::class, Element::EVENT_REGISTER_SORT_OPTIONS)) {
-            $event = new RegisterElementSortOptionsEvent(['sortOptions' => $sortOptions]);
-            Event::trigger(static::class, Element::EVENT_REGISTER_SORT_OPTIONS, $event);
+        event($event = new RegisterSortOptions(
+            elementType: static::class,
+            sortOptions: $sortOptions,
+        ));
 
-            return $event->sortOptions;
-        }
-
-        return $sortOptions;
+        return $event->sortOptions;
     }
 
     /**
@@ -536,17 +436,12 @@ trait DisplayedInIndex
      */
     public static function tableAttributes(): array
     {
-        $tableAttributes = static::defineTableAttributes();
+        event($event = new RegisterTableAttributes(
+            elementType: static::class,
+            tableAttributes: static::defineTableAttributes(),
+        ));
 
-        // Fire a 'registerTableAttributes' event
-        if (Event::hasHandlers(static::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES)) {
-            $event = new RegisterElementTableAttributesEvent(['tableAttributes' => $tableAttributes]);
-            Event::trigger(static::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, $event);
-
-            return $event->tableAttributes;
-        }
-
-        return $tableAttributes;
+        return $event->tableAttributes;
     }
 
     /**
@@ -588,20 +483,13 @@ trait DisplayedInIndex
      */
     public static function defaultTableAttributes(string $source): array
     {
-        $tableAttributes = static::defineDefaultTableAttributes($source);
+        event($event = new RegisterDefaultTableAttributes(
+            elementType: static::class,
+            source: $source,
+            tableAttributes: static::defineDefaultTableAttributes($source),
+        ));
 
-        // Fire a 'registerDefaultTableAttributes' event
-        if (Event::hasHandlers(static::class, Element::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES)) {
-            $event = new RegisterElementDefaultTableAttributesEvent([
-                'source' => $source,
-                'tableAttributes' => $tableAttributes,
-            ]);
-            Event::trigger(static::class, Element::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $event);
-
-            return $event->tableAttributes;
-        }
-
-        return $tableAttributes;
+        return $event->tableAttributes;
     }
 
     /**
@@ -631,17 +519,13 @@ trait DisplayedInIndex
      */
     public static function cardAttributes(?FieldLayout $fieldLayout = null): array
     {
-        $cardAttributes = static::defineCardAttributes();
+        event($event = new RegisterCardAttributes(
+            elementType: static::class,
+            cardAttributes: static::defineCardAttributes(),
+            fieldLayout: $fieldLayout,
+        ));
 
-        // Fire a 'registerCardAttributes' event
-        if (Event::hasHandlers(static::class, Element::EVENT_REGISTER_CARD_ATTRIBUTES)) {
-            $event = new RegisterElementCardAttributesEvent(['cardAttributes' => $cardAttributes, 'fieldLayout' => $fieldLayout]);
-            Event::trigger(static::class, Element::EVENT_REGISTER_CARD_ATTRIBUTES, $event);
-
-            return $event->cardAttributes;
-        }
-
-        return $cardAttributes;
+        return $event->cardAttributes;
     }
 
     /**
@@ -722,19 +606,12 @@ trait DisplayedInIndex
      */
     public static function defaultCardAttributes(): array
     {
-        $cardAttributes = static::defineDefaultCardAttributes();
+        event($event = new RegisterDefaultCardAttributes(
+            elementType: static::class,
+            cardAttributes: static::defineDefaultCardAttributes(),
+        ));
 
-        // Fire a 'registerDefaultCardAttributes' event
-        if (Event::hasHandlers(static::class, Element::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES)) {
-            $event = new RegisterElementDefaultCardAttributesEvent([
-                'cardAttributes' => $cardAttributes,
-            ]);
-            Event::trigger(static::class, Element::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES, $event);
-
-            return $event->cardAttributes;
-        }
-
-        return $cardAttributes;
+        return $event->cardAttributes;
     }
 
     /**

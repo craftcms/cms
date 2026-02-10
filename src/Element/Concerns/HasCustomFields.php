@@ -23,9 +23,9 @@ use yii\base\InvalidConfigException;
  * This trait contains all logic related to getting, setting, normalizing,
  * and tracking changes to custom field values on elements.
  *
- * @property array $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
- * @property array $fieldValues The element’s normalized custom field values, indexed by their handles
- * @property string $fieldContext The field context this element’s content uses
+ * @property array $serializedFieldValues Array of the element's serialized custom field values, indexed by their handles
+ * @property array $fieldValues The element's normalized custom field values, indexed by their handles
+ * @property string $fieldContext The field context this element's content uses
  * @property FieldLayout|null $fieldLayout The field layout used by this element
  * @property array $fieldParamNamespace The namespace used by custom field params on the request
  *
@@ -34,16 +34,7 @@ use yii\base\InvalidConfigException;
 trait HasCustomFields
 {
     /**
-     * @event RegisterElementFieldLayoutsEvent The event that is triggered when registering all of the field layouts
-     * associated with elements from a given source.
-     *
-     * @see fieldLayouts()
-     * @since 3.5.0
-     */
-    public const EVENT_REGISTER_FIELD_LAYOUTS = 'registerFieldLayouts';
-
-    /**
-     * @var int|null The element’s field layout ID
+     * @var int|null The element's field layout ID
      */
     public ?int $fieldLayoutId = null;
 

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\events\RegisterElementFieldLayoutsEvent;
-use craft\events\RegisterElementSourcesEvent;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Element\Events\RegisterFieldLayouts;
+use CraftCms\Cms\Element\Events\RegisterSources;
 use CraftCms\Cms\Support\Facades\Fields;
-use yii\base\Event;
 
 /**
  * HasSources provides element source management functionality.
@@ -20,11 +19,6 @@ use yii\base\Event;
  */
 trait HasSources
 {
-    /**
-     * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
-     */
-    public const EVENT_REGISTER_SOURCES = 'registerSources';
-
     /**
      * @see sources()
      */
@@ -47,15 +41,8 @@ trait HasSources
             // Memoize the results immediately, in case sources() gets called again via the event
             self::$sources[static::class][$context] = static::defineSources($context);
 
-            // Fire a 'registerSources' event
-            if (Event::hasHandlers(static::class, self::EVENT_REGISTER_SOURCES)) {
-                $event = new RegisterElementSourcesEvent([
-                    'context' => $context,
-                    'sources' => self::$sources[static::class][$context],
-                ]);
-                Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
-                self::$sources[static::class][$context] = $event->sources;
-            }
+            event($event = new RegisterSources(static::class, $context, self::$sources[static::class][$context]));
+            self::$sources[static::class][$context] = $event->sources;
         }
 
         return self::$sources[static::class][$context];
@@ -105,15 +92,7 @@ trait HasSources
     {
         $fieldLayouts = static::defineFieldLayouts($source);
 
-        if (! Event::hasHandlers(static::class, self::EVENT_REGISTER_FIELD_LAYOUTS)) {
-            return $fieldLayouts;
-        }
-
-        $event = new RegisterElementFieldLayoutsEvent([
-            'source' => $source,
-            'fieldLayouts' => $fieldLayouts,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_FIELD_LAYOUTS, $event);
+        event($event = new RegisterFieldLayouts(static::class, $source, $fieldLayouts));
 
         return $event->fieldLayouts;
     }

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use Craft;
-use craft\events\RenderElementEvent;
 use craft\web\View;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Events\Render;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Twig\Markup;
@@ -23,27 +23,6 @@ use Twig\Markup;
 trait Renderable
 {
     /**
-     * @event RenderElementEvent The event that is triggered before an element is rendered.
-     *
-     * @since 5.7.5
-     *
-     * ```php
-     * use CraftCms\Cms\Element\Element;
-     * use craft\events\RenderElementEvent;
-     * use yii\base\Event;
-     *
-     * Event::on(
-     *     Element::class,
-     *     Element::EVENT_RENDER,
-     *     function(RenderElementEvent $event) {
-     *         $event->output = '…';
-     *     }
-     * );
-     * ```
-     */
-    public const EVENT_RENDER = 'render';
-
-    /**
      * {@inheritdoc}
      */
     public function render(array $variables = []): Markup
@@ -54,21 +33,18 @@ trait Renderable
             $variables[$refHandle] = $this;
         }
 
-        if ($this->hasEventHandlers(self::EVENT_RENDER)) {
-            $event = new RenderElementEvent([
-                'templates' => $templates,
-                'variables' => $variables,
-            ]);
+        event($event = new Render(
+            element: $this,
+            templates: $templates,
+            variables: $variables,
+        ));
 
-            $this->trigger(self::EVENT_RENDER, $event);
-
-            if (isset($event->output)) {
-                return new Markup($event->output, 'UTF-8');
-            }
-
-            $templates = $event->templates;
-            $variables = $event->variables;
+        if ($event->output !== null) {
+            return new Markup($event->output, 'UTF-8');
         }
+
+        $templates = $event->templates;
+        $variables = $event->variables;
 
         if (! empty($templates)) {
             $view = Craft::$app->getView();
