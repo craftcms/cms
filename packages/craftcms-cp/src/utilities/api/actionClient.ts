@@ -19,9 +19,10 @@ export function actionHeaders(): RawAxiosRequestHeaders {
     'X-Registered-Js-Files': [...new Set(Craft.registeredJsFiles)].join(','),
   };
 
-  if (Craft.csrfTokenValue) {
-    headers['X-CSRF-Token'] = Craft.csrfTokenValue;
-  }
+  // @TODO Make sure we really don't need this anymore
+  // if (Craft.csrfTokenValue) {
+  //   headers['X-CSRF-Token'] = Craft.csrfTokenValue;
+  // }
 
   return headers;
 }
@@ -42,17 +43,18 @@ actionClient.interceptors.request.use(async (config) => {
     config.headers.set(key, value);
   });
 
-  if (
-    ['post', 'put', 'patch', 'delete'].includes(
-      config.method?.toLowerCase() || ''
-    ) &&
-    !config.url?.includes('users/session-info')
-  ) {
-    const tokenValue = await csrf.getToken();
-    if (tokenValue) {
-      config.headers.set('X-CSRF-Token', tokenValue);
-    }
-  }
+  // @TODO Make sure we really don't need this anymore
+  // if (
+  //   ['post', 'put', 'patch', 'delete'].includes(
+  //     config.method?.toLowerCase() || ''
+  //   ) &&
+  //   !config.url?.includes('users/session-info')
+  // ) {
+  //   const tokenValue = await csrf.getToken();
+  //   if (tokenValue) {
+  //     config.headers.set('X-CSRF-Token', tokenValue);
+  //   }
+  // }
 
   return config;
 });

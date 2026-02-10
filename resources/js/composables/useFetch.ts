@@ -9,18 +9,22 @@ import {
 } from 'vue';
 import axios, {
   type AxiosError,
+  type AxiosInstance,
   type AxiosRequestConfig,
   type AxiosResponse,
   type CancelTokenSource,
 } from 'axios';
 import {useHelpers} from '@/composables/useCraftData';
+import {apiClient} from '@craftcms/cp/src/utilities/api/apiClient.js';
 
 // Type for URL parameter - can be string, ref, or computed
 type MaybeRef<T> = T | Ref<T> | ComputedRef<T>;
 
 // Options interface
-interface UseAxiosOptions<T = any>
-  extends Omit<AxiosRequestConfig, 'url' | 'params'> {
+interface UseAxiosOptions<T = any> extends Omit<
+  AxiosRequestConfig,
+  'url' | 'params'
+> {
   immediate?: boolean;
   refetch?: boolean;
   params?: MaybeRef<Record<string, any>>;
@@ -30,6 +34,7 @@ interface UseAxiosOptions<T = any>
   onSuccess?: (data: T, response: AxiosResponse) => void;
   onError?: (error: any) => void;
   initialData?: T | null;
+  axiosInstance?: AxiosInstance;
 }
 
 // Return type interface
@@ -68,6 +73,7 @@ export function useFetch<T = any>(
     onError,
     initialData = null,
     method = 'get',
+    axiosInstance = axios,
     ...axiosOptions
   } = options;
 
@@ -106,7 +112,7 @@ export function useFetch<T = any>(
     error.value = null;
 
     try {
-      const response = await axios<T>({
+      const response = await axiosInstance<T>({
         method: computedMethod.value,
         url: computedUrl.value,
         params: computedParams.value,
@@ -223,5 +229,18 @@ export function useActionClient<T = any>(
     immediate: false,
     ...options,
     method,
+  });
+}
+
+export function useApiClient<T = any>(
+  url: MaybeRef<string>,
+  options: UseAxiosOptions<T> = {}
+) {
+  const {getApiUrl} = useHelpers();
+  const apiUrl = computed(() => getApiUrl(unref(url)));
+
+  return useFetch(apiUrl, {
+    ...options,
+    axiosInstance: apiClient,
   });
 }

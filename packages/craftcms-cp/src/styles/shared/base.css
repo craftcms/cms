@@ -69,6 +69,36 @@ hr {
 }
 
 /**
+Prose class, wrap around WYSIWYG text or markdown text.
+Previously `.readable`
+ */
+.prose {
+  > *:first-child {
+    margin-block-start: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-block: 0.5rem;
+  }
+
+  ol,
+  ul {
+    padding-inline-start: 1.5em;
+    display: grid;
+    gap: 0.25em;
+  }
+
+  ul {
+    list-style: disc;
+  }
+}
+
+/**
 CP Table
 
 Applies some basic styling to table elements.

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
-use craft\web\assets\updates\UpdatesAsset;
+use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\Updates\Updates as UpdatesService;
 use CraftCms\Cms\Utility\Utility;
 
@@ -58,10 +57,6 @@ final class Updates extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(UpdatesAsset::class);
-        $view->registerJs('new Craft.UpdatesUtility();');
-
-        return $view->renderTemplate('_components/utilities/Updates.twig');
+        return VueComponent::render('Updates');
     }
 }

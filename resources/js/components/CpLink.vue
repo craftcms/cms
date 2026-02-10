@@ -7,10 +7,17 @@
       as?: string | Component;
       href: string;
       variant?: 'default' | 'primary' | 'danger';
+      size?: 'zero' | 'small' | 'medium' | 'large';
       appearance?: 'button' | 'inline';
       block?: boolean;
     }>(),
-    {as: 'a', variant: 'default', appearance: 'inline', block: false}
+    {
+      as: 'a',
+      variant: 'default',
+      appearance: 'inline',
+      block: false,
+      size: 'medium',
+    }
   );
 </script>
 
@@ -22,6 +29,10 @@
       block: block,
       'inline-flex': !block,
       'cp-link': true,
+      'cp-link--zero': size === 'zero',
+      'cp-link--small': size === 'small',
+      'cp-link--medium': size === 'medium',
+      'cp-link--large': size === 'large',
       'cp-link--inline': appearance === 'inline',
       'cp-link--button': appearance === 'button',
       'cp-link--default': variant === 'default',
@@ -74,6 +85,25 @@
         );
         color: var(--c-button-fg-hover, var(--c-button-default-fg-hover));
       }
+    }
+
+    &.cp-link--zero {
+      min-width: 0;
+      min-height: 0;
+      padding-inline: 0;
+    }
+
+    &.cp-link--small {
+      padding-inline: var(--c-spacing-sm);
+      min-width: var(--c-size-control-sm);
+      min-height: var(--c-size-control-sm);
+      font-size: 0.9em;
+    }
+
+    &.cp-link--large {
+      padding-inline: var(--c-spacing-lg);
+      min-height: var(--c-size-control-lg);
+      min-width: var(--c-size-control-lg);
     }
   }
 

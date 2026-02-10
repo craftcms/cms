@@ -11,6 +11,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Rebrand;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
@@ -102,6 +103,7 @@ class HandleInertiaRequests extends Middleware
                 ],
                 'cpUrl' => UrlHelper::cpUrl(),
                 'actionUrl' => UrlHelper::actionUrl(),
+                'baseApiUrl' => Api::craftApiEndpoint(),
                 'nav' => $nav->getItems(),
             ],
         ];

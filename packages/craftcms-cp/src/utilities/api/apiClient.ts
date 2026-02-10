@@ -51,7 +51,7 @@ async function getApiHeaders(cancelToken?: CancelToken) {
 }
 
 export const apiClient = axios.create({
-  baseURL: 'https://api.craftcms.com/v1/',
+  baseURL: 'https://api.craftcms.com/v1/', // @TODO Make configurable
 });
 
 async function apiHeadersRequestInterceptor(
