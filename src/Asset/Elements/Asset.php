@@ -1288,7 +1288,8 @@ class Asset extends Element
 
         try {
             return parent::__get($name);
-        } catch (UnknownPropertyException $e) {
+            /** @phpstan-ignore catch.neverThrown */
+        } catch (UnknownPropertyException|\CraftCms\Cms\Component\Exceptions\UnknownPropertyException $e) {
             // Is $name a transform handle?
             if (($transform = Craft::$app->getImageTransforms()->getTransformByHandle($name)) !== null) {
                 return $this->copyWithTransform($transform);

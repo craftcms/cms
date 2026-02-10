@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component;
 
+use CraftCms\Cms\Component\Exceptions\InvalidCallException;
+use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Support\Arrayable;
-use RuntimeException;
 use Yiisoft\Arrays\ArrayableInterface;
 use Yiisoft\Arrays\ArrayableTrait;
 
@@ -18,9 +19,23 @@ abstract class Component implements Arrayable, ArrayableInterface
     {
         Typecast::properties(static::class, $config);
 
-        foreach ($config as $key => $value) {
-            $this->$key = $value;
+        self::configure($this, $config);
+    }
+
+    /**
+     * Configures a component with the initial property values.
+     *
+     * @param  self  $component  the component to be configured
+     * @param  array  $properties  the property initial values given in terms of name-value pairs.
+     * @return self the component itself
+     */
+    final public static function configure(self $component, array $properties = []): self
+    {
+        foreach ($properties as $name => $value) {
+            $component->$name = $value;
         }
+
+        return $component;
     }
 
     public function __get(string $name)
@@ -32,10 +47,10 @@ abstract class Component implements Arrayable, ArrayableInterface
         }
 
         if (method_exists($this, 'set'.$name)) {
-            throw new RuntimeException('Getting write-only property: '.static::class.'::'.$name);
+            throw new InvalidCallException('Getting write-only property: '.static::class.'::'.$name);
         }
 
-        throw new RuntimeException('Getting unknown property: '.static::class.'::'.$name);
+        throw new UnknownPropertyException('Getting unknown property: '.static::class.'::'.$name);
     }
 
     public function __set(string $name, $value): void
@@ -50,10 +65,10 @@ abstract class Component implements Arrayable, ArrayableInterface
         }
 
         if (method_exists($this, 'get'.$name)) {
-            throw new RuntimeException('Setting read-only property: '.static::class.'::'.$name);
+            throw new InvalidCallException('Setting read-only property: '.static::class.'::'.$name);
         }
 
-        throw new RuntimeException('Setting unknown property: '.static::class.'::'.$name);
+        throw new UnknownPropertyException('Setting unknown property: '.static::class.'::'.$name);
     }
 
     public function __isset(string $name): bool
@@ -77,6 +92,6 @@ abstract class Component implements Arrayable, ArrayableInterface
             return;
         }
 
-        throw new RuntimeException('Unsetting an unknown or read-only property: '.static::class.'::'.$name);
+        throw new InvalidCallException('Unsetting an unknown or read-only property: '.static::class.'::'.$name);
     }
 }

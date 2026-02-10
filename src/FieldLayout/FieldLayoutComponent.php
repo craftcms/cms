@@ -190,6 +190,7 @@ abstract class FieldLayoutComponent extends Component implements Validatable
         $fields['userCondition'] = fn () => $this->getUserCondition()?->getConfig();
         $fields['elementCondition'] = fn () => $this->getElementCondition()?->getConfig();
 
+        /** @phpstan-ignore-next-line */
         return $fields;
     }
 
