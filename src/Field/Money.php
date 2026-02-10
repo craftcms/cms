@@ -137,7 +137,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'defaultValue' => ['nullable', 'numeric'],

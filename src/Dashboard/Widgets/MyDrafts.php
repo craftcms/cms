@@ -48,7 +48,7 @@ final class MyDrafts extends Widget
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [
             'limit' => ['required', 'integer', 'min:1'],

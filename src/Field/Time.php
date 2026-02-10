@@ -111,7 +111,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'minuteIncrement' => ['nullable', 'integer', 'min:1', 'max:60'],

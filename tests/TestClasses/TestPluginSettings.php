@@ -11,7 +11,7 @@ final class TestPluginSettings extends PluginSettings
     public ?string $foo = null;
 
     #[\Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [
             'foo' => 'required',
