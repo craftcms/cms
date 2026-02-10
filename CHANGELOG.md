@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where the Entries index page could trigger an infinite browser redirect loop. ([#18400](https://github.com/craftcms/cms/issues/18400))
+
 ## 5.9.7 - 2026-02-09
 
 - Nested entries’ edit screens now have a “Field settings” action menu item.
