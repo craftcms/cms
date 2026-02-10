@@ -20,6 +20,7 @@ use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
+use craft\controllers\ElementsController;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
@@ -1089,10 +1090,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                         'num' => $section->maxAuthors,
                     ]));
                 }
-                foreach ($authors as $author) {
-                    if (!$author->can(sprintf("viewEntries:%s", $this->getSection()->uid))) {
-                        $this->addError($attribute, Craft::t('app', 'This user doesn’t have permission to author entries in this section.'));
-                        break;
+                if (isset($this->_oldAuthorIds)) {
+                    foreach ($authors as $author) {
+                        if (
+                            !in_array($author->id, $this->_oldAuthorIds) &&
+                            !$author->can(sprintf("viewEntries:%s", $this->getSection()->uid))
+                        ) {
+                            $this->addError($attribute, Craft::t('app', 'This user doesn’t have permission to author entries in this section.'));
+                            break;
+                        }
                     }
                 }
             },
@@ -1126,10 +1132,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             isset($this->sectionId)
         ) {
             $authorIds = $this->normalizeAuthorIds($authorIds ?? $authorId);
+            $oldAuthorIds = $this->getAuthorIds();
             if (
-                $authorIds !== $this->getAuthorIds() &&
+                $authorIds !== $oldAuthorIds &&
                 $this->canChangeAuthor()
             ) {
+                $this->_oldAuthorIds = $oldAuthorIds;
                 $this->setAuthorIds($authorIds);
             }
         }
@@ -2270,6 +2278,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function cpRevisionsUrl(): ?string
     {
+        if (!$this->sectionId) {
+            return ElementHelper::elementRevisionsUrl($this);
+        }
+
         return sprintf('%s/revisions', $this->cpEditUrl());
     }
 
@@ -2331,6 +2343,32 @@ JS, [
     JS, [
                     $view->namespaceInputId($sectionEditId),
                     ['sectionId' => $this->sectionId],
+                ]);
+            }
+
+            // Field settings
+            if (
+                !empty($this->fieldId) &&
+                Craft::$app->controller instanceof ElementsController &&
+                Craft::$app->controller->element === $this
+            ) {
+                $fieldEditId = sprintf('edit-field-%s', mt_rand());
+                $actions[] = [
+                    'id' => $fieldEditId,
+                    'icon' => 'gear',
+                    'label' => Craft::t('app', 'Field settings'),
+                ];
+
+                $view = Craft::$app->getView();
+                $view->registerJsWithVars(fn($id, $params) => <<<JS
+    (() => {
+      $('#' + $id).on('activate', function() {
+        new Craft.CpScreenSlideout('fields/edit-field', {params: $params});
+      });
+    })();
+    JS, [
+                    $view->namespaceInputId($fieldEditId),
+                    ['fieldId' => $this->fieldId],
                 ]);
             }
         }

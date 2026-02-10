@@ -13,6 +13,7 @@ return [
     'dashboard' => 'dashboard/index',
     'edit/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/redirect',
     'edit/<elementUid:' . StringHelper::UUID_PATTERN . '>' => 'elements/redirect',
+    'revisions/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/revisions',
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
     'entries/<section:{handle}>/new' => 'entries/create',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
