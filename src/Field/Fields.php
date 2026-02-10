@@ -558,7 +558,6 @@ final class Fields
         return [
             'name' => $field->name,
             'handle' => $field->handle,
-            'columnSuffix' => property_exists($field, 'columnSuffix') ? $field->columnSuffix : null,
             'instructions' => $field->instructions,
             'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
@@ -1182,7 +1181,6 @@ final class Fields
             $fieldRecord->name = $data['name'];
             $fieldRecord->handle = $data['handle'];
             $fieldRecord->context = $context;
-            $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
             $fieldRecord->searchable = (bool) $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
@@ -1352,7 +1350,6 @@ final class Fields
                 'fields.name',
                 'fields.handle',
                 'fields.context',
-                'fields.columnSuffix',
                 'fields.instructions',
                 'fields.searchable',
                 'fields.translationMethod',

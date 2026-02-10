@@ -256,10 +256,9 @@ class BaseContentRefactorMigration extends Migration
         }
 
         $primaryColumn = sprintf(
-            '%s%s%s',
+            '%s%s',
             $fieldColumnPrefix,
             $field->handle,
-            (property_exists($field, 'columnSuffix') && $field->columnSuffix ? "_$field->columnSuffix" : ''),
         );
 
         if (! Schema::hasColumn($contentTable, $primaryColumn)) {
@@ -270,8 +269,7 @@ class BaseContentRefactorMigration extends Migration
         if (is_array($dbType) && count($dbType) > 1) {
             $dbTypeKeys = array_keys($dbType);
             $extraColumns = array_map(
-                fn (string $key) => sprintf('%s%s_%s_%s', $fieldColumnPrefix, $field->handle, $key,
-                    property_exists($field, 'columnSuffix') ? $field->columnSuffix : ''),
+                fn (string $key) => sprintf('%s%s_%s', $fieldColumnPrefix, $field->handle, $key),
                 array_slice($dbTypeKeys, 1),
             );
 

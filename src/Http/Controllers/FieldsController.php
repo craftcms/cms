@@ -167,7 +167,6 @@ final class FieldsController
             'uid' => $fieldUid,
             'name' => $request->input('name'),
             'handle' => $request->input('handle'),
-            'columnSuffix' => $oldField->columnSuffix ?? null,
             'instructions' => $request->input('instructions'),
             'searchable' => (bool) $request->input('searchable', true),
             'translationMethod' => $request->input('translationMethod', Field::TRANSLATION_METHOD_NONE),
