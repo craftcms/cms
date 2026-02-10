@@ -381,7 +381,7 @@ abstract class Element extends Component implements ElementInterface
 
         try {
             parent::__set($name, $value);
-            /** @phpstan-ignore catch.neverThrown */
+            /** @phpstan-ignore-next-line */
         } catch (InvalidCallException|UnknownPropertyException|\CraftCms\Cms\Component\Exceptions\InvalidCallException|\CraftCms\Cms\Component\Exceptions\UnknownPropertyException $e) {
             // Is this is a field?
             if ($this->fieldByHandle($name) !== null) {
