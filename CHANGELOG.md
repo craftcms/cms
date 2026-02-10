@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.8 - 2026-02-10
 
 - Element edit pages no longer redirect to their referral URL on save. ([#18404](https://github.com/craftcms/cms/issues/18404))
 - Fixed a bug where the Entries index page could trigger an infinite browser redirect loop. ([#18400](https://github.com/craftcms/cms/issues/18400))
