@@ -7,7 +7,7 @@
 
 namespace craft\queue;
 
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\queue\Queue as BaseQueue;
 
 /**

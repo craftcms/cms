@@ -34,8 +34,8 @@ use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Validator;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;

@@ -80,11 +80,11 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Override;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -1090,7 +1090,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         try {
             /** @var EntryTitleField $titleField */
             $titleField = $entryType->getFieldLayout()->getField('title');
-            /** @phpstan-ignore catch.neverThrown */
         } catch (InvalidArgumentException) {
             return true;
         }

@@ -69,13 +69,21 @@ final class EntryTypesController
 
     public function create(): CpScreenResponse
     {
+        $entryType = new EntryType;
+
+        $fieldLayout = $entryType->getFieldLayout();
+
+        if ($entryType->hasTitleField && ! $fieldLayout->isFieldIncluded('title')) {
+            $fieldLayout->prependElements([new EntryTitleField]);
+        }
+
         return new CpScreenResponse()
             ->title(t('Create a new entry type'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
             ->contentTemplate('settings/entry-types/_edit.twig', [
                 'entryTypeId' => null,
-                'entryType' => new EntryType,
+                'entryType' => $entryType,
                 'typeName' => Entry::displayName(),
                 'lowerTypeName' => Entry::lowerDisplayName(),
                 'readOnly' => $this->readOnly,

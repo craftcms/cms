@@ -98,10 +98,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\UnknownMethodException;
 use function CraftCms\Cms\t;
 

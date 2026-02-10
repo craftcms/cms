@@ -15,7 +15,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 

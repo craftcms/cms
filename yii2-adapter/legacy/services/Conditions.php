@@ -13,10 +13,10 @@ use craft\base\conditions\ConditionRuleInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use InvalidArgumentException;
 use ReflectionException;
 use ReflectionProperty;
 use yii\base\Component;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**

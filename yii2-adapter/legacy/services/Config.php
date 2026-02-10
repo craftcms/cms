@@ -16,10 +16,10 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\Config as ConfigFacade;
+use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 use yii\base\Component;
-use yii\base\InvalidArgumentException;
 
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),

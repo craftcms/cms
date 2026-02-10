@@ -10,10 +10,10 @@ namespace crafttests\unit\helpers\FileHelper;
 use craft\helpers\FileHelper;
 use craft\test\TestCase;
 use CraftCms\Cms\Support\Str;
+use InvalidArgumentException;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**

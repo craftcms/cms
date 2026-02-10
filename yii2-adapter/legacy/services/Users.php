@@ -52,10 +52,10 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Schema;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 
 /**
  * The Users service provides APIs for managing users.

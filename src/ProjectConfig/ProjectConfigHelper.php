@@ -16,8 +16,8 @@ use CraftCms\DependencyAwareCache\Dependency\AllDependencies;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use StdClass;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 final class ProjectConfigHelper

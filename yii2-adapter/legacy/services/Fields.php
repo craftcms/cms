@@ -36,10 +36,10 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 
 /**

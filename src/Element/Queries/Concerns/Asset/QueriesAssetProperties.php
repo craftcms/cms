@@ -10,7 +10,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Database\Query\Builder;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 
 /**
  * @internal

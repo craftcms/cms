@@ -13,10 +13,10 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use crafttests\fixtures\AssetFixture;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use PDO;
 use UnitTester;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**

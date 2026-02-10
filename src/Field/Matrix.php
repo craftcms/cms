@@ -60,9 +60,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use InvalidArgumentException;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;

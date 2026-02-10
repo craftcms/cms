@@ -2,7 +2,7 @@
 
 namespace craft\errors;
 
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 
 /** @phpstan-ignore-next-line */
 if (false) {
