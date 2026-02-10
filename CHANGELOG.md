@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where the Entries index page could trigger an infinite browser redirect loop. ([#18400](https://github.com/craftcms/cms/issues/18400))
+- Fixed a styling issue with slideouts within Live Preview. ([#18383](https://github.com/craftcms/cms/issues/18383))
 
 ## 5.9.7 - 2026-02-09
 

@@ -6534,7 +6534,7 @@ $min2ColWidth: 400px;
   pointer-events: none;
 
   &.so-lp {
-    position: absolute;
+    position: fixed;
     inset-block-start: var(--m);
     inset-inline-start: var(--m);
     width: calc(100% - var(--m) * 2);
