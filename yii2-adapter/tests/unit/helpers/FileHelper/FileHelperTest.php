@@ -276,7 +276,7 @@ class FileHelperTest extends TestCase
     public function testFindClosestFile(string|null|false $expected, string $dir, array $options = [])
     {
         if ($expected === false) {
-            $this->expectException(InvalidArgumentException::class);
+            $this->expectException(\yii\base\InvalidArgumentException::class);
             FileHelper::findClosestFile($dir, $options);
         } else {
             self::assertSame($expected, FileHelper::findClosestFile($dir, $options));

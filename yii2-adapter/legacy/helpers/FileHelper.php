@@ -646,7 +646,7 @@ class FileHelper extends \yii\helpers\FileHelper
             $exists = file_exists($dir);
             try {
                 $files = static::findFiles($dir, $options);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException|\yii\base\InvalidArgumentException $e) {
                 if ($exists) {
                     return null;
                 }
