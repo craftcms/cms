@@ -6,17 +6,11 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html as HtmlHelper;
 use Illuminate\Support\Facades\Auth;
 use Override;
 
-/**
- * TextareaField represents a textarea field that can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
 class TextareaField extends BaseNativeField
 {
     /**
@@ -77,12 +71,8 @@ class TextareaField extends BaseNativeField
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-
         // Don't include the value
-        unset($fields['value']);
-
-        return $fields;
+        return Arr::except(parent::fields(), ['value']);
     }
 
     /**
@@ -101,8 +91,6 @@ class TextareaField extends BaseNativeField
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
-     *
-     * @since 5.1.5
      */
     protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
     {

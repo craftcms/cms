@@ -6,17 +6,11 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\addresses;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
+use CraftCms\Cms\Support\Arr;
 use Override;
 
 use function CraftCms\Cms\t;
 
-/**
- * Class OrganizationTaxIdField.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
 class OrganizationTaxIdField extends TextField
 {
     /**
@@ -34,14 +28,12 @@ class OrganizationTaxIdField extends TextField
      */
     public function __construct($config = [])
     {
-        unset(
-            $config['mandatory'],
-            $config['translatable'],
-            $config['maxlength'],
-            $config['autofocus']
-        );
-
-        parent::__construct($config);
+        parent::__construct(Arr::except($config, [
+            'mandatory',
+            'translatable',
+            'maxlength',
+            'autofocus',
+        ]));
     }
 
     /**
@@ -50,15 +42,12 @@ class OrganizationTaxIdField extends TextField
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-        unset(
-            $fields['mandatory'],
-            $fields['translatable'],
-            $fields['maxlength'],
-            $fields['autofocus']
-        );
-
-        return $fields;
+        return Arr::except(parent::fields(), [
+            'mandatory',
+            'translatable',
+            'maxlength',
+            'autofocus',
+        ]);
     }
 
     /**

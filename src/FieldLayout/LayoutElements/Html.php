@@ -9,18 +9,8 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Support\Html as HtmlHelper;
 use yii\base\NotSupportedException;
 
-/**
- * Html represents a field layout component that displays arbitrary HTML.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.5.0
- */
 class Html extends FieldLayoutElement
 {
-    /**
-     * Constructor
-     */
     public function __construct(private readonly string $html, array $config = [])
     {
         parent::__construct($config);

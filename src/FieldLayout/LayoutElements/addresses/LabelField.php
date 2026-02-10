@@ -11,13 +11,6 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-/**
- * Class LabelField.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
 class LabelField extends TitleField
 {
     /**

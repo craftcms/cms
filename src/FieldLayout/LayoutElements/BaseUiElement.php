@@ -14,10 +14,6 @@ use function CraftCms\Cms\t;
 
 /**
  * BaseUiElement is the base class for UI elements that can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.5.0
  */
 abstract class BaseUiElement extends FieldLayoutElement
 {

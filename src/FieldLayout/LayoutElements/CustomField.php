@@ -17,8 +17,8 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
-use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -61,8 +61,6 @@ class CustomField extends BaseField
 
     /**
      * @var string|null The field handle override.
-     *
-     * @since 5.0.0
      */
     public ?string $handle = null;
 
@@ -177,8 +175,6 @@ class CustomField extends BaseField
 
     /**
      * {@inheritdoc}
-     *
-     * @since 3.5.2
      */
     #[Override]
     protected function value(?ElementInterface $element = null): mixed
@@ -383,15 +379,19 @@ class CustomField extends BaseField
      */
     public function getField(): FieldInterface
     {
-        if (! isset($this->_field)) {
-            if (! isset($this->_fieldUid)) {
-                throw new InvalidConfigException('No field UUID set.');
-            }
-            if (($field = app(Fields::class)->getFieldByUid($this->_fieldUid)) === null) {
-                throw new FieldNotFoundException($this->_fieldUid);
-            }
-            $this->setField($field);
+        if (isset($this->_field)) {
+            return $this->_field;
         }
+
+        if (! isset($this->_fieldUid)) {
+            throw new InvalidConfigException('No field UUID set.');
+        }
+
+        if (($field = Fields::getFieldByUid($this->_fieldUid)) === null) {
+            throw new FieldNotFoundException($this->_fieldUid);
+        }
+
+        $this->setField($field);
 
         return $this->_field;
     }
@@ -433,8 +433,6 @@ class CustomField extends BaseField
 
     /**
      * Returns the field’s original handle.
-     *
-     * @since 5.0.0
      */
     public function getOriginalHandle(): string
     {
@@ -450,6 +448,7 @@ class CustomField extends BaseField
         if (parent::hasConditions()) {
             return true;
         }
+
         if ($this->getEditCondition()) {
             return true;
         }
@@ -459,8 +458,6 @@ class CustomField extends BaseField
 
     /**
      * Returns the edit condition for this layout element.
-     *
-     * @since 5.7.0
      */
     public function getEditCondition(): ?UserCondition
     {
@@ -474,11 +471,7 @@ class CustomField extends BaseField
     /**
      * Sets the edit condition for this layout element.
      *
-     * @param  UserCondition|class-string<UserCondition>|array|null  $editCondition
-     *
-     * @phpstan-param UserCondition|class-string<UserCondition>|array{class:class-string<UserCondition>}|null $editCondition
-     *
-     * @since 5.7.0
+     * @param  UserCondition|class-string<UserCondition>|array{class:class-string<UserCondition>}|null  $editCondition
      */
     public function setEditCondition(mixed $editCondition): void
     {
@@ -487,33 +480,33 @@ class CustomField extends BaseField
 
     /**
      * Returns the element edit condition for this layout element.
-     *
-     * @since 5.9.0
      */
     public function getElementEditCondition(): ?ElementConditionInterface
     {
-        if (isset($this->_elementEditCondition) && ! $this->_elementEditCondition instanceof ElementConditionInterface) {
-            if (is_string($this->_elementEditCondition)) {
-                $this->_elementEditCondition = ['class' => $this->_elementEditCondition];
-            }
-            $this->_elementEditCondition = array_merge(
-                ['fieldLayouts' => [$this->getLayout()]],
-                $this->_elementEditCondition,
-            );
-            $this->_elementEditCondition = $this->normalizeCondition($this->_elementEditCondition);
+        if (! isset($this->_elementEditCondition)) {
+            return null;
         }
 
-        return $this->_elementEditCondition;
+        if ($this->_elementEditCondition instanceof ElementConditionInterface) {
+            return $this->_elementEditCondition;
+        }
+
+        if (is_string($this->_elementEditCondition)) {
+            $this->_elementEditCondition = ['class' => $this->_elementEditCondition];
+        }
+
+        $this->_elementEditCondition = array_merge(
+            ['fieldLayouts' => [$this->getLayout()]],
+            $this->_elementEditCondition,
+        );
+
+        return $this->_elementEditCondition = $this->normalizeCondition($this->_elementEditCondition);
     }
 
     /**
      * Sets the element edit condition for this layout element.
      *
-     * @param  ElementConditionInterface|class-string<ElementConditionInterface>|array|null  $elementEditCondition
-     *
-     * @phpstan-param ElementConditionInterface|class-string<ElementConditionInterface>|array{class:class-string<ElementConditionInterface>}|null $elementEditCondition
-     *
-     * @since 5.9.0
+     * @param  ElementConditionInterface|class-string<ElementConditionInterface>|array{class:class-string<ElementConditionInterface>}|null  $elementEditCondition
      */
     public function setElementEditCondition(mixed $elementEditCondition): void
     {
@@ -783,8 +776,6 @@ class CustomField extends BaseField
 
     /**
      * Returns whether the field can be edited by the current user.
-     *
-     * @since 5.7.0
      */
     public function editable(?ElementInterface $element): bool
     {
@@ -981,7 +972,7 @@ class CustomField extends BaseField
         }
 
         $user = Auth::user();
-        if ($user?->admin && ! $user->getPreference('showFieldHandles')) {
+        if ($user?->isAdmin() && ! $user->getPreference('showFieldHandles')) {
             $items[] = $this->copyAttributeAction([
                 'label' => t('Copy field handle'),
                 'promptLabel' => t('Field Handle'),

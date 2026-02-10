@@ -14,10 +14,6 @@ use function CraftCms\Cms\t;
 
 /**
  * HorizontalRule represents an `<hr>` UI element can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.5.0
  */
 class HorizontalRule extends FieldLayoutElement
 {

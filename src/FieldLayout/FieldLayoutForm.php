@@ -92,20 +92,20 @@ class FieldLayoutForm extends Component
         $response = [];
 
         foreach ($this->tabs as $tab) {
-            if ($tab->getUid()) {
-                $elementUids = [];
-                foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml, $isStatic]) {
-                    /** @var FieldLayoutComponent $layoutElement */
-                    /** @var bool $isConditional */
-                    /** @var string|bool $elementHtml */
-                    /** @var bool $isStatic */
-                    if ($isConditional && $elementHtml) {
-                        $elementUids[] = $layoutElement->uid;
-                    }
+            if (! $tab->getUid()) {
+                continue;
+            }
+
+            $elementUids = [];
+
+            foreach ($tab->elements as $formElement) {
+                if ($formElement->isConditional && $formElement->html) {
+                    $elementUids[] = $formElement->layoutElement->uid;
                 }
-                if ($elementUids) {
-                    $response[$tab->getUid()] = $elementUids;
-                }
+            }
+
+            if ($elementUids) {
+                $response[$tab->getUid()] = $elementUids;
             }
         }
 
@@ -120,20 +120,20 @@ class FieldLayoutForm extends Component
         $response = [];
 
         foreach ($this->tabs as $tab) {
-            if ($tab->getUid()) {
-                $elementUids = [];
-                foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml, $isStatic]) {
-                    /** @var FieldLayoutComponent $layoutElement */
-                    /** @var bool $isConditional */
-                    /** @var string|bool $elementHtml */
-                    /** @var bool $isStatic */
-                    if ($isConditional && $elementHtml && $isStatic) {
-                        $elementUids[] = $layoutElement->uid;
-                    }
+            if (! $tab->getUid()) {
+                continue;
+            }
+
+            $elementUids = [];
+
+            foreach ($tab->elements as $formElement) {
+                if ($formElement->isConditional && $formElement->html && $formElement->isStatic) {
+                    $elementUids[] = $formElement->layoutElement->uid;
                 }
-                if ($elementUids) {
-                    $response[$tab->getUid()] = $elementUids;
-                }
+            }
+
+            if ($elementUids) {
+                $response[$tab->getUid()] = $elementUids;
             }
         }
 

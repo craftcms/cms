@@ -10,20 +10,14 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
-/**
- * Class CountryCodeField.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
 class CountryCodeField extends BaseNativeField
 {
     /**
@@ -63,16 +57,13 @@ class CountryCodeField extends BaseNativeField
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-        unset(
-            $fields['mandatory'],
-            $fields['translatable'],
-            $fields['maxlength'],
-            $fields['required'],
-            $fields['autofocus']
-        );
-
-        return $fields;
+        return Arr::except(parent::fields(), [
+            'mandatory',
+            'translatable',
+            'maxlength',
+            'required',
+            'autofocus',
+        ]);
     }
 
     /**

@@ -11,17 +11,13 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Support\Html;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
 /**
  * AddressField represents an Address field that can be included within an Address field layout designer.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
  */
 class AddressField extends BaseField
 {

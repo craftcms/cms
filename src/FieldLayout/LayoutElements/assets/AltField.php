@@ -11,18 +11,11 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextareaField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
-/**
- * AltField represents an Alternative Text field that can be included within a volume’s field layout designer.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
 class AltField extends TextareaField
 {
     /**
@@ -40,16 +33,14 @@ class AltField extends TextareaField
      */
     public function __construct($config = [])
     {
-        unset(
-            $config['attribute'],
-            $config['autofocus'],
-            $config['mandatory'],
-            $config['maxlength'],
-            $config['requirable'],
-            $config['translatable'],
-        );
-
-        parent::__construct($config);
+        parent::__construct(Arr::except($config, [
+            'attribute',
+            'autofocus',
+            'mandatory',
+            'maxlength',
+            'requirable',
+            'translatable',
+        ]));
     }
 
     /**
@@ -58,15 +49,12 @@ class AltField extends TextareaField
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-        unset(
-            $fields['autofocus'],
-            $fields['mandatory'],
-            $fields['maxlength'],
-            $fields['translatable'],
-        );
-
-        return $fields;
+        return Arr::except(parent::fields(), [
+            'autofocus',
+            'mandatory',
+            'maxlength',
+            'translatable',
+        ]);
     }
 
     /**

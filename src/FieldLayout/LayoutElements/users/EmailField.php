@@ -8,21 +8,15 @@ use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
-/**
- * EmailField represents an Email field that can be included in the user field layout.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.0.0
- */
 class EmailField extends TextField
 {
     /**
@@ -51,17 +45,15 @@ class EmailField extends TextField
     public function __construct($config = [])
     {
         // We didn't start removing autofocus from fields() until 3.5.6
-        unset(
-            $config['mandatory'],
-            $config['attribute'],
-            $config['translatable'],
-            $config['maxlength'],
-            $config['required'],
-            $config['autofocus'],
-            $config['warning'],
-        );
-
-        parent::__construct($config);
+        parent::__construct(Arr::except($config, [
+            'mandatory',
+            'attribute',
+            'translatable',
+            'maxlength',
+            'required',
+            'autofocus',
+            'warning',
+        ]));
     }
 
     /**
@@ -70,18 +62,15 @@ class EmailField extends TextField
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-        unset(
-            $fields['mandatory'],
-            $fields['attribute'],
-            $fields['translatable'],
-            $fields['maxlength'],
-            $fields['required'],
-            $fields['autofocus'],
-            $fields['warning'],
-        );
-
-        return $fields;
+        return Arr::except(parent::fields(), [
+            'mandatory',
+            'attribute',
+            'translatable',
+            'maxlength',
+            'required',
+            'autofocus',
+            'warning',
+        ]);
     }
 
     /**
@@ -101,7 +90,7 @@ class EmailField extends TextField
         /** @var User $element */
         if (
             Edition::get()->value >= Edition::Pro->value &&
-            app(ProjectConfig::class)->get('users.requireEmailVerification') &&
+            ProjectConfig::get('users.requireEmailVerification') &&
             ! $element->getIsDraft() &&
             ! Gate::check('administrateUsers')
         ) {

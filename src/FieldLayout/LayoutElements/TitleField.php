@@ -7,19 +7,13 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Override;
 
 use function CraftCms\Cms\t;
 
-/**
- * TitleField represents a Title field that can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.5.0
- */
 class TitleField extends TextField
 {
     /**
@@ -58,16 +52,14 @@ class TitleField extends TextField
     public function __construct($config = [])
     {
         // We didn't start removing autofocus from fields() until 3.5.6
-        unset(
-            $config['mandatory'],
-            $config['attribute'],
-            $config['translatable'],
-            $config['maxlength'],
-            $config['required'],
-            $config['autofocus']
-        );
-
-        parent::__construct($config);
+        parent::__construct(Arr::except($config, [
+            'mandatory',
+            'attribute',
+            'translatable',
+            'maxlength',
+            'required',
+            'autofocus',
+        ]));
     }
 
     /**
@@ -76,17 +68,14 @@ class TitleField extends TextField
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-        unset(
-            $fields['mandatory'],
-            $fields['attribute'],
-            $fields['translatable'],
-            $fields['maxlength'],
-            $fields['required'],
-            $fields['autofocus']
-        );
-
-        return $fields;
+        return Arr::except(parent::fields(), [
+            'mandatory',
+            'attribute',
+            'translatable',
+            'maxlength',
+            'required',
+            'autofocus',
+        ]);
     }
 
     /**

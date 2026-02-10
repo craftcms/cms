@@ -1090,6 +1090,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         try {
             /** @var EntryTitleField $titleField */
             $titleField = $entryType->getFieldLayout()->getField('title');
+            /** @phpstan-ignore catch.neverThrown */
         } catch (InvalidArgumentException) {
             return true;
         }

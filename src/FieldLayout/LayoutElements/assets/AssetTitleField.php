@@ -9,16 +9,9 @@ use craft\helpers\ElementHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 
-/**
- * AssetTitleField represents a Title field that can be included within a volume’s field layout designer.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.6.0
- */
 class AssetTitleField extends TitleField
 {
     /**

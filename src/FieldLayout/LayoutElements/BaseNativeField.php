@@ -11,11 +11,7 @@ use Override;
 /**
  * BaseNativeField is the base class for native fields that can be included in field layouts.
  *
- * Native fields can be registered using [[\CraftCms\Cms\FieldLayout\FieldLayout::EVENT_DEFINE_NATIVE_FIELDS]].
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
+ * Native fields can be registered using {@see \CraftCms\Cms\FieldLayout\Events\DefineNativeFields}.
  */
 abstract class BaseNativeField extends BaseField
 {

@@ -6,31 +6,16 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Override;
 
-/**
- * TextField represents a text field that can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
 class TextField extends BaseNativeField
 {
     /**
      * @var string|null The input type
-     *
-     * @since 4.5.12
      */
     public ?string $inputType = null;
-
-    /**
-     * @var string The input type
-     *
-     * @deprecated in 4.5.12. [[$inputType]] should be used instead.
-     */
-    public string $type = 'text';
 
     /**
      * @var string|bool|null The input’s `autocomplete` attribute value.
@@ -119,12 +104,8 @@ class TextField extends BaseNativeField
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-
         // Don't include the value
-        unset($fields['value']);
-
-        return $fields;
+        return Arr::except(parent::fields(), ['value']);
     }
 
     /**
@@ -133,7 +114,7 @@ class TextField extends BaseNativeField
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
-            'type' => $this->inputType ?? $this->type,
+            'type' => $this->inputType,
             'autocomplete' => $this->autocomplete,
             'class' => $this->class,
             'id' => $this->id(),
@@ -162,8 +143,6 @@ class TextField extends BaseNativeField
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)
-     *
-     * @since 5.0.0
      */
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {

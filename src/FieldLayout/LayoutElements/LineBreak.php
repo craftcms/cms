@@ -14,10 +14,6 @@ use function CraftCms\Cms\t;
 
 /**
  * LineBreak represents a line break UI element can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.1.0
  */
 class LineBreak extends FieldLayoutElement
 {

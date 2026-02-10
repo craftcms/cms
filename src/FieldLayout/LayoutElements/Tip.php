@@ -13,35 +13,21 @@ use yii\helpers\Markdown;
 
 use function CraftCms\Cms\t;
 
-/**
- * Tip represents an author tip UI element that can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.5.0
- */
 class Tip extends BaseUiElement
 {
-    public const STYLE_TIP = 'tip';
+    public const string STYLE_TIP = 'tip';
 
-    public const STYLE_WARNING = 'warning';
+    public const string STYLE_WARNING = 'warning';
 
-    /**
-     * @var string The tip text
-     */
     public string $tip = '';
 
     /**
      * @var bool Whether the tip can be dismissed by user
-     *
-     * @since 4.4.0
      */
     public bool $dismissible = false;
 
     /**
-     * @var string The tip style (`tip` or `warning`)
-     *
-     * @phpstan-var self::STYLE_TIP|self::STYLE_WARNING
+     * @var self::STYLE_TIP|self::STYLE_WARNING The tip style (`tip` or `warning`)
      */
     public string $style = self::STYLE_TIP;
 
@@ -51,6 +37,7 @@ class Tip extends BaseUiElement
     protected function selectorLabel(): string
     {
         $tip = trim($this->tip);
+
         if ($tip !== '') {
             return $this->tip;
         }

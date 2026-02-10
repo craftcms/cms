@@ -8,20 +8,14 @@ use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
-/**
- * Class LatLongField.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
 class LatLongField extends BaseNativeField
 {
     /**
@@ -39,14 +33,12 @@ class LatLongField extends BaseNativeField
      */
     public function __construct($config = [])
     {
-        unset(
-            $config['mandatory'],
-            $config['translatable'],
-            $config['maxlength'],
-            $config['autofocus']
-        );
-
-        parent::__construct($config);
+        parent::__construct(Arr::except($config, [
+            'mandatory',
+            'translatable',
+            'maxlength',
+            'autofocus',
+        ]));
     }
 
     /**
@@ -55,15 +47,12 @@ class LatLongField extends BaseNativeField
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-        unset(
-            $fields['mandatory'],
-            $fields['translatable'],
-            $fields['maxlength'],
-            $fields['autofocus']
-        );
-
-        return $fields;
+        return Arr::except(parent::fields(), [
+            'mandatory',
+            'translatable',
+            'maxlength',
+            'autofocus',
+        ]);
     }
 
     /**
@@ -175,7 +164,10 @@ class LatLongField extends BaseNativeField
             return [];
         }
 
-        return array_merge($element->errors()->get('latitude'), $element->errors()->get('longitude'));
+        return array_merge(
+            $element->errors()->get('latitude'),
+            $element->errors()->get('longitude'),
+        );
     }
 
     /**

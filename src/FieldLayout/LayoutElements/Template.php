@@ -16,27 +16,22 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-/**
- * Template represents a UI element based on a custom template that can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.5.0
- */
 class Template extends BaseUiElement
 {
     private static Environment $twig;
 
     private static function twig(): Environment
     {
-        if (! isset(self::$twig)) {
-            $view = Craft::$app->getView();
-            $templateMode = $view->getTemplateMode();
-            $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
-            self::$twig = Craft::$app->getView()->createTwig();
-            self::$twig->addExtension(new CpExtension);
-            $view->setTemplateMode($templateMode);
+        if (isset(self::$twig)) {
+            return self::$twig;
         }
+
+        $view = Craft::$app->getView();
+        $templateMode = $view->getTemplateMode();
+        $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        self::$twig = Craft::$app->getView()->createTwig();
+        self::$twig->addExtension(new CpExtension);
+        $view->setTemplateMode($templateMode);
 
         return self::$twig;
     }
@@ -48,8 +43,6 @@ class Template extends BaseUiElement
 
     /**
      * @var string The template mode to use when loading the template.
-     *
-     * @since 5.5.0
      */
     public string $templateMode = View::TEMPLATE_MODE_SITE;
 
@@ -161,9 +154,6 @@ class Template extends BaseUiElement
         return true;
     }
 
-    /**
-     * Renders an error message.
-     */
     private function _error(string $error, string $errorClass): string
     {
         $icon = Html::tag('span', '', [

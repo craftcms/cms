@@ -7,19 +7,13 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
-/**
- * UsernameField represents a Username field that can be included in the user field layout.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.0.0
- */
 class UsernameField extends TextField
 {
     /**
@@ -48,16 +42,14 @@ class UsernameField extends TextField
     public function __construct($config = [])
     {
         // We didn't start removing autofocus from fields() until 3.5.6
-        unset(
-            $config['mandatory'],
-            $config['attribute'],
-            $config['translatable'],
-            $config['maxlength'],
-            $config['required'],
-            $config['autofocus']
-        );
-
-        parent::__construct($config);
+        parent::__construct(Arr::except($config, [
+            'mandatory',
+            'attribute',
+            'translatable',
+            'maxlength',
+            'required',
+            'autofocus',
+        ]));
     }
 
     /**
@@ -66,17 +58,14 @@ class UsernameField extends TextField
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-        unset(
-            $fields['mandatory'],
-            $fields['attribute'],
-            $fields['translatable'],
-            $fields['maxlength'],
-            $fields['required'],
-            $fields['autofocus']
-        );
-
-        return $fields;
+        return Arr::except(parent::fields(), [
+            'mandatory',
+            'attribute',
+            'translatable',
+            'maxlength',
+            'required',
+            'autofocus',
+        ]);
     }
 
     /**

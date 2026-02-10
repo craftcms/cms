@@ -10,6 +10,6 @@ final class FieldLayoutFormElement
         public FieldLayoutElement $layoutElement,
         public bool $isConditional,
         public string|bool $html,
-        public bool $static,
+        public bool $isStatic,
     ) {}
 }

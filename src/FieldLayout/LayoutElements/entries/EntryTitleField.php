@@ -11,16 +11,9 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use CraftCms\Cms\Support\Arr;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 
-/**
- * EntryTitleField represents a Title field that can be included within an entry type’s field layout designer.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.5.0
- */
 class EntryTitleField extends TitleField
 {
     /**

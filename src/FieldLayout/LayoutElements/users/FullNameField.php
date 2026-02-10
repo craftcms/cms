@@ -7,16 +7,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 use craft\base\ElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\FullNameField as BaseFullNameField;
 use CraftCms\Cms\User\Elements\User;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 
-/**
- * FullNameField represents a Full Name field that can be included in the user field layout.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.0.0
- */
 class FullNameField extends BaseFullNameField
 {
     /**

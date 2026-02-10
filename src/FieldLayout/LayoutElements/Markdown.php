@@ -13,13 +13,6 @@ use yii\helpers\Markdown as MarkdownHelper;
 
 use function CraftCms\Cms\t;
 
-/**
- * Markdown represents a UI element based on Markdown content can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.5.0
- */
 class Markdown extends BaseUiElement
 {
     /**
@@ -55,6 +48,7 @@ class Markdown extends BaseUiElement
     protected function selectorLabelAttributes(): array
     {
         $attr = parent::selectorLabelAttributes();
+
         if ($this->content) {
             $attr['class'][] = 'code';
         }

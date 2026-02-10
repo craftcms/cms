@@ -13,10 +13,6 @@ use function CraftCms\Cms\t;
 
 /**
  * Heading represents an `<h2>` UI element that can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.5.0
  */
 class Heading extends BaseUiElement
 {

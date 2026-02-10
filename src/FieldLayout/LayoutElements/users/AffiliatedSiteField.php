@@ -8,21 +8,15 @@ use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
-/**
- * AffiliatedSiteField represents the Affiliated Site field that can be included in the user field layout.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.6.0
- */
 class AffiliatedSiteField extends BaseNativeField
 {
     /**
@@ -36,15 +30,13 @@ class AffiliatedSiteField extends BaseNativeField
     public function __construct($config = [])
     {
         // We didn't start removing autofocus from fields() until 3.5.6
-        unset(
-            $config['mandatory'],
-            $config['attribute'],
-            $config['translatable'],
-            $config['required'],
-            $config['warning'],
-        );
-
-        parent::__construct($config);
+        parent::__construct(Arr::except($config, [
+            'mandatory',
+            'attribute',
+            'translatable',
+            'required',
+            'warning',
+        ]));
     }
 
     /**
@@ -53,16 +45,13 @@ class AffiliatedSiteField extends BaseNativeField
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-        unset(
-            $fields['mandatory'],
-            $fields['attribute'],
-            $fields['translatable'],
-            $fields['required'],
-            $fields['warning'],
-        );
-
-        return $fields;
+        return Arr::except(parent::fields(), [
+            'mandatory',
+            'attribute',
+            'translatable',
+            'required',
+            'warning',
+        ]);
     }
 
     /**

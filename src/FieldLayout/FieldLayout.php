@@ -13,7 +13,6 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Field;
-use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\Events\CreateFieldLayoutForm;
 use CraftCms\Cms\FieldLayout\Events\DefineCustomFields;
@@ -29,6 +28,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Concerns\Validates;
@@ -37,7 +37,7 @@ use CraftCms\Cms\Validation\Rules\HandleRule;
 use Generator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -48,44 +48,15 @@ class FieldLayout extends Component implements Validatable
         getAttributes as traitGetAttributes;
     }
 
-    /**
-     * Creates a new field layout from the given config.
-     */
-    public static function createFromConfig(array $config): self
-    {
-        $tabConfigs = Arr::pull($config, 'tabs');
-        $layout = new self($config);
-
-        if (is_array($tabConfigs)) {
-            $layout->setTabs(array_values(array_map(
-                fn (array $tabConfig) => FieldLayoutTab::createFromConfig(['layout' => $layout] + $tabConfig),
-                $tabConfigs,
-            )));
-        } else {
-            $layout->setTabs([]);
-        }
-
-        return $layout;
-    }
-
-    /**
-     * @var int|null ID
-     */
     public ?int $id = null;
+
+    public string $uid;
 
     /**
      * @var class-string<ElementInterface>|null The element type
      */
     public ?string $type = null;
 
-    /**
-     * @var string UID
-     */
-    public string $uid;
-
-    /**
-     * @var FieldLayoutProviderInterface|null The field layout’s provider.
-     */
     public ?FieldLayoutProviderInterface $provider = null;
 
     /**
@@ -182,6 +153,26 @@ class FieldLayout extends Component implements Validatable
         if (! isset($this->_cardThumbAlignment)) {
             $this->setCardThumbAlignment();
         }
+    }
+
+    /**
+     * Creates a new field layout from the given config.
+     */
+    public static function createFromConfig(array $config): self
+    {
+        $tabConfigs = Arr::pull($config, 'tabs');
+        $layout = new self($config);
+
+        if (is_array($tabConfigs)) {
+            $layout->setTabs(array_values(array_map(
+                fn (array $tabConfig) => FieldLayoutTab::createFromConfig(['layout' => $layout] + $tabConfig),
+                $tabConfigs,
+            )));
+        } else {
+            $layout->setTabs([]);
+        }
+
+        return $layout;
     }
 
     public function getRules(): array
@@ -426,14 +417,10 @@ class FieldLayout extends Component implements Validatable
             return $this->_availableCustomFields;
         }
 
-        $customFields = [];
-
-        foreach (app(Fields::class)->getAllFields() as $field) {
-            $customFields[] = Craft::createObject([
-                'class' => CustomField::class,
-                'layout' => $this,
-            ], [$field]);
-        }
+        $customFields = Fields::getAllFields()->map(fn (FieldInterface $field) => Craft::createObject([
+            'class' => CustomField::class,
+            'layout' => $this,
+        ], [$field]))->all();
 
         $this->_availableCustomFields = [
             t('Custom Fields') => $customFields,

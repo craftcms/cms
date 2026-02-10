@@ -7,19 +7,13 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html as HtmlHelper;
 use Illuminate\Support\Facades\Auth;
 use Override;
 
 use function CraftCms\Cms\t;
 
-/**
- * Class FullNameField.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
 class FullNameField extends TextField
 {
     /**
@@ -37,14 +31,12 @@ class FullNameField extends TextField
      */
     public function __construct($config = [])
     {
-        unset(
-            $config['mandatory'],
-            $config['translatable'],
-            $config['maxlength'],
-            $config['autofocus']
-        );
-
-        parent::__construct($config);
+        parent::__construct(Arr::except($config, [
+            'mandatory',
+            'translatable',
+            'maxlength',
+            'autofocus',
+        ]));
     }
 
     /**
@@ -53,15 +45,12 @@ class FullNameField extends TextField
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-        unset(
-            $fields['mandatory'],
-            $fields['translatable'],
-            $fields['maxlength'],
-            $fields['autofocus']
-        );
-
-        return $fields;
+        return Arr::except(parent::fields(), [
+            'mandatory',
+            'translatable',
+            'maxlength',
+            'autofocus',
+        ]);
     }
 
     /**

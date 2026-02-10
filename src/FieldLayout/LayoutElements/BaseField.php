@@ -19,13 +19,6 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-/**
- * BaseField is the base class for native and custom fields that can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.5.0
- */
 abstract class BaseField extends FieldLayoutElement
 {
     /**
@@ -54,20 +47,6 @@ abstract class BaseField extends FieldLayoutElement
     public bool $required = false;
 
     /**
-     * @var bool Whether this field should be used to define element thumbnails.
-     *
-     * @deprecated in 5.9.0
-     */
-    public bool $providesThumbs = false;
-
-    /**
-     * @var bool Whether this field’s contents should be included in element cards.
-     *
-     * @deprecated in 5.9.0
-     */
-    public bool $includeInCards = false;
-
-    /**
      * {@inheritdoc}
      */
     public function __construct($config = [])
@@ -77,18 +56,6 @@ abstract class BaseField extends FieldLayoutElement
         }
 
         parent::__construct($config);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function fields(): array
-    {
-        $fields = parent::fields();
-        unset($fields['includeInCards'], $fields['providesThumbs']);
-
-        return $fields;
     }
 
     /**

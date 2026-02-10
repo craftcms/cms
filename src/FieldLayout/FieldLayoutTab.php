@@ -16,73 +16,18 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
 /**
- * FieldLayoutTab model class.
- *
  * @property FieldLayoutElement[]|null $elements The tab’s layout elements
  * @property FieldLayout|null $layout The tab’s layout
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
  */
 class FieldLayoutTab extends FieldLayoutComponent
 {
-    /**
-     * Creates a new field layout tab from the given config.
-     */
-    public static function createFromConfig(array $config): self
-    {
-        static::updateConfig($config);
-
-        return new self($config);
-    }
-
-    /**
-     * Returns the label HTML that should be displayed within field layout designers.
-     */
-    public function labelHtml(): string
-    {
-        return
-            Html::tag('h3', Html::encode($this->name), [
-                'class' => 'fld-tab__name',
-            ]).
-            ($this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
-                'class' => array_filter(array_merge(['cp-icon', 'puny', 'orange'])),
-                'title' => t('This tab is conditional'),
-                'aria' => ['label' => t('This tab is conditional')],
-            ]) : '');
-    }
-
-    /**
-     * Updates a field layout tab’s config to the new format.
-     */
-    public static function updateConfig(array &$config): void
-    {
-        if (! array_key_exists('fields', $config)) {
-            return;
-        }
-
-        $config['elements'] = [];
-
-        $config['fields'] = Arr::sort($config['fields'], 'sortOrder');
-        foreach ($config['fields'] as $fieldUid => $fieldConfig) {
-            $config['elements'][] = [
-                'type' => CustomField::class,
-                'fieldUid' => $fieldUid,
-                'required' => (bool) $fieldConfig['required'],
-            ];
-        }
-
-        unset($config['fields']);
-    }
-
     /**
      * @var int|null ID
      */
@@ -123,16 +68,70 @@ class FieldLayoutTab extends FieldLayoutComponent
     public function __construct($config = [])
     {
         // Config normalization
-        if (array_key_exists('elements', $config)) {
-            if (is_string($config['elements'])) {
-                $config['elements'] = Json::decode($config['elements']);
-            }
-            if (! is_array($config['elements'])) {
-                unset($config['elements']);
-            }
+        if (! array_key_exists('elements', $config)) {
+            parent::__construct($config);
+
+            return;
+        }
+
+        if (is_string($config['elements'])) {
+            $config['elements'] = Json::decode($config['elements']);
+        }
+
+        if (! is_array($config['elements'])) {
+            unset($config['elements']);
         }
 
         parent::__construct($config);
+    }
+
+    /**
+     * Creates a new field layout tab from the given config.
+     */
+    public static function createFromConfig(array $config): self
+    {
+        static::updateConfig($config);
+
+        return new self($config);
+    }
+
+    /**
+     * Returns the label HTML that should be displayed within field layout designers.
+     */
+    public function labelHtml(): string
+    {
+        return
+            Html::tag('h3', Html::encode($this->name), [
+                'class' => 'fld-tab__name',
+            ]).
+            ($this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
+                'class' => array_filter(array_merge(['cp-icon', 'puny', 'orange'])),
+                'title' => t('This tab is conditional'),
+                'aria' => ['label' => t('This tab is conditional')],
+            ]) : '');
+    }
+
+    /**
+     * Updates a field layout tab’s config to the new format.
+     */
+    public static function updateConfig(array &$config): void
+    {
+        if (! array_key_exists('fields', $config)) {
+            return;
+        }
+
+        $config['elements'] = [];
+        $config['fields'] = Arr::sort($config['fields'], 'sortOrder');
+
+        foreach ($config['fields'] as $fieldUid => $fieldConfig) {
+            $config['elements'][] = [
+                'type' => CustomField::class,
+                'fieldUid' => $fieldUid,
+                'required' => (bool) $fieldConfig['required'],
+            ];
+        }
+
+        unset($config['fields']);
     }
 
     /**
@@ -141,10 +140,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-        unset($fields['sortOrder']);
-
-        return $fields;
+        return Arr::except(parent::fields(), ['sortOrder']);
     }
 
     public function getRules(): array
@@ -207,6 +203,7 @@ class FieldLayoutTab extends FieldLayoutComponent
             if (! isset($layoutElement->uid)) {
                 $layoutElement->uid = Str::uuid()->toString();
             }
+
             $elementConfigs[] = ['type' => $layoutElement::class] + $layoutElement->toArray();
         }
 
@@ -278,7 +275,6 @@ class FieldLayoutTab extends FieldLayoutComponent
                 } catch (FieldNotFoundException) {
                     // Skip quietly
                     continue;
-                    /** @phpstan-ignore catch.neverThrown */
                 } catch (InvalidArgumentException $e) {
                     Log::warning('Invalid field layout element config: '.$e->getMessage(), [__METHOD__]);
                     report($e);
@@ -301,12 +297,9 @@ class FieldLayoutTab extends FieldLayoutComponent
         }
     }
 
-    /**
-     * Returns the tab’s HTML ID.
-     */
     public function getHtmlId(): string
     {
-        $asciiName = isset($this->name) ? Str::kebab(Str::ascii($this->name, 'en')) : '';
+        $asciiName = isset($this->name) ? Str::kebab(Str::ascii($this->name)) : '';
 
         if ($asciiName === '') {
             // Use md5() as a fallback

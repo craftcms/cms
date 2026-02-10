@@ -8,21 +8,15 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\web\assets\userphoto\UserPhotoAsset;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
-/**
- * PhotoField represents a Photo field that can be included in the user field layout.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.0.0
- */
 class PhotoField extends BaseNativeField
 {
     /**
@@ -41,14 +35,12 @@ class PhotoField extends BaseNativeField
     public function __construct($config = [])
     {
         // We didn't start removing autofocus from fields() until 3.5.6
-        unset(
-            $config['mandatory'],
-            $config['attribute'],
-            $config['translatable'],
-            $config['required'],
-        );
-
-        parent::__construct($config);
+        parent::__construct(Arr::except($config, [
+            'mandatory',
+            'attribute',
+            'translatable',
+            'required',
+        ]));
     }
 
     /**
@@ -57,15 +49,12 @@ class PhotoField extends BaseNativeField
     #[Override]
     public function fields(): array
     {
-        $fields = parent::fields();
-        unset(
-            $fields['mandatory'],
-            $fields['attribute'],
-            $fields['translatable'],
-            $fields['required'],
-        );
-
-        return $fields;
+        return Arr::except(parent::fields(), [
+            'mandatory',
+            'attribute',
+            'translatable',
+            'required',
+        ]);
     }
 
     /**
@@ -86,8 +75,7 @@ class PhotoField extends BaseNativeField
             return null;
         }
 
-        $volumeUid = app(ProjectConfig::class)->get('users.photoVolumeUid');
-        if (! $volumeUid) {
+        if (! $volumeUid = ProjectConfig::get('users.photoVolumeUid')) {
             return null;
         }
 
