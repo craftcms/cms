@@ -153,14 +153,14 @@ final class Asset extends Element
      *
      * @see getUrl()
      */
-    public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
+    public const string EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
 
     /**
      * @event DefineAssetUrlEvent The event that is triggered when defining the asset’s URL.
      *
      * @see getUrl()
      */
-    public const EVENT_DEFINE_URL = 'defineUrl';
+    public const string EVENT_DEFINE_URL = 'defineUrl';
 
     // Location error codes
     // -------------------------------------------------------------------------

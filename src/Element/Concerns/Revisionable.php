@@ -13,9 +13,23 @@ use Illuminate\Support\Facades\DB;
 
 use function CraftCms\Cms\t;
 
-/** @phpstan-ignore trait.unused */
+/**
+ * Revisionable provides revision functionality for elements.
+ *
+ * This trait contains methods for managing element revisions, including tracking revision metadata
+ * (creator, number, notes), determining if an element is a revision, and fetching the current revision.
+ *
+ * @internal
+ */
 trait Revisionable
 {
+    /**
+     * @var int|null The ID of the revision’s row in the `revisions` table
+     *
+     * @since 3.2.0
+     */
+    public ?int $revisionId = null;
+
     /**
      * @var int|null The creator’s ID
      */

@@ -110,6 +110,7 @@ use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
+use CraftCms\Yii2Adapter\Mixins\ElementMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
@@ -224,6 +225,7 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         Element::mixin(new ValidateMixin());
+        Element::mixin(new ElementMixin());
         Field::mixin(new ValidateMixin());
         ElementQuery::mixin(new ElementQueryMixin());
         User::mixin(new UserMixin());
