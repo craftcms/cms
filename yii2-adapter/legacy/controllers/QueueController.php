@@ -14,7 +14,7 @@ use craft\web\Controller;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\db\Exception as YiiDbException;
 use yii\queue\Queue;
 use yii\web\BadRequestHttpException;

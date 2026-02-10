@@ -439,7 +439,6 @@ class Install extends Migration
             $table->text('name');
             $table->string('handle', 64);
             $table->string('context')->default('global');
-            $table->char('columnSuffix', 8)->nullable();
             $table->text('instructions')->nullable();
             $table->boolean('searchable')->default(true);
             $table->string('translationMethod')->default(Field::TRANSLATION_METHOD_NONE);

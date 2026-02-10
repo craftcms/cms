@@ -40,7 +40,7 @@ use Override;
  * @method static \CraftCms\Cms\User\Data\UserGroup[] getDefaultUserGroups(\CraftCms\Cms\User\Elements\User $user)
  * @method static bool assignUserToDefaultGroup(\CraftCms\Cms\User\Elements\User $user)
  * @method static void handleChangedUserFieldLayout(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
- * @method static bool saveLayout(\craft\models\FieldLayout $layout, bool $runValidation = true)
+ * @method static bool saveLayout(\CraftCms\Cms\FieldLayout\FieldLayout $layout, bool $runValidation = true)
  * @method static bool canImpersonate(\CraftCms\Cms\User\Elements\User $impersonator, \CraftCms\Cms\User\Elements\User $impersonatee)
  * @method static bool canSuspend(\CraftCms\Cms\User\Elements\User $suspender, \CraftCms\Cms\User\Elements\User $suspendee)
  * @method static int|null getMaxUsers(\CraftCms\Cms\Edition $edition)

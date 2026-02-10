@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use Craft;
-use craft\base\FieldLayoutElement;
-use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -19,6 +16,9 @@ use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
@@ -69,13 +69,21 @@ final class EntryTypesController
 
     public function create(): CpScreenResponse
     {
+        $entryType = new EntryType;
+
+        $fieldLayout = $entryType->getFieldLayout();
+
+        if ($entryType->hasTitleField && ! $fieldLayout->isFieldIncluded('title')) {
+            $fieldLayout->prependElements([new EntryTitleField]);
+        }
+
         return new CpScreenResponse()
             ->title(t('Create a new entry type'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
             ->contentTemplate('settings/entry-types/_edit.twig', [
                 'entryTypeId' => null,
-                'entryType' => new EntryType,
+                'entryType' => $entryType,
                 'typeName' => Entry::displayName(),
                 'lowerTypeName' => Entry::lowerDisplayName(),
                 'readOnly' => $this->readOnly,

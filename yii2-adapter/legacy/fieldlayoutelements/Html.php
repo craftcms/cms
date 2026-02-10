@@ -1,50 +1,29 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fieldlayoutelements;
 
-use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
-use CraftCms\Cms\Support\Html as HtmlHelper;
-use yii\base\NotSupportedException;
-
-/**
- * Html represents a field layout component that displays arbitrary HTML.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.5.0
- */
-class Html extends FieldLayoutElement
-{
-    private string $html;
-
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Constructor
+     * Html represents a field layout component that displays arbitrary HTML.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
+     * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Html} instead.
      */
-    public function __construct(string $html, array $config = [])
+    class Html
     {
-        $this->html = $html;
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     * @throws NotSupportedException
-     */
-    public function selectorHtml(): string
-    {
-        throw new NotSupportedException(sprintf('%s should not be included in user-modifyable field layouts.', self::class));
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        return HtmlHelper::tag('div', $this->html);
     }
 }
+
+class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\Html::class, Html::class);

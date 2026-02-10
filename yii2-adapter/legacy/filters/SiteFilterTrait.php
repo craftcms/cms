@@ -11,7 +11,7 @@ use Craft;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 
 /**
  * Trait to make a filter site-aware.

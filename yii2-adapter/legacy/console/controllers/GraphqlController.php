@@ -17,8 +17,8 @@ use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Utils\SchemaPrinter;
+use InvalidArgumentException;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
 use yii\web\BadRequestHttpException;
 

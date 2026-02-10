@@ -14,9 +14,9 @@ use CraftCms\Cms\Cms;
 use Illuminate\Support\Facades\Log;
 use Imagick;
 use Imagine\Image\Format;
+use InvalidArgumentException;
 use Throwable;
 use TypeError;
-use yii\base\InvalidArgumentException;
 
 /**
  * Class Image

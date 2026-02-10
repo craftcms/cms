@@ -6219,7 +6219,7 @@ class GeneralConfig extends BaseConfig
         // Store the DateInterval separately for getRememberedUserSessionDuration()
         try {
             $interval = DateTimeHelper::toDateInterval($value);
-        } catch (\yii\base\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             throw new InvalidConfigException($e->getMessage(), 0, $e);
         }
 

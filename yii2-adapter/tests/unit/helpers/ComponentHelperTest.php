@@ -7,9 +7,7 @@
 
 namespace crafttests\unit\helpers;
 
-use craft\base\FieldLayoutElement;
 use craft\errors\MissingComponentException;
-use craft\fieldlayoutelements\HorizontalRule;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\test\mockclasses\components\ComponentExample;
@@ -19,6 +17,8 @@ use craft\test\TestCase;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
 use Exception;
 use Throwable;
 use UnitTester;

@@ -8,6 +8,8 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
+use Override;
+use Yiisoft\Arrays\ArrayableInterface;
 
 class Arr extends \Illuminate\Support\Arr
 {
@@ -108,7 +110,7 @@ class Arr extends \Illuminate\Support\Arr
                 }
             }
 
-            if ($object instanceof \yii\base\Arrayable) {
+            if ($object instanceof \yii\base\Arrayable || $object instanceof ArrayableInterface) {
                 $result = $object->toArray([], [], $recursive);
             } elseif ($object instanceof Arrayable || method_exists($object, 'toArray')) {
                 $result = $object->toArray();
@@ -172,7 +174,7 @@ class Arr extends \Illuminate\Support\Arr
      * If the key is specified in square bracket notation (e.g. `x[y][z]`), it will automatically be converted
      * to dot notation (`x.y.z`).
      */
-    #[\Override]
+    #[Override]
     public static function get($array, $key, $default = null)
     {
         // Normalize the key into dot notation

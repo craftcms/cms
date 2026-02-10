@@ -44,15 +44,11 @@ trait ValidatesWithRuleset
         return $this->ruleset = app()->make($class, ['component' => $this]);
     }
 
-    protected function getValidator(?array $attributeNames = null, bool $fresh = false): Validator
+    protected function getValidator(?array $attributeNames = null): Validator
     {
-        if ($fresh || ! isset($this->validator)) {
-            $this->validator = ValidatorFacade::make([], []);
-        }
-
         $ruleset = $this->getRuleset();
 
-        return $this->validator
+        return ValidatorFacade::make([], [])
             ->setData($this->getAttributes())
             ->setCustomMessages($ruleset->messages())
             ->setAttributeNames($ruleset->attributes())

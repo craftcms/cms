@@ -8,6 +8,7 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
@@ -16,7 +17,6 @@ use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
@@ -61,7 +61,7 @@ use Twig\Markup;
  * @method static whereNotExists($callback, $boolean = 'and')
  * @method static whereNull($columns, $boolean = 'and', $not = false)
  */
-class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, ElementQueryInterface
+class ElementQuery extends Component implements \Illuminate\Contracts\Database\Query\Builder, ElementQueryInterface
 {
     /** @use \Illuminate\Database\Concerns\BuildsQueries<TElement> */
     use BuildsQueries {
@@ -103,7 +103,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
     /**
      * All of the globally registered builder macros.
      */
-    protected static array $macros = [];
+    protected static $macros = [];
 
     /**
      * All of the locally registered builder macros.
@@ -222,11 +222,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         public string $elementType = Element::class,
         protected array $config = [],
     ) {
-        Typecast::properties(static::class, $config);
-
-        foreach ($config as $key => $value) {
-            $this->{$key} = $value;
-        }
+        parent::__construct($config);
 
         $this->query = DB::query()
             ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.id', 'subquery.siteSettingsId')
@@ -819,6 +815,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
      *
      * @throws \Exception
      */
+    #[\Override]
     public function __get($key): mixed
     {
         if (array_key_exists($key, $this->customFieldValues)) {
@@ -832,6 +829,7 @@ class ElementQuery implements \Illuminate\Contracts\Database\Query\Builder, Elem
         throw new Exception("Property [{$key}] does not exist on the Element query instance.");
     }
 
+    #[\Override]
     public function __set(string $name, $value): void
     {
         if (array_key_exists($name, $this->customFieldValues)) {

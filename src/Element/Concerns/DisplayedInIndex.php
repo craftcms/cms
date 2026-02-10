@@ -9,7 +9,6 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\db\ExcludeDescendantIdsExpression;
 use craft\helpers\ElementHelper;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
@@ -22,6 +21,7 @@ use CraftCms\Cms\Element\Events\RegisterSortOptions;
 use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -519,7 +519,7 @@ trait DisplayedInIndex
     /**
      * Returns the card attributes for the element type.
      *
-     * @param  FieldLayout|null  $fieldLayout  The field layout
+     * @param  \CraftCms\Cms\FieldLayout\FieldLayout|null  $fieldLayout  The field layout
      * @return array The card attributes
      *
      * @since 5.5.0

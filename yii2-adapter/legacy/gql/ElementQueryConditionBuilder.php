@@ -38,7 +38,7 @@ use GraphQL\Language\AST\ObjectValueNode;
 use GraphQL\Language\AST\VariableNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\WrappingType;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 
 /**
  * Class ElementQueryConditionBuilder.

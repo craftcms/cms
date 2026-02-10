@@ -8,6 +8,7 @@ use Craft;
 use craft\web\assets\feed\FeedAsset;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Cache;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -22,7 +23,7 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Feed');
@@ -31,7 +32,7 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'rss';
@@ -40,8 +41,8 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
-    public static function getRules(): array
+    #[Override]
+    public function getRules(): array
     {
         return [
             'title' => ['required'],
@@ -53,7 +54,7 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/settings.twig',
@@ -65,7 +66,7 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getTitle(): ?string
     {
         return $this->title;
@@ -74,7 +75,7 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getBodyHtml(): string
     {
         // See if it's already cached

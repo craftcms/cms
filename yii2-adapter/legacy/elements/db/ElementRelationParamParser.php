@@ -20,8 +20,8 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use yii\base\BaseObject;
-use yii\base\InvalidArgumentException;
 
 /**
  * Parses a relatedTo param on an ElementQuery.

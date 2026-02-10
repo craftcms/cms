@@ -20,7 +20,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\db\Expression;
 
 /**

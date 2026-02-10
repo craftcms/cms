@@ -71,7 +71,7 @@ final readonly class WidgetsController
         // Create a new widget model with the new settings
         $settings = $request->input("widget{$widget->id}-settings");
 
-        Validator::validate($settings, $widget::getRules());
+        Validator::validate($settings, $widget->getRules());
 
         $widget = $this->dashboard->createWidget([
             'id' => $widget->id,

@@ -24,7 +24,7 @@ abstract class Widget extends SavableComponent implements \CraftCms\Cms\Dashboar
     /**
      * Old widgets will get validated by calling the ->validate() method.
      */
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [];
     }

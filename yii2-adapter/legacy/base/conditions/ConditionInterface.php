@@ -2,7 +2,7 @@
 
 namespace craft\base\conditions;
 
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 
 /**
  * ConditionInterface defines the common interface to be implemented by condition classes.

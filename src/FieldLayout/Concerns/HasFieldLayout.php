@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\Concerns;
 
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutProviderInterface;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
 use RuntimeException;
 

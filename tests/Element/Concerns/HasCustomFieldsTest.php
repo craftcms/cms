@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,7 @@ beforeEach(function () {
     $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
     $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
 
+    EntryTypes::refreshEntryTypes();
     Fields::invalidateCaches();
     Fields::refreshFields();
 

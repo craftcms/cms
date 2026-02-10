@@ -6,7 +6,6 @@
  */
 
 use craft\elements\GlobalSet;
-use craft\fieldlayoutelements\entries\EntryTitleField;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Color;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Field\Table;
+use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
 use CraftCms\Cms\User\Elements\User;
 
 return [

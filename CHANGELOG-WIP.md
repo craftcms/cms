@@ -288,6 +288,65 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Removed `craft\console\controllers\EntryTypesController` in favor of:
   - `CraftCms\Cms\Entry\Commands\MergeEntryTypesCommand`
 
+## Component
+
+- Added `CraftCms\Cms\Component\Component` base class, replacing Yii2's `BaseObject`/`Component` with config hydration, magic getters/setters, and `Arrayable` support.
+- Added `CraftCms\Cms\Component\Exceptions\InvalidCallException`, replacing `yii\base\InvalidCallException`.
+- Added `CraftCms\Cms\Component\Exceptions\UnknownPropertyException`, replacing `yii\base\UnknownPropertyException`.
+
+## Field Layouts
+
+### Added
+
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutForm`.
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutFormTab`.
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutFormElement`.
+- Added `CraftCms\Cms\FieldLayout\FieldLayoutServiceProvider`.
+- Added `CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout` trait.
+
+### Deprecations
+- Deprecated `craft\models\FieldLayout`. `CraftCms\Cms\FieldLayout\FieldLayout` should be used instead.
+- Deprecated `craft\models\FieldLayoutTab`. `CraftCms\Cms\FieldLayout\FieldLayoutTab` should be used instead.
+- Deprecated `craft\base\FieldLayoutComponent`. `CraftCms\Cms\FieldLayout\FieldLayoutComponent` should be used instead.
+- Deprecated `craft\base\FieldLayoutElement`. `CraftCms\Cms\FieldLayout\FieldLayoutElement` should be used instead.
+- Deprecated `craft\base\FieldLayoutProviderInterface`. `CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface` should be used instead.
+- Deprecated `craft\records\FieldLayout`. `CraftCms\Cms\FieldLayout\Models\FieldLayout` should be used instead.
+- Deprecated `craft\fieldlayoutelements\BaseField`. `CraftCms\Cms\FieldLayout\LayoutElements\BaseField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\BaseNativeField`. `CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\BaseUiElement`. `CraftCms\Cms\FieldLayout\LayoutElements\BaseUiElement` should be used instead.
+- Deprecated `craft\fieldlayoutelements\CustomField`. `CraftCms\Cms\FieldLayout\LayoutElements\CustomField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\Heading`. `CraftCms\Cms\FieldLayout\LayoutElements\Heading` should be used instead.
+- Deprecated `craft\fieldlayoutelements\HorizontalRule`. `CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule` should be used instead.
+- Deprecated `craft\fieldlayoutelements\Html`. `CraftCms\Cms\FieldLayout\LayoutElements\Html` should be used instead.
+- Deprecated `craft\fieldlayoutelements\LineBreak`. `CraftCms\Cms\FieldLayout\LayoutElements\LineBreak` should be used instead.
+- Deprecated `craft\fieldlayoutelements\Markdown`. `CraftCms\Cms\FieldLayout\LayoutElements\Markdown` should be used instead.
+- Deprecated `craft\fieldlayoutelements\Template`. `CraftCms\Cms\FieldLayout\LayoutElements\Template` should be used instead.
+- Deprecated `craft\fieldlayoutelements\TextField`. `CraftCms\Cms\FieldLayout\LayoutElements\TextField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\TextareaField`. `CraftCms\Cms\FieldLayout\LayoutElements\TextareaField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\Tip`. `CraftCms\Cms\FieldLayout\LayoutElements\Tip` should be used instead.
+- Deprecated `craft\fieldlayoutelements\TitleField`. `CraftCms\Cms\FieldLayout\LayoutElements\TitleField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\FullNameField`. `CraftCms\Cms\FieldLayout\LayoutElements\FullNameField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\addresses\AddressField`. `CraftCms\Cms\FieldLayout\LayoutElements\addresses\AddressField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\addresses\CountryCodeField`. `CraftCms\Cms\FieldLayout\LayoutElements\addresses\CountryCodeField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\addresses\LabelField`. `CraftCms\Cms\FieldLayout\LayoutElements\addresses\LabelField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\addresses\LatLongField`. `CraftCms\Cms\FieldLayout\LayoutElements\addresses\LatLongField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\addresses\OrganizationField`. `CraftCms\Cms\FieldLayout\LayoutElements\addresses\OrganizationField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\addresses\OrganizationTaxIdField`. `CraftCms\Cms\FieldLayout\LayoutElements\addresses\OrganizationTaxIdField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\assets\AssetTitleField`. `CraftCms\Cms\FieldLayout\LayoutElements\assets\AssetTitleField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\assets\AltField`. `CraftCms\Cms\FieldLayout\LayoutElements\assets\AltField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\entries\EntryTitleField`. `CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\users\UsernameField`. `CraftCms\Cms\FieldLayout\LayoutElements\users\UsernameField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\users\FullNameField`. `CraftCms\Cms\FieldLayout\LayoutElements\users\FullNameField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\users\EmailField`. `CraftCms\Cms\FieldLayout\LayoutElements\users\EmailField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\users\AffiliatedSiteField`. `CraftCms\Cms\FieldLayout\LayoutElements\users\AffiliatedSiteField` should be used instead.
+- Deprecated `craft\fieldlayoutelements\users\PhotoField`. `CraftCms\Cms\FieldLayout\LayoutElements\users\PhotoField` should be used instead.
+- Deprecated `craft\events\CreateFieldLayoutFormEvent`. `CraftCms\Cms\FieldLayout\Events\CreateFieldLayoutForm` should be used instead.
+- Deprecated `craft\events\DefineFieldLayoutCustomFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\DefineCustomFields` should be used instead.
+- Deprecated `craft\events\DefineFieldLayoutElementsEvent`. `CraftCms\Cms\FieldLayout\Events\DefineUIElements` should be used instead.
+- Deprecated `craft\events\DefineFieldLayoutFieldsEvent`. `CraftCms\Cms\FieldLayout\Events\DefineNativeFields` should be used instead.
+- Deprecated `craft\events\DefineShowFieldLayoutComponentInFormEvent`. `CraftCms\Cms\FieldLayout\Events\DefineShowInForm` should be used instead.
+- Deprecated `craft\events\DefineFieldActionsEvent`. `CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems` should be used instead.
+
 ## Fields
 
 - Removed `craft\controllers\FieldsController` in favor of `CraftCms\Cms\Http\Controllers\FieldsController`.

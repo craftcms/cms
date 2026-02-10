@@ -31,10 +31,10 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Twig\Error\RuntimeError;
 use yii\base\Event;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 

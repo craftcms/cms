@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Migrations;
 
 use craft\base\ElementInterface;
-use craft\fieldlayoutelements\CustomField;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
@@ -46,7 +46,7 @@ class BaseContentRefactorMigration extends Migration
      *
      * @param  int[]|Builder  $ids  The element IDs to update, or a query that selects them.
      *                              If a query is passed but `select` is not set, it will default to `'id'`.
-     * @param  FieldLayout|null  $fieldLayout  The field layout that the elements use, if any
+     * @param  \CraftCms\Cms\FieldLayout\FieldLayout|null  $fieldLayout  The field layout that the elements use, if any
      * @param  string  $contentTable  The table that the elements stored their field values in.
      * @param  string  $fieldColumnPrefix  The column prefix that the content table used for these elements’ fields.
      */
@@ -256,10 +256,9 @@ class BaseContentRefactorMigration extends Migration
         }
 
         $primaryColumn = sprintf(
-            '%s%s%s',
+            '%s%s',
             $fieldColumnPrefix,
             $field->handle,
-            (property_exists($field, 'columnSuffix') && $field->columnSuffix ? "_$field->columnSuffix" : ''),
         );
 
         if (! Schema::hasColumn($contentTable, $primaryColumn)) {
@@ -270,8 +269,7 @@ class BaseContentRefactorMigration extends Migration
         if (is_array($dbType) && count($dbType) > 1) {
             $dbTypeKeys = array_keys($dbType);
             $extraColumns = array_map(
-                fn (string $key) => sprintf('%s%s_%s_%s', $fieldColumnPrefix, $field->handle, $key,
-                    property_exists($field, 'columnSuffix') ? $field->columnSuffix : ''),
+                fn (string $key) => sprintf('%s%s_%s', $fieldColumnPrefix, $field->handle, $key),
                 array_slice($dbTypeKeys, 1),
             );
 

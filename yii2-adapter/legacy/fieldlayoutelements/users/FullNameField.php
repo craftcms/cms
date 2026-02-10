@@ -1,41 +1,27 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fieldlayoutelements\users;
 
-use craft\base\ElementInterface;
-use craft\fieldlayoutelements\FullNameField as BaseFullNameField;
-use CraftCms\Cms\User\Elements\User;
-use yii\base\InvalidArgumentException;
-
-/**
- * FullNameField represents a Full Name field that can be included in the user field layout.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- */
-class FullNameField extends BaseFullNameField
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * FullNameField represents a Full Name field that can be included in the user field layout.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
+     * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\users\FullNameField} instead.
      */
-    public bool $mandatory = true;
-
-    /**
-     * @inheritdoc
-     */
-    protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
+    class FullNameField
     {
-        if (!$element instanceof User) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
-        }
-
-        return [
-            'autocomplete' => $element->getIsCurrent() ? 'name' : 'off',
-        ];
     }
 }
+
+class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\users\FullNameField::class, FullNameField::class);

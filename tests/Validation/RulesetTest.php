@@ -59,12 +59,12 @@ function createTestComponent(array $scenarios = []): ValidatableWithRuleset
             return $this->testScenarios;
         }
 
-        public static function getRules(): array
+        public function getRules(): array
         {
             return [];
         }
 
-        public static function getMessages(): array
+        public function getMessages(): array
         {
             return [];
         }

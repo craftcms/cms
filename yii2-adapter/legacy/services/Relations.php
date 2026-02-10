@@ -9,9 +9,9 @@ namespace craft\services;
 
 use craft\base\ElementInterface;
 use craft\db\Command;
-use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;

@@ -8,10 +8,10 @@ use CraftCms\Cms\Config\ConstAdapter;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
+use InvalidArgumentException;
 use Orchestra\Testbench\PHPUnit\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
-use yii\base\InvalidArgumentException;
 
 final class AppHelperTest extends TestCase
 {

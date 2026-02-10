@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
-use craft\models\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
  * @event RegisterFieldLayouts The event that is triggered when registering all of the field layouts

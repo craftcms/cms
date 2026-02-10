@@ -1,114 +1,27 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fieldlayoutelements;
 
-use craft\base\ElementInterface;
-use craft\helpers\Cp;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Str;
-use yii\helpers\Markdown as MarkdownHelper;
-use function CraftCms\Cms\t;
-
-/**
- * Markdown represents a UI element based on Markdown content can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.5.0
- */
-class Markdown extends BaseUiElement
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var string The Markdown content
+     * Markdown represents a UI element based on Markdown content can be included in field layouts.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
+     * @since 5.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\Markdown} instead.
      */
-    public string $content = '';
-
-    /**
-     * @var bool Whether the content should be displayed in a pane.
-     */
-    public bool $displayInPane = true;
-
-    /**
-     * @inheritdoc
-     */
-    protected function selectorLabel(): string
+    class Markdown
     {
-        return Str::firstLine($this->content) ?: 'Markdown';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function selectorIcon(): ?string
-    {
-        return 'markdown';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function selectorLabelAttributes(): array
-    {
-        $attr = parent::selectorLabelAttributes();
-        if ($this->content) {
-            $attr['class'][] = 'code';
-        }
-        return $attr;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasCustomWidth(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function hasSettings()
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function settingsHtml(): ?string
-    {
-        return
-            Cp::textareaFieldHtml([
-                'label' => t('Content'),
-                'class' => ['code', 'nicetext'],
-                'id' => 'content',
-                'name' => 'content',
-                'value' => $this->content,
-            ]) .
-            Cp::lightswitchFieldHtml([
-                'label' => t('Display content in a pane'),
-                'id' => 'display-in-pane',
-                'name' => 'displayInPane',
-                'on' => $this->displayInPane,
-            ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        $content = Html::tag('div', MarkdownHelper::process(Html::encode($this->content)), [
-            'class' => array_filter([
-                'markdown',
-                $this->displayInPane ? 'pane' : null,
-            ]),
-        ]);
-
-        return Html::tag('div', $content, $this->containerAttributes($element, $static));
     }
 }
+
+class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\Markdown::class, Markdown::class);

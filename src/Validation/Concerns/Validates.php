@@ -14,29 +14,25 @@ trait Validates
 {
     use InteractsWithValidator;
 
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [];
     }
 
-    public static function getMessages(): array
+    public function getMessages(): array
     {
         return [];
     }
 
-    protected function getValidator(?array $attributeNames = null, bool $fresh = false): Validator
+    protected function getValidator(?array $attributeNames = null): Validator
     {
-        if ($fresh || ! isset($this->validator)) {
-            $this->validator = ValidatorFacade::make([], []);
-        }
-
-        return $this->validator
+        return ValidatorFacade::make([], [])
             ->setData($this->getAttributes())
-            ->setCustomMessages(static::getMessages())
+            ->setCustomMessages($this->getMessages())
             ->setAttributeNames($this->attributeLabels())
             ->setRules(is_null($attributeNames)
-                ? static::getRules()
-                : Arr::only(static::getRules(), $attributeNames)
+                ? $this->getRules()
+                : Arr::only($this->getRules(), $attributeNames)
             );
     }
 

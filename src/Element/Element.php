@@ -8,10 +8,10 @@ use ArrayIterator;
 use BadMethodCallException;
 use craft\base\Component;
 use craft\base\ElementInterface;
-use craft\fieldlayoutelements\BaseField;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
@@ -381,7 +381,8 @@ abstract class Element extends Component implements ElementInterface
 
         try {
             parent::__set($name, $value);
-        } catch (InvalidCallException|UnknownPropertyException $e) {
+            /** @phpstan-ignore-next-line */
+        } catch (InvalidCallException|UnknownPropertyException|\CraftCms\Cms\Component\Exceptions\InvalidCallException|\CraftCms\Cms\Component\Exceptions\UnknownPropertyException $e) {
             // Is this is a field?
             if ($this->fieldByHandle($name) !== null) {
                 $this->setFieldValue($name, $value);

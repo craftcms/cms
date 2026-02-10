@@ -24,7 +24,6 @@ use craft\events\PopulateElementEvent;
 use craft\events\PopulateElementsEvent;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Element;
@@ -43,13 +42,13 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
+use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
 use Twig\Markup;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\base\NotSupportedException;
@@ -2623,7 +2622,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Returns the field layouts whose custom fields should be returned by [[customFields()]].
      *
-     * @return FieldLayout[]
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout[]
      * @since 5.0.0
      */
     protected function fieldLayouts(): array

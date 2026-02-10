@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Data;
 
 use Craft;
-use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -33,11 +33,14 @@ use Spatie\LaravelData\Attributes\WithCastable;
 use Spatie\LaravelData\Dto;
 use Spatie\LaravelData\Support\Validation\ValidationContext;
 use Stringable;
+use Yiisoft\Arrays\ArrayableInterface;
+use Yiisoft\Arrays\ArrayableTrait;
 
 use function CraftCms\Cms\t;
 
-final class EntryType extends Dto implements Actionable, Chippable, Colorable, CpEditable, Describable, FieldLayoutProviderInterface, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
+final class EntryType extends Dto implements Actionable, ArrayableInterface, Chippable, Colorable, CpEditable, Describable, FieldLayoutProviderInterface, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
 {
+    use ArrayableTrait;
     use HasFieldLayout;
 
     public function __construct(

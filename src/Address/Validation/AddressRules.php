@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Address\Validation;
 
-use craft\fieldlayoutelements\addresses\LatLongField;
-use craft\fieldlayoutelements\addresses\OrganizationField;
-use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
-use craft\fieldlayoutelements\BaseNativeField;
-use craft\fieldlayoutelements\FullNameField;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\FieldLayout\LayoutElements\addresses\LatLongField;
+use CraftCms\Cms\FieldLayout\LayoutElements\addresses\OrganizationField;
+use CraftCms\Cms\FieldLayout\LayoutElements\addresses\OrganizationTaxIdField;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
+use CraftCms\Cms\FieldLayout\LayoutElements\FullNameField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Validation\Rules\DisallowMb4;
 use Illuminate\Validation\Rule;
