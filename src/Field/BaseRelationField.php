@@ -298,13 +298,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     public ?string $viewMode = null;
 
     /**
-     * @var bool Whether cards should be shown in a multi-column grid
-     *
-     * @deprecated in 5.9.0.
-     */
-    public bool $showCardsInGrid = false;
-
-    /**
      * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true).
      */
     public ?int $minRelations = null;
@@ -440,11 +433,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         $config['viewMode'] ??= self::VIEW_MODE_LIST;
-
-        if (! empty($config['showCardsInGrid']) && $config['viewMode'] === self::VIEW_MODE_CARDS) {
-            $config['viewMode'] = self::VIEW_MODE_CARDS_GRID;
-        }
-        $config['showCardsInGrid'] = $config['viewMode'] === self::VIEW_MODE_CARDS_GRID;
 
         if ($config['viewMode'] === 'large') {
             $config['viewMode'] = self::VIEW_MODE_THUMBS;

@@ -296,11 +296,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             $config['maxEntries'] = Arr::pull($config, 'maxBlocks');
         }
 
-        if (! empty($config['showCardsInGrid']) && ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS) {
-            $config['viewMode'] = self::VIEW_MODE_CARDS_GRID;
-        }
-        $config['showCardsInGrid'] = ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS_GRID;
-
         parent::__construct($config);
 
         foreach ($this->siteSettings as &$siteSettings) {
