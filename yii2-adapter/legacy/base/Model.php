@@ -406,7 +406,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     /**
      * Legacy models are validated differently
      */
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [];
     }
@@ -414,7 +414,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     /**
      * Legacy models are validated differently
      */
-    public static function getMessages(): array
+    public function getMessages(): array
     {
         return [];
     }

@@ -184,7 +184,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         $rules = parent::getRules();
 

@@ -514,7 +514,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
         ];
     }
 
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [
             'name' => ['required'],

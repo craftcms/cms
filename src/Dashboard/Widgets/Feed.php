@@ -41,7 +41,7 @@ final class Feed extends Widget
      * {@inheritdoc}
      */
     #[\Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [
             'title' => ['required'],

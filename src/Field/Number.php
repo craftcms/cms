@@ -160,7 +160,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         $conditionalInteger = Rule::when(fn ($input) => ! $input->decimals, 'integer', 'numeric');
 

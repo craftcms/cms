@@ -177,7 +177,7 @@ abstract class ElementMutationResolver extends MutationResolver
             }
         }
 
-        if ($element->errors()->isNotEmpty()) {
+        if ($element->hasErrors()) {
             $validationErrors = [];
 
             foreach ($element->getFirstErrors() as $errorMessage) {

@@ -116,7 +116,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'min' => ['nullable', 'numeric'],
