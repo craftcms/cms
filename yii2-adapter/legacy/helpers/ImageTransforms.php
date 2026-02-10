@@ -26,7 +26,7 @@ use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Imagine\Image\Format;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use function CraftCms\Cms\t;
 
 /**

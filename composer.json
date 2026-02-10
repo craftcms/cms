@@ -69,6 +69,7 @@
     "twig/twig": "~3.21.1",
     "web-auth/webauthn-lib": "~4.9.0",
     "webonyx/graphql-php": "~14.11.10",
+    "yiisoft/arrays": "^3.2",
     "yiisoft/html": "^3.11",
     "yiisoft/translator": "^3.2",
     "yiisoft/translator-message-php": "^1.1"

@@ -1,11 +1,10 @@
 <?php
 
-use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
-use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -29,9 +28,9 @@ it('can query custom fields', function () {
         'fieldLayoutId' => $fieldLayout->id,
     ]);
 
-    CustomFieldBehavior::$fieldHandles[$field->handle] = true;
+    app(Fields::class)->invalidateCaches();
 
-    Fields::refreshFields();
+    app(Fields::class)->refreshFields();
 
     /** @var \CraftCms\Cms\Entry\Elements\Entry $entry */
     $entry = entryQuery()->first();

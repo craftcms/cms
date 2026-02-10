@@ -17,8 +17,8 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidArgumentException;
 
 final class ElementRelationParamFilter
 {

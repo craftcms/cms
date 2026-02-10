@@ -13,8 +13,8 @@ use craft\test\TestCase;
 use craft\web\twig\TemplateLoaderException;
 use CraftCms\Cms\User\Elements\User;
 use crafttests\fixtures\SitesFixture;
+use InvalidArgumentException;
 use UnitTester;
-use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the CP Helper class.

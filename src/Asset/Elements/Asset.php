@@ -42,7 +42,6 @@ use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\models\FieldLayout;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
@@ -68,6 +67,7 @@ use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Users;
@@ -84,11 +84,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Override;
 use Stringable;
 use Twig\Markup;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -1288,7 +1288,8 @@ class Asset extends Element
 
         try {
             return parent::__get($name);
-        } catch (UnknownPropertyException $e) {
+            /** @phpstan-ignore catch.neverThrown */
+        } catch (UnknownPropertyException|\CraftCms\Cms\Component\Exceptions\UnknownPropertyException $e) {
             // Is $name a transform handle?
             if (($transform = Craft::$app->getImageTransforms()->getTransformByHandle($name)) !== null) {
                 return $this->copyWithTransform($transform);

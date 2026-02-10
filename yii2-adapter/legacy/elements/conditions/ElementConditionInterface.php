@@ -9,7 +9,6 @@ namespace craft\elements\conditions;
 
 use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
@@ -27,7 +26,7 @@ interface ElementConditionInterface extends ConditionInterface
     /**
      * Returns the possible field layouts that the condition could be working with.
      *
-     * @return FieldLayout[]
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout[]
      * @since 5.0.0
      */
     public function getFieldLayouts(): array;
@@ -35,7 +34,8 @@ interface ElementConditionInterface extends ConditionInterface
     /**
      * Sets the possible field layouts that the condition could be working with.
      *
-     * @param array<FieldLayout|array> $fieldLayouts
+     * @param array<\CraftCms\Cms\FieldLayout\FieldLayout|array> $fieldLayouts
+     *
      * @since 5.1.0
      */
     public function setFieldLayouts(array $fieldLayouts): void;

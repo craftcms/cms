@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use Carbon\Carbon;
 use craft\base\ElementInterface;
-use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +31,8 @@ beforeEach(function () {
     $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
     $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
 
-    CustomFieldBehavior::$fieldHandles[$field->handle] = true;
+    EntryTypes::refreshEntryTypes();
+    Fields::invalidateCaches();
     Fields::refreshFields();
 
     $this->entry = entryQuery()->id($entryModel->id)->one();

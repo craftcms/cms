@@ -9,13 +9,10 @@ use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementRelationParamParser;
-use craft\fieldlayoutelements\BaseField;
-use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -35,6 +32,8 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -299,13 +298,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     public ?string $viewMode = null;
 
     /**
-     * @var bool Whether cards should be shown in a multi-column grid
-     *
-     * @deprecated in 5.9.0.
-     */
-    public bool $showCardsInGrid = false;
-
-    /**
      * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true).
      */
     public ?int $minRelations = null;
@@ -442,11 +434,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
         $config['viewMode'] ??= self::VIEW_MODE_LIST;
 
-        if (! empty($config['showCardsInGrid']) && $config['viewMode'] === self::VIEW_MODE_CARDS) {
-            $config['viewMode'] = self::VIEW_MODE_CARDS_GRID;
-        }
-        $config['showCardsInGrid'] = $config['viewMode'] === self::VIEW_MODE_CARDS_GRID;
-
         if ($config['viewMode'] === 'large') {
             $config['viewMode'] = self::VIEW_MODE_THUMBS;
         }
@@ -578,7 +565,7 @@ JS, [
         return $view->renderTemplate($this->settingsTemplate, $variables);
     }
 
-    #[\Override]
+    #[Override]
     public function getElementRules(ElementInterface $element): array
     {
         if (! $element->inScenarios(Element::SCENARIO_LIVE)) {
@@ -862,12 +849,10 @@ JS, [
         }
 
         // Make sure none of the other instances have values
-        /** @var CustomFieldBehavior $behavior */
-        $behavior = $element->getBehavior('customFields');
         foreach ($fieldInstances as $fieldInstance) {
             /** @var self $field */
             $field = $fieldInstance->getField();
-            if (isset($behavior->{$field->handle})) {
+            if ($element->hasCustomFieldValue($field->handle)) {
                 return false;
             }
         }
@@ -1048,7 +1033,7 @@ JS, [
             $value = $this->_all($value, $element)->all();
         } else {
             // todo: come up with a way to get the normalized field value ignoring the eager-loaded value
-            $rawValue = $element->getBehavior('customFields')->{$this->handle} ?? null;
+            $rawValue = $element->getCustomFieldRawValue($this->handle);
             if (is_array($rawValue)) {
                 $ids = array_flip($rawValue);
                 $value = $value->filter(fn (ElementInterface $element) => isset($ids[$element->id]));
@@ -1103,7 +1088,7 @@ JS, [
         $missingSourceElementIds = [];
 
         foreach ($sourceElements as $sourceElement) {
-            $rawValue = $sourceElement->getBehavior('customFields')->{$this->handle} ?? null;
+            $rawValue = $sourceElement->getCustomFieldRawValue($this->handle);
             if ($rawValue instanceof ElementQuery) {
                 $rawValue = $rawValue->where['elements.id'] ?? null;
             }

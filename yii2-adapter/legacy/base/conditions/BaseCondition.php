@@ -13,8 +13,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 

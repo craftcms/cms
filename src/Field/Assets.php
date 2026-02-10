@@ -299,7 +299,7 @@ final class Assets extends BaseRelationField
         }
     }
 
-    #[\Override]
+    #[Override]
     public function getElementRules(ElementInterface $element): array
     {
         $rules = parent::getElementRules($element);

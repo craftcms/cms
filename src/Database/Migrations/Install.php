@@ -439,7 +439,6 @@ class Install extends Migration
             $table->text('name');
             $table->string('handle', 64);
             $table->string('context')->default('global');
-            $table->char('columnSuffix', 8)->nullable();
             $table->text('instructions')->nullable();
             $table->boolean('searchable')->default(true);
             $table->string('translationMethod')->default(Field::TRANSLATION_METHOD_NONE);
@@ -482,7 +481,6 @@ class Install extends Migration
             $table->string('schemaVersion', 15);
             $table->boolean('maintenance')->default(false);
             $table->char('configVersion', 12)->default('000000000000');
-            $table->char('fieldVersion', 12)->default('000000000000');
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
             $table->char('uid', 36)->default('0');
@@ -1067,7 +1065,6 @@ class Install extends Migration
                 'schemaVersion' => Cms::SCHEMA_VERSION,
                 'maintenance' => false,
                 'configVersion' => Str::random(12),
-                'fieldVersion' => Str::random(12),
             ]);
         });
 

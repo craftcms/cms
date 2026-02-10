@@ -13,7 +13,6 @@ use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\UrlHelper;
-use craft\models\FieldLayout;
 use craft\web\twig\TemplateLoaderException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
@@ -23,6 +22,7 @@ use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -40,12 +40,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use InvalidArgumentException;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use yii\base\Component;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
@@ -759,8 +759,9 @@ class Cp extends Component
     /**
      * Renders a field layout designer’s HTML.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      * @param array $config
+     *
      * @return string
      * @since 4.0.0
      * @deprecated in 5.5.0. The `fieldLayoutDesigner()` global CP function should be used instead.

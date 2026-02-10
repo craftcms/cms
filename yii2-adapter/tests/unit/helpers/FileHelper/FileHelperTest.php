@@ -10,10 +10,10 @@ namespace crafttests\unit\helpers\FileHelper;
 use craft\helpers\FileHelper;
 use craft\test\TestCase;
 use CraftCms\Cms\Support\Str;
+use InvalidArgumentException;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**
@@ -276,7 +276,7 @@ class FileHelperTest extends TestCase
     public function testFindClosestFile(string|null|false $expected, string $dir, array $options = [])
     {
         if ($expected === false) {
-            $this->expectException(InvalidArgumentException::class);
+            $this->expectException(\yii\base\InvalidArgumentException::class);
             FileHelper::findClosestFile($dir, $options);
         } else {
             self::assertSame($expected, FileHelper::findClosestFile($dir, $options));

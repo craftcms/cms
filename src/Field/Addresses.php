@@ -690,7 +690,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         return $this->addressManager()->getIndexHtml($owner, $config);
     }
 
-    #[\Override]
+    #[Override]
     public function getElementRules(ElementInterface $element): array
     {
         if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {

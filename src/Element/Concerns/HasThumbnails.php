@@ -36,6 +36,7 @@ trait HasThumbnails
 
         if ($fieldLayout?->thumbFieldKey) {
             $thumbHtml = $fieldLayout->getThumbHtmlForElement($fieldLayout->thumbFieldKey, $this, $size);
+
             if ($thumbHtml) {
                 return $thumbHtml;
             }

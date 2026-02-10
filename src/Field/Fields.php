@@ -6,17 +6,12 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use craft\base\MemoizableArray;
-use craft\behaviors\CustomFieldBehavior;
 use craft\errors\MissingComponentException;
-use craft\fieldlayoutelements\BaseField;
-use craft\fieldlayoutelements\CustomField;
 use craft\helpers\AdminTable;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db as DbHelper;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
@@ -29,6 +24,7 @@ use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
 use CraftCms\Cms\Field\Events\ApplyingFieldSave;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
+use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\FieldDeleted;
 use CraftCms\Cms\Field\Events\FieldDeleting;
 use CraftCms\Cms\Field\Events\FieldLayoutDeleted;
@@ -42,11 +38,14 @@ use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Field\Table as TableField;
 use CraftCms\Cms\Field\Users as UsersField;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig as ProjectConfigFacade;
 use CraftCms\Cms\Support\Json as JsonHelper;
@@ -81,13 +80,119 @@ final class Fields
     private ?MemoizableArray $_fields = null;
 
     /**
-     * @var MemoizableArray<FieldLayout>|null
+     * @var MemoizableArray<\CraftCms\Cms\FieldLayout\FieldLayout>|null
      *
      * @see _layouts()
      */
     private ?MemoizableArray $_layouts = null;
 
     private array $_savingFields = [];
+
+    /**
+     * @var array<string,bool>|null Memoized map of all known custom field handles.
+     */
+    private ?array $_allFieldHandles = null;
+
+    /**
+     * @var array<string,bool>|null Memoized map of all generated field handles.
+     */
+    private ?array $_allGeneratedFieldHandles = null;
+
+    // Handle Registry
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns a map of all known custom field handles (including layout-overridden handles).
+     *
+     * @return array<string,bool>
+     */
+    public function allFieldHandles(): array
+    {
+        if ($this->_allFieldHandles !== null) {
+            return $this->_allFieldHandles;
+        }
+
+        $handles = [];
+
+        foreach ($this->getAllFields(false) as $field) {
+            $handles[$field->handle] = true;
+        }
+
+        foreach ($this->getAllLayouts() as $layout) {
+            foreach ($layout->getCustomFields() as $field) {
+                $handles[$field->handle] = true;
+            }
+        }
+
+        return $this->_allFieldHandles = $handles;
+    }
+
+    /**
+     * Returns a map of all generated field handles from all layouts.
+     *
+     * @return array<string,bool>
+     */
+    public function allGeneratedFieldHandles(): array
+    {
+        if ($this->_allGeneratedFieldHandles !== null) {
+            return $this->_allGeneratedFieldHandles;
+        }
+
+        $handles = [];
+
+        foreach ($this->getAllLayouts() as $layout) {
+            foreach ($layout->getGeneratedFields() as $generatedField) {
+                if (! empty($generatedField['handle'])) {
+                    $handles[$generatedField['handle']] = true;
+                }
+            }
+        }
+
+        return $this->_allGeneratedFieldHandles = $handles;
+    }
+
+    /**
+     * Returns whether the given handle belongs to a custom field.
+     */
+    public function isFieldHandle(string $handle): bool
+    {
+        return isset($this->allFieldHandles()[$handle]);
+    }
+
+    /**
+     * Returns whether the given handle belongs to a generated field.
+     */
+    public function isGeneratedFieldHandle(string $handle): bool
+    {
+        return isset($this->allGeneratedFieldHandles()[$handle]);
+    }
+
+    /**
+     * Returns whether the given handle belongs to any known field (custom or generated).
+     */
+    public function isKnownFieldHandle(string $handle): bool
+    {
+        if ($this->isFieldHandle($handle)) {
+            return true;
+        }
+
+        return $this->isGeneratedFieldHandle($handle);
+    }
+
+    /**
+     * Invalidates all memoized field and layout caches including handle maps.
+     *
+     * Call this whenever fields or layouts change, without writing a new field version to the database.
+     */
+    public function invalidateCaches(): void
+    {
+        $this->_fields = null;
+        $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
+
+        event(new FieldCachesInvalidated);
+    }
 
     // Fields
     // -------------------------------------------------------------------------
@@ -294,6 +399,10 @@ final class Fields
     {
         $context ??= $this->fieldContext;
 
+        if (! Cms::isInstalled()) {
+            return new MemoizableArray([], fn () => []);
+        }
+
         $this->_fields ??= new MemoizableArray(
             $this->_createFieldQuery()->get()->all(),
             fn (object $config) => $this->createField((array) $config),
@@ -449,7 +558,6 @@ final class Fields
         return [
             'name' => $field->name,
             'handle' => $field->handle,
-            'columnSuffix' => property_exists($field, 'columnSuffix') ? $field->columnSuffix : null,
             'instructions' => $field->instructions,
             'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
@@ -653,10 +761,7 @@ final class Fields
         }
 
         // Clear caches
-        $this->_fields = null;
-
-        // Update the field version
-        $this->updateFieldVersion();
+        $this->invalidateCaches();
 
         event(new FieldDeleted($field));
 
@@ -672,10 +777,7 @@ final class Fields
      */
     public function refreshFields(): void
     {
-        $this->_fields = null;
-        $this->_layouts = null;
-
-        $this->updateFieldVersion();
+        $this->invalidateCaches();
     }
 
     /**
@@ -723,7 +825,7 @@ final class Fields
     /**
      * Returns a memoizable array of all field layouts.
      *
-     * @return MemoizableArray<FieldLayout>
+     * @return MemoizableArray<\CraftCms\Cms\FieldLayout\FieldLayout>
      */
     private function _layouts(): MemoizableArray
     {
@@ -738,8 +840,8 @@ final class Fields
         }
 
         /**
-         * @var MemoizableArray<FieldLayout> $layouts
-         * @var FieldLayout[] $layoutConfigs
+         * @var MemoizableArray<\CraftCms\Cms\FieldLayout\FieldLayout> $layouts
+         * @var \CraftCms\Cms\FieldLayout\FieldLayout[] $layoutConfigs
          */
         $layouts = new MemoizableArray(
             elements: $layoutConfigs,
@@ -775,7 +877,7 @@ final class Fields
      *
      * @param  int  $layoutId  The field layout’s ID
      * @param  bool  $withTrashed  Whether to return the field layout even if it’s soft-deleted
-     * @return FieldLayout|null The field layout, or null if it doesn’t exist
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutById(int $layoutId, bool $withTrashed = false): ?FieldLayout
     {
@@ -795,7 +897,7 @@ final class Fields
      * Returns a field layout by its UUID.
      *
      * @param  string  $uid  The field layout’s UUID
-     * @return FieldLayout|null The field layout, or null if it doesn’t exist
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutByUid(string $uid): ?FieldLayout
     {
@@ -818,7 +920,7 @@ final class Fields
      *
      * @param  class-string<ElementInterface>  $type  The associated element type
      * @param  bool  $create  Whether to create a field layout if one doesn’t exist
-     * @return FieldLayout|null The field layout
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null The field layout
      */
     public function getLayoutByType(string $type, bool $create = true): ?FieldLayout
     {
@@ -847,15 +949,15 @@ final class Fields
      */
     public function createLayout(array $config): FieldLayout
     {
-        $config['class'] = FieldLayout::class;
+        unset($config['class']);
 
-        return Craft::createObject($config);
+        return new FieldLayout($config);
     }
 
     /**
      * Creates a field layout element instance from its config.
      *
-     * @template T of FieldLayoutElement
+     * @template T of \CraftCms\Cms\FieldLayout\FieldLayoutElement
      *
      * @phpstan-param array{type:class-string<T>} $config
      *
@@ -871,17 +973,15 @@ final class Fields
             throw new InvalidArgumentException("Invalid field layout element class: $type");
         }
 
-        $config['class'] = $type;
-
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return Craft::createObject($config);
+        return new $type(config: $config);
     }
 
     /**
      * Assembles a field layout from post data.
      *
      * @param  string|null  $namespace  The namespace that the form data was posted in, if any
-     * @return FieldLayout The field layout
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout The field layout
      */
     public function assembleLayoutFromPost(?string $namespace = null): FieldLayout
     {
@@ -906,7 +1006,7 @@ final class Fields
     /**
      * Saves a field layout.
      *
-     * @param  FieldLayout  $layout  The field layout
+     * @param  \CraftCms\Cms\FieldLayout\FieldLayout  $layout  The field layout
      * @param  bool  $runValidation  Whether the layout should be validated
      * @return bool Whether the field layout was saved successfully
      *
@@ -960,17 +1060,7 @@ final class Fields
         event(new FieldLayoutSaved($layout, $isNewLayout));
 
         // Clear caches
-        $this->_layouts = null;
-
-        // Refresh CustomFieldBehavior in case any custom field handles were just added/removed
-        $this->updateFieldVersion();
-
-        // Tell the current CustomFieldBehavior class about the fields, since they might have custom handles
-        foreach ($layout->getCustomFieldElements() as $layoutElement) {
-            if (isset($layoutElement->handle)) {
-                CustomFieldBehavior::$fieldHandles[$layoutElement->handle] = true;
-            }
-        }
+        $this->invalidateCaches();
 
         return true;
     }
@@ -999,7 +1089,7 @@ final class Fields
     /**
      * Deletes a field layout.
      *
-     * @param  FieldLayout  $layout  The field layout
+     * @param  \CraftCms\Cms\FieldLayout\FieldLayout  $layout  The field layout
      * @return bool Whether the field layout was deleted successfully
      */
     public function deleteLayout(FieldLayout $layout): bool
@@ -1012,6 +1102,8 @@ final class Fields
 
         // Clear caches
         $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
 
         return true;
     }
@@ -1030,6 +1122,8 @@ final class Fields
 
         // Clear caches
         $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
 
         return (bool) $affectedRows;
     }
@@ -1046,38 +1140,10 @@ final class Fields
 
         // Clear caches
         $this->_layouts = null;
+        $this->_allFieldHandles = null;
+        $this->_allGeneratedFieldHandles = null;
 
         return (bool) $affectedRows;
-    }
-
-    /**
-     * Returns the current field version.
-     */
-    public function getFieldVersion(): ?string
-    {
-        $fieldVersion = Info::fetch()->fieldVersion;
-
-        // If it doesn't start with `3@`, then it needs to be updated
-        if ($fieldVersion === null || ! str_starts_with($fieldVersion, '3@')) {
-            return null;
-        }
-
-        return $fieldVersion;
-    }
-
-    /**
-     * Sets a new field version, so the CustomFieldBehavior class
-     * will get regenerated on the next request.
-     */
-    public function updateFieldVersion(): void
-    {
-        // Make sure that CustomFieldBehavior has already been loaded,
-        // so the field version change won't be detected until the next request
-        class_exists(CustomFieldBehavior::class);
-
-        Info::fetch()->update([
-            'fieldVersion' => '3@'.Str::random(10),
-        ]);
     }
 
     /**
@@ -1115,7 +1181,6 @@ final class Fields
             $fieldRecord->name = $data['name'];
             $fieldRecord->handle = $data['handle'];
             $fieldRecord->context = $context;
-            $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
             $fieldRecord->searchable = (bool) $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
@@ -1138,9 +1203,6 @@ final class Fields
 
         // Clear caches
         $this->refreshFields();
-
-        // Tell the current CustomFieldBehavior class about the field
-        CustomFieldBehavior::$fieldHandles[$fieldRecord->handle] = true;
 
         // Now get the field, if it's not a field save request
         $field ??= $this->getFieldById($fieldRecord->id);
@@ -1288,7 +1350,6 @@ final class Fields
                 'fields.name',
                 'fields.handle',
                 'fields.context',
-                'fields.columnSuffix',
                 'fields.instructions',
                 'fields.searchable',
                 'fields.translationMethod',

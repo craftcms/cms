@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories\Concerns;
 
-use craft\behaviors\CustomFieldBehavior;
-use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Database\Factories\ElementFactoryResult;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -88,7 +87,6 @@ trait HasFieldFactory
                 'settings' => $config->settings,
             ]);
             $fields->put($config->handle, $field);
-            CustomFieldBehavior::$fieldHandles[$config->handle] = true;
         }
 
         // Create field layout with all fields

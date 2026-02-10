@@ -26,9 +26,9 @@ use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Contracts;
 
 use craft\base\ElementInterface;
-use craft\models\FieldLayout;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Collection;
 
@@ -1600,7 +1599,7 @@ interface ElementQueryInterface extends Builder
     /**
      * Returns the field layouts that could be associated with the resulting elements.
      *
-     * @return FieldLayout[]
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout[]
      */
     public function getFieldLayouts(): array;
 

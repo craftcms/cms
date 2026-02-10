@@ -366,7 +366,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $this->_isoCurrencies->subunitFor($currency);
     }
 
-    #[\Override]
+    #[Override]
     public function prepareForElementValidation(mixed $value): mixed
     {
         if (! $value instanceof MoneyLibrary) {

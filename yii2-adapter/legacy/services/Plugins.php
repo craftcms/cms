@@ -27,9 +27,9 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins as PluginsService;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use Illuminate\Support\Facades\Event;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Component;
-use yii\base\InvalidArgumentException;
 
 /**
  * The Plugins service provides APIs for managing plugins.

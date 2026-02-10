@@ -13,7 +13,6 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use Illuminate\Support\Traits\Macroable;
 use Override;
@@ -22,7 +21,7 @@ use RuntimeException;
 /**
  * Provides a base implementation for dashboard widgets.
  */
-abstract class Widget implements WidgetInterface
+abstract class Widget extends \CraftCms\Cms\Component\Component implements WidgetInterface
 {
     use ConfigurableComponent;
     use Macroable;
@@ -30,19 +29,6 @@ abstract class Widget implements WidgetInterface
     use Validates;
 
     public ?int $colspan = null;
-
-    public function __construct(array $config = [])
-    {
-        Typecast::properties(static::class, $config);
-
-        foreach ($config as $name => $value) {
-            if (! property_exists($this, $name)) {
-                continue;
-            }
-
-            $this->$name = $value;
-        }
-    }
 
     /**
      * {@inheritdoc}

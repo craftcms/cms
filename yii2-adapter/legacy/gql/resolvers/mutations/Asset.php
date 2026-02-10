@@ -27,9 +27,9 @@ use GuzzleHttp\TransferStats;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 
 /**

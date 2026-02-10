@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Override;
+use Symfony\Component\Filesystem\Path;
 
 use function CraftCms\Cms\t;
 
@@ -201,6 +202,20 @@ final class ClearCaches extends Utility
                 'label' => t('Asset indexing data'),
                 'action' => function () {
                     DB::table(Table::ASSETINDEXDATA)->truncate();
+                },
+            ],
+            [
+                'key' => 'ide-helper',
+                'label' => t('IDE helper'),
+                'info' => t('Contents of {path}', [
+                    'path' => sprintf('`%s/`', Cms::config()->ideHelperPath),
+                ]),
+                'action' => function () {
+                    $configPath = Cms::config()->ideHelperPath;
+                    $path = Path::isAbsolute($configPath) ? $configPath : base_path($configPath);
+                    if (File::isDirectory($path)) {
+                        File::cleanDirectory($path);
+                    }
                 },
             ],
         ];

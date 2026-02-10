@@ -19,7 +19,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\db\Schema;
 
 /**

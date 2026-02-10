@@ -7,13 +7,14 @@
 
 namespace craft\models;
 
-use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Tag;
 use craft\records\TagGroup as TagGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use DateTime;
 use function CraftCms\Cms\t;
 

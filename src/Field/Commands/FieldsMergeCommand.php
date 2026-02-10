@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Commands;
 
 use craft\errors\InvalidFieldException;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Commands\Concerns\MergesFields;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
@@ -74,10 +74,10 @@ final class FieldsMergeCommand extends Command
             })
             ->keyBy(fn (FieldInterface $field) => $field->handle);
 
-        /** @var Collection<string,FieldLayout[]> $layoutsByField */
+        /** @var Collection<string,\CraftCms\Cms\FieldLayout\FieldLayout[]> $layoutsByField */
         $layoutsByField = $fields->map(fn (FieldInterface $field) => $fieldsService->findFieldUsages($field));
 
-        /** @var Collection<FieldLayout> $layouts */
+        /** @var Collection<\CraftCms\Cms\FieldLayout\FieldLayout> $layouts */
         $layouts = $layoutsByField->values()->flatten(1)->unique();
 
         // Make sure all the layouts either have an ID or UUID; otherwise we wouldn't know what to do with it

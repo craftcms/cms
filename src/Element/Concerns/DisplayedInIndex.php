@@ -7,10 +7,8 @@ namespace CraftCms\Cms\Element\Concerns;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\db\Connection;
 use craft\db\ExcludeDescendantIdsExpression;
 use craft\helpers\ElementHelper;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
@@ -23,6 +21,7 @@ use CraftCms\Cms\Element\Events\RegisterSortOptions;
 use CraftCms\Cms\Element\Events\RegisterTableAttributes;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -146,15 +145,15 @@ trait DisplayedInIndex
             'elementQuery' => self::elementQueryWithAllDescendants($elementQuery),
         ];
 
-        $db = Craft::$app->getDb();
-
         if (! empty($viewState['order'])) {
             // Special case for sorting by structure
             if ($viewState['order'] === 'structure') {
                 $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
                 if (isset($source['structureId'])) {
-                    $elementQuery->orderBy('lft');
+                    $elementQuery
+                        ->structureId($source['structureId'])
+                        ->orderBy('lft');
                     $variables['structure'] = Structures::getStructureById($source['structureId']);
 
                     // Are they allowed to make changes to this structure?
@@ -167,13 +166,21 @@ trait DisplayedInIndex
                 } else {
                     unset($viewState['order']);
                 }
-            } elseif ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc', $db)) {
-                $elementQuery->orderBy($orderBy);
+            } elseif ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
+                if ($orderBy instanceof ExpressionInterface) {
+                    $elementQuery->orderByRaw($orderBy->getValue(DB::getQueryGrammar()));
+                } else {
+                    $elementQuery->orderBy($orderBy);
+                }
 
                 if ((! is_array($orderBy) || ! isset($orderBy['score'])) && ! empty($viewState['orderHistory'])) {
                     foreach ($viewState['orderHistory'] as $order) {
-                        if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1], $db)) {
-                            $elementQuery->orderBy($orderBy[0]);
+                        if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1])) {
+                            if ($orderBy[0] instanceof ExpressionInterface) {
+                                $elementQuery->orderByRaw($orderBy[0]->getValue(DB::getQueryGrammar()));
+                            } else {
+                                $elementQuery->orderBy($orderBy[0]);
+                            }
                         } else {
                             break;
                         }
@@ -512,7 +519,7 @@ trait DisplayedInIndex
     /**
      * Returns the card attributes for the element type.
      *
-     * @param  FieldLayout|null  $fieldLayout  The field layout
+     * @param  \CraftCms\Cms\FieldLayout\FieldLayout|null  $fieldLayout  The field layout
      * @return array The card attributes
      *
      * @since 5.5.0
@@ -634,17 +641,15 @@ trait DisplayedInIndex
      * @param  string  $sourceKey  The source key
      * @param  string  $attribute  The attribute to sort by
      * @param  string  $dir  The sort direction ('asc' or 'desc')
-     * @param  Connection  $db  The database connection
      * @return ExpressionInterface|array|false The order by clause
      */
     private static function _indexOrderBy(
         string $sourceKey,
         string $attribute,
         string $dir,
-        Connection $db,
     ): ExpressionInterface|array|false {
         $sortDirection = strcasecmp($dir, 'desc') === 0 ? SORT_DESC : SORT_ASC;
-        $columns = self::_indexOrderByColumns($sourceKey, $attribute, $sortDirection, $db);
+        $columns = self::_indexOrderByColumns($sourceKey, $attribute, $sortDirection);
 
         if ($columns === false || $columns instanceof ExpressionInterface) {
             return $columns;
@@ -694,14 +699,12 @@ trait DisplayedInIndex
      * @param  string  $sourceKey  The source key
      * @param  string  $attribute  The attribute to sort by
      * @param  int  $dir  The sort direction (SORT_ASC or SORT_DESC)
-     * @param  Connection  $db  The database connection
      * @return ExpressionInterface|bool|array|string The columns
      */
     private static function _indexOrderByColumns(
         string $sourceKey,
         string $attribute,
         int $dir,
-        Connection $db,
     ): ExpressionInterface|bool|array|string {
         if (! $attribute) {
             return false;
@@ -712,7 +715,7 @@ trait DisplayedInIndex
         }
 
         // Check element's own sort options
-        if ($orderBy = self::resolveSortOption($attribute, $dir, $db)) {
+        if ($orderBy = self::resolveSortOption($attribute, $dir)) {
             return $orderBy;
         }
 
@@ -725,10 +728,9 @@ trait DisplayedInIndex
      *
      * @param  string  $attribute  The attribute to sort by
      * @param  int  $dir  The sort direction
-     * @param  Connection  $db  The database connection
      * @return ExpressionInterface|array|string|false The orderBy value
      */
-    private static function resolveSortOption(string $attribute, int $dir, Connection $db): ExpressionInterface|array|string|false
+    private static function resolveSortOption(string $attribute, int $dir): ExpressionInterface|array|string|false
     {
         foreach (static::sortOptions() as $key => $sortOption) {
             if (! is_array($sortOption) && $key === $attribute) {
@@ -739,7 +741,7 @@ trait DisplayedInIndex
                 $optionAttribute = $sortOption['attribute'] ?? $sortOption['orderBy'];
                 if ($optionAttribute === $attribute) {
                     return is_callable($sortOption['orderBy'])
-                        ? $sortOption['orderBy']($dir, $db)
+                        ? $sortOption['orderBy']($dir)
                         : $sortOption['orderBy'];
                 }
             }

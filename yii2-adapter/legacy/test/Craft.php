@@ -16,7 +16,6 @@ use craft\base\ElementInterface;
 use craft\config\DbConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\errors\ElementNotFoundException;
-use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\web\Application as WebApplication;
@@ -25,6 +24,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use InvalidArgumentException;
 use PDO;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -50,7 +51,6 @@ use yii\base\Application;
 use yii\base\ErrorException as YiiBaseErrorException;
 use yii\base\Event;
 use yii\base\Exception as YiiBaseException;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
 use function CraftCms\Cms\maxPowerCaptain;
@@ -638,7 +638,8 @@ class Craft extends Yii2
 
     /**
      * @param string $fieldHandle
-     * @return FieldLayout|null
+     *
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null
      */
     public function getFieldLayoutByFieldHandle(string $fieldHandle): ?FieldLayout
     {
