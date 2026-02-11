@@ -35,7 +35,6 @@ use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Revisions;
-use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\FieldLayoutForm;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -2421,16 +2420,12 @@ JS, [
 
             $elementInfo = [];
 
-            foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml, $isStatic]) {
-                /** @var FieldLayoutComponent $layoutElement */
-                /** @var bool $isConditional */
-                /** @var string|bool $elementHtml */
-                /** @var bool $isStatic */
-                if ($isConditional) {
+            foreach ($tab->elements as $formElement) {
+                if ($formElement->isConditional) {
                     $elementInfo[] = [
-                        'uid' => $layoutElement->uid,
-                        'html' => $elementHtml,
-                        'static' => $isStatic,
+                        'uid' => $formElement->layoutElement->uid,
+                        'html' => $formElement->html,
+                        'static' => $formElement->isStatic,
                     ];
                 }
             }
