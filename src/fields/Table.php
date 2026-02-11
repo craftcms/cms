@@ -399,7 +399,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
                 // make sure the row has a UUID
                 $row['rowId'] ??= StringHelper::uuid();
                 return $row;
-            }, $this->defaults),
+            }, $this->defaults ?? []),
             'initJs' => false,
             'static' => $readOnly,
             'includeRowId' => true,
