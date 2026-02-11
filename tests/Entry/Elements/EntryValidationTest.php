@@ -11,8 +11,6 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Gate;
 
-use function Pest\Laravel\actingAs;
-
 beforeEach(function () {
     Edition::set(Edition::Pro);
 });
@@ -222,17 +220,17 @@ describe('Author permission validation', function () {
         $entryType = EntryType::factory()->create();
         $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
 
+        $initialAuthor = User::factory()->create(['admin' => true]);
         $user = User::factory()->create(['admin' => false]);
-
-        actingAs(\CraftCms\Cms\User\Elements\User::findOne());
 
         $entry = EntryModel::factory()->createElement([
             'sectionId' => $section->id,
             'typeId' => $entryType->id,
         ]);
-        $entry->setAttributesFromRequest([
-            'authorIds' => [$user->id],
-        ]);
+        $entry->setAuthorIds([$initialAuthor->id]);
+        Craft::$app->getElements()->saveElement($entry);
+
+        $entry->setAuthorIds([$user->id]);
 
         $entry->validate(['authorIds']);
 
@@ -248,6 +246,7 @@ describe('Author permission validation', function () {
         $entryType = EntryType::factory()->create();
         $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
 
+        $initialAuthor = User::factory()->create(['admin' => true]);
         $user = User::factory()->create(['admin' => false]);
 
         Gate::before(function ($authUser, string $ability) use ($user, $section) {
@@ -262,6 +261,9 @@ describe('Author permission validation', function () {
             'sectionId' => $section->id,
             'typeId' => $entryType->id,
         ]);
+        $entry->setAuthorIds([$initialAuthor->id]);
+        Craft::$app->getElements()->saveElement($entry);
+
         $entry->setAuthorIds([$user->id]);
 
         $entry->validate(['authorIds']);
@@ -277,12 +279,16 @@ describe('Author permission validation', function () {
         $entryType = EntryType::factory()->create();
         $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
 
+        $initialAuthor = User::factory()->create(['admin' => true]);
         $adminUser = User::factory()->create(['admin' => true]);
 
         $entry = EntryModel::factory()->createElement([
             'sectionId' => $section->id,
             'typeId' => $entryType->id,
         ]);
+        $entry->setAuthorIds([$initialAuthor->id]);
+        Craft::$app->getElements()->saveElement($entry);
+
         $entry->setAuthorIds([$adminUser->id]);
 
         $entry->validate(['authorIds']);

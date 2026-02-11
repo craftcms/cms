@@ -5,12 +5,16 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\IdeHelper\CustomFieldIdeHelperGenerator;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\File;
 
@@ -118,11 +122,64 @@ describe('CustomFieldIdeHelperGenerator', function () {
         $helperFile = $this->ideHelperPath.'/custom-fields.php';
         $content = File::get($helperFile);
 
-        $entryTypeHandle = \CraftCms\Cms\Support\Str::studly($entryModel->entryType->handle);
+        $entryTypeHandle = Str::studly($entryModel->entryType->handle);
 
         expect($content)
             ->toContain("class {$entryTypeHandle} extends Entry")
             ->toContain('$articleBody');
+    });
+
+    it('generates use imports inside namespace blocks for matrix fields', function () {
+        $imageLayout = FieldLayout::create([
+            'type' => EntryElement::class,
+            'config' => [
+                'tabs' => [
+                    [
+                        'uid' => Str::uuid()->toString(),
+                        'name' => 'Content',
+                        'elements' => [],
+                    ],
+                ],
+            ],
+        ]);
+
+        $imageEntryType = EntryTypeModel::factory()->create([
+            'fieldLayoutId' => $imageLayout->id,
+            'name' => 'Image',
+            'handle' => 'image',
+        ]);
+
+        $headingEntryType = EntryTypeModel::factory()->create([
+            'name' => 'Heading',
+            'handle' => 'heading',
+        ]);
+
+        $matrixField = Field::factory()->create([
+            'handle' => 'contentBlocks',
+            'type' => Matrix::class,
+            'settings' => ['entryTypes' => [$imageEntryType->id, $headingEntryType->id]],
+        ]);
+
+        $fieldLayout = FieldLayout::factory()->forField($matrixField)->create();
+        $entryModel = Entry::factory()->create();
+        $entryModel->element->update(['fieldLayoutId' => $fieldLayout->id]);
+        $entryModel->entryType->update(['fieldLayoutId' => $fieldLayout->id]);
+
+        app(Fields::class)->invalidateCaches();
+        app(Fields::class)->refreshFields();
+
+        $generator = app(CustomFieldIdeHelperGenerator::class);
+        $generator->generate();
+
+        $helperFile = $this->ideHelperPath.'/custom-fields.php';
+        $content = File::get($helperFile);
+
+        // use imports should be inside namespace blocks, not at the top level
+        expect($content)
+            ->toContain("namespace CraftCms\\Cms\\Entry\\Elements {\n    use CraftCms\\Cms\\Element\\ElementCollection;")
+            ->toContain('use CraftCms\\Cms\\Element\\Queries\\EntryQuery;')
+            ->toContain('EntryQuery<Heading|Image>|ElementCollection<Heading|Image>')
+            ->toContain('$contentBlocks');
     });
 
     it('generates volume-specific asset classes', function () {

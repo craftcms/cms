@@ -18,8 +18,10 @@ import axios, {
 type MaybeRef<T> = T | Ref<T> | ComputedRef<T>;
 
 // Options interface
-interface UseAxiosOptions<T = any>
-  extends Omit<AxiosRequestConfig, 'url' | 'params'> {
+interface UseAxiosOptions<T = any> extends Omit<
+  AxiosRequestConfig,
+  'url' | 'params'
+> {
   immediate?: boolean;
   refetch?: boolean;
   params?: MaybeRef<Record<string, any>>;

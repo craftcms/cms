@@ -367,8 +367,10 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         Event::listen(FieldCachesInvalidated::class, fn() => Craft::populateCustomFieldBehavior());
 
-        $this->ensureNewMigrationTable();
-        $this->ensureNewSessionsTable();
+        $this->app->booted(function() {
+            $this->ensureNewMigrationTable();
+            $this->ensureNewSessionsTable();
+        });
 
         if (!$this->app->runningInConsole()) {
             return;
