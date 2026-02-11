@@ -6,15 +6,21 @@ namespace CraftCms\Cms\Http\Controllers\Updates;
 
 use Composer\Semver\Comparator;
 use Craft;
+use craft\helpers\UrlHelper;
+use craft\web\Application;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Updates\Updates;
+use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 use Override;
 use RequirementsChecker;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,6 +58,24 @@ final class UpdaterController extends BaseUpdaterController
         if ($request->has('install') && $this->request->fullUrlIs(action([self::class, 'index']))) {
             abort_unless($request->user()->can('performUpdates'), 403, 'You do not have permission to perform updates.');
         }
+    }
+
+    /**
+     * Renders the Updater page via Inertia.
+     */
+    #[Override]
+    public function index(#[Give('Craft')] Application $craft): Response
+    {
+        $this->data = $this->initialData();
+        $state = $this->realInitialState();
+        $state['data'] = Crypt::encrypt(Json::encode($this->data));
+
+        return Inertia::render('Updater', [
+            'title' => $this->pageTitle(),
+            'initialState' => $state,
+            'actionPrefix' => 'updater',
+            'returnUrl' => UrlHelper::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect()),
+        ])->toResponse($this->request);
     }
 
     public function forceUpdate(): Response
@@ -296,7 +320,7 @@ final class UpdaterController extends BaseUpdaterController
     #[Override]
     protected function returnUrl(): string
     {
-        return $this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect();
+        return UrlHelper::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
     }
 
     /**

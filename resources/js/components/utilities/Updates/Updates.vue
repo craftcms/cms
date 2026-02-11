@@ -4,16 +4,8 @@
   import {useApiClient} from '@/composables/useFetch';
   import Empty from '@/components/Empty.vue';
   import Update from '@/components/utilities/Updates/Update.vue';
-  import rawDummyData from './dummyData.js';
-  import {Form} from '@inertiajs/vue3';
+  import {router} from '@inertiajs/vue3';
   import UpdaterController from '@actions/Updates/UpdaterController';
-
-  // Set to true to use dummy data for testing all variations
-  const USE_DUMMY_DATA = false;
-
-  // ============================================================================
-  // Type Definitions
-  // ============================================================================
 
   interface Release {
     version: string;
@@ -54,36 +46,19 @@
     };
   }
 
-  // ============================================================================
   // State & API
-  // ============================================================================
 
-  const {
-    data: apiData,
-    isLoading,
-    isError,
-    isSuccess,
-  } = useApiClient<UpdatesResponse>('updates', {
-    params: {
-      forceRefresh: true,
-      includeDetails: true,
-    },
-  });
-
-  // ============================================================================
-  // Dummy Data for Testing
-  // ============================================================================
-
-  const dummyData = ref<UpdatesResponse>(rawDummyData);
-
-  // Use dummy data or API data based on flag
-  const data = computed(() =>
-    USE_DUMMY_DATA ? dummyData.value : apiData.value
+  const {data, isLoading, isError, isSuccess} = useApiClient<UpdatesResponse>(
+    'updates',
+    {
+      params: {
+        forceRefresh: true,
+        includeDetails: true,
+      },
+    }
   );
 
-  // ============================================================================
   // Computed Properties
-  // ============================================================================
 
   const allowUpdates = computed(() => data.value?.allowUpdates ?? false);
 
@@ -142,9 +117,7 @@
     );
   });
 
-  // ============================================================================
   // Helper Functions
-  // ============================================================================
 
   function isInstallable(update: UpdateInfo): boolean {
     if (update.status === 'phpIssue' || update.status === 'expired') {
@@ -170,6 +143,41 @@
       return false;
     }
     return true;
+  }
+
+  // Update All Functionality
+
+  const isUpdatingAll = ref(false);
+
+  function startUpdateAll() {
+    if (installableUpdates.value.length === 0) {
+      return;
+    }
+
+    isUpdatingAll.value = true;
+
+    // Build the install and packageNames objects
+    const install: Record<string, string> = {};
+    const packageNames: Record<string, string> = {};
+
+    installableUpdates.value.forEach((update) => {
+      install[update.handle] = `^${update.latestVersion}`;
+      packageNames[update.handle] = update.packageName;
+    });
+
+    router.post(
+      UpdaterController.index['/admin/actions/updater'](),
+      {
+        return: 'utilities/updates',
+        install,
+        packageNames,
+      },
+      {
+        onFinish: () => {
+          isUpdatingAll.value = false;
+        },
+      }
+    );
   }
 </script>
 
@@ -205,30 +213,14 @@
         class="updates-header"
       >
         <h1 class="text-2xl font-semibold">{{ headingText }}</h1>
-        <Form
-          method="post"
-          :action="UpdaterController.index['/admin/actions/updater']()"
+        <craft-button
+          type="button"
+          variant="primary"
+          :loading="isUpdatingAll"
+          @click="startUpdateAll"
         >
-          <input type="hidden" name="return" value="utilities/updates" />
-          <template
-            v-for="update in installableUpdates"
-            :key="`all-${update.handle}`"
-          >
-            <input
-              type="hidden"
-              :name="`install[${update.handle}]`"
-              :value="`^${update.latestVersion}`"
-            />
-            <input
-              type="hidden"
-              :name="`packageNames[${update.handle}]`"
-              :value="update.packageName"
-            />
-          </template>
-          <craft-button type="submit" variant="primary">
-            {{ t('Update all') }}
-          </craft-button>
-        </Form>
+          {{ t('Update all') }}
+        </craft-button>
       </div>
 
       <!-- Updates Grid -->

@@ -54,6 +54,7 @@ hr {
   width: 100%;
   border: 0;
   border-top: 1px solid var(--c-color-neutral-border-subtle);
+  margin-block: var(--c-spacing-xl);
 }
 
 .index-grid {

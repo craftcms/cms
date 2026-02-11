@@ -5,7 +5,7 @@
   const props = withDefaults(
     defineProps<{
       as?: Component | string;
-      variant?: 'plain' | 'error';
+      variant?: 'plain' | 'error' | 'code';
       hideHeader?: boolean;
       hideFooter?: boolean;
       title?: string;
@@ -58,7 +58,15 @@
 </script>
 
 <template>
-  <component :is="as" class="pane" v-bind="$attrs">
+  <component
+    :is="as"
+    :class="{
+      pane: true,
+      'pane--code': variant === 'code',
+      'pane--error': variant === 'error',
+    }"
+    v-bind="$attrs"
+  >
     <slot name="header" v-if="showHeader">
       <div class="pane__header">
         <slot name="title">
@@ -98,6 +106,15 @@
     border-radius: var(--c-pane-radius);
     border: var(--c-pane-border);
     display: grid;
+  }
+
+  .pane--code {
+    background: var(--c-color-neutral-bg-subtle);
+    border: 1px solid var(--c-color-neutral-border-subtle);
+    border-radius: var(--c-radius-md);
+    margin-block-end: var(--c-spacing-md);
+    max-height: 500px;
+    overflow: auto;
   }
 
   .pane__header {

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
-use craft\web\assets\cpbridge\CpBridgeAsset;
-use craft\web\assets\prismjs\PrismJsAsset;
+use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Utility\Utility;
 use Symfony\Component\Yaml\Yaml;
@@ -53,14 +51,8 @@ final class ProjectConfig extends Utility
     {
         $projectConfig = app(ProjectConfigService::class);
         $areChangesPending = $projectConfig->areChangesPending(force: true);
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(CpBridgeAsset::class);
 
         if ($areChangesPending) {
-            $view->registerAssetBundle(PrismJsAsset::class);
-            $view->registerTranslations('app', [
-                'Show all changes',
-            ]);
             $invert = (
                 ! $projectConfig->readOnly &&
                 ! $projectConfig->writeYamlAutomatically &&
@@ -70,12 +62,12 @@ final class ProjectConfig extends Utility
             $invert = false;
         }
 
-        return $view->renderTemplate('_components/utilities/ProjectConfig.twig', [
-            'readOnly' => $projectConfig->readOnly,
-            'invert' => $invert,
-            'yamlExists' => $projectConfig->writeYamlAutomatically || $projectConfig->getDoesExternalConfigExist(),
-            'areChangesPending' => $areChangesPending,
-            'entireConfig' => Yaml::dump($projectConfig->get(), 20, 2),
+        return VueComponent::render('ProjectConfig', [
+            ':read-only' => $projectConfig->readOnly ? 'true' : 'false',
+            ':invert' => $invert ? 'true' : 'false',
+            ':yaml-exists' => ($projectConfig->writeYamlAutomatically || $projectConfig->getDoesExternalConfigExist()) ? 'true' : 'false',
+            ':are-changes-pending' => $areChangesPending ? 'true' : 'false',
+            'entire-config' => Yaml::dump($projectConfig->get(), 20, 2),
         ]);
     }
 }

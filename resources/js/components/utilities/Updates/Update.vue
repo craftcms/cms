@@ -4,7 +4,7 @@
   import {computed, ref} from 'vue';
   import CpLink from '@/components/CpLink.vue';
   import UpdaterController from '@actions/Updates/UpdaterController';
-  import {Form} from '@inertiajs/vue3';
+  import {Form, router} from '@inertiajs/vue3';
 
   interface ReleaseInfo {
     version: string;
@@ -50,6 +50,32 @@
   const ctaButtonText = computed(() => {
     return props.ctaText || t('Update');
   });
+
+  // Loading state for update button
+  const isUpdating = ref(false);
+
+  // Start the update process
+  function startUpdate() {
+    if (!props.handle || !props.latestVersion || !props.packageName) {
+      return;
+    }
+
+    isUpdating.value = true;
+
+    router.post(
+      UpdaterController.index['/admin/actions/updater'](),
+      {
+        return: 'utilities/updates',
+        install: {[props.handle]: `^${props.latestVersion}`},
+        packageNames: {[props.handle]: props.packageName},
+      },
+      {
+        onFinish: () => {
+          isUpdating.value = false;
+        },
+      }
+    );
+  }
 
   // Copy handle to clipboard
   const initialHandleLabel = t('Copy plugin handle');
@@ -102,11 +128,12 @@
           >
             {{ ctaButtonText }}
           </CpLink>
-          <!-- Form-based CTA -->
+          <!-- Update button -->
           <Form
             v-else
-            method="post"
             :action="UpdaterController.index['/admin/actions/updater']()"
+            method="post"
+            #default="{processing}"
           >
             <input type="hidden" name="return" value="utilities/updates" />
             <input
@@ -119,7 +146,7 @@
               :name="`packageNames[${handle}]`"
               :value="packageName"
             />
-            <craft-button type="submit" variant="primary">
+            <craft-button type="submit" variant="primary" :loading="processing">
               {{ ctaButtonText }}
             </craft-button>
           </Form>
@@ -136,24 +163,6 @@
           >
             {{ altCtaText }}
           </CpLink>
-          <!-- Form-based Alt CTA -->
-          <form v-else method="post" action="" class="inline">
-            <input type="hidden" name="action" value="updater" />
-            <input type="hidden" name="return" value="utilities/updates" />
-            <input
-              type="hidden"
-              :name="`install[${handle}]`"
-              :value="`^${latestVersion}`"
-            />
-            <input
-              type="hidden"
-              :name="`packageNames[${handle}]`"
-              :value="packageName"
-            />
-            <craft-button type="submit" variant="secondary">
-              {{ altCtaText }}
-            </craft-button>
-          </form>
         </template>
 
         <!-- Action Menu -->
@@ -234,9 +243,5 @@
   .releases {
     display: grid;
     gap: var(--c-spacing-sm);
-  }
-
-  .inline {
-    display: inline;
   }
 </style>
