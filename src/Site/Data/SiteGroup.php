@@ -4,45 +4,48 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Site\Data;
 
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
-use Spatie\LaravelData\Attributes\Validation\Exists;
-use Spatie\LaravelData\Attributes\Validation\Max;
-use Spatie\LaravelData\Attributes\Validation\Required;
-use Spatie\LaravelData\Attributes\Validation\Unique;
-use Spatie\LaravelData\Dto;
-use Spatie\LaravelData\Support\Validation\References\RouteParameterReference;
+use Illuminate\Validation\Rule;
 
-final class SiteGroup extends Dto implements Arrayable
+final class SiteGroup extends Component
 {
-    public function __construct(
-        #[Exists(Table::SITEGROUPS, 'id')]
-        public ?int $id = null,
+    public ?int $id = null;
 
-        #[Max(255)]
-        public ?string $uid = null,
+    public ?string $uid = null;
 
-        #[Required]
-        #[Unique(Table::SITEGROUPS, 'name', ignore: new RouteParameterReference('id', nullable: true), withoutTrashed: true, deletedAtColumn: 'dateDeleted')]
-        public string $name = '',
-    ) {}
+    private ?string $_name = null;
+
+    public string $name {
+        get => $this->getName();
+        set {
+            $this->setName($value);
+        }
+    }
+
+    public function getRules(): array
+    {
+        return [
+            'id' => ['nullable', Rule::exists(Table::SITEGROUPS, 'id')],
+            'uid' => ['nullable', 'string', 'uuid'],
+            'name' => ['required', 'string', 'max:255', Rule::unique(Table::SITEGROUPS)->ignore($this->id)->withoutTrashed('dateDeleted')],
+        ];
+    }
 
     public function getName(bool $parse = true): string
     {
-        return ($parse ? Env::parse($this->name) : $this->name) ?? '';
+        return ($parse ? Env::parse($this->_name) : $this->_name) ?? '';
     }
 
     public function setName(string $name): void
     {
-        $this->name = $name;
+        $this->_name = $name;
     }
 
     /**
-     * Returns the group's sites.
-     *
      * @return Collection<Site>
      */
     public function getSites(): Collection
@@ -51,8 +54,6 @@ final class SiteGroup extends Dto implements Arrayable
     }
 
     /**
-     * Returns the group’s site IDs.
-     *
      * @return Collection<int>
      */
     public function getSiteIds(): Collection
@@ -60,9 +61,6 @@ final class SiteGroup extends Dto implements Arrayable
         return $this->getSites()->pluck('id');
     }
 
-    /**
-     * Returns the site group’s config.
-     */
     public function getConfig(): array
     {
         return [
@@ -70,13 +68,10 @@ final class SiteGroup extends Dto implements Arrayable
         ];
     }
 
-    public function toArray(): array
+    public function toArray(array $fields = [], array $expand = [], bool $recursive = true): array
     {
-        return [
-            'id' => $this->id,
-            'uid' => $this->uid,
-            'rawName' => $this->name,
-            'name' => $this->getName(),
-        ];
+        return array_merge(parent::toArray($fields, $expand, $recursive), [
+            'rawName' => $this->getName(false),
+        ]);
     }
 }
