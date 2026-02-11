@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -9,6 +10,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 use function Pest\Laravel\actingAs;
@@ -224,12 +226,18 @@ describe('Author permission validation', function () {
 
         $user = User::factory()->create(['admin' => false]);
 
-        actingAs(\CraftCms\Cms\User\Elements\User::findOne());
+        actingAs($admin = \CraftCms\Cms\User\Elements\User::findOne());
 
         $entry = EntryModel::factory()->createElement([
             'sectionId' => $section->id,
             'typeId' => $entryType->id,
         ]);
+        DB::table(Table::ENTRIES_AUTHORS)->insert([
+            'entryId' => $entry->id,
+            'authorId' => $admin->id,
+            'sortOrder' => 1,
+        ]);
+
         $entry->setAttributesFromRequest([
             'authorIds' => [$user->id],
         ]);
