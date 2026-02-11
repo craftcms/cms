@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -10,10 +9,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Models\User;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-
-use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
     Edition::set(Edition::Pro);
@@ -224,23 +220,17 @@ describe('Author permission validation', function () {
         $entryType = EntryType::factory()->create();
         $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
 
+        $initialAuthor = User::factory()->create(['admin' => true]);
         $user = User::factory()->create(['admin' => false]);
-
-        actingAs($admin = \CraftCms\Cms\User\Elements\User::findOne());
 
         $entry = EntryModel::factory()->createElement([
             'sectionId' => $section->id,
             'typeId' => $entryType->id,
         ]);
-        DB::table(Table::ENTRIES_AUTHORS)->insert([
-            'entryId' => $entry->id,
-            'authorId' => $admin->id,
-            'sortOrder' => 1,
-        ]);
+        $entry->setAuthorIds([$initialAuthor->id]);
+        Craft::$app->getElements()->saveElement($entry);
 
-        $entry->setAttributesFromRequest([
-            'authorIds' => [$user->id],
-        ]);
+        $entry->setAuthorIds([$user->id]);
 
         $entry->validate(['authorIds']);
 
@@ -256,6 +246,7 @@ describe('Author permission validation', function () {
         $entryType = EntryType::factory()->create();
         $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
 
+        $initialAuthor = User::factory()->create(['admin' => true]);
         $user = User::factory()->create(['admin' => false]);
 
         Gate::before(function ($authUser, string $ability) use ($user, $section) {
@@ -270,6 +261,9 @@ describe('Author permission validation', function () {
             'sectionId' => $section->id,
             'typeId' => $entryType->id,
         ]);
+        $entry->setAuthorIds([$initialAuthor->id]);
+        Craft::$app->getElements()->saveElement($entry);
+
         $entry->setAuthorIds([$user->id]);
 
         $entry->validate(['authorIds']);
@@ -285,12 +279,16 @@ describe('Author permission validation', function () {
         $entryType = EntryType::factory()->create();
         $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
 
+        $initialAuthor = User::factory()->create(['admin' => true]);
         $adminUser = User::factory()->create(['admin' => true]);
 
         $entry = EntryModel::factory()->createElement([
             'sectionId' => $section->id,
             'typeId' => $entryType->id,
         ]);
+        $entry->setAuthorIds([$initialAuthor->id]);
+        Craft::$app->getElements()->saveElement($entry);
+
         $entry->setAuthorIds([$adminUser->id]);
 
         $entry->validate(['authorIds']);
