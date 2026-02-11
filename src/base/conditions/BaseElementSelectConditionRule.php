@@ -76,7 +76,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             } else {
                 $referenceElement = new stdClass();
             }
-            return Craft::$app->getView()->renderObjectTemplate($elementId, $referenceElement);
+            return Craft::$app->getView()->renderSandboxedObjectTemplate($elementId, $referenceElement);
         }
         return $this->_elementId;
     }
