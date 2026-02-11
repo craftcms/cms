@@ -56,7 +56,7 @@ final class CreateCommand extends Command
             callback: fn () => $projectConfig->readOnly,
         );
 
-        $rules = Section::rules();
+        $rules = new Section()->getRules();
 
         $entryTypes = collect($this->option('entryTypes'))
             ->flatMap(fn (string $entryType) => explode(',', $entryType))
@@ -146,20 +146,20 @@ final class CreateCommand extends Command
             )
             ->submit();
 
-        $section = new Section(
-            name: $responses['name'],
-            handle: $responses['handle'],
-            type: SectionType::from($responses['type']),
-            enableVersioning: $responses['enableVersioning'],
-        );
+        $section = new Section([
+            'name' => $responses['name'],
+            'handle' => $responses['handle'],
+            'type' => SectionType::from($responses['type']),
+            'enableVersioning' => $responses['enableVersioning'],
+        ]);
 
         $section->setSiteSettings(Sites::getAllSites(true)->map(
-            fn (Site $site) => new SectionSiteSettings(
-                siteId: $site->id,
-                hasUrls: $this->option('uriFormat') !== null,
-                uriFormat: $this->option('uriFormat'),
-                template: $this->option('template'),
-            )
+            fn (Site $site) => new SectionSiteSettings([
+                'siteId' => $site->id,
+                'hasUrls' => $this->option('uriFormat') !== null,
+                'uriFormat' => $this->option('uriFormat'),
+                'template' => $this->option('template'),
+            ])
         )->all());
 
         $hasUrls = collect($section->getSiteSettings())->contains(
