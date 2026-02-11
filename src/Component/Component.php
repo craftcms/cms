@@ -7,18 +7,19 @@ namespace CraftCms\Cms\Component;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Validation\Concerns\Validates;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Contracts\Support\Arrayable;
 use Yiisoft\Arrays\ArrayableInterface;
 use Yiisoft\Arrays\ArrayableTrait;
 
-abstract class Component implements Arrayable, ArrayableInterface
+abstract class Component implements Arrayable, ArrayableInterface, Validatable
 {
     use ArrayableTrait;
+    use Validates;
 
     public function __construct(array $config = [])
     {
-        Typecast::properties(static::class, $config);
-
         self::configure($this, $config);
     }
 
@@ -31,6 +32,8 @@ abstract class Component implements Arrayable, ArrayableInterface
      */
     final public static function configure(self $component, array $properties = []): self
     {
+        Typecast::properties(static::class, $properties);
+
         foreach ($properties as $name => $value) {
             $component->$name = $value;
         }

@@ -14,8 +14,6 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\FieldLayout\Events\DefineShowInForm;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\Validation\Concerns\Validates;
-use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
@@ -25,10 +23,8 @@ use function CraftCms\Cms\t;
  * @property ?UserCondition $userCondition The user condition for this layout element
  * @property FieldLayout $layout The layout this element belongs to
  */
-abstract class FieldLayoutComponent extends Component implements Validatable
+abstract class FieldLayoutComponent extends Component
 {
-    use Validates;
-
     private static UserCondition $defaultUserCondition;
 
     /**
