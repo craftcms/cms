@@ -235,6 +235,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Element::mixin(new ValidateMixin());
         Element::mixin(new ElementMixin());
         Field::mixin(new ValidateMixin());
+        FieldLayoutComponent::mixin(new ValidateMixin());
         ElementQuery::mixin(new ElementQueryMixin());
         User::mixin(new UserMixin());
         Widget::mixin(new ValidateMixin());

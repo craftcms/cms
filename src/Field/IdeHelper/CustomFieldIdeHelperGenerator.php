@@ -7,9 +7,13 @@ namespace CraftCms\Cms\Field\IdeHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Section\Sections;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\File;
@@ -22,7 +26,7 @@ final readonly class CustomFieldIdeHelperGenerator
 {
     public function __construct(
         private Fields $fields,
-        private Sections $sections,
+        private EntryTypes $entryTypes,
     ) {}
 
     public function generate(): void
@@ -82,7 +86,7 @@ final readonly class CustomFieldIdeHelperGenerator
     private function buildHelperContent(): string
     {
         $elementFields = $this->collectFieldsByElement();
-        $entryTypeFields = $this->collectFieldsBySectionEntryType();
+        $entryTypeFields = $this->collectFieldsByEntryType();
         $volumeFields = $this->collectFieldsByVolume();
 
         $lines = [
@@ -138,14 +142,10 @@ final readonly class CustomFieldIdeHelperGenerator
                     $lines[] = '';
                 }
 
-                $hasAnnotations = $class['fields'] !== [] || isset($class['see']) || isset($class['mixin']);
+                $hasAnnotations = $class['fields'] !== [] || isset($class['see']);
 
                 if ($hasAnnotations) {
                     $lines[] = '    /**';
-
-                    if (isset($class['mixin'])) {
-                        $lines[] = "     * @mixin {$class['mixin']}";
-                    }
 
                     foreach ($class['fields'] as $handle => $type) {
                         $lines[] = "     * @property {$type} \${$handle}";
@@ -173,7 +173,7 @@ final readonly class CustomFieldIdeHelperGenerator
     /**
      * Group subclass stubs (e.g. Entry types, Asset volumes) into the namespaces map.
      *
-     * @param  array<string, list<array{className: string, fields: array<string, string>, extends?: string, see?: string, mixin?: string}>>  $namespaces
+     * @param  array<string, list<array{className: string, fields: array<string, string>, extends?: string, see?: string}>>  $namespaces
      * @param  array<string, array<string, string>>  $classFields
      */
     private function groupSubclasses(array &$namespaces, array $classFields, string $namespace, string $parentClass): void
@@ -182,28 +182,29 @@ final readonly class CustomFieldIdeHelperGenerator
             $namespaces[$namespace][] = [
                 'className' => $className,
                 'fields' => $fields,
-                'mixin' => "\\{$namespace}\\{$parentClass}",
+                'extends' => $parentClass,
             ];
         }
     }
 
     /**
-     * Collect fields grouped by section/entry type combination.
+     * Collect fields grouped by entry type.
      *
      * @return array<string, array<string, string>>
      */
-    private function collectFieldsBySectionEntryType(): array
+    private function collectFieldsByEntryType(): array
     {
         $result = [];
 
-        foreach ($this->sections->getAllSections() as $section) {
-            $sectionHandle = $this->normalizeHandle($section->handle);
+        foreach ($this->entryTypes->getAllEntryTypes() as $entryType) {
+            $layout = $entryType->getFieldLayout();
 
-            foreach ($section->getEntryTypes() as $entryType) {
-                $layout = $entryType->getFieldLayout();
-                $entryTypeHandle = $this->normalizeHandle($entryType->handle);
-                $result["{$sectionHandle}_{$entryTypeHandle}"] = $this->collectFieldsFromLayout($layout);
+            if (! $layout) {
+                continue;
             }
+
+            $entryTypeHandle = $this->normalizeHandle($entryType->handle);
+            $result[$entryTypeHandle] = $this->collectFieldsFromLayout($layout);
         }
 
         ksort($result);
@@ -229,7 +230,7 @@ final readonly class CustomFieldIdeHelperGenerator
                 continue;
             }
 
-            $className = 'Asset_'.$this->normalizeHandle($volume->handle);
+            $className = $this->normalizeHandle($volume->handle).'_Asset';
             $result[$className] = $this->collectFieldsFromLayout($layout);
         }
 
@@ -271,7 +272,7 @@ final readonly class CustomFieldIdeHelperGenerator
         $fields = [];
 
         foreach ($layout->getCustomFields() as $field) {
-            $fields[$field->handle] ??= $this->normalizePhpType($field::phpType());
+            $fields[$field->handle] ??= $this->resolvePhpType($field);
         }
 
         foreach ($layout->getGeneratedFields() as $generatedField) {
@@ -284,6 +285,47 @@ final readonly class CustomFieldIdeHelperGenerator
         ksort($fields);
 
         return $fields;
+    }
+
+    /**
+     * Resolve the PHPDoc type for a field, using entry type stubs for Matrix fields.
+     */
+    private function resolvePhpType(FieldInterface $field): string
+    {
+        if ($field instanceof Matrix) {
+            return $this->resolveMatrixPhpType($field);
+        }
+
+        return $this->normalizePhpType($field::phpType());
+    }
+
+    /**
+     * Resolve the PHPDoc type for a Matrix field using its configured entry types.
+     */
+    private function resolveMatrixPhpType(Matrix $field): string
+    {
+        $entryTypes = $field->getEntryTypes();
+
+        if ($entryTypes === []) {
+            return $this->normalizePhpType($field::phpType());
+        }
+
+        $entryTypeClasses = array_map(
+            fn ($entryType) => '\\CraftCms\\Cms\\Entry\\Elements\\'.$this->normalizeHandle($entryType->handle),
+            $entryTypes,
+        );
+
+        sort($entryTypeClasses);
+
+        $entryTypeUnion = implode('|', $entryTypeClasses);
+
+        return sprintf(
+            '\\%s<%s>|\\%s<%s>',
+            EntryQuery::class,
+            $entryTypeUnion,
+            ElementCollection::class,
+            $entryTypeUnion,
+        );
     }
 
     /**

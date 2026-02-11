@@ -3532,7 +3532,7 @@ class GeneralConfig extends BaseConfig
         // (Re-)normalize everything.
         $this
             // IDE Helper defaults to the same value as devMode
-            ->ideHelperEnabled($this->devMode)
+            ->ideHelperEnabled(config('app.debug'))
             // file extensions
             ->allowedFileExtensions($this->allowedFileExtensions)
             ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)

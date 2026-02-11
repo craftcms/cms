@@ -15,6 +15,7 @@ use CraftCms\Cms\FieldLayout\Events\DefineShowInForm;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Traits\Macroable;
 
 use function CraftCms\Cms\t;
 
@@ -25,6 +26,8 @@ use function CraftCms\Cms\t;
  */
 abstract class FieldLayoutComponent extends Component
 {
+    use Macroable;
+
     private static UserCondition $defaultUserCondition;
 
     /**
