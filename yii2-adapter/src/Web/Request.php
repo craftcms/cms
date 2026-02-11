@@ -49,8 +49,6 @@ class Request extends \yii\web\Request
      */
     public $csrfParam = '_token';
 
-    private IlluminateRequest $_illuminateRequest;
-
     private ?HeaderCollection $_headers = null;
 
     /** @phpstan-ignore property.unusedType */
@@ -62,7 +60,7 @@ class Request extends \yii\web\Request
     public function getIlluminateRequest(): IlluminateRequest
     {
         /** @var IlluminateRequest $request */
-        $request = $this->_illuminateRequest ??= IlluminateRequest::capture();
+        $request = app('request');
 
         $request->setLaravelSession(session()->driver());
 

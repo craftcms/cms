@@ -273,11 +273,11 @@ final class ElementSources
         // Remove pages that only have disabled sources
         $pages = array_filter(
             $pages,
-            fn(array $sources) => collect($sources)->contains(fn(array $source) => !($source['disabled'] ?? false)),
+            fn (array $sources) => collect($sources)->contains(fn (array $source) => ! ($source['disabled'] ?? false)),
         );
 
         // Remove pages that only have headings, disabled sources, and sources not available for the user
-        $pages = array_filter($pages, fn(array $sources) => collect($sources)->contains(function(array $source) {
+        $pages = array_filter($pages, fn (array $sources) => collect($sources)->contains(function (array $source) {
             if ($source['type'] === self::TYPE_HEADING) {
                 return false;
             }

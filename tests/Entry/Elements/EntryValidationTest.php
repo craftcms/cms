@@ -11,6 +11,8 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Gate;
 
+use function Pest\Laravel\actingAs;
+
 beforeEach(function () {
     Edition::set(Edition::Pro);
 });
@@ -222,11 +224,15 @@ describe('Author permission validation', function () {
 
         $user = User::factory()->create(['admin' => false]);
 
+        actingAs(\CraftCms\Cms\User\Elements\User::findOne());
+
         $entry = EntryModel::factory()->createElement([
             'sectionId' => $section->id,
             'typeId' => $entryType->id,
         ]);
-        $entry->setAuthorIds([$user->id]);
+        $entry->setAttributesFromRequest([
+            'authorIds' => [$user->id],
+        ]);
 
         $entry->validate(['authorIds']);
 

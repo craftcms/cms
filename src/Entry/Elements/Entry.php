@@ -954,9 +954,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     /**
      * @var int[] Original entry author IDs
      *
+     * @see getOldAuthorIds()
      * @see setAuthorIds()
      */
-    private array $_oldAuthorIds;
+    private ?array $_oldAuthorIds = null;
 
     /**
      * @var User[]|null Entry authors
@@ -2017,7 +2018,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
      */
     protected function cpRevisionsUrl(): string
     {
-        if (!$this->sectionId) {
+        if (! $this->sectionId) {
             return ElementHelper::elementRevisionsUrl($this);
         }
 
@@ -2088,7 +2089,7 @@ JS, [
 
             // Field settings
             if (
-                !empty($this->fieldId) &&
+                ! empty($this->fieldId) &&
                 Craft::$app->controller instanceof ElementsController &&
                 Craft::$app->controller->element === $this
             ) {
@@ -2100,7 +2101,7 @@ JS, [
                 ];
 
                 $view = Craft::$app->getView();
-                $view->registerJsWithVars(fn($id, $params) => <<<JS
+                $view->registerJsWithVars(fn ($id, $params) => <<<JS
     (() => {
       $('#' + $id).on('activate', function() {
         new Craft.CpScreenSlideout('fields/edit-field', {params: $params})

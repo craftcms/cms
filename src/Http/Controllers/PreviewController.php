@@ -10,15 +10,14 @@ use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\RouteToken\Data\RouteToken;
 use CraftCms\Cms\RouteToken\RouteTokens;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Context;
-
 use Illuminate\Support\Facades\Crypt;
+
 use function CraftCms\Cms\t;
 
 final readonly class PreviewController
