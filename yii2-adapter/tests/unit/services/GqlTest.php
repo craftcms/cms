@@ -359,7 +359,7 @@ class GqlTest extends TestCase
 
         $userGroupService = $this->make(UserGroups::class, [
             'getAllGroups' => [
-                UserGroup::from([
+                new UserGroup([
                     'id' => 1,
                     'name' => 'Test user group',
                     'uid' => 'userGroupUid',

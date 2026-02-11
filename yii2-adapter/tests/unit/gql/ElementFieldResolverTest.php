@@ -247,9 +247,9 @@ class ElementFieldResolverTest extends TestCase
                     'timeZone' => 'Fiji',
                 ],
                 'getGroups' => fn() => [
-                    UserGroup::from(['uid' => 'group-1-uid', 'handle' => 'Group 1']),
-                    UserGroup::from(['uid' => 'group-2-uid', 'handle' => 'Group 2']),
-                    UserGroup::from(['uid' => 'group-3-uid', 'handle' => 'Group 3']),
+                    new UserGroup(['uid' => 'group-1-uid', 'handle' => 'Group 1']),
+                    new UserGroup(['uid' => 'group-2-uid', 'handle' => 'Group 2']),
+                    new UserGroup(['uid' => 'group-3-uid', 'handle' => 'Group 3']),
                 ],
             ]
         );

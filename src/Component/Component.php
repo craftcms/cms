@@ -18,8 +18,12 @@ abstract class Component implements Arrayable, ArrayableInterface, Validatable
     use ArrayableTrait;
     use Validates;
 
-    public function __construct(array $config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = (array) $config;
+        }
+
         self::configure($this, $config);
     }
 
