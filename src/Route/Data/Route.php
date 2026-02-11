@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route\Data;
 
 use CraftCms\Cms\Support\Html;
-use Spatie\LaravelData\Dto;
 
-final class Route extends Dto
+final class Route
 {
     public function __construct(
         /**

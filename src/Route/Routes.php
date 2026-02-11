@@ -69,7 +69,13 @@ final class Routes
         $this->projectConfigRoutes = [];
 
         foreach ($routes as $uid => $route) {
-            $route = Route::from(array_merge($route, ['uid' => $uid]));
+            $route = new Route(
+                uriParts: $route['uriParts'] ?? [],
+                template: $route['template'],
+                siteUid: $route['siteUid'] ?? null,
+                uid: $uid,
+                sortOrder: $route['sortOrder'] ?? null,
+            );
 
             $uri = $route->getUri();
 
