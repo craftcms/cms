@@ -118,7 +118,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             } else {
                 $referenceElement = new stdClass();
             }
-            $elementIds = Craft::$app->getView()->renderObjectTemplate($elementIds, $referenceElement);
+            $elementIds = Craft::$app->getView()->renderSandboxedObjectTemplate($elementIds, $referenceElement);
             return array_values(array_filter(array_map(
                 fn(string $elementId) => (int)trim($elementId),
                 explode(',', $elementIds),
