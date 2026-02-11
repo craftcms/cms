@@ -115,16 +115,15 @@ it('can save a section', function () {
     expect(Arr::first($section->getSiteSettings())->template)->toBe('_foo');
 });
 
-test('values are validated', function (string $attribute, string $value = '') {
+test('values are validated', function (string $attribute, string $value = '', ?string $errorAttribute = null) {
     post(action([SectionsController::class, 'store']), validSectionData([
         $attribute => $value,
-    ]))->assertSessionHasErrors($attribute);
+    ]))->assertSessionHasErrors($errorAttribute ?? $attribute);
 })->with([
     ['name'],
     ['handle'],
-    ['type'],
     ['entryTypes'],
-    ['sites'],
+    ['sites', '', 'siteSettings'],
 
     // Reserved handles are invalid
     ['handle', 'id'],
@@ -133,28 +132,27 @@ test('values are validated', function (string $attribute, string $value = '') {
     ['handle', 'uid'],
     ['handle', 'title'],
     ['handle', Str::repeat('a', 256)],
-
-    // Enum validations
-    ['type', 'foo'],
-    ['defaultPlacement', 'foo'],
-    ['propagationMethod', 'foo'],
 ]);
 
 test('handle needs to be unique', function () {
-    post(action([SectionsController::class, 'store']), validSectionData())
+    $data = validSectionData();
+
+    post(action([SectionsController::class, 'store']), $data)
         ->assertSessionHasNoErrors();
 
-    post(action([SectionsController::class, 'store']), validSectionData())
+    post(action([SectionsController::class, 'store']), $data)
         ->assertSessionHasErrors('handle');
 });
 
 test('handle needs to be unique without trashed', function () {
-    post(action([SectionsController::class, 'store']), validSectionData())
+    $data = validSectionData();
+
+    post(action([SectionsController::class, 'store']), $data)
         ->assertSessionHasNoErrors();
 
     Section::latest('id')->first()->update(['dateDeleted' => now()]);
 
-    post(action([SectionsController::class, 'store']), validSectionData())
+    post(action([SectionsController::class, 'store']), $data)
         ->assertSessionHasNoErrors();
 });
 

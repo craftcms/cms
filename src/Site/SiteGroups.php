@@ -47,7 +47,7 @@ final class SiteGroups
     {
         return $this->groups ??= new MemoizableArray(
             $this->createGroupQuery()->get()->all(),
-            fn (object $result) => new SiteGroup(...(array) $result),
+            fn (object $result) => new SiteGroup($result),
         );
     }
 
@@ -75,11 +75,17 @@ final class SiteGroups
      * @param  SiteGroup  $group  The site group to be saved
      * @return bool Whether the site group was saved successfully
      */
-    public function saveGroup(SiteGroup $group): bool
+    public function saveGroup(SiteGroup $group, bool $runValidation = true): bool
     {
         $isNewGroup = ! $group->id;
 
         event(new SavingSiteGroup($group, $isNewGroup));
+
+        if ($runValidation && ! $group->validate()) {
+            Log::info('Site group not saved due to validation error.', [__METHOD__]);
+
+            return false;
+        }
 
         if ($isNewGroup) {
             $group->uid = Str::uuid()->toString();

@@ -105,7 +105,7 @@ test('store validates on unique handle and name', function () {
 it('can delete a group', function () {
     Edition::set(Edition::Pro);
 
-    UserGroups::saveGroup($group = UserGroupData::from([
+    UserGroups::saveGroup($group = new UserGroupData([
         'name' => 'A new group',
         'handle' => 'anewgroup',
     ]));

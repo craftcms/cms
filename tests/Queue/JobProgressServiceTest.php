@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Queue\Data\ProgressData;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
 use Illuminate\Contracts\Queue\ClearableQueue;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
 use Illuminate\Support\Facades\Cache;
@@ -27,7 +27,7 @@ it('can set and retrieve job progress', function () {
     $progress = $this->service->getProgress($uid);
 
     expect($progress)
-        ->toBeInstanceOf(ProgressData::class)
+        ->toBeInstanceOf(JobProgressModel::class)
         ->uid->toBe($uid)
         ->description->toBe('Test Job')
         ->progress->toBe(50)

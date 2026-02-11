@@ -46,7 +46,7 @@ trait InteractsWithValidator
      * @param  array|string|null  $attributeNames
      * @param  bool  $clearErrors
      */
-    public function validate($attributeNames = null, $clearErrors = true): bool
+    public function validate($attributeNames = null, $clearErrors = true, bool $throw = false): bool
     {
         if ($clearErrors) {
             $this->errors = new MessageBag;
@@ -58,6 +58,10 @@ trait InteractsWithValidator
 
         $validator = $this->getValidator($attributeNames)
             ->after(fn ($validator) => $this->afterValidate($validator));
+
+        if ($throw) {
+            $validator->validate();
+        }
 
         $result = $validator->passes();
 

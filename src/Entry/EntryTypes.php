@@ -115,7 +115,7 @@ final class EntryTypes
                 $result->slugTranslationMethod = TranslationMethod::from($result->slugTranslationMethod);
                 $result->color = $result->color ? Color::from($result->color) : null;
 
-                return EntryType::from($result);
+                return new EntryType($result);
             },
         );
 
@@ -180,7 +180,7 @@ final class EntryTypes
         if (! $entryType && $withTrashed) {
             $record = $this->getEntryTypeModel($entryTypeId, true);
             if ($record->exists) {
-                return EntryType::from(Arr::only($record->toArray(), [
+                return new EntryType(Arr::only($record->toArray(), [
                     'id',
                     'fieldLayoutId',
                     'name',

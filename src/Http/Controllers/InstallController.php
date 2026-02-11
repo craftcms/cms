@@ -208,13 +208,13 @@ final readonly class InstallController
             }
         }
 
-        $site = new Site(
-            name: $request->input('site.name'),
-            handle: 'default',
-            language: $request->input('site.language'),
-            baseUrl: $siteUrl,
-            hasUrls: true,
-        );
+        $site = new Site([
+            'name' => $request->input('site.name'),
+            'handle' => 'default',
+            'language' => $request->input('site.language'),
+            'baseUrl' => $siteUrl,
+            'hasUrls' => true,
+        ]);
 
         $migration = new Install(
             username: $username,

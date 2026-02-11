@@ -137,13 +137,13 @@ final class InstallCommand extends Command
             $username = $email;
         }
 
-        $site = new Site(
-            name: $siteName,
-            handle: 'default',
-            language: $language,
-            baseUrl: $siteUrl,
-            hasUrls: true,
-        );
+        $site = new Site([
+            'name' => $siteName,
+            'handle' => 'default',
+            'language' => $language,
+            'baseUrl' => $siteUrl,
+            'hasUrls' => true,
+        ]);
 
         // Try to save the site URL to a APP_URL environment variable
         // if it’s not already set to an alias or environment variable

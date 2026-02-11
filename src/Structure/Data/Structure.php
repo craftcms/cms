@@ -5,15 +5,24 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Structure\Data;
 
 use CraftCms\Cms\Auth\SessionAuth;
-use Spatie\LaravelData\Dto;
+use CraftCms\Cms\Component\Component;
 
-final class Structure extends Dto
+final class Structure extends Component
 {
-    public function __construct(
-        public ?int $id = null,
-        public ?int $maxLevels = null,
-        public ?string $uid = null,
-    ) {}
+    public ?int $id = null;
+
+    public ?int $maxLevels = null;
+
+    public ?string $uid = null;
+
+    public function getRules(): array
+    {
+        return [
+            'id' => ['nullable', 'integer'],
+            'uid' => ['nullable', 'uuid'],
+            'maxLevels' => ['nullable', 'integer'],
+        ];
+    }
 
     public function isSortable(): bool
     {

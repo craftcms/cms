@@ -25,6 +25,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Language\Alias;
 
@@ -53,7 +54,7 @@ final readonly class UserGroups
             default => $this->createUserGroupsQuery()
                 ->orderBy('name')
                 ->get()
-                ->map(fn (object $group) => UserGroup::from($group))
+                ->mapInto(UserGroup::class)
         };
     }
 
@@ -93,7 +94,7 @@ final readonly class UserGroups
     {
         $result = $this->createUserGroupsQuery()->find($groupId);
 
-        return $result ? UserGroup::from($result) : null;
+        return $result ? new UserGroup((array) $result) : null;
     }
 
     public function getGroupByUid(string $uid): ?UserGroup
@@ -102,7 +103,7 @@ final readonly class UserGroups
             ->where('uid', $uid)
             ->first();
 
-        return $result ? UserGroup::from($result) : null;
+        return $result ? new UserGroup((array) $result) : null;
     }
 
     public function getGroupByHandle(string $groupHandle): ?UserGroup
@@ -111,7 +112,7 @@ final readonly class UserGroups
             ->where('handle', $groupHandle)
             ->first();
 
-        return $result ? UserGroup::from($result) : null;
+        return $result ? new UserGroup((array) $result) : null;
     }
 
     /**
@@ -125,7 +126,7 @@ final readonly class UserGroups
             return $group;
         }
 
-        $group = UserGroup::from([
+        $group = new UserGroup([
             'uid' => self::TEAM_GROUP_UUID,
         ]);
 
@@ -136,7 +137,10 @@ final readonly class UserGroups
             $group->handle = sprintf('team%s', $i > 1 ? $i : '');
 
             try {
-                UserGroup::validate(['name' => $group->name, 'handle' => $group->handle]);
+                Validator::validate(
+                    ['name' => $group->name, 'handle' => $group->handle],
+                    $group->getRules(),
+                );
                 break;
             } catch (ValidationException) {
                 // Continue
@@ -175,7 +179,7 @@ final readonly class UserGroups
             ->join(new Alias(Table::USERGROUPS_USERS, 'gu'), 'gu.groupId', 'g.id')
             ->where('gu.userId', $userId)
             ->get()
-            ->map(fn (object $group) => UserGroup::from($group));
+            ->mapInto(UserGroup::class);
     }
 
     /**
@@ -202,7 +206,7 @@ final readonly class UserGroups
                 ->whereIn('id', $assignments->pluck('groupId')->unique())
                 ->get()
                 ->keyBy('id')
-                ->map(fn (object $result) => UserGroup::from($result))
+                ->map(fn (object $result) => new UserGroup((array) $result))
                 ->all();
 
             // Create batches of user groups by user ID

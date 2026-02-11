@@ -67,7 +67,7 @@ trait HasFieldLayout
     /**
      * Sets the owner's field layout ID.
      */
-    public function setFieldLayoutId(callable|int|string $id): void
+    public function setFieldLayoutId(callable|int|string|null $id): void
     {
         $this->fieldLayoutId = $id;
     }

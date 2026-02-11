@@ -7,6 +7,7 @@ namespace CraftCms\Cms\User\Data;
 use Craft;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
@@ -18,16 +19,12 @@ use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
-use Spatie\LaravelData\Attributes\MapInputName;
-use Spatie\LaravelData\Dto;
-use Spatie\LaravelData\Support\Validation\ValidationContext;
 use Stringable;
 
 use function CraftCms\Cms\t;
 
-final class UserGroup extends Dto implements Actionable, Chippable, CpEditable, Describable, Grippable, Stringable
+final class UserGroup extends Component implements Actionable, Chippable, CpEditable, Describable, Grippable, Stringable
 {
-    #[MapInputName('groupId')]
     #[AllowedInSandbox]
     public ?int $id = null;
 
@@ -129,11 +126,11 @@ JS, [
         return $items;
     }
 
-    public static function rules(?ValidationContext $context = null): array
+    public function getRules(): array
     {
         return [
             'id' => ['nullable', 'integer'],
-            'name' => ['required', 'string', 'max:255', Rule::unique(Table::USERGROUPS, 'name')->ignore($context?->payload['id'] ?? $context?->payload['groupId'] ?? null)],
+            'name' => ['required', 'string', 'max:255', Rule::unique(Table::USERGROUPS, 'name')->ignore($this->id)],
             'handle' => ['required', 'string', 'max:255', new HandleRule(reservedWords: [
                 'admins',
                 'all',
@@ -145,7 +142,7 @@ JS, [
                 'new',
                 'title',
                 'uid',
-            ]), Rule::unique(Table::USERGROUPS, 'handle')->ignore($context?->payload['id'] ?? $context?->payload['groupId'] ?? null)],
+            ]), Rule::unique(Table::USERGROUPS, 'handle')->ignore($this->id)],
         ];
     }
 

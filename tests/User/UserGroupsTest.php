@@ -15,7 +15,7 @@ beforeEach(function () {
 
     Edition::set(Edition::Pro);
 
-    UserGroups::saveGroup($group = UserGroup::from([
+    UserGroups::saveGroup($group = new UserGroup([
         'name' => 'Test group',
         'handle' => 'testGroup',
     ]));
@@ -70,7 +70,7 @@ it('can get team group', function () {
 });
 
 it('creates a unique name and handle for the team group', function () {
-    UserGroups::saveGroup(UserGroup::from([
+    UserGroups::saveGroup(new UserGroup([
         'name' => 'Team',
         'handle' => 'team',
     ]));

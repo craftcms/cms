@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Queue;
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Queue\Data\ProgressData;
 use CraftCms\Cms\Queue\Enums\JobStatus;
+use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Queue\ClearableQueue;
-use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use RuntimeException;
-use Tpetry\QueryExpressions\Function\Time\Now;
 
 /**
  * Service for tracking job progress and status.
@@ -23,10 +20,6 @@ use Tpetry\QueryExpressions\Function\Time\Now;
 #[Singleton]
 final readonly class JobProgress
 {
-    public function __construct(
-        private DatabaseManager $db,
-    ) {}
-
     public function queued(string $uid, string $description, ?int $delay = null): void
     {
         $status = $delay && $delay > 0 ? JobStatus::Delayed : JobStatus::Pending;
@@ -54,26 +47,20 @@ final readonly class JobProgress
         $this->upsertJob($uid, JobStatus::Reserved, $progress, $description, $label);
     }
 
-    public function getProgress(string $uid): ?ProgressData
+    public function getProgress(string $uid): ?JobProgressModel
     {
-        $row = $this->db->table(Table::JOBPROGRESS)
+        return JobProgressModel::query()
             ->where('uid', $uid)
             ->first();
-
-        if ($row === null) {
-            return null;
-        }
-
-        return ProgressData::from($row);
     }
 
     public function getTotalJobs(): int
     {
-        return $this->db->table(Table::JOBPROGRESS)->count();
+        return JobProgressModel::count();
     }
 
     /**
-     * @return Collection<ProgressData>
+     * @return Collection<JobProgressModel>
      */
     public function getJobInfo(?int $limit = null): Collection
     {
@@ -83,7 +70,7 @@ final readonly class JobProgress
             default => throw new RuntimeException('Unsupported database driver: '.DB::connection()->getDriverName()),
         };
 
-        return $this->db->table(Table::JOBPROGRESS)
+        return JobProgressModel::query()
             // Failed jobs go last
             ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END DESC', [JobStatus::Failed->value])
             // Reserved jobs go first
@@ -95,31 +82,29 @@ final readonly class JobProgress
             // Lastly by dateCreated
             ->orderBy('dateCreated')
             ->limit($limit)
-            ->get()
-            ->map(fn (object $row) => ProgressData::from($row));
+            ->get();
     }
 
     /**
      * Gets all active jobs (pending, delayed, or reserved).
      *
-     * @return Collection<ProgressData>
+     * @return Collection<JobProgressModel>
      */
     public function getAll(): Collection
     {
-        return $this->db->table(Table::JOBPROGRESS)
+        return JobProgressModel::query()
             ->orderBy('dateCreated')
-            ->get()
-            ->map(fn (object $row) => ProgressData::from($row));
+            ->get();
     }
 
     /**
      * Gets all active jobs (pending, delayed, or reserved).
      *
-     * @return Collection<ProgressData>
+     * @return Collection<JobProgressModel>
      */
     public function getActive(): Collection
     {
-        return $this->db->table(Table::JOBPROGRESS)
+        return JobProgressModel::query()
             ->whereIn('status', [
                 JobStatus::Pending,
                 JobStatus::Delayed,
@@ -127,26 +112,24 @@ final readonly class JobProgress
                 JobStatus::Failed,
             ])
             ->orderBy('dateCreated')
-            ->get()
-            ->map(fn (object $row) => ProgressData::from($row));
+            ->get();
     }
 
     /**
      * Gets all jobs with a specific status.
      *
-     * @return Collection<ProgressData>
+     * @return Collection<JobProgressModel>
      */
     public function getByStatus(JobStatus $status): Collection
     {
-        return $this->db->table(Table::JOBPROGRESS)
+        return JobProgressModel::query()
             ->where('status', $status->value)
             ->orderBy('dateCreated')
-            ->get()
-            ->map(fn (object $row) => ProgressData::from($row));
+            ->get();
     }
 
     /**
-     * @return Collection<ProgressData>
+     * @return Collection<JobProgressModel>
      */
     public function getFailed(): Collection
     {
@@ -155,14 +138,14 @@ final readonly class JobProgress
 
     public function delete(string $uid): void
     {
-        $this->db->table(Table::JOBPROGRESS)
+        JobProgressModel::query()
             ->where('uid', $uid)
             ->delete();
     }
 
     public function clear(): void
     {
-        $this->db->table(Table::JOBPROGRESS)->delete();
+        JobProgressModel::query()->delete();
 
         $queue = Queue::connection();
 
@@ -174,14 +157,14 @@ final readonly class JobProgress
 
     public function clearCompleted(): void
     {
-        $this->db->table(Table::JOBPROGRESS)
+        JobProgressModel::query()
             ->where('status', JobStatus::Done->value)
             ->delete();
     }
 
     public function updateStatus(string $uid, JobStatus $status): void
     {
-        $this->db->table(Table::JOBPROGRESS)
+        JobProgressModel::query()
             ->where('uid', $uid)
             ->update([
                 'status' => $status->value,
@@ -225,10 +208,10 @@ final readonly class JobProgress
         DB::beginTransaction();
 
         $now = now();
-        $exists = $this->db->table(Table::JOBPROGRESS)->where('uid', $uid)->exists();
+        $exists = JobProgressModel::query()->where('uid', $uid)->exists();
 
         if (! $exists) {
-            $this->db->table(Table::JOBPROGRESS)->insert([
+            JobProgressModel::create([
                 'uid' => $uid,
                 'status' => $status->value,
                 'description' => $description,
@@ -257,7 +240,7 @@ final readonly class JobProgress
             $data['description'] = $description;
         }
 
-        $this->db->table(Table::JOBPROGRESS)->where('uid', $uid)->update($data);
+        JobProgressModel::query()->where('uid', $uid)->update($data);
 
         DB::commit();
     }

@@ -54,7 +54,7 @@ final class Structures
             )
             ->find($structureId);
 
-        return $result ? Structure::from($result) : null;
+        return $result ? new Structure($result) : null;
     }
 
     public function getStructureByUid(string $structureUid, bool $withTrashed = false): ?Structure
@@ -72,7 +72,7 @@ final class Structures
             )
             ->first();
 
-        return $result ? Structure::from($result) : null;
+        return $result ? new Structure($result) : null;
     }
 
     /**

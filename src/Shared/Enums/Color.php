@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Shared\Enums;
 
 use InvalidArgumentException;
-use Spatie\LaravelData\Casts\Cast;
-use Spatie\LaravelData\Casts\Castable;
-use Spatie\LaravelData\Support\Creation\CreationContext;
-use Spatie\LaravelData\Support\DataProperty;
 
-enum Color: string implements Castable
+enum Color: string
 {
     case Red = 'red';
     case Orange = 'orange';
@@ -61,21 +57,6 @@ enum Color: string implements Castable
         return match ($this) {
             self::White, self::Gray, self::Black => sprintf('var(--%s)', $this->value),
             default => sprintf('var(--%s-%s)', $this->value, str_pad((string) $shade, 3, '0', STR_PAD_LEFT)),
-        };
-    }
-
-    public static function dataCastUsing(...$arguments): Cast
-    {
-        return new class implements Cast
-        {
-            public function cast(DataProperty $property, mixed $value, array $properties, CreationContext $context): mixed
-            {
-                if ($value === '__blank__') {
-                    return null;
-                }
-
-                return Color::from($value);
-            }
         };
     }
 }

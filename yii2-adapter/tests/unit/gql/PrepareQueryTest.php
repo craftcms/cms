@@ -279,18 +279,18 @@ class PrepareQueryTest extends TestCase
         ]);
         $this->_entryType->save();
 
-        $this->_section = new Section(
-            name: Str::random(),
-            handle: Str::random(),
-            type: SectionType::Channel,
-            enableVersioning: true,
-            propagationMethod: PropagationMethod::All,
-            uid: self::SECTION_UID,
-            siteSettings: [
-                1 => new SectionSiteSettings(),
+        $this->_section = new Section([
+            'name' => Str::random(),
+            'handle' => Str::random(),
+            'type' => SectionType::Channel,
+            'enableVersioning' => true,
+            'propagationMethod' => PropagationMethod::All,
+            'uid' => self::SECTION_UID,
+            'siteSettings' => [
+                1 => new SectionSiteSettings(['siteId' => 1]),
             ],
-        );
-        Sections::saveSection($this->_section);
+        ]);
+        Sections::saveSection($this->_section, false);
         Craft::$app->set('entries', new Entries());
 
         DB::table(Table::SECTIONS_ENTRYTYPES)->insert([

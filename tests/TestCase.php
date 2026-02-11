@@ -105,14 +105,14 @@ class TestCase extends Orchestra
 
         $this->artisan('db:wipe');
 
-        $site = new Site(
-            name: 'Craft test site',
-            handle: 'defaultSite',
-            language: 'en-US',
-            baseUrl: 'https://localhost/',
-            primary: true,
-            hasUrls: true,
-        );
+        $site = new Site([
+            'name' => 'Craft test site',
+            'handle' => 'defaultSite',
+            'language' => 'en-US',
+            'baseUrl' => 'https://localhost/',
+            'primary' => true,
+            'hasUrls' => true,
+        ]);
 
         $migration = new Install(
             username: 'craftcms',

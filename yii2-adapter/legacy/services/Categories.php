@@ -355,7 +355,7 @@ class Categories extends Component
 
             // Structure
             $structure = Structures::getStructureByUid($structureUid,
-                true) ?? new Structure(uid: $structureUid);
+                true) ?? new Structure(['uid' => $structureUid]);
             $structure->maxLevels = $structureData['maxLevels'];
             Structures::saveStructure($structure);
 

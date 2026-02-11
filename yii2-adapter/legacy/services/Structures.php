@@ -122,7 +122,7 @@ class Structures extends Component
             return null;
         }
 
-        return Structure::from([
+        return new Structure([
             'id' => $structure->id,
             'maxLevels' => $structure->maxLevels,
             'uid' => $structure->uid,
@@ -145,7 +145,7 @@ class Structures extends Component
             return null;
         }
 
-        return Structure::from([
+        return new Structure([
             'id' => $structure->id,
             'maxLevels' => $structure->maxLevels,
             'uid' => $structure->uid,
