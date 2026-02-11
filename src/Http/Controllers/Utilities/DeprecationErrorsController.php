@@ -13,6 +13,7 @@ use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
@@ -43,7 +44,7 @@ final readonly class DeprecationErrorsController
         ]);
     }
 
-    public function deleteDeprecationError(Request $request): JsonResponse
+    public function deleteDeprecationError(Request $request): Response
     {
         $request->validate([
             'logId' => ['required', 'integer', Rule::exists(Table::DEPRECATIONERRORS, 'id')],
@@ -51,21 +52,21 @@ final readonly class DeprecationErrorsController
 
         $this->deprecator->deleteLogById($request->integer('logId'));
 
-        if (! $request->inertia() && $request->ajax()) {
-            return new JsonResponse;
+        if ($request->inertia()) {
+            return back()->with('success', t('Deprecation error removed.'));
         }
 
-        return back()->with('success', t('Deprecation error removed.'));
+        return new JsonResponse;
     }
 
-    public function deleteAllDeprecationErrors(Request $request)
+    public function deleteAllDeprecationErrors(Request $request): Response
     {
         $this->deprecator->deleteAllLogs();
 
-        if (! $request->inertia() && $request->ajax()) {
-            return new JsonResponse;
+        if ($request->inertia()) {
+            return back()->with('success', t('Deprecation errors removed.'));
         }
 
-        return back()->with('success', t('Deprecation errors removed.'));
+        return new JsonResponse;
     }
 }

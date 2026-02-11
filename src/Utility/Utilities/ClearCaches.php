@@ -8,8 +8,10 @@ use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
 use CraftCms\Cms\Utility\Events\RegisterTagOptions;
 use CraftCms\Cms\Utility\Utility;
@@ -17,7 +19,6 @@ use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 use Override;
 use Symfony\Component\Filesystem\Path;
 
@@ -81,10 +82,10 @@ final class ClearCaches extends Utility
 
         $cacheOptions = Arr::sort($cacheOptions, 'label');
 
-        return view('c::utilities.clear-caches.content', [
-            'cacheOptions' => $cacheOptions,
-            'tagOptions' => $tagOptions,
-        ])->toHtml();
+        return VueComponent::render('ClearCaches', [
+            ':cacheOptions' => $cacheOptions,
+            ':tagOptions' => $tagOptions,
+        ]);
     }
 
     /**

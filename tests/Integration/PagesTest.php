@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -112,6 +114,34 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
         ],
     ],
 
+    // Utilities
+    [
+        'url' => '/utilities/system-messages',
+        'title' => 'System Messages',
+        'extraContent' => [
+            ['rendered' => 'When someone creates an account:'],
+            ['rendered' => 'When someone changes their email address:'],
+            ['rendered' => 'When someone forgets their password:'],
+            ['rendered' => 'When you are testing your email settings:'],
+        ],
+    ],
+]);
+
+it('renders utility pages', function (string $url, string $title, array $extraContent = []) {
+    $response = get("/{$this->cpTrigger}{$url}");
+
+    if ($response->status() === 404) {
+        $this->markTestIncomplete('Page not found: '.$url);
+    }
+
+    $response->assertInertia(function (AssertableInertia $page) use ($title, $extraContent) {
+        $page->where('title', $title);
+        foreach ($extraContent as $content) {
+            $page->where('contentHtml', fn (string $value) => Str::contains($value, $content['rendered']));
+        }
+        $page->etc();
+    });
+})->with([
     // Utility pages
     [
         'url' => '/utilities/system-report',
@@ -128,64 +158,50 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
         'url' => '/utilities/project-config',
         'title' => 'Project Config',
         'extraContent' => [
-            ['rendered' => 'Apply YAML Changes'],
-            ['rendered' => 'Rebuild the Config'],
-            ['rendered' => 'Loaded Project Config Data'],
+            ['rendered' => '<ProjectConfig'],
         ],
     ],
     ['url' => '/utilities/php-info', 'title' => 'PHP Info'],
     [
-        'url' => '/utilities/system-messages',
-        'title' => 'System Messages',
-        'extraContent' => [
-            ['rendered' => 'When someone creates an account:'],
-            ['rendered' => 'When someone changes their email address:'],
-            ['rendered' => 'When someone forgets their password:'],
-            ['rendered' => 'When you are testing your email settings:'],
-        ],
-    ],
-    [
         'url' => '/utilities/queue-manager',
         'title' => 'Queue Manager',
         'extraContent' => [
-            ['rendered' => 'No pending jobs.'],
+            ['rendered' => '<QueueManager'],
         ],
     ],
     [
         'url' => '/utilities/deprecation-errors',
         'title' => 'Deprecation Warnings',
         'extraContent' => [
-            ['rendered' => 'No deprecation warnings to report!'],
+            ['rendered' => '<DeprecationErrors'],
         ],
     ],
     [
         'url' => '/utilities/find-replace',
         'title' => 'Find and Replace',
         'extraContent' => [
-            ['rendered' => 'Find Text'],
-            ['rendered' => 'Replace Text'],
+            ['rendered' => '<FindReplace'],
         ],
     ],
     [
         'url' => '/utilities/migrations',
         'title' => 'Migrations',
         'extraContent' => [
-            ['rendered' => 'No pending content migrations.'],
+            ['rendered' => '<Migrations'],
         ],
     ],
     [
         'url' => '/utilities/clear-caches',
         'title' => 'Caches',
         'extraContent' => [
-            ['rendered' => 'Clear Caches'],
-            ['rendered' => 'Invalidate Data Caches'],
+            ['rendered' => '<ClearCaches'],
         ],
     ],
     [
         'url' => '/utilities/db-backup',
         'title' => 'Database Backup',
         'extraContent' => [
-            ['rendered' => 'Download backup'],
+            ['rendered' => '<DatabaseBackup'],
         ],
     ],
 ]);

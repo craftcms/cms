@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
+use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Utility\Utility;
 
@@ -64,8 +65,8 @@ final class DeprecationErrors extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        return view('c::utilities.deprecation-errors.content', [
-            'logs' => Deprecator::getLogs(),
-        ])->toHtml();
+        return VueComponent::render('DeprecationErrors', [
+            ':logs' => Deprecator::getLogs(),
+        ]);
     }
 }

@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use Illuminate\View\ComponentAttributeBag;
-
 class VueComponent
 {
-    public static function render(string $name, $props = [])
+    public static function render(string $name, $props = []): string
     {
-        $attributes = new ComponentAttributeBag($props);
+        $attributes = new VueProps($props);
 
         return "<$name $attributes />";
     }

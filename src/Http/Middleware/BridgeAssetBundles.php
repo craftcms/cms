@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use Craft;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -59,7 +60,7 @@ final readonly class BridgeAssetBundles
             return $response;
         }
 
-        $data = json_decode($content, true);
+        $data = Json::decode($content, true);
         if (! is_array($data) || ! isset($data['props'])) {
             return $response;
         }
@@ -71,7 +72,7 @@ final readonly class BridgeAssetBundles
             $data['props']['bridgedBodyHtml'] = $bodyHtml;
         }
 
-        $response->setContent(json_encode($data));
+        $response->setContent(Json::encode($data));
 
         return $response;
     }

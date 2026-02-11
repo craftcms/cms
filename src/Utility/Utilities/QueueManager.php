@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
+use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\Queue\Data\ProgressData;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
@@ -53,10 +54,10 @@ final class QueueManager extends Utility
     {
         $progressService = app(JobProgress::class);
 
-        return view('c::utilities.queue-manager.toolbar', [
-            'activeJob' => self::getActiveJob($progressService),
-            'jobs' => $progressService->getJobInfo(),
-        ])->toHtml();
+        return VueComponent::render('QueueManagerToolbar', [
+            ':activeJob' => self::getActiveJob($progressService),
+            ':jobs' => $progressService->getJobInfo(),
+        ]);
     }
 
     /**
@@ -77,13 +78,13 @@ final class QueueManager extends Utility
         $progressService = app(JobProgress::class);
         $jobsData = app(JobProgress::class)->getJobInfo();
 
-        return view('c::utilities.queue-manager.content', [
-            'initialData' => $jobsData,
-            'activeJob' => self::getActiveJob($progressService),
-            'hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
-            'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
-            'totalJobs' => $progressService->getTotalJobs(),
-        ])->toHtml();
+        return VueComponent::render('QueueManager', [
+            ':initialData' => $jobsData,
+            ':activeJob' => self::getActiveJob($progressService),
+            ':hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
+            ':hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
+            ':totalJobs' => $progressService->getTotalJobs(),
+        ]);
     }
 
     private static function getActiveJob(JobProgress $progressService): ?ProgressData

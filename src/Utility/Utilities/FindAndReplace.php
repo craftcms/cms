@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
-use craft\web\assets\findreplace\FindReplaceAsset;
+use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\Utility\Utility;
 
 use function CraftCms\Cms\t;
@@ -48,11 +47,6 @@ final class FindAndReplace extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        // $view = Craft::$app->getView();
-
-        // $view->registerAssetBundle(FindReplaceAsset::class);
-        // $view->registerJs('new Craft.FindAndReplaceUtility(\'find-replace\');');
-
-        return view('c::utilities.find-replace.content')->toHtml();
+        return VueComponent::render('FindReplace');
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
+use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\Utility\Utility;
 
 use function CraftCms\Cms\t;
@@ -46,6 +47,6 @@ final class DbBackup extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        return view('c::utilities.db-backup.content')->toHtml();
+        return VueComponent::render('DatabaseBackup');
     }
 }
