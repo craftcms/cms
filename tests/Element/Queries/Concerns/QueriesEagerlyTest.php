@@ -1,15 +1,14 @@
 <?php
 
-use craft\behaviors\CustomFieldBehavior;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
-use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -32,8 +31,8 @@ beforeEach(function () {
         'fieldLayoutId' => $fieldLayout->id,
     ]);
 
-    CustomFieldBehavior::$fieldHandles[$field->handle] = true;
-    Fields::refreshFields();
+    app(Fields::class)->invalidateCaches();
+    app(Fields::class)->refreshFields();
 
     $entryModels = EntryModel::factory(10)->create([
         'sectionId' => $section->id,

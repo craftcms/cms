@@ -9,14 +9,11 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutComponent;
 use craft\base\NestedElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\errors\InvalidTypeException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
-use craft\fieldlayoutelements\BaseField;
-use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -24,7 +21,6 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
-use craft\models\FieldLayoutForm;
 use craft\services\Drafts;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
@@ -39,6 +35,9 @@ use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\FieldLayout\FieldLayoutForm;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -371,7 +370,7 @@ class ElementsController extends Controller
         [$docTitle, $title] = $this->_editElementTitles($element);
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
-        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? UrlHelper::cpReferralUrl() ?? ElementHelper::postEditUrl($element);
+        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? ElementHelper::postEditUrl($element);
 
         // Site statuses
         if ($canEditMultipleSites) {
@@ -381,6 +380,8 @@ class ElementsController extends Controller
                 $element->siteId => $element->enabled,
             ];
         }
+
+        $previewToken = $previewTargets ? Str::random(extendedChars: true) : null;
 
         $notice = null;
         if ($element->isProvisionalDraft) {
@@ -461,7 +462,8 @@ class ElementsController extends Controller
                         'isProvisionalDraft' => $element->isProvisionalDraft,
                         'isUnpublishedDraft' => $isUnpublishedDraft,
                         'previewTargets' => $previewTargets,
-                        'previewToken' => $previewTargets ? Str::random(extendedChars: true) : null,
+                        'previewToken' => $previewToken,
+                        'hashedPreviewToken' => $previewToken ? Crypt::encrypt($previewToken) : null,
                         'previewParamValue' => $previewTargets ? Crypt::encrypt(Str::random(10)) : null,
                         'revisionId' => $element->revisionId,
                         'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
@@ -959,7 +961,7 @@ JS, [
             ];
         }
 
-        if ($hasMoreRevisions) {
+        if ($hasMoreRevisions && $revisionsPageUrl) {
             $items[] = ['type' => MenuItemType::HR];
             $items[] = [
                 'label' => t('View all revisions'),
@@ -2421,16 +2423,12 @@ JS, [
 
             $elementInfo = [];
 
-            foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml, $isStatic]) {
-                /** @var FieldLayoutComponent $layoutElement */
-                /** @var bool $isConditional */
-                /** @var string|bool $elementHtml */
-                /** @var bool $isStatic */
-                if ($isConditional) {
+            foreach ($tab->elements as $formElement) {
+                if ($formElement->isConditional) {
                     $elementInfo[] = [
-                        'uid' => $layoutElement->uid,
-                        'html' => $elementHtml,
-                        'static' => $isStatic,
+                        'uid' => $formElement->layoutElement->uid,
+                        'html' => $formElement->html,
+                        'static' => $formElement->isStatic,
                     ];
                 }
             }

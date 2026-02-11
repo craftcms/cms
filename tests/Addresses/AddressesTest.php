@@ -8,7 +8,6 @@ use CommerceGuys\Addressing\AddressFormat\AdministrativeAreaType;
 use CommerceGuys\Addressing\AddressFormat\LocalityType;
 use CommerceGuys\Addressing\AddressFormat\PostalCodeType;
 use CommerceGuys\Addressing\Country\CountryRepository;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Events\DefineAddressCountries;
 use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
 use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
 use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {

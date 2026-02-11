@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Workbench\Database\Seeders;
 
-use craft\fieldlayoutelements\entries\EntryTitleField;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;

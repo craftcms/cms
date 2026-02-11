@@ -4,7 +4,7 @@
 {% if not page or not craft.app.elementSources.pageExists("craft\\elements\\Entry", page) %}
   {% if sectionHandle is defined %}
     {% set redirect = craft.app.entries.getSectionByHandle(sectionHandle).getCpIndexUri() ?? null %}
-    {% if redirect %}
+    {% if redirect and redirect != craft.app.request.getPathInfo() %}
       {% redirect redirect %}
     {% endif %}
   {% endif %}

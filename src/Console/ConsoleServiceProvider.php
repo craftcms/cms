@@ -8,6 +8,7 @@ use CraftCms\Cms\Console\Commands\ClearCachesCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvRemoveCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvSetCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvShowCommand;
+use CraftCms\Cms\Console\Commands\IdeHelper\GenerateCustomFieldsCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCheckCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCommand;
 use CraftCms\Cms\Console\Commands\InvalidateTagsCommand;
@@ -49,6 +50,9 @@ final class ConsoleServiceProvider extends ServiceProvider
 
         // Gc
         RunCommand::class,
+
+        // IDE Helper
+        GenerateCustomFieldsCommand::class,
 
         // Twig
         TwigCacheCommand::class,

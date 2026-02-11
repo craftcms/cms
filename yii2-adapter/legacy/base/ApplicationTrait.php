@@ -14,23 +14,7 @@ use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\mysql\Schema;
 use craft\errors\DbConnectException;
-use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
-use craft\fieldlayoutelements\addresses\AddressField;
-use craft\fieldlayoutelements\addresses\CountryCodeField;
-use craft\fieldlayoutelements\addresses\LabelField;
-use craft\fieldlayoutelements\addresses\LatLongField;
-use craft\fieldlayoutelements\addresses\OrganizationField;
-use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
-use craft\fieldlayoutelements\assets\AltField;
-use craft\fieldlayoutelements\assets\AssetTitleField;
-use craft\fieldlayoutelements\entries\EntryTitleField;
-use craft\fieldlayoutelements\FullNameField;
-use craft\fieldlayoutelements\users\AffiliatedSiteField;
-use craft\fieldlayoutelements\users\EmailField;
-use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
-use craft\fieldlayoutelements\users\PhotoField;
-use craft\fieldlayoutelements\users\UsernameField;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\log\Dispatcher;
@@ -39,7 +23,6 @@ use craft\markdown\GithubMarkdown;
 use craft\markdown\Markdown;
 use craft\markdown\MarkdownExtra;
 use craft\markdown\PreEncodedMarkdown;
-use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
 use craft\services\Addresses;
@@ -88,22 +71,15 @@ use craft\web\UrlManager;
 use craft\web\User as UserSession;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Announcement\Announcements;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator as DeprecatorFacade;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
-use CraftCms\Cms\User\Elements\User;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
@@ -709,7 +685,7 @@ trait ApplicationTrait
     public function saveInfo(Info $info, ?array $attributeNames = null): bool
     {
         if ($attributeNames === null) {
-            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configVersion', 'fieldVersion'];
+            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configVersion'];
         }
 
         if (! $info->validate($attributeNames)) {
@@ -1378,9 +1354,6 @@ trait ApplicationTrait
      */
     private function _postInit(): void
     {
-        // Register field layout listeners
-        $this->_registerFieldLayoutListener();
-
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
@@ -1422,47 +1395,6 @@ trait ApplicationTrait
 
         // Default to the source language.
         return $this->sourceLanguage;
-    }
-
-    /**
-     * Register event listeners for field layouts.
-     */
-    private function _registerFieldLayoutListener(): void
-    {
-        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_NATIVE_FIELDS, function (DefineFieldLayoutFieldsEvent $event) {
-            /** @var FieldLayout $fieldLayout */
-            $fieldLayout = $event->sender;
-
-            switch ($fieldLayout->type) {
-                case Address::class:
-                    $event->fields[] = LabelField::class;
-                    $event->fields[] = OrganizationField::class;
-                    $event->fields[] = OrganizationTaxIdField::class;
-                    $event->fields[] = FullNameField::class;
-                    $event->fields[] = CountryCodeField::class;
-                    $event->fields[] = AddressField::class;
-                    $event->fields[] = LatLongField::class;
-                    break;
-                case Asset::class:
-                    $event->fields[] = AssetTitleField::class;
-                    $event->fields[] = AltField::class;
-                    break;
-                case Entry::class:
-                    $event->fields[] = EntryTitleField::class;
-                    break;
-                case User::class:
-                    if (! Cms::config()->useEmailAsUsername) {
-                        $event->fields[] = UsernameField::class;
-                    }
-                    $event->fields[] = UserFullNameField::class;
-                    $event->fields[] = PhotoField::class;
-                    $event->fields[] = EmailField::class;
-                    if (\CraftCms\Cms\Support\Facades\Sites::isMultiSite()) {
-                        $event->fields[] = AffiliatedSiteField::class;
-                    }
-                    break;
-            }
-        });
     }
 
     /**

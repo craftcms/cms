@@ -8,13 +8,14 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\fieldlayoutelements\BaseField;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 
 /**
  * DefineFieldLayoutCustomFieldsEvent event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.2.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\Events\DefineCustomFields} instead.
  */
 class DefineFieldLayoutCustomFieldsEvent extends Event
 {

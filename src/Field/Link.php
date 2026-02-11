@@ -40,8 +40,8 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\Validator;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
@@ -227,7 +227,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'types' => ['required', 'array'],

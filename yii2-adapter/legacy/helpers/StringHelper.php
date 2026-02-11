@@ -10,11 +10,11 @@ namespace craft\helpers;
 use Craft;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use InvalidArgumentException;
 use Normalizer;
 use Throwable;
 use voku\helper\ASCII;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use const ENT_COMPAT;
 

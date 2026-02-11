@@ -106,6 +106,13 @@ test('returns custom route', function () {
 
 This pattern allows testing trait behavior without needing factories or database state. See `tests/Element/Concerns/` for examples.
 
+**Important**: When writing integration tests for a trait using a concrete subclass (like `Entry`), assert against the subclass's actual behavior, not the trait's default return values. For example, `Entry` overrides `getCardTitle()`, `getCrumbs()`, and status values — your assertions must account for these overrides.
+
+## Database best practices
+
+- Never use hardcoded IDs in tests involving database relations. Always use factories to generate valid records and reference their dynamic IDs. Hardcoded IDs will cause foreign key violations.
+- When tests require an authenticated user, ensure the database is seeded first. A `Call to a member function update() on null` error during `actingAs` typically means no user exists in the database yet.
+
 ## Testing Laravel events
 
 Use Laravel's event fakes to test that events are dispatched correctly:

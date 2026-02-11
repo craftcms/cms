@@ -5,7 +5,7 @@ import {Csrf} from '../../services/Csrf.js';
  * @TODO
  */
 export function getActionUrl(action: string = '') {
-  return `https://craft6-dev.ddev.site/admin/actions/${action}`;
+  return `/admin/actions/${action}`;
 }
 
 /**

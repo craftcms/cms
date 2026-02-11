@@ -11,9 +11,9 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use yii\base\Component;
@@ -181,7 +181,8 @@ class ElementSources extends Component
      *
      * @param class-string<ElementInterface> $elementType
      * @param string $sourceKey
-     * @return FieldLayout[]
+     *
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout[]
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): array
     {

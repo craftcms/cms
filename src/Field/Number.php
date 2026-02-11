@@ -22,9 +22,9 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use InvalidArgumentException;
 use Override;
 use Throwable;
-use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 use yii\helpers\Markdown;
 
@@ -160,7 +160,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         $conditionalInteger = Rule::when(fn ($input) => ! $input->decimals, 'integer', 'numeric');
 

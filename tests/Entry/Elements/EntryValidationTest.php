@@ -220,12 +220,16 @@ describe('Author permission validation', function () {
         $entryType = EntryType::factory()->create();
         $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
 
+        $initialAuthor = User::factory()->create(['admin' => true]);
         $user = User::factory()->create(['admin' => false]);
 
         $entry = EntryModel::factory()->createElement([
             'sectionId' => $section->id,
             'typeId' => $entryType->id,
         ]);
+        $entry->setAuthorIds([$initialAuthor->id]);
+        Craft::$app->getElements()->saveElement($entry);
+
         $entry->setAuthorIds([$user->id]);
 
         $entry->validate(['authorIds']);
@@ -242,6 +246,7 @@ describe('Author permission validation', function () {
         $entryType = EntryType::factory()->create();
         $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
 
+        $initialAuthor = User::factory()->create(['admin' => true]);
         $user = User::factory()->create(['admin' => false]);
 
         Gate::before(function ($authUser, string $ability) use ($user, $section) {
@@ -256,6 +261,9 @@ describe('Author permission validation', function () {
             'sectionId' => $section->id,
             'typeId' => $entryType->id,
         ]);
+        $entry->setAuthorIds([$initialAuthor->id]);
+        Craft::$app->getElements()->saveElement($entry);
+
         $entry->setAuthorIds([$user->id]);
 
         $entry->validate(['authorIds']);
@@ -271,12 +279,16 @@ describe('Author permission validation', function () {
         $entryType = EntryType::factory()->create();
         $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
 
+        $initialAuthor = User::factory()->create(['admin' => true]);
         $adminUser = User::factory()->create(['admin' => true]);
 
         $entry = EntryModel::factory()->createElement([
             'sectionId' => $section->id,
             'typeId' => $entryType->id,
         ]);
+        $entry->setAuthorIds([$initialAuthor->id]);
+        Craft::$app->getElements()->saveElement($entry);
+
         $entry->setAuthorIds([$adminUser->id]);
 
         $entry->validate(['authorIds']);

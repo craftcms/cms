@@ -1498,6 +1498,45 @@ class GeneralConfig extends BaseConfig
     public ?string $httpProxy = null;
 
     /**
+     * @var bool Whether to automatically generate IDE helper files for custom fields.
+     *
+     * When enabled, Craft will generate PHPDoc metadata files in the IDE helper path
+     * whenever field layouts are saved. This improves IDE autocompletion for custom fields.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->ideHelperEnabled(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_IDE_HELPER_ENABLED=true
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public bool $ideHelperEnabled = true;
+
+    /**
+     * @var string The path where IDE helper files should be written, relative to the project root.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->ideHelperPath('vendor/_craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_IDE_HELPER_PATH=vendor/_craft
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public string $ideHelperPath = 'vendor/_craft';
+
+    /**
      * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed
      *            and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
      *
@@ -3492,6 +3531,8 @@ class GeneralConfig extends BaseConfig
     {
         // (Re-)normalize everything.
         $this
+            // IDE Helper defaults to the same value as devMode
+            ->ideHelperEnabled(config('app.debug'))
             // file extensions
             ->allowedFileExtensions($this->allowedFileExtensions)
             ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)
@@ -5086,7 +5127,48 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed
+     * Whether to automatically generate IDE helper files for custom fields.
+     *
+     * When enabled, Craft will generate PHPDoc metadata files in the IDE helper path
+     * whenever field layouts are saved. This improves IDE autocompletion for custom fields.
+     *
+     * ```php
+     * ->ideHelperEnabled(false)
+     * ```
+     *
+     * @group System
+     *
+     * @see $ideHelperEnabled
+     * @since 6.0.0
+     */
+    public function ideHelperEnabled(bool $value = true): self
+    {
+        $this->ideHelperEnabled = $value;
+
+        return $this;
+    }
+
+    /**
+     * The path where IDE helper files should be written, relative to the project root.
+     *
+     * ```php
+     * ->ideHelperPath('vendor/_craft')
+     * ```
+     *
+     * @group System
+     *
+     * @see $ideHelperPath
+     * @since 6.0.0
+     */
+    public function ideHelperPath(string $value): self
+    {
+        $this->ideHelperPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it's installed
      * and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
      *
      * ```php
@@ -6137,7 +6219,7 @@ class GeneralConfig extends BaseConfig
         // Store the DateInterval separately for getRememberedUserSessionDuration()
         try {
             $interval = DateTimeHelper::toDateInterval($value);
-        } catch (\yii\base\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             throw new InvalidConfigException($e->getMessage(), 0, $e);
         }
 

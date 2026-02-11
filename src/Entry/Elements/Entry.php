@@ -10,8 +10,7 @@ use craft\base\ExpirableElementInterface;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\controllers\ElementIndexesController;
-use craft\db\Connection;
-use craft\db\FixedOrderExpression;
+use craft\controllers\ElementsController;
 use craft\elements\actions\Copy;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
@@ -26,21 +25,17 @@ use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\entries\SectionConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\db\EagerLoadPlan;
-use craft\events\DefineEntryTypesEvent;
-use craft\events\DefineMetaFields;
-use craft\events\ElementCriteriaEvent;
-use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
-use craft\models\FieldLayout;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
@@ -50,6 +45,9 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Events\DefineEntryTypes;
+use CraftCms\Cms\Entry\Events\DefineMetaFields;
+use CraftCms\Cms\Entry\Events\DefineParentSelectionCriteria;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Validation\EntryRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -57,6 +55,8 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -81,11 +81,11 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Override;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -100,7 +100,7 @@ use function CraftCms\Cms\t;
  * @property int[] $authorIds the entry authors’ IDs
  */
 #[Ruleset(EntryRules::class)]
-final class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface
+class Entry extends Element implements Colorable, ExpirableElementInterface, Iconic, NestedElementInterface
 {
     use NestedElementTrait {
         eagerLoadingMap as traitEagerLoadingMap;
@@ -114,30 +114,6 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
     public const string STATUS_PENDING = 'pending';
 
     public const string STATUS_EXPIRED = 'expired';
-
-    /**
-     * @event DefineEntryTypesEvent The event that is triggered when defining the available entry types for the entry
-     *
-     * @see getAvailableEntryTypes()
-     * @since 3.6.0
-     */
-    public const string EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
-
-    /**
-     * @event ElementCriteriaEvent The event that is triggered when defining the parent selection criteria.
-     *
-     * @see _parentOptionCriteria()
-     * @since 4.4.0
-     */
-    public const string EVENT_DEFINE_PARENT_SELECTION_CRITERIA = 'defineParentSelectionCriteria';
-
-    /**
-     * @event DefineMetaFields The event that is triggered when defining the meta fields.
-     *
-     * @see metaFieldsHtml()
-     * @since 5.9.0
-     */
-    public const string EVENT_DEFINE_META_FIELDS = 'defineEntryMetaFields';
 
     /**
      * {@inheritdoc}
@@ -620,13 +596,13 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
                         ->pluck('id')
                         ->all();
 
-                    return new \CraftCms\Cms\Database\Expressions\FixedOrderExpression('entries.sectionId', $sectionIds);
+                    return new FixedOrderExpression('entries.sectionId', $sectionIds);
                 },
                 'attribute' => 'section',
             ],
             [
                 'label' => t('Entry Type'),
-                'orderBy' => function (int $dir, Connection $db) {
+                'orderBy' => function (int $dir) {
                     $entryTypeIds = EntryTypes::getAllEntryTypes()
                         ->sort(fn (EntryType $a, EntryType $b) => $dir === SORT_ASC
                             ? $a->name <=> $b->name
@@ -634,7 +610,7 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
                         ->pluck('id')
                         ->all();
 
-                    return new FixedOrderExpression('entries.typeId', $entryTypeIds, $db);
+                    return new FixedOrderExpression('entries.typeId', $entryTypeIds);
                 },
                 'attribute' => 'type',
             ],
@@ -642,13 +618,13 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
                 'label' => t('Post Date'),
                 'orderBy' => function (int $dir) {
                     if ($dir === SORT_ASC) {
-                        if (Craft::$app->getDb()->getIsMysql()) {
+                        if (DB::getDriverName() === 'mysql') {
                             return DB::raw('postDate IS NOT NULL DESC, postDate ASC');
                         }
 
                         return DB::raw('postDate ASC NULLS LAST');
                     }
-                    if (Craft::$app->getDb()->getIsMysql()) {
+                    if (DB::getDriverName() === 'mysql') {
                         return DB::raw('postDate IS NULL DESC, postDate DESC');
                     }
 
@@ -978,9 +954,10 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
     /**
      * @var int[] Original entry author IDs
      *
+     * @see getOldAuthorIds()
      * @see setAuthorIds()
      */
-    private array $_oldAuthorIds;
+    private ?array $_oldAuthorIds = null;
 
     /**
      * @var User[]|null Entry authors
@@ -1088,10 +1065,12 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
             isset($this->sectionId)
         ) {
             $authorIds = $this->normalizeAuthorIds($authorIds ?? $authorId);
+            $oldAuthorIds = $this->getAuthorIds();
             if (
-                $authorIds !== $this->getAuthorIds() &&
+                $authorIds !== $oldAuthorIds &&
                 $this->canChangeAuthor()
             ) {
+                $this->_oldAuthorIds = $oldAuthorIds;
                 $this->setAuthorIds($authorIds);
             }
         }
@@ -1672,11 +1651,10 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
             throw new InvalidConfigException('Either `sectionId` or `fieldId` + `ownerId` must be set on the entry.');
         }
 
-        // Fire a 'defineEntryTypes' event
-        if ($triggerEvent && $this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
-            $event = new DefineEntryTypesEvent(['entryTypes' => $entryTypes]);
-            $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
-            $entryTypes = $event->entryTypes;
+        if ($triggerEvent) {
+            event($event = new DefineEntryTypes($this, $entryTypes));
+
+            return $event->entryTypes;
         }
 
         return $entryTypes;
@@ -1768,6 +1746,11 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
         }
 
         return $this->_authorIds;
+    }
+
+    public function getOldAuthorIds(): ?array
+    {
+        return $this->_oldAuthorIds;
     }
 
     /**
@@ -2035,6 +2018,10 @@ final class Entry extends Element implements Colorable, ExpirableElementInterfac
      */
     protected function cpRevisionsUrl(): string
     {
+        if (! $this->sectionId) {
+            return ElementHelper::elementRevisionsUrl($this);
+        }
+
         return sprintf('%s/revisions', $this->cpEditUrl());
     }
 
@@ -2097,6 +2084,32 @@ JS, [
     JS, [
                     $view->namespaceInputId($sectionEditId),
                     ['sectionId' => $this->sectionId],
+                ]);
+            }
+
+            // Field settings
+            if (
+                ! empty($this->fieldId) &&
+                Craft::$app->controller instanceof ElementsController &&
+                Craft::$app->controller->element === $this
+            ) {
+                $fieldEditId = sprintf('edit-field-%s', mt_rand());
+                $actions[] = [
+                    'id' => $fieldEditId,
+                    'icon' => 'gear',
+                    'label' => Craft::t('app', 'Field settings'),
+                ];
+
+                $view = Craft::$app->getView();
+                $view->registerJsWithVars(fn ($id, $params) => <<<JS
+    (() => {
+      $('#' + $id).on('activate', function() {
+        new Craft.CpScreenSlideout('fields/edit-field', {params: $params})
+      });
+    })();
+    JS, [
+                    $view->namespaceInputId($fieldEditId),
+                    ['fieldId' => $this->fieldId],
                 ]);
             }
         }
@@ -2446,18 +2459,9 @@ JS, [
 
         $fields[] = parent::metaFieldsHtml($static);
 
-        // Fire a 'defineEntryMetaFields' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_META_FIELDS)) {
-            $event = new DefineMetaFields([
-                'element' => $this,
-                'static' => $static,
-                'fields' => $fields,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_META_FIELDS, $event);
-            $fields = $event->fields;
-        }
+        event($event = new DefineMetaFields($this, $static, $fields));
 
-        return implode("\n", $fields);
+        return implode("\n", $event->fields);
     }
 
     /**
@@ -2572,15 +2576,9 @@ JS;
             $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
         }
 
-        // Fire a 'defineParentSelectionCriteria' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA)) {
-            $event = new ElementCriteriaEvent(['criteria' => $parentOptionCriteria]);
-            $this->trigger(self::EVENT_DEFINE_PARENT_SELECTION_CRITERIA, $event);
+        event($event = new DefineParentSelectionCriteria($this, $parentOptionCriteria));
 
-            return $event->criteria;
-        }
-
-        return $parentOptionCriteria;
+        return $event->criteria;
     }
 
     /**

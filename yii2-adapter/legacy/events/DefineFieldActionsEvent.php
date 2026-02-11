@@ -15,6 +15,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.9.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems} instead.
  */
 class DefineFieldActionsEvent extends DefineMenuItemsEvent
 {

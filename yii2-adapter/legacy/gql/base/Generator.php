@@ -10,8 +10,8 @@ namespace craft\gql\base;
 use Craft;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\errors\GqlException;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Log;
 

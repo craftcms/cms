@@ -25,7 +25,7 @@ use CraftCms\Cms\Updates\Updates;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\di\Instance;
 use yii\web\BadRequestHttpException;

@@ -60,9 +60,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use InvalidArgumentException;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -296,11 +296,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             $config['maxEntries'] = Arr::pull($config, 'maxBlocks');
         }
 
-        if (! empty($config['showCardsInGrid']) && ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS) {
-            $config['viewMode'] = self::VIEW_MODE_CARDS_GRID;
-        }
-        $config['showCardsInGrid'] = ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS_GRID;
-
         parent::__construct($config);
 
         foreach ($this->siteSettings as &$siteSettings) {
@@ -353,7 +348,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'entryTypes' => ['array', 'min:1'],

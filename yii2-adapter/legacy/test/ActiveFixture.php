@@ -7,11 +7,11 @@
 
 namespace craft\test;
 
-use craft\models\FieldLayout;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\db\ActiveRecord;
 use yii\db\TableSchema;
 use yii\log\Logger;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests\TestClasses;
 
-use craft\models\FieldLayout;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Validation\Validator as LaravelValidator;
 use Override;

@@ -9,15 +9,15 @@ use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\db\CoalesceColumnsExpression;
 use craft\elements\conditions\ElementConditionInterface;
-use craft\errors\FieldNotFoundException;
-use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
@@ -262,11 +262,38 @@ final class ElementSources
      */
     public function getPages(string $elementType): Collection
     {
-        return collect($this->sourceConfigs($elementType) ?? [])
-            ->filter(fn (array $source) => isset($source['page']))
-            ->groupBy('page')
-            ->filter(fn (Collection $sources) => $sources->contains(fn (array $source) => ! ($source['disabled'] ?? false)))
-            ->keys();
+        $pages = [];
+        foreach ($this->sourceConfigs($elementType) ?? [] as $source) {
+            // divide all sources into pages
+            if (isset($source['page'])) {
+                $pages[$source['page']][] = $source;
+            }
+        }
+
+        // Remove pages that only have disabled sources
+        $pages = array_filter(
+            $pages,
+            fn (array $sources) => collect($sources)->contains(fn (array $source) => ! ($source['disabled'] ?? false)),
+        );
+
+        // Remove pages that only have headings, disabled sources, and sources not available for the user
+        $pages = array_filter($pages, fn (array $sources) => collect($sources)->contains(function (array $source) {
+            if ($source['type'] === self::TYPE_HEADING) {
+                return false;
+            }
+
+            if ($source['disabled'] ?? false) {
+                return false;
+            }
+
+            if (! $this->showCustomSource($source)) {
+                return false;
+            }
+
+            return true;
+        }));
+
+        return collect($pages)->keys();
     }
 
     /**
@@ -452,7 +479,7 @@ final class ElementSources
      * Returns all the field layouts available for the given element source.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @return Collection<FieldLayout>
+     * @return Collection<\CraftCms\Cms\FieldLayout\FieldLayout>
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): Collection
     {
@@ -526,7 +553,7 @@ final class ElementSources
      * Returns additional sort options that should be available for an element index source that includes the given
      * field layouts.
      *
-     * @param  FieldLayout[]|Collection<FieldLayout>  $fieldLayouts
+     * @param  \CraftCms\Cms\FieldLayout\FieldLayout[]|Collection<\CraftCms\Cms\FieldLayout\FieldLayout>  $fieldLayouts
      * @return Collection<array>
      */
     public function getSortOptionsForFieldLayouts(array|Collection $fieldLayouts): Collection

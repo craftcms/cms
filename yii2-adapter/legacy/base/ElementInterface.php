@@ -11,13 +11,13 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\InvalidFieldException;
-use craft\models\FieldLayout;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\User\Elements\User;
@@ -565,10 +565,11 @@ interface ElementInterface extends
      * This method should return an array whose keys represent element attribute names, and whose values make
      * up the table’s column headers.
      *
-     * @param FieldLayout|null $fieldLayout
-     * @since 5.9.0
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout|null $fieldLayout
+     *
      * @return array The card attributes.
      *
+     * @since 5.9.0
      * @since 5.5.0
      */
     public static function cardAttributes(?FieldLayout $fieldLayout = null): array;

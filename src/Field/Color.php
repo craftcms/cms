@@ -220,7 +220,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'allowCustomColors' => ['required', 'boolean'],
@@ -231,7 +231,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    public static function getMessages(): array
+    public function getMessages(): array
     {
         return [
             'palette.required_if' => t('Palette cannot be blank if custom colors aren’t allowed.'),
@@ -295,7 +295,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $value;
     }
 
-    #[\Override]
+    #[Override]
     public function getElementRules(ElementInterface $element): array
     {
         return [

@@ -7,8 +7,8 @@
 
 namespace craft\helpers;
 
+use InvalidArgumentException;
 use RuntimeException;
-use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 
 /**

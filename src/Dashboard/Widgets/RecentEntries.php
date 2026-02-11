@@ -59,7 +59,7 @@ final class RecentEntries extends Widget
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [
             'siteId' => ['nullable', 'integer'],

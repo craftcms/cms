@@ -90,11 +90,15 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
             } else {
                 $config['byteLimit'] = (int) $config['fieldLimit'] ?: null;
             }
-            unset($config['limitUnit'], $config['fieldLimit']);
         }
 
         // remove unused settings
-        unset($config['maxLengthUnit'], $config['columnType']);
+        unset(
+            $config['limitUnit'],
+            $config['fieldLimit'],
+            $config['maxLengthUnit'],
+            $config['columnType'],
+        );
 
         parent::__construct($config);
 
@@ -117,7 +121,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'initialRows' => ['nullable', 'integer', 'min:1'],

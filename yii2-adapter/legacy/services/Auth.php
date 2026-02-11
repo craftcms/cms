@@ -19,10 +19,10 @@ use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Password;
+use InvalidArgumentException;
 use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\Component;
-use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 
 /**

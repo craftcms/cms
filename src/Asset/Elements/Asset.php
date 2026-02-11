@@ -32,9 +32,6 @@ use craft\errors\FileException;
 use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
-use craft\events\AssetEvent;
-use craft\events\DefineAssetUrlEvent;
-use craft\events\GenerateTransformEvent;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
@@ -45,7 +42,6 @@ use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\models\FieldLayout;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
@@ -56,6 +52,11 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
+use CraftCms\Cms\Asset\Events\BeforeDefineAssetUrl;
+use CraftCms\Cms\Asset\Events\BeforeGenerateTransform;
+use CraftCms\Cms\Asset\Events\BeforeHandleFile;
+use CraftCms\Cms\Asset\Events\DefineAssetUrl;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
@@ -66,6 +67,7 @@ use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Users;
@@ -82,11 +84,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Override;
 use Stringable;
 use Twig\Markup;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -128,40 +130,8 @@ use function CraftCms\Cms\t;
  * @property-read string|null $mimeType the file’s MIME type, if it can be determined
  */
 #[Ruleset(AssetRules::class)]
-final class Asset extends Element
+class Asset extends Element
 {
-    // Events
-    // -------------------------------------------------------------------------
-
-    /**
-     * @event AssetEvent The event that is triggered before an asset is uploaded to volume.
-     */
-    public const string EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
-
-    /**
-     * @event GenerateTransformEvent The event that is triggered before a transform is generated for an asset.
-     */
-    public const string EVENT_BEFORE_GENERATE_TRANSFORM = 'beforeGenerateTransform';
-
-    /**
-     * @event GenerateTransformEvent The event that is triggered after a transform is generated for an asset.
-     */
-    public const string EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
-
-    /**
-     * @event DefineAssetUrlEvent The event that is triggered before defining the asset’s URL.
-     *
-     * @see getUrl()
-     */
-    public const EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
-
-    /**
-     * @event DefineAssetUrlEvent The event that is triggered when defining the asset’s URL.
-     *
-     * @see getUrl()
-     */
-    public const EVENT_DEFINE_URL = 'defineUrl';
-
     // Location error codes
     // -------------------------------------------------------------------------
 
@@ -1318,7 +1288,8 @@ final class Asset extends Element
 
         try {
             return parent::__get($name);
-        } catch (UnknownPropertyException $e) {
+            /** @phpstan-ignore catch.neverThrown */
+        } catch (UnknownPropertyException|\CraftCms\Cms\Component\Exceptions\UnknownPropertyException $e) {
             // Is $name a transform handle?
             if (($transform = Craft::$app->getImageTransforms()->getTransformByHandle($name)) !== null) {
                 return $this->copyWithTransform($transform);
@@ -2087,35 +2058,20 @@ JS, [
 
         $transform ??= $this->_transform;
 
-        // Fire a 'beforeDefineUrl' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DEFINE_URL)) {
-            $event = new DefineAssetUrlEvent([
-                'transform' => $transform,
-                'asset' => $this,
-            ]);
-            $this->trigger(self::EVENT_BEFORE_DEFINE_URL, $event);
-            $url = $event->url;
-        } else {
-            $url = null;
-        }
+        event($event = new BeforeDefineAssetUrl($this, $transform));
 
-        // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
-        if ($url === null && ! ($event->handled ?? false)) {
+        $url = $event->url;
+
+        // If BeforeDefineAssetUrl::$url is set to null, only respect that if $handled is true
+        if ($event->url === null && ! ($event->handled ?? false)) {
             $url = $this->_url($transform, $immediately);
         }
 
-        // Fire a 'defineUrl' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
-            $event = new DefineAssetUrlEvent([
-                'url' => $url,
-                'transform' => $transform,
-                'asset' => $this,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_URL, $event);
-            // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
-            if ($event->url !== null || $event->handled) {
-                $url = $event->url;
-            }
+        event($event = new DefineAssetUrl($this, $transform, $url));
+
+        // If DefineAssetUrl::$url is set to null, only respect that if $handled is true
+        if ($event->url !== null || $event->handled) {
+            $url = $event->url;
         }
 
         return $url !== null ? Html::encodeSpaces($url) : $url;
@@ -2157,17 +2113,11 @@ JS, [
                 $immediately = Cms::config()->generateTransformsBeforePageLoad;
             }
 
-            // Fire a 'beforeGenerateTransform' event
-            if ($this->hasEventHandlers(self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
-                $event = new GenerateTransformEvent([
-                    'asset' => $this,
-                    'transform' => $transform,
-                ]);
-                $this->trigger(self::EVENT_BEFORE_GENERATE_TRANSFORM, $event);
-                // If a plugin set the url, we'll just use that.
-                if ($event->url !== null) {
-                    return Html::encodeSpaces($event->url);
-                }
+            event($event = new BeforeGenerateTransform($this, $transform));
+
+            // If a plugin set the url, we'll just use that.
+            if ($event->url !== null) {
+                return Html::encodeSpaces($event->url);
             }
 
             $imageTransformer = $transform->getImageTransformer();
@@ -2183,15 +2133,7 @@ JS, [
                 return null;
             }
 
-            // Fire an 'afterGenerateTransform' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {
-                $event = new GenerateTransformEvent([
-                    'asset' => $this,
-                    'transform' => $transform,
-                    'url' => $url,
-                ]);
-                $this->trigger(self::EVENT_AFTER_GENERATE_TRANSFORM, $event);
-            }
+            event(new AfterGenerateTransform($this, $transform, $url));
 
             return $url;
         }
@@ -3120,14 +3062,8 @@ JS;
         }
 
         // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
-        if (
-            (isset($this->newLocation) || isset($this->tempFilePath)) &&
-            $this->hasEventHandlers(self::EVENT_BEFORE_HANDLE_FILE)
-        ) {
-            $this->trigger(self::EVENT_BEFORE_HANDLE_FILE, new AssetEvent([
-                'asset' => $this,
-                'isNew' => ! $this->id,
-            ]));
+        if (isset($this->newLocation) || isset($this->tempFilePath)) {
+            event(new BeforeHandleFile($this, isNew: ! $this->id));
         }
 
         // Set the kind based on filename

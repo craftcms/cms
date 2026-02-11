@@ -15,6 +15,7 @@ use CraftCms\Cms\Element\Element;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.8.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\Render} instead.
  */
 class RenderElementEvent extends Event
 {

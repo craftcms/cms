@@ -7,21 +7,19 @@
 
 namespace craft\base;
 
-use craft\models\FieldLayout;
-
-/**
- * FieldLayoutProviderInterface defines the common interface to be implemented by classes
- * which provide a field layout.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.5.0
- */
-interface FieldLayoutProviderInterface extends \CraftCms\Cms\Component\Contracts\Grippable
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Returns the field layout defined by this component.
+     * FieldLayoutProviderInterface defines the common interface to be implemented by classes
+     * which provide a field layout.
      *
-     * @return FieldLayout
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.5.0
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface} instead.
      */
-    public function getFieldLayout(): FieldLayout;
+    interface FieldLayoutProviderInterface extends \CraftCms\Cms\Component\Contracts\Grippable
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface::class, FieldLayoutProviderInterface::class);

@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use craft\models\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use yii\base\Event;
 
 /**
@@ -15,6 +15,7 @@ use yii\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\RegisterCardAttributes} instead.
  */
 class RegisterElementCardAttributesEvent extends Event
 {
@@ -24,7 +25,7 @@ class RegisterElementCardAttributesEvent extends Event
     public array $cardAttributes = [];
 
     /**
-     * @var FieldLayout|null The field layout associated with the card designer
+     * @var \CraftCms\Cms\FieldLayout\FieldLayout|null The field layout associated with the card designer
      * @since 5.9.0
      */
     public ?FieldLayout $fieldLayout = null;

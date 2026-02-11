@@ -57,7 +57,7 @@ it('can add extra field types through an event', function () {
 it('can get all field types that have content', function () {
     class CustomFieldWithoutContent extends Field
     {
-        #[\Override]
+        #[Override]
         public static function dbType(): null
         {
             return null;
@@ -204,7 +204,6 @@ it('can create a field config from a field', function () {
     expect($this->fields->createFieldConfig($field))->toBe([
         'name' => 'Plain Text',
         'handle' => 'plainText',
-        'columnSuffix' => null,
         'instructions' => null,
         'searchable' => false,
         'translationMethod' => 'none',

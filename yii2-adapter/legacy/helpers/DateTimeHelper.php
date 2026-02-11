@@ -17,9 +17,9 @@ use DateTimeInterface;
 use DateTimeZone;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\ErrorException;
-use yii\base\InvalidArgumentException;
 use function CraftCms\Cms\t;
 
 /**

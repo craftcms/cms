@@ -9,10 +9,10 @@ namespace crafttests\unit\test;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\fieldlayoutelements\CustomField;
 use craft\test\TestCase;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use crafttests\fixtures\EntryWithMatrixFixture;
 use yii\base\ErrorException;
 use yii\base\Exception;
