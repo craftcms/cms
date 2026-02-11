@@ -13,32 +13,32 @@ use Illuminate\Support\Facades\Gate;
 beforeEach(function () {
     $this->policy = app(EntryPolicy::class);
 
-    $this->channelSection = new Section(
-        id: 1,
-        name: 'Blog',
-        handle: 'blog',
-        type: SectionType::Channel,
-        uid: 'channel-section-uid',
-        propagationMethod: PropagationMethod::All,
-    );
+    $this->channelSection = new Section([
+        'id' => 1,
+        'name' => 'Blog',
+        'handle' => 'blog',
+        'type' => SectionType::Channel,
+        'uid' => 'channel-section-uid',
+        'propagationMethod' => PropagationMethod::All,
+    ]);
 
-    $this->singleSection = new Section(
-        id: 2,
-        name: 'Homepage',
-        handle: 'homepage',
-        type: SectionType::Single,
-        uid: 'single-section-uid',
-        propagationMethod: PropagationMethod::All,
-    );
+    $this->singleSection = new Section([
+        'id' => 2,
+        'name' => 'Homepage',
+        'handle' => 'homepage',
+        'type' => SectionType::Single,
+        'uid' => 'single-section-uid',
+        'propagationMethod' => PropagationMethod::All,
+    ]);
 
-    $this->customPropagationSection = new Section(
-        id: 3,
-        name: 'Products',
-        handle: 'products',
-        type: SectionType::Channel,
-        uid: 'custom-propagation-uid',
-        propagationMethod: PropagationMethod::Custom,
-    );
+    $this->customPropagationSection = new Section([
+        'id' => 3,
+        'name' => 'Products',
+        'handle' => 'products',
+        'type' => SectionType::Channel,
+        'uid' => 'custom-propagation-uid',
+        'propagationMethod' => PropagationMethod::Custom,
+    ]);
 });
 
 it('is registered with the gate', function () {
