@@ -44,6 +44,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Concerns\Validates;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -63,7 +64,7 @@ use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\t;
 
-abstract class Field extends Component implements Actionable, FieldInterface, Iconic, Stringable
+abstract class Field extends Component implements Actionable, FieldInterface, Iconic, Stringable, Validatable
 {
     use ConfigurableComponent;
     use HasComponentEvents;
