@@ -138,7 +138,7 @@
 
 .lp-draghandle {
   inset-block-start: 0;
-  position: absolute;
+  position: fixed;
   z-index: 101;
   width: 4px;
   height: 100%;

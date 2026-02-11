@@ -93,10 +93,15 @@ final class EntryRules extends ElementRules
                     }
 
                     $authors = $this->component->getAuthors();
-                    foreach ($authors as $author) {
-                        if (! $author->can(sprintf('viewEntries:%s', $section->uid))) {
-                            $fail(t('This user doesn’t have permission to author entries in this section.'));
-                            break;
+                    if ($this->component->getOldAuthorIds() !== null) {
+                        foreach ($authors as $author) {
+                            if (
+                                !in_array($author->id, $this->component->getOldAuthorIds()) &&
+                                !$author->can(sprintf("viewEntries:%s", $this->component->getSection()->uid))
+                            ) {
+                                $fail(t('This user doesn’t have permission to author entries in this section.'));
+                                break;
+                            }
                         }
                     }
                 },

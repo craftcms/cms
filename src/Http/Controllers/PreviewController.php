@@ -10,6 +10,7 @@ use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\RouteToken\Data\RouteToken;
 use CraftCms\Cms\RouteToken\RouteTokens;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Context;
 
+use Illuminate\Support\Facades\Crypt;
 use function CraftCms\Cms\t;
 
 final readonly class PreviewController
@@ -25,6 +27,10 @@ final readonly class PreviewController
 
     public function createToken(Request $request, RouteTokens $tokens, RouteToken $tokenData): JsonResponse|RedirectResponse
     {
+        if ($token = $request->input('previewToken')) {
+            $tokenData->previewToken = Crypt::decrypt($token);
+        }
+
         match (true) {
             isset($tokenData->draftId) => $this->requireSessionAuthorization("previewDraft:{$tokenData->draftId}"),
             isset($tokenData->revisionId) => $this->requireSessionAuthorization("previewRevision:{$tokenData->revisionId}"),

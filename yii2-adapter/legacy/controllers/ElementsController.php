@@ -370,7 +370,7 @@ class ElementsController extends Controller
         [$docTitle, $title] = $this->_editElementTitles($element);
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
-        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? UrlHelper::cpReferralUrl() ?? ElementHelper::postEditUrl($element);
+        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? ElementHelper::postEditUrl($element);
 
         // Site statuses
         if ($canEditMultipleSites) {
@@ -380,6 +380,8 @@ class ElementsController extends Controller
                 $element->siteId => $element->enabled,
             ];
         }
+
+        $previewToken = $previewTargets ? Str::random(extendedChars: true) : null;
 
         $notice = null;
         if ($element->isProvisionalDraft) {
@@ -460,7 +462,8 @@ class ElementsController extends Controller
                         'isProvisionalDraft' => $element->isProvisionalDraft,
                         'isUnpublishedDraft' => $isUnpublishedDraft,
                         'previewTargets' => $previewTargets,
-                        'previewToken' => $previewTargets ? Str::random(extendedChars: true) : null,
+                        'previewToken' => $previewToken,
+                        'hashedPreviewToken' => $previewToken ? Crypt::encrypt($previewToken) : null,
                         'previewParamValue' => $previewTargets ? Crypt::encrypt(Str::random(10)) : null,
                         'revisionId' => $element->revisionId,
                         'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
@@ -958,7 +961,7 @@ JS, [
             ];
         }
 
-        if ($hasMoreRevisions) {
+        if ($hasMoreRevisions && $revisionsPageUrl) {
             $items[] = ['type' => MenuItemType::HR];
             $items[] = [
                 'label' => t('View all revisions'),

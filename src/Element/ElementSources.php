@@ -262,11 +262,38 @@ final class ElementSources
      */
     public function getPages(string $elementType): Collection
     {
-        return collect($this->sourceConfigs($elementType) ?? [])
-            ->filter(fn (array $source) => isset($source['page']))
-            ->groupBy('page')
-            ->filter(fn (Collection $sources) => $sources->contains(fn (array $source) => ! ($source['disabled'] ?? false)))
-            ->keys();
+        $pages = [];
+        foreach ($this->sourceConfigs($elementType) ?? [] as $source) {
+            // divide all sources into pages
+            if (isset($source['page'])) {
+                $pages[$source['page']][] = $source;
+            }
+        }
+
+        // Remove pages that only have disabled sources
+        $pages = array_filter(
+            $pages,
+            fn(array $sources) => collect($sources)->contains(fn(array $source) => !($source['disabled'] ?? false)),
+        );
+
+        // Remove pages that only have headings, disabled sources, and sources not available for the user
+        $pages = array_filter($pages, fn(array $sources) => collect($sources)->contains(function(array $source) {
+            if ($source['type'] === self::TYPE_HEADING) {
+                return false;
+            }
+
+            if ($source['disabled'] ?? false) {
+                return false;
+            }
+
+            if (! $this->showCustomSource($source)) {
+                return false;
+            }
+
+            return true;
+        }));
+
+        return collect($pages)->keys();
     }
 
     /**
