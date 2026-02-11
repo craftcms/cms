@@ -516,7 +516,7 @@ final class Sections
                 // Save the structure
                 $structureUid = $data['structure']['uid'];
                 $structure = Structures::getStructureByUid($structureUid, true)
-                    ?? new Structure(uid: $structureUid);
+                    ?? new Structure(['uid' => $structureUid]);
                 $isNewStructure = empty($structure->id);
                 $structure->maxLevels = $data['structure']['maxLevels'];
 
