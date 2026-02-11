@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+
+// Bootstrap the testbench application
+require __DIR__ . '/../vendor/autoload.php';
+
+$app = require __DIR__ . '/../vendor/orchestra/testbench-core/laravel/bootstrap/app.php';
+
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+
+// Manually register wayfinder command before running
+$cmd = $app->make(Laravel\Wayfinder\GenerateCommand::class);
+$kernel->registerCommand($cmd);
+
+// Run the command with forwarded arguments
+$status = $kernel->handle(
+    $input = new Symfony\Component\Console\Input\ArgvInput(array_merge(['artisan', 'wayfinder:generate'], array_slice($argv, 1))),
+    new Symfony\Component\Console\Output\ConsoleOutput
+);
+
+$kernel->terminate($input, $status);
+
+exit($status);

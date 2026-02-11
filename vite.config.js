@@ -49,7 +49,7 @@ export default defineConfig(({mode}) => {
       tsconfigPaths(),
       wayfinder({
         path: 'resources/js',
-        command: './vendor/bin/testbench wayfinder:generate',
+        command: './bin/wayfinder-generate',
       }),
       vue({
         template: {
