@@ -11,9 +11,9 @@ namespace craft\queue;
 
 use craft\helpers\Queue as QueueHelper;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Queue\Data\ProgressData;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Queue\Queue as LaravelQueue;
 use Illuminate\Queue\Failed\FailedJobProviderInterface;
@@ -157,7 +157,7 @@ class QueueComponent extends Component implements QueueInterface
      */
     public function getJobInfo(?int $limit = null): array
     {
-        return app(JobProgress::class)->getJobInfo($limit)->map(fn(ProgressData $job) => [
+        return app(JobProgress::class)->getJobInfo($limit)->map(fn(JobProgressModel $job) => [
             'id' => $job->uid,
             'status' => $job->status->value,
             'progress' => $job->progress,
