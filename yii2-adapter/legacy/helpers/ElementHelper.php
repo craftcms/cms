@@ -1012,6 +1012,24 @@ class ElementHelper
     }
 
     /**
+     * Returns a generic URL for viewing an element’s revisions.
+     *
+     * @param ElementInterface $element
+     * @return string
+     * @since 5.9.7
+     */
+    public static function elementRevisionsUrl(ElementInterface $element): string
+    {
+        $url = sprintf('revisions/%s', $element->getCanonicalId());
+
+        if ($element->slug && !static::isTempSlug($element->slug)) {
+            $url .= "-$element->slug";
+        }
+
+        return UrlHelper::cpUrl($url);
+    }
+
+    /**
      * Returns an element action’s JavaScript configuration.
      *
      * @param ElementActionInterface $action

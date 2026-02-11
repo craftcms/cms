@@ -3979,7 +3979,7 @@ class Elements extends Component
             $runValidation,
             $originalDateUpdated,
             $dirtyFields,
-            $siteSettingsRecord,
+            &$siteSettingsRecord,
         ) {
             // Figure out whether we will be updating the search index (and memoize that for nested element saves)
             $oldUpdateSearchIndex = $this->_updateSearchIndex;

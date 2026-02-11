@@ -16,6 +16,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Crypt;
 
 use function CraftCms\Cms\t;
 
@@ -26,7 +27,11 @@ final readonly class PreviewController
     public function createToken(Request $request, RouteTokens $tokens): JsonResponse|RedirectResponse
     {
         $tokenData = new RouteToken($request->all());
+        if ($token = $request->input('previewToken')) {
+            $tokenData->previewToken = Crypt::decrypt($token);
+        }
         $tokenData->validate(throw: true);
+        
 
         match (true) {
             isset($tokenData->draftId) => $this->requireSessionAuthorization("previewDraft:{$tokenData->draftId}"),
