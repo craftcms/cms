@@ -90,6 +90,8 @@ final readonly class CustomFieldIdeHelperGenerator
         $entryTypeFields = $this->collectFieldsByEntryType();
         $volumeFields = $this->collectFieldsByVolume();
 
+        $importMap = $this->shortenTypes($elementFields, $entryTypeFields, $volumeFields);
+
         $lines = [
             '<?php',
             '',
@@ -106,7 +108,6 @@ final readonly class CustomFieldIdeHelperGenerator
 
         // Group all classes by namespace
         $namespaces = [];
-
         foreach ($elementFields as $elementClass => $fields) {
             if ($elementClass === Entry::class && $entryTypeFields !== []) {
                 continue;
@@ -138,8 +139,14 @@ final readonly class CustomFieldIdeHelperGenerator
         foreach ($namespaces as $namespace => $classes) {
             $lines[] = "namespace {$namespace} {";
 
+            // Collect use imports needed for this namespace block
+            $namespaceImports = $this->collectImportsForNamespace($classes, $importMap, $namespace);
+            foreach ($namespaceImports as $import) {
+                $lines[] = "    use {$import};";
+            }
+
             foreach ($classes as $i => $class) {
-                if ($i > 0) {
+                if ($i > 0 || $namespaceImports !== []) {
                     $lines[] = '';
                 }
 
@@ -341,5 +348,105 @@ final readonly class CustomFieldIdeHelperGenerator
         }, explode('|', $type));
 
         return implode('|', $types);
+    }
+
+    /**
+     * Shorten all FQCNs in type strings and return the import map.
+     *
+     * Modifies the passed arrays in-place, replacing FQCNs with short class names.
+     *
+     * @param  array<string, array<string, string>>  ...$fieldGroups
+     * @return array<string, string> FQCN → short name
+     */
+    private function shortenTypes(array &...$fieldGroups): array
+    {
+        // Collect all FQCNs from type strings
+        $fqcns = [];
+        foreach ($fieldGroups as $group) {
+            foreach ($group as $fields) {
+                foreach ($fields as $type) {
+                    preg_match_all('/\\\\[A-Za-z_][A-Za-z0-9_\\\\]+/', $type, $matches);
+                    foreach ($matches[0] as $match) {
+                        $fqcns[ltrim($match, '\\')] = true;
+                    }
+                }
+            }
+        }
+
+        if ($fqcns === []) {
+            return [];
+        }
+
+        // Build import map: FQCN → short name
+        // If short names conflict, keep the FQCN as-is (don't import)
+        $shortNameCounts = [];
+        foreach (array_keys($fqcns) as $fqcn) {
+            $shortNameCounts[class_basename($fqcn)][] = $fqcn;
+        }
+
+        $importMap = [];
+        foreach ($shortNameCounts as $shortName => $matchingFqcns) {
+            if (count($matchingFqcns) === 1) {
+                $importMap[$matchingFqcns[0]] = $shortName;
+            }
+        }
+
+        // Replace FQCNs in all type strings (longest first to avoid partial replacements)
+        $replacements = [];
+        foreach ($importMap as $fqcn => $shortName) {
+            $replacements['\\'.$fqcn] = $shortName;
+        }
+        uksort($replacements, fn (string $a, string $b) => strlen($b) <=> strlen($a));
+
+        foreach ($fieldGroups as &$group) {
+            foreach ($group as &$fields) {
+                foreach ($fields as &$type) {
+                    $type = strtr($type, $replacements);
+                }
+            }
+        }
+
+        return $importMap;
+    }
+
+    /**
+     * Collect the use imports needed for a namespace block based on the short names referenced by its classes.
+     *
+     * @param  list<array{className: string, fields: array<string, string>, extends?: string, see?: string}>  $classes
+     * @param  array<string, string>  $importMap  FQCN → short name
+     * @return list<string>
+     */
+    private function collectImportsForNamespace(array $classes, array $importMap, string $namespace): array
+    {
+        $usedShortNames = [];
+        foreach ($classes as $class) {
+            foreach ($class['fields'] as $type) {
+                // Split on non-word characters to find all identifiers (handles generics, unions)
+                foreach (preg_split('/[^A-Za-z0-9_]+/', $type) as $token) {
+                    if ($token !== '') {
+                        $usedShortNames[$token] = true;
+                    }
+                }
+            }
+        }
+
+        $imports = [];
+        foreach ($importMap as $fqcn => $shortName) {
+            if (! isset($usedShortNames[$shortName])) {
+                continue;
+            }
+
+            // Don't import classes that belong to the current namespace
+            $fqcnNamespace = substr($fqcn, 0, (int) strrpos($fqcn, '\\'));
+            if ($fqcnNamespace === $namespace) {
+                continue;
+            }
+
+            $imports[] = $fqcn;
+        }
+
+        sort($imports);
+
+        return $imports;
     }
 }
