@@ -98,7 +98,7 @@ describe('CustomFieldIdeHelperGenerator', function () {
             ->and($generator->normalizeHandle('simpleHandle'))->toBe('SimpleHandle');
     });
 
-    it('generates section-specific entry type classes', function () {
+    it('generates entry type classes', function () {
         $field = Field::factory()->create([
             'handle' => 'articleBody',
             'type' => PlainText::class,
@@ -118,14 +118,11 @@ describe('CustomFieldIdeHelperGenerator', function () {
         $helperFile = $this->ideHelperPath.'/custom-fields.php';
         $content = File::get($helperFile);
 
-        $sectionHandle = \CraftCms\Cms\Support\Str::studly($entryModel->section->handle);
         $entryTypeHandle = \CraftCms\Cms\Support\Str::studly($entryModel->entryType->handle);
 
         expect($content)
-            ->toContain("class {$sectionHandle}_{$entryTypeHandle}")
-            ->toContain('$articleBody')
-            ->toContain('@mixin \CraftCms\Cms\Entry\Elements\Entry')
-            ->not->toContain('extends Entry');
+            ->toContain("class {$entryTypeHandle} extends Entry")
+            ->toContain('$articleBody');
     });
 
     it('generates volume-specific asset classes', function () {
@@ -153,7 +150,7 @@ describe('CustomFieldIdeHelperGenerator', function () {
         $content = File::get($helperFile);
 
         expect($content)
-            ->toContain('class Asset_Images')
+            ->toContain('class Images_Asset')
             ->toContain('$altText');
     });
 
@@ -196,9 +193,9 @@ describe('CustomFieldIdeHelperGenerator', function () {
         $content = File::get($helperFile);
 
         expect($content)
-            ->toContain('class Asset_Images')
+            ->toContain('class Images_Asset')
             ->toContain('$altText')
-            ->toContain('class Asset_Documents')
+            ->toContain('class Documents_Asset')
             ->toContain('$caption');
     });
 

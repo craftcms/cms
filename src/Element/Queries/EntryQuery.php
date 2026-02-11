@@ -26,7 +26,9 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 /**
- * @extends ElementQuery<Entry>
+ * @template T of Entry
+ *
+ * @extends ElementQuery<T>
  */
 final class EntryQuery extends ElementQuery
 {

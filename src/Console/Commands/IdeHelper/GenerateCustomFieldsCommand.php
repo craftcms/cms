@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console\Commands\IdeHelper;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\IdeHelper\CustomFieldIdeHelperGenerator;
 use Illuminate\Console\Command;
 
@@ -17,9 +18,17 @@ final class GenerateCustomFieldsCommand extends Command
 
     public function handle(CustomFieldIdeHelperGenerator $generator): int
     {
+        if (! Cms::config()->ideHelperEnabled) {
+            $this->components->warn(t('IDE helper generation is disabled.'));
+
+            return self::SUCCESS;
+        }
+
         $this->components->task(
             t('Generating custom field IDE helper'),
-            fn () => $generator->generate(),
+            function () use ($generator) {
+                $generator->generate();
+            },
         );
 
         $this->components->info(t('IDE helper generated successfully.'));

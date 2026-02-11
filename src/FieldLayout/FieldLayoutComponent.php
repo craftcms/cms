@@ -17,6 +17,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Traits\Macroable;
 
 use function CraftCms\Cms\t;
 
@@ -27,6 +28,7 @@ use function CraftCms\Cms\t;
  */
 abstract class FieldLayoutComponent extends Component implements Validatable
 {
+    use Macroable;
     use Validates;
 
     private static UserCondition $defaultUserCondition;
