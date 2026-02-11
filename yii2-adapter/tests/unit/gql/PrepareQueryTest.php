@@ -287,10 +287,10 @@ class PrepareQueryTest extends TestCase
             'propagationMethod' => PropagationMethod::All,
             'uid' => self::SECTION_UID,
             'siteSettings' => [
-                1 => new SectionSiteSettings(),
+                1 => new SectionSiteSettings(['siteId' => 1]),
             ],
         ]);
-        Sections::saveSection($this->_section);
+        Sections::saveSection($this->_section, false);
         Craft::$app->set('entries', new Entries());
 
         DB::table(Table::SECTIONS_ENTRYTYPES)->insert([

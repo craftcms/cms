@@ -88,8 +88,8 @@ class ElementFieldResolverTest extends TestCase
                 '__get' => fn($property) =>
                     // Assume fields 'plainTextField' and 'typeface'
                     in_array($property, ['plainTextField', 'typeface'], false) ? 'ok' : $this->$property,
-                'getSection' => fn() => new Section(handle: $sectionHandle),
-                'getType' => fn() => new EntryType(handle: $typeHandle),
+                'getSection' => fn() => new Section(['handle' => $sectionHandle]),
+                'getType' => fn() => new EntryType(['handle' => $typeHandle]),
             ]
         );
 
@@ -218,7 +218,7 @@ class ElementFieldResolverTest extends TestCase
                 'ownerId' => 80,
                 'typeId' => 99,
                 'getTypeId' => 99,
-                'getType' => fn() => new EntryType(handle: $typeHandle),
+                'getType' => fn() => new EntryType(['handle' => $typeHandle]),
             ]
         );
 
