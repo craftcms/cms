@@ -7,7 +7,6 @@ use craft\helpers\FileHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
-use InvalidArgumentException;
 
 test('associative array config transforms', function (array $unpackedData, array $packedData) {
     expect(ProjectConfigHelper::packAssociativeArrays($unpackedData))->toBe($packedData);
