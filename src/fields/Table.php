@@ -504,7 +504,7 @@ class Table extends Field
 
         if ($this->staticRows) {
             // get the order of the default rows
-            $order = ArrayHelper::getColumn($this->defaults, 'rowId');
+            $order = ArrayHelper::getColumn($this->defaults ?? [], 'rowId');
             $missingValueRowIds = null;
 
             if (!empty($order)) {
