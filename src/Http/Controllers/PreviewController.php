@@ -31,7 +31,6 @@ final readonly class PreviewController
             $tokenData->previewToken = Crypt::decrypt($token);
         }
         $tokenData->validate(throw: true);
-        
 
         match (true) {
             isset($tokenData->draftId) => $this->requireSessionAuthorization("previewDraft:{$tokenData->draftId}"),
