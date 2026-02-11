@@ -14,6 +14,7 @@ use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\File;
@@ -255,11 +256,11 @@ final readonly class CustomFieldIdeHelperGenerator
             );
         }
 
-        foreach ($elementFields as $elementClass => $fields) {
-            ksort($elementFields[$elementClass]);
-        }
+        return array_map(function (array $fields) {
+            ksort($fields);
 
-        return $elementFields;
+            return $fields;
+        }, $elementFields);
     }
 
     /**
@@ -267,7 +268,7 @@ final readonly class CustomFieldIdeHelperGenerator
      *
      * @return array<string, string>
      */
-    private function collectFieldsFromLayout(mixed $layout): array
+    private function collectFieldsFromLayout(FieldLayout $layout): array
     {
         $fields = [];
 
@@ -310,21 +311,17 @@ final readonly class CustomFieldIdeHelperGenerator
             return $this->normalizePhpType($field::phpType());
         }
 
-        $entryTypeClasses = array_map(
-            fn ($entryType) => '\\CraftCms\\Cms\\Entry\\Elements\\'.$this->normalizeHandle($entryType->handle),
-            $entryTypes,
-        );
-
-        sort($entryTypeClasses);
-
-        $entryTypeUnion = implode('|', $entryTypeClasses);
+        $entryTypeClasses = collect($entryTypes)
+            ->map(fn ($entryType) => '\\CraftCms\\Cms\\Entry\\Elements\\'.$this->normalizeHandle($entryType->handle))
+            ->sort()
+            ->implode('|');
 
         return sprintf(
             '\\%s<%s>|\\%s<%s>',
             EntryQuery::class,
-            $entryTypeUnion,
+            $entryTypeClasses,
             ElementCollection::class,
-            $entryTypeUnion,
+            $entryTypeClasses,
         );
     }
 
