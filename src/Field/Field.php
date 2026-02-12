@@ -1015,7 +1015,7 @@ JS, [
         }
 
         $castType = null;
-        if (DB::getDriverName() === 'mysql') {
+        if (DB::isMysql()) {
             // If the field uses an optimized DB type, cast it so its values can be indexed
             // (see "Functional Key Parts" on https://dev.mysql.com/doc/refman/8.0/en/create-index.html)
             $castType = match (DbHelper::parseColumnType($dbType)) {

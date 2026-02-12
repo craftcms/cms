@@ -612,7 +612,7 @@ trait QueriesStructures
                 // Use index hints to specify index so Mysql does not select the less
                 // performant one (dateDeleted).
                 ->when(
-                    DB::getDriverName() === 'mysql',
+                    DB::isMysql(),
                     fn (Builder $query) => $query->useIndex('primary'),
                 )
                 ->whereColumn('id', 'structureelements.structureId')

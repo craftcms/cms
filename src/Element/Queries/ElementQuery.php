@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Traits\ForwardsCalls;
 use InvalidArgumentException;
+use Override;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -815,7 +816,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @throws \Exception
      */
-    #[\Override]
+    #[Override]
     public function __get($key): mixed
     {
         if (array_key_exists($key, $this->customFieldValues)) {
@@ -829,7 +830,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         throw new Exception("Property [{$key}] does not exist on the Element query instance.");
     }
 
-    #[\Override]
+    #[Override]
     public function __set(string $name, $value): void
     {
         if (array_key_exists($name, $this->customFieldValues)) {
@@ -1055,7 +1056,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         $this->applyOrderByParams($this);
         $this->applyUniqueParams($this);
 
-        if ($this->getOffset() !== null && $this->getLimit() === null && DB::connection()->getDriverName() === 'mysql') {
+        if ($this->getOffset() !== null && $this->getLimit() === null && DB::isMysql()) {
             // Limit is not optional in MySQL
             $this->subQuery->limit(PHP_INT_MAX);
         }

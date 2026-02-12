@@ -618,13 +618,13 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 'label' => t('Post Date'),
                 'orderBy' => function (int $dir) {
                     if ($dir === SORT_ASC) {
-                        if (DB::getDriverName() === 'mysql') {
+                        if (DB::isMysql()) {
                             return DB::raw('postDate IS NOT NULL DESC, postDate ASC');
                         }
 
                         return DB::raw('postDate ASC NULLS LAST');
                     }
-                    if (DB::getDriverName() === 'mysql') {
+                    if (DB::isMysql()) {
                         return DB::raw('postDate IS NULL DESC, postDate DESC');
                     }
 

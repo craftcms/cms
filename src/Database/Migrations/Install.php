@@ -952,7 +952,7 @@ class Install extends Migration
             $table->primary(['elementId', 'attribute', 'fieldId', 'siteId']);
         });
 
-        if (DB::getDriverName() === 'mysql') {
+        if (DB::isMysql()) {
             Schema::createIndex(Table::ELEMENTS_SITES, ['uri', 'siteId']);
             Schema::createIndex(Table::USERS, ['email']);
             Schema::createIndex(Table::USERS, ['username']);

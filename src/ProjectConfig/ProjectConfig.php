@@ -714,7 +714,7 @@ final class ProjectConfig
                 }
 
                 if (! empty($changeSet['added'])) {
-                    $isMysql = DB::connection()->getDriverName() === 'mysql';
+                    $isMysql = DB::isMysql();
                     $batch = [];
                     $pathsToInsert = [];
                     $additionalCleanupPaths = [];

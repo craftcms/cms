@@ -129,7 +129,7 @@ final readonly class Query
 
         /** @var \Illuminate\Database\Connection $connection */
         $connection = $query->getConnection();
-        $isMysql = $connection->getDriverName() === 'mysql';
+        $isMysql = $connection->isMysql();
 
         // Only PostgreSQL supports case-sensitive strings on non-JSON column values
         if ($isMysql && $columnType !== self::TYPE_JSON) {

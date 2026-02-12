@@ -142,7 +142,7 @@ it('properly handles email with leading/trailing spaces when editing another use
 
 it('can upload a photo for another user', function () {
     // @TODO: Bulk ops cause issues
-    if (\Illuminate\Support\Facades\DB::getDriverName() === 'mysql') {
+    if (\Illuminate\Support\Facades\DB::isMysql()) {
         $this->markTestSkipped('Bulk ops cause issues with MySQL');
     }
 

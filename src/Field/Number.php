@@ -74,7 +74,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     #[Override]
     public static function dbType(): string
     {
-        if (DB::getDriverName() === 'mysql') {
+        if (DB::isMysql()) {
             return sprintf('%s(65,16)', Query::TYPE_DECIMAL);
         }
 
