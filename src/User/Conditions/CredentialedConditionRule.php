@@ -1,38 +1,29 @@
 <?php
 
-namespace craft\elements\conditions\users;
+namespace CraftCms\Cms\User\Conditions;
 
 use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\UserQuery;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\User\Elements\User;
 use function CraftCms\Cms\t;
 
 /**
- * Admin condition rule.
+ * Credentialed condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class AdminConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class CredentialedConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Admin');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function isSelectable(): bool
-    {
-        return Edition::get()->value >= Edition::Pro->value;
+        return t('Credentialed');
     }
 
     /**
@@ -40,7 +31,7 @@ class AdminConditionRule extends BaseLightswitchConditionRule implements Element
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['admin'];
+        return ['status'];
     }
 
     /**
@@ -49,7 +40,11 @@ class AdminConditionRule extends BaseLightswitchConditionRule implements Element
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var UserQuery $query */
-        $query->admin($this->value);
+        if ($this->value) {
+            $query->status(['active', 'pending']);
+        } else {
+            $query->status('inactive');
+        }
     }
 
     /**
@@ -58,6 +53,6 @@ class AdminConditionRule extends BaseLightswitchConditionRule implements Element
     public function matchElement(ElementInterface $element): bool
     {
         /** @var User $element */
-        return $this->matchValue($element->admin);
+        return $this->matchValue($element->getIsCredentialed());
     }
 }

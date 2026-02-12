@@ -1,8 +1,8 @@
 <?php
 
-namespace craft\elements\conditions\users;
+namespace CraftCms\Cms\User\Conditions;
 
-use craft\base\conditions\BaseLightswitchConditionRule;
+use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\UserQuery;
@@ -11,19 +11,19 @@ use CraftCms\Cms\User\Elements\User;
 use function CraftCms\Cms\t;
 
 /**
- * Credentialed condition rule.
+ * Last name condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class CredentialedConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class LastNameConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Credentialed');
+        return t('Last Name');
     }
 
     /**
@@ -31,7 +31,7 @@ class CredentialedConditionRule extends BaseLightswitchConditionRule implements 
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['status'];
+        return ['lastName'];
     }
 
     /**
@@ -40,11 +40,7 @@ class CredentialedConditionRule extends BaseLightswitchConditionRule implements 
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var UserQuery $query */
-        if ($this->value) {
-            $query->status(['active', 'pending']);
-        } else {
-            $query->status('inactive');
-        }
+        $query->lastName($this->paramValue());
     }
 
     /**
@@ -53,6 +49,6 @@ class CredentialedConditionRule extends BaseLightswitchConditionRule implements 
     public function matchElement(ElementInterface $element): bool
     {
         /** @var User $element */
-        return $this->matchValue($element->getIsCredentialed());
+        return $this->matchValue($element->lastName);
     }
 }

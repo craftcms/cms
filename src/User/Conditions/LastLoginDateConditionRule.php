@@ -1,8 +1,8 @@
 <?php
 
-namespace craft\elements\conditions\users;
+namespace CraftCms\Cms\User\Conditions;
 
-use craft\base\conditions\BaseTextConditionRule;
+use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\UserQuery;
@@ -11,19 +11,19 @@ use CraftCms\Cms\User\Elements\User;
 use function CraftCms\Cms\t;
 
 /**
- * First name condition rule.
+ * Last login date condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class FirstNameConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
+class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('First Name');
+        return t('Last Login Date');
     }
 
     /**
@@ -31,7 +31,7 @@ class FirstNameConditionRule extends BaseTextConditionRule implements ElementCon
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['firstName'];
+        return ['lastLoginDate'];
     }
 
     /**
@@ -40,7 +40,7 @@ class FirstNameConditionRule extends BaseTextConditionRule implements ElementCon
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var UserQuery $query */
-        $query->firstName($this->paramValue());
+        $query->lastLoginDate($this->queryParamValue());
     }
 
     /**
@@ -49,6 +49,6 @@ class FirstNameConditionRule extends BaseTextConditionRule implements ElementCon
     public function matchElement(ElementInterface $element): bool
     {
         /** @var User $element */
-        return $this->matchValue($element->firstName);
+        return $this->matchValue($element->lastLoginDate);
     }
 }

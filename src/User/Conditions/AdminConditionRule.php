@@ -1,29 +1,38 @@
 <?php
 
-namespace craft\elements\conditions\users;
+namespace CraftCms\Cms\User\Conditions;
 
-use craft\base\conditions\BaseDateRangeConditionRule;
+use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\UserQuery;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\User\Elements\User;
 use function CraftCms\Cms\t;
 
 /**
- * Last login date condition rule.
+ * Admin condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
+class AdminConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Last Login Date');
+        return t('Admin');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function isSelectable(): bool
+    {
+        return Edition::get()->value >= Edition::Pro->value;
     }
 
     /**
@@ -31,7 +40,7 @@ class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements E
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['lastLoginDate'];
+        return ['admin'];
     }
 
     /**
@@ -40,7 +49,7 @@ class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements E
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var UserQuery $query */
-        $query->lastLoginDate($this->queryParamValue());
+        $query->admin($this->value);
     }
 
     /**
@@ -49,6 +58,6 @@ class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements E
     public function matchElement(ElementInterface $element): bool
     {
         /** @var User $element */
-        return $this->matchValue($element->lastLoginDate);
+        return $this->matchValue($element->admin);
     }
 }

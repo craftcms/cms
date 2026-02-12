@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\elements\conditions\users;
+namespace CraftCms\Cms\User\Conditions;
 
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
@@ -11,19 +11,19 @@ use CraftCms\Cms\User\Elements\User;
 use function CraftCms\Cms\t;
 
 /**
- * Last name condition rule.
+ * First name condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class LastNameConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
+class FirstNameConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Last Name');
+        return t('First Name');
     }
 
     /**
@@ -31,7 +31,7 @@ class LastNameConditionRule extends BaseTextConditionRule implements ElementCond
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['lastName'];
+        return ['firstName'];
     }
 
     /**
@@ -40,7 +40,7 @@ class LastNameConditionRule extends BaseTextConditionRule implements ElementCond
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var UserQuery $query */
-        $query->lastName($this->paramValue());
+        $query->firstName($this->paramValue());
     }
 
     /**
@@ -49,6 +49,6 @@ class LastNameConditionRule extends BaseTextConditionRule implements ElementCond
     public function matchElement(ElementInterface $element): bool
     {
         /** @var User $element */
-        return $this->matchValue($element->lastName);
+        return $this->matchValue($element->firstName);
     }
 }
