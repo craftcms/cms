@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Data;
 
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Rules\SingleSectionUriRule;
 use CraftCms\Cms\Site\Data\Site;
@@ -12,22 +13,24 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Validation\Rules\SiteIdRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use RuntimeException;
-use Spatie\LaravelData\Dto;
-use Spatie\LaravelData\Support\Validation\ValidationContext;
 
-final class SectionSiteSettings extends Dto
+final class SectionSiteSettings extends Component
 {
     private ?Section $section = null;
 
-    public function __construct(
-        public ?int $id = null,
-        public ?int $sectionId = null,
-        public ?int $siteId = null,
-        public bool $enabledByDefault = true,
-        public bool $hasUrls = false,
-        public ?string $uriFormat = null,
-        public ?string $template = null,
-    ) {}
+    public ?int $id = null;
+
+    public ?int $sectionId = null;
+
+    public ?int $siteId = null;
+
+    public bool $enabledByDefault = true;
+
+    public bool $hasUrls = false;
+
+    public ?string $uriFormat = null;
+
+    public ?string $template = null;
 
     /**
      * Returns the section.
@@ -77,7 +80,7 @@ final class SectionSiteSettings extends Dto
         return $site;
     }
 
-    public static function rules(?ValidationContext $context = null): array
+    public function getRules(): array
     {
         return [
             'id' => ['nullable', 'integer'],
@@ -85,7 +88,7 @@ final class SectionSiteSettings extends Dto
             'template' => ['nullable', 'string', 'max:500'],
             'uriFormat' => array_merge(
                 ['required_if:hasUrls,true', new UriFormatRule],
-                $context?->fullPayload['type'] === SectionType::Single->value
+                $this->section?->type === SectionType::Single->value
                     ? [new SingleSectionUriRule]
                     : [],
             ),

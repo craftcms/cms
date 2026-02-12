@@ -75,12 +75,12 @@ class RequestTest extends TestCase
             'SERVER_NAME' => 'craft.test',
         ]);
         $sites = new Sites();
-        $sites->setCurrentSite(new Site(
-            name: 'Site',
-            handle: 'site',
-            language: 'en-US',
-            baseUrl: 'http://craft.test/foo',
-        ));
+        $sites->setCurrentSite(new Site([
+            'name' => 'Site',
+            'handle' => 'site',
+            'language' => 'en-US',
+            'baseUrl' => 'http://craft.test/foo',
+        ]));
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
         ));
@@ -166,12 +166,12 @@ class RequestTest extends TestCase
             'SERVER_NAME' => 'craft.test',
         ]);
         $sites = new Sites();
-        $sites->setCurrentSite(new Site(
-            name: 'Site',
-            handle: 'site',
-            language: 'en-US',
-            baseUrl: 'http://craft.test/foo/bar',
-        ));
+        $sites->setCurrentSite(new Site([
+            'name' => 'Site',
+            'handle' => 'site',
+            'language' => 'en-US',
+            'baseUrl' => 'http://craft.test/foo/bar',
+        ]));
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
         ));

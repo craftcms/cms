@@ -420,7 +420,7 @@ class TestSetup
             }
         }
 
-        $site = new Site(...$siteConfig);
+        $site = new Site($siteConfig);
 
         LaravelEvent::listen(PostCreateTables::class, function() {
             Artisan::call('craft:add-categories-support', [

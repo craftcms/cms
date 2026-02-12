@@ -107,7 +107,6 @@ test('values are validated', function (string $attribute, string $value = '') {
     ['name'],
     ['handle'],
 
-    ['id', 'not-a-number'],
     ['name', Str::repeat('a', 256)],
 
     // Reserved handles are invalid
@@ -117,11 +116,6 @@ test('values are validated', function (string $attribute, string $value = '') {
     ['handle', 'uid'],
     ['handle', 'title'],
     ['handle', Str::repeat('a', 256)],
-
-    // Enum validations
-    ['color', 'foo'],
-    ['titleTranslationMethod', 'foo'],
-    ['slugTranslationMethod', 'foo'],
 ]);
 
 test('handle needs to be unique', function () {

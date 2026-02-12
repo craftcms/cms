@@ -41,9 +41,9 @@ class EntryQueryTest extends TestCase
     {
         $query = Entry::find();
 
-        $group1 = UserGroup::from(['id' => 1, 'handle' => 'foo']);
-        $group2 = UserGroup::from(['id' => 2, 'handle' => 'bar']);
-        $group3 = UserGroup::from(['id' => 3, 'handle' => 'baz']);
+        $group1 = new UserGroup(['id' => 1, 'handle' => 'foo']);
+        $group2 = new UserGroup(['id' => 2, 'handle' => 'bar']);
+        $group3 = new UserGroup(['id' => 3, 'handle' => 'baz']);
 
         $query->authorGroup($group1);
         self::assertSame(1, $query->authorGroupId);

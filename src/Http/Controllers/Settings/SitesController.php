@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -65,7 +66,7 @@ final readonly class SitesController
         ]);
     }
 
-    public function create(Request $request, Sites $sitesService): \Inertia\Response
+    public function create(Request $request, Sites $sitesService): Response
     {
         $allGroups = $this->siteGroups->getAllGroups();
 
@@ -95,12 +96,12 @@ final readonly class SitesController
                     'active' => true,
                 ],
             ],
-            'site' => new Site(
-                name: '',
-                handle: '',
-                language: $this->sites->getPrimarySite()->getLanguage(false),
-                groupId: $request->integer('groupId'),
-            ),
+            'site' => new Site([
+                'name' => '',
+                'handle' => '',
+                'language' => $this->sites->getPrimarySite()->getLanguage(false),
+                'groupId' => $request->integer('groupId'),
+            ]),
             'groupId' => $request->input('groupId', $allGroups->first()->id),
             'groupOptions' => $allGroups->map(fn ($group) => [
                 'label' => $group->name,
@@ -116,7 +117,7 @@ final readonly class SitesController
 
         abort_if($allGroups->isEmpty(), 500, 'No site groups exist.');
 
-        $siteData = new Site(...$site->except('dateDeleted'));
+        $siteData = new Site($site->except('dateDeleted'));
         $siteGroup = $siteData->getGroup();
 
         return Inertia::render('SettingsSitesEdit', [
@@ -151,33 +152,40 @@ final readonly class SitesController
         ]);
     }
 
-    public function store(Request $request, Site $siteData): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'siteId' => ['nullable', Rule::exists(Table::SITES, 'id')],
             'group' => ['required', 'integer', Rule::exists(Table::SITEGROUPS, 'id')],
         ]);
 
-        $isNew = $siteData->id === null;
         $siteId = $request->input('siteId');
+        $isNew = false;
         if ($siteId) {
-            $siteId = (int) $siteId;
-            abort_if(is_null($site = $this->sites->getSiteById($siteId)), 404, "Invalid section ID: $siteId");
-
-            $siteData->id = $site->id;
-            $siteData->uid = $site->uid;
+            abort_if(is_null($site = $this->sites->getSiteById((int) $siteId)), 404, "Invalid site ID: $siteId");
+        } else {
+            $site = new Site;
+            $isNew = true;
         }
 
-        if (! $this->sites->saveSite($siteData)) {
-            return back();
+        $site->groupId = $request->input('group');
+        $site->name = $request->input('name');
+        $site->handle = $request->input('handle');
+        $site->language = $request->input('language');
+        $site->primary = $request->boolean('primary');
+        $site->enabled = $site->primary ? true : $request->input('enabled', true);
+        $site->hasUrls = $request->boolean('hasUrls');
+        $site->baseUrl = $site->hasUrls ? $request->input('baseUrl') : null;
+
+        if (! $this->sites->saveSite($site)) {
+            throw ValidationException::withMessages($site->errors()->getMessages());
         }
 
         if ($isNew) {
             return to_route('craft.cp.settings.sites.index')->with('success', t('Site created'));
         }
 
-        return back()
-            ->with('success', t('Site saved.'));
+        return back()->with('success', t('Site saved.'));
     }
 
     public function reorder(Request $request): RedirectResponse

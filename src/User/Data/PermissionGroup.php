@@ -6,9 +6,8 @@ namespace CraftCms\Cms\User\Data;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
-use Spatie\LaravelData\Dto;
 
-final class PermissionGroup extends Dto implements Arrayable
+final class PermissionGroup implements Arrayable
 {
     public function __construct(
         public string $heading,

@@ -60,12 +60,12 @@ test('index validates group id when passed', function () {
 });
 
 test('index shows all sites', function () {
-    $this->sites->saveSite(new SiteData(
-        name: 'New site',
-        handle: 'new-site',
-        language: 'nl',
-        groupId: SiteGroup::first()->id,
-    ));
+    $this->sites->saveSite(new SiteData([
+        'name' => 'New site',
+        'handle' => 'newSite',
+        'language' => 'nl',
+        'groupId' => SiteGroup::first()->id,
+    ]));
 
     $this->get(action([SitesController::class, 'index']))
         ->assertInertia(fn (AssertableInertia $page) => $page->component('SettingsSitesIndex')
@@ -74,14 +74,14 @@ test('index shows all sites', function () {
 });
 
 test('index can filter by group', function () {
-    $this->siteGroups->saveGroup($group = new \CraftCms\Cms\Site\Data\SiteGroup(name: 'New group'));
+    $this->siteGroups->saveGroup($group = new \CraftCms\Cms\Site\Data\SiteGroup(['name' => 'New group']));
 
-    $this->sites->saveSite(new SiteData(
-        name: 'New site',
-        handle: 'new-site',
-        language: 'nl',
-        groupId: $group->id,
-    ));
+    $this->sites->saveSite(new SiteData([
+        'name' => 'New site',
+        'handle' => 'newSite',
+        'language' => 'nl',
+        'groupId' => $group->id,
+    ]));
 
     $this->get(action([SitesController::class, 'index'], ['groupId' => $group->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -203,12 +203,12 @@ test('group is required', function () {
 });
 
 it('can reorder sites', function () {
-    $this->sites->saveSite($newSite = new SiteData(
-        name: 'New site',
-        handle: 'new-site',
-        language: 'nl',
-        groupId: SiteGroup::first()->id,
-    ));
+    $this->sites->saveSite($newSite = new SiteData([
+        'name' => 'New site',
+        'handle' => 'newSite',
+        'language' => 'nl',
+        'groupId' => SiteGroup::first()->id,
+    ]));
 
     ProjectConfig::rebuild();
 
@@ -229,12 +229,12 @@ it('can reorder sites', function () {
 });
 
 it('requires transferContentTo when contentDestination is transfer', function () {
-    $this->sites->saveSite($newSite = new SiteData(
-        name: 'New site',
-        handle: 'new-site',
-        language: 'nl',
-        groupId: SiteGroup::first()->id,
-    ));
+    $this->sites->saveSite($newSite = new SiteData([
+        'name' => 'New site',
+        'handle' => 'newSite',
+        'language' => 'nl',
+        'groupId' => SiteGroup::first()->id,
+    ]));
 
     expect(Site::count())->toBe(2);
 
@@ -245,12 +245,12 @@ it('requires transferContentTo when contentDestination is transfer', function ()
 });
 
 it('can delete a site', function () {
-    $this->sites->saveSite($newSite = new SiteData(
-        name: 'New site',
-        handle: 'new-site',
-        language: 'nl',
-        groupId: SiteGroup::first()->id,
-    ));
+    $this->sites->saveSite($newSite = new SiteData([
+        'name' => 'New site',
+        'handle' => 'newSite',
+        'language' => 'nl',
+        'groupId' => SiteGroup::first()->id,
+    ]));
 
     expect(Site::count())->toBe(2);
 

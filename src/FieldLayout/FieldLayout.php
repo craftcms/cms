@@ -32,7 +32,6 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Concerns\Validates;
-use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Generator;
 use Illuminate\Support\Collection;
@@ -42,7 +41,7 @@ use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
-class FieldLayout extends Component implements Validatable
+class FieldLayout extends Component
 {
     use Validates {
         getAttributes as traitGetAttributes;

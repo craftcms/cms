@@ -555,7 +555,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
             $config['linkType'] = $linkTypes[$typeId] ?? Component::createComponent(self::types()[$typeId], BaseLinkType::class);
         }
 
-        return LinkData::from($config);
+        return new LinkData($config['value'], $config['linkType']);
     }
 
     /**

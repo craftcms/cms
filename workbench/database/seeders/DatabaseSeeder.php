@@ -119,19 +119,19 @@ class DatabaseSeeder extends Seeder
         $section = null;
 
         $this->components->task("{$title} section ({$sectionType->label()})", function () use ($uriFormat, $entryTypes, $sectionType, $title, $site, &$section) {
-            Sections::saveSection($section = new Section(
-                name: $title,
-                handle: Str::slug($title),
-                type: $sectionType,
-                siteSettings: [
-                    $site->id => new SectionSiteSettings(
-                        siteId: $site->id,
-                        hasUrls: ! is_null($uriFormat),
-                        uriFormat: $uriFormat,
-                    ),
+            Sections::saveSection($section = new Section([
+                'name' => $title,
+                'handle' => Str::slug($title),
+                'type' => $sectionType,
+                'siteSettings' => [
+                    $site->id => new SectionSiteSettings([
+                        'siteId' => $site->id,
+                        'hasUrls' => ! is_null($uriFormat),
+                        'uriFormat' => $uriFormat,
+                    ]),
                 ],
-                entryTypes: $entryTypes,
-            ));
+                'entryTypes' => $entryTypes,
+            ]));
         });
 
         return $section;

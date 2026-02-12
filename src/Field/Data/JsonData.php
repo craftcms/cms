@@ -8,19 +8,22 @@ use ArrayAccess;
 use ArrayIterator;
 use craft\base\Serializable;
 use craft\web\twig\AllowedInSandbox;
+use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Support\Json;
 use IteratorAggregate;
-use Spatie\LaravelData\Dto;
 use Stringable;
 use Traversable;
-use yii\base\InvalidCallException;
 
 #[AllowedInSandbox]
-final class JsonData extends Dto implements ArrayAccess, IteratorAggregate, Serializable, Stringable
+final class JsonData extends Component implements ArrayAccess, IteratorAggregate, Serializable, Stringable
 {
     public function __construct(
         private mixed $value,
-    ) {}
+        public array $config = [],
+    ) {
+        parent::__construct($config);
+    }
 
     public function __toString(): string
     {

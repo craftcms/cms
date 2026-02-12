@@ -48,6 +48,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
@@ -157,11 +158,11 @@ final class Sections
                 $result->propagationMethod = PropagationMethod::from($result->propagationMethod);
                 $result->defaultPlacement = DefaultPlacement::from($result->defaultPlacement);
 
-                $section = Section::from($result);
+                $section = new Section($result);
 
                 if ($siteSettings = Arr::pull($siteSettingsBySection, $section->id)) {
                     $section->setSiteSettings(
-                        array_map(SectionSiteSettings::from(...), $siteSettings),
+                        array_map(fn ($data) => new SectionSiteSettings($data), $siteSettings),
                     );
                 }
 
@@ -364,7 +365,7 @@ final class Sections
         return $this->_createSectionSiteSettingsQuery()
             ->where('sections_sites.sectionId', $sectionId)
             ->get()
-            ->map(fn (object $result) => SectionSiteSettings::from($result))
+            ->mapInto(SectionSiteSettings::class)
             ->all();
     }
 
@@ -422,11 +423,17 @@ final class Sections
      * @throws SectionNotFoundException if $section->id is invalid
      * @throws Throwable if reasons
      */
-    public function saveSection(Section $section): bool
+    public function saveSection(Section $section, bool $runValidation = true): bool
     {
         $isNewSection = ! $section->id;
 
         event(new SavingSection($section, $isNewSection));
+
+        if ($runValidation && ! $section->validate()) {
+            Log::info('Section not saved due to validation error.', [__METHOD__]);
+
+            return false;
+        }
 
         if ($isNewSection) {
             $section->uid ??= Str::uuid()->toString();
@@ -516,7 +523,7 @@ final class Sections
                 // Save the structure
                 $structureUid = $data['structure']['uid'];
                 $structure = Structures::getStructureByUid($structureUid, true)
-                    ?? new Structure(uid: $structureUid);
+                    ?? new Structure(['uid' => $structureUid]);
                 $isNewStructure = empty($structure->id);
                 $structure->maxLevels = $data['structure']['maxLevels'];
 

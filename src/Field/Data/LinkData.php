@@ -12,12 +12,11 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Support\Html;
-use Spatie\LaravelData\Dto;
 use Stringable;
 use Twig\Markup;
 
 #[AllowedInSandbox]
-final class LinkData extends Dto implements Serializable, Stringable
+final class LinkData implements Serializable, Stringable
 {
     /** @var string|null The link’s URL suffix value. */
     public ?string $urlSuffix = null;

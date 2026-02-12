@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Site\SiteGroups;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -19,17 +21,25 @@ final readonly class SiteGroupsController
         private SiteGroups $siteGroups,
     ) {}
 
-    public function store(SiteGroup $siteGroup): Response
+    public function store(Request $request): Response
     {
-        $this->siteGroups->saveGroup($siteGroup);
+        $groupId = $request->input('id');
 
-        $data = $siteGroup->toArray();
-        $data['name'] = t($data['name'], category: 'site');
+        if ($groupId) {
+            abort_if(is_null($group = $this->siteGroups->getGroupById($groupId)), 400, "Invalid site group ID: $groupId");
+        } else {
+            $group = new SiteGroup;
+        }
+
+        $group->setName($request->input('name'));
+
+        if (! $this->siteGroups->saveGroup($group)) {
+            throw ValidationException::withMessages($group->errors()->getMessages());
+        }
 
         return to_route('craft.cp.settings.sites.index', [
-            'groupId' => $siteGroup->id,
-        ])
-            ->with('success', t('Site deleted.'));
+            'groupId' => $group->id,
+        ])->with('success', t('Group saved.'));
     }
 
     public function destroy(int $groupId): Response
