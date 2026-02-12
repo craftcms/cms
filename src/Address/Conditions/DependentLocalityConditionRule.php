@@ -15,34 +15,22 @@ use function CraftCms\Cms\t;
 
 final class DependentLocalityConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Dependent Locality');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['dependentLocality'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AddressQuery $query */
         $query->dependentLocality($this->paramValue());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Address $element */

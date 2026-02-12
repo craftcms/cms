@@ -682,7 +682,6 @@ final class CpScreenResponse implements Responsable
         );
     }
 
-    /** {@inheritdoc} */
     public function toResponse($request): Response
     {
         if ($request->wantsJson()) {

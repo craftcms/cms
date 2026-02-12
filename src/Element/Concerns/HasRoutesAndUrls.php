@@ -39,25 +39,16 @@ trait HasRoutesAndUrls
     #[AllowedInSandbox]
     public ?string $uri = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public static function hasUris(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUriFormat(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getRoute(): mixed
     {
         // Fire a 'setRoute' event
@@ -88,17 +79,11 @@ trait HasRoutesAndUrls
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIsHomepage(): bool
     {
         return $this->uri === Element::HOMEPAGE_URI;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUrl(): ?string
     {
         // Fire a 'beforeDefineUrl' event
@@ -126,9 +111,6 @@ trait HasRoutesAndUrls
         return Html::encodeSpaces($url);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCpEditUrl(): ?string
     {
         if (! $this->id) {
@@ -150,17 +132,11 @@ trait HasRoutesAndUrls
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getPostEditUrl(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getLink(): ?Markup
     {
         if (($url = $this->getUrl()) === null) {

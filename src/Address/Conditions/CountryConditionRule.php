@@ -16,42 +16,27 @@ use function CraftCms\Cms\t;
 
 final class CountryConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Country');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         return Addresses::getCountryList();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AddressQuery $query */
         $query->countryCode($this->paramValue());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Address $element */

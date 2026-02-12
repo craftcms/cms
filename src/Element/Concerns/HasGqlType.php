@@ -18,17 +18,12 @@ use ReflectionClass;
  */
 trait HasGqlType
 {
-    /**
-     * {@inheritdoc}
-     */
     public static function baseGqlType(): Type
     {
         return ElementGqlType::getType();
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @since 3.3.0
      */
     public static function gqlScopesByContext(mixed $context): array
@@ -38,8 +33,6 @@ trait HasGqlType
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @since 3.3.0
      */
     public function getGqlTypeName(): string

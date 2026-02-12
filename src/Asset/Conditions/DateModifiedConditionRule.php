@@ -15,34 +15,22 @@ use function CraftCms\Cms\t;
 
 final class DateModifiedConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('File Modification Date');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['dateModified'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
         $query->dateModified($this->queryParamValue());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Asset $element */

@@ -22,8 +22,6 @@ use CraftCms\Cms\Support\Arr;
 trait Queryable
 {
     /**
-     * {@inheritdoc}
-     *
      * @return ElementQuery<static>
      */
     public static function find(): ElementQueryInterface
@@ -31,17 +29,11 @@ trait Queryable
         return new ElementQuery(static::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function findOne(mixed $criteria = null): ?static
     {
         return static::findByCondition($criteria, true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function findAll(mixed $criteria = null): array
     {
         return static::findByCondition($criteria, false);
@@ -62,9 +54,6 @@ trait Queryable
             ->first();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function createCondition(): ElementConditionInterface
     {
         return Craft::createObject(ElementCondition::class, [static::class]);

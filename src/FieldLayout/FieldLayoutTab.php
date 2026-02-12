@@ -62,9 +62,6 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     private array $_elements = [];
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // Config normalization
@@ -134,9 +131,6 @@ class FieldLayoutTab extends FieldLayoutComponent
         unset($config['fields']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -153,18 +147,12 @@ class FieldLayoutTab extends FieldLayoutComponent
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasSettings(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function settingsHtml(): ?string
     {
         return Cp::textFieldHtml([

@@ -18,25 +18,16 @@ use function CraftCms\Cms\t;
 
 class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Site Group');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['site', 'siteId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         return SiteGroups::getAllGroups()
@@ -46,9 +37,6 @@ class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements Ele
             ->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $siteIds = Collection::make((array) $this->paramValue())
@@ -62,9 +50,6 @@ class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements Ele
         $query->siteId($siteIds);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         return $this->matchValue($element->getSite()->getGroup()->uid);

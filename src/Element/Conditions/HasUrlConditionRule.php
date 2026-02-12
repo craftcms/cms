@@ -13,25 +13,16 @@ use function CraftCms\Cms\t;
 
 class HasUrlConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Has URL');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['uri'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         if ($this->value) {
@@ -41,9 +32,6 @@ class HasUrlConditionRule extends BaseLightswitchConditionRule implements Elemen
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         return $this->matchValue($element->getUrl() !== null);

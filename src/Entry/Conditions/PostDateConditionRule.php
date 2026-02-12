@@ -22,34 +22,22 @@ use function CraftCms\Cms\t;
  */
 class PostDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Post Date');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['postDate', 'after', 'before'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
         $query->postDate($this->queryParamValue());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */

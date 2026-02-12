@@ -15,34 +15,22 @@ use function CraftCms\Cms\t;
 
 final class AddressLine3ConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Address Line 3');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['addressLine3'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AddressQuery $query */
         $query->addressLine3($this->paramValue());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Address $element */

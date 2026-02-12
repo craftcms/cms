@@ -43,81 +43,54 @@ final class Address extends Element implements AddressInterface, NestedElementIn
      */
     public const string GQL_TYPE_NAME = 'Address';
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Address');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function lowerDisplayName(): string
     {
         return t('address');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function pluralDisplayName(): string
     {
         return t('Addresses');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function pluralLowerDisplayName(): string
     {
         return t('addresses');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function trackChanges(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function hasTitles(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function hasStatuses(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function createCondition(): ElementConditionInterface
     {
         return Craft::createObject(AddressCondition::class, [self::class]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -126,9 +99,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineTableAttributes(): array
     {
@@ -137,9 +107,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function attributeHtml(string $attribute): string
     {
@@ -149,9 +116,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSortOptions(): array
     {
@@ -184,8 +148,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return AddressQuery The newly created [[AddressQuery]] instance.
      */
     #[Override]
@@ -194,9 +156,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         return new AddressQuery;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSearchableAttributes(): array
     {
@@ -322,9 +281,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
     #[AllowedInSandbox]
     public ?string $longitude = null;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function init(): void
     {
@@ -337,9 +293,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         $this->normalizeNames();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function setAttributes($values, $safeOnly = true): void
     {
@@ -359,9 +312,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         parent::setAttributes($values, $safeOnly);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getAttributeLabel($attribute): string
     {
@@ -394,9 +344,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         return $owner instanceof User && $owner->getIsCurrent();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getCountryCode(): string
     {
@@ -414,117 +361,78 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         return app(Addresses::class)->getCountryRepository()->get($this->countryCode, app()->getLocale());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getAdministrativeArea(): ?string
     {
         return $this->administrativeArea;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getLocality(): ?string
     {
         return $this->locality;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getDependentLocality(): ?string
     {
         return $this->dependentLocality;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getPostalCode(): ?string
     {
         return $this->postalCode;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getSortingCode(): ?string
     {
         return $this->sortingCode;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getAddressLine1(): ?string
     {
         return $this->addressLine1;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getAddressLine2(): ?string
     {
         return $this->addressLine2;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getAddressLine3(): ?string
     {
         return $this->addressLine3;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getOrganization(): ?string
     {
         return $this->organization;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getGivenName(): ?string
     {
         return $this->firstName;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getAdditionalName(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getFamilyName(): ?string
     {
         return $this->lastName;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[AllowedInSandbox]
     public function getLocale(): string
     {
@@ -532,8 +440,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @since 3.3.0
      */
     #[Override]
@@ -553,9 +459,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         return $titleField->required && $titleField->showInForm($this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeValidate(): bool
     {
@@ -579,18 +482,12 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         return parent::beforeValidate();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getUiLabel(): string
     {
         return $this->title ?? '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function cacheTags(): array
     {
@@ -603,9 +500,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         return $tags;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeSave(bool $isNew): bool
     {
@@ -631,8 +525,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InvalidConfigException
      */
     #[Override]
@@ -680,9 +572,6 @@ final class Address extends Element implements AddressInterface, NestedElementIn
         parent::afterSave($isNew);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getFieldLayout(): FieldLayout
     {

@@ -39,18 +39,12 @@ use function CraftCms\Cms\t;
  */
 final class Money extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Money');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -72,9 +66,6 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
@@ -148,26 +139,17 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getIcon(): string
     {
         return self::currencyIcon($this->currency);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -190,18 +172,12 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): string
     {
         return Schema::TYPE_DECIMAL;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
@@ -210,9 +186,6 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $query->whereMoneyParam($valueSql, $instances[0]->currency, $value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): MoneyLibrary|null|false
     {
@@ -306,9 +279,6 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $money->getAmount();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -377,9 +347,6 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -388,26 +355,17 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): string
     {
         return MoneyFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         return MoneyHelper::toString($value) ?: '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
@@ -418,18 +376,12 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $this->getPreviewHtml($value, $element ?? new Entry);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): Type
     {
         return MoneyType::getType();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {

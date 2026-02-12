@@ -28,17 +28,11 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
         private Auth $auth,
     ) {}
 
-    /**
-     * {@inheritDoc}
-     */
     public function retrieveById($identifier): ?User
     {
         return User::find()->addSelect('password')->id($identifier)->one();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function retrieveByToken($identifier, #[SensitiveParameter] $token): ?User
     {
         $user = $this->retrieveById($identifier);
@@ -54,9 +48,6 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function updateRememberToken(Authenticatable $user, #[SensitiveParameter] $token): void
     {
         DB::table(Table::USERS)
@@ -64,9 +55,6 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
             ->update(['rememberToken' => $token]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function retrieveByCredentials(#[SensitiveParameter] array $credentials): ?User
     {
         $credentials = array_filter(
@@ -91,8 +79,6 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @param  User  $user
      */
     public function validateCredentials(Authenticatable $user, #[SensitiveParameter] array $credentials): bool
@@ -100,9 +86,6 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
         return $this->auth->authenticate($user, $credentials);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function rehashPasswordIfRequired(
         Authenticatable $user,
         #[SensitiveParameter] array $credentials,

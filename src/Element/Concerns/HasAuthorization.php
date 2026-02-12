@@ -16,49 +16,31 @@ use CraftCms\Cms\User\Elements\User;
  */
 trait HasAuthorization
 {
-    /**
-     * {@inheritdoc}
-     */
     public function canView(User $user): bool
     {
         return $user->can('view', $this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canSave(User $user): bool
     {
         return $user->can('save', $this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canDuplicate(User $user): bool
     {
         return $user->can('duplicate', $this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canCopy(User $user): bool
     {
         return $user->can('copy', $this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canDelete(User $user): bool
     {
         return $user->can('delete', $this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canDeleteForSite(User $user): bool
     {
         return $user->can('deleteForSite', $this);

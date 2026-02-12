@@ -53,9 +53,6 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         if (
@@ -98,9 +95,6 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
         $this->_endDate = ($value ? DateTimeHelper::toIso8601($value) : null);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getConfig(): array
     {
@@ -114,8 +108,6 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @noinspection PhpNamedArgumentsWithChangedOrderInspection
      */
     #[Override]
@@ -284,7 +276,7 @@ JS,
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [

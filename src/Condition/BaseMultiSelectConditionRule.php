@@ -16,9 +16,6 @@ use yii\base\InvalidConfigException;
  */
 abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 {
-    /**
-     * {@inheritdoc}
-     */
     public string $operator = self::OPERATOR_IN;
 
     /**
@@ -85,9 +82,6 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getConfig(): array
     {
@@ -105,9 +99,6 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      */
     abstract protected function options(): array;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(): string
     {

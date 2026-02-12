@@ -43,9 +43,6 @@ final class ColorData implements Serializable, Stringable
         return $this->_hex;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function serialize(): mixed
     {
         return $this->_hex;

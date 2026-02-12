@@ -14,9 +14,6 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
 {
     use FieldConditionRuleTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(): string
     {
@@ -27,9 +24,6 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
         return parent::inputHtml();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function elementQueryParam(): array|string|null
     {
         if (! $this->field() instanceof Date) {
@@ -39,9 +33,6 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
         return $this->queryParamValue();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function matchFieldValue($value): bool
     {
         if (! $this->field() instanceof Date) {

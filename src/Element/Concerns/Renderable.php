@@ -22,9 +22,6 @@ use Twig\Markup;
  */
 trait Renderable
 {
-    /**
-     * {@inheritdoc}
-     */
     public function render(array $variables = []): Markup
     {
         $templates = $this->partialTemplatePathCandidates();

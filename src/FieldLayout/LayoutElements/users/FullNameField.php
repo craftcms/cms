@@ -12,14 +12,8 @@ use Override;
 
 class FullNameField extends BaseFullNameField
 {
-    /**
-     * {@inheritdoc}
-     */
     public bool $mandatory = true;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {

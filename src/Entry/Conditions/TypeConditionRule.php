@@ -24,25 +24,16 @@ use function CraftCms\Cms\t;
  */
 class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Entry Type');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['type', 'typeId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setAttributes($values, $safeOnly = true): void
     {
         if (array_key_exists('entryTypeUid', $values)) {
@@ -60,18 +51,12 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
             ->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
         $query->typeId($this->paramValue(fn ($uid) => EntryTypes::getEntryTypeByUid($uid)->id ?? null));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */

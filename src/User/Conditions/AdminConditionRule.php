@@ -16,43 +16,28 @@ use function CraftCms\Cms\t;
 
 class AdminConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Admin');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function isSelectable(): bool
     {
         return Edition::isAtLeast(Edition::Pro);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['admin'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var UserQuery $query */
         $query->admin($this->value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var User $element */

@@ -15,25 +15,16 @@ use function CraftCms\Cms\t;
 
 class SiteConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Site');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['site', 'siteId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         return Sites::getEditableSites()
@@ -44,17 +35,11 @@ class SiteConditionRule extends BaseMultiSelectConditionRule implements ElementC
             ->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $query->siteId($this->paramValue(fn ($uid) => Sites::getSiteByUid($uid, true)->id ?? null));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         return $this->matchValue($element->getSite()->uid);

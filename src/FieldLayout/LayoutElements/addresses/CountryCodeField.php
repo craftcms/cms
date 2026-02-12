@@ -20,24 +20,12 @@ use function CraftCms\Cms\t;
 
 class CountryCodeField extends BaseNativeField
 {
-    /**
-     * {@inheritdoc}
-     */
     public bool $mandatory = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public string $attribute = 'countryCode';
 
-    /**
-     * {@inheritdoc}
-     */
     public bool $required = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         unset(
@@ -51,9 +39,6 @@ class CountryCodeField extends BaseNativeField
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -66,26 +51,17 @@ class CountryCodeField extends BaseNativeField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewable(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Country');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (! $element instanceof Address) {
@@ -111,9 +87,6 @@ class CountryCodeField extends BaseNativeField
             Html::endTag('div');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
@@ -129,9 +102,6 @@ class CountryCodeField extends BaseNativeField
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

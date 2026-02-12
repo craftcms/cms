@@ -384,9 +384,6 @@ trait QueriesNestedElements
         return $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function cacheTags(): array
     {
         $tags = [];
@@ -412,9 +409,6 @@ trait QueriesNestedElements
         return $tags;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function fieldLayouts(): Collection
     {
         $this->normalizeFieldId($this);

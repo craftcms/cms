@@ -23,8 +23,6 @@ use CraftCms\Cms\Element\Events\BeforeSave;
 trait HasLifecycleHooks
 {
     /**
-     * {@inheritdoc}
-     *
      * @see Element::beforeSave()
      */
     public function beforeSave(bool $isNew): bool
@@ -40,8 +38,6 @@ trait HasLifecycleHooks
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @see Element::afterSave()
      */
     public function afterSave(bool $isNew): void
@@ -58,8 +54,6 @@ trait HasLifecycleHooks
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @see Element::afterPropagate()
      */
     public function afterPropagate(bool $isNew): void
@@ -75,8 +69,6 @@ trait HasLifecycleHooks
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @see Element::beforeDelete()
      */
     public function beforeDelete(): bool
@@ -92,8 +84,6 @@ trait HasLifecycleHooks
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @see Element::afterDelete()
      */
     public function afterDelete(): void
@@ -110,8 +100,6 @@ trait HasLifecycleHooks
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @see Element::beforeDeleteForSite()
      */
     public function beforeDeleteForSite(): bool
@@ -120,8 +108,6 @@ trait HasLifecycleHooks
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @see Element::afterDeleteForSite()
      */
     public function afterDeleteForSite(): void
@@ -136,8 +122,6 @@ trait HasLifecycleHooks
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @see Element::beforeRestore()
      */
     public function beforeRestore(): bool
@@ -153,8 +137,6 @@ trait HasLifecycleHooks
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @see Element::afterRestore()
      */
     public function afterRestore(): void

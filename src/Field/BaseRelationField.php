@@ -108,9 +108,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         return t('Choose');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
@@ -118,18 +115,12 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ElementInterface::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): array|string|null
     {
         return Schema::TYPE_JSON;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function modifyQuery(\Illuminate\Contracts\Database\Query\Builder $query, array $instances, mixed $value): \Illuminate\Contracts\Database\Query\Builder
     {
@@ -378,9 +369,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      */
     private array|null|ElementConditionInterface $_selectionCondition = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct(array $config = [])
     {
         // limit => maxRelations
@@ -494,9 +482,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
@@ -518,9 +503,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         return $attributes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettings(): array
     {
         $settings = parent::getSettings();
@@ -540,9 +522,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         return $settings;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         $variables = $this->settingsTemplateVariables();
@@ -706,9 +685,6 @@ JS, [
         return $validates;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
@@ -720,9 +696,6 @@ JS, [
         return $value->isEmpty();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
@@ -861,9 +834,6 @@ JS, [
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
@@ -882,17 +852,11 @@ JS, [
         return $this->_all($value, $element)->ids();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): array|string
     {
         return RelationalFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function modifyElementIndexQuery(ElementQueryInterface $query): void
     {
@@ -914,27 +878,18 @@ JS, [
         $query->andWith([$this->handle, $criteria]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->localizeRelations;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, $inline, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
@@ -1001,9 +956,6 @@ JS, [
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
@@ -1023,9 +975,6 @@ JS, [
         return parent::searchKeywords($titles, $element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
@@ -1044,9 +993,6 @@ JS, [
         return $this->previewHtml($value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
@@ -1064,9 +1010,6 @@ JS, [
         return Cp::elementPreviewHtml($elements->all());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
     {
         /** @var ElementQueryInterface|ElementCollection $value */
@@ -1078,9 +1021,6 @@ JS, [
         return $value->one()?->getThumbHtml($size);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getEagerLoadingMap(array $sourceElements): array|null|false
     {
         $sourceSiteId = $sourceElements[0]->siteId;
@@ -1152,9 +1092,6 @@ JS, [
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {
@@ -1192,9 +1129,6 @@ JS, [
     // Events
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterSave(bool $isNew): void
     {
@@ -1209,25 +1143,16 @@ JS, [
         parent::afterSave($isNew);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function localizeRelations(): bool
     {
         return $this->localizeRelations;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function forceUpdateRelations(ElementInterface $element): bool
     {
         return $this->maintainHierarchy;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getRelationTargetIds(ElementInterface $element): array
     {
         /** @var \CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection $value */
@@ -1290,9 +1215,6 @@ JS, [
         return $targetIds;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
@@ -1471,9 +1393,6 @@ JS, [
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function useFieldset(): bool
     {

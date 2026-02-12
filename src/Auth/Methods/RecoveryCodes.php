@@ -14,33 +14,21 @@ use function CraftCms\Cms\t;
 
 final class RecoveryCodes extends BaseAuthMethod
 {
-    /**
-     * {@inheritdoc}
-     */
     public static function displayName(): string
     {
         return t('Recovery Codes');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function description(): string
     {
         return t('Generate recovery codes that can be used as a backup.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isActive(): bool
     {
         return RecoveryCodesModel::where('userId', $this->user->id)->exists();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSetupHtml(string $containerId): string
     {
         $view = Craft::$app->getView();
@@ -52,9 +40,6 @@ JS, [$containerId]);
         return $view->renderTemplate('_components/auth/methods/RecoveryCodes/setup.twig');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAuthFormHtml(): string
     {
         $view = Craft::$app->getView();
@@ -63,9 +48,6 @@ JS, [$containerId]);
         return $view->renderTemplate('_components/auth/methods/RecoveryCodes/form.twig');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getActionMenuItems(): array
     {
@@ -79,9 +61,6 @@ JS, [$containerId]);
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function verify(mixed ...$args): bool
     {
         [$code] = $args;
@@ -109,9 +88,6 @@ JS, [$containerId]);
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function remove(): void
     {
         RecoveryCodesModel::where('userId', $this->user->id)->delete();

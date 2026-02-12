@@ -98,9 +98,6 @@ class TextField extends BaseNativeField
      */
     public ?int $max = null;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -108,9 +105,6 @@ class TextField extends BaseNativeField
         return Arr::except(parent::fields(), ['value']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
@@ -149,27 +143,18 @@ class TextField extends BaseNativeField
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function baseInputName(): string
     {
         return $this->name ?? parent::baseInputName();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function errorKey(): string
     {
         return $this->name ?? parent::errorKey();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

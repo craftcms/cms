@@ -15,25 +15,16 @@ use function CraftCms\Cms\t;
 
 class LanguageConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Language');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['site', 'siteId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         return I18N::getSiteLocales()
@@ -42,17 +33,11 @@ class LanguageConditionRule extends BaseMultiSelectConditionRule implements Elem
             ->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $query->language($this->paramValue());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         return $this->matchValue($element->getLanguage());

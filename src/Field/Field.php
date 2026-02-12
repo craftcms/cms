@@ -363,7 +363,6 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         }
     }
 
-    /** {@inheritdoc} */
     public static function get(int|string $id): ?static
     {
         /** @var ?static $field */
@@ -372,25 +371,21 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return $field;
     }
 
-    /** {@inheritdoc} */
     public static function icon(): string
     {
         return 'i-cursor';
     }
 
-    /** {@inheritdoc} */
     public static function isMultiInstance(): bool
     {
         return static::dbType() !== null;
     }
 
-    /** {@inheritdoc} */
     public static function isRequirable(): bool
     {
         return true;
     }
 
-    /** {@inheritdoc} */
     public static function supportedTranslationMethods(): array
     {
         if (static::dbType() === null) {
@@ -408,17 +403,11 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function phpType(): string
     {
         return 'mixed';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function dbType(): array|string|null
     {
         return Query::TYPE_TEXT;
@@ -523,31 +512,26 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         ];
     }
 
-    /** {@inheritdoc} */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /** {@inheritdoc} */
     public function getUiLabel(): string
     {
         return t($this->name, category: 'site');
     }
 
-    /** {@inheritdoc} */
     public function getHandle(): ?string
     {
         return $this->handle;
     }
 
-    /** {@inheritdoc} */
     public function getIcon(): ?string
     {
         return static::icon();
     }
 
-    /** {@inheritdoc} */
     public function getCpEditUrl(): ?string
     {
         if (! $this->id || ! Auth::user()?->isAdmin()) {
@@ -557,7 +541,6 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return UrlHelper::cpUrl("settings/fields/edit/$this->id");
     }
 
-    /** {@inheritdoc} */
     public function getActionMenuItems(): array
     {
         $items = $this->actionMenuItems();
@@ -606,7 +589,6 @@ JS, [
         return $items;
     }
 
-    /** {@inheritdoc} */
     public function getOrientation(?ElementInterface $element): string
     {
         $locale = match (true) {
@@ -621,7 +603,6 @@ JS, [
         return $locale->getOrientation();
     }
 
-    /** {@inheritdoc} */
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
@@ -631,7 +612,6 @@ JS, [
         return $this->translationMethod !== self::TRANSLATION_METHOD_NONE;
     }
 
-    /** {@inheritdoc} */
     public function getTranslationDescription(?ElementInterface $element): ?string
     {
         if (! $this->getIsTranslatable($element)) {
@@ -641,19 +621,16 @@ JS, [
         return ElementHelper::translationDescription($this->translationMethod);
     }
 
-    /** {@inheritdoc} */
     public function getTranslationKey(ElementInterface $element): string
     {
         return ElementHelper::translationKey($element, $this->translationMethod, $this->translationKeyFormat);
     }
 
-    /** {@inheritdoc} */
     public function showStatus(): bool
     {
         return true;
     }
 
-    /** {@inheritdoc} */
     public function getStatus(ElementInterface $element): ?array
     {
         if ($element->isFieldModified($this->handle)) {
@@ -673,37 +650,31 @@ JS, [
         return null;
     }
 
-    /** {@inheritdoc} */
     public function getInputId(): string
     {
         return Html::id($this->handle);
     }
 
-    /** {@inheritdoc} */
     public function getLabelId(): string
     {
         return sprintf('%s-label', $this->getInputId());
     }
 
-    /** {@inheritdoc} */
     public function useFieldset(): bool
     {
         return false;
     }
 
-    /** {@inheritdoc} */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $value;
     }
 
-    /** {@inheritdoc} */
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->normalizeValue($value, $element);
     }
 
-    /** {@inheritdoc} */
     public function getInputHtml(mixed $value, ?ElementInterface $element): string
     {
         $html = $this->inputHtml($value, $element, false);
@@ -753,43 +724,28 @@ JS, [
         return Html::textarea($this->handle, $value)->render();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         // Just return the input HTML with disabled inputs by default
         return Html::disableInputs(fn () => $this->getInputHtml($value, $element));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function prepareForElementValidation(mixed $value): mixed
     {
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementRules(ElementInterface $element): array
     {
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         // Default to yii\validators\Validator::isEmpty()'s behavior
         return $value === null || $value === [] || $value === '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSearchKeywords(mixed $value, ElementInterface $element): string
     {
         $this->dispatchComponentEvent(self::EVENT_DEFINE_KEYWORDS, $event = new DefineFieldKeywords(
@@ -921,7 +877,6 @@ JS, [
         $this->dispatchComponentEvent(self::EVENT_AFTER_MERGE_FROM, new FieldEvent($outgoingField));
     }
 
-    /** {@inheritdoc} */
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If the object explicitly defines its savable value, use that
@@ -942,7 +897,6 @@ JS, [
         return $value;
     }
 
-    /** {@inheritdoc} */
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         // Dates should be stored in UTC w/o the time zone
@@ -953,7 +907,6 @@ JS, [
         return $this->serializeValue($value, $element);
     }
 
-    /** {@inheritdoc} */
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         $value = $this->serializeValue($from->getFieldValue($this->handle), $from);
@@ -969,13 +922,11 @@ JS, [
         $this->copyValue($from, $to);
     }
 
-    /** {@inheritdoc} */
     public function getElementConditionRuleType(): array|string|null
     {
         return null;
     }
 
-    /** {@inheritdoc} */
     public function getValueSql(?string $key = null): string|Expression|null
     {
         if (! isset($this->layoutElement)) {
@@ -1079,7 +1030,6 @@ JS, [
         return static::dbType();
     }
 
-    /** {@inheritdoc} */
     public function modifyElementIndexQuery(ElementQueryInterface $query): void
     {
         if ($this instanceof EagerLoadingFieldInterface) {
@@ -1087,25 +1037,21 @@ JS, [
         }
     }
 
-    /** {@inheritdoc} */
     public function setIsFresh(?bool $isFresh = null): void
     {
         $this->_isFresh = $isFresh;
     }
 
-    /** {@inheritdoc} */
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return true;
     }
 
-    /** {@inheritdoc} */
     public function getContentGqlType(): Type|array
     {
         return Type::string();
     }
 
-    /** {@inheritdoc} */
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
@@ -1115,7 +1061,6 @@ JS, [
         ];
     }
 
-    /** {@inheritdoc} */
     public function getContentGqlQueryArgumentType(): Type|array
     {
         return [
@@ -1127,7 +1072,6 @@ JS, [
     // Events
     // -------------------------------------------------------------------------
 
-    /** {@inheritdoc} */
     public function beforeSave(bool $isNew): bool
     {
         // Set the field context if it’s not set
@@ -1145,9 +1089,6 @@ JS, [
         $this->dispatchComponentEvent(self::EVENT_AFTER_SAVE, new ComponentEvent($this, $isNew));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
         $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_SAVE, $event = new FieldElementEvent(
@@ -1159,9 +1100,6 @@ JS, [
         return $event->isValid;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
         $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent(
@@ -1171,7 +1109,6 @@ JS, [
         ));
     }
 
-    /** {@inheritdoc} */
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_PROPAGATE, new FieldElementEvent(
@@ -1181,7 +1118,6 @@ JS, [
         ));
     }
 
-    /** {@inheritdoc} */
     public function beforeElementDelete(ElementInterface $element): bool
     {
         $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_DELETE, $event = new FieldElementEvent(
@@ -1192,7 +1128,6 @@ JS, [
         return $event->isValid;
     }
 
-    /** {@inheritdoc} */
     public function afterElementDelete(ElementInterface $element): void
     {
         $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent(
@@ -1201,19 +1136,16 @@ JS, [
         ));
     }
 
-    /** {@inheritdoc} */
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
         return true;
     }
 
-    /** {@inheritdoc} */
     public function afterElementDeleteForSite(ElementInterface $element): void
     {
         // carry on
     }
 
-    /** {@inheritdoc} */
     public function beforeElementRestore(ElementInterface $element): bool
     {
         $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_RESTORE, $event = new FieldElementEvent(
@@ -1224,7 +1156,6 @@ JS, [
         return $event->isValid;
     }
 
-    /** {@inheritdoc} */
     public function afterElementRestore(ElementInterface $element): void
     {
         $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_RESTORE, new FieldElementEvent(
@@ -1290,9 +1221,6 @@ JS, [
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function propagateValue(ElementInterface $from, ElementInterface $to): void
     {
         $to->setFieldValue($this->handle, $from->getFieldValue($this->handle));

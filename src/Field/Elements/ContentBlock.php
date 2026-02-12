@@ -28,70 +28,46 @@ final class ContentBlock extends Element implements NestedElementInterface
 {
     use NestedElementTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Content Block');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function lowerDisplayName(): string
     {
         return t('content block');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function pluralDisplayName(): string
     {
         return t('Content Blocks');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function pluralLowerDisplayName(): string
     {
         return t('content blocks');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function refHandle(): string
     {
         return 'block';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function hasDrafts(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function trackChanges(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function isLocalized(): bool
     {
@@ -99,8 +75,6 @@ final class ContentBlock extends Element implements NestedElementInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return ContentBlockQuery The newly created [[ContentBlockQuery]] instance.
      */
     #[Override]
@@ -109,9 +83,6 @@ final class ContentBlock extends Element implements NestedElementInterface
         return new ContentBlockQuery;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineFieldLayouts(?string $source): array
     {
@@ -129,27 +100,18 @@ final class ContentBlock extends Element implements NestedElementInterface
         return sprintf('%s_ContentBlock', $field->layoutElement?->getOriginalHandle() ?? $field->handle);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function baseGqlType(): Type
     {
         return ContentBlockInterface::getType();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSupportedSites(): array
     {
         return $this->getField()->getSupportedSitesForElement($this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function cacheTags(): array
     {
@@ -159,35 +121,23 @@ final class ContentBlock extends Element implements NestedElementInterface
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getUiLabel(): string
     {
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function uiLabel(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getFieldLayout(): FieldLayout
     {
         return $this->getField()->getFieldLayout();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getGqlTypeName(): string
     {
@@ -197,9 +147,6 @@ final class ContentBlock extends Element implements NestedElementInterface
     // Events
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterSave(bool $isNew): void
     {

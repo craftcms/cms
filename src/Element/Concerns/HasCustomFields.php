@@ -440,9 +440,6 @@ trait HasCustomFields
         array_push($this->_invalidNestedElementIds, ...$ids);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldLayout(): ?FieldLayout
     {
         if ($this->fieldLayoutId) {

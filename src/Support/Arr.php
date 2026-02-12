@@ -169,8 +169,6 @@ class Arr extends \Illuminate\Support\Arr
     }
 
     /**
-     * {@inheritdoc}
-     *
      * If the key is specified in square bracket notation (e.g. `x[y][z]`), it will automatically be converted
      * to dot notation (`x.y.z`).
      */

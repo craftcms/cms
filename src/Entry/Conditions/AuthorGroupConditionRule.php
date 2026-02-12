@@ -24,51 +24,33 @@ use function CraftCms\Cms\t;
  */
 class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Author Group');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['authorGroup', 'authorGroupId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function isSelectable(): bool
     {
         return UserGroups::getAllGroups()->isNotEmpty();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         return UserGroups::getAllGroups()->pluck('name', 'uid')->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
         $query->authorGroupId($this->paramValue(fn ($uid) => UserGroups::getGroupByUid($uid)->id ?? null));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */

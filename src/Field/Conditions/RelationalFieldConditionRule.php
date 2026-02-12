@@ -26,19 +26,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
 
     public const string OPERATOR_RELATED_TO = 'relatedTo';
 
-    /**
-     * {@inheritdoc}
-     */
     public string $operator = self::OPERATOR_RELATED_TO;
 
-    /**
-     * {@inheritdoc}
-     */
     protected bool $reloadOnOperatorChange = true;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function elementType(): string
     {
         /** @var BaseRelationField $field */
@@ -47,9 +38,6 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         return $field::elementType();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function sources(): ?array
     {
         /** @var BaseRelationField $field */
@@ -58,9 +46,6 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         return (array) $field->getInputSources();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectionCondition(): ?ElementConditionInterface
     {
         /** @var BaseRelationField $field */
@@ -69,9 +54,6 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         return $field->getSelectionCondition();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function criteria(): ?array
     {
         /** @var BaseRelationField $field */
@@ -80,18 +62,12 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         return $field->getInputSelectionCriteria();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function allowMultiple(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function operators(): array
     {
@@ -102,9 +78,6 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function operatorLabel(string $operator): string
     {
@@ -114,9 +87,6 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(): string
     {
@@ -130,9 +100,6 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $field = $this->field();
@@ -187,18 +154,12 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function elementQueryParam(): ?array
     {
         // $this->operator will always be OPERATOR_RELATED_TO at this point
         return $this->getElementIds();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function matchFieldValue($value): bool
     {
         if (! $this->field() instanceof BaseRelationField) {

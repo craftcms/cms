@@ -27,9 +27,6 @@ final class IconData implements Serializable, Stringable
         return $this->name;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function serialize(): string
     {
         return $this->name;

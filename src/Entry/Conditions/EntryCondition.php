@@ -17,9 +17,6 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
  */
 class EntryCondition extends ElementCondition
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function selectableConditionRules(): array
     {

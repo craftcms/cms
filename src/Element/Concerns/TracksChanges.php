@@ -70,17 +70,11 @@ trait TracksChanges
      */
     private ?bool $_isFresh = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public static function trackChanges(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAttributeStatus(string $attribute): ?array
     {
         if ($this->isAttributeModified($attribute)) {
@@ -100,33 +94,21 @@ trait TracksChanges
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getOutdatedAttributes(): array
     {
         return array_keys($this->_outdatedAttributes());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isAttributeOutdated(string $name): bool
     {
         return isset($this->_outdatedAttributes()[$name]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getModifiedAttributes(): array
     {
         return array_keys($this->_modifiedAttributes());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isAttributeModified(string $name): bool
     {
         return isset($this->_modifiedAttributes()[$name]);
@@ -171,9 +153,6 @@ trait TracksChanges
             ->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isAttributeDirty(string $name): bool
     {
         if ($this->_allDirty()) {
@@ -183,9 +162,6 @@ trait TracksChanges
         return isset($this->_dirtyAttributes[$name]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getDirtyAttributes(): array
     {
         if (static::hasTitles() && $this->title !== $this->_savedTitle) {
@@ -195,9 +171,6 @@ trait TracksChanges
         return array_keys($this->_dirtyAttributes);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setDirtyAttributes(array $names, bool $merge = true): void
     {
         $attributes = array_flip($names);
@@ -215,17 +188,11 @@ trait TracksChanges
         return $this->_allDirty || $this->resaving;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function markAsDirty(): void
     {
         $this->_allDirty = true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function markAsClean(): void
     {
         $this->_allDirty = false;
@@ -237,9 +204,6 @@ trait TracksChanges
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIsFresh(): bool
     {
         if ($this->errors()->isNotEmpty()) {
@@ -249,9 +213,6 @@ trait TracksChanges
         return ! isset($this->siteSettingsId) || ($this->_isFresh ?? false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setIsFresh(bool $isFresh = true): void
     {
         $this->_isFresh = $isFresh;

@@ -31,9 +31,6 @@ class Tip extends BaseUiElement
      */
     public string $style = self::STYLE_TIP;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectorLabel(): string
     {
         $tip = trim($this->tip);
@@ -45,26 +42,17 @@ class Tip extends BaseUiElement
         return $this->_isTip() ? t('Tip') : t('Warning');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectorIcon(): ?string
     {
         return $this->_isTip() ? 'lightbulb' : 'triangle-exclamation';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasSettings(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function settingsHtml(): ?string
     {
         return
@@ -85,9 +73,6 @@ class Tip extends BaseUiElement
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $tip = trim($this->tip);

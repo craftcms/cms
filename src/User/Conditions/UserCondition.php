@@ -10,9 +10,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 
 class UserCondition extends ElementCondition
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function selectableConditionRules(): array
     {

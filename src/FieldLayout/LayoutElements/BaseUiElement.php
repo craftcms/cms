@@ -17,18 +17,12 @@ use function CraftCms\Cms\t;
  */
 abstract class BaseUiElement extends FieldLayoutElement
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isMultiInstance(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function selectorHtml(): string
     {
         $icon = $this->selectorIcon();

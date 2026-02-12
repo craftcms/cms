@@ -15,18 +15,12 @@ use function CraftCms\Cms\t;
 
 final class MyDrafts extends Widget
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('My Drafts');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function allowMultipleInstances(): bool
     {
@@ -38,9 +32,6 @@ final class MyDrafts extends Widget
      */
     public int $limit = 10;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -55,9 +46,6 @@ final class MyDrafts extends Widget
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSettingsHtml(): string
     {
@@ -71,9 +59,6 @@ final class MyDrafts extends Widget
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getBodyHtml(): string
     {

@@ -12,17 +12,11 @@ class NumberFieldConditionRule extends BaseNumberConditionRule implements FieldC
 {
     use FieldConditionRuleTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function elementQueryParam(): ?string
     {
         return $this->paramValue();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function matchFieldValue($value): bool
     {
         if ($value instanceof Money) {

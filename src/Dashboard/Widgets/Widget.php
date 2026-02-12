@@ -28,9 +28,6 @@ abstract class Widget extends \CraftCms\Cms\Component\Component implements Widge
 
     public ?int $colspan = null;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function isSelectable(): bool
     {

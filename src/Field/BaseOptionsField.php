@@ -67,27 +67,18 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
      */
     protected static bool $allowCustomOptions = false;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s', static::$multi ? MultiOptionsFieldData::class : SingleOptionFieldData::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): string
     {
         return static::$multi ? Schema::TYPE_JSON : Schema::TYPE_STRING;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
@@ -136,9 +127,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
      */
     public bool $customOptions = false;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // Normalize the options
@@ -175,9 +163,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
@@ -264,9 +249,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         if (empty($this->options)) {
@@ -349,9 +331,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return $html;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
@@ -439,9 +418,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return in_array($option['value'], $selectedValues, true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
@@ -469,9 +445,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return parent::serializeValue($value, $element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
@@ -494,9 +467,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return implode(' ', $keywords);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): array|string
     {
         return OptionsFieldConditionRule::class;
@@ -522,9 +492,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
@@ -535,9 +502,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return $value->value === null || $value->value === '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
@@ -592,9 +556,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
@@ -625,9 +586,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         return static::$multi;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -639,9 +597,6 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {

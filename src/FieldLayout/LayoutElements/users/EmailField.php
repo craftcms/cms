@@ -19,29 +19,14 @@ use function CraftCms\Cms\t;
 
 class EmailField extends TextField
 {
-    /**
-     * {@inheritdoc}
-     */
     public bool $mandatory = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public string $attribute = 'email';
 
-    /**
-     * {@inheritdoc}
-     */
     public ?int $maxlength = 255;
 
-    /**
-     * {@inheritdoc}
-     */
     public bool $autofocus = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // We didn't start removing autofocus from fields() until 3.5.6
@@ -56,9 +41,6 @@ class EmailField extends TextField
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -73,17 +55,11 @@ class EmailField extends TextField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Email');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function warning(?ElementInterface $element = null, bool $static = false): ?string
     {
@@ -100,9 +76,6 @@ class EmailField extends TextField
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
@@ -129,9 +102,6 @@ JS, [
         return parent::inputHtml($element, $static);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -145,9 +115,6 @@ JS, [
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function fieldErrors(?ElementInterface $element = null): array
     {

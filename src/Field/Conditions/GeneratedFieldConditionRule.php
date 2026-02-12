@@ -28,9 +28,6 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
 
     private array|false $field;
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getConfig(): array
     {
@@ -40,9 +37,6 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         $field = $this->getFieldConfig();
@@ -53,17 +47,11 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
         return $field['name'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getGroupLabel(): ?string
     {
         return t('Fields');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         $field = $this->getFieldConfig();
@@ -82,9 +70,6 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
         return [$handle];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $field = $this->getFieldConfig();
@@ -100,9 +85,6 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
         $query->whereParam(new JsonExtract('elements_sites.content', [$field['uid']]), $value, caseInsensitive: true, columnType: Schema::TYPE_JSON);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         $field = $this->getFieldConfig();

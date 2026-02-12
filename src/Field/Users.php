@@ -26,62 +26,41 @@ use function CraftCms\Cms\t;
  */
 final class Users extends BaseRelationField
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Users');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'user-group';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function elementType(): string
     {
         return User::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function defaultSelectionLabel(): string
     {
         return t('Add a user');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', UserQuery::class, ElementCollection::class, User::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryUsers($schema);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -94,9 +73,6 @@ final class Users extends BaseRelationField
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
@@ -118,9 +94,6 @@ final class Users extends BaseRelationField
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function createSelectionCondition(): ElementCondition
     {
         $condition = User::createCondition();

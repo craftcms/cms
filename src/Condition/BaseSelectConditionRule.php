@@ -24,9 +24,6 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
      */
     abstract protected function options(): array;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getConfig(): array
     {
@@ -35,9 +32,6 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(): string
     {

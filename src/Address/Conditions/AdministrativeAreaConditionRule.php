@@ -22,9 +22,6 @@ final class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule
 {
     public string $countryCode = 'US';
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getConfig(): array
     {
@@ -41,25 +38,16 @@ final class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Administrative Area');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         $administrativeAreas = Addresses::getSubdivisionRepository()->getList([$this->countryCode], app()->getLocale());
@@ -73,18 +61,12 @@ final class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule
         return $administrativeAreas;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AddressQuery $query */
         $query->administrativeArea($this->paramValue());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Address $element */

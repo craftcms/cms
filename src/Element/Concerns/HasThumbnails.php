@@ -17,9 +17,6 @@ use CraftCms\Cms\Support\Html;
  */
 trait HasThumbnails
 {
-    /**
-     * {@inheritdoc}
-     */
     public static function hasThumbs(): bool
     {
         return false;

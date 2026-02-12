@@ -11,18 +11,12 @@ use function CraftCms\Cms\t;
 
 class NotRelatedToConditionRule extends RelatedToConditionRule
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getLabel(): string
     {
         return t('Not Related To');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -33,9 +27,6 @@ class NotRelatedToConditionRule extends RelatedToConditionRule
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function matchElement(ElementInterface $element): bool
     {

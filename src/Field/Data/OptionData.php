@@ -33,9 +33,6 @@ class OptionData implements Serializable, Stringable
         return (string) $this->value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function serialize(): ?string
     {
         return $this->value;

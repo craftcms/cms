@@ -117,9 +117,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function createConditionRule(array|string $config): ConditionRuleInterface
     {
         if (is_string($config)) {
@@ -132,9 +129,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
         return Conditions::createConditionRule($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     final public function getSelectableConditionRules(): array
     {
         if (! isset($this->_selectableConditionRules)) {
@@ -186,17 +180,11 @@ abstract class BaseCondition extends Component implements ConditionInterface
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getConditionRules(): array
     {
         return $this->_conditionRules->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setConditionRules(array $rules): void
     {
         $this->_conditionRules = Collection::make();
@@ -226,9 +214,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $this->_selectableConditionRules = null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function addConditionRule(ConditionRuleInterface $rule): void
     {
         if (! $this->validateConditionRule($rule)) {
@@ -256,9 +241,6 @@ abstract class BaseCondition extends Component implements ConditionInterface
         return array_any($this->getSelectableConditionRules(), fn ($selectableRule) => $ruleClass === $selectableRule::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getBuilderHtml(): string
     {
         $view = Craft::$app->getView();
@@ -272,9 +254,6 @@ JS, [$view->namespaceInputId($this->id)]);
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getBuilderInnerHtml(bool $autofocusAddButton = false): string
     {
         $view = Craft::$app->getView();
@@ -601,17 +580,11 @@ JS,
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getBuilderConfig(): array
     {
         return $this->config();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     final public function getConfig(): array
     {
         return array_merge($this->config(), [

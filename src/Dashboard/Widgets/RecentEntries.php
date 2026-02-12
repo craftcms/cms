@@ -18,18 +18,12 @@ use function CraftCms\Cms\t;
 
 final class RecentEntries extends Widget
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Recent Entries');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -67,9 +61,6 @@ final class RecentEntries extends Widget
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSettingsHtml(): string
     {
@@ -79,9 +70,6 @@ final class RecentEntries extends Widget
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitle(): string
     {
@@ -113,9 +101,6 @@ final class RecentEntries extends Widget
         return $title;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getBodyHtml(): string
     {

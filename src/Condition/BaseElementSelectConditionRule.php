@@ -161,9 +161,6 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         $this->setElementIds($elementId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getConfig(): array
     {
@@ -172,9 +169,6 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(): string
     {

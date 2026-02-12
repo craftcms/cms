@@ -65,9 +65,6 @@ class TextareaField extends BaseNativeField
      */
     public ?string $placeholder = null;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -75,9 +72,6 @@ class TextareaField extends BaseNativeField
         return Arr::except(parent::fields(), ['value']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::$app->getView()->renderTemplate(
@@ -112,27 +106,18 @@ class TextareaField extends BaseNativeField
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function baseInputName(): string
     {
         return $this->name ?? parent::baseInputName();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function errorKey(): string
     {
         return $this->name ?? parent::errorKey();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

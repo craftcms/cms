@@ -54,36 +54,24 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
 
     private static array $_types;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Link');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'link';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', LinkData::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): array
     {
@@ -179,9 +167,6 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     public bool $fullGraphqlData = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         if (isset($config['types'], $config['typeSettings'])) {
@@ -287,17 +272,11 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return UrlType::id();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -449,9 +428,6 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $html.Html::endTag('div');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): ?LinkData
     {
@@ -557,18 +533,12 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return new LinkData($config['value'], $config['linkType']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -784,9 +754,6 @@ JS;
         return $html.Html::endTag('div');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -826,9 +793,6 @@ JS;
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
@@ -845,17 +809,11 @@ JS;
         return $linkType->isValueEmpty($value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): string
     {
         return LinkFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
@@ -863,9 +821,6 @@ JS;
         return $value?->getLink() ?? '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
@@ -877,9 +832,6 @@ JS;
         return $this->getPreviewHtml($value, new EntryElement);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): Type|array
     {
@@ -890,9 +842,6 @@ JS;
         return LinkDataType::generateType($this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
@@ -913,9 +862,6 @@ JS;
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getRelationTargetIds(ElementInterface $element): array
     {
         $targetIds = [];

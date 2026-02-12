@@ -15,14 +15,8 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
 {
     use FieldConditionRuleTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     public string $operator = self::OPERATOR_NOT_EMPTY;
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function operators(): array
     {
@@ -32,9 +26,6 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         try {
@@ -60,9 +51,6 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
         return ! $isEmpty;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function elementQueryParam(): int|string|null
     {
         return match ($this->operator) {
@@ -72,9 +60,6 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function matchFieldValue($value): bool
     {
         throw new NotSupportedException;

@@ -73,9 +73,6 @@ trait SavableComponent
         static::listen(self::EVENT_AFTER_SAVE, $callback);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function afterSave(bool $isNew): void
     {
         event(self::componentEventName(self::EVENT_AFTER_SAVE), new ComponentEvent($this, $isNew));
@@ -86,9 +83,6 @@ trait SavableComponent
         static::listen(self::EVENT_BEFORE_DELETE, $callback);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function beforeDelete(): bool
     {
         event(
@@ -104,9 +98,6 @@ trait SavableComponent
         static::listen(self::EVENT_BEFORE_APPLY_DELETE, $callback);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function beforeApplyDelete(): void
     {
         event(self::componentEventName(self::EVENT_BEFORE_APPLY_DELETE), new ComponentEvent($this));
@@ -117,9 +108,6 @@ trait SavableComponent
         static::listen(self::EVENT_AFTER_DELETE, $callback);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function afterDelete(): void
     {
         event(self::componentEventName(self::EVENT_AFTER_DELETE), new ComponentEvent($this));

@@ -31,42 +31,27 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Related To');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function elementType(): string
     {
         return $this->elementType;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function allowMultiple(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function elementSelectConfig(): array
     {
@@ -75,9 +60,6 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $elementIds = $this->getElementIds();
@@ -86,9 +68,6 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(): string
     {
@@ -135,9 +114,6 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getConfig(): array
     {
@@ -146,9 +122,6 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         $elementIds = $this->getElementIds();

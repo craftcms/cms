@@ -111,17 +111,11 @@ trait Revisionable
         DB::table(Table::REVISIONS)->delete($this->revisionId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIsRevision(): bool
     {
         return ! empty($this->revisionId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCpRevisionsUrl(): ?string
     {
         $cpEditUrl = $this->cpRevisionsUrl();
@@ -147,9 +141,6 @@ trait Revisionable
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function hasRevisions(): bool
     {
         return false;
@@ -157,9 +148,6 @@ trait Revisionable
 
     abstract public function getCanonical(bool $anySite = false): ElementInterface;
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCurrentRevision(): ?ElementInterface
     {
         if (! $this->id) {

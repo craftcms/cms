@@ -8,9 +8,6 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 
 final class AssetCondition extends ElementCondition
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function selectableConditionRules(): array
     {

@@ -368,18 +368,12 @@ final class ElementCollection extends Collection
     // The following methods are intercepted to always return base collections.
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function countBy($countBy = null): Collection
     {
         return $this->toBase()->countBy($countBy);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function collapse(): Collection
     {
@@ -387,8 +381,6 @@ final class ElementCollection extends Collection
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @param  int|float  $depth
      */
     #[Override]
@@ -398,8 +390,6 @@ final class ElementCollection extends Collection
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws RuntimeException
      */
     #[Override]
@@ -408,18 +398,12 @@ final class ElementCollection extends Collection
         throw new RuntimeException('Not possible to flip element collections.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function keys(): Collection
     {
         return $this->toBase()->keys();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function pad($size, $value): Collection
     {
@@ -442,9 +426,6 @@ final class ElementCollection extends Collection
         return $this->toBase()->pluck($value, $key);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function zip($items): Collection
     {

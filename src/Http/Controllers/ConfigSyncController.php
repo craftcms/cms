@@ -122,18 +122,12 @@ final class ConfigSyncController extends BaseUpdaterController
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function pageTitle(): string
     {
         return t('Project Config Sync');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function initialData(): array
     {
@@ -155,9 +149,6 @@ final class ConfigSyncController extends BaseUpdaterController
         return $data;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function initialState(bool $force = false): array
     {
@@ -228,27 +219,18 @@ final class ConfigSyncController extends BaseUpdaterController
         return $this->actionState($this->nextApplyYamlAction());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function postComposerInstallState(): array
     {
         throw new RuntimeException('postComposerInstallState() is not supported by '.self::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function returnUrl(): string
     {
         return $this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function actionStatus(string $action): string
     {

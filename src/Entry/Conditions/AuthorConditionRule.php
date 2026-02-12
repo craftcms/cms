@@ -23,25 +23,16 @@ use function CraftCms\Cms\t;
  */
 class AuthorConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Author');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function elementType(): string
     {
         return User::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function criteria(): ?array
     {
         return [
@@ -49,35 +40,23 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function allowMultiple(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['author', 'authorId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
         $query->authorId($this->getElementIds());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */

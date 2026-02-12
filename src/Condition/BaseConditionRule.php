@@ -104,57 +104,36 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function supportsProjectConfig(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getLabelHint(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function showLabelHint(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCondition(): ConditionInterface
     {
         return $this->_condition;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setCondition(ConditionInterface $condition): void
     {
         $this->_condition = $condition;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getGroupLabel(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getConfig(): array
     {
         $config = [
@@ -208,9 +187,6 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getHtml(): string
     {
         $operators = $this->operators();
@@ -249,17 +225,11 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAutofocus(): bool
     {
         return $this->_autofocus;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setAutofocus(bool $autofocus = true): void
     {
         $this->_autofocus = $autofocus;

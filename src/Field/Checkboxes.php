@@ -16,56 +16,32 @@ use function CraftCms\Cms\t;
  */
 final class Checkboxes extends BaseOptionsField
 {
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $multi = true;
 
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $allowCustomOptions = true;
 
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $optionIcons = true;
 
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $optionColors = true;
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
         return t('Checkboxes');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'square-check';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -82,9 +58,6 @@ final class Checkboxes extends BaseOptionsField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function optionsSettingLabel(): string
     {

@@ -16,25 +16,16 @@ use function CraftCms\Cms\t;
 
 final class FileTypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('File Type');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['kind'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function operators(): array
     {
@@ -43,9 +34,6 @@ final class FileTypeConditionRule extends BaseMultiSelectConditionRule implement
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         $options = [];
@@ -56,18 +44,12 @@ final class FileTypeConditionRule extends BaseMultiSelectConditionRule implement
         return $options;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
         $query->kind($this->paramValue());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Asset $element */

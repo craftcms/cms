@@ -28,30 +28,18 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
 {
     use HintableConditionRuleTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     protected bool $includeEmptyOperators = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Field');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['field', 'fieldId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         return $this->nestedEntryFields()
@@ -62,9 +50,6 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
             ->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
@@ -78,9 +63,6 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */

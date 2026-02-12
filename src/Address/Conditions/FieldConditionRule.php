@@ -21,30 +21,18 @@ final class FieldConditionRule extends BaseMultiSelectConditionRule implements E
 {
     use HintableConditionRuleTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     protected bool $includeEmptyOperators = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Field');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['field', 'fieldId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         return $this->addressFields()
@@ -55,9 +43,6 @@ final class FieldConditionRule extends BaseMultiSelectConditionRule implements E
             ->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AddressQuery $query */
@@ -70,9 +55,6 @@ final class FieldConditionRule extends BaseMultiSelectConditionRule implements E
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Address $element */

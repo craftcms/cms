@@ -106,41 +106,26 @@ final class EntryType extends Component implements Actionable, Chippable, Colora
         return Entry::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUiLabel(): string
     {
         return t($this->name, category: 'site');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIcon(): ?string
     {
         return $this->icon;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIndicators(): array
     {
         if (! isset($this->original)) {
@@ -169,17 +154,11 @@ final class EntryType extends Component implements Actionable, Chippable, Colora
         return $indicators;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getColor(): ?Color
     {
         return $this->color;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getActionMenuItems(): array
     {
         if (! $this->id) {
@@ -269,33 +248,21 @@ JS, [
         return (string) $this->handle ?: self::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getHandle(): ?string
     {
         return $this->handle;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldContext(): string
     {
         return 'global';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getEagerLoadingPrefix(): string
     {
         return $this->handle;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCpEditUrl(): ?string
     {
         if (! $this->id || ! Auth::user()?->isAdmin()) {

@@ -20,18 +20,12 @@ final class Updates extends Widget
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
         return t('Updates');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function isSelectable(): bool
     {
@@ -39,27 +33,18 @@ final class Updates extends Widget
         return parent::isSelectable() && Auth::user()->can('performUpdates');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected static function allowMultipleInstances(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'certificate';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getBodyHtml(): ?string
     {

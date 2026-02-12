@@ -115,106 +115,70 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     public const string STATUS_EXPIRED = 'expired';
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Entry');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function lowerDisplayName(): string
     {
         return t('entry');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function pluralDisplayName(): string
     {
         return t('Entries');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function pluralLowerDisplayName(): string
     {
         return t('entries');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function refHandle(): string
     {
         return 'entry';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function hasDrafts(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function trackChanges(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function hasTitles(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function hasUris(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function isLocalized(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function hasStatuses(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function statuses(): array
     {
@@ -227,8 +191,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return EntryQuery The newly created [[EntryQuery]] instance.
      */
     #[Override]
@@ -238,8 +200,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return EntryCondition
      */
     #[Override]
@@ -248,18 +208,12 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return Craft::createObject(EntryCondition::class, [self::class]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function multiPageSources(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSources(string $context): array
     {
@@ -354,9 +308,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $sources;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function modifyCustomSource(array $config): array
     {
@@ -396,9 +347,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $config;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineFieldLayouts(?string $source): array
     {
@@ -424,9 +372,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return array_map(fn (EntryType $entryType) => $entryType->getFieldLayout(), $entryTypes);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -555,18 +500,12 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $actions;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function includeSetStatusAction(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function baseBulkDuplicateAttributes(): array
     {
@@ -576,9 +515,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSortOptions(): array
     {
@@ -651,9 +587,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineTableAttributes(): array
     {
@@ -678,9 +611,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $attributes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineDefaultTableAttributes(string $source): array
     {
@@ -701,9 +631,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $attributes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineCardAttributes(): array
     {
@@ -764,9 +691,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $attributes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function attributePreviewHtml(array $attribute): mixed
     {
@@ -776,9 +700,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -824,18 +745,12 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return sprintf('%s_Entry', $entryType->handle);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function baseGqlType(): Type
     {
         return EntryInterface::getType();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function gqlScopesByContext(mixed $context): array
     {
@@ -847,9 +762,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
@@ -984,8 +896,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     private ?EntryType $_type = null;
 
     /**
-     * {@inheritdoc}
-     *
      * @since 3.5.0
      */
     #[Override]
@@ -998,9 +908,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $this->_oldTypeId = $this->_typeId;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function attributes(): array
     {
@@ -1014,9 +921,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return array_keys($names);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function extraFields(): array
     {
@@ -1029,9 +933,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $names;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function attributeLabels(): array
     {
@@ -1048,9 +949,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function setAttributesFromRequest(array $values): void
     {
@@ -1081,9 +979,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function shouldValidateTitle(): bool
     {
@@ -1101,17 +996,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $titleField->required && $titleField->showInForm($this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getColor(): ?Color
     {
         return $this->getType()->getColor();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSupportedSites(): array
     {
@@ -1207,8 +1096,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @since 3.5.0
      */
     #[Override]
@@ -1233,8 +1120,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InvalidConfigException if [[siteId]] is not set to a site ID that the entry’s section is enabled for
      */
     public function getUriFormat(): ?string
@@ -1256,9 +1141,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $sectionSiteSettings[$this->siteId]->uriFormat;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function route(): ?array
     {
         // Make sure that the entry is actually live
@@ -1289,9 +1171,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function crumbs(): array
     {
@@ -1390,9 +1269,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $crumbs;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getUiLabel(): string
     {
@@ -1406,9 +1282,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return parent::getUiLabel();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function uiLabel(): ?string
     {
         if ($this->getType()->uiLabelFormat !== '{title}') {
@@ -1432,9 +1305,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getChipLabelHtml(): string
     {
@@ -1448,26 +1318,17 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function showStatusIndicator(): bool
     {
         return $this->getType()->showStatusField;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCardTitle(): string
     {
         return $this->getType()->getUiLabel();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function previewTargets(): array
     {
@@ -1482,9 +1343,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }, $this->getSection()->previewTargets ?? []);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIcon(): ?string
     {
         return $this->getType()->getIcon();
@@ -1502,27 +1360,18 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $this->getSection()->handle.'/'.$this->slug;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getIsTitleTranslatable(): bool
     {
         return $this->getType()->titleTranslationMethod !== TranslationMethod::None;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitleTranslationDescription(): ?string
     {
         return ElementHelper::translationDescription($this->getType()->titleTranslationMethod);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitleTranslationKey(): string
     {
@@ -1531,27 +1380,18 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return ElementHelper::translationKey($this, $type->titleTranslationMethod, $type->titleTranslationKeyFormat);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getIsSlugTranslatable(): bool
     {
         return $this->getType()->slugTranslationMethod !== TranslationMethod::None;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSlugTranslationDescription(): ?string
     {
         return ElementHelper::translationDescription($this->getType()->slugTranslationMethod);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSlugTranslationKey(): string
     {
@@ -1560,9 +1400,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return ElementHelper::translationKey($this, $type->slugTranslationMethod, $type->slugTranslationKeyFormat);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getFieldLayout(): ?FieldLayout
     {
@@ -1574,9 +1411,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExpiryDate(): ?DateTime
     {
         return $this->expiryDate;
@@ -1883,9 +1717,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $this->_authorIds = array_map(fn (User $author) => $author->id, $authors);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getStatus(): ?string
     {
@@ -1924,9 +1755,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $this->status = $status;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function createAnother(): self
     {
         /** @var self $entry */
@@ -1968,9 +1796,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $entry;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function hasRevisions(): bool
     {
         $section = $this->getSection();
@@ -1983,9 +1808,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $field instanceof Matrix && $field->enableVersioning;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function cpEditUrl(): string
     {
         $section = $this->getSection();
@@ -2005,17 +1827,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $path;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getPostEditUrl(): string
     {
         return UrlHelper::cpUrl('entries');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function cpRevisionsUrl(): string
     {
         if (! $this->sectionId) {
@@ -2025,9 +1841,6 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return sprintf('%s/revisions', $this->cpEditUrl());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function safeActionMenuItems(): array
     {
@@ -2118,8 +1931,6 @@ JS, [
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @since 3.3.0
      */
     #[Override]
@@ -2129,8 +1940,6 @@ JS, [
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @param  User[]  $elements
      */
     #[Override]
@@ -2145,9 +1954,6 @@ JS, [
     // Indexes, etc.
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function attributeHtml(string $attribute): string
     {
@@ -2184,9 +1990,6 @@ JS, [
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inlineAttributeInputHtml(string $attribute): string
     {
@@ -2233,9 +2036,6 @@ JS, [
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function htmlAttributes(string $context): array
     {
@@ -2313,9 +2113,6 @@ JS, [
         return $compatibleSections->count();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function metaFieldsHtml(bool $static): string
     {
@@ -2522,9 +2319,6 @@ JS;
             $user->can("changeAuthorForPeerEntries:$section->uid");
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function showStatusField(): bool
     {
@@ -2637,8 +2431,6 @@ JS;
     // -------------------------------------------------------------------------
 
     /**
-     * {@inheritdoc}
-     *
      * @throws Exception if reasons
      */
     #[Override]
@@ -2751,8 +2543,6 @@ JS;
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InvalidConfigException
      */
     #[Override]
@@ -2897,9 +2687,6 @@ JS;
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterPropagate(bool $isNew): void
     {
@@ -2911,9 +2698,6 @@ JS;
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeDelete(): bool
     {
@@ -2946,9 +2730,6 @@ JS;
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterRestore(): void
     {
@@ -2983,9 +2764,6 @@ JS;
         parent::afterRestore();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterMoveInStructure(int $structureId): void
     {

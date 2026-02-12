@@ -46,25 +46,16 @@ class Template extends BaseUiElement
      */
     public string $templateMode = View::TEMPLATE_MODE_SITE;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectorLabel(): string
     {
         return $this->template ?: t('Template');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectorIcon(): ?string
     {
         return 'file-code';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function selectorLabelAttributes(): array
     {
@@ -76,27 +67,18 @@ class Template extends BaseUiElement
         return $attr;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasCustomWidth(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasSettings(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function settingsHtml(): ?string
     {
         return Cp::autosuggestFieldHtml([
@@ -111,9 +93,6 @@ class Template extends BaseUiElement
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (! $this->template) {
@@ -145,9 +124,6 @@ class Template extends BaseUiElement
         return Html::tag('div', $content, $this->containerAttributes($element, $static));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function alwaysRefresh(): bool
     {

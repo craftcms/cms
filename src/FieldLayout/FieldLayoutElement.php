@@ -23,9 +23,6 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      */
     public ?DateTime $dateAdded = null;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {

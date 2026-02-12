@@ -46,25 +46,16 @@ trait FieldConditionRuleTrait
      */
     private array $_fieldInstances;
 
-    /**
-     * {@inheritdoc}
-     */
     public function getGroupLabel(): ?string
     {
         return t('Fields');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setFieldUid(string $uid): void
     {
         $this->_fieldUid = $uid;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setLayoutElementUid(?string $uid): void
     {
         $this->_layoutElementUid = $uid;
@@ -162,9 +153,6 @@ trait FieldConditionRuleTrait
         return $this->fieldInstances()[0];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), array_filter([
@@ -173,9 +161,6 @@ trait FieldConditionRuleTrait
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         $instances = $this->fieldInstances();
@@ -186,25 +171,16 @@ trait FieldConditionRuleTrait
         return $instances[0]->layoutElement->label();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getLabelHint(): ?string
     {
         return $this->field()->handle;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function showLabelHint(): bool
     {
         return Auth::user()?->getPreference('showFieldHandles') ?? false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         try {
@@ -221,9 +197,6 @@ trait FieldConditionRuleTrait
         return array_values(array_unique($params));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(Builder $query): void
     {
         $value = $this->elementQueryParam();
@@ -242,9 +215,6 @@ trait FieldConditionRuleTrait
         $firstInstance::modifyQuery($query, $instances, $value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         try {
@@ -275,9 +245,6 @@ trait FieldConditionRuleTrait
 
     abstract protected function matchFieldValue($value): bool;
 
-    /**
-     * {@inheritdoc}
-     */
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [

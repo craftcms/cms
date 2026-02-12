@@ -15,9 +15,6 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
 {
     public bool $value = true;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getConfig(): array
     {
@@ -26,9 +23,6 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(): string
     {

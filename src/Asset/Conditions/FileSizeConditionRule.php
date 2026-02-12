@@ -34,17 +34,11 @@ final class FileSizeConditionRule extends BaseNumberConditionRule implements Ele
      */
     public string $unit = self::UNIT_B;
 
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('File Size');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(): string
     {
@@ -70,17 +64,11 @@ final class FileSizeConditionRule extends BaseNumberConditionRule implements Ele
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['size'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
@@ -107,9 +95,6 @@ final class FileSizeConditionRule extends BaseNumberConditionRule implements Ele
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         if (! $this->value) {
@@ -179,9 +164,6 @@ final class FileSizeConditionRule extends BaseNumberConditionRule implements Ele
         return [$minBytes, $maxBytes];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getConfig(): array
     {

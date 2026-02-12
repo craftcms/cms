@@ -11,9 +11,6 @@ class TextFieldConditionRule extends BaseTextConditionRule implements FieldCondi
 {
     use FieldConditionRuleTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function elementQueryParam(): ?array
     {
         $value = $this->paramValue();
@@ -27,9 +24,6 @@ class TextFieldConditionRule extends BaseTextConditionRule implements FieldCondi
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function matchFieldValue($value): bool
     {
         /** @var string|null $value */

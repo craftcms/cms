@@ -21,9 +21,6 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
 {
     use FieldConditionRuleTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     public function setAttributes($values, $safeOnly = true): void
     {
         // Hold setting of the value attribute until we have all the info we need
@@ -61,9 +58,6 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(): string
     {
@@ -100,9 +94,6 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         return Cp::moneyInputHtml($this->inputOptions());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputOptions(): array
     {
@@ -132,9 +123,6 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function elementQueryParam(): ?string
     {
         if (! $this->field() instanceof Money) {
@@ -144,9 +132,6 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         return $this->paramValue();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function matchFieldValue($value): bool
     {
         if (! $this->field() instanceof Money) {

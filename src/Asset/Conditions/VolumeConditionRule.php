@@ -17,25 +17,16 @@ use function CraftCms\Cms\t;
 
 final class VolumeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Volume');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['volume', 'volumeId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
@@ -43,9 +34,6 @@ final class VolumeConditionRule extends BaseMultiSelectConditionRule implements 
         return Arr::pluck($volumes, 'name', 'uid');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
@@ -54,9 +42,6 @@ final class VolumeConditionRule extends BaseMultiSelectConditionRule implements 
         $query->volumeId($this->paramValue(fn ($uid) => $volumes->getVolumeByUid($uid)->id ?? null));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Asset $element */

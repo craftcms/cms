@@ -58,9 +58,6 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
         return array_pop($classNameParts);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function isSelectable(): bool
     {
         return true;

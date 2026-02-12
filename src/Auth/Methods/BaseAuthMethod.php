@@ -13,17 +13,11 @@ abstract class BaseAuthMethod implements AuthMethodInterface
      */
     protected User $user;
 
-    /**
-     * {@inheritdoc}
-     */
     public function setUser(User $user): void
     {
         $this->user = $user;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getActionMenuItems(): array
     {
         return [];

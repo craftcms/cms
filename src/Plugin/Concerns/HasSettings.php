@@ -52,7 +52,6 @@ trait HasSettings
      */
     private bool|null|Validatable $settings = null;
 
-    /** {@inheritdoc} */
     public function getSettings(): ?Validatable
     {
         if (! isset($this->settings)) {
@@ -62,7 +61,6 @@ trait HasSettings
         return $this->settings ?: null;
     }
 
-    /** {@inheritdoc} */
     public function setSettings(array $settings): void
     {
         if (($model = $this->getSettings()) === null) {
@@ -74,13 +72,11 @@ trait HasSettings
         $model->setAttributes($settings);
     }
 
-    /** {@inheritdoc} */
     public function getSettingsResponse(): mixed
     {
         return $this->settingsResponse(false);
     }
 
-    /** {@inheritdoc} */
     public function getReadOnlySettingsResponse(): mixed
     {
         return $this->settingsResponse(true);
@@ -108,7 +104,6 @@ trait HasSettings
         ]);
     }
 
-    /** {@inheritdoc} */
     public function beforeSaveSettings(): bool
     {
         event(self::componentEventName(self::EVENT_BEFORE_SAVE_SETTINGS), $event = new ComponentEvent($this));
@@ -116,7 +111,6 @@ trait HasSettings
         return $event->isValid;
     }
 
-    /** {@inheritdoc} */
     public function afterSaveSettings(): void
     {
         event(self::componentEventName(self::EVENT_AFTER_SAVE_SETTINGS), new ComponentEvent($this));

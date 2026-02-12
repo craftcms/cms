@@ -18,19 +18,10 @@ use function CraftCms\Cms\t;
 
 class LatLongField extends BaseNativeField
 {
-    /**
-     * {@inheritdoc}
-     */
     public string $attribute = 'latLong';
 
-    /**
-     * {@inheritdoc}
-     */
     public bool $requirable = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         parent::__construct(Arr::except($config, [
@@ -41,9 +32,6 @@ class LatLongField extends BaseNativeField
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -55,27 +43,18 @@ class LatLongField extends BaseNativeField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasCustomWidth(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewable(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewHtml(ElementInterface $element): string
     {
@@ -83,36 +62,24 @@ class LatLongField extends BaseNativeField
         return sprintf('%s, %s', $element->longitude ?? '0', $element->latitude ?? '0');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function showLabel(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         // we need it for the card view designer
         return t('Latitude/Longitude');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function selectorLabel(): ?string
     {
         return t('Latitude/Longitude');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (! $element instanceof Address) {
@@ -154,9 +121,6 @@ class LatLongField extends BaseNativeField
             Html::endTag('div');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function fieldErrors(?ElementInterface $element = null): array
     {
@@ -170,9 +134,6 @@ class LatLongField extends BaseNativeField
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {

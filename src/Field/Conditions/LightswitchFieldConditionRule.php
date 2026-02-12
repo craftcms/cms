@@ -13,9 +13,6 @@ class LightswitchFieldConditionRule extends BaseLightswitchConditionRule impleme
 {
     use FieldConditionRuleTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(): string
     {
@@ -26,9 +23,6 @@ class LightswitchFieldConditionRule extends BaseLightswitchConditionRule impleme
         return parent::inputHtml();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function elementQueryParam(): ?bool
     {
         if (! $this->field() instanceof Lightswitch) {
@@ -38,9 +32,6 @@ class LightswitchFieldConditionRule extends BaseLightswitchConditionRule impleme
         return $this->value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function matchFieldValue($value): bool
     {
         if (! $this->field() instanceof Lightswitch) {

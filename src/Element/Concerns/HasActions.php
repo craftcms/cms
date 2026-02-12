@@ -25,9 +25,6 @@ use function CraftCms\Cms\t;
  */
 trait HasActions
 {
-    /**
-     * {@inheritdoc}
-     */
     public static function actions(string $source): array
     {
         $actions = Collection::make(static::defineActions($source));

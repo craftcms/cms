@@ -23,9 +23,6 @@ use yii\base\InvalidConfigException;
 
 class ElementCondition extends BaseCondition implements ElementConditionInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public bool $sortable = false;
 
     /**
@@ -94,9 +91,6 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldLayouts(): array
     {
         if (isset($this->_fieldLayouts)) {
@@ -115,9 +109,6 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         return app(Fields::class)->getLayoutsByType($this->elementType)->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setFieldLayouts(array $fieldLayouts): void
     {
         $fieldsService = app(Fields::class);
@@ -132,9 +123,6 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         }, $fieldLayouts);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function isConditionRuleSelectable(ConditionRuleInterface $rule): bool
     {
@@ -158,9 +146,6 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         return array_all($rule->getExclusiveQueryParams(), fn ($param) => ! isset($queryParams[$param]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectableConditionRules(): array
     {
         $types = [
@@ -245,9 +230,6 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getBuilderConfig(): array
     {
@@ -260,9 +242,6 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         return $config;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function config(): array
     {
@@ -272,9 +251,6 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         foreach ($this->getConditionRules() as $rule) {
@@ -283,9 +259,6 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var ElementConditionRuleInterface[] $rules */

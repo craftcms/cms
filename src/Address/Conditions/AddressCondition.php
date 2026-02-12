@@ -8,9 +8,6 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 
 final class AddressCondition extends ElementCondition
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function selectableConditionRules(): array
     {

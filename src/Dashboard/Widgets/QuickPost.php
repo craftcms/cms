@@ -20,18 +20,12 @@ use function CraftCms\Cms\t;
 
 final class QuickPost extends Widget
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Quick Post');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -100,9 +94,6 @@ final class QuickPost extends Widget
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSettingsHtml(): string
     {
@@ -128,9 +119,6 @@ final class QuickPost extends Widget
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitle(): string
     {
@@ -148,9 +136,6 @@ final class QuickPost extends Widget
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getBodyHtml(): string
     {

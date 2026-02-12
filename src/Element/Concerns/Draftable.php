@@ -138,9 +138,6 @@ trait Draftable
         DB::table(Table::DRAFTS)->delete($this->draftId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canCreateDrafts(UserElement $user): bool
     {
         event($event = new AuthorizeCreateDrafts($this, $user));
@@ -148,26 +145,17 @@ trait Draftable
         return $event->authorized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canDuplicateAsDraft(UserElement $user): bool
     {
         // if anything, this will be more lenient than canDuplicate()
         return Craft::$app->getElements()->canDuplicate($this, $user);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIsDraft(): bool
     {
         return ! empty($this->draftId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function hasDrafts(): bool
     {
         return false;

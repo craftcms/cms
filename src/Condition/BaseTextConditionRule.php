@@ -15,9 +15,6 @@ use yii\base\InvalidConfigException;
  */
 abstract class BaseTextConditionRule extends BaseConditionRule
 {
-    /**
-     * {@inheritdoc}
-     */
     public string $operator = self::OPERATOR_EQ;
 
     /**
@@ -25,14 +22,8 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      */
     public string $value = '';
 
-    /**
-     * {@inheritdoc}
-     */
     protected bool $reloadOnOperatorChange = true;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getConfig(): array
     {
@@ -65,9 +56,6 @@ abstract class BaseTextConditionRule extends BaseConditionRule
         return 'text';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(): string
     {

@@ -17,25 +17,16 @@ use function CraftCms\Cms\t;
 
 class AffiliatedSiteConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Affiliated Site');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['affiliatedSite', 'affiliatedSiteId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         return Sites::getAllSites()
@@ -46,18 +37,12 @@ class AffiliatedSiteConditionRule extends BaseMultiSelectConditionRule implement
             ->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var UserQuery $query */
         $query->affiliatedSiteId($this->paramValue(fn ($uid) => Sites::getSiteByUid($uid, true)->id ?? null));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var User $element */

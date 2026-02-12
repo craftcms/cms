@@ -13,9 +13,6 @@ use function CraftCms\Cms\t;
 
 class IdConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('ID');
@@ -27,25 +24,16 @@ class IdConditionRule extends BaseNumberConditionRule implements ElementConditio
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['id'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $query->id($this->paramValue());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         return $this->matchValue($element->id);

@@ -16,45 +16,30 @@ use function CraftCms\Cms\t;
  */
 final class Updates extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
         return t('Updates');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function id(): string
     {
         return 'updates';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'certificate';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function badgeCount(): int
     {
         return app(UpdatesService::class)->totalAvailableUpdates();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function contentHtml(): string
     {

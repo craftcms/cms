@@ -18,42 +18,27 @@ use function CraftCms\Cms\t;
 
 class GroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('User Group');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['group', 'groupId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function isSelectable(): bool
     {
         return UserGroups::getAllGroups()->isNotEmpty();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         return UserGroups::getAllGroups()->pluck('name', 'uid')->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var UserQuery $query */

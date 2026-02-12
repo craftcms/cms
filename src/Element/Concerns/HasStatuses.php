@@ -105,17 +105,11 @@ trait HasStatuses
         return self::STATUS_ENABLED;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function hasStatuses(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function statuses(): array
     {
         return [

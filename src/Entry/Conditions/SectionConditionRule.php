@@ -27,30 +27,18 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
 {
     use HintableConditionRuleTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     protected bool $reloadOnOperatorChange = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Section');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['section', 'sectionId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function operators(): array
     {
@@ -60,9 +48,6 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function options(): array
     {
         return Sections::getAllSections()
@@ -71,9 +56,6 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
             ->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
@@ -84,9 +66,6 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */

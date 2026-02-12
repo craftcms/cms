@@ -16,19 +16,10 @@ use Override;
 
 class EntryTitleField extends TitleField
 {
-    /**
-     * {@inheritdoc}
-     */
     public bool $mandatory = false;
 
-    /**
-     * {@inheritdoc}
-     */
     public bool $requirable = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         $this->required = Arr::pull($config, 'required', $this->required);
@@ -36,9 +27,6 @@ class EntryTitleField extends TitleField
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -49,9 +37,6 @@ class EntryTitleField extends TitleField
         return $fields;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
@@ -62,9 +47,6 @@ class EntryTitleField extends TitleField
         return $element->getType()->titleTranslationMethod !== TranslationMethod::None;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (! $element instanceof Entry) {
@@ -74,9 +56,6 @@ class EntryTitleField extends TitleField
         return ElementHelper::translationDescription($element->getType()->titleTranslationMethod);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {

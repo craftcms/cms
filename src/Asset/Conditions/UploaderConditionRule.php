@@ -16,25 +16,16 @@ use function CraftCms\Cms\t;
 
 final class UploaderConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getLabel(): string
     {
         return t('Uploaded By');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function elementType(): string
     {
         return User::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function criteria(): array
     {
         return [
@@ -42,26 +33,17 @@ final class UploaderConditionRule extends BaseElementSelectConditionRule impleme
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getExclusiveQueryParams(): array
     {
         return ['uploader', 'uploaderId'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
         $query->uploader($this->getElementId());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Asset $element */

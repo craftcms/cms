@@ -30,36 +30,24 @@ use function CraftCms\Cms\t;
  */
 final class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Color');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'palette';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', ColorData::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): string
     {
@@ -78,9 +66,6 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
      */
     public bool $allowCustomColors = false;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // presets => palette
@@ -163,17 +148,11 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -238,18 +217,12 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
@@ -312,9 +285,6 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -421,9 +391,6 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $html.Html::endTag('div');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
@@ -448,9 +415,6 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $html;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
@@ -479,9 +443,6 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $html;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {

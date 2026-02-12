@@ -25,9 +25,6 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
      */
     public int|float|null $step = 1;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getConfig(): array
     {
@@ -37,9 +34,6 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function operators(): array
     {
@@ -56,9 +50,6 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function operatorLabel(string $operator): string
     {
@@ -69,9 +60,6 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
         return parent::operatorLabel($operator);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputType(): string
     {
@@ -87,9 +75,6 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(): string
     {
@@ -122,9 +107,6 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function paramValue(): ?string
     {
@@ -147,9 +129,6 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
         return sprintf('and, >= %s, <= %s', Query::escapeParam($this->value), Query::escapeParam($this->maxValue));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function matchValue(mixed $value): bool
     {
@@ -172,9 +151,6 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputOptions(): array
     {
