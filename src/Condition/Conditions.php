@@ -26,6 +26,8 @@ final readonly class Conditions
      *
      * @phpstan-param array{class:class-string<T>}|class-string<T> $config
      *
+     * @return T
+     *
      * @throws InvalidArgumentException if the condition does not implement [[ConditionInterface]]
      */
     public function createCondition(array|string $config): ConditionInterface

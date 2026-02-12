@@ -2,7 +2,7 @@
 
 namespace craft\fields\conditions;
 
-use craft\elements\conditions\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 
 /** @phpstan-ignore-next-line */
 if (false) {
@@ -16,6 +16,7 @@ if (false) {
      * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
      * @since 4.0.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Conditions\FieldConditionRuleTrait} instead.
+     * @phpstan-ignore trait.unused
      */
     trait FieldConditionRuleTrait
     {

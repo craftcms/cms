@@ -285,6 +285,9 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      */
     public function matchElement(ElementInterface $element): bool
     {
-        return array_all($this->getConditionRules(), fn ($rule) => $rule->matchElement($element));
+        /** @var ElementConditionRuleInterface[] $rules */
+        $rules = $this->getConditionRules();
+
+        return array_all($rules, fn (ElementConditionRuleInterface $rule) => $rule->matchElement($element));
     }
 }

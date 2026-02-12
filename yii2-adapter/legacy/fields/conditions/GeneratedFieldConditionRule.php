@@ -2,7 +2,7 @@
 
 namespace craft\fields\conditions;
 
-use craft\elements\conditions\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 
 /** @phpstan-ignore-next-line */
 if (false) {

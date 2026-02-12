@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\helpers\Cp;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\FieldLayout\Events\DefineShowInForm;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Html;

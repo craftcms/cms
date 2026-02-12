@@ -8,13 +8,13 @@
 namespace craft\elements;
 
 use Craft;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\tags\TagCondition;
 use craft\elements\db\TagQuery;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\helpers\Db;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\User\Elements\User;

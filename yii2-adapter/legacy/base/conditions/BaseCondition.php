@@ -53,6 +53,13 @@ abstract class BaseCondition extends \CraftCms\Cms\Condition\BaseCondition
                 $validator->validateAttribute(new ModelWrapper($this), $attribute);
             }
         });
+
+        return $rules;
+    }
+
+    public function defineRules(): array
+    {
+        return [];
     }
 
     public static function registerEvents(): void

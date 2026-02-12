@@ -25,7 +25,6 @@ use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\Restore;
 use craft\elements\actions\ShowInFolder;
 use craft\elements\conditions\assets\AssetCondition;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\AssetException;
 use craft\errors\FileException;
@@ -62,6 +61,7 @@ use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -2574,7 +2574,7 @@ JS, [
     {
         if (is_array($value)) {
             if (! isset($value['x'], $value['y'])) {
-                throw new \InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
+                throw new InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
             }
             $value = [
                 'x' => (float) $value['x'],
@@ -2583,7 +2583,7 @@ JS, [
         } elseif ($value !== null) {
             $focal = explode(';', $value);
             if (count($focal) !== 2) {
-                throw new \InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
+                throw new InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
             }
             $value = [
                 'x' => (float) $focal[0],

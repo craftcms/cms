@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Element;
 
 use craft\base\ElementInterface;
 use craft\db\CoalesceColumnsExpression;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
