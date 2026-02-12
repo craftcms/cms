@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Conditions;
 
 use craft\helpers\Cp;
@@ -8,23 +10,19 @@ use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use Illuminate\Contracts\Database\Query\Builder;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
+
 use function CraftCms\Cms\t;
 
-/**
- * Options field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.8.0
- */
 class LinkFieldConditionRule extends TextFieldConditionRule
 {
-    private const OPERATOR_TYPE = 'type';
+    private const string OPERATOR_TYPE = 'type';
 
     /**
      * @var string|null The selected link type
      */
     public ?string $linkType = null;
 
+    #[\Override]
     protected function operators(): array
     {
         return [
@@ -33,6 +31,7 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         ];
     }
 
+    #[\Override]
     public function getConfig(): array
     {
         return [
@@ -41,6 +40,7 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         ];
     }
 
+    #[\Override]
     protected function operatorLabel(string $operator): string
     {
         return match ($operator) {
@@ -49,41 +49,45 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         };
     }
 
+    #[\Override]
     protected function inputHtml(): string
     {
-        if ($this->operator === self::OPERATOR_TYPE) {
-            /** @var Link $field */
-            $field = $this->field();
-            $linkTypeOptions = array_map(
-                fn(BaseLinkType $linkType) => ['value' => $linkType::id(), 'label' => $linkType::displayName()],
-                $field->getLinkTypes(),
-            );
-
-            return Cp::selectHtml([
-                'name' => 'linkType',
-                'options' => $linkTypeOptions,
-                'value' => $this->linkType,
-            ]);
+        if ($this->operator !== self::OPERATOR_TYPE) {
+            return parent::inputHtml();
         }
 
-        return parent::inputHtml();
+        /** @var Link $field */
+        $field = $this->field();
+        $linkTypeOptions = array_map(
+            fn (BaseLinkType $linkType) => ['value' => $linkType::id(), 'label' => $linkType::displayName()],
+            $field->getLinkTypes(),
+        );
+
+        return Cp::selectHtml([
+            'name' => 'linkType',
+            'options' => $linkTypeOptions,
+            'value' => $this->linkType,
+        ]);
     }
 
     public function modifyQuery(Builder $query): void
     {
-        if ($this->operator === self::OPERATOR_TYPE) {
-            /** @phpstan-ignore-next-line */
-            $valueSql = array_map(fn(Link $field) => $field->getValueSql('type'), $this->fieldInstances());
-
-            $query->where(new Coalesce($valueSql), $this->linkType);
-        } else {
+        if ($this->operator !== self::OPERATOR_TYPE) {
             parent::modifyQuery($query);
+
+            return;
         }
+
+        /** @phpstan-ignore-next-line */
+        $valueSql = array_map(fn (Link $field) => $field->getValueSql('type'), $this->fieldInstances());
+
+        $query->where(new Coalesce($valueSql), $this->linkType);
     }
 
+    #[\Override]
     protected function matchFieldValue($value): bool
     {
-        if (!$this->field() instanceof Link) {
+        if (! $this->field() instanceof Link) {
             return true;
         }
 
@@ -95,11 +99,11 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         return parent::matchFieldValue($value);
     }
 
-    protected function defineRules(): array
+    #[\Override]
+    public function getRules(): array
     {
-        return [
-            ...parent::defineRules(),
-            [['linkType'], 'safe'],
-        ];
+        return array_merge(parent::getRules(), [
+            'linkType' => ['nullable', 'string'],
+        ]);
     }
 }

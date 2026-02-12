@@ -15,10 +15,6 @@ use InvalidArgumentException;
  * @mixin BaseCondition
  *
  * @phpstan-require-extends BaseCondition
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
  */
 interface ConditionInterface
 {

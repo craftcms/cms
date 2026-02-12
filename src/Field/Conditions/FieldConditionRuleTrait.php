@@ -1,27 +1,24 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Conditions;
 
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidConfigException;
+
 use function CraftCms\Cms\t;
 
 /**
  * FieldConditionRuleTrait implements the common methods and properties for custom fields’ query condition rule classes.
  *
  * @property ElementConditionInterface $condition
+ *
  * @method ElementConditionInterface getCondition()
- * @property-write string $fieldUid The UUID of the custom field associated with this rule
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
  */
 trait FieldConditionRuleTrait
 {
@@ -29,6 +26,15 @@ trait FieldConditionRuleTrait
      * @var string The UUID of the custom field associated with this rule
      */
     private string $_fieldUid;
+
+    /**
+     * @var string The UUID of the custom field associated with this rule
+     */
+    public string $fieldUid {
+        set {
+            $this->setFieldUid($value);
+        }
+    }
 
     /**
      * @var string|null The UUID of the custom field layout element associated with this rule
@@ -41,7 +47,7 @@ trait FieldConditionRuleTrait
     private array $_fieldInstances;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getGroupLabel(): ?string
     {
@@ -49,7 +55,7 @@ trait FieldConditionRuleTrait
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setFieldUid(string $uid): void
     {
@@ -57,7 +63,7 @@ trait FieldConditionRuleTrait
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setLayoutElementUid(?string $uid): void
     {
@@ -68,75 +74,78 @@ trait FieldConditionRuleTrait
      * Returns the custom field instances associated with this rule, if known.
      *
      * @return FieldInterface[]
+     *
      * @throws InvalidConfigException if [[fieldUid]] or [[layoutElementUid]] are invalid
-     * @since 5.0.0
      */
     protected function fieldInstances(): array
     {
-        if (!isset($this->_fieldInstances)) {
-            if (!isset($this->_fieldUid)) {
-                throw new InvalidConfigException('No field UUID set on the field condition rule yet.');
-            }
+        if (isset($this->_fieldInstances)) {
+            return $this->_fieldInstances;
+        }
 
-            // Loop through all the layout's fields, and look for the selected field instance
-            // and any other instances with the same label and handle
-            $this->_fieldInstances = [];
-            /** @var FieldInterface[] $potentialInstances */
-            $potentialInstances = [];
-            $selectedInstance = null;
-            $selectedInstanceLabel = null;
+        if (! isset($this->_fieldUid)) {
+            throw new InvalidConfigException('No field UUID set on the field condition rule yet.');
+        }
 
-            foreach ($this->getCondition()->getFieldLayouts() as $fieldLayout) {
-                foreach ($fieldLayout->getCustomFields() as $field) {
-                    if ($field->uid === $this->_fieldUid) {
-                        // skip if it doesn't have a label
-                        $label = $field->layoutElement->label();
-                        if ($label === null) {
-                            continue;
+        // Loop through all the layout's fields, and look for the selected field instance
+        // and any other instances with the same label and handle
+        $this->_fieldInstances = [];
+
+        /** @var FieldInterface[] $potentialInstances */
+        $potentialInstances = [];
+        $selectedInstance = null;
+        $selectedInstanceLabel = null;
+
+        foreach ($this->getCondition()->getFieldLayouts() as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
+                if ($field->uid === $this->_fieldUid) {
+                    // skip if it doesn't have a label
+                    $label = $field->layoutElement->label();
+                    if ($label === null) {
+                        continue;
+                    }
+
+                    // is this the selected field instance?
+                    // (if we aren't looking for a specific instance, include it if the handle isn't overridden)
+                    if (
+                        (isset($this->_layoutElementUid) && $field->layoutElement->uid === $this->_layoutElementUid) ||
+                        (! isset($this->_layoutElementUid) && ! isset($field->layoutElement->handle))
+                    ) {
+                        $this->_fieldInstances[] = $field;
+
+                        if (isset($this->_layoutElementUid)) {
+                            $selectedInstance = $field;
+                            $selectedInstanceLabel = $label;
                         }
-
-                        // is this the selected field instance?
-                        // (if we aren't looking for a specific instance, include it if the handle isn't overridden)
-                        if (
-                            (isset($this->_layoutElementUid) && $field->layoutElement->uid === $this->_layoutElementUid) ||
-                            (!isset($this->_layoutElementUid) && !isset($field->layoutElement->handle))
-                        ) {
-                            $this->_fieldInstances[] = $field;
-
-                            if (isset($this->_layoutElementUid)) {
-                                $selectedInstance = $field;
-                                $selectedInstanceLabel = $label;
-                            }
-                        } elseif (isset($this->_layoutElementUid)) {
-                            $potentialInstances[] = $field;
-                        }
+                    } elseif (isset($this->_layoutElementUid)) {
+                        $potentialInstances[] = $field;
                     }
                 }
             }
+        }
 
-            if (empty($this->_fieldInstances)) {
-                if (!isset($this->_layoutElementUid)) {
-                    throw new InvalidConfigException("Field $this->_fieldUid is not included in the available field layouts.");
-                }
-
-                if (empty($potentialInstances)) {
-                    throw new InvalidConfigException("Invalid field layout element UUID: $this->_layoutElementUid");
-                }
-
-                // Just go with the first one
-                $this->_fieldInstances[] = $first = array_shift($potentialInstances);
-                $selectedInstance = $first;
-                $selectedInstanceLabel = $first->layoutElement->label();
+        if (empty($this->_fieldInstances)) {
+            if (! isset($this->_layoutElementUid)) {
+                throw new InvalidConfigException("Field $this->_fieldUid is not included in the available field layouts.");
             }
 
-            // Add any potential fields to the mix if they have a matching label and handle
-            foreach ($potentialInstances as $field) {
-                if (
-                    $field->handle === $selectedInstance->handle &&
-                    $field->layoutElement->label() === $selectedInstanceLabel
-                ) {
-                    $this->_fieldInstances[] = $field;
-                }
+            if (empty($potentialInstances)) {
+                throw new InvalidConfigException("Invalid field layout element UUID: $this->_layoutElementUid");
+            }
+
+            // Just go with the first one
+            $this->_fieldInstances[] = $first = array_shift($potentialInstances);
+            $selectedInstance = $first;
+            $selectedInstanceLabel = $first->layoutElement->label();
+        }
+
+        // Add any potential fields to the mix if they have a matching label and handle
+        foreach ($potentialInstances as $field) {
+            if (
+                $field->handle === $selectedInstance->handle &&
+                $field->layoutElement->label() === $selectedInstanceLabel
+            ) {
+                $this->_fieldInstances[] = $field;
             }
         }
 
@@ -146,7 +155,6 @@ trait FieldConditionRuleTrait
     /**
      * Returns the first custom field instance associated with this rule.
      *
-     * @return FieldInterface
      * @throws InvalidConfigException if [[fieldUid]] or [[layoutElementUid]] are invalid
      */
     protected function field(): FieldInterface
@@ -155,7 +163,7 @@ trait FieldConditionRuleTrait
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getConfig(): array
     {
@@ -166,7 +174,7 @@ trait FieldConditionRuleTrait
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -174,11 +182,12 @@ trait FieldConditionRuleTrait
         if (empty($instances)) {
             throw new InvalidConfigException('No field instances for this condition rule.');
         }
+
         return $instances[0]->layoutElement->label();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabelHint(): ?string
     {
@@ -186,7 +195,7 @@ trait FieldConditionRuleTrait
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function showLabelHint(): bool
     {
@@ -194,7 +203,7 @@ trait FieldConditionRuleTrait
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -208,29 +217,33 @@ trait FieldConditionRuleTrait
         foreach ($instances as $field) {
             $params[] = $field->handle;
         }
+
         return array_values(array_unique($params));
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function modifyQuery(\Illuminate\Contracts\Database\Query\Builder $query): void
+    public function modifyQuery(Builder $query): void
     {
         $value = $this->elementQueryParam();
-        if ($value !== null) {
-            $instances = $this->fieldInstances();
-            $firstInstance = $instances[0];
 
-            if (!method_exists($firstInstance, 'modifyQuery')) {
-                return;
-            }
-
-            $firstInstance::modifyQuery($query, $instances, $value);
+        if ($value === null) {
+            return;
         }
+
+        $instances = $this->fieldInstances();
+        $firstInstance = $instances[0];
+
+        if (! method_exists($firstInstance, 'modifyQuery')) {
+            return;
+        }
+
+        $firstInstance::modifyQuery($query, $instances, $value);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {
@@ -243,7 +256,7 @@ trait FieldConditionRuleTrait
 
         // index the field instance UUIDs
         $instanceUids = array_flip(
-            array_map(fn(FieldInterface $field) => $field->layoutElement->uid, $fieldInstances),
+            array_map(fn (FieldInterface $field) => $field->layoutElement->uid, $fieldInstances),
         );
 
         foreach ($element->getFieldLayout()->getCustomFields() as $field) {
@@ -258,23 +271,18 @@ trait FieldConditionRuleTrait
         return false;
     }
 
-    /**
-     * @return mixed
-     */
     abstract protected function elementQueryParam(): mixed;
 
-    /**
-     * @return mixed
-     */
     abstract protected function matchFieldValue($value): bool;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    protected function defineRules(): array
+    public function getRules(): array
     {
-        return array_merge(parent::defineRules(), [
-            [['fieldUid', 'layoutElementUid'], 'safe'],
+        return array_merge(parent::getRules(), [
+            'fieldUid' => ['nullable', 'uuid'],
+            'layoutElementUid' => ['nullable', 'uuid'],
         ]);
     }
 }

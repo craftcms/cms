@@ -1,31 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Conditions;
 
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
 use craft\errors\InvalidFieldException;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 
-/**
- * Empty/not-empty field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.2.0
- */
 class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public string $operator = self::OPERATOR_NOT_EMPTY;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function operators(): array
     {
         return [
@@ -35,7 +33,7 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {
@@ -59,11 +57,11 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
             return $isEmpty;
         }
 
-        return !$isEmpty;
+        return ! $isEmpty;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function elementQueryParam(): int|string|null
     {
@@ -75,10 +73,10 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function matchFieldValue($value): bool
     {
-        throw new NotSupportedException();
+        throw new NotSupportedException;
     }
 }

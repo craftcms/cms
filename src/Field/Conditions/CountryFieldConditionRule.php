@@ -1,24 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Conditions;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Country;
 use yii\base\InvalidConfigException;
 
-/**
- * Options field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.6.0
- */
 class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function options(): array
     {
@@ -26,23 +23,24 @@ class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements 
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(): string
     {
-        if (!$this->field() instanceof Country) {
-            throw new InvalidConfigException();
+        if (! $this->field() instanceof Country) {
+            throw new InvalidConfigException;
         }
 
         return parent::inputHtml();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function elementQueryParam(): ?array
     {
-        if (!$this->field() instanceof Country) {
+        if (! $this->field() instanceof Country) {
             return null;
         }
 
@@ -50,11 +48,11 @@ class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements 
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function matchFieldValue($value): bool
     {
-        if (!$this->field() instanceof Country) {
+        if (! $this->field() instanceof Country) {
             return true;
         }
 

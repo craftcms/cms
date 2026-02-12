@@ -6,18 +6,19 @@ namespace CraftCms\Cms\Element\Conditions;
 
 use craft\base\ElementInterface;
 use craft\errors\InvalidTypeException;
-use craft\fields\conditions\FieldConditionRuleInterface;
-use craft\fields\conditions\GeneratedFieldConditionRule;
 use CraftCms\Cms\Condition\BaseCondition;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
+use CraftCms\Cms\Field\Conditions\GeneratedFieldConditionRule;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
+use Override;
 use yii\base\InvalidConfigException;
 
 class ElementCondition extends BaseCondition implements ElementConditionInterface
@@ -134,7 +135,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function isConditionRuleSelectable(ConditionRuleInterface $rule): bool
     {
         if (! $rule instanceof ElementConditionRuleInterface) {
@@ -234,7 +235,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         return $types;
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -247,7 +248,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getBuilderConfig(): array
     {
         $config = parent::getBuilderConfig();
@@ -262,7 +263,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function config(): array
     {
         return $this->toArray(['elementType', 'fieldContext']);

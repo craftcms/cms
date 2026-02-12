@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\fields\conditions\TextFieldConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;

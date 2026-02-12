@@ -1,40 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Conditions;
 
 use CraftCms\Cms\Condition\BaseDateRangeConditionRule;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Date;
 use DateTime;
 use yii\base\InvalidConfigException;
 
-/**
- * Date field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class DateFieldConditionRule extends BaseDateRangeConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(): string
     {
-        if (!$this->field() instanceof Date) {
-            throw new InvalidConfigException();
+        if (! $this->field() instanceof Date) {
+            throw new InvalidConfigException;
         }
 
         return parent::inputHtml();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function elementQueryParam(): array|string|null
     {
-        if (!$this->field() instanceof Date) {
+        if (! $this->field() instanceof Date) {
             return null;
         }
 
@@ -42,11 +40,11 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function matchFieldValue($value): bool
     {
-        if (!$this->field() instanceof Date) {
+        if (! $this->field() instanceof Date) {
             return true;
         }
 

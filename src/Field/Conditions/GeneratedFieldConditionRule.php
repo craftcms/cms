@@ -1,37 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Conditions;
 
-use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
+use CraftCms\Cms\Condition\BaseTextConditionRule;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use yii\base\InvalidConfigException;
 use yii\db\Schema;
+
 use function CraftCms\Cms\t;
 
 /**
  * Generated field condition rule.
  *
  * @property ElementConditionInterface $condition
+ *
  * @method ElementConditionInterface getCondition()
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.8.0
  */
 class GeneratedFieldConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * The generated field’s UUID.
-     */
     public string $fieldUid;
 
     private array|false $field;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function getConfig(): array
     {
         return [
@@ -41,19 +41,20 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
         $field = $this->getFieldConfig();
-        if (!$field) {
+        if (! $field) {
             throw new InvalidConfigException("Invalid generated field UUID: $this->fieldUid");
         }
+
         return $field['name'];
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getGroupLabel(): ?string
     {
@@ -61,32 +62,33 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
         $field = $this->getFieldConfig();
-        if (!$field) {
+        if (! $field) {
             return [];
         }
 
         $handle = $field['handle'];
         if (is_array($handle)) {
-            if (!isset($handle['value'])) {
+            if (! isset($handle['value'])) {
                 return [];
             }
             $handle = $handle['value'];
         }
+
         return [$handle];
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $field = $this->getFieldConfig();
-        if (!$field) {
+        if (! $field) {
             return;
         }
 
@@ -99,41 +101,46 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {
         $field = $this->getFieldConfig();
-        if (!$field) {
+        if (! $field) {
             return true;
         }
         $value = $element->getGeneratedFieldValues()[$field['handle']] ?? null;
+
         return $this->matchValue($value);
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function defineRules(): array
+    #[\Override]
+    public function getRules(): array
     {
-        return array_merge(parent::defineRules(), [
-            ['fieldUid', 'safe'],
+        return array_merge(parent::getRules(), [
+            'fieldUid' => ['nullable', 'uuid'],
         ]);
     }
 
     private function getFieldConfig(): ?array
     {
-        if (!isset($this->field)) {
-            $this->field = false;
-            foreach ($this->getCondition()->getFieldLayouts() as $fieldLayout) {
-                foreach ($fieldLayout->getGeneratedFields() as $field) {
-                    if ($field['uid'] === $this->fieldUid) {
-                        if (($field['name'] ?? '') !== '' && ($field['handle'] ?? '') !== '') {
-                            $this->field = $field;
-                        }
-                        break 2;
-                    }
+        if (isset($this->field)) {
+            return $this->field ?: null;
+        }
+
+        $this->field = false;
+
+        foreach ($this->getCondition()->getFieldLayouts() as $fieldLayout) {
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if ($field['uid'] !== $this->fieldUid) {
+                    continue;
                 }
+
+                if (($field['name'] ?? '') !== '' && ($field['handle'] ?? '') !== '') {
+                    $this->field = $field;
+                }
+
+                break 2;
             }
         }
 

@@ -1,21 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Conditions;
 
-use craft\base\conditions\BaseTextConditionRule;
+use CraftCms\Cms\Condition\BaseTextConditionRule;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 
-/**
- * Text field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class TextFieldConditionRule extends BaseTextConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function elementQueryParam(): ?array
     {
@@ -31,7 +28,7 @@ class TextFieldConditionRule extends BaseTextConditionRule implements FieldCondi
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function matchFieldValue($value): bool
     {

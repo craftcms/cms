@@ -1,22 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Conditions;
 
-use craft\base\conditions\BaseNumberConditionRule;
+use CraftCms\Cms\Condition\BaseNumberConditionRule;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use Money\Money;
 
-/**
- * Text field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class NumberFieldConditionRule extends BaseNumberConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function elementQueryParam(): ?string
     {
@@ -24,12 +21,12 @@ class NumberFieldConditionRule extends BaseNumberConditionRule implements FieldC
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function matchFieldValue($value): bool
     {
         if ($value instanceof Money) {
-            $value = (float)$value->getAmount();
+            $value = (float) $value->getAmount();
         }
 
         /** @var int|float|null $value */

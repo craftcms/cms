@@ -6,13 +6,13 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\fields\conditions\DateFieldConditionRule;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Conditions\DateFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;

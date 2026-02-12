@@ -1,39 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Conditions;
 
-use craft\base\conditions\BaseLightswitchConditionRule;
+use CraftCms\Cms\Condition\BaseLightswitchConditionRule;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Lightswitch;
 use yii\base\InvalidConfigException;
 
-/**
- * Lightswitch field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class LightswitchFieldConditionRule extends BaseLightswitchConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(): string
     {
-        if (!$this->field() instanceof Lightswitch) {
-            throw new InvalidConfigException();
+        if (! $this->field() instanceof Lightswitch) {
+            throw new InvalidConfigException;
         }
 
         return parent::inputHtml();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function elementQueryParam(): ?bool
     {
-        if (!$this->field() instanceof Lightswitch) {
+        if (! $this->field() instanceof Lightswitch) {
             return null;
         }
 
@@ -41,11 +39,11 @@ class LightswitchFieldConditionRule extends BaseLightswitchConditionRule impleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function matchFieldValue($value): bool
     {
-        if (!$this->field() instanceof Lightswitch) {
+        if (! $this->field() instanceof Lightswitch) {
             return true;
         }
 

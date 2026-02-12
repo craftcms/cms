@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Field\Conditions;
 
-use craft\base\conditions\BaseNumberConditionRule;
 use craft\helpers\Cp;
+use CraftCms\Cms\Condition\BaseNumberConditionRule;
+use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -11,20 +14,15 @@ use CraftCms\Cms\Support\Money as MoneyHelper;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
 use yii\base\InvalidConfigException;
+
 use function CraftCms\Cms\t;
 
-/**
- * Money field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- */
 class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setAttributes($values, $safeOnly = true): void
     {
@@ -42,19 +40,21 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         parent::setAttributes($values, $safeOnly);
 
         $field = $this->field();
-        if (!$field instanceof Money) {
-            throw new InvalidConfigException();
+
+        if (! $field instanceof Money) {
+            throw new InvalidConfigException;
         }
 
-        if (isset($value) && isset($this->_fieldUid)) {
-            if (!isset($value['currency'])) {
+        if (isset($value, $this->_fieldUid)) {
+            if (! isset($value['currency'])) {
                 $value['currency'] = $field->currency;
             }
+
             $this->value = MoneyHelper::toDecimal(MoneyHelper::toMoney($value));
         }
 
-        if (isset($maxValue) && isset($this->_fieldUid)) {
-            if (!isset($maxValue['currency'])) {
+        if (isset($maxValue, $this->_fieldUid)) {
+            if (! isset($maxValue['currency'])) {
                 $maxValue['currency'] = $field->currency;
             }
             $this->maxValue = MoneyHelper::toDecimal(MoneyHelper::toMoney($maxValue));
@@ -62,13 +62,15 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(): string
     {
         $field = $this->field();
-        if (!$field instanceof Money) {
-            throw new InvalidConfigException();
+
+        if (! $field instanceof Money) {
+            throw new InvalidConfigException;
         }
 
         // don't show the value input if the condition checks for empty/notempty
@@ -80,16 +82,16 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             $maxValue = is_numeric($this->maxValue) ? MoneyHelper::toNumber(MoneyHelper::toMoney(['value' => $this->maxValue, 'currency' => $field->currency])) : $this->maxValue;
 
             return Html::tag('div',
-                Html::hiddenLabel(t('Min Value'), 'min') .
+                Html::hiddenLabel(t('Min Value'), 'min').
                 // Min value (value) input
-                Cp::moneyInputHtml($this->inputOptions()) .
-                Html::tag('span', t('and')) .
-                Html::hiddenLabel(t('Max Value'), 'max') .
+                Cp::moneyInputHtml($this->inputOptions()).
+                Html::tag('span', t('and')).
+                Html::hiddenLabel(t('Max Value'), 'max').
                 // Max value input
                 Cp::moneyInputHtml(array_merge(
                     $this->inputOptions(),
                     ['id' => 'maxValue', 'name' => 'maxValue', 'value' => $maxValue]
-                )) .
+                )).
                 Html::tag('span', t('The values are matched inclusively.'), ['class' => 'info']),
                 ['class' => 'flex flex-center']
             );
@@ -99,8 +101,9 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function inputOptions(): array
     {
         /** @var Money $field */
@@ -130,11 +133,11 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function elementQueryParam(): ?string
     {
-        if (!$this->field() instanceof Money) {
+        if (! $this->field() instanceof Money) {
             return null;
         }
 
@@ -142,16 +145,16 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function matchFieldValue($value): bool
     {
-        if (!$this->field() instanceof Money) {
+        if (! $this->field() instanceof Money) {
             return true;
         }
 
         if ($value instanceof MoneyLibrary) {
-            $value = (float)$value->getAmount();
+            $value = (float) $value->getAmount();
         }
 
         /** @var int|float|null $value */
