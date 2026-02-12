@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -13,6 +15,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use Illuminate\Foundation\ViteException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Vite;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -23,12 +26,13 @@ use Twig\TwigFunction;
  * Control panel Twig extension
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.7.8
  */
 class CpExtension extends AbstractExtension implements GlobalsInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getGlobals(): array
     {
@@ -43,7 +47,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFunctions(): array
     {
@@ -79,12 +83,13 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
                     'message' => $e->getMessage(),
                 ]);
             }
+
             return '';
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFilters(): array
     {
@@ -93,13 +98,18 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
-    private function findCrumb(array $items): array
+    private function findCrumb(array|Collection $items): array
     {
+        if ($items instanceof Collection) {
+            $items = $items->all();
+        }
+
         foreach ($items as $item) {
             if (array_key_exists('selected', $item)) {
                 if ($item['selected']) {
                     return $item;
                 }
+
                 continue;
             }
 
