@@ -133,8 +133,12 @@ class AppHelperTest extends TestCase
      * @param bool|null $expected
      * @param mixed $value
      */
-    public function testParseBooleanEnv(?bool $expected, mixed $value): void
+    public function testParseBooleanEnv(?bool $expected, mixed $value, array $values = []): void
     {
+        foreach ($values as $name => $v) {
+            putenv("$name=$v");
+        }
+
         self::assertSame($expected, App::parseBooleanEnv($value));
     }
 
@@ -469,6 +473,16 @@ class AppHelperTest extends TestCase
             [false, 0],
             [null, 2],
             [null, '$TEST_MISSING'],
+            [
+                false,
+                '$TEST_FALSE',
+                ['TEST_FALSE' => 'false'],
+            ],
+            [
+                true,
+                '$TEST_TRUE',
+                ['TEST_TRUE' => 'true'],
+            ],
         ];
     }
 

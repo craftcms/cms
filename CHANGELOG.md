@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where the control panel requests could trigger an infinite browser redirect loop. ([#18420](https://github.com/craftcms/cms/issues/18420))
+- Fixed a bug where `craft\helpers\App::parseBooleanEnv()` wasn’t handling `false` values properly. ([#18418](https://github.com/craftcms/cms/issues/18418))
 
 ## 5.9.9 - 2026-02-11
 
