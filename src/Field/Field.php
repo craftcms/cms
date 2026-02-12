@@ -55,6 +55,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
+use Override;
 use RuntimeException;
 use Stringable;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
@@ -1275,6 +1276,7 @@ JS, [
      *
      * @return string The display name of this class.
      */
+    #[Override]
     public static function displayName(): string
     {
         $classNameParts = explode('\\', static::class);
@@ -1282,6 +1284,7 @@ JS, [
         return array_pop($classNameParts);
     }
 
+    #[Override]
     public static function isSelectable(): bool
     {
         return true;
