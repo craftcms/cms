@@ -31,7 +31,6 @@
 
   async function handleSubmit() {
     await startIndexing(form);
-    console.log('refreshing');
   }
 </script>
 
