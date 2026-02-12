@@ -17,6 +17,9 @@ Craft.ProgressBar = Garnish.Base.extend(
     _displaySteps: false,
 
     init: function ($element, displaySteps, settings) {
+      console.warn(
+        'Craft.ProgressBar has been deprecated. Use the <craft-progress-bar/> custom element instead.'
+      );
       this.setSettings(settings, Craft.ProgressBar.defaults);
 
       if (displaySteps) {
