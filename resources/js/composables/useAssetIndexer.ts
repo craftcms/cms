@@ -21,25 +21,24 @@ const indexer = shallowRef<AssetIndexer | null>(null);
 const sessions = ref<Map<number, IndexingSession>>(new Map());
 const currentSessionId = ref<number | null>(null);
 const reviewSession = ref<IndexingSession | null>(null);
+const isLoadingReview = ref(false);
 const isReviewOpen = ref(false);
 const isFinishing = ref(false);
 const isStarting = ref(false);
+const isStopping = ref(false);
 const lastError = ref<string | null>(null);
 const isComplete = ref(false);
 let initialized = false;
 
 /** Pull the current truth out of the service into our refs. */
 function sync() {
-  console.log('syncing ...');
   if (!indexer.value) {
     return;
   }
 
-  console.log('updating sesssions');
   sessions.value = new Map(
     indexer.value.getSessions().map((s: IndexingSession) => [s.id, s])
   );
-  console.log('updating currentSession');
   currentSessionId.value = indexer.value.getCurrentSessionId();
 }
 
@@ -133,9 +132,16 @@ async function stopSession(sessionId: number) {
   if (!indexer.value) {
     return;
   }
-  const response = await indexer.value.stopSession(sessionId);
-  sync();
-  return response;
+
+  isStopping.value = true;
+
+  try {
+    const response = await indexer.value.stopSession(sessionId);
+    sync();
+    return response;
+  } finally {
+    isStopping.value = false;
+  }
 }
 
 /** Fetch the overview (missing/skipped files) for a session, then open review. */
@@ -143,12 +149,14 @@ async function reviewSessionOverview(sessionId: number) {
   if (!indexer.value) {
     return;
   }
+
+  isLoadingReview.value = true;
   await indexer.value.getSessionOverview(sessionId);
   sync();
-
   const session = sessions.value.get(sessionId);
   if (session) {
     openReview(session);
+    isLoadingReview.value = false;
   }
 }
 
@@ -296,6 +304,7 @@ export function useAssetIndexer(options: UseAssetIndexerOptions = {}) {
     hasSessions,
     isProcessing,
     isStarting,
+    isStopping,
     isComplete,
     lastError,
     progressPercent,
@@ -305,6 +314,7 @@ export function useAssetIndexer(options: UseAssetIndexerOptions = {}) {
     reviewSession,
     isReviewOpen,
     isFinishing,
+    isLoadingReview,
 
     // Actions
     startIndexing,

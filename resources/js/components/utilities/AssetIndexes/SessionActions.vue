@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {ref} from 'vue';
+  import {useAssetIndexer} from '@/composables/useAssetIndexer';
 
   defineProps<{
     sessionId: number;
@@ -12,16 +12,13 @@
     review: [sessionId: number];
   }>();
 
-  const isStopping = ref(false);
-  const isLoadingReview = ref(false);
+  const {isLoadingReview, isStopping} = useAssetIndexer();
 
   function handleStop(sessionId: number) {
-    isStopping.value = true;
     emit('stop', sessionId);
   }
 
   function handleReview(sessionId: number) {
-    isLoadingReview.value = true;
     emit('review', sessionId);
   }
 </script>
