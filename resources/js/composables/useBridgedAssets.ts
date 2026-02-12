@@ -1,4 +1,10 @@
-import {type MaybeRefOrGetter, onMounted, onUnmounted, toValue, watch,} from 'vue';
+import {
+  type MaybeRefOrGetter,
+  onMounted,
+  onUnmounted,
+  toValue,
+  watch,
+} from 'vue';
 
 /**
  * Injects bridged HTML assets from Yii2's View into the DOM and executes any scripts.

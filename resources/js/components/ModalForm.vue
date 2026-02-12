@@ -32,7 +32,7 @@
 <template>
   <Modal :isActive="isActive" :overlay="overlay" @close="emit('close')">
     <form @submit.prevent="submitHandler">
-      <Pane class="w-[60ch] mx-auto" :title="title">
+      <Pane :title="title">
         <slot></slot>
         <template #secondary-action>
           <craft-button type="reset" @click="emit('close')" appearance="plain">

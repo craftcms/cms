@@ -101,13 +101,15 @@
 <style scoped lang="scss">
   .pane {
     --_pane-spacing: v-bind(computedPadding);
+    --_bg-color: var(--c-pane-bg);
 
-    background-color: var(--c-pane-bg);
+    background-color: var(--_bg-color);
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-pane-radius);
     border: var(--c-pane-border);
     display: grid;
+    grid-template-rows: auto 400px auto;
   }
 
   .pane--code {
@@ -131,12 +133,19 @@
   .pane__body {
     padding-inline: var(--_pane-spacing);
     padding-block: var(--_pane-spacing) calc(var(--_pane-spacing) * 1.5);
+    overflow: sroll;
   }
 
   .pane__footer {
+    background-color: var(--_bg-color);
     border-top: 1px solid var(--c-color-neutral-border-subtle);
     padding-inline: var(--_pane-spacing);
     padding-block: calc(var(--_pane-spacing) / 2);
+    position: sticky;
+    inset-block-end: 0;
+    //inset-inline: 0;
+    //inset-block-end: 0;
+    //z-index: 10;
   }
 
   .actions {
