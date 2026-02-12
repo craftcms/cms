@@ -59,7 +59,7 @@ describe('matchElement', function () {
         expect($rule->matchElement($entry))->toBe($expected);
     })->with([
         'created today' => [fn () => DateTimeHelper::today()->modify('+12 hours'), true],
-        'created yesterday' => [fn () => DateTimeHelper::yesterday(), false],
+        'created yesterday' => [DateTimeHelper::yesterday(...), false],
     ]);
 
     it('matches with TYPE_RANGE', function (string $entryDate, array $ruleAttributes, bool $expected) {
