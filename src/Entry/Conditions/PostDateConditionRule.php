@@ -1,29 +1,29 @@
 <?php
 
-namespace craft\elements\conditions\entries;
+namespace CraftCms\Cms\Entry\Conditions;
 
-use Craft;
-use craft\base\conditions\BaseLightswitchConditionRule;
+use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\EntryQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use function CraftCms\Cms\t;
 
 /**
- * Entry viewable condition rule.
+ * Element post date condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.4.0
+ * @since 4.0.0
  */
-class ViewableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class PostDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Viewable');
+        return t('Post Date');
     }
 
     /**
@@ -31,7 +31,7 @@ class ViewableConditionRule extends BaseLightswitchConditionRule implements Elem
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['editable'];
+        return ['postDate', 'after', 'before'];
     }
 
     /**
@@ -40,7 +40,7 @@ class ViewableConditionRule extends BaseLightswitchConditionRule implements Elem
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $query->editable($this->value);
+        $query->postDate($this->queryParamValue());
     }
 
     /**
@@ -48,7 +48,7 @@ class ViewableConditionRule extends BaseLightswitchConditionRule implements Elem
      */
     public function matchElement(ElementInterface $element): bool
     {
-        $viewable = Craft::$app->getElements()->canView($element);
-        return $viewable === $this->value;
+        /** @var Entry $element */
+        return $this->matchValue($element->postDate);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\elements\conditions\entries;
+namespace CraftCms\Cms\Entry\Conditions;
 
 use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;

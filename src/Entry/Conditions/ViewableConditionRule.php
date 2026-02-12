@@ -1,29 +1,29 @@
 <?php
 
-namespace craft\elements\conditions\entries;
+namespace CraftCms\Cms\Entry\Conditions;
 
-use craft\base\conditions\BaseDateRangeConditionRule;
+use Craft;
+use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\EntryQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Entry\Elements\Entry;
 use function CraftCms\Cms\t;
 
 /**
- * Element expiry date condition rule.
+ * Entry viewable condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
+ * @since 4.4.0
  */
-class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
+class ViewableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Expiry Date');
+        return t('Viewable');
     }
 
     /**
@@ -31,7 +31,7 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Elem
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['expiryDate'];
+        return ['editable'];
     }
 
     /**
@@ -40,7 +40,7 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Elem
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $query->expiryDate($this->queryParamValue());
+        $query->editable($this->value);
     }
 
     /**
@@ -48,7 +48,7 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Elem
      */
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var Entry $element */
-        return $this->matchValue($element->expiryDate);
+        $viewable = Craft::$app->getElements()->canView($element);
+        return $viewable === $this->value;
     }
 }

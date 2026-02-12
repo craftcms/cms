@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\elements\conditions\entries;
+namespace CraftCms\Cms\Entry\Conditions;
 
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\HasDescendantsRule;

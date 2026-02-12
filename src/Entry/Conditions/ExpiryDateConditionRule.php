@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\elements\conditions\entries;
+namespace CraftCms\Cms\Entry\Conditions;
 
 use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\base\ElementInterface;
@@ -11,19 +11,19 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use function CraftCms\Cms\t;
 
 /**
- * Element post date condition rule.
+ * Element expiry date condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class PostDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
+class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Post Date');
+        return t('Expiry Date');
     }
 
     /**
@@ -31,7 +31,7 @@ class PostDateConditionRule extends BaseDateRangeConditionRule implements Elemen
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['postDate', 'after', 'before'];
+        return ['expiryDate'];
     }
 
     /**
@@ -40,7 +40,7 @@ class PostDateConditionRule extends BaseDateRangeConditionRule implements Elemen
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $query->postDate($this->queryParamValue());
+        $query->expiryDate($this->queryParamValue());
     }
 
     /**
@@ -49,6 +49,6 @@ class PostDateConditionRule extends BaseDateRangeConditionRule implements Elemen
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */
-        return $this->matchValue($element->postDate);
+        return $this->matchValue($element->expiryDate);
     }
 }
