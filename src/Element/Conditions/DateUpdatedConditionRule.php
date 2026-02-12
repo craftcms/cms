@@ -1,26 +1,27 @@
 <?php
 
-namespace craft\elements\conditions;
+namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseLightswitchConditionRule;
+use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**
- * Element has URL condition rule.
+ * Date updated condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class HasUrlConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class DateUpdatedConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Has URL');
+        return t('Date Updated');
     }
 
     /**
@@ -28,7 +29,7 @@ class HasUrlConditionRule extends BaseLightswitchConditionRule implements Elemen
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['uri'];
+        return ['dateUpdated'];
     }
 
     /**
@@ -36,11 +37,7 @@ class HasUrlConditionRule extends BaseLightswitchConditionRule implements Elemen
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        if ($this->value) {
-            $query->uri('not :empty:');
-        } else {
-            $query->uri(':empty:');
-        }
+        $query->dateUpdated($this->queryParamValue());
     }
 
     /**
@@ -48,6 +45,6 @@ class HasUrlConditionRule extends BaseLightswitchConditionRule implements Elemen
      */
     public function matchElement(ElementInterface $element): bool
     {
-        return $this->matchValue($element->getUrl() !== null);
+        return $this->matchValue($element->dateUpdated);
     }
 }

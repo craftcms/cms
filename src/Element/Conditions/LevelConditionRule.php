@@ -1,9 +1,10 @@
 <?php
 
-namespace craft\elements\conditions;
+namespace CraftCms\Cms\Element\Conditions;
 
 use craft\base\conditions\BaseNumberConditionRule;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 

@@ -1,26 +1,28 @@
 <?php
 
-namespace craft\elements\conditions;
+namespace CraftCms\Cms\Element\Conditions;
 
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
+use craft\helpers\ElementHelper;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**
- * ID condition rule.
+ * Slug condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class UriConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
+class SlugConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('URI');
+        return t('Slug');
     }
 
     /**
@@ -28,7 +30,7 @@ class UriConditionRule extends BaseTextConditionRule implements ElementCondition
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['uri'];
+        return ['slug'];
     }
 
     /**
@@ -36,7 +38,7 @@ class UriConditionRule extends BaseTextConditionRule implements ElementCondition
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $query->uri($this->paramValue());
+        $query->slug($this->paramValue());
     }
 
     /**
@@ -44,6 +46,14 @@ class UriConditionRule extends BaseTextConditionRule implements ElementCondition
      */
     public function matchElement(ElementInterface $element): bool
     {
-        return $this->matchValue($element->uri);
+        return $this->matchValue($element->slug);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function isEmpty(mixed $value): bool
+    {
+        return parent::isEmpty($value) || (is_string($value) && ElementHelper::isTempSlug($value));
     }
 }

@@ -1,26 +1,27 @@
 <?php
 
-namespace craft\elements\conditions;
+namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseLightswitchConditionRule;
+use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**
- * Element has descendants condition rule.
+ * Date created condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.3.0
+ * @since 4.0.0
  */
-class HasDescendantsRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class DateCreatedConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Has Descendants');
+        return t('Date Created');
     }
 
     /**
@@ -28,7 +29,7 @@ class HasDescendantsRule extends BaseLightswitchConditionRule implements Element
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['hasDescendants'];
+        return ['dateCreated'];
     }
 
     /**
@@ -36,7 +37,7 @@ class HasDescendantsRule extends BaseLightswitchConditionRule implements Element
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $query->hasDescendants($this->value);
+        $query->dateCreated($this->queryParamValue());
     }
 
     /**
@@ -44,6 +45,6 @@ class HasDescendantsRule extends BaseLightswitchConditionRule implements Element
      */
     public function matchElement(ElementInterface $element): bool
     {
-        return $this->matchValue($element->getCanonical()->getHasDescendants());
+        return $this->matchValue($element->dateCreated);
     }
 }

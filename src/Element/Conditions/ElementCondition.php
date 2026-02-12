@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\elements\conditions;
+namespace CraftCms\Cms\Element\Conditions;
 
 use craft\base\conditions\BaseCondition;
 use craft\base\conditions\ConditionRuleInterface;
@@ -8,6 +8,8 @@ use craft\base\ElementInterface;
 use craft\errors\InvalidTypeException;
 use craft\fields\conditions\FieldConditionRuleInterface;
 use craft\fields\conditions\GeneratedFieldConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Fields;

@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\elements\conditions;
+namespace CraftCms\Cms\Element\Conditions\Contracts;
 
 use craft\base\conditions\ConditionRuleInterface;
 use craft\base\ElementInterface;

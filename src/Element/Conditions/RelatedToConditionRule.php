@@ -1,11 +1,12 @@
 <?php
 
-namespace craft\elements\conditions;
+namespace CraftCms\Cms\Element\Conditions;
 
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;

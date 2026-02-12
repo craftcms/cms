@@ -1,26 +1,27 @@
 <?php
 
-namespace craft\elements\conditions;
+namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseDateRangeConditionRule;
+use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**
- * Date created condition rule.
+ * Title condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class DateCreatedConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
+class TitleConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Date Created');
+        return t('Title');
     }
 
     /**
@@ -28,7 +29,7 @@ class DateCreatedConditionRule extends BaseDateRangeConditionRule implements Ele
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['dateCreated'];
+        return ['title'];
     }
 
     /**
@@ -36,7 +37,7 @@ class DateCreatedConditionRule extends BaseDateRangeConditionRule implements Ele
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $query->dateCreated($this->queryParamValue());
+        $query->title($this->paramValue());
     }
 
     /**
@@ -44,6 +45,6 @@ class DateCreatedConditionRule extends BaseDateRangeConditionRule implements Ele
      */
     public function matchElement(ElementInterface $element): bool
     {
-        return $this->matchValue($element->dateCreated);
+        return $this->matchValue($element->title);
     }
 }

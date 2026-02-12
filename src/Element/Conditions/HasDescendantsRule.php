@@ -1,26 +1,27 @@
 <?php
 
-namespace craft\elements\conditions;
+namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseDateRangeConditionRule;
+use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**
- * Date updated condition rule.
+ * Element has descendants condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
+ * @since 5.3.0
  */
-class DateUpdatedConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
+class HasDescendantsRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Date Updated');
+        return t('Has Descendants');
     }
 
     /**
@@ -28,7 +29,7 @@ class DateUpdatedConditionRule extends BaseDateRangeConditionRule implements Ele
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['dateUpdated'];
+        return ['hasDescendants'];
     }
 
     /**
@@ -36,7 +37,7 @@ class DateUpdatedConditionRule extends BaseDateRangeConditionRule implements Ele
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $query->dateUpdated($this->queryParamValue());
+        $query->hasDescendants($this->value);
     }
 
     /**
@@ -44,6 +45,6 @@ class DateUpdatedConditionRule extends BaseDateRangeConditionRule implements Ele
      */
     public function matchElement(ElementInterface $element): bool
     {
-        return $this->matchValue($element->dateUpdated);
+        return $this->matchValue($element->getCanonical()->getHasDescendants());
     }
 }

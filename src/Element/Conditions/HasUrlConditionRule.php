@@ -1,27 +1,27 @@
 <?php
 
-namespace craft\elements\conditions;
+namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseTextConditionRule;
+use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**
- * Slug condition rule.
+ * Element has URL condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class SlugConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
+class HasUrlConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Slug');
+        return t('Has URL');
     }
 
     /**
@@ -29,7 +29,7 @@ class SlugConditionRule extends BaseTextConditionRule implements ElementConditio
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['slug'];
+        return ['uri'];
     }
 
     /**
@@ -37,7 +37,11 @@ class SlugConditionRule extends BaseTextConditionRule implements ElementConditio
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $query->slug($this->paramValue());
+        if ($this->value) {
+            $query->uri('not :empty:');
+        } else {
+            $query->uri(':empty:');
+        }
     }
 
     /**
@@ -45,14 +49,6 @@ class SlugConditionRule extends BaseTextConditionRule implements ElementConditio
      */
     public function matchElement(ElementInterface $element): bool
     {
-        return $this->matchValue($element->slug);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function isEmpty(mixed $value): bool
-    {
-        return parent::isEmpty($value) || (is_string($value) && ElementHelper::isTempSlug($value));
+        return $this->matchValue($element->getUrl() !== null);
     }
 }

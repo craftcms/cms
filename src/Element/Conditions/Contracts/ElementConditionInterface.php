@@ -5,10 +5,11 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\elements\conditions;
+namespace CraftCms\Cms\Element\Conditions\Contracts;
 
 use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**

@@ -1,26 +1,27 @@
 <?php
 
-namespace craft\elements\conditions;
+namespace CraftCms\Cms\Element\Conditions;
 
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**
- * Title condition rule.
+ * ID condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class TitleConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
+class UriConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Title');
+        return t('URI');
     }
 
     /**
@@ -28,7 +29,7 @@ class TitleConditionRule extends BaseTextConditionRule implements ElementConditi
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['title'];
+        return ['uri'];
     }
 
     /**
@@ -36,7 +37,7 @@ class TitleConditionRule extends BaseTextConditionRule implements ElementConditi
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $query->title($this->paramValue());
+        $query->uri($this->paramValue());
     }
 
     /**
@@ -44,6 +45,6 @@ class TitleConditionRule extends BaseTextConditionRule implements ElementConditi
      */
     public function matchElement(ElementInterface $element): bool
     {
-        return $this->matchValue($element->title);
+        return $this->matchValue($element->uri);
     }
 }
