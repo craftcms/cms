@@ -1,36 +1,21 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\fields\conditions;
 
-use craft\elements\conditions\ElementConditionRuleInterface;
-
-/**
- * FieldConditionRuleInterface defines the common interface to be implemented by custom fields’ query condition rule classes.
- *
- * Classes implementing this interface should also use [[FieldConditionRuleTrait]].
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-interface FieldConditionRuleInterface extends ElementConditionRuleInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Sets the UUID of the custom field associated with this rule.
+     * FieldConditionRuleInterface defines the common interface to be implemented by custom fields' query condition rule classes.
      *
-     * @param string $uid
-     */
-    public function setFieldUid(string $uid): void;
-
-    /**
-     * Sets the UUID of the custom field layout element associated with this rule.
+     * Classes implementing this interface should also use [[FieldConditionRuleTrait]].
      *
-     * @param string|null $uid
-     * @since 5.0.0
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface} instead.
      */
-    public function setLayoutElementUid(?string $uid): void;
+    interface FieldConditionRuleInterface
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface::class, FieldConditionRuleInterface::class);

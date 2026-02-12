@@ -2,53 +2,18 @@
 
 namespace craft\elements\conditions\users;
 
-use craft\base\conditions\BaseTextConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\UserQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\User\Elements\User;
-use function CraftCms\Cms\t;
-
-/**
- * Email condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class EmailConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Email condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Conditions\EmailConditionRule} instead.
      */
-    public function getLabel(): string
+    class EmailConditionRule
     {
-        return t('Email');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['email'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var UserQuery $query */
-        $query->email($this->paramValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var User $element */
-        return $this->matchValue($element->email);
     }
 }
+
+class_alias(\CraftCms\Cms\User\Conditions\EmailConditionRule::class, EmailConditionRule::class);

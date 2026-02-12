@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout;
 
-use Craft;
-use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\helpers\Cp;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\FieldLayout\Events\DefineShowInForm;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -172,7 +172,7 @@ abstract class FieldLayoutComponent extends Component
         }
 
         if (! $condition instanceof ConditionInterface) {
-            $condition = Craft::$app->getConditions()->createCondition($condition);
+            $condition = Conditions::createCondition($condition);
         }
 
         if (! $condition->getConditionRules()) {

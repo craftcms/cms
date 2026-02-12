@@ -17,18 +17,19 @@ use craft\base\ElementInterface;
 use craft\db\ExcludeDescendantIdsExpression;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
-use craft\elements\conditions\ElementConditionInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
 use craft\helpers\Component;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -458,16 +459,14 @@ class ElementIndexesController extends BaseElementsController
         $serialized = $this->request->getBodyParam('serialized');
         $fieldLayouts = $this->request->getBodyParam('fieldLayouts');
 
-        $conditionsService = Craft::$app->getConditions();
-
         if ($conditionConfig) {
             $conditionConfig = Component::cleanseConfig($conditionConfig);
             /** @var ElementConditionInterface $condition */
-            $condition = $conditionsService->createCondition($conditionConfig);
+            $condition = Conditions::createCondition($conditionConfig);
         } elseif ($serialized) {
             parse_str($serialized, $conditionConfig);
             /** @var ElementConditionInterface $condition */
-            $condition = $conditionsService->createCondition($conditionConfig['condition']);
+            $condition = Conditions::createCondition($conditionConfig['condition']);
         } else {
             /** @var ElementConditionInterface $condition */
             $condition = $this->elementType()::createCondition();
@@ -487,7 +486,7 @@ class ElementIndexesController extends BaseElementsController
             $condition->sourceKey = $this->sourceKey;
         } else {
             /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = $conditionsService->createCondition($this->source['condition']);
+            $sourceCondition = Conditions::createCondition($this->source['condition']);
             $condition->queryParams = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
                 /** @var ElementConditionRuleInterface $rule */
@@ -679,7 +678,6 @@ class ElementIndexesController extends BaseElementsController
     protected function elementQuery(): ElementQueryInterface
     {
         $query = $this->elementType::find();
-        $conditionsService = Craft::$app->getConditions();
 
         if (!$this->source) {
             $query->id(false);
@@ -690,7 +688,7 @@ class ElementIndexesController extends BaseElementsController
         // Does the source specify any criteria attributes?
         if ($this->source['type'] === ElementSources::TYPE_CUSTOM) {
             /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = $conditionsService->createCondition($this->source['condition']);
+            $sourceCondition = Conditions::createCondition($this->source['condition']);
             $sourceCondition->modifyQuery($query);
         }
 
@@ -761,7 +759,7 @@ class ElementIndexesController extends BaseElementsController
         }
         if ($filterConditionConfig) {
             /** @var ElementConditionInterface $filterCondition */
-            $filterCondition = $conditionsService->createCondition(Component::cleanseConfig($filterConditionConfig));
+            $filterCondition = Conditions::createCondition(Component::cleanseConfig($filterConditionConfig));
             $filterCondition->modifyQuery($query);
             $hasFilters = true;
         }

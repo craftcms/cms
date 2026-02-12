@@ -2,80 +2,18 @@
 
 namespace craft\elements\conditions\entries;
 
-use craft\base\conditions\BaseElementSelectConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\EntryQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\User\Elements\User;
-use function CraftCms\Cms\t;
-
-/**
- * Author condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class AuthorConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Author condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Conditions\AuthorConditionRule} instead.
      */
-    public function getLabel(): string
+    class AuthorConditionRule
     {
-        return t('Author');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function elementType(): string
-    {
-        return User::class;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function criteria(): ?array
-    {
-        return [
-            'authors' => true,
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function allowMultiple(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['author', 'authorId'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var EntryQuery $query */
-        $query->authorId($this->getElementIds());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var Entry $element */
-        return $this->matchValue($element->getAuthorId());
     }
 }
+
+class_alias(\CraftCms\Cms\Entry\Conditions\AuthorConditionRule::class, AuthorConditionRule::class);

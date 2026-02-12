@@ -2,48 +2,18 @@
 
 namespace craft\elements\conditions;
 
-use craft\base\conditions\BaseDateRangeConditionRule;
-use craft\base\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use function CraftCms\Cms\t;
-
-/**
- * Date updated condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class DateUpdatedConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Date updated condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Conditions\DateUpdatedConditionRule} instead.
      */
-    public function getLabel(): string
+    class DateUpdatedConditionRule
     {
-        return t('Date Updated');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['dateUpdated'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        $query->dateUpdated($this->queryParamValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        return $this->matchValue($element->dateUpdated);
     }
 }
+
+class_alias(\CraftCms\Cms\Element\Conditions\DateUpdatedConditionRule::class, DateUpdatedConditionRule::class);

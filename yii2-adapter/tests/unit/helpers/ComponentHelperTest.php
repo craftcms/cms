@@ -18,7 +18,6 @@ use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
-use CraftCms\Cms\FieldLayout\LayoutElements\HorizontalRule;
 use Exception;
 use Throwable;
 use UnitTester;
@@ -139,9 +138,6 @@ class ComponentHelperTest extends TestCase
             [true, PlainText::class, FieldInterface::class],
             // fails because the class doesn't exist
             [false, 'foo\\bar\\Baz', MissingComponentException::class],
-            // fails because it’s not a ComponentInterface
-            [false, HorizontalRule::class, null, InvalidConfigException::class],
-            [false, HorizontalRule::class, FieldLayoutElement::class, InvalidConfigException::class],
             // fails because it's the wrong interface
             [false, PlainText::class, FieldLayoutElement::class, InvalidConfigException::class],
         ];

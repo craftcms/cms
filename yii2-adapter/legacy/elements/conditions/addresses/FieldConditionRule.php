@@ -2,96 +2,18 @@
 
 namespace craft\elements\conditions\addresses;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\conditions\HintableConditionRuleTrait;
-use craft\elements\db\AddressQuery;
-use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Field\Addresses;
-use CraftCms\Cms\Support\Facades\Fields;
-use Illuminate\Support\Collection;
-use function CraftCms\Cms\t;
-
-/**
- * Field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.8.0
- */
-class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
-{
-    use HintableConditionRuleTrait;
-
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Field condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 5.8.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Conditions\FieldConditionRule} instead.
      */
-    protected bool $includeEmptyOperators = true;
-
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
+    class FieldConditionRule
     {
-        return t('Field');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['field', 'fieldId'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function options(): array
-    {
-        return $this->addressFields()
-            ->keyBy(fn(Addresses $field) => $field->uid)
-            ->map(
-                fn(Addresses $field) =>
-                $field->getUiLabel() . ($this->showLabelHint() ? " ($field->handle)" : '')
-            )
-            ->all();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AddressQuery $query */
-        if ($this->operator === self::OPERATOR_NOT_EMPTY) {
-            $query->field($this->addressFields()->all());
-        } elseif ($this->operator === self::OPERATOR_EMPTY) {
-            $query->field(false);
-        } else {
-            $query->fieldId($this->paramValue(fn($uid) => Fields::getFieldByUid($uid)->id ?? null));
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var Address $element */
-        return match ($this->operator) {
-            self::OPERATOR_NOT_EMPTY => $element->getField() !== null,
-            self::OPERATOR_EMPTY => $element->getField() === null,
-            default => $this->matchValue($element->getField()?->uid),
-        };
-    }
-
-    /**
-     * @return Collection<Addresses>
-     */
-    private function addressFields(): Collection
-    {
-        return Fields::getFieldsByType(Addresses::class);
     }
 }
+
+class_alias(\CraftCms\Cms\Address\Conditions\FieldConditionRule::class, FieldConditionRule::class);

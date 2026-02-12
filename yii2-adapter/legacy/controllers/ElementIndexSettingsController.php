@@ -9,13 +9,14 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Cp;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -56,7 +57,6 @@ class ElementIndexSettingsController extends BaseElementsController
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $this->elementType();
-        $conditionsService = Craft::$app->getConditions();
         $view = Craft::$app->getView();
 
         // Global sort options
@@ -146,7 +146,7 @@ class ElementIndexSettingsController extends BaseElementsController
             if ($source['type'] === ElementSources::TYPE_CUSTOM) {
                 if (isset($source['condition'])) {
                     /** @var ElementConditionInterface $condition */
-                    $condition = $conditionsService->createCondition(Arr::pull($source, 'condition'));
+                    $condition = Conditions::createCondition(Arr::pull($source, 'condition'));
                     $condition->mainTag = 'div';
                     $condition->name = "sources[{$source['key']}][condition]";
                     $condition->forProjectConfig = true;
@@ -264,8 +264,6 @@ class ElementIndexSettingsController extends BaseElementsController
             ->keyBy('key')
             ->all();
 
-        $conditionsService = Craft::$app->getConditions();
-
         $sourceOrder = $this->request->getBodyParam('sourceOrder', []);
         $sourceSettings = $this->request->getBodyParam('sources', []);
         $newSourceConfigs = [];
@@ -314,7 +312,7 @@ class ElementIndexSettingsController extends BaseElementsController
                 if ($isCustom) {
                     $sourceConfig += [
                         'label' => $postedSettings['label'],
-                        'condition' => $conditionsService->createCondition($postedSettings['condition'])->getConfig(),
+                        'condition' => Conditions::createCondition($postedSettings['condition'])->getConfig(),
                     ];
 
                     if (isset($postedSettings['sites']) && $postedSettings['sites'] !== '*') {

@@ -2,53 +2,18 @@
 
 namespace craft\elements\conditions\users;
 
-use craft\base\conditions\BaseTextConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\UserQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\User\Elements\User;
-use function CraftCms\Cms\t;
-
-/**
- * Last name condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class LastNameConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Last name condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Conditions\LastNameConditionRule} instead.
      */
-    public function getLabel(): string
+    class LastNameConditionRule
     {
-        return t('Last Name');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['lastName'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var UserQuery $query */
-        $query->lastName($this->paramValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var User $element */
-        return $this->matchValue($element->lastName);
     }
 }
+
+class_alias(\CraftCms\Cms\User\Conditions\LastNameConditionRule::class, LastNameConditionRule::class);

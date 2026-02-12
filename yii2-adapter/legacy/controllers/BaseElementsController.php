@@ -9,11 +9,12 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementCondition;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\InvalidTypeException;
 use craft\services\ElementSources;
 use craft\web\Controller;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Support\Facades\Conditions;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -88,7 +89,7 @@ abstract class BaseElementsController extends Controller
             return null;
         }
 
-        $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
+        $condition = Conditions::createCondition($conditionConfig);
 
         if ($condition instanceof ElementCondition) {
             $referenceElementId = $this->request->getBodyParam('referenceElementId');

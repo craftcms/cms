@@ -147,7 +147,7 @@ class TestCase extends Orchestra
             return;
         }
 
-        $dotenv = Dotenv::createImmutable(__DIR__);
+        $dotenv = Dotenv::createMutable(__DIR__);
         $dotenv->load();
 
         $configKey = 'database.connections.'.env('DB_CONNECTION');

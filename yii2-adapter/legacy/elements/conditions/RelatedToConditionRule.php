@@ -2,164 +2,20 @@
 
 namespace craft\elements\conditions;
 
-use craft\base\conditions\BaseElementSelectConditionRule;
-use craft\base\ElementInterface;
-use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\BaseRelationField;
-use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Support\Html;
-use function CraftCms\Cms\t;
-
-/**
- * Relation condition rule.
- *
- * @property int[] $elementIds
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class RelatedToConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var class-string<ElementInterface>
+     * Relation condition rule.
+     *
+     * @property int[] $elementIds
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Conditions\RelatedToConditionRule} instead.
      */
-    public string $elementType = Entry::class;
-
-    /**
-     * @inheritdoc
-     */
-    public function getLabel(): string
+    class RelatedToConditionRule
     {
-        return t('Related To');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function elementType(): string
-    {
-        return $this->elementType;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function allowMultiple(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function elementSelectConfig(): array
-    {
-        return array_merge(parent::elementSelectConfig(), [
-            'showSiteMenu' => true,
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        $elementIds = $this->getElementIds();
-        if (!empty($elementIds)) {
-            $query->andRelatedTo($elementIds);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function inputHtml(): string
-    {
-        $id = 'element-type';
-        return Html::hiddenLabel($this->getLabel(), $id) .
-            Html::tag('div',
-                Cp::selectHtml([
-                    'id' => $id,
-                    'name' => 'elementType',
-                    'options' => $this->_elementTypeOptions(),
-                    'value' => $this->elementType,
-                    'inputAttributes' => [
-                        'hx' => [
-                            'post' => UrlHelper::actionUrl('conditions/render'),
-                        ],
-                    ],
-                ]) .
-                parent::inputHtml(),
-                [
-                    'class' => ['flex', 'flex-start'],
-                ]
-            );
-    }
-
-    /**
-     * @return array
-     */
-    private function _elementTypeOptions(): array
-    {
-        return app(Fields::class)->getRelationalFieldTypes()->map(function(string $field) {
-            /** @var class-string<BaseRelationField> $field */
-            $elementType = $field::elementType();
-
-            return [
-                'value' => $elementType,
-                'label' => $elementType::displayName(),
-            ];
-        })->all();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function defineRules(): array
-    {
-        return array_merge(parent::defineRules(), [
-            [['elementType'], 'safe'],
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getConfig(): array
-    {
-        return array_merge(parent::getConfig(), [
-            'elementType' => $this->elementType,
-        ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        $elementIds = $this->getElementIds();
-        if (empty($elementIds)) {
-            return true;
-        }
-
-        return $element::find()
-            ->id($element->id ?: false)
-            ->site('*')
-            ->drafts($element->getIsDraft())
-            ->provisionalDrafts($element->isProvisionalDraft)
-            ->revisions($element->getIsRevision())
-            ->status(null)
-            ->relatedTo($elementIds)
-            ->exists();
     }
 }
+
+class_alias(\CraftCms\Cms\Element\Conditions\RelatedToConditionRule::class, RelatedToConditionRule::class);

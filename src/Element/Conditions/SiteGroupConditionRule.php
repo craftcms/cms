@@ -1,0 +1,72 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Element\Conditions;
+
+use craft\base\ElementInterface;
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Site\Data\SiteGroup;
+use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Support\Collection;
+
+use function CraftCms\Cms\t;
+
+class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getLabel(): string
+    {
+        return t('Site Group');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getExclusiveQueryParams(): array
+    {
+        return ['site', 'siteId'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function options(): array
+    {
+        return SiteGroups::getAllGroups()
+            ->filter(fn (SiteGroup $group) => Sites::getEditableSitesByGroupId($group->id)->isNotEmpty())
+            ->keyBy(fn (SiteGroup $group) => $group->uid)
+            ->map(fn (SiteGroup $group) => $group->getName())
+            ->all();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function modifyQuery(ElementQueryInterface $query): void
+    {
+        $siteIds = Collection::make((array) $this->paramValue())
+            ->map(fn (string $uid) => SiteGroups::getGroupByUid($uid))
+            ->filter(fn (?SiteGroup $group) => $group !== null)
+            ->map(fn (SiteGroup $group) => Sites::getEditableSitesByGroupId($group->id))
+            ->flatten(1)
+            ->map(fn (Site $site) => $site->id)
+            ->all();
+
+        $query->siteId($siteIds);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        return $this->matchValue($element->getSite()->getGroup()->uid);
+    }
+}

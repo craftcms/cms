@@ -1,0 +1,58 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Element\Conditions;
+
+use craft\base\ElementInterface;
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+
+use function CraftCms\Cms\t;
+
+class StatusConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+{
+    /**
+     * {@inheritdoc}
+     */
+    public function getLabel(): string
+    {
+        return t('Status');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getExclusiveQueryParams(): array
+    {
+        return ['status'];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function options(): array
+    {
+        /** @var ElementCondition $condition */
+        $condition = $this->getCondition();
+
+        return array_map(fn ($info) => $info['label'] ?? $info, $condition->elementType::statuses());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function modifyQuery(ElementQueryInterface $query): void
+    {
+        $query->status($this->paramValue());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function matchElement(ElementInterface $element): bool
+    {
+        return $this->matchValue($element->getStatus());
+    }
+}
