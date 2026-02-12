@@ -89,6 +89,7 @@ abstract class BaseElementsController extends Controller
             return null;
         }
 
+        /** @var ElementConditionInterface $condition */
         $condition = Conditions::createCondition($conditionConfig);
 
         if ($condition instanceof ElementCondition) {

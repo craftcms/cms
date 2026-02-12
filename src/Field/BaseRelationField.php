@@ -1583,6 +1583,7 @@ JS, [
     public function getSelectionCondition(): ?ElementConditionInterface
     {
         if ($this->_selectionCondition !== null && ! $this->_selectionCondition instanceof ConditionInterface) {
+            /** @var ElementConditionInterface $condition */
             $condition = Conditions::createCondition($this->_selectionCondition);
             if (! empty($condition->getConditionRules())) {
                 $this->_selectionCondition = $condition;
