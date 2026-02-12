@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\errors\InvalidTypeException;
 use craft\helpers\Component;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
@@ -60,6 +61,9 @@ class ElementSearchController extends Controller
             ->limit(5);
 
         if ($criteria) {
+            // Remove unsupported criteria attributes
+            $criteria = ElementHelper::cleanseQueryCriteria($criteria);
+
             Craft::configure($query, Component::cleanseConfig($criteria));
         }
 

@@ -370,7 +370,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                 $row['rowId'] ??= Str::uuid()->toString();
 
                 return $row;
-            }, $this->defaults),
+            }, $this->defaults ?? []),
             'initJs' => false,
             'static' => $readOnly,
             'includeRowId' => true,
@@ -498,7 +498,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 
         if ($this->staticRows) {
             // get the order of the default rows
-            $order = ArrayHelper::getColumn($this->defaults, 'rowId');
+            $order = ArrayHelper::getColumn($this->defaults ?? [], 'rowId');
             $missingValueRowIds = null;
 
             if (! empty($order)) {

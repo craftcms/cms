@@ -1215,4 +1215,30 @@ class ElementHelper
 
         self::$provisionalDraftUser = $user;
     }
+
+    /**
+     * Removes values from a posted element query criteria, which would typically not be user-editable.
+     *
+     * @param array $criteria
+     * @return array
+     * @since 5.9.9
+     */
+    public static function cleanseQueryCriteria(array $criteria): array
+    {
+        unset(
+            $criteria['where'],
+            $criteria['orderBy'],
+            $criteria['indexBy'],
+            $criteria['select'],
+            $criteria['selectOption'],
+            $criteria['from'],
+            $criteria['groupBy'],
+            $criteria['join'],
+            $criteria['having'],
+            $criteria['union'],
+            $criteria['withQueries'],
+            $criteria['params'],
+        );
+        return $criteria;
+    }
 }
