@@ -9,6 +9,7 @@
 - Fixed an error that could occur when editing an element with a Table field. ([#18408](https://github.com/craftcms/cms/pull/18408))
 - Fixed an error that occurred when editing a Table field with no default rows. ([#18407](https://github.com/craftcms/cms/issues/18407))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-fp5j-j7j4-mcxc)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-g7j6-fmwx-7vp8)
 
 ## 5.9.8 - 2026-02-10
 
