@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.17.4 - 2026-02-11
 
 > [!WARNING]  
 > Relational condition rules’ element ID templates are now rendered in a sandboxed Twig environment, when `enableTwigSandbox` is enabled.
