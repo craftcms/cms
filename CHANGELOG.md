@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where the control panel requests could trigger an infinite browser redirect loop. ([#18420](https://github.com/craftcms/cms/issues/18420))
+
 ## 4.17.4 - 2026-02-11
 
 > [!WARNING]  
