@@ -1,5 +1,5 @@
 import WaIcon from '@awesome.me/webawesome/dist/components/icon/icon.js';
-import styles from './icon.styles.js';
+import {css} from 'lit';
 
 /**
  * craft-icon is just an alias to wa-icon from web awesome.
@@ -8,7 +8,14 @@ import styles from './icon.styles.js';
  */
 export default class CraftIcon extends WaIcon {
   static override get styles() {
-    return [WaIcon.styles, styles];
+    return [
+      WaIcon.styles,
+      css`
+        :host {
+          font-size: 0.8em;
+        }
+      `,
+    ];
   }
 }
 
