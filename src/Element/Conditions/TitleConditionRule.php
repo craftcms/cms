@@ -1,23 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Condition\BaseTextConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+
 use function CraftCms\Cms\t;
 
-/**
- * Title condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class TitleConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -25,7 +22,7 @@ class TitleConditionRule extends BaseTextConditionRule implements ElementConditi
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -33,7 +30,7 @@ class TitleConditionRule extends BaseTextConditionRule implements ElementConditi
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -41,7 +38,7 @@ class TitleConditionRule extends BaseTextConditionRule implements ElementConditi
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

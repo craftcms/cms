@@ -1,39 +1,41 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Asset\Conditions;
 
-use craft\base\conditions\BaseNumberConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AssetQuery;
 use craft\helpers\Cp;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Condition\BaseNumberConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Validation\Rule;
 use yii\base\InvalidValueException;
+
 use function CraftCms\Cms\t;
 
-/**
- * File Size condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
+final class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
 {
-    public const UNIT_B = 'B';
-    public const UNIT_KB = 'KB';
-    public const UNIT_MB = 'MB';
-    public const UNIT_GB = 'GB';
+    public const string UNIT_B = 'B';
+
+    public const string UNIT_KB = 'KB';
+
+    public const string UNIT_MB = 'MB';
+
+    public const string UNIT_GB = 'GB';
 
     /**
      * @var string The size unit
+     *
      * @phpstan-var self::UNIT_B|self::UNIT_KB|self::UNIT_MB|self::UNIT_GB
      */
     public string $unit = self::UNIT_B;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -41,14 +43,16 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(): string
     {
         $unitId = 'unit';
+
         return Html::tag('div',
-            parent::inputHtml() .
-            Html::hiddenLabel(t('Unit'), $unitId) .
+            parent::inputHtml().
+            Html::hiddenLabel(t('Unit'), $unitId).
             Cp::selectHtml([
                 'name' => 'unit',
                 'id' => $unitId,
@@ -67,7 +71,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -75,57 +79,45 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
         if ($this->unit === self::UNIT_B) {
             $query->size($this->paramValue());
+
             return;
         }
 
-        if (!$this->value) {
+        if (! $this->value) {
             return;
         }
 
         [$minBytes, $maxBytes] = $this->_byteRange();
 
-        switch ($this->operator) {
-            case self::OPERATOR_EQ:
-                $query->size(['and', ">= $minBytes", "<= $maxBytes"]);
-                return;
-            case self::OPERATOR_NE:
-                $query->size(['or', "< $minBytes", "> $maxBytes"]);
-                return;
-            case self::OPERATOR_LT:
-                $query->size("< $minBytes");
-                return;
-            case self::OPERATOR_LTE:
-                $query->size("<= $maxBytes");
-                return;
-            case self::OPERATOR_GT:
-                $query->size("> $maxBytes");
-                return;
-            case self::OPERATOR_GTE:
-                $query->size(">= $minBytes");
-                return;
-            default:
-                throw new InvalidValueException("Invalid file size operator: $this->operator");
-        }
+        match ($this->operator) {
+            self::OPERATOR_EQ => $query->size(['and', ">= $minBytes", "<= $maxBytes"]),
+            self::OPERATOR_NE => $query->size(['or', "< $minBytes", "> $maxBytes"]),
+            self::OPERATOR_LT => $query->size("< $minBytes"),
+            self::OPERATOR_LTE => $query->size("<= $maxBytes"),
+            self::OPERATOR_GT => $query->size("> $maxBytes"),
+            self::OPERATOR_GTE => $query->size(">= $minBytes"),
+            default => throw new InvalidValueException("Invalid file size operator: $this->operator"),
+        };
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {
-        if (!$this->value) {
+        if (! $this->value) {
             return true;
         }
 
         /** @var Asset $element */
-        if (!$element->size) {
+        if (! $element->size) {
             return false;
         }
 
@@ -146,62 +138,51 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
         };
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function defineRules(): array
+    #[\Override]
+    public function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [
-            ['unit'], 'in', 'range' => [
+        return array_merge(parent::getRules(), [
+            'unit' => ['required', 'string', Rule::in([
                 self::UNIT_B,
                 self::UNIT_KB,
                 self::UNIT_MB,
                 self::UNIT_GB,
-            ],
-        ];
-        return $rules;
+            ])],
+        ]);
     }
 
     /**
      * Returns the min and max bytes that [[value]] should actually represent, when the actual value is rounded to [[unit]].
      *
-     * @return array
-     * @phpstan-return array<int,int>
+     * @return array<int,int>
      */
     private function _byteRange(): array
     {
         if ($this->unit === self::UNIT_B) {
-            return [(int)$this->value, (int)$this->value];
+            return [(int) $this->value, (int) $this->value];
         }
 
         $multiplier = 1;
 
-        switch ($this->unit) {
-            case self::UNIT_GB:
-                $multiplier *= 1000;
-            // no break
-            case self::UNIT_MB:
-                $multiplier *= 1000;
-            // no break
-            case self::UNIT_KB:
-                $multiplier *= 1000;
-                break;
-            default:
-                throw new InvalidValueException("Invalid file size unit: $this->unit");
-        }
+        $multiplier *= match ($this->unit) {
+            self::UNIT_GB => 1000 * 1000 * 1000,
+            self::UNIT_MB => 1000 * 1000,
+            self::UNIT_KB => 1000,
+            default => throw new InvalidValueException("Invalid file size unit: $this->unit"),
+        };
 
         // 1 KB == 500 - 1,499 B
         $maxDiff = $multiplier / 2;
-        $minBytes = (int)$this->value * $multiplier - $maxDiff;
-        $maxBytes = (int)$this->value * $multiplier + $maxDiff - 1;
+        $minBytes = (int) $this->value * $multiplier - $maxDiff;
+        $maxBytes = (int) $this->value * $multiplier + $maxDiff - 1;
 
         return [$minBytes, $maxBytes];
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [

@@ -2,7 +2,7 @@
 
 namespace craft\elements\conditions\users;
 
-use craft\elements\conditions\ElementCondition;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 
 /** @phpstan-ignore-next-line */
 if (false) {

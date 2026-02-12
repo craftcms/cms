@@ -1,24 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Conditions;
 
 use Illuminate\Support\Facades\Auth;
 
-/**
- * HintableConditionRuleTrait
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.9.0
- */
 trait HintableConditionRuleTrait
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function showLabelHint(): bool
     {

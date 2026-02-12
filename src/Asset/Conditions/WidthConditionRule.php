@@ -1,25 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Asset\Conditions;
 
-use craft\base\conditions\BaseNumberConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AssetQuery;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Condition\BaseNumberConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+
 use function CraftCms\Cms\t;
 
-/**
- * Width condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class WidthConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
+final class WidthConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -27,7 +24,7 @@ class WidthConditionRule extends BaseNumberConditionRule implements ElementCondi
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -35,7 +32,7 @@ class WidthConditionRule extends BaseNumberConditionRule implements ElementCondi
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -44,7 +41,7 @@ class WidthConditionRule extends BaseNumberConditionRule implements ElementCondi
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

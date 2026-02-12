@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementCondition;
 use craft\elements\db\EntryQuery;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
@@ -15,6 +14,7 @@ use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;

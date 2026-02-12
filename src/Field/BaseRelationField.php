@@ -6,10 +6,8 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use Craft;
-use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementRelationParamParser;
@@ -17,8 +15,10 @@ use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
@@ -36,6 +36,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
@@ -1663,7 +1664,7 @@ JS, [
     public function getSelectionCondition(): ?ElementConditionInterface
     {
         if ($this->_selectionCondition !== null && ! $this->_selectionCondition instanceof ConditionInterface) {
-            $condition = Craft::$app->getConditions()->createCondition($this->_selectionCondition);
+            $condition = Conditions::createCondition($this->_selectionCondition);
             if (! empty($condition->getConditionRules())) {
                 $this->_selectionCondition = $condition;
             } else {

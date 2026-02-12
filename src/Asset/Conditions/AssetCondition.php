@@ -1,20 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Asset\Conditions;
 
-use craft\elements\conditions\ElementCondition;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 
-/**
- * Asset query condition.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class AssetCondition extends ElementCondition
+final class AssetCondition extends ElementCondition
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function selectableConditionRules(): array
     {
         return array_merge(parent::selectableConditionRules(), [

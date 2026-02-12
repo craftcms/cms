@@ -1,26 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Condition\BaseElementSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Html;
+
 use function CraftCms\Cms\t;
 
-/**
- * Relation condition rule.
- *
- * @property int[] $elementIds
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class RelatedToConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
@@ -28,8 +24,15 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     public string $elementType = Entry::class;
 
+    public array $elementIds {
+        get => $this->getElementIds();
+        set {
+            $this->setElementIds($value);
+        }
+    }
+
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -37,7 +40,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function elementType(): string
     {
@@ -45,15 +48,16 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function allowMultiple(): bool
     {
         return true;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -61,8 +65,9 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function elementSelectConfig(): array
     {
         return array_merge(parent::elementSelectConfig(), [
@@ -71,23 +76,25 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $elementIds = $this->getElementIds();
-        if (!empty($elementIds)) {
+        if (! empty($elementIds)) {
             $query->andRelatedTo($elementIds);
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(): string
     {
         $id = 'element-type';
-        return Html::hiddenLabel($this->getLabel(), $id) .
+
+        return Html::hiddenLabel($this->getLabel(), $id).
             Html::tag('div',
                 Cp::selectHtml([
                     'id' => $id,
@@ -99,7 +106,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
                             'post' => UrlHelper::actionUrl('conditions/render'),
                         ],
                     ],
-                ]) .
+                ]).
                 parent::inputHtml(),
                 [
                     'class' => ['flex', 'flex-start'],
@@ -107,12 +114,9 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
             );
     }
 
-    /**
-     * @return array
-     */
     private function _elementTypeOptions(): array
     {
-        return app(Fields::class)->getRelationalFieldTypes()->map(function(string $field) {
+        return app(Fields::class)->getRelationalFieldTypes()->map(function (string $field) {
             /** @var class-string<BaseRelationField> $field */
             $elementType = $field::elementType();
 
@@ -123,19 +127,18 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         })->all();
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function defineRules(): array
+    #[\Override]
+    public function getRules(): array
     {
-        return array_merge(parent::defineRules(), [
-            [['elementType'], 'safe'],
+        return array_merge(parent::getRules(), [
+            'elementType' => ['required', 'string'],
         ]);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -144,7 +147,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

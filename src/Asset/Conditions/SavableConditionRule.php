@@ -1,25 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Asset\Conditions;
 
 use Craft;
-use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AssetQuery;
+use CraftCms\Cms\Condition\BaseLightswitchConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+
 use function CraftCms\Cms\t;
 
-/**
- * Asset savable condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.4.0
- */
-class SavableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+final class SavableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -27,7 +24,7 @@ class SavableConditionRule extends BaseLightswitchConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -35,7 +32,7 @@ class SavableConditionRule extends BaseLightswitchConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -44,11 +41,12 @@ class SavableConditionRule extends BaseLightswitchConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {
         $savable = Craft::$app->getElements()->canSave($element);
+
         return $savable === $this->value;
     }
 }

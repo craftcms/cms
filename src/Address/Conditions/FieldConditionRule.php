@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Address\Conditions;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\conditions\HintableConditionRuleTrait;
-use craft\elements\db\AddressQuery;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
+use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -17,14 +17,7 @@ use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
-/**
- * Field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.8.0
- */
-class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+final class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     use HintableConditionRuleTrait;
 

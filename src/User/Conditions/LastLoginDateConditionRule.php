@@ -1,25 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\User\Conditions;
 
-use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\UserQuery;
+use CraftCms\Cms\Condition\BaseDateRangeConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\User\Elements\User;
+
 use function CraftCms\Cms\t;
 
-/**
- * Last login date condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -27,7 +24,7 @@ class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -35,7 +32,7 @@ class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -44,7 +41,7 @@ class LastLoginDateConditionRule extends BaseDateRangeConditionRule implements E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

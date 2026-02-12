@@ -2,7 +2,7 @@
 
 namespace craft\elements\conditions\addresses;
 
-use craft\elements\conditions\ElementCondition;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 
 /** @phpstan-ignore-next-line */
 if (false) {

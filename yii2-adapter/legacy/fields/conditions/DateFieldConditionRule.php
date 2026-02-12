@@ -2,7 +2,7 @@
 
 namespace craft\fields\conditions;
 
-use craft\base\conditions\BaseDateRangeConditionRule;
+use CraftCms\Cms\Condition\BaseDateRangeConditionRule;
 use CraftCms\Cms\Field\Date;
 use DateTime;
 use yii\base\InvalidConfigException;

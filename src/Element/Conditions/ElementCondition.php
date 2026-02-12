@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseCondition;
-use craft\base\conditions\ConditionRuleInterface;
 use craft\base\ElementInterface;
 use craft\errors\InvalidTypeException;
 use craft\fields\conditions\FieldConditionRuleInterface;
 use craft\fields\conditions\GeneratedFieldConditionRule;
+use CraftCms\Cms\Condition\BaseCondition;
+use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\ElementSources;
@@ -18,16 +20,10 @@ use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use yii\base\InvalidConfigException;
 
-/**
- * ElementCondition provides an element condition.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class ElementCondition extends BaseCondition implements ElementConditionInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public bool $sortable = false;
 
@@ -38,12 +34,12 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
 
     /**
      * @var string|null The selected element source key.
-     * @since 4.1.0
      */
     public ?string $sourceKey = null;
 
     /**
      * @var string The field context that should be used when fetching custom fields’ condition rule types.
+     *
      * @see selectableConditionRules()
      */
     public string $fieldContext = 'global';
@@ -55,23 +51,28 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
 
     /**
      * @var ElementInterface|null The element that this condition is being executed in reference to, if any.
-     *
-     * @since 4.4.0
      */
     public ?ElementInterface $referenceElement = null;
 
     /**
      * @var FieldLayout[]
+     *
      * @see getFieldLayouts()
      * @see setFieldLayouts()
      */
     private array $_fieldLayouts;
 
+    public array $fieldLayouts {
+        get => $this->getFieldLayouts();
+        set {
+            $this->setFieldLayouts($value);
+        }
+    }
+
     /**
      * Constructor.
      *
-     * @param class-string<ElementInterface>|null $elementType
-     * @param array $config
+     * @param  class-string<ElementInterface>|null  $elementType
      */
     public function __construct(?string $elementType = null, array $config = [])
     {
@@ -80,7 +81,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
 
         if (
             $elementType !== null &&
-            (!class_exists($elementType) || !is_subclass_of($elementType, ElementInterface::class))
+            (! class_exists($elementType) || ! is_subclass_of($elementType, ElementInterface::class))
         ) {
             throw new InvalidConfigException("Invalid element type: $elementType");
         }
@@ -93,7 +94,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFieldLayouts(): array
     {
@@ -114,30 +115,33 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setFieldLayouts(array $fieldLayouts): void
     {
         $fieldsService = app(Fields::class);
-        $this->_fieldLayouts = array_map(function(FieldLayout|array $fieldLayout) use ($fieldsService) {
+        $this->_fieldLayouts = array_map(function (FieldLayout|array $fieldLayout) use ($fieldsService) {
             if (is_array($fieldLayout)) {
                 $fieldLayout['type'] = $this->elementType;
+
                 return $fieldsService->createLayout($fieldLayout);
             }
+
             return $fieldLayout;
         }, $fieldLayouts);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function isConditionRuleSelectable(ConditionRuleInterface $rule): bool
     {
-        if (!$rule instanceof ElementConditionRuleInterface) {
+        if (! $rule instanceof ElementConditionRuleInterface) {
             return false;
         }
 
-        if (!parent::isConditionRuleSelectable($rule)) {
+        if (! parent::isConditionRuleSelectable($rule)) {
             return false;
         }
 
@@ -150,17 +154,11 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
 
         $queryParams = array_flip($queryParams);
 
-        foreach ($rule->getExclusiveQueryParams() as $param) {
-            if (isset($queryParams[$param])) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($rule->getExclusiveQueryParams(), fn ($param) => ! isset($queryParams[$param]));
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function selectableConditionRules(): array
     {
@@ -212,7 +210,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
                     if (is_string($type)) {
                         $type = ['class' => $type];
                     }
-                    if (!is_subclass_of($type['class'], FieldConditionRuleInterface::class)) {
+                    if (! is_subclass_of($type['class'], FieldConditionRuleInterface::class)) {
                         throw new InvalidTypeException($type['class'], FieldConditionRuleInterface::class);
                     }
 
@@ -236,38 +234,42 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         return $types;
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function defineRules(): array
+    #[\Override]
+    public function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['elementType', 'fieldLayouts', 'fieldContext'], 'safe'];
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'elementType' => ['string'],
+            'fieldLayouts' => ['array'],
+            'fieldContext' => ['string'],
+        ]);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function getBuilderConfig(): array
     {
         $config = parent::getBuilderConfig();
+
         if (isset($this->_fieldLayouts)) {
-            $config['fieldLayouts'] = array_map(fn(FieldLayout $layout) => $layout->getConfig(), $this->_fieldLayouts);
+            $config['fieldLayouts'] = array_map(fn (FieldLayout $layout) => $layout->getConfig(), $this->_fieldLayouts);
         }
+
         return $config;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function config(): array
     {
         return $this->toArray(['elementType', 'fieldContext']);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -278,17 +280,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {
-        foreach ($this->getConditionRules() as $rule) {
-            /** @var ElementConditionRuleInterface $rule */
-            if (!$rule->matchElement($element)) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($this->getConditionRules(), fn ($rule) => $rule->matchElement($element));
     }
 }

@@ -4,34 +4,28 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Address\Conditions;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AddressQuery;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
-use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\Addresses;
 use CraftCms\Cms\Support\Html;
+use Override;
 
 use function CraftCms\Cms\t;
 
-/**
- * Address Administrative Area condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
-class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+final class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     public string $countryCode = 'US';
 
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -39,14 +33,11 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
-    protected function defineRules(): array
+    public function getRules(): array
     {
-        return array_merge(parent::defineRules(), [
-            [['countryCode'], 'safe'],
+        return array_merge(parent::getRules(), [
+            'countryCode' => ['required', 'string'],
         ]);
     }
 
@@ -71,10 +62,10 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
      */
     protected function options(): array
     {
-        $administrativeAreas = app(Addresses::class)->getSubdivisionRepository()->getList([$this->countryCode], app()->getLocale());
+        $administrativeAreas = Addresses::getSubdivisionRepository()->getList([$this->countryCode], app()->getLocale());
         // Allow custom states that are currently in the administrative areas list to remain in the list.
         foreach ($this->getValues() as $val) {
-            if (! in_array($val, $administrativeAreas, false)) {
+            if (! in_array($val, $administrativeAreas)) {
                 $administrativeAreas[$val] = $val;
             }
         }
@@ -100,13 +91,13 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
         return $this->matchValue($element->administrativeArea);
     }
 
-    #[\Override]
+    #[Override]
     protected function inputHtml(): string
     {
         $countrySelect = Cp::selectFieldHtml([
             'id' => 'country-code',
             'name' => 'countryCode',
-            'options' => app(Addresses::class)->getCountryList(),
+            'options' => Addresses::getCountryList(),
             'value' => $this->countryCode,
             'inputAttributes' => [
                 'hx' => [

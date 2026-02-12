@@ -1,23 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Condition\BaseLightswitchConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+
 use function CraftCms\Cms\t;
 
-/**
- * Element has descendants condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.3.0
- */
 class HasDescendantsRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -25,7 +22,7 @@ class HasDescendantsRule extends BaseLightswitchConditionRule implements Element
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -33,7 +30,7 @@ class HasDescendantsRule extends BaseLightswitchConditionRule implements Element
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -41,7 +38,7 @@ class HasDescendantsRule extends BaseLightswitchConditionRule implements Element
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

@@ -6,13 +6,10 @@ namespace CraftCms\Cms\Condition;
 
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
+use Override;
 
 /**
  * BaseLightswitchConditionRule provides a base implementation for condition rules that are composed of a lightswitch input.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
  */
 abstract class BaseLightswitchConditionRule extends BaseConditionRule
 {
@@ -21,7 +18,7 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -32,7 +29,7 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(): string
     {
         $lightswitchId = 'lightswitch';
@@ -52,14 +49,11 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
             );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
-    protected function defineRules(): array
+    public function getRules(): array
     {
-        return array_merge(parent::defineRules(), [
-            [['value'], 'safe'],
+        return array_merge(parent::getRules(), [
+            'value' => ['boolean'],
         ]);
     }
 

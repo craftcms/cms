@@ -1,27 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\User\Conditions;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\UserQuery;
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+
 use function CraftCms\Cms\t;
 
-/**
- * Site condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.6.0
- */
 class AffiliatedSiteConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -29,7 +26,7 @@ class AffiliatedSiteConditionRule extends BaseMultiSelectConditionRule implement
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -37,12 +34,12 @@ class AffiliatedSiteConditionRule extends BaseMultiSelectConditionRule implement
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function options(): array
     {
         return Sites::getAllSites()
-            ->map(fn(Site $site) => [
+            ->map(fn (Site $site) => [
                 'label' => $site->getUiLabel(),
                 'value' => $site->uid,
             ])
@@ -50,16 +47,16 @@ class AffiliatedSiteConditionRule extends BaseMultiSelectConditionRule implement
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var UserQuery $query */
-        $query->affiliatedSiteId($this->paramValue(fn($uid) => Sites::getSiteByUid($uid, true)->id ?? null));
+        $query->affiliatedSiteId($this->paramValue(fn ($uid) => Sites::getSiteByUid($uid, true)->id ?? null));
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

@@ -5,16 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
+use Override;
 use yii\base\InvalidConfigException;
 
 /**
  * BaseTextConditionRule provides a base implementation for condition rules that are composed of an operator menu and text input.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
  */
 abstract class BaseTextConditionRule extends BaseConditionRule
 {
@@ -36,7 +33,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -47,7 +44,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     /**
      * Returns the operators that should be allowed for this rule.
      */
-    #[\Override]
+    #[Override]
     protected function operators(): array
     {
         return [
@@ -71,7 +68,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(): string
     {
         // don't show the value input if the condition checks for empty/notempty
@@ -86,8 +83,6 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
     /**
      * Returns the input options that should be used.
-     *
-     * @since 4.3.0
      */
     protected function inputOptions(): array
     {
@@ -101,19 +96,16 @@ abstract class BaseTextConditionRule extends BaseConditionRule
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
-    protected function defineRules(): array
+    public function getRules(): array
     {
-        return array_merge(parent::defineRules(), [
-            [['value'], 'safe'],
+        return array_merge(parent::getRules(), [
+            'value' => ['nullable', 'string'],
         ]);
     }
 
     /**
-     * Returns the rule’s value, prepped for [[Db::parseParam()]] based on the selected operator.
+     * Returns the rule’s value, prepped for {@see \CraftCms\Cms\Database\QueryParam::parse()} based on the selected operator.
      */
     protected function paramValue(): ?string
     {
@@ -128,7 +120,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
             return null;
         }
 
-        $value = Db::escapeParam($this->value);
+        $value = Query::escapeParam($this->value);
 
         return match ($this->operator) {
             self::OPERATOR_BEGINS_WITH => "$value*",
@@ -170,8 +162,6 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
     /**
      * Returns whether the given value should be considered empty.
-     *
-     * @since 5.6.11
      */
     protected function isEmpty(mixed $value): bool
     {

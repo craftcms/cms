@@ -6,23 +6,18 @@ namespace CraftCms\Cms\Condition;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementCondition;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Cp;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use Override;
 use stdClass;
 
 use function CraftCms\Cms\t;
 
 /**
  * BaseElementSelectConditionRule provides a base implementation for element query condition rules that are composed of an element select input.
- *
- * @property int|null $elementId
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
  */
 abstract class BaseElementSelectConditionRule extends BaseConditionRule
 {
@@ -34,6 +29,13 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      */
     private array|string|null $_elementIds = null;
 
+    public ?int $elementId {
+        get => $this->getElementId();
+        set {
+            $this->setElementId($value);
+        }
+    }
+
     /**
      * Returns the element type that can be selected.
      *
@@ -41,7 +43,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      */
     abstract protected function elementType(): string;
 
-    #[\Override]
+    #[Override]
     public function setAttributes($values, $safeOnly = true): void
     {
         if (isset($values['elementId'])) {
@@ -77,8 +79,6 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
 
     /**
      * Returns whether multiple elements can be selected.
-     *
-     * @since 5.6.0
      */
     protected function allowMultiple(): bool
     {
@@ -87,8 +87,6 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
 
     /**
      * Defines the element select config.
-     *
-     * @since 5.5.0
      */
     protected function elementSelectConfig(): array
     {
@@ -108,18 +106,18 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     /**
      * @param  bool  $parse  Whether to parse the value for an environment variable
      * @return int[]|string
-     *
-     * @since 5.6.0
      */
     public function getElementIds(bool $parse = true): array|string
     {
         if ($parse && is_string($this->_elementIds)) {
             $elementIds = Env::parse($this->_elementIds);
+
             if ($this->condition instanceof ElementCondition && isset($this->condition->referenceElement)) {
                 $referenceElement = $this->condition->referenceElement;
             } else {
                 $referenceElement = new stdClass;
             }
+
             $elementIds = Craft::$app->getView()->renderObjectTemplate($elementIds, $referenceElement);
 
             return array_values(array_filter(array_map(
@@ -132,9 +130,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @phpstan-param array<int|string>|int|string|null $elementIds
-     *
-     * @since 5.6.0
+     * @param  array<int|string>|int|string|null  $elementIds
      */
     public function setElementIds(array|int|string|null $elementIds): void
     {
@@ -158,7 +154,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @phpstan-param array<int|string>|int|string|null $elementId
+     * @param  array<int|string>|int|string|null  $elementId
      */
     public function setElementId(array|int|string|null $elementId): void
     {
@@ -168,7 +164,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -179,7 +175,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(): string
     {
         if ($this->getCondition()->forProjectConfig) {
@@ -215,6 +211,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     private function _elements(): array
     {
         $elementIds = $this->getElementIds();
+
         if (empty($elementIds)) {
             return [];
         }
@@ -229,24 +226,18 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             ->all();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
-    protected function defineRules(): array
+    public function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['elementIds'], 'safe'];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'elementIds' => ['nullable'],
+        ]);
     }
 
     /**
      * Returns whether the condition rule matches the given value.
      *
-     * @param  ElementInterface|int|array|null  $value
-     *
-     * @phpstan-param ElementInterface|int|array<ElementInterface|int>|null $value
+     * @param  ElementInterface|int|array<ElementInterface|int>|null  $value
      */
     protected function matchValue(mixed $value): bool
     {
@@ -271,8 +262,8 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         if (is_array($value)) {
             foreach ($value as $val) {
                 if (
-                    $val instanceof ElementInterface && in_array($val->id, $elementIds) ||
-                    is_numeric($val) && in_array((int) $val, $elementIds)
+                    ($val instanceof ElementInterface && in_array($val->id, $elementIds)) ||
+                    (is_numeric($val) && in_array((int) $val, $elementIds))
                 ) {
                     return true;
                 }

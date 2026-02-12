@@ -1,23 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Condition\BaseDateRangeConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+
 use function CraftCms\Cms\t;
 
-/**
- * Date created condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class DateCreatedConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -25,7 +22,7 @@ class DateCreatedConditionRule extends BaseDateRangeConditionRule implements Ele
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -33,7 +30,7 @@ class DateCreatedConditionRule extends BaseDateRangeConditionRule implements Ele
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -41,7 +38,7 @@ class DateCreatedConditionRule extends BaseDateRangeConditionRule implements Ele
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition\Contracts;
 
-use craft\base\ModelInterface;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Condition\BaseConditionRule;
 use yii\base\InvalidConfigException;
@@ -21,12 +20,8 @@ use yii\base\InvalidConfigException;
  * @mixin BaseConditionRule
  *
  * @phpstan-require-extends BaseConditionRule
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
  */
-interface ConditionRuleInterface extends ComponentInterface, ModelInterface
+interface ConditionRuleInterface extends ComponentInterface
 {
     /**
      * Returns whether the rule is safe to include in conditions that are stored in the project config.
@@ -40,15 +35,11 @@ interface ConditionRuleInterface extends ComponentInterface, ModelInterface
 
     /**
      * Returns the rule’s option label hint.
-     *
-     * @since 4.6.0
      */
     public function getLabelHint(): ?string;
 
     /**
      * Returns whether to show rule’s option label hint.
-     *
-     * @since 4.16.0
      */
     public function showLabelHint(): bool;
 

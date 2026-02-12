@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Site\Data\Site;
@@ -11,18 +13,13 @@ use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Collection;
+
 use function CraftCms\Cms\t;
 
-/**
- * Site Group condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.4.0
- */
 class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -30,7 +27,7 @@ class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements Ele
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -38,35 +35,35 @@ class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements Ele
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function options(): array
     {
         return SiteGroups::getAllGroups()
-            ->filter(fn(SiteGroup $group) => Sites::getEditableSitesByGroupId($group->id)->isNotEmpty())
-            ->keyBy(fn(SiteGroup $group) => $group->uid)
-            ->map(fn(SiteGroup $group) => $group->getName())
+            ->filter(fn (SiteGroup $group) => Sites::getEditableSitesByGroupId($group->id)->isNotEmpty())
+            ->keyBy(fn (SiteGroup $group) => $group->uid)
+            ->map(fn (SiteGroup $group) => $group->getName())
             ->all();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $siteIds = Collection::make((array) $this->paramValue())
-            ->map(fn(string $uid) => SiteGroups::getGroupByUid($uid))
-            ->filter(fn(?SiteGroup $group) => $group !== null)
-            ->map(fn(SiteGroup $group) => Sites::getEditableSitesByGroupId($group->id))
+            ->map(fn (string $uid) => SiteGroups::getGroupByUid($uid))
+            ->filter(fn (?SiteGroup $group) => $group !== null)
+            ->map(fn (SiteGroup $group) => Sites::getEditableSitesByGroupId($group->id))
             ->flatten(1)
-            ->map(fn(Site $site) => $site->id)
+            ->map(fn (Site $site) => $site->id)
             ->all();
 
         $query->siteId($siteIds);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

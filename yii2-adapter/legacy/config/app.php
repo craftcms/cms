@@ -11,7 +11,6 @@ use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Auth;
 use craft\services\Categories;
-use craft\services\Conditions;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
 use craft\services\Drafts;
@@ -49,6 +48,7 @@ use craft\web\UrlManager;
 use craft\web\UrlRule;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Yii2Adapter\Log\LogTarget;
 

@@ -4,23 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Address\Conditions;
 
-use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AddressQuery;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Condition\BaseTextConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 use function CraftCms\Cms\t;
 
-/**
- * Address address line 1 condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.0.0
- */
-class AddressLine1ConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
+final class AddressLine1ConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     /**
      * {@inheritdoc}

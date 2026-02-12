@@ -1,23 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Entry\Conditions;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\conditions\HintableConditionRuleTrait;
 use craft\elements\db\EntryQuery;
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use Illuminate\Support\Collection;
+
 use function CraftCms\Cms\t;
 
 /**
  * Field condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 5.6.0
  */
 class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
@@ -25,12 +29,12 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     use HintableConditionRuleTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected bool $includeEmptyOperators = true;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -38,7 +42,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -46,21 +50,20 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function options(): array
     {
         return $this->nestedEntryFields()
-            ->keyBy(fn(ElementContainerFieldInterface $field) => $field->uid)
+            ->keyBy(fn (ElementContainerFieldInterface $field) => $field->uid)
             ->map(
-                fn(ElementContainerFieldInterface $field) =>
-                    $field->getUiLabel() . ($this->showLabelHint() ? " ($field->handle)" : '')
+                fn (ElementContainerFieldInterface $field) => $field->getUiLabel().($this->showLabelHint() ? " ($field->handle)" : '')
             )
             ->all();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -71,12 +74,12 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
             $query->field(false);
         } else {
             $fieldsService = app(Fields::class);
-            $query->fieldId($this->paramValue(fn($uid) => $fieldsService->getFieldByUid($uid)->id ?? null));
+            $query->fieldId($this->paramValue(fn ($uid) => $fieldsService->getFieldByUid($uid)->id ?? null));
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {
@@ -96,7 +99,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
         $fieldsService = app(Fields::class);
 
         return $fieldsService->getNestedEntryFieldTypes()
-            ->map(fn(string $class) => $fieldsService->getFieldsByType($class))
+            ->map(fn (string $class) => $fieldsService->getFieldsByType($class))
             ->flatten(1);
     }
 }

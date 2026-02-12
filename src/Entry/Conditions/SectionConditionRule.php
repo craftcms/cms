@@ -1,22 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Entry\Conditions;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\conditions\HintableConditionRuleTrait;
 use craft\elements\db\EntryQuery;
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Facades\Sections;
+
 use function CraftCms\Cms\t;
 
 /**
  * Entry section condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  */
 class SectionConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
@@ -24,12 +28,12 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     use HintableConditionRuleTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected bool $reloadOnOperatorChange = true;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -37,7 +41,7 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -45,8 +49,9 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function operators(): array
     {
         return [
@@ -56,18 +61,18 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function options(): array
     {
         return Sections::getAllSections()
             ->keyBy('uid')
-            ->map(fn(Section $section) => $section->name . ($this->showLabelHint() ? " ($section->handle)" : ''))
+            ->map(fn (Section $section) => $section->name.($this->showLabelHint() ? " ($section->handle)" : ''))
             ->all();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -75,12 +80,12 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
             $query->section('*');
         } else {
-            $query->sectionId($this->paramValue(fn($uid) => Sections::getSectionByUid($uid)->id ?? null));
+            $query->sectionId($this->paramValue(fn ($uid) => Sections::getSectionByUid($uid)->id ?? null));
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

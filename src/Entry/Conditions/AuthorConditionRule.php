@@ -1,26 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Entry\Conditions;
 
-use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\EntryQuery;
+use CraftCms\Cms\Condition\BaseElementSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\User\Elements\User;
+
 use function CraftCms\Cms\t;
 
 /**
  * Author condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  */
 class AuthorConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -28,7 +32,7 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function elementType(): string
     {
@@ -36,7 +40,7 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function criteria(): ?array
     {
@@ -46,15 +50,16 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function allowMultiple(): bool
     {
         return true;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -62,7 +67,7 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -71,7 +76,7 @@ class AuthorConditionRule extends BaseElementSelectConditionRule implements Elem
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

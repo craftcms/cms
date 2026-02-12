@@ -1,25 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\User\Conditions;
 
-use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\UserQuery;
+use CraftCms\Cms\Condition\BaseTextConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\User\Elements\User;
+
 use function CraftCms\Cms\t;
 
-/**
- * First name condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class FirstNameConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -27,7 +24,7 @@ class FirstNameConditionRule extends BaseTextConditionRule implements ElementCon
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -35,7 +32,7 @@ class FirstNameConditionRule extends BaseTextConditionRule implements ElementCon
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -44,7 +41,7 @@ class FirstNameConditionRule extends BaseTextConditionRule implements ElementCon
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

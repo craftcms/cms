@@ -13,43 +13,45 @@ use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Html;
 use DateTime;
 use Exception;
+use Illuminate\Validation\Rule;
+use Override;
 
 use function CraftCms\Cms\t;
 
 /**
  * BaseDateRangeConditionRule provides a base implementation for condition rules that are composed of date range inputs.
- *
- * @property string|null $startDate
- * @property string|null $endDate
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
  */
 abstract class BaseDateRangeConditionRule extends BaseConditionRule
 {
     /**
      * @phpstan-var DateRange::TYPE_*
-     *
-     * @since 4.3.0
      */
     public string $rangeType = DateRange::TYPE_TODAY;
 
     /**
      * @phpstan-var DateRange::PERIOD_*
-     *
-     * @since 4.3.0
      */
     public string $periodType = DateRange::PERIOD_DAYS_AGO;
 
-    /**
-     * @since 4.3.0
-     */
     public ?float $periodValue = null;
 
     private ?string $_startDate = null;
 
+    public ?string $startDate {
+        get => $this->getStartDate();
+        set {
+            $this->setStartDate($value);
+        }
+    }
+
     private ?string $_endDate = null;
+
+    public ?string $endDate {
+        get => $this->getEndDate();
+        set {
+            $this->setEndDate($value);
+        }
+    }
 
     /**
      * {@inheritdoc}
@@ -99,7 +101,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -116,7 +118,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
      *
      * @noinspection PhpNamedArgumentsWithChangedOrderInspection
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(): string
     {
         $groupedOptions = [];
@@ -282,22 +284,22 @@ JS,
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
-    protected function defineRules(): array
+    public function getRules(): array
     {
-        return array_merge(parent::defineRules(), [
-            [['startDate', 'endDate', 'rangeType', 'timeFrameUnits', 'timeFrameValue'], 'safe'],
-            [['rangeType'], 'in', 'range' => array_keys($this->rangeTypeOptions())],
-            [['periodType'], 'in', 'range' => array_keys($this->periodTypeOptions())],
-            [['periodValue'], 'number', 'skipOnEmpty' => true],
+        return array_merge(parent::getRules(), [
+            'startDate' => ['nullable'],
+            'endDate' => ['nullable'],
+            'rangeType' => ['nullable', Rule::in(array_keys($this->rangeTypeOptions()))],
+            'periodType' => ['nullable', Rule::in(array_keys($this->periodTypeOptions()))],
+            'periodValue' => ['nullable', 'numeric'],
+            'timeFrameUnits' => ['nullable'],
+            'timeFrameValue' => ['nullable'],
         ]);
     }
 
     /**
-     * Returns the rule’s value, prepped for [[\craft\helpers\Db::parseDateParam()]].
+     * Returns the rule’s value, prepped for {@see \CraftCms\Cms\Database\QueryParam::parse()}.
      */
     protected function queryParamValue(): array|string|null
     {

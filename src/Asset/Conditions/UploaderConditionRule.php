@@ -1,26 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Asset\Conditions;
 
-use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AssetQuery;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Condition\BaseElementSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\User\Elements\User;
+
 use function CraftCms\Cms\t;
 
-/**
- * Uploader condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class UploaderConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
+final class UploaderConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -28,7 +25,7 @@ class UploaderConditionRule extends BaseElementSelectConditionRule implements El
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function elementType(): string
     {
@@ -36,9 +33,9 @@ class UploaderConditionRule extends BaseElementSelectConditionRule implements El
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    protected function criteria(): ?array
+    protected function criteria(): array
     {
         return [
             'assetUploaders' => true,
@@ -46,7 +43,7 @@ class UploaderConditionRule extends BaseElementSelectConditionRule implements El
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -54,7 +51,7 @@ class UploaderConditionRule extends BaseElementSelectConditionRule implements El
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -63,7 +60,7 @@ class UploaderConditionRule extends BaseElementSelectConditionRule implements El
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

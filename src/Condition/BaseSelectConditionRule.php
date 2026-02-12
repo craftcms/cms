@@ -6,13 +6,11 @@ namespace CraftCms\Cms\Condition;
 
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Validation\Rule;
+use Override;
 
 /**
  * BaseSelectConditionRule provides a base implementation for condition rules that are composed of a select input.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
  */
 abstract class BaseSelectConditionRule extends BaseConditionRule
 {
@@ -29,7 +27,7 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -40,7 +38,7 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(): string
     {
         $selectId = 'select';
@@ -55,14 +53,11 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
-    protected function defineRules(): array
+    public function getRules(): array
     {
-        return array_merge(parent::defineRules(), [
-            [['value'], 'in', 'range' => $this->_validValues(...)],
+        return array_merge(parent::getRules(), [
+            'value' => ['required', Rule::in($this->_validValues())],
         ]);
     }
 
@@ -72,8 +67,11 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
     private function _validValues(): array
     {
         $options = [];
+
         foreach ($this->options() as $key => $value) {
-            $options[] = is_array($value) && array_key_exists('value', $value) ? $value['value'] : $key;
+            $options[] = is_array($value) && array_key_exists('value', $value)
+                ? $value['value']
+                : $key;
         }
 
         return $options;

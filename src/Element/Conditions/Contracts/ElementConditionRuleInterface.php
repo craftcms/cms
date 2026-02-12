@@ -1,23 +1,24 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace CraftCms\Cms\Element\Conditions\Contracts;
 
-use craft\base\conditions\ConditionRuleInterface;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
  * ElementConditionRuleInterface defines the common interface to be implemented by element condition rule classes.
- * A class implementing this interface should also use [[ElementConditionRuleTrait]].
  *
  * @property-read string[] $exclusiveQueryParams The query param names that this rule should have exclusive control over
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
  */
 interface ElementConditionRuleInterface extends ConditionRuleInterface
 {
@@ -30,16 +31,11 @@ interface ElementConditionRuleInterface extends ConditionRuleInterface
 
     /**
      * Modifies the given query with the condition rule.
-     *
-     * @param ElementQueryInterface $query
      */
     public function modifyQuery(ElementQueryInterface $query): void;
 
     /**
      * Returns whether the given element matches the condition rule.
-     *
-     * @param ElementInterface $element
-     * @return bool
      */
     public function matchElement(ElementInterface $element): bool;
 }

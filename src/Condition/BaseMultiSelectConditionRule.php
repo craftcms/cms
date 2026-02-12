@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
+use Override;
 use yii\base\InvalidConfigException;
 
 /**
  * BaseMultiSelectConditionRule provides a base implementation for condition rules that are composed of a multi-select input.
- *
- * @property string[] $values
- *
- * @since 4.0.0
  */
 abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 {
@@ -29,20 +26,21 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      */
     private array $_values = [];
 
+    public array $values {
+        get => $this->getValues();
+        set {
+            $this->setValues($value);
+        }
+    }
+
     /**
      * @var bool Whether “has a value” and “is empty” operators should be available to the condition rule.
-     *
-     * @since 5.7.0
      */
     protected bool $includeEmptyOperators = false;
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
-    public function init(): void
+    public function __construct(object|array $config = [])
     {
-        parent::init();
+        parent::__construct($config);
 
         if ($this->includeEmptyOperators) {
             $this->reloadOnOperatorChange = true;
@@ -52,7 +50,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     /**
      * Returns the operators that should be allowed for this rule.
      */
-    #[\Override]
+    #[Override]
     protected function operators(): array
     {
         $operators = [
@@ -90,7 +88,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -103,16 +101,14 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      *
      * Options can be expressed as value/label pairs, or as arrays with `value` and `label` keys.
      *
-     * @return string[]|array[]
-     *
-     * @phpstan-return string[]|array{value:string,label:string}[]
+     * @return string[]|array{value:string,label:string}[]
      */
     abstract protected function options(): array;
 
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(): string
     {
         if (! in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])) {
@@ -133,19 +129,16 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
-    protected function defineRules(): array
+    public function getRules(): array
     {
-        return array_merge(parent::defineRules(), [
-            [['values'], 'safe'],
+        return array_merge(parent::getRules(), [
+            'values' => ['array'],
         ]);
     }
 
     /**
-     * Returns the rule’s value, prepped for [[Db::parseParam()]] based on the selected operator.
+     * Returns the rule’s value, prepped for {@see \CraftCms\Cms\Database\QueryParam::parse} based on the selected operator.
      *
      * @param  callable|null  $normalizeValue  Method for normalizing a given selected value.
      */
@@ -166,7 +159,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
                     continue;
                 }
             }
-            $values[] = Db::escapeParam($value);
+            $values[] = Query::escapeParam($value);
         }
 
         if (! $values) {

@@ -1,28 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\User\Conditions;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\UserQuery;
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Elements\User;
 use yii\base\InvalidConfigException;
+
 use function CraftCms\Cms\t;
 
-/**
- * User group condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class GroupConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -30,7 +27,7 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -38,15 +35,16 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public static function isSelectable(): bool
     {
         return UserGroups::getAllGroups()->isNotEmpty();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function options(): array
     {
@@ -54,17 +52,15 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var UserQuery $query */
-        $query->groupId($this->paramValue(fn($uid) => UserGroups::getGroupByUid($uid)->id ?? null));
+        $query->groupId($this->paramValue(fn ($uid) => UserGroups::getGroupByUid($uid)->id ?? null));
     }
 
     /**
-     * @param ElementInterface $element
-     * @return bool
      * @throws InvalidConfigException
      */
     public function matchElement(ElementInterface $element): bool

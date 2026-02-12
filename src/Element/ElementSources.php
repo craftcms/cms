@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use Craft;
-use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\db\CoalesceColumnsExpression;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Cp;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
@@ -21,6 +20,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
@@ -499,7 +499,7 @@ final class ElementSources
         }
 
         /** @var ElementConditionInterface $condition */
-        $condition = Craft::$app->getConditions()->createCondition($source['condition']);
+        $condition = Conditions::createCondition($source['condition']);
         $query = $elementType::find();
         $condition->modifyQuery($query);
 

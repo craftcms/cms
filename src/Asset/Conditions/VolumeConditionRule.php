@@ -1,27 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Asset\Conditions;
 
 use Craft;
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AssetQuery;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
+
 use function CraftCms\Cms\t;
 
-/**
- * Asset volume condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class VolumeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+final class VolumeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -29,7 +26,7 @@ class VolumeConditionRule extends BaseMultiSelectConditionRule implements Elemen
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -37,26 +34,28 @@ class VolumeConditionRule extends BaseMultiSelectConditionRule implements Elemen
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function options(): array
     {
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
+
         return Arr::pluck($volumes, 'name', 'uid');
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
         $volumes = Craft::$app->getVolumes();
-        $query->volumeId($this->paramValue(fn($uid) => $volumes->getVolumeByUid($uid)->id ?? null));
+
+        $query->volumeId($this->paramValue(fn ($uid) => $volumes->getVolumeByUid($uid)->id ?? null));
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

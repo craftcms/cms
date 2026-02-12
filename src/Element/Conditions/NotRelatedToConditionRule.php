@@ -1,45 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Element\Conditions;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+
 use function CraftCms\Cms\t;
 
-/**
- * Not Relation condition rule.
- *
- * @property int[] $elementIds
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.4.0
- */
 class NotRelatedToConditionRule extends RelatedToConditionRule
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function getLabel(): string
     {
         return t('Not Related To');
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function modifyQuery(ElementQueryInterface $query): void
     {
         $elementIds = $this->getElementIds();
-        if (!empty($elementIds)) {
+
+        if (! empty($elementIds)) {
             $query->andNotRelatedTo($elementIds);
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function matchElement(ElementInterface $element): bool
     {
         $elementIds = $this->getElementIds();
+
         if (empty($elementIds)) {
             return true;
         }

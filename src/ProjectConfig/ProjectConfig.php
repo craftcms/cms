@@ -36,6 +36,7 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -1764,13 +1765,11 @@ final class ProjectConfig
      */
     private function _getElementSourceData(array $sourceConfigs): array
     {
-        $conditionsService = Craft::$app->getConditions();
-
         foreach ($sourceConfigs as &$elementTypeConfigs) {
             foreach ($elementTypeConfigs as &$config) {
                 if ($config['type'] === ElementSources::TYPE_CUSTOM && isset($config['condition'])) {
                     try {
-                        $config['condition'] = $conditionsService->createCondition($config['condition'])->getConfig();
+                        $config['condition'] = Conditions::createCondition($config['condition'])->getConfig();
                     } catch (InvalidArgumentException|InvalidConfigException) {
                         // Ignore it
                     }

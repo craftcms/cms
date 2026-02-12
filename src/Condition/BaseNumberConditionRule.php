@@ -5,41 +5,30 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
+use Override;
 
 use function CraftCms\Cms\t;
 
 /**
  * BaseNumberConditionRule provides a base implementation for condition rules that are composed of a number input.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
  */
 abstract class BaseNumberConditionRule extends BaseTextConditionRule
 {
-    /**
-     * @since 4.3.0
-     */
     protected const OPERATOR_BETWEEN = 'between';
 
-    /**
-     * @since 4.3.0
-     */
     public string $maxValue = '';
 
     /**
      * @var int|float|null The `step` value the input should have.
-     *
-     * @since 5.2.2
      */
     public int|float|null $step = 1;
 
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -51,7 +40,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function operators(): array
     {
         return [
@@ -70,7 +59,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function operatorLabel(string $operator): string
     {
         if ($operator === self::OPERATOR_BETWEEN) {
@@ -83,112 +72,110 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputType(): string
     {
         return 'number';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
-    protected function defineRules(): array
+    public function getRules(): array
     {
-        return array_merge(parent::defineRules(), [
-            [['maxValue', 'step'], 'safe'],
+        return array_merge(parent::getRules(), [
+            'maxValue' => ['nullable', 'numeric'],
+            'step' => ['nullable', 'numeric'],
         ]);
     }
 
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(): string
     {
-        if ($this->operator === self::OPERATOR_BETWEEN) {
-            return Html::tag('div',
-                Html::hiddenLabel(t('Min Value'), 'min').
-                Cp::textHtml([
-                    'type' => $this->inputType(),
-                    'id' => 'min',
-                    'name' => 'value',
-                    'value' => $this->value,
-                    'autocomplete' => false,
-                    'class' => 'flex-grow flex-shrink',
-                ]).
-                Html::tag('span', t('and')).
-                Html::hiddenLabel(t('Max Value'), 'max').
-                Cp::textHtml([
-                    'type' => $this->inputType(),
-                    'id' => 'max',
-                    'name' => 'maxValue',
-                    'value' => $this->maxValue,
-                    'autocomplete' => false,
-                    'class' => 'flex-grow flex-shrink',
-                ]).
-                Html::tag('span', t('The values are matched inclusively.'), ['class' => 'info']),
-                ['class' => 'flex flex-center']
-            );
+        if ($this->operator !== self::OPERATOR_BETWEEN) {
+            return parent::inputHtml();
         }
 
-        return parent::inputHtml();
+        return Html::tag('div',
+            Html::hiddenLabel(t('Min Value'), 'min').
+            Cp::textHtml([
+                'type' => $this->inputType(),
+                'id' => 'min',
+                'name' => 'value',
+                'value' => $this->value,
+                'autocomplete' => false,
+                'class' => 'flex-grow flex-shrink',
+            ]).
+            Html::tag('span', t('and')).
+            Html::hiddenLabel(t('Max Value'), 'max').
+            Cp::textHtml([
+                'type' => $this->inputType(),
+                'id' => 'max',
+                'name' => 'maxValue',
+                'value' => $this->maxValue,
+                'autocomplete' => false,
+                'class' => 'flex-grow flex-shrink',
+            ]).
+            Html::tag('span', t('The values are matched inclusively.'), ['class' => 'info']),
+            ['class' => 'flex flex-center']
+        );
     }
 
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function paramValue(): ?string
     {
-        if ($this->operator === self::OPERATOR_BETWEEN) {
-            if (empty($this->value) && empty($this->maxValue)) {
-                return null;
-            }
-
-            if (empty($this->maxValue)) {
-                return '>= '.Db::escapeParam($this->value);
-            }
-
-            if (empty($this->value)) {
-                return '<= '.Db::escapeParam($this->maxValue);
-            }
-
-            return sprintf('and, >= %s, <= %s', Db::escapeParam($this->value), Db::escapeParam($this->maxValue));
+        if ($this->operator !== self::OPERATOR_BETWEEN) {
+            return parent::paramValue();
         }
 
-        return parent::paramValue();
+        if (empty($this->value) && empty($this->maxValue)) {
+            return null;
+        }
+
+        if (empty($this->maxValue)) {
+            return '>= '.Query::escapeParam($this->value);
+        }
+
+        if (empty($this->value)) {
+            return '<= '.Query::escapeParam($this->maxValue);
+        }
+
+        return sprintf('and, >= %s, <= %s', Query::escapeParam($this->value), Query::escapeParam($this->maxValue));
     }
 
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function matchValue(mixed $value): bool
     {
-        if ($this->operator === self::OPERATOR_BETWEEN) {
-            if (empty($this->value) && empty($this->maxValue)) {
-                return true;
-            }
+        if ($this->operator !== self::OPERATOR_BETWEEN) {
+            return parent::matchValue($value);
+        }
 
-            if (! empty($this->value) && $value < $this->value) {
-                return false;
-            }
-
-            if (! empty($this->maxValue) && $value > $this->maxValue) {
-                return false;
-            }
-
+        if (empty($this->value) && empty($this->maxValue)) {
             return true;
         }
 
-        return parent::matchValue($value);
+        if (! empty($this->value) && $value < $this->value) {
+            return false;
+        }
+
+        if (! empty($this->maxValue) && $value > $this->maxValue) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputOptions(): array
     {
         return array_merge(parent::inputOptions(), [

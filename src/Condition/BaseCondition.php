@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use Craft;
-use craft\base\Component;
-use craft\events\RegisterConditionRulesEvent;
 use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
+use CraftCms\Cms\Condition\Events\RegisterConditionRules;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
@@ -23,28 +24,8 @@ use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
-/**
- * BaseCondition provides a base implementation for conditions.
- *
- * @property ConditionRuleInterface[] $conditionRules The rules this condition is configured with
- * @property-read array $config The condition’s portable config
- * @property-read string $builderHtml The HTML for the condition builder, including its outer container element
- * @property-read string $builderInnerHtml The inner HTML for the condition builder, excluding its outer container element
- * @property-read string[]|array{class: string}[] $conditionRuleTypes The available rule types for this condition
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
 abstract class BaseCondition extends Component implements ConditionInterface
 {
-    /**
-     * @event RegisterConditionRulesEvent The event that is triggered when defining the selectable condition rules.
-     *
-     * @see getSelectableConditionRules()
-     */
-    public const EVENT_REGISTER_CONDITION_RULES = 'registerConditionRules';
-
     /**
      * @var string The condition builder container tag name
      */
@@ -76,10 +57,27 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public ?string $addRuleLabel = null;
 
     /**
+     * @var array The condition’s portable config
+     */
+    public array $config {
+        get => $this->getConfig();
+    }
+
+    /**
      * @see getConditionRules()
      * @see setConditionRules()
      */
     private Collection $_conditionRules;
+
+    /**
+     * @var ConditionRuleInterface[] The rules this condition is configured with
+     */
+    public array $conditionRules {
+        get => $this->getConditionRules();
+        set {
+            $this->setConditionRules($value);
+        }
+    }
 
     /**
      * @var ConditionRuleInterface[]|null The selectable condition rules for this condition.
@@ -89,12 +87,22 @@ abstract class BaseCondition extends Component implements ConditionInterface
     private ?array $_selectableConditionRules = null;
 
     /**
-     * {@inheritdoc}
+     * @var string The HTML for the condition builder, including its outer container element
      */
-    #[\Override]
-    public function init(): void
+    public string $builderHtml {
+        get => $this->getBuilderHtml();
+    }
+
+    /**
+     * @var string The inner HTML for the condition builder, excluding its outer container element
+     */
+    public string $builderInnerHtml {
+        get => $this->getBuilderInnerHtml();
+    }
+
+    public function __construct(array $config = [])
     {
-        parent::init();
+        parent::__construct($config);
 
         if (! isset($this->id)) {
             $this->id = 'condition'.mt_rand();
@@ -121,25 +129,22 @@ abstract class BaseCondition extends Component implements ConditionInterface
         // Set the condition before anything else
         $config = ['condition' => $this] + $config;
 
-        return Craft::$app->getConditions()->createConditionRule($config);
+        return Conditions::createConditionRule($config);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getSelectableConditionRules(): array
+    final public function getSelectableConditionRules(): array
     {
         if (! isset($this->_selectableConditionRules)) {
             $rules = $this->selectableConditionRules();
 
-            // Fire a 'registerConditionRules' event
-            if ($this->hasEventHandlers(self::EVENT_REGISTER_CONDITION_RULES)) {
-                $event = new RegisterConditionRulesEvent([
-                    'conditionRules' => $rules,
-                ]);
-                $this->trigger(self::EVENT_REGISTER_CONDITION_RULES, $event);
-                $rules = $event->conditionRules;
-            }
+            event($event = new RegisterConditionRules(
+                conditionRules: $rules,
+            ));
+
+            $rules = $event->conditionRules;
 
             $this->_selectableConditionRules = Collection::make($rules)
                 ->keyBy(fn ($type) => is_string($type) ? $type : Json::encode($type))
@@ -154,14 +159,12 @@ abstract class BaseCondition extends Component implements ConditionInterface
     /**
      * Returns the selectable rules for this condition.
      *
-     * Conditions should override this method instead of [[getSelectableConditionRules()]]
-     * so [[EVENT_REGISTER_CONDITION_RULES]] handlers can modify the class-defined rules.
+     * Conditions should override this method instead of {@see getSelectableConditionRules()}
+     * so {@see RegisterConditionRules} handlers can modify the class-defined rules.
      *
      * Rules should be defined as either the class name or an array with a `class` key set to the class name.
      *
-     * @return string[]|array[]
-     *
-     * @phpstan-return string[]|array{class:string}[]
+     * @return string[]|array{class:string}[]
      */
     abstract protected function selectableConditionRules(): array;
 
@@ -586,14 +589,10 @@ JS,
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
-    protected function defineRules(): array
+    public function getRules(): array
     {
         return [
-            [['conditionRules'], 'safe'],
+            'conditionRules' => ['nullable'],
         ];
     }
 
@@ -608,7 +607,7 @@ JS,
     /**
      * {@inheritdoc}
      */
-    public function getConfig(): array
+    final public function getConfig(): array
     {
         return array_merge($this->config(), [
             'class' => static::class,

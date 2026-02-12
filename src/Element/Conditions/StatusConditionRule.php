@@ -1,23 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+
 use function CraftCms\Cms\t;
 
-/**
- * Element status condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class StatusConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -25,7 +22,7 @@ class StatusConditionRule extends BaseMultiSelectConditionRule implements Elemen
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -33,17 +30,18 @@ class StatusConditionRule extends BaseMultiSelectConditionRule implements Elemen
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function options(): array
     {
         /** @var ElementCondition $condition */
         $condition = $this->getCondition();
-        return array_map(fn($info) => $info['label'] ?? $info, $condition->elementType::statuses());
+
+        return array_map(fn ($info) => $info['label'] ?? $info, $condition->elementType::statuses());
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -51,7 +49,7 @@ class StatusConditionRule extends BaseMultiSelectConditionRule implements Elemen
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

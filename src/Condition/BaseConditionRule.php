@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\base\Component;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
 
@@ -18,42 +19,90 @@ use function CraftCms\Cms\t;
  * BaseConditionRule provides a base implementation for condition rules.
  *
  * @property bool $isNew Whether the rule is new
- * @property ConditionInterface $condition
- * @property-read array $config The rule’s portable config
  * @property-read string $html The rule’s HTML for a condition builder
  * @property-read string $uiLabel The rule’s option label
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
  */
 abstract class BaseConditionRule extends Component implements ConditionRuleInterface
 {
-    protected const OPERATOR_EQ = '=';
+    protected const string OPERATOR_EQ = '=';
 
-    protected const OPERATOR_NE = '!=';
+    protected const string OPERATOR_NE = '!=';
 
-    protected const OPERATOR_LT = '<';
+    protected const string OPERATOR_LT = '<';
 
-    protected const OPERATOR_LTE = '<=';
+    protected const string OPERATOR_LTE = '<=';
 
-    protected const OPERATOR_GT = '>';
+    protected const string OPERATOR_GT = '>';
 
-    protected const OPERATOR_GTE = '>=';
+    protected const string OPERATOR_GTE = '>=';
 
-    protected const OPERATOR_BEGINS_WITH = 'bw';
+    protected const string OPERATOR_BEGINS_WITH = 'bw';
 
-    protected const OPERATOR_ENDS_WITH = 'ew';
+    protected const string OPERATOR_ENDS_WITH = 'ew';
 
-    protected const OPERATOR_CONTAINS = '**';
+    protected const string OPERATOR_CONTAINS = '**';
 
-    protected const OPERATOR_IN = 'in';
+    protected const string OPERATOR_IN = 'in';
 
-    protected const OPERATOR_NOT_IN = 'ni';
+    protected const string OPERATOR_NOT_IN = 'ni';
 
-    protected const OPERATOR_EMPTY = 'empty';
+    protected const string OPERATOR_EMPTY = 'empty';
 
-    protected const OPERATOR_NOT_EMPTY = 'notempty';
+    protected const string OPERATOR_NOT_EMPTY = 'notempty';
+
+    /**
+     * @var string|null UUID
+     */
+    public ?string $uid = null;
+
+    /**
+     * @var string The selected operator.
+     */
+    public string $operator;
+
+    /**
+     * @var bool Whether to reload the condition builder when the operator changes
+     */
+    protected bool $reloadOnOperatorChange = false;
+
+    private ConditionInterface $_condition;
+
+    public ConditionInterface $condition {
+        get => $this->getCondition();
+        set {
+            $this->setCondition($value);
+        }
+    }
+
+    /**
+     * @see getAutofocus()
+     * @see setAutofocus()
+     */
+    private bool $_autofocus = false;
+
+    public bool $autofocus {
+        get => $this->getAutofocus();
+        set {
+            $this->setAutofocus($value);
+        }
+    }
+
+    public array $config {
+        get => $this->getConfig();
+    }
+
+    public string $html {
+        get => $this->getHtml();
+    }
+
+    public function __construct(object|array $config = [])
+    {
+        parent::__construct($config);
+
+        if (! isset($this->uid)) {
+            $this->uid = Str::uuid()->toString();
+        }
+    }
 
     /**
      * {@inheritdoc}
@@ -77,42 +126,6 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     public function showLabelHint(): bool
     {
         return false;
-    }
-
-    /**
-     * @var string|null UUID
-     */
-    public ?string $uid = null;
-
-    /**
-     * @var string The selected operator.
-     */
-    public string $operator;
-
-    /**
-     * @var bool Whether to reload the condition builder when the operator changes
-     */
-    protected bool $reloadOnOperatorChange = false;
-
-    private ConditionInterface $_condition;
-
-    /**
-     * @see getAutofocus()
-     * @see setAutofocus()
-     */
-    private bool $_autofocus = false;
-
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
-    public function init(): void
-    {
-        parent::init();
-
-        if (! isset($this->uid)) {
-            $this->uid = Str::uuid()->toString();
-        }
     }
 
     /**
@@ -227,19 +240,13 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
             Html::endTag('div');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
-    protected function defineRules(): array
+    public function getRules(): array
     {
-        return [
-            [['uid', 'condition'], 'safe'],
-            [
-                ['operator'],
-                fn () => in_array($this->operator, $this->operators(), true),
-            ],
-        ];
+        return array_merge(parent::getRules(), [
+            'uid' => ['nullable'],
+            'condition' => ['nullable'],
+            'operator' => ['nullable', Rule::in($this->operators())],
+        ]);
     }
 
     /**

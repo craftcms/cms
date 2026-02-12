@@ -1,24 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Element\Conditions;
 
-use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Condition\BaseTextConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+
 use function CraftCms\Cms\t;
 
-/**
- * Slug condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
 class SlugConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -26,7 +23,7 @@ class SlugConditionRule extends BaseTextConditionRule implements ElementConditio
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -34,7 +31,7 @@ class SlugConditionRule extends BaseTextConditionRule implements ElementConditio
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -42,7 +39,7 @@ class SlugConditionRule extends BaseTextConditionRule implements ElementConditio
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {
@@ -50,10 +47,15 @@ class SlugConditionRule extends BaseTextConditionRule implements ElementConditio
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function isEmpty(mixed $value): bool
     {
-        return parent::isEmpty($value) || (is_string($value) && ElementHelper::isTempSlug($value));
+        if (parent::isEmpty($value)) {
+            return true;
+        }
+
+        return is_string($value) && ElementHelper::isTempSlug($value);
     }
 }
