@@ -8,10 +8,9 @@
   import TransitionFade from '@/components/TransitionFade.vue';
   import CheckboxGroup from '@/components/form/CheckboxGroup.vue';
   import {useAnnouncer} from '@/composables/useAnnouncer';
+  import type {SelectOption} from '@/types';
 
-  interface CacheOption {
-    label: string;
-    value: string;
+  interface CacheOption extends SelectOption {
     info?: string;
   }
 

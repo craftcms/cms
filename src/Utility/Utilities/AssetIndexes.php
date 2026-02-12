@@ -7,7 +7,8 @@ namespace CraftCms\Cms\Utility\Utilities;
 use Craft;
 use craft\helpers\App;
 use craft\models\Volume;
-use craft\web\assets\assetindexes\AssetIndexesAsset;
+use craft\services\AssetIndexer;
+use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
@@ -69,6 +70,7 @@ final class AssetIndexes extends Utility
     #[Override]
     public static function contentHtml(): string
     {
+        $assetIndexer = app(AssetIndexer::class);
         $volumeOptions = [];
 
         foreach (self::volumes() as $volume) {
@@ -78,25 +80,14 @@ final class AssetIndexes extends Utility
             ];
         }
 
-        $view = Craft::$app->getView();
-        $checkboxSelectHtml = $view->renderTemplate('_includes/forms/checkboxSelect.twig', [
-            'class' => 'first',
-            'name' => 'volumes',
-            'options' => $volumeOptions,
-            'showAllOption' => true,
-            'values' => '*',
-        ]);
-
-        $view->registerAssetBundle(AssetIndexesAsset::class);
         $dateFormat = I18N::getLocale()->getDateTimeFormat('short', Locale::FORMAT_PHP);
+        $existingIndexingSessions = $assetIndexer->getExistingIndexingSessions();
 
-        $existingIndexingSessions = Craft::$app->getAssetIndexer()->getExistingIndexingSessions();
-
-        return $view->renderTemplate('_components/utilities/AssetIndexes.twig', [
-            'existingSessions' => $existingIndexingSessions,
-            'checkboxSelectHtml' => $checkboxSelectHtml,
-            'dateFormat' => $dateFormat,
-            'isEphemeral' => App::isEphemeral(),
+        return VueComponent::render('AssetIndexes', [
+            ':existingSessions' => $existingIndexingSessions,
+            ':volumeOptions' => $volumeOptions,
+            ':dateFormat' => $dateFormat,
+            ':isEphemeral' => App::isEphemeral(),
         ]);
     }
 }

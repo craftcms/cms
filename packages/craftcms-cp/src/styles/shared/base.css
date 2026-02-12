@@ -113,6 +113,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
   table-layout: fixed;
   width: 100%;
   border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
 
   thead {
     background-color: var(--c-color-neutral-bg-normal);

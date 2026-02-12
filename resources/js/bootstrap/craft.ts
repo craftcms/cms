@@ -14,6 +14,7 @@ import DatabaseBackup from '@/components/utilities/DatabaseBackup.vue';
 import Migrations from '@/components/utilities/Migrations.vue';
 import Updates from '@/components/utilities/Updates/Updates.vue';
 import ProjectConfig from '@/components/utilities/ProjectConfig/ProjectConfig.vue';
+import AssetIndexes from '@/components/utilities/AssetIndexes/AssetIndexes.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -92,6 +93,7 @@ const Craft = {
         app.component('Migrations', Migrations);
         app.component('Updates', Updates);
         app.component('ProjectConfig', ProjectConfig);
+        app.component('AssetIndexes', AssetIndexes);
 
         app.mount(el);
       },

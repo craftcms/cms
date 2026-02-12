@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use Craft;
 use craft\models\AssetIndexingSession;
+use craft\services\AssetIndexer;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -22,7 +23,7 @@ final readonly class AssetIndexesController
 {
     use RespondsWithFlash;
 
-    public function __construct(Utilities $utilitiesService)
+    public function __construct(Utilities $utilitiesService, private AssetIndexer $assetIndexer)
     {
         if (! $utilitiesService->checkAuthorization(AssetIndexes::class)) {
             abort(403, 'User is not authorized to perform this action.');
@@ -49,16 +50,15 @@ final readonly class AssetIndexesController
             return $this->asFailure(t('No volumes specified.'));
         }
 
-        $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumeIds, $cacheRemoteImages, $listEmptyFolders);
-        $sessionData = $this->prepareSessionData($indexingSession);
+        $indexingSession = $this->assetIndexer->startIndexingSession($volumeIds, $cacheRemoteImages, $listEmptyFolders);
 
-        $data = ['session' => $sessionData];
+        $data = ['session' => $indexingSession];
         $error = null;
 
         if ($indexingSession->totalEntries === 0 && ! $indexingSession->processIfRootEmpty) {
             $data['stop'] = $indexingSession->id;
             $error = t('The filesystem doesn’t contain any files.');
-            Craft::$app->getAssetIndexer()->stopIndexingSession($indexingSession);
+            $this->assetIndexer->stopIndexingSession($indexingSession);
         }
 
         return $error ?
@@ -78,10 +78,10 @@ final readonly class AssetIndexesController
             return $this->asFailure(t('No indexing session specified.'));
         }
 
-        $session = Craft::$app->getAssetIndexer()->getIndexingSessionById($sessionId);
+        $session = $this->assetIndexer->getIndexingSessionById($sessionId);
 
         if ($session) {
-            Craft::$app->getAssetIndexer()->stopIndexingSession($session);
+            $this->assetIndexer->stopIndexingSession($session);
         }
 
         return $this->asSuccess(null, ['stop' => $sessionId]);
@@ -99,7 +99,7 @@ final readonly class AssetIndexesController
             return $this->asFailure(t('No indexing session specified.'));
         }
 
-        $assetIndexer = Craft::$app->getAssetIndexer();
+        $assetIndexer = $this->assetIndexer;
         $indexingSession = $assetIndexer->getIndexingSessionById($sessionId);
 
         // Have to account for the fact that some people might be processing this in parallel
@@ -144,9 +144,7 @@ final readonly class AssetIndexesController
             $skipDialog = true;
         }
 
-        $sessionData = $this->prepareSessionData($indexingSession);
-
-        return $this->asSuccess(null, ['session' => $sessionData, 'skipDialog' => $skipDialog]);
+        return $this->asSuccess(null, ['session' => $indexingSession, 'skipDialog' => $skipDialog]);
     }
 
     public function indexingSessionOverview(Request $request): Response
@@ -161,7 +159,7 @@ final readonly class AssetIndexesController
             return $this->asFailure(t('No indexing session specified.'));
         }
 
-        $assetIndexer = Craft::$app->getAssetIndexer();
+        $assetIndexer = $this->assetIndexer;
         $indexingSession = $assetIndexer->getIndexingSessionById($sessionId);
 
         if (! $indexingSession || ! $indexingSession->actionRequired) {
@@ -171,9 +169,7 @@ final readonly class AssetIndexesController
         $indexingSession->skippedEntries = $assetIndexer->getSkippedItemsForSession($indexingSession);
         $indexingSession->missingEntries = $assetIndexer->getMissingEntriesForSession($indexingSession);
 
-        $sessionData = $this->prepareSessionData($indexingSession);
-
-        return $this->asSuccess(null, ['session' => $sessionData]);
+        return $this->asSuccess(null, ['session' => $indexingSession]);
     }
 
     public function finishIndexingSession(Request $request): Response
@@ -190,10 +186,10 @@ final readonly class AssetIndexesController
             return $this->asFailure(t('No indexing session specified.'));
         }
 
-        $session = Craft::$app->getAssetIndexer()->getIndexingSessionById($sessionId);
+        $session = $this->assetIndexer->getIndexingSessionById($sessionId);
 
         if ($session) {
-            Craft::$app->getAssetIndexer()->stopIndexingSession($session);
+            $this->assetIndexer->stopIndexingSession($session);
         }
 
         $deleteFolders = $validated['deleteFolder'] ?? [];
@@ -227,7 +223,7 @@ final readonly class AssetIndexesController
 
         unset($sessionData['dateUpdated']);
 
-        $sessionData['dateCreated'] = $indexingSession->dateUpdated->format(I18N::getLocale()->getDateTimeFormat('medium', Locale::FORMAT_PHP));
+        $sessionData['dateUpdated'] = $indexingSession->dateUpdated->format(I18N::getLocale()->getDateTimeFormat('medium', Locale::FORMAT_PHP));
         $sessionData['indexedVolumes'] = Json::decodeIfJson($indexingSession->indexedVolumes);
 
         return $sessionData;

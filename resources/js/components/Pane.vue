@@ -6,6 +6,7 @@
     defineProps<{
       as?: Component | string;
       variant?: 'plain' | 'error' | 'code';
+      appearance?: 'plain' | 'outline';
       hideHeader?: boolean;
       hideFooter?: boolean;
       title?: string;
@@ -64,6 +65,7 @@
       pane: true,
       'pane--code': variant === 'code',
       'pane--error': variant === 'error',
+      'pane--outline': appearance === 'outline',
     }"
     v-bind="$attrs"
   >
@@ -115,6 +117,10 @@
     margin-block-end: var(--c-spacing-md);
     max-height: 500px;
     overflow: auto;
+  }
+
+  .pane--outline {
+    --c-pane-border: 1px solid var(--c-color-neutral-border-subtle);
   }
 
   .pane__header {

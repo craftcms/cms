@@ -43,6 +43,7 @@ export {default as CraftCombobox} from './components/combobox/combobox.js';
 export {default as CraftIndicator} from './components/indicator/indicator.js';
 export {default as CraftShortcut} from './components/shortcut/shortcut.js';
 export {default as CraftProgress} from './components/progress/progress.js';
+export {default as CraftProgressBar} from './components/progress-bar/progress-bar.js';
 export {default as CraftRadioGroup} from './components/radio-group/radio-group.js';
 export {default as CraftRadio} from './components/radio/radio.js';
 /* plop:component */
@@ -57,6 +58,20 @@ export * from './utilities/string.js';
 // Services
 export {QueueService} from './services/Queue.js';
 export {ConfigService} from './services/Config.js';
+export {AssetIndexer} from './services/AssetIndexer.js';
+export type {
+  IndexingSession,
+  IndexingResponse,
+  StartIndexingParams,
+  FinishIndexingParams,
+  SessionEventData,
+  ProgressEventData,
+  ErrorEventData,
+  MissingEntries,
+  IndexerEventType,
+  IndexerEventListener,
+} from './services/AssetIndexer.js';
+export {SessionStatus, IndexingActions} from './services/AssetIndexer.js';
 
 // Types
 export * from './types/index.js';
