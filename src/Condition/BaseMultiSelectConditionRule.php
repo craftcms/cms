@@ -1,6 +1,8 @@
 <?php
 
-namespace craft\base\conditions;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Condition;
 
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -12,12 +14,13 @@ use yii\base\InvalidConfigException;
  * BaseMultiSelectConditionRule provides a base implementation for condition rules that are composed of a multi-select input.
  *
  * @property string[] $values
+ *
  * @since 4.0.0
  */
 abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public string $operator = self::OPERATOR_IN;
 
@@ -28,13 +31,15 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 
     /**
      * @var bool Whether “has a value” and “is empty” operators should be available to the condition rule.
+     *
      * @since 5.7.0
      */
     protected bool $includeEmptyOperators = false;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function init(): void
     {
         parent::init();
@@ -46,9 +51,8 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 
     /**
      * Returns the operators that should be allowed for this rule.
-     *
-     * @return array
      */
+    #[\Override]
     protected function operators(): array
     {
         $operators = [
@@ -72,7 +76,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @param string|string[] $values
+     * @param  string|string[]  $values
      */
     public function setValues(array|string $values): void
     {
@@ -84,8 +88,9 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -99,23 +104,25 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      * Options can be expressed as value/label pairs, or as arrays with `value` and `label` keys.
      *
      * @return string[]|array[]
+     *
      * @phpstan-return string[]|array{value:string,label:string}[]
      */
     abstract protected function options(): array;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(): string
     {
-        if (!in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])) {
+        if (! in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])) {
             return '';
         }
 
         $multiSelectId = 'multiselect';
 
         return
-            Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId) .
+            Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId).
             Cp::selectizeHtml([
                 'id' => $multiSelectId,
                 'class' => 'flex-grow',
@@ -127,8 +134,9 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
@@ -139,8 +147,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     /**
      * Returns the rule’s value, prepped for [[Db::parseParam()]] based on the selected operator.
      *
-     * @param callable|null $normalizeValue Method for normalizing a given selected value.
-     * @return string|array|null
+     * @param  callable|null  $normalizeValue  Method for normalizing a given selected value.
      */
     protected function paramValue(?callable $normalizeValue = null): string|array|null
     {
@@ -162,7 +169,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
             $values[] = Db::escapeParam($value);
         }
 
-        if (!$values) {
+        if (! $values) {
             return null;
         }
 
@@ -176,25 +183,24 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     /**
      * Returns whether the condition rule matches the given value.
      *
-     * @param string|string[]|null $value
-     * @return bool
+     * @param  string|string[]|null  $value
      */
     protected function matchValue(array|string|null $value): bool
     {
-        if (!$this->_values) {
+        if (! $this->_values) {
             return true;
         }
 
         if ($value === '' || $value === null) {
             $value = [];
         } else {
-            $value = (array)$value;
+            $value = (array) $value;
         }
 
         return match ($this->operator) {
-            self::OPERATOR_IN => !empty(array_intersect($value, $this->_values)),
+            self::OPERATOR_IN => ! empty(array_intersect($value, $this->_values)),
             self::OPERATOR_NOT_IN => empty(array_intersect($value, $this->_values)),
-            self::OPERATOR_NOT_EMPTY => !empty($value),
+            self::OPERATOR_NOT_EMPTY => ! empty($value),
             self::OPERATOR_EMPTY => empty($value),
             default => throw new InvalidConfigException("Invalid operator: $this->operator"),
         };

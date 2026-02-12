@@ -1,6 +1,8 @@
 <?php
 
-namespace craft\base\conditions;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Condition;
 
 use Craft;
 use craft\base\ElementInterface;
@@ -10,19 +12,23 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use stdClass;
+
 use function CraftCms\Cms\t;
 
 /**
  * BaseElementSelectConditionRule provides a base implementation for element query condition rules that are composed of an element select input.
  *
  * @property int|null $elementId
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  */
 abstract class BaseElementSelectConditionRule extends BaseConditionRule
 {
     /**
      * @var int[]|string|null
+     *
      * @see getElementIds()
      * @see setElementIds()
      */
@@ -35,6 +41,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      */
     abstract protected function elementType(): string;
 
+    #[\Override]
     public function setAttributes($values, $safeOnly = true): void
     {
         if (isset($values['elementId'])) {
@@ -46,8 +53,6 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
 
     /**
      * Returns the element source(s) that the element can be selected from.
-     *
-     * @return array|null
      */
     protected function sources(): ?array
     {
@@ -56,8 +61,6 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
 
     /**
      * Returns the element condition that filters which elements can be selected.
-     *
-     * @return ElementConditionInterface|null
      */
     protected function selectionCondition(): ?ElementConditionInterface
     {
@@ -66,8 +69,6 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
 
     /**
      * Returns the criteria that determines which elements can be selected.
-     *
-     * @return array|null
      */
     protected function criteria(): ?array
     {
@@ -77,7 +78,6 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     /**
      * Returns whether multiple elements can be selected.
      *
-     * @return bool
      * @since 5.6.0
      */
     protected function allowMultiple(): bool
@@ -88,12 +88,12 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     /**
      * Defines the element select config.
      *
-     * @return array
      * @since 5.5.0
      */
     protected function elementSelectConfig(): array
     {
         $elements = $this->_elements();
+
         return [
             'name' => 'elementIds',
             'elements' => $elements,
@@ -101,13 +101,14 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             'sources' => $this->sources(),
             'criteria' => $this->criteria(),
             'condition' => $this->selectionCondition(),
-            'single' => !$this->allowMultiple(),
+            'single' => ! $this->allowMultiple(),
         ];
     }
 
     /**
-     * @param bool $parse Whether to parse the value for an environment variable
+     * @param  bool  $parse  Whether to parse the value for an environment variable
      * @return int[]|string
+     *
      * @since 5.6.0
      */
     public function getElementIds(bool $parse = true): array|string
@@ -117,11 +118,12 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             if ($this->condition instanceof ElementCondition && isset($this->condition->referenceElement)) {
                 $referenceElement = $this->condition->referenceElement;
             } else {
-                $referenceElement = new stdClass();
+                $referenceElement = new stdClass;
             }
             $elementIds = Craft::$app->getView()->renderObjectTemplate($elementIds, $referenceElement);
+
             return array_values(array_filter(array_map(
-                fn(string $elementId) => (int)trim($elementId),
+                fn (string $elementId) => (int) trim($elementId),
                 explode(',', $elementIds),
             )));
         }
@@ -130,33 +132,32 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @param array|int|string|null $elementIds
      * @phpstan-param array<int|string>|int|string|null $elementIds
+     *
      * @since 5.6.0
      */
     public function setElementIds(array|int|string|null $elementIds): void
     {
         if (is_array($elementIds)) {
-            $elementIds = array_map(fn($id) => (int)$id, $elementIds);
+            $elementIds = array_map(fn ($id) => (int) $id, $elementIds);
         } elseif (is_numeric($elementIds)) {
-            $elementIds = [(int)$elementIds];
+            $elementIds = [(int) $elementIds];
         }
 
         $this->_elementIds = $elementIds ?: null;
     }
 
     /**
-     * @param bool $parse Whether to parse the value for an environment variable
-     * @return int|string|null
+     * @param  bool  $parse  Whether to parse the value for an environment variable
      */
     public function getElementId(bool $parse = true): int|string|null
     {
         $elementIds = $this->getElementIds($parse);
-        return (is_array($elementIds) && !empty($elementIds)) ? $elementIds[0] : null;
+
+        return (is_array($elementIds) && ! empty($elementIds)) ? $elementIds[0] : null;
     }
 
     /**
-     * @param array|int|string|null $elementId
      * @phpstan-param array<int|string>|int|string|null $elementId
      */
     public function setElementId(array|int|string|null $elementId): void
@@ -165,8 +166,9 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -175,20 +177,21 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(): string
     {
         if ($this->getCondition()->forProjectConfig) {
             $value = $this->getElementIds(false);
             if (is_array($value)) {
-                $value = join(',', $value);
+                $value = implode(',', $value);
             }
             $type = $this->elementType()::displayName();
 
             return Cp::autosuggestFieldHtml([
                 'suggestEnvVars' => true,
-                'suggestionFilter' => fn($value) => is_int($value) && $value > 0,
+                'suggestionFilter' => fn ($value) => is_int($value) && $value > 0,
                 'required' => true,
                 'id' => 'elementIds',
                 'class' => 'code',
@@ -227,21 +230,23 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
         $rules[] = [['elementIds'], 'safe'];
+
         return $rules;
     }
 
     /**
      * Returns whether the condition rule matches the given value.
      *
-     * @param ElementInterface|int|array|null $value
+     * @param  ElementInterface|int|array|null  $value
+     *
      * @phpstan-param ElementInterface|int|array<ElementInterface|int>|null $value
-     * @return bool
      */
     protected function matchValue(mixed $value): bool
     {
@@ -251,7 +256,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             return true;
         }
 
-        if (!$value) {
+        if (! $value) {
             return false;
         }
 
@@ -260,14 +265,14 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         }
 
         if (is_numeric($value)) {
-            return in_array((int)$value, $elementIds);
+            return in_array((int) $value, $elementIds);
         }
 
         if (is_array($value)) {
             foreach ($value as $val) {
                 if (
                     $val instanceof ElementInterface && in_array($val->id, $elementIds) ||
-                    is_numeric($val) && in_array((int)$val, $elementIds)
+                    is_numeric($val) && in_array((int) $val, $elementIds)
                 ) {
                     return true;
                 }

@@ -1,6 +1,8 @@
 <?php
 
-namespace craft\elements\conditions\addresses;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Address\Conditions;
 
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
@@ -12,12 +14,14 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Addresses;
 use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Collection;
+
 use function CraftCms\Cms\t;
 
 /**
  * Field condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 5.8.0
  */
 class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
@@ -25,12 +29,12 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     use HintableConditionRuleTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected bool $includeEmptyOperators = true;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -38,7 +42,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -46,21 +50,20 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function options(): array
     {
         return $this->addressFields()
-            ->keyBy(fn(Addresses $field) => $field->uid)
+            ->keyBy(fn (Addresses $field) => $field->uid)
             ->map(
-                fn(Addresses $field) =>
-                $field->getUiLabel() . ($this->showLabelHint() ? " ($field->handle)" : '')
+                fn (Addresses $field) => $field->getUiLabel().($this->showLabelHint() ? " ($field->handle)" : '')
             )
             ->all();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -70,12 +73,12 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
         } elseif ($this->operator === self::OPERATOR_EMPTY) {
             $query->field(false);
         } else {
-            $query->fieldId($this->paramValue(fn($uid) => Fields::getFieldByUid($uid)->id ?? null));
+            $query->fieldId($this->paramValue(fn ($uid) => Fields::getFieldByUid($uid)->id ?? null));
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

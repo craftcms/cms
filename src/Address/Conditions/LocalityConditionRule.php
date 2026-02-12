@@ -1,6 +1,8 @@
 <?php
 
-namespace craft\elements\conditions\addresses;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Address\Conditions;
 
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
@@ -8,18 +10,20 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AddressQuery;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+
 use function CraftCms\Cms\t;
 
 /**
  * Address locality condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 5.0.0
  */
 class LocalityConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -27,7 +31,7 @@ class LocalityConditionRule extends BaseTextConditionRule implements ElementCond
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -35,7 +39,7 @@ class LocalityConditionRule extends BaseTextConditionRule implements ElementCond
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -44,7 +48,7 @@ class LocalityConditionRule extends BaseTextConditionRule implements ElementCond
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

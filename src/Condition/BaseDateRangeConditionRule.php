@@ -1,6 +1,8 @@
 <?php
 
-namespace craft\base\conditions;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Condition;
 
 use Craft;
 use craft\helpers\Cp;
@@ -11,6 +13,7 @@ use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Html;
 use DateTime;
 use Exception;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -18,49 +21,44 @@ use function CraftCms\Cms\t;
  *
  * @property string|null $startDate
  * @property string|null $endDate
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  */
 abstract class BaseDateRangeConditionRule extends BaseConditionRule
 {
     /**
-     * @var string
      * @phpstan-var DateRange::TYPE_*
+     *
      * @since 4.3.0
      */
     public string $rangeType = DateRange::TYPE_TODAY;
 
     /**
-     * @var string
      * @phpstan-var DateRange::PERIOD_*
+     *
      * @since 4.3.0
      */
     public string $periodType = DateRange::PERIOD_DAYS_AGO;
 
     /**
-     * @var float|null
      * @since 4.3.0
      */
     public ?float $periodValue = null;
 
-    /**
-     * @var string|null
-     */
     private ?string $_startDate = null;
 
-    /**
-     * @var string|null
-     */
     private ?string $_endDate = null;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __construct($config = [])
     {
         if (
-            !isset($config['attributes']['rangeType']) &&
-            (!empty($config['attributes']['startDate']) || !empty($config['attributes']['endDate']))
+            ! isset($config['attributes']['rangeType']) &&
+            (! empty($config['attributes']['startDate']) || ! empty($config['attributes']['endDate']))
         ) {
             $config['attributes']['rangeType'] = DateRange::TYPE_RANGE;
         }
@@ -78,41 +76,30 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
         parent::__construct($config);
     }
 
-    /**
-     * @return string|null
-     */
     public function getStartDate(): ?string
     {
         return $this->_startDate;
     }
 
-    /**
-     * @param mixed $value
-     */
     public function setStartDate(mixed $value): void
     {
         $this->_startDate = ($value ? DateTimeHelper::toIso8601($value) : null);
     }
 
-    /**
-     * @return string|null
-     */
     public function getEndDate(): ?string
     {
         return $this->_endDate;
     }
 
-    /**
-     * @param mixed $value
-     */
     public function setEndDate(mixed $value): void
     {
         $this->_endDate = ($value ? DateTimeHelper::toIso8601($value) : null);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -125,9 +112,11 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @noinspection PhpNamedArgumentsWithChangedOrderInspection
      */
+    #[\Override]
     protected function inputHtml(): string
     {
         $groupedOptions = [];
@@ -145,11 +134,11 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
                 $index = 0;
             }
 
-            $groupedOptions[$index][] = Html::beginTag('li') .
+            $groupedOptions[$index][] = Html::beginTag('li').
                 Html::a($label, options: [
                     'class' => $value === $this->rangeType ? 'sel' : false,
                     'data' => ['value' => $value],
-                ]) .
+                ]).
                 Html::endTag('li');
         }
 
@@ -167,7 +156,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
 
         $view = Craft::$app->getView();
         $view->registerJsWithVars(
-            fn($buttonId, $inputId) => <<<JS
+            fn ($buttonId, $inputId) => <<<JS
 Garnish.requestAnimationFrame(() => {
   const \$button = $('#' + $buttonId);
   \$button.menubtn().data('menubtn').on('optionSelect', event => {
@@ -186,17 +175,17 @@ JS,
         );
 
         $html = Html::button($this->rangeTypeOptions()[$this->rangeType], [
-                'id' => $buttonId,
-                'class' => ['btn', 'menubtn'],
-                'autofocus' => false,
-                'aria' => [
-                    'label' => t('Date Range'),
-                ],
-            ]) .
+            'id' => $buttonId,
+            'class' => ['btn', 'menubtn'],
+            'autofocus' => false,
+            'aria' => [
+                'label' => t('Date Range'),
+            ],
+        ]).
             Html::tag('div', $rangeTypeOptionsHtml, [
                 'id' => $menuId,
                 'class' => 'menu',
-            ]) .
+            ]).
             Html::hiddenInput('rangeType', $this->rangeType, [
                 'id' => $inputId,
                 'hx' => [
@@ -206,21 +195,21 @@ JS,
 
         if ($this->rangeType === DateRange::TYPE_RANGE) {
             $html .= Html::tag(
-                    'div',
-                    options: ['class' => ['flex', 'flex-nowrap']],
-                    content: Html::label(t('From'), 'start-date-date') .
-                    Html::tag('div',
-                        Cp::dateHtml([
-                            'id' => 'start-date',
-                            'name' => 'startDate',
-                            'value' => $this->getStartDate(),
-                        ])
-                    )
-                ) .
+                'div',
+                options: ['class' => ['flex', 'flex-nowrap']],
+                content: Html::label(t('From'), 'start-date-date').
+                Html::tag('div',
+                    Cp::dateHtml([
+                        'id' => 'start-date',
+                        'name' => 'startDate',
+                        'value' => $this->getStartDate(),
+                    ])
+                )
+            ).
                 Html::tag(
                     'div',
                     options: ['class' => ['flex', 'flex-nowrap']],
-                    content: Html::label(t('To'), 'end-date-date') .
+                    content: Html::label(t('To'), 'end-date-date').
                     Html::tag('div',
                         Cp::dateHtml([
                             'id' => 'end-date',
@@ -233,7 +222,7 @@ JS,
             $periodValueId = 'period-value';
             $periodTypeId = 'period-type';
 
-            $html .= Html::hiddenLabel(t('Period Value'), $periodValueId) .
+            $html .= Html::hiddenLabel(t('Period Value'), $periodValueId).
                 Html::tag(
                     'div',
                     options: ['class' => ['flex', 'flex-nowrap']],
@@ -242,8 +231,8 @@ JS,
                         'name' => 'periodValue',
                         'value' => $this->periodValue,
                         'size' => '5',
-                    ]) .
-                    Html::hiddenLabel(t('Period Type'), $periodTypeId) .
+                    ]).
+                    Html::hiddenLabel(t('Period Type'), $periodTypeId).
                     Cp::selectHtml([
                         'id' => $periodTypeId,
                         'name' => 'periodType',
@@ -258,8 +247,6 @@ JS,
 
     /**
      * Returns the available range type options for the rule.
-     *
-     * @return array
      */
     protected function rangeTypeOptions(): array
     {
@@ -282,8 +269,6 @@ JS,
 
     /**
      * Returns the available period type options for the rule.
-     *
-     * @return array
      */
     protected function periodTypeOptions(): array
     {
@@ -298,8 +283,9 @@ JS,
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
@@ -312,31 +298,30 @@ JS,
 
     /**
      * Returns the rule’s value, prepped for [[\craft\helpers\Db::parseDateParam()]].
-     *
-     * @return array|string|null
      */
     protected function queryParamValue(): array|string|null
     {
         switch ($this->rangeType) {
             case DateRange::TYPE_RANGE:
-                if (!$this->_startDate && !$this->_endDate) {
+                if (! $this->_startDate && ! $this->_endDate) {
                     return null;
                 }
 
                 return array_filter([
                     'and',
                     $this->_startDate ? ">= $this->_startDate" : null,
-                    $this->_endDate ? "< " . DateTimeHelper::toIso8601($this->_inclusiveEndDate()) : null,
+                    $this->_endDate ? '< '.DateTimeHelper::toIso8601($this->_inclusiveEndDate()) : null,
                 ]);
 
             case DateRange::TYPE_BEFORE:
             case DateRange::TYPE_AFTER:
-                if (!$this->periodValue) {
+                if (! $this->periodValue) {
                     return null;
                 }
 
                 $dateInterval = DateRange::dateIntervalByTimePeriod($this->periodValue, $this->periodType);
-                return ($this->rangeType === DateRange::TYPE_AFTER ? '>=' : '<') . ' ' .
+
+                return ($this->rangeType === DateRange::TYPE_AFTER ? '>=' : '<').' '.
                     DateTimeHelper::toIso8601(DateTimeHelper::now()->add($dateInterval));
 
             case self::OPERATOR_EMPTY:
@@ -349,6 +334,7 @@ JS,
                 [$startDate, $endDate] = DateRange::dateRangeByType($this->rangeType);
                 $startDate = DateTimeHelper::toIso8601($startDate);
                 $endDate = DateTimeHelper::toIso8601($endDate);
+
                 return ['and', ">= $startDate", "< $endDate"];
         }
     }
@@ -356,22 +342,19 @@ JS,
     /**
      * Returns whether the condition rule matches the given value.
      *
-     * @param DateTime|null $value
-     * @return bool
      * @throws Exception
      */
     protected function matchValue(?DateTime $value): bool
     {
         switch ($this->rangeType) {
             case DateRange::TYPE_RANGE:
-                return (
-                    (!$this->_startDate || ($value && $value >= DateTimeHelper::toDateTime($this->_startDate))) &&
-                    (!$this->_endDate || ($value && $value < $this->_inclusiveEndDate()))
-                );
+                return
+                    (! $this->_startDate || ($value && $value >= DateTimeHelper::toDateTime($this->_startDate))) &&
+                    (! $this->_endDate || ($value && $value < $this->_inclusiveEndDate()));
 
             case DateRange::TYPE_BEFORE:
             case DateRange::TYPE_AFTER:
-                if (!$this->periodValue) {
+                if (! $this->periodValue) {
                     return true;
                 }
 
@@ -384,13 +367,14 @@ JS,
                 return $value && $value < $date;
 
             case self::OPERATOR_EMPTY:
-                return !$value;
+                return ! $value;
 
             case self::OPERATOR_NOT_EMPTY:
-                return (bool)$value;
+                return (bool) $value;
 
             default:
                 [$startDate, $endDate] = DateRange::dateRangeByType($this->rangeType);
+
                 return $value && $value >= $startDate && $value < $endDate;
         }
     }

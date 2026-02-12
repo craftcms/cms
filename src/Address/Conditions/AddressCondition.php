@@ -1,6 +1,8 @@
 <?php
 
-namespace craft\elements\conditions\addresses;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Address\Conditions;
 
 use craft\elements\conditions\ElementCondition;
 
@@ -8,12 +10,13 @@ use craft\elements\conditions\ElementCondition;
  * Asset query condition.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  */
 class AddressCondition extends ElementCondition
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function selectableConditionRules(): array
     {

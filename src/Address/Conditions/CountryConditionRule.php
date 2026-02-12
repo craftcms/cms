@@ -1,6 +1,8 @@
 <?php
 
-namespace craft\elements\conditions\addresses;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Address\Conditions;
 
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
@@ -9,18 +11,20 @@ use craft\elements\db\AddressQuery;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+
 use function CraftCms\Cms\t;
 
 /**
  * Address country condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  */
 class CountryConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabel(): string
     {
@@ -28,7 +32,7 @@ class CountryConditionRule extends BaseMultiSelectConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getExclusiveQueryParams(): array
     {
@@ -36,7 +40,7 @@ class CountryConditionRule extends BaseMultiSelectConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function options(): array
     {
@@ -44,7 +48,7 @@ class CountryConditionRule extends BaseMultiSelectConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
@@ -53,7 +57,7 @@ class CountryConditionRule extends BaseMultiSelectConditionRule implements Eleme
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function matchElement(ElementInterface $element): bool
     {

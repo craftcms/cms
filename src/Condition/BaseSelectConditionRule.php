@@ -1,6 +1,8 @@
 <?php
 
-namespace craft\base\conditions;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Condition;
 
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
@@ -9,6 +11,7 @@ use CraftCms\Cms\Support\Html;
  * BaseSelectConditionRule provides a base implementation for condition rules that are composed of a select input.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  */
 abstract class BaseSelectConditionRule extends BaseConditionRule
@@ -20,14 +23,13 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
 
     /**
      * Returns the selectable options in the select input.
-     *
-     * @return array
      */
     abstract protected function options(): array;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -36,14 +38,15 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(): string
     {
         $selectId = 'select';
 
         return
-            Html::hiddenLabel(Html::encode($this->getLabel()), $selectId) .
+            Html::hiddenLabel(Html::encode($this->getLabel()), $selectId).
             Cp::selectHtml([
                 'id' => $selectId,
                 'name' => 'value',
@@ -53,19 +56,18 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
-            [['value'], 'in', 'range' => fn() => $this->_validValues()],
+            [['value'], 'in', 'range' => $this->_validValues(...)],
         ]);
     }
 
     /**
      * Returns the valid option values.
-     *
-     * @return array
      */
     private function _validValues(): array
     {
@@ -73,14 +75,12 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
         foreach ($this->options() as $key => $value) {
             $options[] = is_array($value) && array_key_exists('value', $value) ? $value['value'] : $key;
         }
+
         return $options;
     }
 
     /**
      * Returns whether the condition rule matches the given value.
-     *
-     * @param string $value
-     * @return bool
      */
     protected function matchValue(string $value): bool
     {

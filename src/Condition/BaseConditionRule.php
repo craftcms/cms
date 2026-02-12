@@ -1,12 +1,17 @@
 <?php
 
-namespace craft\base\conditions;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Condition;
 
 use craft\base\Component;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -17,27 +22,41 @@ use function CraftCms\Cms\t;
  * @property-read array $config The rule’s portable config
  * @property-read string $html The rule’s HTML for a condition builder
  * @property-read string $uiLabel The rule’s option label
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  */
 abstract class BaseConditionRule extends Component implements ConditionRuleInterface
 {
     protected const OPERATOR_EQ = '=';
+
     protected const OPERATOR_NE = '!=';
+
     protected const OPERATOR_LT = '<';
+
     protected const OPERATOR_LTE = '<=';
+
     protected const OPERATOR_GT = '>';
+
     protected const OPERATOR_GTE = '>=';
+
     protected const OPERATOR_BEGINS_WITH = 'bw';
+
     protected const OPERATOR_ENDS_WITH = 'ew';
+
     protected const OPERATOR_CONTAINS = '**';
+
     protected const OPERATOR_IN = 'in';
+
     protected const OPERATOR_NOT_IN = 'ni';
+
     protected const OPERATOR_EMPTY = 'empty';
+
     protected const OPERATOR_NOT_EMPTY = 'notempty';
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function supportsProjectConfig(): bool
     {
@@ -45,7 +64,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getLabelHint(): ?string
     {
@@ -53,7 +72,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function showLabelHint(): bool
     {
@@ -75,32 +94,29 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      */
     protected bool $reloadOnOperatorChange = false;
 
-    /**
-     * @var ConditionInterface
-     */
     private ConditionInterface $_condition;
 
     /**
-     * @var bool
      * @see getAutofocus()
      * @see setAutofocus()
      */
     private bool $_autofocus = false;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function init(): void
     {
         parent::init();
 
-        if (!isset($this->uid)) {
+        if (! isset($this->uid)) {
             $this->uid = Str::uuid()->toString();
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getCondition(): ConditionInterface
     {
@@ -108,7 +124,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setCondition(ConditionInterface $condition): void
     {
@@ -116,7 +132,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getGroupLabel(): ?string
     {
@@ -124,16 +140,16 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getConfig(): array
     {
         $config = [
-            'class' => get_class($this),
+            'class' => static::class,
             'uid' => $this->uid,
         ];
 
-        if (!empty($this->operators())) {
+        if (! empty($this->operators())) {
             $config['operator'] = $this->operator;
         }
 
@@ -142,8 +158,6 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
 
     /**
      * Returns the operators that should be allowed for this rule.
-     *
-     * @return array
      */
     protected function operators(): array
     {
@@ -152,8 +166,6 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
 
     /**
      * Returns the input HTML.
-     *
-     * @return string
      */
     protected function inputHtml(): string
     {
@@ -162,9 +174,6 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
 
     /**
      * Returns the option label for a given operator.
-     *
-     * @param string $operator
-     * @return string
      */
     protected function operatorLabel(string $operator): string
     {
@@ -187,7 +196,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getHtml(): string
     {
@@ -196,15 +205,15 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         return
             Html::beginTag('div', [
                 'class' => ['flex', 'flex-start'],
-            ]) .
+            ]).
             (count($operators) > 1
                 ? (
-                    Html::hiddenLabel(t('Operator'), 'operator') .
+                    Html::hiddenLabel(t('Operator'), 'operator').
                     Cp::selectHtml([
                         'id' => 'operator',
                         'name' => 'operator',
                         'value' => $this->operator,
-                        'options' => array_map(fn($operator) => ['value' => $operator, 'label' => $this->operatorLabel($operator)], $operators),
+                        'options' => array_map(fn ($operator) => ['value' => $operator, 'label' => $this->operatorLabel($operator)], $operators),
                         'inputAttributes' => [
                             'hx' => [
                                 'post' => $this->reloadOnOperatorChange ? UrlHelper::actionUrl('conditions/render') : false,
@@ -213,27 +222,28 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
                     ])
                 )
                 : Html::hiddenInput('operator', reset($operators))
-            ) .
-            $this->inputHtml() .
+            ).
+            $this->inputHtml().
             Html::endTag('div');
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function defineRules(): array
     {
         return [
             [['uid', 'condition'], 'safe'],
             [
                 ['operator'],
-                fn() => in_array($this->operator, $this->operators(), true),
+                fn () => in_array($this->operator, $this->operators(), true),
             ],
         ];
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getAutofocus(): bool
     {
@@ -241,7 +251,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setAutofocus(bool $autofocus = true): void
     {

@@ -1,6 +1,8 @@
 <?php
 
-namespace craft\base\conditions;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Condition;
 
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -11,12 +13,13 @@ use yii\base\InvalidConfigException;
  * BaseTextConditionRule provides a base implementation for condition rules that are composed of an operator menu and text input.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  */
 abstract class BaseTextConditionRule extends BaseConditionRule
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public string $operator = self::OPERATOR_EQ;
 
@@ -26,13 +29,14 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     public string $value = '';
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected bool $reloadOnOperatorChange = true;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
@@ -42,9 +46,8 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
     /**
      * Returns the operators that should be allowed for this rule.
-     *
-     * @return array
      */
+    #[\Override]
     protected function operators(): array
     {
         return [
@@ -59,8 +62,6 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
     /**
      * Returns the input type that should be used.
-     *
-     * @return string
      */
     protected function inputType(): string
     {
@@ -68,23 +69,24 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function inputHtml(): string
     {
         // don't show the value input if the condition checks for empty/notempty
         if ($this->operator === self::OPERATOR_EMPTY || $this->operator === self::OPERATOR_NOT_EMPTY) {
             return '';
         }
+
         return
-            Html::hiddenLabel(Html::encode($this->getLabel()), 'value') .
+            Html::hiddenLabel(Html::encode($this->getLabel()), 'value').
             Cp::textHtml($this->inputOptions());
     }
 
     /**
      * Returns the input options that should be used.
      *
-     * @return array
      * @since 4.3.0
      */
     protected function inputOptions(): array
@@ -100,8 +102,9 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
@@ -111,8 +114,6 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
     /**
      * Returns the rule’s value, prepped for [[Db::parseParam()]] based on the selected operator.
-     *
-     * @return string|null
      */
     protected function paramValue(): ?string
     {
@@ -139,9 +140,6 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
     /**
      * Returns whether the condition rule matches the given value.
-     *
-     * @param mixed $value
-     * @return bool
      */
     protected function matchValue(mixed $value): bool
     {
@@ -149,7 +147,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
             case self::OPERATOR_EMPTY:
                 return $this->isEmpty($value);
             case self::OPERATOR_NOT_EMPTY:
-                return !$this->isEmpty($value);
+                return ! $this->isEmpty($value);
         }
 
         if ($this->value === '') {
@@ -173,12 +171,10 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     /**
      * Returns whether the given value should be considered empty.
      *
-     * @param mixed $value
-     * @return bool
      * @since 5.6.11
      */
     protected function isEmpty(mixed $value): bool
     {
-        return !$value;
+        return ! $value;
     }
 }
