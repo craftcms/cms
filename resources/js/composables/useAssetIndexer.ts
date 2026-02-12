@@ -1,10 +1,10 @@
 import {computed, ref, shallowRef} from 'vue';
 import {
   AssetIndexer,
+  type ChangeEventData,
   type ErrorEventData,
   type FinishIndexingParams,
   type IndexingSession,
-  type SessionEventData,
   type StartIndexingParams,
 } from '@craftcms/cp/src/services/AssetIndexer.js';
 
@@ -21,11 +21,8 @@ const indexer = shallowRef<AssetIndexer | null>(null);
 const sessions = ref<Map<number, IndexingSession>>(new Map());
 const currentSessionId = ref<number | null>(null);
 const reviewSession = ref<IndexingSession | null>(null);
-const isLoadingReview = ref(false);
 const isReviewOpen = ref(false);
-const isFinishing = ref(false);
 const isStarting = ref(false);
-const isStopping = ref(false);
 const lastError = ref<string | null>(null);
 const isComplete = ref(false);
 let initialized = false;
@@ -48,23 +45,25 @@ function subscribe() {
     return;
   }
 
-  indexer.value.on<SessionEventData>('sessionAdded', ({session}) => {
-    sessions.value.set(session.id, session);
-    currentSessionId.value = indexer.value!.getCurrentSessionId();
-  });
+  indexer.value.on<ChangeEventData>('change', ({reviewSessionId: reviewId}) => {
+    sync();
 
-  indexer.value.on<SessionEventData>('sessionUpdated', ({session}) => {
-    sessions.value.set(session.id, session);
-    currentSessionId.value = indexer.value!.getCurrentSessionId();
-  });
+    // Auto-close review if the session was removed (finished or stopped)
+    if (
+      isReviewOpen.value &&
+      reviewSession.value &&
+      !sessions.value.has(reviewSession.value.id)
+    ) {
+      closeReview();
+    }
 
-  indexer.value.on<SessionEventData>('sessionRemoved', ({session}) => {
-    sessions.value.delete(session.id);
-    currentSessionId.value = indexer.value!.getCurrentSessionId();
-  });
-
-  indexer.value.on<SessionEventData>('reviewRequired', ({session}) => {
-    openReview(session);
+    // Open review if requested
+    if (reviewId && !isReviewOpen.value) {
+      const session = sessions.value.get(reviewId);
+      if (session) {
+        openReview(session);
+      }
+    }
   });
 
   indexer.value.on<ErrorEventData>('error', ({message}) => {
@@ -91,24 +90,26 @@ const currentSession = computed(() => {
 });
 
 const progressPercent = computed(() => {
-  if (currentSessionId.value === null || !indexer.value) {
+  const session = currentSession.value;
+  if (!session || session.totalEntries === 0) {
     return 0;
   }
-  return indexer.value.getSessionProgress(currentSessionId.value);
+  return Math.round((session.processedEntries / session.totalEntries) * 100);
 });
 
 const progressInfo = computed(() => {
-  if (currentSessionId.value === null || !indexer.value) {
+  const session = currentSession.value;
+  if (!session) {
     return null;
   }
-  return indexer.value.getSessionProgressInfo(currentSessionId.value);
+  return `${session.processedEntries} / ${session.totalEntries}`;
 });
 
 // =============================================================================
 // Global actions
 // =============================================================================
 
-/** Start a new indexing run. */
+/** Start a new indexing run (the only async action). */
 async function startIndexing(params: StartIndexingParams) {
   if (!indexer.value || params.volumes.length === 0) {
     return;
@@ -127,89 +128,55 @@ async function startIndexing(params: StartIndexingParams) {
   }
 }
 
-/** Stop / discard a session. */
-async function stopSession(sessionId: number) {
-  if (!indexer.value) {
-    return;
-  }
-
-  isStopping.value = true;
-
-  try {
-    const response = await indexer.value.stopSession(sessionId);
-    sync();
-    return response;
-  } finally {
-    isStopping.value = false;
-  }
+/** Stop / discard a session. State updates arrive via the change event. */
+function stopSession(sessionId: number) {
+  indexer.value?.stopSession(sessionId);
 }
 
-/** Fetch the overview (missing/skipped files) for a session, then open review. */
-async function reviewSessionOverview(sessionId: number) {
-  if (!indexer.value) {
-    return;
-  }
-
-  isLoadingReview.value = true;
-  await indexer.value.getSessionOverview(sessionId);
-  sync();
-  const session = sessions.value.get(sessionId);
-  if (session) {
-    openReview(session);
-    isLoadingReview.value = false;
-  }
+/** Fetch the overview for a session. Opens review when data arrives via change event. */
+function reviewSessionOverview(sessionId: number) {
+  indexer.value?.getSessionOverview(sessionId);
 }
 
 /** Finish a session, optionally deleting selected items. */
-async function finishSession(params: FinishIndexingParams) {
-  if (!indexer.value) {
-    return;
-  }
-  isFinishing.value = true;
-
-  try {
-    const response = await indexer.value.finishSession(params);
-    sync();
-    return response;
-  } finally {
-    isFinishing.value = false;
-    closeReview();
-  }
+function finishSession(params: FinishIndexingParams) {
+  indexer.value?.finishSession(params);
 }
 
 /** Keep all files and stop the session (from the review modal). */
-async function keepFiles(sessionId: number) {
-  await stopSession(sessionId);
-  closeReview();
+function keepFiles(sessionId: number) {
+  stopSession(sessionId);
 }
 
 // =============================================================================
-// Review helpers
+// Review helpers (UI-only state, not in the service)
 // =============================================================================
 
 function openReview(session: IndexingSession) {
-  if (!indexer.value || indexer.value.isCurrentlyReviewing()) {
+  if (isReviewOpen.value) {
     return;
   }
 
-  indexer.value.startReview(session.id);
   reviewSession.value = session;
   isReviewOpen.value = true;
 }
 
 function closeReview() {
   isReviewOpen.value = false;
-  indexer.value?.endReview();
   reviewSession.value = null;
 }
 
 /**
  * Composable that wraps the AssetIndexer service, exposing its state
- * as reactive Vue refs and its operations as plain async functions.
+ * as reactive Vue refs and its operations as plain functions.
  *
  * State is **global** — the first call that provides `existingSessions`
  * creates the underlying `AssetIndexer` instance; subsequent calls from
  * any component share the same refs and actions.
+ *
+ * Only `startIndexing` is async (returns the API response). All other
+ * actions are fire-and-forget — state updates arrive via the `change`
+ * event from the service and are synced into reactive refs automatically.
  *
  * @example Initialise with server data (typically in a page-level component)
  * ```vue
@@ -246,7 +213,6 @@ function closeReview() {
  * const {
  *   reviewSession,
  *   isReviewOpen,
- *   isFinishing,
  *   finishSession,
  *   keepFiles,
  *   closeReview,
@@ -258,7 +224,6 @@ function closeReview() {
  *     v-if="reviewSession"
  *     :open="isReviewOpen"
  *     :session="reviewSession"
- *     :is-loading="isFinishing"
  *     @close="closeReview"
  *     @finish="finishSession"
  *     @keep="keepFiles"
@@ -304,7 +269,6 @@ export function useAssetIndexer(options: UseAssetIndexerOptions = {}) {
     hasSessions,
     isProcessing,
     isStarting,
-    isStopping,
     isComplete,
     lastError,
     progressPercent,
@@ -313,8 +277,6 @@ export function useAssetIndexer(options: UseAssetIndexerOptions = {}) {
     // Review state
     reviewSession,
     isReviewOpen,
-    isFinishing,
-    isLoadingReview,
 
     // Actions
     startIndexing,

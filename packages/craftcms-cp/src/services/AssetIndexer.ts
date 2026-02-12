@@ -3,18 +3,6 @@ import type {AxiosResponse} from 'axios';
 import type {DateObject} from '@src/types';
 
 /**
- * Session status indicating the current state of an indexing session.
- */
-export enum SessionStatus {
-  /** Session requires user review (missing files, skipped entries, etc.) */
-  ACTION_REQUIRED = 'actionRequired',
-  /** Session is currently being processed */
-  ACTIVE = 'active',
-  /** Session is queued and waiting to be processed */
-  WAITING = 'waiting',
-}
-
-/**
  * API action endpoints for asset indexing operations.
  */
 export const IndexingActions = {
@@ -99,14 +87,7 @@ export interface FinishIndexingParams {
 /**
  * Event types emitted by the AssetIndexer.
  */
-export type IndexerEventType =
-  | 'sessionAdded'
-  | 'sessionUpdated'
-  | 'sessionRemoved'
-  | 'reviewRequired'
-  | 'progress'
-  | 'error'
-  | 'complete';
+export type IndexerEventType = 'change' | 'error' | 'complete';
 
 /**
  * Event listener callback type.
@@ -114,21 +95,13 @@ export type IndexerEventType =
 export type IndexerEventListener<T = unknown> = (data: T) => void;
 
 /**
- * Event data for session-related events.
+ * Event data for the `change` event, fired whenever session state changes.
  */
-export interface SessionEventData {
-  session: IndexingSession;
-  status: SessionStatus;
-}
-
-/**
- * Event data for progress updates.
- */
-export interface ProgressEventData {
-  sessionId: number;
-  processed: number;
-  total: number;
-  percent: number;
+export interface ChangeEventData {
+  sessions: IndexingSession[];
+  currentSessionId: number | null;
+  /** Set when a session has finished processing and requires user review. */
+  reviewSessionId?: number;
 }
 
 /**
@@ -145,11 +118,8 @@ export interface ErrorEventData {
 interface QueuedTask {
   sessionId: number;
   action: string;
-  method?: 'get' | 'post';
   params: Record<string, unknown>;
   priority: boolean;
-  resolve: (response: IndexingResponse) => void;
-  reject: (error: Error) => void;
 }
 
 /**
@@ -157,76 +127,43 @@ interface QueuedTask {
  *
  * Manages asset indexing sessions with support for concurrent connections,
  * task queuing, and event-based state updates. This is a pure data/logic
- * service with no rendering — consumers handle UI based on events and
- * data returned from methods.
+ * service with no rendering concerns.
+ *
+ * Public methods are fire-and-forget — call them to initiate operations,
+ * then listen to `change`, `error`, and `complete` events to react to
+ * state updates. The one exception is `startIndexing()`, which returns
+ * a promise so callers can detect immediate failures.
  *
  * @example Basic usage
  * ```ts
  * const indexer = new AssetIndexer();
  *
- * // Listen for events
- * indexer.on('sessionUpdated', ({ session, status }) => {
- *   console.log(`Session ${session.id} is ${status}`);
+ * indexer.on('change', ({ sessions, currentSessionId, reviewSessionId }) => {
+ *   console.log('Sessions:', sessions);
+ *   if (reviewSessionId) {
+ *     console.log('Review needed for session', reviewSessionId);
+ *   }
  * });
  *
- * indexer.on('reviewRequired', ({ session }) => {
- *   // Show review modal with session data
- *   console.log('Missing files:', session.missingEntries.files);
- *   console.log('Skipped files:', session.skippedEntries);
- * });
+ * indexer.on('error', ({ message }) => console.error(message));
+ * indexer.on('complete', () => console.log('All done'));
  *
- * indexer.on('error', ({ message }) => {
- *   showErrorNotification(message);
- * });
- *
- * // Start indexing
- * await indexer.startIndexing({
- *   volumes: [1, 2, 3],
- *   cacheImages: true,
- * });
+ * await indexer.startIndexing({ volumes: [1, 2, 3], cacheImages: true });
  * ```
  *
  * @example Resuming existing sessions
  * ```ts
  * const indexer = new AssetIndexer({
  *   existingSessions: sessionsFromServer,
- *   autoResume: true,
  * });
  * ```
  *
- * @example Custom concurrency
+ * @example Fire-and-forget operations
  * ```ts
- * const indexer = new AssetIndexer({
- *   maxConcurrentConnections: 5,
- * });
- * ```
- *
- * @example Handling review flow
- * ```ts
- * indexer.on('reviewRequired', ({ session }) => {
- *   // Mark review as started to prevent duplicates
- *   indexer.startReview(session.id);
- *
- *   // Show your review UI with session data
- *   showReviewModal({
- *     skippedEntries: session.skippedEntries,
- *     missingFiles: session.missingEntries.files,
- *     missingFolders: session.missingEntries.folders,
- *     listEmptyFolders: session.listEmptyFolders,
- *     onFinish: (deleteFolder, deleteAsset) => {
- *       indexer.finishSession({
- *         sessionId: session.id,
- *         deleteFolder,
- *         deleteAsset,
- *       });
- *       indexer.endReview();
- *     },
- *     onKeep: () => {
- *       indexer.stopSession(session.id);
- *       indexer.endReview();
- *     },
- *   });
- * });
+ * indexer.stopSession(sessionId);        // no await needed
+ * indexer.getSessionOverview(sessionId); // no await needed
+ * indexer.finishSession({ sessionId });  // no await needed
+ * // state updates arrive via 'change' event
  * ```
  */
 export class AssetIndexer {
@@ -251,19 +188,15 @@ export class AssetIndexer {
   /** Session IDs that have been pruned (stopped/finished) */
   #prunedSessionIds = new Set<number>();
 
-  /** Whether a review is currently in progress */
-  #isReviewing = false;
-
   /** Event listeners */
   #listeners = new Map<IndexerEventType, Set<IndexerEventListener>>();
 
   /**
    * Creates a new AssetIndexer instance.
    *
-   * @param options - Configuration options
-   * @param options.existingSessions - Existing sessions to load
+   * @param options.existingSessions - Existing sessions to resume
    * @param options.maxConcurrentConnections - Maximum concurrent API connections (default: 3)
-   * @param options.autoResume - Whether to automatically resume existing sessions (default: true)
+   * @param options.autoResume - Whether to automatically resume processing (default: true)
    */
   constructor(
     options: {
@@ -280,12 +213,10 @@ export class AssetIndexer {
 
     this.maxConcurrentConnections = maxConcurrentConnections;
 
-    // Load existing sessions
     for (const session of existingSessions) {
       this.#sessions.set(session.id, session);
     }
 
-    // Find initial current session
     if (autoResume) {
       this.#updateCurrentSession();
 
@@ -303,80 +234,10 @@ export class AssetIndexer {
   }
 
   /**
-   * Gets a session by ID.
-   */
-  getSession(sessionId: number): IndexingSession | undefined {
-    return this.#sessions.get(sessionId);
-  }
-
-  /**
-   * Gets the currently active session.
-   */
-  getCurrentSession(): IndexingSession | null {
-    if (this.#currentSessionId === null) {
-      return null;
-    }
-    return this.#sessions.get(this.#currentSessionId) ?? null;
-  }
-
-  /**
    * Gets the current session ID.
    */
   getCurrentSessionId(): number | null {
     return this.#currentSessionId;
-  }
-
-  /**
-   * Gets the status of a session.
-   */
-  getSessionStatus(sessionId: number): SessionStatus {
-    const session = this.#sessions.get(sessionId);
-    if (!session) {
-      return SessionStatus.WAITING;
-    }
-
-    if (session.actionRequired) {
-      return SessionStatus.ACTION_REQUIRED;
-    }
-
-    if (this.#currentSessionId === sessionId) {
-      return SessionStatus.ACTIVE;
-    }
-
-    return SessionStatus.WAITING;
-  }
-
-  /**
-   * Gets the progress percentage for a session (0-100).
-   */
-  getSessionProgress(sessionId: number): number {
-    const session = this.#sessions.get(sessionId);
-    if (!session || session.totalEntries === 0) {
-      return 0;
-    }
-    return Math.round((session.processedEntries / session.totalEntries) * 100);
-  }
-
-  /**
-   * Gets the progress info string for a session (e.g., "25 / 100").
-   */
-  getSessionProgressInfo(sessionId: number): string {
-    const session = this.#sessions.get(sessionId);
-    if (!session) {
-      return '0 / 0';
-    }
-    return `${session.processedEntries} / ${session.totalEntries}`;
-  }
-
-  /**
-   * Gets the number of remaining entries for a session.
-   */
-  getEntriesRemaining(sessionId: number): number {
-    const session = this.#sessions.get(sessionId);
-    if (!session) {
-      return 0;
-    }
-    return session.totalEntries - session.processedEntries;
   }
 
   /**
@@ -387,28 +248,7 @@ export class AssetIndexer {
   }
 
   /**
-   * Whether a review is currently in progress.
-   */
-  isCurrentlyReviewing(): boolean {
-    return this.#isReviewing;
-  }
-
-  /**
-   * Registers an event listener.
-   *
-   * @param event - Event type to listen for
-   * @param listener - Callback function
-   * @returns Unsubscribe function
-   *
-   * @example
-   * ```ts
-   * const unsubscribe = indexer.on('progress', (data) => {
-   *   console.log(`${data.percent}% complete`);
-   * });
-   *
-   * // Later, to stop listening:
-   * unsubscribe();
-   * ```
+   * Registers an event listener. Returns an unsubscribe function.
    */
   on<T = unknown>(
     event: IndexerEventType,
@@ -425,17 +265,8 @@ export class AssetIndexer {
   }
 
   /**
-   * Removes an event listener.
-   */
-  off(event: IndexerEventType, listener: IndexerEventListener): void {
-    this.#listeners.get(event)?.delete(listener);
-  }
-
-  /**
-   * Starts a new indexing session.
-   *
-   * @param params - Indexing parameters
-   * @returns Promise resolving to the API response
+   * Starts a new indexing session. This is the only async public method —
+   * it returns the response so callers can detect immediate failures.
    */
   async startIndexing(
     postData: StartIndexingParams
@@ -448,8 +279,9 @@ export class AssetIndexer {
     const {data} = response;
 
     if (data.session) {
-      this.#addSession(data.session);
+      this.#sessions.set(data.session.id, data.session);
       this.#currentSessionId = data.session.id;
+      this.#emitChange();
 
       if (!data.stop) {
         this.#performIndexingStep();
@@ -465,14 +297,11 @@ export class AssetIndexer {
 
   /**
    * Stops and discards an indexing session.
-   *
-   * @param sessionId - Session to stop
-   * @returns Promise resolving to the API response
    */
-  async stopSession(sessionId: number): Promise<IndexingResponse> {
+  stopSession(sessionId: number): void {
     this.#pruneTasksForSession(sessionId);
 
-    return this.#enqueueTask({
+    this.#enqueueTask({
       sessionId,
       action: IndexingActions.STOP,
       params: {sessionId},
@@ -482,13 +311,10 @@ export class AssetIndexer {
 
   /**
    * Fetches the review data (overview) for a session.
-   * Use this to get updated missing/skipped entry data before showing a review modal.
-   *
-   * @param sessionId - Session to get overview for
-   * @returns Promise resolving to the API response with updated session data
+   * The updated session data will arrive via a `change` event.
    */
-  async getSessionOverview(sessionId: number): Promise<IndexingResponse> {
-    return this.#enqueueTask({
+  getSessionOverview(sessionId: number): void {
+    this.#enqueueTask({
       sessionId,
       action: IndexingActions.OVERVIEW,
       params: {sessionId},
@@ -498,34 +324,14 @@ export class AssetIndexer {
 
   /**
    * Finishes an indexing session, optionally deleting missing files/folders.
-   *
-   * @param params - Finish parameters including items to delete
-   * @returns Promise resolving to the API response
    */
-  async finishSession(params: FinishIndexingParams): Promise<IndexingResponse> {
-    return this.#enqueueTask({
+  finishSession(params: FinishIndexingParams): void {
+    this.#enqueueTask({
       sessionId: params.sessionId,
       action: IndexingActions.FINISH,
       params,
       priority: true,
     });
-  }
-
-  /**
-   * Marks a session as being reviewed.
-   * Call this when opening a review modal to prevent duplicate review events.
-   */
-  startReview(sessionId: number): void {
-    this.#isReviewing = true;
-    this.#pruneTasksForSession(sessionId);
-  }
-
-  /**
-   * Marks the review as complete.
-   * Call this when closing a review modal.
-   */
-  endReview(): void {
-    this.#isReviewing = false;
   }
 
   /**
@@ -544,57 +350,26 @@ export class AssetIndexer {
   // Private methods
   // ============================================
 
-  /**
-   * Emits an event to all registered listeners.
-   */
   #emit<T>(event: IndexerEventType, data: T): void {
     this.#listeners.get(event)?.forEach((listener) => listener(data));
   }
 
-  /**
-   * Adds a session to the store and emits events.
-   */
-  #addSession(session: IndexingSession): void {
-    const isNew = !this.#sessions.has(session.id);
-    this.#sessions.set(session.id, session);
-
-    const eventData: SessionEventData = {
-      session,
-      status: this.getSessionStatus(session.id),
-    };
-
-    if (isNew) {
-      this.#emit('sessionAdded', eventData);
-    } else {
-      this.#emit('sessionUpdated', eventData);
-    }
-
-    // Emit progress event
-    this.#emit<ProgressEventData>('progress', {
-      sessionId: session.id,
-      processed: session.processedEntries,
-      total: session.totalEntries,
-      percent: this.getSessionProgress(session.id),
+  #emitChange(reviewSessionId?: number): void {
+    this.#emit<ChangeEventData>('change', {
+      sessions: this.getSessions(),
+      currentSessionId: this.#currentSessionId,
+      reviewSessionId,
     });
   }
 
-  /**
-   * Removes a session from the store and emits events.
-   */
   #removeSession(sessionId: number): void {
-    const session = this.#sessions.get(sessionId);
     this.#sessions.delete(sessionId);
 
     if (this.#currentSessionId === sessionId) {
       this.#currentSessionId = null;
     }
 
-    if (session) {
-      this.#emit<SessionEventData>('sessionRemoved', {
-        session,
-        status: SessionStatus.WAITING,
-      });
-    }
+    this.#emitChange();
   }
 
   /**
@@ -611,7 +386,7 @@ export class AssetIndexer {
   }
 
   /**
-   * Performs the next indexing step by queueing tasks.
+   * Performs the next indexing step by queueing process tasks.
    */
   #performIndexingStep(): void {
     if (!this.#currentSessionId) {
@@ -627,11 +402,10 @@ export class AssetIndexer {
       return;
     }
 
-    const entriesRemaining = this.getEntriesRemaining(this.#currentSessionId);
+    const entriesRemaining = session.totalEntries - session.processedEntries;
     const availableSlots =
       this.maxConcurrentConnections - this.#activeConnectionCount;
 
-    // Queue up tasks to fill available connection slots
     const tasksToQueue = Math.min(availableSlots, entriesRemaining);
     for (let i = 0; i < tasksToQueue; i++) {
       this.#enqueueTask({
@@ -642,7 +416,6 @@ export class AssetIndexer {
       });
     }
 
-    // Handle processIfRootEmpty case
     if (session.processIfRootEmpty) {
       this.#enqueueTask({
         sessionId: session.id,
@@ -653,9 +426,6 @@ export class AssetIndexer {
     }
   }
 
-  /**
-   * Removes all waiting tasks for a session.
-   */
   #pruneTasksForSession(sessionId: number): void {
     this.#prunedSessionIds.add(sessionId);
     this.#taskQueue = this.#taskQueue.filter(
@@ -663,36 +433,19 @@ export class AssetIndexer {
     );
   }
 
-  /**
-   * Enqueues a task and returns a promise for its completion.
-   */
-  #enqueueTask(
-    taskInfo: Omit<QueuedTask, 'resolve' | 'reject'>
-  ): Promise<IndexingResponse> {
-    return new Promise((resolve, reject) => {
-      const task: QueuedTask = {
-        ...taskInfo,
-        resolve,
-        reject,
-      };
+  #enqueueTask(task: QueuedTask): void {
+    if (task.priority) {
+      this.#priorityQueue.push(task);
+    } else {
+      this.#taskQueue.push(task);
+    }
 
-      if (task.priority) {
-        this.#priorityQueue.push(task);
-      } else {
-        this.#taskQueue.push(task);
-      }
-
-      this.#runTasks();
-    });
+    this.#runTasks();
   }
 
-  /**
-   * Processes queued tasks up to the connection limit.
-   */
   #runTasks(): void {
-    const totalTasks = this.#taskQueue.length + this.#priorityQueue.length;
     if (
-      totalTasks === 0 ||
+      this.#taskQueue.length + this.#priorityQueue.length === 0 ||
       this.#activeConnectionCount >= this.maxConcurrentConnections
     ) {
       return;
@@ -713,44 +466,34 @@ export class AssetIndexer {
     }
   }
 
-  /**
-   * Executes a single task.
-   */
   async #executeTask(task: QueuedTask): Promise<void> {
     try {
-      const response = await actionClient.request<IndexingResponse>({
-        method: task.method ?? 'post',
-        url: task.action,
-        data: task.params,
-      });
+      const response = await actionClient.post<IndexingResponse>(
+        task.action,
+        task.params
+      );
 
-      this.#processSuccessResponse(response.data, task);
-      task.resolve(response.data);
+      this.#processResponse(response.data);
     } catch (error) {
-      this.#processFailureResponse(error as Error, task);
-      task.reject(error as Error);
+      this.#processError(error as Error, task);
     } finally {
       this.#activeConnectionCount--;
       this.#runTasks();
     }
   }
 
-  /**
-   * Processes a successful API response.
-   */
-  #processSuccessResponse(response: IndexingResponse, task: QueuedTask): void {
+  #processResponse(response: IndexingResponse): void {
+    let reviewSessionId: number | undefined;
+
     if (response.session) {
-      this.#addSession(response.session);
+      this.#sessions.set(response.session.id, response.session);
       this.#updateCurrentSession();
 
-      const session = response.session;
-      const status = this.getSessionStatus(session.id);
-
-      if (status === SessionStatus.ACTION_REQUIRED && !response.skipDialog) {
-        if (!this.#prunedSessionIds.has(session.id)) {
-          this.#emit<SessionEventData>('reviewRequired', {session, status});
+      if (response.session.actionRequired && !response.skipDialog) {
+        if (!this.#prunedSessionIds.has(response.session.id)) {
+          reviewSessionId = response.session.id;
         }
-      } else if (!this.#prunedSessionIds.has(session.id)) {
+      } else if (!this.#prunedSessionIds.has(response.session.id)) {
         this.#performIndexingStep();
       }
     }
@@ -758,19 +501,20 @@ export class AssetIndexer {
     this.#updateCurrentSession();
 
     if (response.stop) {
-      this.#removeSession(response.stop);
+      this.#sessions.delete(response.stop);
+      if (this.#currentSessionId === response.stop) {
+        this.#currentSessionId = null;
+      }
     }
 
-    // Check if all sessions are complete
+    this.#emitChange(reviewSessionId);
+
     if (this.#sessions.size === 0) {
       this.#emit('complete', {});
     }
   }
 
-  /**
-   * Processes a failed API response.
-   */
-  #processFailureResponse(error: Error, task: QueuedTask): void {
+  #processError(error: Error, task: QueuedTask): void {
     this.#updateCurrentSession();
 
     const message =
@@ -784,7 +528,6 @@ export class AssetIndexer {
       sessionId: task.sessionId,
     });
 
-    // Continue processing other tasks
     this.#runTasks();
   }
 }

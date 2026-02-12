@@ -64,14 +64,13 @@ export type {
   IndexingResponse,
   StartIndexingParams,
   FinishIndexingParams,
-  SessionEventData,
-  ProgressEventData,
+  ChangeEventData,
   ErrorEventData,
   MissingEntries,
   IndexerEventType,
   IndexerEventListener,
 } from './services/AssetIndexer.js';
-export {SessionStatus, IndexingActions} from './services/AssetIndexer.js';
+export {IndexingActions} from './services/AssetIndexer.js';
 
 // Types
 export * from './types/index.js';

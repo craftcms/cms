@@ -11,10 +11,7 @@
   import SessionProgress from '@/components/utilities/AssetIndexes/SessionProgress.vue';
   import SessionActions from '@/components/utilities/AssetIndexes/SessionActions.vue';
   import {useAssetIndexer} from '@/composables/useAssetIndexer';
-  import {
-    type IndexingSession,
-    SessionStatus,
-  } from '@craftcms/cp/src/services/AssetIndexer.js';
+  import {type IndexingSession} from '@craftcms/cp/src/services/AssetIndexer.js';
   import ReviewSessionModal from '@/components/utilities/AssetIndexes/ReviewSessionModal.vue';
 
   const {
@@ -95,9 +92,7 @@
       return columns.value;
     },
     getRowId: (row) => String(row.id),
-    getCoreRowModel: getCoreRowModel<
-      IndexingSession & {status: SessionStatus}
-    >(),
+    getCoreRowModel: getCoreRowModel<IndexingSession>(),
   });
 </script>
 
