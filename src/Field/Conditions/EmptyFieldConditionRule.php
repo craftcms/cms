@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\fields\conditions;
+namespace CraftCms\Cms\Field\Conditions;
 
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;

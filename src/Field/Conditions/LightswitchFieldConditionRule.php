@@ -1,19 +1,18 @@
 <?php
 
-namespace craft\fields\conditions;
+namespace CraftCms\Cms\Field\Conditions;
 
-use CraftCms\Cms\Condition\BaseDateRangeConditionRule;
-use CraftCms\Cms\Field\Date;
-use DateTime;
+use craft\base\conditions\BaseLightswitchConditionRule;
+use CraftCms\Cms\Field\Lightswitch;
 use yii\base\InvalidConfigException;
 
 /**
- * Date field condition rule.
+ * Lightswitch field condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class DateFieldConditionRule extends BaseDateRangeConditionRule implements FieldConditionRuleInterface
+class LightswitchFieldConditionRule extends BaseLightswitchConditionRule implements FieldConditionRuleInterface
 {
     use FieldConditionRuleTrait;
 
@@ -22,7 +21,7 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
      */
     protected function inputHtml(): string
     {
-        if (!$this->field() instanceof Date) {
+        if (!$this->field() instanceof Lightswitch) {
             throw new InvalidConfigException();
         }
 
@@ -32,13 +31,13 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
     /**
      * @inheritdoc
      */
-    protected function elementQueryParam(): array|string|null
+    protected function elementQueryParam(): ?bool
     {
-        if (!$this->field() instanceof Date) {
+        if (!$this->field() instanceof Lightswitch) {
             return null;
         }
 
-        return $this->queryParamValue();
+        return $this->value;
     }
 
     /**
@@ -46,11 +45,11 @@ class DateFieldConditionRule extends BaseDateRangeConditionRule implements Field
      */
     protected function matchFieldValue($value): bool
     {
-        if (!$this->field() instanceof Date) {
+        if (!$this->field() instanceof Lightswitch) {
             return true;
         }
 
-        /** @var DateTime|null $value */
+        /** @var bool $value */
         return $this->matchValue($value);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\fields\conditions;
+namespace CraftCms\Cms\Field\Conditions;
 
 use craft\helpers\Cp;
 use CraftCms\Cms\Field\Data\LinkData;
