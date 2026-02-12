@@ -22,22 +22,24 @@
 
 <template>
   <nav class="cp-sidebar" :data-visibility="visibility" :data-mode="mode">
-    <div class="cp-sidebar__header">
-      <div class="sidebar-header" v-if="mode !== 'docked'">
-        <SystemInfo />
-        <div class="ml-auto"></div>
-        <craft-button size="small" icon @click="emit('close')" type="button">
-          <craft-icon name="x" style="font-size: 0.7em"></craft-icon>
-        </craft-button>
+    <template v-if="visibility === 'visible'">
+      <div class="cp-sidebar__header">
+        <div class="sidebar-header" v-if="mode !== 'docked'">
+          <SystemInfo />
+          <div class="ml-auto"></div>
+          <craft-button size="small" icon @click="emit('close')" type="button">
+            <craft-icon name="x" style="font-size: 0.7em"></craft-icon>
+          </craft-button>
+        </div>
       </div>
-    </div>
-    <div class="cp-sidebar__body">
-      <MainNav />
-    </div>
-    <div class="cp-sidebar__footer">
-      <EditionInfo />
-      <DevModeIndicator />
-    </div>
+      <div class="cp-sidebar__body">
+        <MainNav />
+      </div>
+      <div class="cp-sidebar__footer">
+        <EditionInfo />
+        <DevModeIndicator />
+      </div>
+    </template>
   </nav>
 </template>
 
