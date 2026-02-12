@@ -1,0 +1,69 @@
+{% extends "_layouts/cp" %}
+{% set title = "Dashboard"|t('app') %}
+{% import '_includes/forms' as forms %}
+
+{% block actionButton %}
+    <div class="buttons">
+        <div class="newwidget btngroup">
+            <button type="button" id="newwidgetmenubtn" class="btn menubtn add icon" aria-controls="new-widget-menu" data-disclosure-trigger>{{ 'New widget'|t('app') }}</button>
+            <div id="new-widget-menu" class="menu menu--disclosure newwidgetmenu" data-disclosure-menu>
+                <ul>
+                    {% for type, info in widgetTypes|filter(t => t.selectable) %}
+                        <li>
+                            <a role="button" type="button" class="menu-item" tabindex="0" data-type="{{ type }}" data-name="{{ info.name }}">
+                                <span class="icon" aria-hidden="true">{{ svg(info.iconSvg, sanitize=false) }}</span>
+                                {{ info.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <button type="button" id="widgetManagerBtn" class="btn settings icon" title="{{ 'Settings'|t('app') }}" aria-label="{{ 'Settings'|t('app') }}" aria-expanded="false"></button>
+    </div>
+{% endblock %}
+
+
+{% block main %}
+    <div id="dashboard-grid" class="grid">
+        {% for widget in widgets %}
+            {% set widgetHeadingId = "widget-heading-#{widget.id}" %}
+            <div class="item" data-colspan="{{ widget.colspan }}">
+                <div id="widget{{ widget.id }}" class="widget {{ widget.type|lower }}" data-id="{{ widget.id }}" data-type="{{ widget.type }}" data-title="{{ widget.title }}">
+                    <div class="front">
+                        <div class="pane">
+                            <div class="spinner body-loading"></div>
+                            {% if widget.title or widget.subtitle %}
+                                <div id="{{ widgetHeadingId }}" class="widget-heading">
+                                    {% if widget.title %}
+                                        <h2>{{ widget.title }}</h2>
+                                    {% endif %}
+                                    {% if widget.subtitle %}
+                                        <h5>{{ widget.subtitle }}</h5>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            <button role="button" class="settings icon hidden" aria-label="{{ 'Widget settings'|t('app') }}" aria-describedby="{{ widgetHeadingId }}" data-settings-toggle></button>
+                            <div class="body">
+                                {{ widget.bodyHtml|raw }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="back hidden">
+                        <form class="pane">
+                            {{ hiddenInput('widgetId', widget.id) }}
+                            <h2 class="first">{{ "{type} Settings"|t('app', { type: widget.name }) }}</h2>
+                            <div class="settings"></div>
+                            <hr>
+                            <div class="buttons clearafter">
+                                {{ forms.submitButton({label: 'Save'|t('app'), spinner: true}) }}
+                                {{ forms.button({label: 'Cancel'|t('app'), class: 'cancel-btn'}) }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

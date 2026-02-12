@@ -1,0 +1,104 @@
+{% import '_includes/forms' as forms %}
+
+{% set id = id ?? "checkbox-group-#{random()}" %}
+{%- set options = options ?? [] %}
+{%- set values = values ?? [] %}
+{%- set optionName = (name ?? false) ? "#{name}[]" : null %}
+
+{% set fieldsetAttributes = {
+    id,
+    class: ['checkbox-group'],
+} %}
+
+{% if block('attr') is defined %}
+    {%- set fieldsetAttributes = fieldsetAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% tag 'div' with fieldsetAttributes %}
+    {% if name ?? false %}
+        {{ hiddenInput(name, '') }}
+    {% endif -%}
+
+    {%- for key, option in options %}
+        {%- if option is not iterable %}
+            {%- set option = {label: option, value: key} %}
+        {%- endif %}
+        {% tag 'div' with {
+            data: {custom: option.custom ?? false},
+        } %}
+            {% include "_includes/forms/checkbox" with {
+                describedBy: describedBy ?? false,
+                name: optionName,
+                checked: option.value is defined and option.value in values,
+                autofocus: loop.first and (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+            }|merge(option) only %}
+        {% endtag %}
+    {%- endfor %}
+
+    {% if allowCustomOptions ?? false %}
+        {% set addBtnId = "#{id}-add-btn" %}
+        {{ forms.button({
+            id: addBtnId,
+            class: ['dashed', 'small', 'icon', 'add'],
+            label: 'Add option'|t('app'),
+        }) }}
+
+        {% set customOptionHtml %}
+            {% namespace view.namespace %}
+                {% tag 'div' with {
+                    data: {custom: true},
+                } %}
+                    {% include '_includes/forms/checkbox' with {
+                        id: '__ID__',
+                        label: null,
+                        value: '',
+                        describedBy: describedBy ?? false,
+                        name: optionName,
+                        checked: true,
+                        custom: true,
+                    } only %}
+                {% endtag %}
+            {% endnamespace %}
+        {% endset %}
+
+        {% js %}
+          (() => {
+            const $container = $('#{{ id|namespaceInputId }}');
+            const $button = $('#{{ addBtnId|namespaceInputId }}');
+            const customOptionHtml = {{ customOptionHtml|json_encode|raw }};
+
+            const initCustomOption = ($option) => {
+              const $checkbox = $option.find('input[type=checkbox]');
+              const $text = $option.find('.text');
+              $checkbox.on('change', () => {
+                if ($checkbox.prop('checked')) {
+                  $text.prop('disabled', false).removeClass('disabled noteditable').focus();
+                } else {
+                  if ($text.val() !== '') {
+                    $text.prop('disabled', true).addClass('disabled noteditable');
+                  } else {
+                    $option.remove();
+                    $button.focus();
+                  }
+                }
+              });
+              $text.on('input', () => {
+                $checkbox.val($text.val());
+              });
+            };
+
+            const $customOptions = $container.children('[data-custom]');
+            for (let i = 0; i < $customOptions.length; i++) {
+              initCustomOption($customOptions.eq(i));
+            }
+
+            $button.on('activate', () => {
+              const id = 'option' + Math.floor(Math.random() * 1000000000);
+              const $newOption = $(customOptionHtml.replace(/__ID__/g, id)).insertBefore($button);
+              initCustomOption($newOption);
+              $newOption.find('.text').focus();
+            });
+          })();
+        {% endjs %}
+    {% endif %}
+{% endtag %}

@@ -1,0 +1,97 @@
+{% import '_includes/forms.twig' as forms %}
+{{ hiddenInput('userId', user.id) }}
+
+{% set showUserGroups = currentUser.canAssignUserGroups() %}
+{% set showPermissions = currentUser.can('assignUserPermissions') %}
+
+{% if showUserGroups %}
+  <fieldset class="first">
+    <h2>{{ 'User Groups'|t('app') }}</h2>
+
+    {% do view.registerDeltaName('groups') %}
+
+    {% embed '_includes/forms/field.twig' with {
+      fieldId: 'user-groups',
+      data: {'error-key': 'groups'},
+    } %}
+      {% block input %}
+        {% include '_includes/forms/componentSelect.twig' with {
+          name: 'groups[]',
+          options: craft.app.userGroups.getAssignableGroups(user),
+          values: user.getGroups(),
+          showDescription: true,
+          sortable: false,
+          createAction: currentUser.admin and craft.app.config.general.allowAdminChanges ? 'user-settings/edit-group' : null,
+        } %}
+      {% endblock %}
+    {% endembed %}
+  </fieldset>
+{% endif %}
+
+{% if showPermissions %}
+  {% if showUserGroups %}
+    <hr>
+  {% endif %}
+
+  <div>
+    <h2>{{ 'Permissions'|t('app') }}</h2>
+
+    {% if currentUser.admin %}
+      {{ forms.lightswitchField({
+        label: 'Admin'|t('app'),
+        name: 'admin',
+        id: 'admin',
+        on: user.admin,
+        reverseToggle: 'permissions'
+      }) }}
+    {% endif %}
+
+    {% do view.registerDeltaName('permissions') %}
+    {{ hiddenInput('permissions', '') }}
+
+    <div id="permissions" class="field{% if user.admin %} hidden{% endif %}">
+      {% if CraftEdition == CraftTeam %}
+        <div class="readable mb-xl">
+          <blockquote class="note tip">
+            <p>
+              {% if craft.app.config.general.allowAdminChanges %}
+                {{ 'Team permissions can be managed from {link}.'|t('app', {
+                  link: tag('strong', {
+                    html: tag('a', {
+                      href: url('settings/users'),
+                      text: 'User Permissions'|t('app'),
+                    }),
+                  }),
+                })|raw }}
+              {% else %}
+                {{ 'Team permissions can be managed from {path} on a development environment.'|t('app', {
+                  path: ['Settings'|t('app'), 'Users'|t('app')]
+                    |map(p => tag('strong', {
+                      class: 'nowrap',
+                      text: p,
+                    }))
+                    |join(' → '),
+                })|raw }}
+              {% endif %}
+            </p>
+          </blockquote>
+        </div>
+      {% endif %}
+
+      {% include '_includes/permissions' with {
+        subject: user.admin ? null : user,
+        permissions: craft.app.userPermissions.getAssignablePermissions(user),
+        groupPermissions: user.id ? craft.app.userPermissions.getGroupPermissionsByUserId(user.id) : [],
+        disabled: CraftEdition == CraftTeam,
+      } only %}
+    </div>
+  </div>
+{% endif %}
+
+{% js %}
+new Craft.ElevatedSessionForm('#main-form', [
+  '[name="admin"][value=""]',
+  '#user-groups input',
+  '#permissions input[type="checkbox"]:not(:checked)',
+]);
+{% endjs %}

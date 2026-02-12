@@ -1,0 +1,36 @@
+{% if passkeys is empty %}
+  <p class="zilch">{{ 'No passkeys have been created yet.'|t('app') }}</p>
+{% else %}
+  {# otherwise show the table of keys #}
+  <div class="tableview">
+    <table class="data fullwidth">
+      <thead>
+      <tr>
+        <th scope="col">{{ 'Name'|t('app') }}</th>
+        <th scope="col">{{ 'Last Used'|t('app') }}</th>
+        <th scope="col"><span class="visually-hidden">{{ 'Actions'|t('app') }}</span></th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for passkey in passkeys %}
+        <tr>
+          <th scope="row" data-name="credentialName">{{ passkey.credentialName }}</th>
+          <td>{{ passkey.dateLastUsed|timestamp }}</td>
+          <td>
+            {{ tag('a', {
+              class: ['delete', 'icon'],
+              href: '#',
+              role: 'button',
+              title: 'Delete'|t('app'),
+              data: {
+                uid: passkey.uid,
+                name: passkey.credentialName,
+              },
+            }) }}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}

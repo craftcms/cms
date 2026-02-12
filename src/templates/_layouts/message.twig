@@ -1,0 +1,12 @@
+{% extends "_layouts/base" %}
+{% set bodyClass = 'message' %}
+
+{% block body %}
+  <main class="message-container">
+    <div class="modal">
+      <div class="body">
+        {% block message %}{% endblock %}
+      </div>
+    </div>
+  </main>
+{% endblock %}

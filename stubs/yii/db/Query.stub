@@ -1,0 +1,23 @@
+<?php
+
+namespace yii\db;
+
+class Query
+{
+    /**
+     * @var string[]|null
+     */
+    public $from;
+
+    /**
+     * @var string[]|null
+     */
+    public $join;
+
+    /**
+     * @var string|array<int|ExpressionInterface>|null
+     */
+    public $orderBy;
+}
+
+interface ExpressionInterface {}

@@ -1,0 +1,64 @@
+{% set spinner = spinner ?? false -%}
+{% set busyMessage = busyMessage ?? false %}
+{% set failureMessage = failureMessage ?? false %}
+{% set retryMessage = retryMessage ?? false %}
+{% set successMessage = successMessage ?? false %}
+{% set enableLiveRegion = busyMessage or failureMessage or retryMessage or successMessage %}
+{% set icon = icon ?? null %}
+{% set iconHtml = iconHtml ?? null %}
+{% set label = label ?? null %}
+{% set labelHtml = labelHtml ?? null %}
+
+{# the "disabled" class takes care of disabling the button,
+   but the "read-only" class is needed so that it is allowed to have custom tabindex attribute #}
+{% set hasIcon = icon or icon is same as('0') %}
+{% set hasLabel = label or label is same as('0') %}
+{% set hasLabelHtml = labelHtml or labelHtml is same as('0') %}
+
+{% set attributes = {
+    type: type ?? 'button',
+    id: id ?? false,
+    class: (class ?? [])|explodeClass|merge([
+        'btn',
+        not (hasIcon or hasLabel or hasLabelHtml) ? 'btn-empty' : null,
+        (disabled ?? readOnly ?? false) ? 'disabled',
+        (readOnly ?? false) ? 'read-only',
+    ]|filter),
+    data: {
+        'busy-message': busyMessage,
+        'failure-message': failureMessage,
+        'retry-message': retryMessage,
+        'success-message': successMessage,
+    }|merge(attributes.data ?? {}),
+}|merge(attributes ?? {}) -%}
+
+{% apply spaceless %}
+    {% if spinner and enableLiveRegion %}
+        <div role="status" class="visually-hidden"></div>
+    {% endif %}
+    {% tag 'button' with attributes %}
+        {% if hasIcon or hasLabel or hasLabelHtml %}
+            <div class="inline-flex">
+                {% if hasIcon or iconHtml %}
+                    {% if hasIcon %}
+                        <div class="cp-icon">{{ iconSvg(icon) }}</div>
+                    {% elseif iconHtml %}
+                        {{ iconHtml|raw }}
+                    {% endif %}
+                {% endif %}
+                {% if hasLabel or hasLabelHtml %}
+                    {{ tag('div', {
+                        class: 'label',
+                        text: hasLabel ? label : null,
+                        html: hasLabelHtml ? labelHtml : null,
+                    }) }}
+                {% endif %}
+            </div>
+        {% endif %}
+        {% if spinner %}
+            <div class="spinner spinner-absolute">
+                <span class="visually-hidden">{{ 'Loading'|t('app') }}</span>
+            </div>
+        {% endif %}
+    {% endtag %}
+{% endapply -%}

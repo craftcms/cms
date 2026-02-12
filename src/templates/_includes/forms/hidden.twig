@@ -1,0 +1,12 @@
+{% set inputAttributes = {
+    type: 'hidden',
+    id: id ?? false,
+    name: name ?? false,
+    value: value ?? false,
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{{ tag('input', inputAttributes) }}

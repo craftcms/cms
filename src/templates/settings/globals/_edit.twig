@@ -1,0 +1,72 @@
+{% extends '_layouts/cp.twig' %}
+
+{% set readOnly = readOnly ?? false %}
+
+{% set fullPageForm = not readOnly %}
+
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/globals/{id}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
+{% import '_includes/forms.twig' as forms %}
+
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    {% if not readOnly %}
+        {{ actionInput('globals/save-set') }}
+        {{ redirectInput('settings/globals') }}
+
+        {% if globalSet.id %}{{ hiddenInput('setId', globalSet.id) }}{% endif %}
+    {% endif %}
+
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        instructions: "What this global set will be called in the control panel."|t('app'),
+        id: 'name',
+        name: 'name',
+        value: globalSet.name,
+        errors: globalSet.getErrors('name'),
+        autofocus: true,
+        required: true,
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        instructions: "How you’ll refer to this global set in the templates."|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        value: globalSet.handle,
+        errors: globalSet.getErrors('handle'),
+        required: true,
+        disabled: readOnly,
+    }) }}
+
+    <hr>
+
+    {{ forms.fieldLayoutDesignerField({
+        fieldLayout: globalSet.getFieldLayout(),
+        withGeneratedFields: true,
+        disabled: readOnly,
+    }) }}
+{% endblock %}
+
+
+{% if not globalSet.handle %}
+    {% js %}
+        new Craft.HandleGenerator('#name', '#handle');
+    {% endjs %}
+{% endif %}

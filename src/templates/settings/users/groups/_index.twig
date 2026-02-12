@@ -1,0 +1,59 @@
+{% requireEdition CraftPro %}
+{% requireAdmin false %}
+
+{% extends "settings/users/_layout" %}
+{% set selectedNavItem = 'groups' %}
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "No groups exist yet.",
+]) %}
+
+{% set groups = craft.app.userGroups.getAllGroups() %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    <div id="groups-vue-admin-table"></div>
+
+    {% if not readOnly %}
+        <div class="buttons">
+            <a href="{{ url('settings/users/groups/new') }}" class="btn submit add icon">{{ "New user group"|t('app') }}</a>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% set tableData = [] %}
+{% for group in groups %}
+    {% set tableData = tableData|merge([{
+        id: group.id,
+        title: group.name|t('site'),
+        url: url('settings/users/groups/' ~ group.id),
+        name: group.name|t('site')|e,
+        handle: group.handle,
+    }]) %}
+{% endfor %}
+
+{% js %}
+    var columns = [
+        { name: '__slot:title', title: Craft.t('app', 'Name') },
+        { name: '__slot:handle', title: Craft.t('app', 'Handle') }
+    ];
+
+    var config = {
+        columns: columns,
+        container: '#groups-vue-admin-table',
+        emptyMessage: Craft.t('app', 'No groups exist yet.'),
+        tableData: {{ tableData|json_encode|raw }}
+    };
+    {% if not readOnly %}
+        config['deleteAction'] = 'user-settings/delete-group';
+    {% endif %}
+    new Craft.VueAdminTable(config);
+{% endjs %}

@@ -1,0 +1,12 @@
+<?php
+
+namespace yii\db;
+
+abstract class BaseActiveRecord
+{
+    /**
+     * @param string[]|null $names
+     * @return array<string, mixed>
+     */
+    public function getDirtyAttributes($names = null) {}
+}

@@ -1,0 +1,15 @@
+{% extends "settings/general/_images/image" %}
+
+{% set imageType = "logo" %}
+
+{% block changeLogoLabel %}
+    {{ 'Change logo'|t('app') }}
+{% endblock %}
+
+{% block deleteLogoLabel %}
+    {{ 'Delete logo'|t('app') }}
+{% endblock %}
+
+{% block uploadLogoLabel %}
+    {{ 'Upload logo'|t('app') }}
+{% endblock %}

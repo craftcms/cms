@@ -1,0 +1,35 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\console\controllers;
+
+use craft\console\ControllerTrait;
+use yii\console\controllers\ServeController as BaseServeController;
+
+/**
+ * Runs the built-in PHP web server.
+ *
+ * Use 0.0.0.0:8000 to access the server from remote machines, which is especially useful when running the server in
+ * a virtual machine.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.1.10
+ */
+class ServeController extends BaseServeController
+{
+    use ControllerTrait;
+
+    /**
+     * @var string path or [path alias](https://craftcms.com/docs/5.x/configure.html#aliases) of the directory to serve.
+     */
+    public $docroot = '@webroot';
+
+    /**
+     * @inheritdoc
+     */
+    public $router = '@craftcms/bootstrap/router.php';
+}

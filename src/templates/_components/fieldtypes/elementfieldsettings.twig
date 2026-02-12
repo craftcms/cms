@@ -1,0 +1,221 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set sourceOptions = field.getSourceOptions() %}
+{% set elementType = elementType ?? pluralElementType %}
+{% set upperElementType = upperElementType ?? elementType|capitalize %}
+
+{% block fieldSettings %}
+    {% block sourcesField %}
+        {% if sourceOptions %}
+            {% if field.allowMultipleSources %}
+                {{ forms.checkboxSelectField({
+                    label: "Sources"|t('app'),
+                    instructions: "Which sources do you want to select {type} from?"|t('app', { type: pluralElementType }),
+                    id: 'sources',
+                    name: 'sources',
+                    options: sourceOptions,
+                    values: field.sources,
+                    showAllOption: true,
+                    errors: field.getErrors('sources'),
+                    data: {'error-key': 'sources'},
+                }) }}
+            {% else %}
+                {{ forms.selectField({
+                    label: "Source"|t('app'),
+                    instructions: "Which source do you want to select {type} from?"|t('app', { type: pluralElementType }),
+                    id: 'source',
+                    name: 'source',
+                    options: sourceOptions,
+                    value: field.source,
+                    errors: field.getErrors('source'),
+                    data: {'error-key': 'source'},
+                }) }}
+            {% endif %}
+        {% else %}
+            {{ forms.field({
+                label: (field.allowMultipleSources ? "Sources"|t('app') : "Source"|t('app')),
+            }, '<p class="error">' ~ "No sources exist yet."|t('app') ~ '</p>') }}
+        {% endif %}
+    {% endblock %}
+
+    {% block selectionConditionField %}
+        {{ (selectionCondition ?? false) ? selectionCondition|raw }}
+    {% endblock %}
+
+    {% block maintainHierarchy %}
+        {{ forms.lightswitchField({
+            label: 'Maintain hierarchy'|t('app'),
+            instructions: 'Whether the structure of the related {type} should be maintained.'|t('app', { type: pluralElementType }),
+            id: 'maintain-hierarchy',
+            name: 'maintainHierarchy',
+            on: field.maintainHierarchy,
+        }) }}
+    {% endblock %}
+
+    {% block limitFields %}
+        {% if field.allowLimit %}
+            {{ forms.textField({
+                label: 'Min Relations'|t('app'),
+                instructions: 'The minimum number of {type} that may be selected.'|t('app', {
+                    type: pluralElementType,
+                }),
+                id: 'min-relations',
+                name: 'minRelations',
+                value: field.minRelations,
+                size: 2,
+                errors: field.getErrors('minRelations'),
+                data: {'error-key': 'minRelations'},
+            }) }}
+
+            {{ forms.textField({
+                label: 'Max Relations'|t('app'),
+                instructions: 'The maximum number of {type} that may be selected.'|t('app', {
+                    type: pluralElementType,
+                }),
+                id: 'max-relations',
+                name: 'maxRelations',
+                value: field.maxRelations,
+                size: 2,
+                errors: field.getErrors('maxRelations'),
+                data: {'error-key': 'maxRelations'},
+            }) }}
+        {% endif %}
+
+        {{ forms.textField({
+            label: "Branch Limit"|t('app'),
+            instructions: "Limit the number of selectable {type} branches."|t('app', { type: elementType }),
+            id: 'branch-limit',
+            name: 'branchLimit',
+            value: field.branchLimit,
+            size: 2,
+            errors: field.getErrors('branchLimit'),
+            data: {'error-key': 'branchLimit'},
+        }) }}
+    {% endblock %}
+
+    {% block defaultPlacementField %}
+        {{ forms.selectField({
+            label: 'Default {type} Placement'|t('app', {type: upperElementType}),
+            instructions: 'Where new {type} should be placed by default in the field.'|t('app', {type: pluralElementType}),
+            id: 'default-placement',
+            name: 'defaultPlacement',
+            options: [
+                {label: 'Before other {type}'|t('app', {type: pluralElementType}), value: 'beginning'},
+                {label: 'After other {type}'|t('app', {type: pluralElementType}), value: 'end'},
+            ],
+            value: field.defaultPlacement,
+            errors: field.getErrors('defaultPlacement'),
+            data: {'error-key': 'defaultPlacement'},
+        })}}
+    {% endblock %}
+
+    {% block viewModeField %}
+        {{ field.getViewModeFieldHtml()|raw }}
+    {% endblock %}
+
+    {% block selectionLabelField %}
+        {{ forms.textField({
+            label: '“Add” Button Label'|t('app'),
+            instructions: 'The text label for {type} selection buttons.'|t('app', { type: elementType }),
+            id: 'selection-label',
+            name: 'selectionLabel',
+            value: field.selectionLabel,
+            placeholder: field.defaultSelectionLabel(),
+            errors: field.getErrors('selectionLabel'),
+        }) }}
+    {% endblock %}
+
+    {% block showSearchInputField %}
+        {{ forms.lightswitchField({
+            fieldClass: field.allowMultipleSources ? 'hidden' : null,
+            label: 'Show the search input'|t('app'),
+            id: 'show-search-input',
+            name: 'showSearchInput',
+            on: field.showSearchInput,
+            errors: field.getErrors('showSearchInput'),
+        }) }}
+    {% endblock %}
+
+    {% block validateRelatedElementsField %}
+        {{ forms.lightswitchField({
+            label: 'Validate related {type}'|t('app', { type: pluralElementType }),
+            instructions: 'Whether validation errors on the related {type} should prevent the source element from being saved.'|t('app', { type: pluralElementType }),
+            id: 'validate-related-elements',
+            name: 'validateRelatedElements',
+            on: field.validateRelatedElements,
+        }) }}
+    {% endblock %}
+
+    {% block advancedSettings %}
+        <hr>
+
+        <button type="button" class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</button>
+        <div id="advanced" class="hidden">
+
+            {{ forms.lightswitchField({
+                label: 'Allow self relations'|t('app'),
+                instructions: 'Whether {type} elements should be allowed to relate to themselves.'|t('app', { type: elementType }),
+                id: 'allow-self-relations',
+                name: 'allowSelfRelations',
+                on: field.allowSelfRelations,
+            }) }}
+
+            {% if craft.app.getIsMultiSite() %}
+
+                {% block targetSiteField %}
+                    {{ field.getTargetSiteFieldHtml()|raw }}
+                {% endblock %}
+            {% endif %}
+
+        </div>
+    {% endblock %}
+{% endblock %}
+
+{% if field.allowMultipleSources %}
+{% js %}
+(() => {
+  const $sourcesField = $('#{{ 'sources-field'|namespaceInputId }}');
+  const $inputs = $sourcesField.find('input');
+  const $searchField = $('#{{ 'show-search-input-field'|namespaceInputId }}');
+
+  const updateSearchField = function() {
+    let showSearchField = false;
+    if (!$sourcesField.is(':visible')) {
+      showSearchField = true;
+    } else {
+      let foundChecked = false;
+      for (let i = 0; i < $inputs.length; i++) {
+        const $input = $inputs.eq(i);
+        const val = $input.val();
+        const checked = $input.prop('checked');
+        if (val === '*') {
+          if (checked) {
+            showSearchField = false;
+            break;
+          }
+        } else if (checked) {
+          if (foundChecked) {
+            showSearchField = false;
+            break;
+          }
+          showSearchField = true;
+          foundChecked = true;
+        }
+      }
+    }
+
+    if (showSearchField) {
+      $searchField.removeClass('hidden');
+    } else {
+      $searchField.addClass('hidden');
+    }
+  };
+
+  $inputs.on('change', () => {
+    updateSearchField();
+  });
+
+  updateSearchField();
+})();
+{% endjs %}
+{% endif %}

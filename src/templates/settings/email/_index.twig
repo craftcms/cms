@@ -1,0 +1,209 @@
+{% requireAdmin false %}
+
+{% extends '_layouts/cp.twig' %}
+
+{% set title = 'Email Settings'|t('app') %}
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
+
+{% set crumbs = [
+    { label: "Settings"|t('app'), url: url('settings') }
+] %}
+
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/email'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
+{% import '_includes/forms.twig' as forms %}
+
+{% do view.registerTranslations('app', [
+    "Email sent successfully! Check your inbox.",
+]) %}
+
+
+{% if settings is not defined %}
+    {% set settings = craft.app.projectConfig.get('email') %}
+    {% set freshSettings = true %}
+{% else %}
+    {% set freshSettings = false %}
+{% endif %}
+
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    {% if customMailerFiles|length %}
+        <div class="readable">
+            <blockquote class="note warning">
+                <p>
+                    {{ 'It looks like these settings are being overridden by {paths}.'|t('app', {
+                        paths: customMailerFiles|join(', ')
+                    }) }}
+                </p>
+            </blockquote>
+        </div>
+        <hr>
+    {% endif %}
+
+    {% if not readOnly %}
+        {{ actionInput('system-settings/save-email-settings') }}
+        {{ redirectInput('settings') }}
+    {% endif %}
+
+    {{ forms.autosuggestField({
+        first: true,
+        label: "System Email Address"|t('app'),
+        instructions: "The email address Craft CMS will use when sending email."|t('app'),
+        id: 'fromEmail',
+        name: 'fromEmail',
+        suggestEnvVars: true,
+        value: settings.fromEmail,
+        autofocus: true,
+        required: true,
+        errors: (freshSettings ? null : settings.getErrors('fromEmail')),
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.autosuggestField({
+        first: true,
+        label: 'Reply-To Address'|t('app'),
+        instructions: 'The Reply-To email address Craft CMS should use when sending email.'|t('app'),
+        id: 'replyToEmail',
+        name: 'replyToEmail',
+        suggestEnvVars: true,
+        value: settings.replyToEmail,
+        errors: (freshSettings ? null : settings.getErrors('replyToEmail')),
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.autosuggestField({
+        label: "Sender Name"|t('app'),
+        instructions: "The “From” name Craft CMS will use when sending email."|t('app'),
+        id: 'fromName',
+        name: 'fromName',
+        suggestEnvVars: true,
+        value: settings.fromName,
+        required: true,
+        errors: (freshSettings ? null : settings.getErrors('fromName')),
+        disabled: readOnly,
+    }) }}
+
+    {% if CraftEdition >= CraftPro %}
+        {{ forms.autosuggestField({
+            label: "HTML Email Template"|t('app'),
+            instructions: "The template Craft CMS will use for HTML emails"|t('app'),
+            id: 'template',
+            name: 'template',
+            suggestTemplates: true,
+            suggestEnvVars: true,
+            value: settings.template,
+            errors: (freshSettings ? null : settings.getErrors('template')),
+            disabled: readOnly,
+        }) }}
+    {% endif %}
+
+    {% if craft.app.isMultiSite %}
+        {{ forms.editableTableField({
+            label: 'Site Overrides'|t('app'),
+            instructions: 'Blank values will default to the settings above.'|t('app'),
+            id: 'site-overrides',
+            name: 'siteOverrides',
+            cols: {
+                heading: {
+                    type: 'heading',
+                    heading: 'Site'|t('app'),
+                    suggestEnvVars: true,
+                    thin: true,
+                },
+                fromEmail: {
+                    type: 'autosuggest',
+                    heading: 'System Email Address'|t('app'),
+                    suggestEnvVars: true,
+                },
+                replyToEmail: {
+                    type: 'autosuggest',
+                    heading: 'Reply-To Address'|t('app'),
+                    suggestEnvVars: true,
+                },
+                fromName: {
+                    type: 'autosuggest',
+                    heading: 'Sender Name'|t('app'),
+                    suggestEnvVars: true,
+                },
+                template: CraftEdition >= CraftPro ? {
+                    type: 'template',
+                    heading: 'HTML Email Template'|t('app'),
+                    suggestEnvVars: true,
+                    code: true,
+                }
+            }|filter,
+            rows: collect(craft.app.sites.getAllSites())
+                .keyBy(site => site.uid)
+                .map(site => {
+                    heading: site.getUiLabel(),
+                    ...(settings.siteOverrides[site.uid] ?? {})
+                })
+                .all(),
+            fullWidth: true,
+            allowAdd: false,
+            allowDelete: false,
+            allowReorder: false,
+            errors: (freshSettings ? null : settings.getErrors('siteOverrides')|unique),
+            static: readOnly,
+        }) }}
+    {% endif %}
+
+    <hr>
+
+    {{ forms.selectField({
+        label: "Transport Type"|t('app'),
+        instructions: "How should Craft CMS send the emails?"|t('app'),
+        id: 'transportType',
+        name: 'transportType',
+        options: transportTypeOptions,
+        value: className(adapter),
+        errors: adapter.getErrors('type') ?? null,
+        toggle: true,
+        disabled: readOnly,
+    }) }}
+
+
+    {% for _adapter in allTransportAdapters %}
+        {% set isCurrent = (className(_adapter) == className(adapter)) %}
+        {% set a = isCurrent ? adapter : _adapter %}
+        {% set classes = [] %}
+        {% if not isCurrent %}
+            {% set classes = classes|merge(['hidden']) %}
+        {% endif %}
+
+        <div id="{{ className(_adapter)|id }}" {% if classes|length %}class="{{ classes|join(' ') }}"{% endif %}>
+            {% namespace 'transportTypes['~className(_adapter)|id~']' %}
+                {% autoescape false %}
+                    {{ readOnly ? a.getReadOnlySettingsHtml() : a.getSettingsHtml() }}
+                {% endautoescape %}
+            {% endnamespace %}
+        </div>
+    {% endfor %}
+
+    <hr>
+
+    <div class="buttons">
+        {% if not readOnly %}
+            <button type="button" id="test" class="btn formsubmit" data-action="system-settings/test-email-settings">{{ "Test"|t('app') }}</button>
+        {% else %}
+            <form method="post" accept-charset="UTF-8">
+                {{ actionInput('system-settings/test-email-settings') }}
+                {{ csrfInput() }}
+                <button type="submit" id="test" class="btn">{{ "Test"|t('app') }}</button>
+            </form>
+        {% endif %}
+    </div>
+
+{% endblock %}

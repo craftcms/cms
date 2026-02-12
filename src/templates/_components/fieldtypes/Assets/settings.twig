@@ -1,0 +1,198 @@
+{% extends '_components/fieldtypes/elementfieldsettings.twig' %}
+{% import '_includes/forms.twig' as forms %}
+
+{% macro uploadLocationField(config) %}
+    {% embed '_includes/forms/field.twig' with config %}
+        {% block input %}
+            {% import '_includes/forms.twig' as forms %}
+            <div class="flex flex-nowrap">
+                <div>
+                    {{ forms.select({
+                        id: "#{config.id}-source",
+                        name: "#{config.name}Source",
+                        options: config.sourceOptions,
+                        value: config.sourceValue,
+                        describedBy: describedBy,
+                        disabled: config.disabled ?? false,
+                    }) }}
+                </div>
+                <div class="flex-grow">
+                    {{ forms.text({
+                        class: 'ltr',
+                        id: "#{config.id}-subpath",
+                        name: "#{config.name}Subpath",
+                        value: config.subpathValue,
+                        placeholder: "path/to/subfolder"|t('app'),
+                        describedBy: describedBy,
+                        disabled: config.disabled ?? false,
+                    }) }}
+                </div>
+            </div>
+        {% endblock %}
+    {% endembed %}
+{% endmacro %}
+
+{% set dynamicPathTip = "The path can contain variables like `{slug}` or `{author.username}`."|t('app') %}
+{% if 'craft\\fields\\Matrix' in craft.app.view.getNamespace() %}
+    {% set dynamicPathTip = dynamicPathTip|replace({
+        '{slug}': '{owner.slug}',
+        '{author.username}': '{owner.author.username}'
+    }) %}
+{% endif %}
+
+
+{% block fieldSettings %}
+    {{ forms.lightswitchField({
+        id: 'restrict-location-toggle',
+        label: 'Restrict assets to a single location'|t('app'),
+        name: 'restrictLocation',
+        on: field.restrictLocation,
+        toggle: 'restricted-location-settings',
+        reverseToggle: 'unrestricted-location-settings',
+    }) }}
+
+    {% tag('div') with {
+        id: 'restricted-location-settings',
+        class: not field.restrictLocation ? 'hidden' : false,
+    } %}
+        {{ _self.uploadLocationField({
+            id: 'restricted-location',
+            label: 'Asset Location'|t('app'),
+            instructions: 'The location where assets can be selected from.'|t('app'),
+            tip: dynamicPathTip,
+            name: 'restrictedLocation',
+            sourceOptions: sourceOptions,
+            sourceValue: field.restrictedLocationSource,
+            subpathValue: field.restrictedLocationSubpath,
+            errors: field.getErrors('restrictedLocationSubpath'),
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Allow subfolders'|t('app'),
+            name: 'allowSubfolders',
+            on: field.allowSubfolders,
+            toggle: 'allow-subfolders-settings',
+        }) }}
+
+        {% tag('div') with {
+            id: 'allow-subfolders-settings',
+            class: not field.allowSubfolders ? 'hidden' : false,
+        } %}
+            {{ forms.textField({
+                class: 'ltr',
+                name: 'restrictedDefaultUploadSubpath',
+                label: 'Default Upload Location'|t('app'),
+                value: field.restrictedDefaultUploadSubpath,
+                instructions: 'Where assets should be stored (relative to **Asset Location**) when they are uploaded directly to the field.'|t('app'),
+                tip: dynamicPathTip,
+                placeholder: 'path/to/subfolder'|t('app'),
+            }) }}
+        {% endtag %}
+    {% endtag %}
+
+    {% tag('div') with {
+        id: 'unrestricted-location-settings',
+        class: field.restrictLocation ? 'hidden' : false,
+    } %}
+        {{ block('sourcesField') }}
+
+        {{ _self.uploadLocationField({
+            id: 'default-upload-location',
+            label: 'Default Upload Location'|t('app'),
+            instructions: 'Where assets should be stored when they are uploaded directly to the field.'|t('app'),
+            tip: dynamicPathTip,
+            name: 'defaultUploadLocation',
+            sourceOptions: sourceOptions,
+            sourceValue: field.defaultUploadLocationSource,
+            subpathValue: field.defaultUploadLocationSubpath,
+            errors: field.getErrors('defaultUploadLocationSubpath'),
+        }) }}
+    {% endtag %}
+
+    <hr>
+
+    {{ block('selectionConditionField') }}
+
+    {{ forms.lightswitchField({
+        label: 'Show unpermitted volumes'|t('app'),
+        instructions: 'Whether to show volumes that the user doesn’t have permission to view.'|t('app'),
+        id: 'showUnpermittedVolumes',
+        name: 'showUnpermittedVolumes',
+        on: field.showUnpermittedVolumes,
+    }) }}
+
+    {{ forms.lightswitchField({
+        label: 'Show unpermitted files'|t('app'),
+        instructions: 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'|t('app'),
+        id: 'showUnpermittedFiles',
+        name: 'showUnpermittedFiles',
+        on: field.showUnpermittedFiles,
+    }) }}
+
+    {{ forms.lightswitchField({
+        label: 'Restrict allowed file types'|t('app'),
+        class: 'restrictFiles',
+        id: 'restrictFiles',
+        name: 'restrictFiles',
+        value: 1,
+        on: field.restrictFiles,
+        toggle: 'restrict-allowed-types',
+    }) }}
+
+    <fieldset id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %} data-error-key="allowedKinds">
+        {% for option in field.getFileKindOptions() %}
+            {{ forms.checkboxField({
+                label: option.label,
+                id: 'allowedKinds-'~option.value,
+                name: 'allowedKinds[]',
+                value: option.value,
+                checked: (option.value in field.allowedKinds),
+            }) }}
+        {% endfor %}
+        {{ forms.errorList(field.getErrors('allowedKinds')) }}
+    </fieldset>
+
+    {{ forms.lightswitchField({
+        label: 'Allow uploading directly to the field'|t('app'),
+        instructions: 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'|t('app'),
+        id: 'allow-uploads',
+        name: 'allowUploads',
+        on: field.allowUploads,
+    }) }}
+
+    {{ block('limitFields') }}
+    {{ block('defaultPlacementField') }}
+    {{ block('viewModeField') }}
+    {{ block('selectionLabelField') }}
+    {{ block('showSearchInputField') }}
+    {{ block('validateRelatedElementsField') }}
+
+    <hr>
+
+    {{ forms.selectField({
+        id: 'preview-mode',
+        name: 'previewMode',
+        label: 'Preview Mode'|t('app'),
+        instructions: 'How the related {type} should be displayed within element indexes.'|t('app', {
+            type: pluralElementType,
+        }),
+        options: [
+            {label: 'Show thumbnails and titles'|t('app'), value: 'full'},
+            {label: 'Show thumbnails only'|t('app'), value: 'thumbs'},
+        ],
+        value: field.previewMode,
+        errors: field.getErrors('previewMode'),
+        data: {'error-key': 'previewMode'},
+    }) }}
+
+    {{ block('advancedSettings') }}
+{% endblock %}
+
+{% js %}
+  new Craft.AssetsFieldSettings(
+    {{ 'restrict-location-toggle'|namespaceInputId|json_encode|raw }},
+    {{ 'sources-field'|namespaceInputId|json_encode|raw }},
+    {{ 'default-upload-location-source'|namespaceInputId|json_encode|raw }},
+    {{ 'show-search-input-field'|namespaceInputId|json_encode|raw }},
+  );
+{% endjs %}

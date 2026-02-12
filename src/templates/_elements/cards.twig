@@ -1,0 +1,28 @@
+{% set elements = elements ?? [] %}
+{% set disabled = disabled ?? null %}
+{% set showInGrid = showInGrid ?? false %}
+
+{% tag 'ul' with {
+  class: [
+    'elements',
+    showInGrid ? 'card-grid' : 'cards',
+  ],
+} %}
+  {%- apply spaceless  %}
+    {% for element in elements %}
+      <li>
+        {% set html = elementCard(element, {
+          context: context ?? 'index',
+          inputName: inputName ?? ((name ?? false) ? ((single ?? false) ? name : "#{name}[]") : null),
+          selectable: selectable ?? false,
+          showActionMenu: showActionMenu ?? false,
+          sortable: sortable ?? false,
+        }) %}
+        {% if disabled %}
+          {% set html = html|removeClass('removable') %}
+        {% endif %}
+        {{ html|raw }}
+      </li>
+    {% endfor %}
+  {% endapply -%}
+{% endtag %}

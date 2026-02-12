@@ -1,0 +1,37 @@
+{% requireAdmin false %}
+
+
+{% extends "_layouts/cp" %}
+{% set title = "Settings"|t('app') %}
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    {% for category, items in craft.cp.settings(80) %}
+        {% set headingId = "category-heading-#{loop.index}" %}
+        <h2 id="{{ headingId }}">{{ category }}</h2>
+        <nav aria-labelledby="{{ headingId }}">
+            <ul class="icons">
+                {% for handle, item in items %}
+                    {% set label = item.label ~ ' - ' ~ 'Settings'|t('app') %}
+                    {% set icon = item.iconMask ?? item.icon %}
+                    <li>
+                        <a aria-label="{{ label }}" href="{% if item.url is defined %}{{ url(item.url) }}{% else %}{{ url('settings/'~handle) }}{% endif %}">
+                            <div class="icon{% if item.iconMask is defined %} icon-mask{% endif %}" aria-hidden="true">
+                                {{ svg(icon, sanitize=true, namespace=true) }}
+                            </div>
+                            {{ item.label }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+
+        {% if not loop.last %}
+            <hr>
+        {% endif %}
+    {% endfor %}
+{% endblock %}

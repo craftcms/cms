@@ -1,0 +1,13 @@
+{% set id = id ?? "languagemenu#{random()}" %}
+{% set value = value ?? null -%}
+{% set options = options ?? [] %}
+{% set appOnly = appOnly ?? false %}
+
+
+{% if includeEnvVars ?? false %}
+    {% set options = options|merge(craft.cp.getLanguageEnvOptions(appOnly)) %}
+{% endif %}
+
+{% include '_includes/forms/selectize' with {
+    includeEnvVars: false,
+} %}

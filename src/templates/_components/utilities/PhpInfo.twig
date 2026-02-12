@@ -1,0 +1,21 @@
+<div class="readable">
+    {% for section, values in phpInfo %}
+        <h2>{{ section }}</h2>
+        <table class="data fullwidth fixed-layout">
+            <tbody>
+                {% for key, value in values %}
+                    <tr>
+                        <th class="light">{{ key|raw }}</th>
+                        <td>
+                            {%- if value is iterable %}
+                                {{- value|join(', ') }}
+                            {%- else %}
+                                {{- value }}
+                            {%- endif -%}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+</div>

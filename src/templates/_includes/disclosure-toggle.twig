@@ -1,0 +1,34 @@
+{% set attributes = attributes ?? {} %}
+{% set id = id ?? null %}
+{% set controls = controls ?? null %}
+{% set expanded = expanded ?? 'true' %}
+{% set content = (content ?? block('content') ?? '')|trim %}
+{% set persist = persist ?? false %}
+{% set storageMode = storageMode ?? 'localStorage' %}
+{% set storageKey = storageKey ?? null %}
+
+{% set cookieState = null %}
+{% if persist and storageMode == 'cookies' and storageKey %}
+    {% set cookieState = storageKey ? craft.app.request.rawCookies.value("Craft-#{craft.app.systemUid}_#{storageKey}") : null %}
+{% endif %}
+
+{% set state = state ?? cookieState %}
+
+{% if controls %}
+    <craft-disclosure
+        {% if id %}id="{{ id }}"{% endif %}
+        {% if persist %}persist{% endif %}
+        {% if persist and storageKey %}storage-key="{{ storageKey }}"{% endif %}
+        {% if persist and storageMode %}storage-mode="{{ storageMode }}"{% endif %}
+        {% if state %}state="{{ state }}"{% endif %}
+    >
+        <button
+            type="button"
+            aria-controls="{{ controls }}"
+            aria-expanded="{{ state == 'expanded' ? 'true' : 'false' }}"
+            {{ attr(attributes) }}
+        >
+            {{ content | raw }}
+        </button>
+    </craft-disclosure>
+{% endif %}

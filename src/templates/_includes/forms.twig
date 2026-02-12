@@ -1,0 +1,542 @@
+{% macro errorList(errors) %}
+    {% include "_includes/forms/errorList" %}
+{% endmacro %}
+
+
+{# Inputs #}
+
+
+{% macro button(config) %}
+    {% include '_includes/forms/button' with config only %}
+{% endmacro %}
+
+
+{% macro submitButton(config) %}
+    {{ _self.button(config|merge({
+        type: 'submit',
+        class: (config.class ?? [])|explodeClass|merge(['submit']),
+        label: config.label ?? 'Submit'|t('app'),
+    })) }}
+{% endmacro %}
+
+
+{# Inputs #}
+
+
+{% macro hidden(config) -%}
+    {% include "_includes/forms/hidden" with config only %}
+{%- endmacro %}
+
+
+{% macro text(config) %}
+    {% include "_includes/forms/text" with config only %}
+{% endmacro %}
+
+
+{% macro password(config) %}
+    {% include "_includes/forms/password" with config only %}
+{% endmacro %}
+
+
+{% macro copytext(config) %}
+    {% include "_includes/forms/copytext" with config only %}
+{% endmacro %}
+
+
+{% macro date(config) %}
+    {% include "_includes/forms/date" with config only %}
+{% endmacro %}
+
+
+{% macro time(config) %}
+    {% include "_includes/forms/time" with config only %}
+{% endmacro %}
+
+
+{% macro color(config) %}
+    {% include "_includes/forms/color" with config only %}
+{% endmacro %}
+
+
+{% macro colorSelect(config) %}
+    {% include "_includes/forms/colorSelect" with config only %}
+{% endmacro %}
+
+
+{% macro textarea(config) %}
+    {% include "_includes/forms/textarea" with config only %}
+{% endmacro %}
+
+
+{% macro select(config) %}
+    {% include "_includes/forms/select" with config only %}
+{% endmacro %}
+
+
+{% macro customSelect(config) %}
+    {% include "_includes/forms/customSelect" with config only %}
+{% endmacro %}
+
+
+{% macro selectize(config) %}
+    {% include "_includes/forms/selectize" with config only %}
+{% endmacro %}
+
+
+{% macro multiselect(config) %}
+    {% include "_includes/forms/multiselect" with config only %}
+{% endmacro %}
+
+
+{% macro checkbox(config) %}
+    {% include "_includes/forms/checkbox" with config only %}
+{% endmacro %}
+
+
+{% macro checkboxGroup(config) %}
+    {% include "_includes/forms/checkboxGroup" with config only %}
+{% endmacro %}
+
+
+{% macro checkboxSelect(config) %}
+    {% include "_includes/forms/checkboxSelect" with config only %}
+{% endmacro %}
+
+
+{% macro radio(config) %}
+    {% include "_includes/forms/radio" with config only %}
+{% endmacro %}
+
+
+{% macro radioGroup(config) %}
+    {% include "_includes/forms/radioGroup" with config only %}
+{% endmacro %}
+
+
+{% macro buttonGroup(config) %}
+    {% include "_includes/forms/buttonGroup" with config only %}
+{% endmacro %}
+
+
+{% macro file(config) %}
+    {% include "_includes/forms/file" with config only %}
+{% endmacro %}
+
+
+{% macro lightswitch(config) %}
+    {% include "_includes/forms/lightswitch" with config only %}
+{% endmacro %}
+
+
+{% macro range(config) %}
+    {% include "_includes/forms/range" with config only %}
+{% endmacro %}
+
+
+{% macro editableTable(config) %}
+    {% include "_includes/forms/editableTable" with config only %}
+{% endmacro %}
+
+
+{% macro elementSelect(config) %}
+    {% include "_includes/forms/elementSelect" with config only %}
+{% endmacro %}
+
+
+{% macro componentSelect(config) %}
+    {% include "_includes/forms/componentSelect" with config only %}
+{% endmacro %}
+
+
+{% macro entryTypeSelect(config) %}
+    {% include "_includes/forms/entryTypeSelect" with config only %}
+{% endmacro %}
+
+
+{% macro autosuggest(config) %}
+    {% include "_includes/forms/autosuggest" with config only %}
+{% endmacro %}
+
+
+{% macro timeZone(config) %}
+    {% include "_includes/forms/timeZone" with config only %}
+{% endmacro %}
+
+
+{% macro iconPicker(config) %}
+    {% include '_includes/forms/iconPicker' with config only %}
+{% endmacro %}
+
+
+{% macro fs(config) %}
+    {% include "_includes/forms/fs" with config only %}
+{% endmacro %}
+
+
+{% macro volume(config) %}
+    {% include "_includes/forms/volume" with config only %}
+{% endmacro %}
+
+
+{% macro booleanMenu(config) %}
+    {% include "_includes/forms/booleanMenu" with config only %}
+{% endmacro %}
+
+
+{% macro languageMenu(config) %}
+    {% include "_includes/forms/languageMenu" with config only %}
+{% endmacro %}
+
+
+{% macro fieldLayoutDesigner(config) %}
+    {% include "_includes/forms/fieldLayoutDesigner" with config only %}
+{% endmacro %}
+
+
+{% macro money(config) %}
+    {% include "_includes/forms/money" with config only %}
+{% endmacro %}
+
+
+{# Fields #}
+
+
+{% macro field(config, input) %}
+    {{ craft.cp.field(input ?? '', config)|raw }}
+{% endmacro %}
+
+
+{% macro textField(config) %}
+    {% set config = config|merge({id: config.id ?? "text#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/text') }}
+{% endmacro %}
+
+
+{% macro copytextField(config) %}
+    {% set config = config|merge({id: config.id ?? "copytext#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/copytext') }}
+{% endmacro %}
+
+
+{% macro passwordField(config) %}
+    {% set config = config|merge({id: config.id ?? "password#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/password') }}
+{% endmacro %}
+
+
+{% macro dateField(config) %}
+    {% set config = config|merge({id: config.id ?? "date#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/date') }}
+{% endmacro %}
+
+
+{% macro timeField(config) %}
+    {% set config = config|merge({id: config.id ?? "time#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/time') }}
+{% endmacro %}
+
+
+{% macro colorField(config) %}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "color#{random()}"
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/color') }}
+{% endmacro %}
+
+
+{% macro colorSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "colorselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/colorSelect') }}
+{% endmacro %}
+
+
+{% macro dateTimeField(config) %}
+    {% set config = config|merge({
+        id: config.id ?? "datetime#{random()}",
+        fieldset: true,
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/datetime') }}
+{% endmacro %}
+
+
+{% macro textareaField(config) %}
+    {% set config = config|merge({id: config.id ?? "textarea#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/textarea') }}
+{% endmacro %}
+
+
+{% macro selectField(config) %}
+    {% set config = config|merge({id: config.id ?? "select#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/select') }}
+{% endmacro %}
+
+
+{% macro customSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "customselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/customSelect') }}
+{% endmacro %}
+
+
+{% macro selectizeField(config) %}
+    {% set config = config|merge({id: config.id ?? "selectize#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: (config.allowedEnvValues is not defined)
+            ? 'This can begin with an environment variable or alias.'|t('app')
+            : 'This can begin with an environment variable.'|t('app'),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/selectize') }}
+{% endmacro %}
+
+
+{% macro multiselectField(config) %}
+    {% set config = config|merge({id: config.id ?? "multiselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/multiselect') }}
+{% endmacro %}
+
+
+{% macro checkboxField(config) %}
+    {# label --> checkboxLabel #}
+    {% set config = config|merge({
+        fieldset: config.fieldset ?? (config.fieldLabel is defined),
+        fieldClass: (config.fieldClass ?? [])|explodeClass|push('checkboxfield'),
+        id: config.id ?? "checkbox#{random()}",
+        checkboxLabel: config.checkboxLabel ?? config.label ?? null,
+        instructionsPosition: config.instructionsPosition ?? 'after',
+    })|withoutKey('label') %}
+    {{ _self.field(config, 'template:_includes/forms/checkbox') }}
+{% endmacro %}
+
+
+{% macro checkboxGroupField(config) %}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "checkboxgroup#{random()}",
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/checkboxGroup') }}
+{% endmacro %}
+
+
+{% macro checkboxSelectField(config) %}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "checkboxselect#{random()}",
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/checkboxSelect') }}
+{% endmacro %}
+
+
+{% macro radioGroupField(config) %}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "radiogroup#{random()}",
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/radioGroup') }}
+{% endmacro %}
+
+
+{% macro buttonGroupField(config) %}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "buttongroup#{random()}",
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/buttonGroup') }}
+{% endmacro %}
+
+
+{% macro fileField(config) %}
+    {% set config = config|merge({id: config.id ?? "file#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/file') }}
+{% endmacro %}
+
+
+{% macro lightswitchField(config) %}
+    {% set config = config|merge({
+        id: config.id ?? "lightswitch#{random()}",
+        fieldClass: (config.fieldClass ?? [])|explodeClass|push('lightswitch-field'),
+        fieldLabel: config.fieldLabel ?? config.label ?? null,
+    })|withoutKey('label') %}
+    {{ _self.field(config, 'template:_includes/forms/lightswitch') }}
+{% endmacro %}
+
+
+{% macro rangeField(config) %}
+    {% set config = config|merge({id: config.id ?? "range#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/range') }}
+{% endmacro %}
+
+
+{% macro editableTableField(config) %}
+    {% set config = config|merge({id: config.id ?? "editabletable#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/editableTable') }}
+{% endmacro %}
+
+
+{% macro elementSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "elementselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/elementSelect') }}
+{% endmacro %}
+
+
+{% macro componentSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "componentselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/componentSelect') }}
+{% endmacro %}
+
+
+{% macro entryTypeSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "entrytypeselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/entryTypeSelect') }}
+{% endmacro %}
+
+
+{% macro autosuggestField(config) %}
+    {% set config = config|merge({
+        id: config.id ?? "autosuggest#{random()}",
+    }) %}
+
+    {# Suggest an environment variable / alias? #}
+    {% if (config.suggestEnvVars ?? false) %}
+        {% set value = config.value ?? '' %}
+        {% if config.tip is not defined and value[0:1] not in ['$', '@'] %}
+            {% set config = config|merge({
+                tip: ((config.suggestAliases ?? false)
+                ? 'This can begin with an environment variable or alias.'|t('app')
+                : 'This can begin with an environment variable.'|t('app')) ~ ' ' ~ tag('a', {
+                    href: 'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
+                    class: 'go',
+                    text: 'Learn more'|t('app'),
+                }),
+            }) %}
+        {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') %}
+            {% set config = config|merge({
+                warning: 'The `@web` alias is not recommended.'|t('app'),
+            }) %}
+        {% endif %}
+    {% endif %}
+
+    {{ _self.field(config, 'template:_includes/forms/autosuggest') }}
+{% endmacro %}
+
+
+{% macro timeZoneField(config) %}
+    {% set config = config|merge({id: config.id ?? "timezone#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable with a value of a [supported time zone]({url}).'|t('app', {
+                url: 'https://www.php.net/manual/en/timezones.php',
+            }),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/timeZone') }}
+{% endmacro %}
+
+
+{% macro iconPickerField(config) %}
+    {% set config = config|merge({id: config.id ?? "iconpicker#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/iconPicker') }}
+{% endmacro %}
+
+
+{% macro fsField(config) %}
+    {% set config = config|merge({id: config.id ?? "fs#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable matching one of the option values.'|t('app'),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/fs') }}
+{% endmacro %}
+
+
+{% macro volumeField(config) %}
+    {% set config = config|merge({id: config.id ?? "volume#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable matching one of the option values.'|t('app'),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/volume') }}
+{% endmacro %}
+
+
+{% macro booleanMenuField(config) %}
+    {% set config = config|merge({id: config.id ?? "booleanmenu#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable with a boolean value ({examples}).'|t('app', {
+                examples: '`yes`/`no`/`true`/`false`/`on`/`off`/`0`/`1`',
+            }),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/booleanMenu') }}
+{% endmacro %}
+
+
+{% macro languageMenuField(config) %}
+    {% set config = config|merge({id: config.id ?? "languagemenu#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable with a valid language ID ({examples}).'|t('app', {
+                examples: '`en`/`en-GB`',
+            }),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/languageMenu') }}
+{% endmacro %}
+
+
+{% macro fieldLayoutDesignerField(config) %}
+    <div class="fld-cvd">
+    <h2 class="visually-hidden">{{ 'Field Layout'|t('app') }}</h2>
+        {{ _self.field({
+            label: 'Field Layout'|t('app'),
+            fieldset: true,
+            errors: config.fieldLayout.getErrors('customFields') ?? [],
+            data: {'error-key': 'fieldLayout.customFields'},
+        }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
+
+        {% if config.withGeneratedFields ?? false %}
+            {{ _self.field({
+                label: 'Generated Fields'|t('app'),
+                instructions: 'Define any additional values that should be saved on your elements.'|t('app'),
+                errors: config.fieldLayout.getErrors('generatedFields') ?? [],
+                data: {'error-key': 'fieldLayout.generatedFields'},
+                fieldLayout: config.fieldLayout ?? null,
+                disabled: config.disabled ?? false,
+            }, 'template:_includes/forms/generatedFieldsTable') }}
+        {% endif %}
+
+        {% if config.withCardViewDesigner ?? false %}
+            {% include '_includes/forms/cardViewDesigner' with {
+                fieldLayout: config.fieldLayout,
+                disabled: config.disabled ?? false,
+            } only %}
+        {% endif %}
+    </div>
+{% endmacro %}
+
+
+{% macro moneyField(config) %}
+    {% set config = config|merge({id: config.id ?? "money#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/money') }}
+{% endmacro %}
+
+
+{# Other #}
+
+
+{% macro optionShortcutLabel(key, shift, alt) -%}
+    <span class="shortcut">{{ _self.shortcutText(key, shift, alt) }}</span>
+{%- endmacro %}
+
+{% macro shortcutText(key, shift, alt) %}
+    {%- switch craft.app.request.getClientOs() %}
+    {%- case 'Mac' %}
+        {{- (alt ? '⌥') ~ (shift ? '⇧') ~ '⌘' ~ key }}
+    {%- default %}
+        {{- 'Ctrl+' ~ (alt ? 'Alt+') ~ (shift ? 'Shift+') ~ key }}
+    {%- endswitch %}
+{%- endmacro %}

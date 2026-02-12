@@ -1,0 +1,69 @@
+{% extends '_layouts/cp' %}
+{% set selectedTab = 'entryTypes' %}
+
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    'Are you sure you want to delete “{name}” and all entries of that type?',
+    'Description',
+    'Entry Type',
+    'Handle',
+    'No entry types exist yet.',
+    'No results.',
+    'No usages',
+    'Used by',
+]) %}
+
+{% set title = 'Entry Types'|t('app') %}
+
+{% set crumbs = [
+    {
+        label: 'Settings'|t('app'),
+        url: url('settings'),
+    },
+] %}
+
+{% block actionButton %}
+    {% if not readOnly %}
+        <a href="{{ url('settings/entry-types/new') }}" class="btn submit add icon">{{ "New entry type"|t('app') }}</a>
+    {% endif %}
+{% endblock %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    <div id="entrytypes-vue-admin-table"></div>
+{% endblock %}
+
+{% js %}
+  (() => {
+    const columns = [
+      { name: 'chip', title: Craft.t('app', 'Entry Type'), sortField: true },
+      { name: '__slot:handle', title: Craft.t('app', 'Handle'), sortField: true },
+      {
+        name: 'usages',
+        title: Craft.t('app', 'Used by'),
+        callback: (value) => value || `<i class="light">${Craft.t('app', 'No usages')}</i>`,
+      },
+    ];
+
+    let config = {
+        columns,
+        container: '#entrytypes-vue-admin-table',
+        emptyMessage: Craft.t('app', 'No entry types exist yet.'),
+        tableDataEndpoint: 'entry-types/table-data',
+        search: true,
+    }
+
+    {% if not readOnly %}
+        config['deleteAction'] = 'entry-types/delete';
+        config['deleteConfirmationMessage'] = Craft.t('app', 'Are you sure you want to delete “{name}” and all entries of that type?');
+    {% endif %}
+
+    new Craft.VueAdminTable(config);
+  })();
+{% endjs %}

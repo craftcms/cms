@@ -1,0 +1,66 @@
+{% import "_includes/forms" as forms %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% if group.id %}
+    {{ hiddenInput('groupId', group.id) }}
+{% endif %}
+
+{{ forms.textField({
+    first: true,
+    label: "Name"|t('app'),
+    id: 'name',
+    name: 'name',
+    value: group.name,
+    errors: group.getErrors('name'),
+    data: {'error-key': 'name'},
+    autofocus: true,
+    required: true,
+    disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+    label: "Handle"|t('app'),
+    id: 'handle',
+    name: 'handle',
+    class: 'code',
+    autocorrect: false,
+    autocapitalize: false,
+    value: group.handle,
+    errors: group.getErrors('handle'),
+    data: {'error-key': 'handle'},
+    required: true,
+    disabled: readOnly,
+}) }}
+
+{{ forms.textareaField({
+    label: 'Description'|t('app'),
+    id: 'description',
+    class: 'nicetext',
+    name: 'description',
+    value: group.description ?? null,
+    errors: group.getErrors('description'),
+    data: {'error-key': 'description'},
+    disabled: readOnly,
+}) }}
+
+<hr>
+
+<h2>{{ "Permissions"|t('app') }}</h2>
+
+<div id="permissions">
+    {% include "_includes/permissions" with {
+        subject: group ?? null,
+        permissions: craft.app.userPermissions.getAllPermissions(),
+        includeGroupPlaceholder: not group.id,
+        disabled: readOnly,
+    } only %}
+</div>
+
+{% if not group.handle %}
+    {% js %}
+        new Craft.HandleGenerator("#{{ 'name'|namespaceInputId }}", "#{{ 'handle'|namespaceInputId }}");
+    {% endjs %}
+{% endif %}

@@ -1,0 +1,60 @@
+{% extends "_layouts/cp" %}
+{% set title = "Tag Groups"|t('app') %}
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "No tag groups exist yet.",
+]) %}
+
+{% block actionButton %}
+    {% if not readOnly %}
+        <a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New tag group"|t('app') }}</a>
+    {% endif %}
+{% endblock %}
+
+{% set crumbs = [
+    { label: "Settings"|t('app'), url: url('settings') }
+] %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    <div id="taggroups-vue-admin-table"></div>
+{% endblock %}
+
+{% set tableData = [] %}
+{% for tagGroup in tagGroups %}
+    {% set tableData = tableData|merge([{
+        id: tagGroup.id,
+        title: tagGroup.name|t('site'),
+        url: url('settings/tags/' ~ tagGroup.id),
+        name: tagGroup.name|t('site')|e,
+        handle: tagGroup.handle,
+    }]) %}
+{% endfor %}
+
+{% js %}
+    var columns = [
+        { name: '__slot:title', title: Craft.t('app', 'Name') },
+        { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+    ];
+
+    let config = {
+        columns: columns,
+        container: '#taggroups-vue-admin-table',
+        emptyMessage: Craft.t('app', 'No tag groups exist yet.'),
+        tableData: {{ tableData|json_encode|raw }}
+    };
+
+    {% if not readOnly %}
+        config['deleteAction'] = 'tags/delete-tag-group';
+    {% endif %}
+
+    new Craft.VueAdminTable(config);
+{% endjs %}

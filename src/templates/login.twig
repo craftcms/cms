@@ -1,0 +1,85 @@
+{% extends '_layouts/basecp.twig' %}
+{% set title = "Sign In"|t('app') %}
+{% set bodyClass = 'login' %}
+
+{% set hasLogo = CraftEdition >= CraftPro and craft.rebrand.isLogoUploaded %}
+
+{% if hasLogo %}
+  {% set logo = craft.rebrand.logo %}
+{% endif %}
+
+{% set formHtml %}
+  <main>
+    {% if hasLogo %}
+      <h1>
+        {{ tag('img', {
+          id: 'login-logo',
+          src: logo.url,
+          alt: systemName,
+          width: logo.width,
+          height: logo.height,
+        }) }}
+      </h1>
+    {% endif %}
+
+    {% include '_special/login.twig' with {
+      showResetPassword: true,
+      showRememberMeCheckbox: true,
+    } %}
+
+    {% if craft.app.request.isCpRequest %}
+      <a id="poweredby" href="http://craftcms.com/" title="{{ 'Powered by Craft CMS'|t('app') }}" aria-label="Craft CMS">
+        {{ svg('@app/web/assets/cp/dist/images/craftcms.svg') }}
+      </a>
+    {% endif %}
+  </main>
+{% endset %}
+
+{% set noCookiesHtml %}
+  <main class="message-container">
+    <div class="modal-shade visible"></div>
+    <div class="modal">
+      <div class="body">
+        <p>{{ 'Cookies must be enabled to access the Craft CMS control panel.'|t('app') }}</p>
+      </div>
+    </div>
+  </main>
+{% endset %}
+
+{% block body %}
+  <header>
+    {% include '_layouts/components/system-info' %}
+  </header>
+
+  <script type="text/javascript">
+    var cookieTest = 'CraftCookieTest='+Math.floor(Math.random() * 1000000);
+    document.cookie = cookieTest;
+    if (document.cookie.search(cookieTest) != -1) {
+      document.cookie = cookieTest + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      document.write({{ formHtml|json_encode|raw }});
+    } else {
+      document.write({{ noCookiesHtml|json_encode|raw }});
+      setTimeout(() => {
+        if (document.activeElement !== document.body) {
+          $(document.activeElement).blur();
+        }
+      }, 50);
+    }
+  </script>
+{% endblock %}
+
+{% css %}
+  html {
+    height: 100%;
+  }
+{% endcss %}
+
+{% js %}
+  (() => {
+    const loginForm = new Craft.LoginForm($('.login-container'));
+
+    {% if authFormData is defined %}
+      loginForm.show2faForm({{ authFormData|json_encode|raw }});
+    {% endif %}
+  })();
+{% endjs %}

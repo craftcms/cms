@@ -1,0 +1,43 @@
+{% import "_includes/forms" as forms %}
+
+{% if not newMigrations %}
+    <p class="zilch">{{ 'No pending content migrations.'|t('app') }}</p>
+{% endif %}
+
+{% if newMigrations or migrationHistory %}
+    {% if newMigrations %}
+        <form method="post" accept-charset="UTF-8" action="" class="buttons">
+            {{ csrfInput() }}
+            {{ actionInput('utilities/apply-new-migrations') }}
+            <button type="submit" class="btn submit">{{ 'Apply new migrations'|t('app') }}</button>
+        </form>
+    {% endif %}
+
+    <table class="data fullwidth">
+        <thead>
+        <tr>
+            <th>{{ 'Name'|t('app') }}</th>
+            <th>{{ 'Status'|t('app') }}</th>
+            <th>{{ 'Apply Time'|t('app') }}</th>
+        </tr>
+        </thead>
+        <tbody>
+
+            {% for newMigration in newMigrations %}
+                <tr>
+                    <td>{{ newMigration }}</td>
+                    <td>{{ 'New'|t('app') }}</td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+
+            {% for migrationName, migration in migrationHistory %}
+                <tr>
+                    <td>{{ migrationName }}</td>
+                    <td>{{ 'Applied'|t('app') }}</td>
+                    <td>{{ migration|datetime() }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}

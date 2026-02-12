@@ -1,0 +1,33 @@
+{% set volume = craft.app.volumes.getUserPhotoVolume() %}
+{% if volume %}
+    {% set id = id ?? "userphoto-#{random()}" %}
+    <div id="{{ id }}" class="user-photo">
+        <div class="current-photo">
+            {% if user.photoId %}
+                {{ user.getThumbHtml(100)|raw }}
+            {% else %}
+                {{ svg('@app/elements/thumbs/user.svg')|prepend(tag('title', {
+                    text: user.getName(),
+                })) }}
+            {% endif %}
+        </div>
+        <div class="user-photo-controls">
+            <input type="file" class="hidden">
+            {% if user.photo %}
+                <div class="flex flex-nowrap">
+                    <button type="button" class="btn upload-photo">{{ "Change photo"|t('app') }}</button>
+                    <button type="button" class="btn delete-photo">{{ "Delete photo"|t('app') }}</button>
+                </div>
+                <div class="flex flex-nowrap">
+                    <button type="button" class="btn edit-photo" data-photoid="{{ user.photoId }}">{{ "Edit Image"|t('app') }}</button>
+                </div>
+            {% else %}
+                <div class="flex flex-nowrap">
+                    <button type="button" class="btn upload-photo">{{ "Upload a photo"|t('app') }}</button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% else %}
+    <p>{{ 'Please set a valid volume for storing the user photos in user settings page first.'|t('app') }}</p>
+{% endif %}

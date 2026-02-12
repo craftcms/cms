@@ -1,0 +1,158 @@
+@charset "UTF-8";
+@import '@craftcms/sass/mixins';
+
+$iconSize: 46px;
+
+#content {
+  #graphic {
+    display: block;
+    margin-block: 200px 0;
+    margin-inline: auto;
+
+    &.success {
+      background-image: url('images/success.png');
+    }
+
+    &.error {
+      background-image: url('images/error.png');
+    }
+  }
+
+  #status {
+    margin-block: 20px 250px;
+    margin-inline: auto;
+    text-align: center;
+    font-size: 16px;
+    color: $grey500;
+  }
+
+  .readable:not(:first-child) {
+    margin-block-start: 24px;
+  }
+
+  #ready-to-upgrade {
+    margin-block-start: 24px;
+
+    ul {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      @include padding-left(0);
+
+      li {
+        margin-block-start: 0;
+        list-style-type: none;
+
+        &:not(:first-child) {
+          &::before {
+            content: '∙';
+            padding-inline-end: 7px;
+          }
+        }
+      }
+    }
+  }
+
+  #plugins {
+    margin-block-start: 24px;
+
+    tbody {
+      th {
+        position: relative;
+        padding-inline-start: $iconSize + 12 + 12;
+        height: $iconSize + 20;
+
+        .plugin-icon {
+          position: absolute;
+          inset-block-start: 10px;
+          inset-inline-start: 12px;
+          width: $iconSize;
+          height: $iconSize;
+
+          svg {
+            display: block;
+            width: $iconSize;
+            height: $iconSize;
+          }
+        }
+      }
+
+      .plugin-developer {
+        margin-block-start: 3px;
+
+        &::before {
+          @include icon;
+          content: 'building';
+          margin-block-start: -3px;
+          margin-inline-end: 4px;
+          color: $grey300;
+        }
+
+        &,
+        a {
+          font-weight: normal;
+        }
+      }
+
+      .plugin-badges > div:not(:last-child) {
+        margin-inline-end: 5px;
+      }
+
+      .plugin-status,
+      .plugin-version {
+        display: inline-block;
+        border: 1px solid $grey600;
+        border-radius: $smallBorderRadius;
+        padding-block: 0 1px;
+        padding-inline: 7px;
+      }
+
+      .plugin-status {
+        text-transform: uppercase;
+        color: $grey600;
+        background-color: transparentize($grey600, 0.95);
+
+        &.plugin-ready {
+          border-color: $teal600;
+          color: $teal600;
+          background-color: transparentize($teal600, 0.95);
+        }
+
+        &.plugin-not-ready {
+          border-color: $yellow600;
+          color: $yellow600;
+          background-color: transparentize($yellow600, 0.95);
+        }
+
+        &.plugin-abandoned {
+          border-color: $red600;
+          color: $red600;
+          background-color: transparentize($red600, 0.95);
+        }
+      }
+
+      .plugin-note {
+        margin-block-start: 3px;
+        color: $lightTextColor;
+      }
+    }
+  }
+}
+
+@media only screen and (resolution >= 1.5dppx) {
+  #content {
+    #graphic {
+      &.success {
+        background-image: url('images/success_2x.png');
+        background-size: 48px;
+      }
+
+      &.error {
+        background-image: url('images/error_2x.png');
+        background-size: 48px;
+      }
+    }
+  }
+}

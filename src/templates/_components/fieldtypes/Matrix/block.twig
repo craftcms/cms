@@ -1,0 +1,274 @@
+{% from '_includes/forms.twig' import button %}
+
+{% set entryType = entry.getType() %}
+{% set singleType = singleType ?? (entryTypes|length == 1) %}
+{% set entryTypeName = entryType.name|t('site') %}
+{% set baseInputName = "#{name}[entries][uid:#{entry.uid}]" %}
+{% set static = static ?? false %}
+{% set staticEntries = staticEntries ?? false %}
+
+{% set actionBtnLabel = "#{entryTypeName} #{'Actions'|t('app')}" %}
+{% set actionMenuId = "matrixblock-action-menu--#{entry.uid}" %}
+
+{% set actionMenuItems = [
+  {
+    icon: 'down-left-and-up-right-to-center',
+    label: 'Collapse'|t('app'),
+    attributes: {
+      data: {action: 'collapse'},
+    },
+  },
+  {
+    icon: 'up-right-and-down-left-from-center',
+    label: 'Expand'|t('app'),
+    attributes: {
+      data: {action: 'expand'},
+    },
+    liAttributes: {
+      class: ['hidden'],
+    },
+  },
+] %}
+
+{% if not static %}
+  {% set actionMenuItems = actionMenuItems|merge([
+    {
+      icon: 'circle-dashed',
+      label: 'Disable'|t('app'),
+      attributes: {
+        data: {action: 'disable'},
+      },
+      liAttributes: {
+        class: {
+          hidden: not entry.enabled,
+        }|filter|keys,
+      },
+    },
+    {
+      icon: 'circle',
+      label: 'Enable'|t('app'),
+      attributes: {
+        data: {action: 'enable'},
+      },
+      liAttributes: {
+        class: {
+          hidden: entry.enabled,
+        }|filter|keys,
+      },
+    },
+    {
+      icon: 'arrow-up',
+      label: 'Move up'|t('app'),
+      attributes: {
+        data: {action: 'moveUp'},
+      },
+    },
+    {
+      label: 'Move down'|t('app'),
+      attributes: {
+        data: {icon: 'arrow-down', action: 'moveDown'},
+      },
+    },
+  ]) %}
+{% endif %}
+
+{% if entry.id or (currentUser.admin and craft.app.config.general.allowAdminChanges) %}
+  {% set actionMenuItems = actionMenuItems|push({hr: true}) %}
+
+  {% if entry.id and not static %}
+    {% set actionMenuItems = actionMenuItems|push({
+      icon: 'external',
+      label: 'Open in a new tab'|t('app'),
+      url: entry.getCpEditUrl(),
+      attributes: {target: '_blank'},
+    }) %}
+  {% endif %}
+
+  {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}
+    {% set actionMenuItems = actionMenuItems|push({
+      icon: 'gear',
+      label: 'Entry type settings'|t('app'),
+      attributes: {
+        data: {action: 'editEntryType'},
+      },
+    }) %}
+  {% endif %}
+{% endif %}
+
+{% set actionMenuItems = actionMenuItems|merge([
+  {hr: true},
+]) %}
+
+{% if not staticEntries %}
+  {% set actionMenuItems = actionMenuItems|merge([
+    {
+      icon: 'trash',
+      label: 'Delete'|t('app'),
+      destructive: true,
+      attributes: {
+        data: {action: 'delete'},
+      },
+    },
+    {hr: true},
+    {
+      icon: 'clone',
+      label: 'Duplicate'|t('app'),
+      attributes: {
+        data: {action: 'duplicate'},
+      },
+    },
+  ]) %}
+{% endif %}
+
+{% set actionMenuItems = actionMenuItems|merge([
+  {
+    icon: 'clone-dashed',
+    color: 'fuchsia',
+    label: 'Copy'|t('app'),
+    attributes: {
+      data: {action: 'copy'},
+    },
+  },
+  {hr: true},
+]) %}
+
+{% if not staticEntries %}
+  {% for entryType in entryTypes %}
+    {% set actionMenuItems = actionMenuItems|push({
+      icon: entryType.icon ?? 'plus',
+      color: entryType.color,
+      label: 'Add {type} above'|t('app', {type: entryType.name|t('site')}),
+      attributes: {
+        data: {action: 'add', type: entryType.handle},
+      },
+    }) %}
+  {% endfor %}
+{% endif %}
+
+{% namespace baseInputName %}
+  {% set form = entry.getFieldLayout().createForm(entry, static, {
+    'errorKeyPrefix' : "#{name}[#{entry.uid}]",
+  }) %}
+  {% set tabs = form.getTabMenu() %}
+{% endnamespace %}
+
+{% tag 'div' with {
+  class: [
+    'matrixblock',
+    'js-deletable',
+    not entry.enabled ? 'disabled-entry',
+    static ? 'static',
+  ]|filter,
+  style: {
+    '--custom-bg-color': entryType.color.cssVar(50) ?? null,
+    '--custom-text-color': entryType.color.cssVar(900) ?? null,
+    '--custom-titlebar-bg-color': entryType.color.cssVar(100) ?? null,
+    '--custom-border-color': entryType.color.cssVar(200) ?? null,
+  }|filter,
+  data: {
+    id: entry.id,
+    'draft-id': entry.isProvisionalDraft ? null : entry.draftId,
+    'revision-id': entry.revisionId,
+    'owner-id': entry.getOwnerId(),
+    'site-id': entry.siteId,
+    uid: entry.uid,
+    type: entryType.handle,
+    'type-name': entryTypeName,
+    collapsed: entry.collapsed,
+    'type-id': entry.typeId,
+    'field-layout-id': entry.getFieldLayout().id,
+    'visible-layout-elements': form.getVisibleElements(),
+    'static-layout-elements': form.getStaticElements(),
+    'base-input-name': baseInputName|namespaceInputName,
+  },
+  role: 'listitem',
+} %}
+  {% if not static %}
+    {{ hiddenInput("#{name}[sortOrder][]", entry.uid) }}
+    {# only register a delta name for this entry if it’s not new #}
+    {% if entry.id and not entry.getIsUnpublishedDraft() %}
+      {% do view.registerDeltaName(baseInputName) %}
+    {% endif %}
+    {{ hiddenInput("#{baseInputName}[type]", entryType.handle) }}
+    {{ hiddenInput("#{baseInputName}[enabled]", entry.enabled ? '1' : '') }}
+    {% if isFresh ?? false %}
+      {{ hiddenInput("#{baseInputName}[fresh]", '1') }}
+    {% endif %}
+  {% endif %}
+
+  {% tag 'div' with {
+    class: 'titlebar',
+  } %}
+    {% tag 'div' with {
+      class: {
+        blocktype: true,
+        flex: true,
+        'flex-nowrap': true,
+        'flex-gap-xs': true,
+        error: not static and entry.hasErrors(),
+      }|filter|keys,
+    } %}
+      {% if entryType.icon %}
+        {{ tag('div', {
+          class: ['cp-icon', 'small', entryType.color.value ?? null]|filter,
+          html: iconSvg(entryType.icon),
+        }) }}
+      {% endif %}
+      <div>{{ entryTypeName }}</div>
+      {% if not static and entry.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
+    {% endtag %}
+    <div class="preview"></div>
+    {% tag 'div' with {
+      class: ['matrixblock-tabs'],
+      style: {
+        '--custom-sel-tab-shadow-color': entryType.color.cssVar(200) ?? null,
+      }|filter,
+    } %}
+      {% if tabs|length > 1 %}
+        {% namespace baseInputName %}
+          {% include '_includes/tabs.twig' %}
+        {% endnamespace %}
+      {% endif %}
+    {% endtag %}
+  {% endtag %}{# /.titlebar #}
+
+  <div class="actions">
+    <div class="status off" title="{{ 'Disabled'|t('app') }}">
+      {{ tag('span', {
+        class: 'visually-hidden',
+        html: 'Disabled'|t('app'),
+      }) }}
+    </div>
+
+    {% if actionMenuItems is not empty %}
+      <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}" tabindex="0" role="checkbox" aria-checked="false"></div>
+      {{ disclosureMenu(actionMenuItems, {
+        hiddenLabel: 'Actions'|t('app'),
+        buttonAttributes: {
+          class: ['action-btn', 'small'],
+          title: 'Actions'|t('app'),
+          data: {
+            'disclosure-trigger': true,
+          },
+        },
+      }) }}
+    {% endif %}
+    {% if not static %}
+      {{ button({
+        class: ['chromeless', 'small', 'move-btn'],
+        icon: 'move',
+        attributes: {
+          title: 'Reorder'|t('app'),
+          aria: {label: 'Reorder'|t('app')},
+          role: 'none',
+          tabindex: '-1',
+        },
+      }) }}
+    {% endif %}
+  </div>
+  <div class="fields">
+    {% namespace baseInputName %}
+      {{ form.render()|raw }}
+    {% endnamespace %}
+  </div>
+{% endtag %}{# /.matrixblock #}

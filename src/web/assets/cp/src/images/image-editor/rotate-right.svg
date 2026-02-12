@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 40.3 (33839) - http://www.bohemiancoding.com/sketch -->
+    <title>rotate-right</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="-Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="rotate-right" fill="#FFFFFF">
+            <g id="Rotate-Icon" transform="translate(12.500000, 12.000000) scale(-1, 1) translate(-12.500000, -12.000000) translate(4.000000, 3.000000)">
+                <path d="M0,7 L11,7 L11,18 L0,18 L0,7 Z M1,8 L10,8 L10,17 L1,17 L1,8 Z M9.75234326,1.92797897 L9.75234326,0.130110634 L7.56119123,2.32126267 L9.75234326,4.51241471 L9.75234326,2.71454637 L10.5014551,2.71454637 C13.6664525,2.71454637 16.2508882,5.2989821 16.2508882,8.46397949 L17,8.46397949 C17,4.84951502 14.078464,1.92797897 10.4827273,1.92797897 L9.75234326,1.92797897 Z" id="Combined-Shape"></path>
+            </g>
+        </g>
+    </g>
+</svg>

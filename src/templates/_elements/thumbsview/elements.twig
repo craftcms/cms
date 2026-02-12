@@ -1,0 +1,22 @@
+{% set context = context ?? 'index' %}
+{% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index']) %}
+
+{% apply spaceless %}
+  {% for element in elements %}
+    {% tag 'li' with {
+      class: element.id in disabledElementIds ? 'disabled' : null,
+      data: {
+        id: element.id,
+      },
+    } %}
+      {{ elementChip(element, {
+        context: context ?? 'index',
+        size: 'large',
+        selectable: selectable,
+        sortable: sortable,
+        hyperlink,
+      }) }}
+    {% endtag %}
+  {% endfor %}
+
+{% endapply -%}

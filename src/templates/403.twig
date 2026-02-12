@@ -1,0 +1,7 @@
+{% extends "_layouts/message" %}
+{% set title = "Unauthorized"|t('app') %}
+
+{% block message %}
+    <h2>{{ title }}</h2>
+    <p>{{ (message ?? null) ?: "You don’t have the proper credentials to access this page."|t('app') }}</p>
+{% endblock %}

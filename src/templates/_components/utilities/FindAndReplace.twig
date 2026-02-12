@@ -1,0 +1,22 @@
+{% import "_includes/forms" as forms %}
+
+<form id="find-replace" class="utility" method="post" accept-charset="UTF-8">
+    {{ actionInput('utilities/find-and-replace-perform-action') }}
+    {{ csrfInput() }}
+
+    {{ forms.textField({
+        label: "Find Text"|t('app'),
+        first: true,
+        name: 'find'
+    }) }}
+
+    {{ forms.textField({
+        label: "Replace Text"|t('app'),
+        name: 'replace'
+    }) }}
+
+    <div class="buttons">
+        <button type="submit" class="btn submit">{{ 'Find and Replace'|t('app') }}</button>
+        <div class="utility-status"></div>
+    </div>
+</form>

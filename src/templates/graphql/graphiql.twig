@@ -1,0 +1,36 @@
+{% extends "_layouts/basecp" %}
+{% import "_includes/forms" as forms %}
+
+{% set title = "Explore the GraphQL API"|t %}
+{% set selectedSubnavItem = 'explore' %}
+{% set showHeader = false %}
+
+{% block body %}
+    <div class="cp-graphiql">
+        <div class="cp-graphiql-header">
+            <h1 class="cp-graphiql-title">Explore the GraphQL API</h1>
+            <form method="GET" class="schema-selector">
+                {{ forms.selectField({
+                    label: 'Select Schema'|t('app'),
+                    name: 'schemaUid',
+                    value: selectedSchema.uid ?? '*',
+                    options: schemas
+                }) }}
+
+                {{ forms.submitButton({
+                    label: 'Go'|t('app')
+                }) }}
+            </form>
+        </div>
+        <div
+            dir="ltr"
+            id="graphiql"
+            class="graphiql-editor"
+            data-endpoint="{{ url }}"
+            data-selected-schema="{{ {name: selectedSchema.name, schema: selectedSchema.uid, }|json_encode }}"
+        >
+
+            <div class="spinner big"></div>
+        </div>
+    </div>
+{% endblock %}

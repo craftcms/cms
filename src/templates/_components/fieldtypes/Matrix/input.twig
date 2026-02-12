@@ -1,0 +1,20 @@
+{% set singleType = entryTypes|length == 1 %}
+{% set static = static ?? false %}
+
+{% if not static %}
+  {{ hiddenInput(name, '') }}
+{% endif %}
+
+<div class="matrix matrix-field" id="{{ id }}">
+  <span role="status" class="visually-hidden" data-status-message></span>
+  <div class="blocks" role="list">
+    {% for entry in entries %}
+      {% include '_components/fieldtypes/Matrix/block.twig' %}
+    {% endfor %}
+  </div>
+  {% if not static and not staticEntries %}
+    <div class="buttons">
+      {% include '_components/fieldtypes/Matrix/create-button.twig' %}
+    </div>
+  {% endif %}
+</div>

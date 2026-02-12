@@ -1,0 +1,66 @@
+{% from "_includes/forms" import text -%}
+
+{% do view.registerTranslations('app', [
+    "Sort by {attribute}",
+    "Score",
+    "Structure",
+    "Display in a table",
+    "Display hierarchically",
+    "Display as thumbnails",
+]) %}
+
+{% hook 'cp.elements.toolbar' %}
+
+{% if showStatusMenu or isAdministrative %}
+    <div>
+        <label id="{{ idPrefix }}status-label" class="visually-hidden">{{ "Status"|t('app') }}</label>
+        <button id="{{ idPrefix }}status-button" aria-labelledby="{{ idPrefix }}status-label" type="button" class="btn menubtn statusmenubtn"><span class="status all"></span>{{ "All"|t('app') }}</button>
+        <div class="menu">
+            <ul class="padded">
+                <li><a data-status="" class="sel"><span class="status all"></span>{{ "All"|t('app') }}</a></li>
+                {% if showStatusMenu %}
+                    {% for status, info in elementStatuses %}
+                        {% set label = info.label ?? info %}
+                        {% set color = info.color ?? '' %}
+                        {% set color = color is instance of ('craft\\enums\\Color') ? color.value : color %}
+                        <li><a data-status="{{ status }}"><span class="status {{ status }} {{ color }}"></span>{{ label }}</a></li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+            {% if isAdministrative %}
+                {% if showStatusMenu %}<hr class="padded" role="presentation">{% endif %}
+                <ul class="padded">
+                    {% if canHaveDrafts ?? false %}
+                        <li><a data-drafts><span class="icon" data-icon="draft" aria-hidden="true"></span>{{ 'Drafts'|t('app') }}</a></li>
+                    {% endif %}
+                    <li><a data-trashed><span class="icon" data-icon="trash" aria-hidden="true"></span>{{ "Trashed"|t('app') }}</a></li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+{% if showSiteMenu %}
+    {% include "_elements/sitemenu" %}
+{% endif %}
+<div class="search-container flex-grow texticon has-filter-btn">
+    <span class="texticon-icon search icon" aria-hidden="true"></span>
+    {{ text({
+        class: 'clearable',
+        placeholder: "Search"|t('app'),
+        value: craft.app.request.getParam('search'),
+        inputAttributes: {
+            aria: {
+                label: 'Search'|t('app'),
+            },
+        },
+    }) }}
+    {{ tag('button', {
+        role: 'button',
+        class: 'clear-btn hidden',
+        title: 'Clear search'|t('app'),
+        aria: {
+            label: 'Clear search'|t('app'),
+        },
+    }) }}
+    <button type="button" class="filter-btn" title="{{ 'Filter results'|t('app') }}" aria-label="{{ 'Filter results'|t('app') }}" aria-expanded="false"></button>
+</div>

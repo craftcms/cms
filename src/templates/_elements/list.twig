@@ -1,0 +1,33 @@
+{% set elements = elements ?? [] %}
+{% set disabled = disabled ?? null %}
+{% set viewMode = viewMode ?? null %}
+{% set size = size ?? (viewMode in ['thumbs', 'large'] ? 'large' : 'small') %}
+
+{% dump {viewMode, inline: inline ?? null} %}
+
+{% apply spaceless %}
+  {% tag 'ul' with {
+    class: [
+      'elements',
+      'chips',
+      "chips-#{size}",
+      (inline ?? false) ? 'inline-chips' : null,
+    ]|filter,
+  } %}
+    {% for element in elements %}
+      <li>
+        {% set element = elementChip(element, {
+          context: context ?? 'index',
+          size,
+          inputName: inputName ?? ((name ?? false) ? ((single ?? false) ? name : "#{name}[]") : null),
+          showActionMenu: showActionMenu ?? false,
+          checkbox: selectable ?? false,
+        }) %}
+        {% if disabled %}
+          {% set element = element|removeClass('removable') %}
+        {% endif %}
+        {{ element|raw }}
+      </li>
+    {% endfor %}
+  {% endtag %}
+{% endapply %}

@@ -1,0 +1,62 @@
+{% set hasOuterContainer = hasOuterContainer ?? false %}
+{% set id = (id ?? "date#{random()}") ~ '-date' -%}
+{% set name = name ?? null -%}
+{% set value = (value ?? false) ? date(value, false) : null -%}
+{% set locale = craft.app.getFormattingLocale() %}
+{% set outputLocaleParam = outputLocaleParam ?? true %}
+{% set timeZone = timeZone ?? null %}
+{% set outputTzParam = outputTzParam ?? true %}
+{% set isMobile = craft.app.request.isMobileBrowser %}
+{% set isDateTime = isDateTime ?? false %}
+{% set disabled = disabled ?? false %}
+
+{% set containerAttributes = {
+    class: ['datewrapper']|merge((class ?? [])|explodeClass),
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% if not hasOuterContainer %}<div class="datetimewrapper">{% endif %}
+
+{% tag 'div' with containerAttributes %}
+    {% if not isMobile %}
+        {% set formatRefId = "#{id}-format" %}
+        {% set describedBy = [formatRefId, describedBy ?? null]|filter|join(' ') %}
+        <span id="{{ formatRefId }}" class="visually-hidden">
+            {{ locale.getDateFormat('short', 'human') }}
+        </span>
+    {% endif %}
+    {%- include "_includes/forms/text" with {
+        type: isMobile ? 'date' : 'text',
+        class: isMobile and not value ? 'empty-value' : false,
+        name: name ? "#{name}[date]" : null,
+        autocomplete: false,
+        size: 10,
+        placeholder: ' ',
+        value: value ? value|date(isMobile ? 'Y-m-d' : 'short', timeZone) : '',
+        inputAttributes: {
+            aria: {
+                label: isDateTime ? 'Date'|t('app') : false,
+            },
+        },
+    } -%}
+    <div data-icon="date"></div>
+    {%- if name and outputLocaleParam -%}
+        {{- hiddenInput("#{name}[locale]", locale.id) -}}
+    {%- endif -%}
+    {%- if name and outputTzParam -%}
+        {{- hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) -}}
+    {%- endif -%}
+{% endtag %}
+
+{% if not hasOuterContainer %}</div>{% endif %}
+
+{%- if not isMobile and not disabled -%}
+    {%- js -%}
+        $('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({
+            defaultDate: new Date({% if value %}{{ value.format('Y') }}, {{ value.format('n')-1 }}, {{ value.format('j') }}{% endif %})
+        }, Craft.datepickerOptions));
+    {%- endjs -%}
+{%- endif -%}

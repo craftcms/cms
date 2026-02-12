@@ -1,0 +1,10 @@
+{% import '_includes/forms.twig' as forms %}
+
+<div class="readable mb-xl">
+    <p>{{ 'Recovery codes can be used as a backup form of verification, when you’re unable to use your primary method.'|t('app') }}</p>
+</div>
+
+{{ forms.submitButton({
+    label: 'Generate recovery codes'|t('app'),
+    spinner: true,
+}) }}

@@ -1,0 +1,73 @@
+<?php
+
+namespace _generated;
+
+trait FunctionalTesterActions
+{
+    /**
+     * @param class-string<\yii\base\Component> $class
+     * @param string $eventName
+     * @param callable $callback
+     * @param string $eventInstance
+     * @param array $eventValues
+     * @return void
+     */
+    public function expectEvent(string $class, string $eventName, callable $callback, string $eventInstance = "", array $eventValues = []): void {}
+
+    /**
+     * @param class-string<\craft\base\ElementInterface> $elementType
+     * @param array $searchProperties
+     * @param int $amount
+     * @param bool $searchAll
+     * @return \craft\base\ElementInterface[]
+     */
+    public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array {}
+}
+
+trait GqlTesterActions
+{
+    /**
+     * @param class-string<\yii\base\Component> $class
+     * @param string $eventName
+     * @param callable $callback
+     * @param string $eventInstance
+     * @param array $eventValues
+     * @return void
+     */
+    public function expectEvent(string $class, string $eventName, callable $callback, string $eventInstance = "", array $eventValues = []): void {}
+
+    /**
+     * @param class-string<\craft\base\ElementInterface> $elementType
+     * @param array $searchProperties
+     * @param int $amount
+     * @param bool $searchAll
+     * @return \craft\base\ElementInterface[]
+     */
+    public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array {}
+}
+
+trait UnitTesterActions
+{
+    /**
+     * @param class-string<\yii\base\Component> $class
+     * @param string $eventName
+     * @param callable $callback
+     * @param string $eventInstance
+     * @param array $eventValues
+     * @return void
+     */
+    public function expectEvent(string $class, string $eventName, callable $callback, string $eventInstance = "", array $eventValues = []): void {}
+
+    /**
+     * @param class-string<\craft\base\ElementInterface> $elementType
+     * @param array $searchProperties
+     * @param int $amount
+     * @param bool $searchAll
+     * @return \craft\base\ElementInterface[]
+     */
+    public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array {}
+}
+
+namespace craft\base;
+
+interface ElementInterface {}

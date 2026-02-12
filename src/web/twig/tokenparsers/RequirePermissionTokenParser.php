@@ -1,0 +1,45 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\web\twig\tokenparsers;
+
+use craft\web\twig\nodes\RequirePermissionNode;
+use Twig\Token;
+use Twig\TokenParser\AbstractTokenParser;
+
+/**
+ * Class RequirePermissionTokenParser
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0.0
+ */
+class RequirePermissionTokenParser extends AbstractTokenParser
+{
+    /**
+     * @inheritdoc
+     */
+    public function parse(Token $token): RequirePermissionNode
+    {
+        $lineno = $token->getLine();
+        $stream = $this->parser->getStream();
+
+        $nodes = [
+            'permissionName' => $this->parser->parseExpression(),
+        ];
+        $stream->expect(Token::BLOCK_END_TYPE);
+
+        return new RequirePermissionNode($nodes, [], $lineno);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTag(): string
+    {
+        return 'requirePermission';
+    }
+}

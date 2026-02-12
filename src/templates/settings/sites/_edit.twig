@@ -1,0 +1,146 @@
+{% extends '_layouts/cp.twig' %}
+
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
+
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/sites/{id}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
+{% import '_includes/forms.twig' as forms %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    {% if not readOnly %}
+        {{ actionInput('sites/save-site') }}
+        {{ redirectInput('settings/sites') }}
+        {% if site.id %}{{ hiddenInput('siteId', site.id) }}{% endif %}
+    {% endif %}
+
+    {{ forms.selectField({
+        first: true,
+        label: "Group"|t('app'),
+        instructions: "Which group should this site belong to?"|t('app'),
+        warning: site.id and craft.app.isMultiSite ? 'Changing this may result in data loss.'|t('app'),
+        id: 'group',
+        name: 'group',
+        options: groupOptions,
+        value: groupId,
+        disabled: readOnly,
+    }) }}
+
+    <div id="site-settings">
+        {{ forms.autosuggestField({
+            first: true,
+            label: "Name"|t('app'),
+            instructions: "What this site will be called in the control panel."|t('app'),
+            id: 'name',
+            name: 'name',
+            value: site.getName(false),
+            suggestEnvVars: true,
+            errors: site.getErrors('name'),
+            autofocus: true,
+            required: true,
+            disabled: readOnly,
+        }) }}
+
+        {{ forms.textField({
+            label: "Handle"|t('app'),
+            instructions: "How you’ll refer to this site in the templates."|t('app'),
+            id: 'handle',
+            name: 'handle',
+            class: 'code',
+            autocorrect: false,
+            autocapitalize: false,
+            value: site.handle,
+            errors: site.getErrors('handle'),
+            required: true,
+            disabled: readOnly,
+        }) }}
+
+        {{ forms.languageMenuField({
+            label: "Language"|t('app'),
+            instructions: "The language content in this site will use."|t('app'),
+            id: 'language',
+            name: 'language',
+            value: site.getLanguage(false),
+            options: craft.cp.getLanguageOptions(true),
+            errors: site.getErrors('language'),
+            includeEnvVars: true,
+            disabled: readOnly,
+        }) }}
+
+        {% if (craft.app.isMultiSite or not site.id) %}
+            {{ forms.booleanMenuField({
+                label: 'Status'|t('app'),
+                id: 'enabled',
+                name: 'enabled',
+                yesLabel: 'Enabled'|t('app'),
+                noLabel: 'Disabled'|t('app'),
+                includeEnvVars: true,
+                value: site.getEnabled(false),
+                disabled: site.primary,
+                tip: site.primary ? 'The primary site cannot be disabled.'|t('app') : null,
+                disabled: readOnly,
+            }) }}
+        {% endif %}
+
+        {% if (craft.app.isMultiSite or not site.id) and not site.primary %}
+            {{ forms.lightswitchField({
+                label: 'Make this the primary site'|t('app'),
+                instructions: "The primary site will be loaded by default on the front end."|t('app'),
+                id: 'primary',
+                name: 'primary',
+                on: site.primary,
+                disabled: readOnly,
+            }) }}
+        {% else %}
+            {{ hiddenInput('primary', '1') }}
+        {% endif %}
+
+        <hr>
+
+        {{ forms.lightswitchField({
+            label: "This site has its own base URL"|t('app'),
+            id: 'has-urls',
+            name: 'hasUrls',
+            on: site.hasUrls,
+            toggle: 'url-settings',
+            disabled: readOnly,
+        }) }}
+
+        <div id="url-settings" class="nested-fields{% if not site.hasUrls %} hidden{% endif %}">
+            {{ forms.autosuggestField({
+                label: "Base URL"|t('app'),
+                instructions: "The base URL for the site."|t('app'),
+                id: 'base-url',
+                class: 'ltr',
+                suggestEnvVars: true,
+                suggestAliases: true,
+                name: 'baseUrl',
+                value: site.getBaseUrl(false),
+                errors: site.getErrors('baseUrl'),
+                disabled: readOnly,
+            }) }}
+        </div>
+    </div>
+{% endblock %}
+
+
+{% if brandNewSite %}
+    {% js on ready %}
+        new Craft.HandleGenerator('#name', '#handle');
+        new Craft.EnvVarGenerator('#name', '#base-url', {
+          prefix: '$',
+          suffix: '_URL',
+        });
+    {% endjs %}
+{% endif %}

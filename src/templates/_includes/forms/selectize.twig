@@ -1,0 +1,262 @@
+{% set id = id ?? "selectize#{random()}" %}
+{% set selectizeOptions = {
+    dropdownParent: 'body',
+    plugins: ['auto_position', 'selectize-plugin-a11y'],
+}|merge(selectizeOptions ?? []) %}
+
+{% set multi = multi ?? false %}
+{% if multi %}
+    {% set selectizeOptions = selectizeOptions|merge({
+        plugins: (selectizeOptions.plugins ?? [])|push('remove_button')
+    }) %}
+{% else %}
+    {% if selectizeOptions.extraPlugins is defined and selectizeOptions.extraPlugins == false %}
+        {# don't include extra plugins if the settings explicitly tell us not to #}
+    {% else %}
+        {% set selectizeOptions = selectizeOptions|merge({
+            plugins: (selectizeOptions.plugins ?? [])|push('select_on_focus')
+        }) %}
+    {% endif %}
+{% endif %}
+
+{# Normalize the options #}
+{% set options = (options ?? [])|map((o, k) => (o.optgroup is defined or o.value is defined) ? o : {
+    value: k,
+    label: o.label is defined ? o.label : o,
+}) %}
+{% set options = options|map(o => o|merge({
+    data: (o.data ?? {})|merge(o.data.data ?? {})|merge({
+        color: o.data.color ?? o.color ?? null,
+        icon: iconSvg(o.data.icon ?? o.icon ?? null),
+    }|filter)
+})) %}
+
+{% if includeEnvVars ?? false %}
+    {% if allowedEnvValues is not defined %}
+        {% set allowedEnvValues = options|filter(o => o.optgroup is not defined)|map(o => o.value) %}
+    {% endif %}
+    {% set options = options|map(o => o.data.hint is defined ? o : o|merge({
+        data: {
+            hint: o.value,
+        },
+    }, recursive=true)) %}
+{% endif %}
+
+{% if addOptionFn is defined and addOptionLabel is defined %}
+    {% if options is empty %}
+        {% set selectizeOptions = selectizeOptions|merge({
+            allowEmptyOption: true,
+        }) %}
+        {% set options = [
+            {value: '', label: ' '},
+        ] %}
+    {% endif %}
+    {% set options = options|push({
+        label: addOptionLabel ,
+        value: '__add__',
+        data: {
+            addOption: true,
+        },
+    }) %}
+{% endif %}
+
+{% if includeEnvVars ?? false %}
+    {% set options = options|merge(craft.cp.getEnvOptions(allowedEnvValues)) %}
+{% endif %}
+
+{% include (multi ? '_includes/forms/multiselect.twig' : '_includes/forms/select.twig') with {
+    class: (class ?? [])|explodeClass|push('selectize')|unique,
+    inputAttributes: {
+        style: {display: 'none'},
+        autocomplete: (not multi and autocomplete is defined) ? autocomplete : false
+    }|merge(inputAttributes ?? [], recursive=true),
+} %}
+
+{% js %}
+(() => {
+    const id = {{ id|namespaceInputId|json_encode|raw }};
+
+    const hasData = (data, option) => {
+        return typeof data[option] !== 'undefined' || typeof data[option.toLowerCase()] !== 'undefined';
+    };
+    const getData = (data, option) => {
+        if (typeof data[option] !== 'undefined') {
+            return data[option];
+        }
+        return data[option.toLowerCase()];
+    };
+    const label = (data, showHint) => {
+        let label = '';
+        if (hasData(data, 'addOption')) {
+            label += '<span class="icon add"></span> ';
+        }
+        const status = (() => {
+            if (hasData(data, 'status')) {
+                return getData(data, 'status');
+            }
+            if (hasData(data, 'boolean')) {
+                return getData(data, 'boolean') ? 'enabled' : 'white';
+            }
+            return null;
+        })();
+        if (status) {
+            label += `<span class="status ${status}"></span>`;
+        }
+        const icon = hasData(data, 'icon') ? getData(data, 'icon') : false;
+        const color = hasData(data, 'color') ? getData(data, 'color') : false;
+        if (icon !== false) {
+            const style = color ? `style="--icon-color: ${color}"` : '';
+            label += `<span class="cp-icon puny" ${style}>${icon}</span> `;
+        } else if (color !== false) {
+            label += '<div class="color small">';
+            if (color[0] == '#') {
+                label += `<div class="color-preview" style="background-color: ${color}"></div>`;
+            } else if (color != '__blank__') {
+                label += `<div class="color-preview bg-${color}"></div>`;
+            } else {
+                label += `<div class="color-preview"></div>`;
+            }
+            label += '</div>';
+        }
+        label += `<span>${Craft.escapeHtml(getData(data, 'text'))}</span>`;
+        if (showHint && hasData(data, 'hint') && getData(data, 'hint') !== '') {
+            const hintLang = getData(data, 'hintLang');
+            const langAttr = hintLang ? ` lang="${hintLang}"` : '';
+            label += `<span class="light"${langAttr}>– ${Craft.escapeHtml(getData(data, 'hint'))}</span>`;
+        }
+        return `<div class="flex flex-nowrap">${label}</div>`;
+    };
+
+    const $select = $(`#${id}`);
+
+    const onChange = () => {
+        const selectize = $select.data('selectize');
+        const $items = selectize.$wrapper.find('.item');
+        const isSelect = $select.is('select');
+
+        for (let i = 0; i < $items.length; i++) {
+            const $item = $items.eq(i);
+
+            if (isSelect) {
+                const boolean = $item.data('boolean');
+                if (typeof boolean !== 'undefined') {
+                    $select.data('boolean', !!boolean);
+                } else {
+                    $select.removeData('boolean');
+                }
+            }
+
+            {% if addOptionFn is defined and addOptionLabel is defined %}
+            if ($item.data('add-option')) {
+                selectize.close();
+                selectize.blur();
+
+                ({{ addOptionFn|raw }})(item => {
+                    selectize.addOption(item);
+
+                    // Remove the “Create” option and re-place it at the end
+                    selectize.removeOption('__add__', true);
+                    selectize.addOption({
+                        text: {{ addOptionLabel|json_encode|raw }} ,
+                        value: '__add__',
+                        addOption: true,
+                        hint: null,
+                    });
+
+                    selectize.refreshOptions(false);
+
+                    if (isSelect) {
+                        selectize.setValue(item.value, true);
+                    } else {
+                        selectize.addItem(item.value, true);
+                    }
+                }, selectize);
+
+                Garnish.requestAnimationFrame(() => {
+                    if (isSelect) {
+                        selectize.setValue({{ ((options|first).value ?? '')|json_encode|raw }}, true);
+                    } else {
+                        selectize.removeItem('__add__');
+                    }
+                });
+            }
+            {% endif %}
+        }
+    };
+
+    {% if not multi %}
+        const selectizeDropdownOpenEvent = new Event("selectizedropdownopen");
+        const selectizeDropdownCloseEvent = new Event("selectizedropdownclose");
+    {% endif %}
+
+    $select.selectize($.extend({
+        searchField: ['text', 'hint', 'value', 'keywords'],
+        selectOnTab: false,
+        render: {
+            option: data => {
+                const classes = ['option'];
+                if (data.value === '') {
+                    classes.push('selectize-dropdown-emptyoptionlabel');
+                }
+                return `<div class="${classes.join(' ')}" role="option" id="${data.text.replace(' ', '')}">${label(data, true)}</div>`;
+            },
+            item: data => {
+                const attrs = ['class="item"'];
+                if (hasData(data, 'boolean')) {
+                    attrs.push(`data-boolean="${getData(data, 'boolean') ? '1' : ''}"`);
+                }
+                if (hasData(data, 'addOption')) {
+                    attrs.push('data-add-option="1"');
+                }
+                return `<div ${attrs.join(' ')}>${label(data, false)}</div>`;
+            },
+        },
+        onChange: onChange,
+        onInitialize: function () {
+            // this is needed so that you can delete selected item when the field is not fully in viewport
+            // see https://github.com/craftcms/cms/issues/18079 for details
+            {% if multi %}
+                this.isFocused = true;
+            {% endif %}
+
+            // Copy all ARIA attributes from initial select to selectize
+            [...$select[0].attributes]
+                .filter(attr => /^aria-/.test(attr.name))
+                .forEach((attr) => {
+                    this.$control_input.attr(attr.name, attr.value);
+                });
+
+            {% if not multi %}
+                // we need some sort of class here to be able to prevent Garnish.setFocusWithin()
+                // from auto-focusing and therefore opening the selectized field if it's the first one in a slideout
+                // see https://github.com/craftcms/cms/issues/15245
+                this.$control_input.addClass('prevent-autofocus');
+            {% endif %}
+
+            // allow autocomplete;
+            // despite what the documentation says, the "autofill_disable" seems to be ON by default,
+            // and there's no "proper" way to disable it
+            // more info: https://github.com/selectize/selectize.js/issues/1535
+            const autocomplete = $select.attr('autocomplete');
+            if (autocomplete) {
+                const selectize = $select.data('selectize');
+                selectize.$control_input
+                    .removeAttr('autofill')
+                    .attr('autocomplete', autocomplete);
+            }
+        },
+        onDropdownOpen: function() {
+            {% if not multi %}
+                $select[0].dispatchEvent(selectizeDropdownOpenEvent);
+            {% endif %}
+        },
+        onDropdownClose: function() {
+            {% if not multi %}
+                $select[0].dispatchEvent(selectizeDropdownCloseEvent);
+            {% endif %}
+        },
+    }, {{ selectizeOptions|json_encode|raw }}));
+
+    onChange();
+})()
+{% endjs %}

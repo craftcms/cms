@@ -1,0 +1,79 @@
+{% set hasOuterContainer = hasOuterContainer ?? false %}
+{% set id = (id ?? "time#{random()}") ~ '-time' -%}
+{% set name = name ?? null -%}
+{% set value = value ?? null -%}
+{% set locale = craft.app.getFormattingLocale() %}
+{% set outputLocaleParam = outputLocaleParam ?? true %}
+{% set timeZone = timeZone ?? null %}
+{% set outputTzParam = outputTzParam ?? true %}
+{% set isMobile = craft.app.request.isMobileBrowser %}
+{% set isDateTime = isDateTime ?? false %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') -%}
+
+{% set containerAttributes = {
+    class: ['timewrapper']|merge((class ?? [])|explodeClass),
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% if not hasOuterContainer %}<div class="datetimewrapper">{% endif %}
+
+{% tag 'div' with containerAttributes %}
+    {% if not isMobile %}
+        {% set formatRefId = "#{id}-format" %}
+        {% set describedBy = [formatRefId, describedBy ?? null]|filter|join(' ') %}
+        <span id="{{ formatRefId }}" class="visually-hidden">
+            {{ locale.getTimeFormat('short', 'human') }}
+        </span>
+    {% endif %}
+    {%- include "_includes/forms/text" with {
+        type: isMobile ? 'time' : 'combobox',
+        class: isMobile and not value ? 'empty-value' : false,
+        name: name ? "#{name}[time]" : null,
+        autocomplete: false,
+        size: 10,
+        placeholder: ' ',
+        value: value ? value|time(isMobile ? 'H:i' : 'short', timeZone) : '',
+        inputAttributes: {
+            aria: {
+                label: isDateTime ? 'Time'|t('app') : false,
+                expanded: isMobile ? false : 'false',
+            },
+        },
+    } -%}
+    <div data-icon="time"></div>
+    {%- if name and outputLocaleParam -%}
+        {{- hiddenInput("#{name}[locale]", locale.id) -}}
+    {%- endif -%}
+    {%- if name and outputTzParam -%}
+        {{- hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) -}}
+    {%- endif -%}
+{% endtag -%}
+
+{% if not hasOuterContainer %}</div>{% endif %}
+
+{%- if not isMobile -%}
+    {% set options = {
+        minTime: minTime ?? null,
+        maxTime: maxTime ?? null,
+        disableTimeRanges: disableTimeRanges ?? null,
+        step: minuteIncrement ?? null,
+        forceRoundTime: forceRoundTime ?? false,
+    }|filter %}
+
+    {#- include JSON_FORCE_OBJECT in the json_encode options -#}
+    {%- set jsonOptions = constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_QUOT') b-or constant('JSON_FORCE_OBJECT') -%}
+
+    {%- js -%}
+        var $timePicker = $('#{{ id|namespaceInputId|e('js') }}');
+        $timePicker.timepicker($.extend({{ options|json_encode(jsonOptions)|raw }}, Craft.timepickerOptions));
+        Craft.ui.remediateTimepickerA11y($timePicker);
+
+        {%- if value and value is instance of('DateTimeInterface') -%}
+            $timePicker.timepicker('setTime', {{ value.format('G') }}*3600 + {{ value.format('i') }}*60 + {{ value.format('s') }});
+        {%- endif -%}
+    {%- endjs -%}
+{%- endif -%}

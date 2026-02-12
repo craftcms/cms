@@ -1,0 +1,46 @@
+@charset "UTF-8";
+@import '@craftcms/sass/mixins';
+
+.message {
+  position: relative;
+  cursor: pointer;
+
+  &:hover {
+    padding-inline-end: 26px;
+
+    &::after {
+      position: absolute;
+      inset-block-start: 18px;
+      @include right(15px);
+      @include icon;
+      content: 'edit';
+      color: var(--link-color);
+    }
+  }
+
+  .subject {
+    padding-block-end: 15px;
+    border-block-end: 1px solid #dbdbdb;
+    margin-block-end: 15px;
+  }
+
+  .body {
+    font-size: 12px;
+    line-height: 16px;
+    font-family: Courier, monospace;
+    color: var(--fg-subtle);
+  }
+}
+
+.message-settings {
+  width: 500px;
+
+  .header .right {
+    inset-block-start: 12px;
+  }
+
+  .body {
+    height: calc(100% - 131px);
+    overflow: auto;
+  }
+}

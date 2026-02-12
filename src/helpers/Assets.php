@@ -1,0 +1,1043 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\helpers;
+
+use Craft;
+use craft\base\BaseFsInterface;
+use craft\base\ElementInterface;
+use craft\base\FsInterface;
+use craft\base\LocalFsInterface;
+use craft\elements\Asset;
+use craft\enums\TimePeriod;
+use craft\errors\FsException;
+use craft\errors\InvalidSubpathException;
+use craft\events\RegisterAssetFileKindsEvent;
+use craft\events\SetAssetFilenameEvent;
+use craft\fs\Temp;
+use craft\helpers\ImageTransforms as TransformHelper;
+use craft\models\Volume;
+use craft\models\VolumeFolder;
+use DateTime;
+use Illuminate\Support\Collection;
+use Twig\Error\RuntimeError;
+use yii\base\Event;
+use yii\base\Exception;
+use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
+
+/**
+ * Class Assets
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.0.0
+ */
+class Assets
+{
+    public const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
+
+    /**
+     * @event SetAssetFilenameEvent The event that is triggered when defining an asset’s filename.
+     */
+    public const EVENT_SET_FILENAME = 'setFilename';
+
+    /**
+     * @event RegisterAssetFileKindsEvent The event that is triggered when registering asset file kinds.
+     */
+    public const EVENT_REGISTER_FILE_KINDS = 'registerFileKinds';
+
+    /**
+     * @var array Supported file kinds
+     * @see getFileKinds()
+     */
+    private static array $_fileKinds;
+
+    /**
+     * @var array Allowed file kinds
+     * @see getAllowedFileKinds()
+     */
+    private static array $_allowedFileKinds;
+
+    /**
+     * Get a temporary file path.
+     *
+     * @param string $extension extension to use. "tmp" by default.
+     * @return string The temporary file path
+     * @throws Exception in case of failure
+     */
+    public static function tempFilePath(string $extension = 'tmp'): string
+    {
+        $extension = str_contains($extension, '.') ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
+        $filename = uniqid('assets', true) . '.' . $extension;
+        $path = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename;
+
+        if (($handle = fopen($path, 'wb')) === false) {
+            throw new Exception('Could not create temp file: ' . $path);
+        }
+        fclose($handle);
+
+        return $path;
+    }
+
+    /**
+     * Generates the URL for an asset.
+     *
+     * @param Asset $asset
+     * @param string|null $uri Asset URI to use. Defaults to the filename.
+     * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
+     * @return string
+     * @throws InvalidConfigException if the asset doesn’t have a filename.
+     */
+    public static function generateUrl(Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
+    {
+        $volume = $asset->getVolume();
+        $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
+        $path = implode('/', array_map('rawurlencode', $pathParts));
+        $rootUrl = $volume->getRootUrl() ?? '';
+        $url = $rootUrl . $path;
+
+        if (Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return self::revUrl($url, $asset, $dateUpdated);
+        }
+
+        return $url;
+    }
+
+    /**
+     * Returns revision query parameters that should be appended to as asset URL.
+     *
+     * @param Asset $asset
+     * @param DateTime|null $dateUpdated
+     * @return array
+     * @since 4.0.0
+     */
+    public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
+    {
+        $v = [];
+
+        $dateModified = max($asset->dateModified, $dateUpdated);
+        if ($dateModified) {
+            $v[] = $dateModified->getTimestamp();
+        }
+
+        if ($asset->getHasFocalPoint()) {
+            $fp = $asset->getFocalPoint();
+            $v[] = $fp['x'];
+            $v[] = $fp['y'];
+        }
+
+        return array_filter([
+            'v' => implode(',', $v),
+        ]);
+    }
+
+    /**
+     * Appends revision parameters to a URL.
+     *
+     * @param string $url
+     * @param Asset $asset
+     * @param DateTime|null $dateUpdated
+     * @param bool $fsOnly Only append a revision param if the URL begins with the asset’s filesystem URL
+     * @return string
+     * @since 4.3.7
+     */
+    public static function revUrl(string $url, Asset $asset, ?DateTime $dateUpdated = null, bool $fsOnly = false): string
+    {
+        if ($fsOnly) {
+            $volume = $asset->getVolume();
+            $fs = $volume->getFs();
+            $fss = [$fs];
+            $transformFs = $volume->getTransformFs();
+            if ($transformFs !== $fs) {
+                $fss[] = $transformFs;
+            }
+            $matchingFs = ArrayHelper::contains($fss, function(FsInterface $fs) use ($url): bool {
+                if (!$fs->hasUrls) {
+                    return false;
+                }
+                $baseUrl = $fs->getRootUrl();
+                return $baseUrl !== null && StringHelper::startsWith($url, StringHelper::ensureRight($baseUrl, '/'));
+            });
+            if (!$matchingFs) {
+                return $url;
+            }
+        }
+
+        $revParams = static::revParams($asset, $dateUpdated);
+        return UrlHelper::urlWithParams($url, $revParams);
+    }
+
+    /**
+     * Get appendix for a URL based on its Source caching settings.
+     *
+     * @param Asset $asset
+     * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
+     * @return string
+     * @deprecated in 4.0.0. [[generateUrl()]] should be used instead.
+     */
+    public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
+    {
+        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return '';
+        }
+
+        $revParams = self::revParams($asset, $dateUpdated);
+        return sprintf('?%s', UrlHelper::buildQuery($revParams));
+    }
+
+    /**
+     * Clean an Asset's filename.
+     *
+     * @param string $name
+     * @param bool $isFilename if set to true (default), will separate extension
+     * and clean the filename separately.
+     * @param bool $preventPluginModifications if set to true, will prevent plugins from modify
+     * @return string
+     */
+    public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false): string
+    {
+        if ($isFilename) {
+            /** @var string $originalBaseName */
+            $originalBaseName = pathinfo($name, PATHINFO_FILENAME);
+            /** @var string $extension */
+            $extension = pathinfo($name, PATHINFO_EXTENSION);
+            if ($extension !== '') {
+                $extension = '.' . $extension;
+            }
+        } else {
+            $originalBaseName = $name;
+            $extension = '';
+        }
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $separator = $generalConfig->filenameWordSeparator;
+
+        if (!is_string($separator)) {
+            $separator = null;
+        }
+
+        $baseName = FileHelper::sanitizeFilename($originalBaseName, [
+            'asciiOnly' => $generalConfig->convertFilenamesToAscii,
+            'separator' => $separator,
+        ]);
+
+        if ($isFilename) {
+            // Fire a 'setFilename' event
+            if (!$preventPluginModifications && Event::hasHandlers(self::class, self::EVENT_SET_FILENAME)) {
+                $event = new SetAssetFilenameEvent([
+                    'filename' => $baseName,
+                    'originalFilename' => $originalBaseName,
+                    'extension' => $extension,
+                ]);
+                Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
+                $baseName = $event->filename;
+                $extension = $event->extension;
+            }
+
+            if ($baseName === '') {
+                $baseName = '-';
+            }
+        }
+
+        // Put them back together, but keep the full filename w/ extension from going over 255 chars
+        return substr($baseName, 0, 255 - strlen($extension)) . $extension;
+    }
+
+    /**
+     * Generates a default asset title based on its filename.
+     *
+     * @param string $filename The asset's filename
+     * @return string
+     */
+    public static function filename2Title(string $filename): string
+    {
+        $title = StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename, false, true)));
+
+        if (strlen($title) > 255) {
+            $title = rtrim(substr($title, 255), ' ');
+        }
+
+        return $title;
+    }
+
+    /**
+     * Mirrors a folder structure within a volume.
+     *
+     * @param VolumeFolder $sourceParentFolder Folder whose nested folder structure should be mirrored.
+     * @param VolumeFolder $destinationFolder The destination folder
+     * @param array $targetTreeMap map of relative path => existing folder ID
+     * @return array map of original folder ID => new folder ID
+     */
+    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = []): array
+    {
+        $assets = Craft::$app->getAssets();
+        $sourceTree = $assets->getAllDescendantFolders($sourceParentFolder);
+        $previousParent = $sourceParentFolder->getParent();
+        $sourcePrefixLength = strlen($previousParent->path);
+        $folderIdChanges = [];
+
+        foreach ($sourceTree as $sourceFolder) {
+            $relativePath = substr($sourceFolder->path, $sourcePrefixLength);
+
+            // If we have a target tree map, try to see if we should just point to an existing folder.
+            if (!empty($targetTreeMap) && isset($targetTreeMap[$relativePath])) {
+                $folderIdChanges[$sourceFolder->id] = $targetTreeMap[$relativePath];
+            } else {
+                $folder = new VolumeFolder();
+                $folder->name = $sourceFolder->name;
+                $folder->volumeId = $destinationFolder->volumeId;
+                $folder->path = ltrim(rtrim($destinationFolder->path, '/') . '/' . $relativePath, '/');
+
+                // Any and all parent folders should be already mirrored
+                $folder->parentId = ($folderIdChanges[$sourceFolder->parentId] ?? $destinationFolder->id);
+                $assets->createFolder($folder);
+
+                $folderIdChanges[$sourceFolder->id] = $folder->id;
+            }
+        }
+
+        return $folderIdChanges;
+    }
+
+    /**
+     * Create an asset transfer list based on a list of assets and an array of
+     * changing folder IDs.
+     *
+     * @param array $assets List of assets
+     * @param array $folderIdChanges A map of folder ID changes
+     * @return array
+     */
+    public static function fileTransferList(array $assets, array $folderIdChanges): array
+    {
+        $fileTransferList = [];
+
+        // Build the transfer list for files
+        foreach ($assets as $asset) {
+            $newFolderId = $folderIdChanges[$asset->folderId];
+
+            $fileTransferList[] = [
+                'assetId' => $asset->id,
+                'folderId' => $newFolderId,
+                'force' => true,
+            ];
+        }
+
+        return $fileTransferList;
+    }
+
+    /**
+     * Get a list of available periods for Cache duration settings.
+     *
+     * @return array
+     */
+    public static function periodList(): array
+    {
+        return [
+            TimePeriod::Seconds->value => Craft::t('app', 'Seconds'),
+            TimePeriod::Minutes->value => Craft::t('app', 'Minutes'),
+            TimePeriod::Hours->value => Craft::t('app', 'Hours'),
+            TimePeriod::Days->value => Craft::t('app', 'Days'),
+            TimePeriod::Months->value => Craft::t('app', 'Months'),
+            TimePeriod::Years->value => Craft::t('app', 'Years'),
+        ];
+    }
+
+    /**
+     * Sorts a folder tree by the volume sort order.
+     *
+     * @param VolumeFolder[] $tree array passed by reference of the sortable folders.
+     * @deprecated in 4.4.0
+     */
+    public static function sortFolderTree(array &$tree): void
+    {
+        /** @phpstan-ignore parameterByRef.type */
+        ArrayHelper::multisort($tree, fn($folder) => $folder->getVolume()->sortOrder);
+    }
+
+    /**
+     * Returns a list of the supported file kinds.
+     *
+     * @return array The supported file kinds
+     */
+    public static function getFileKinds(): array
+    {
+        self::_buildFileKinds();
+        return self::$_fileKinds;
+    }
+
+    /**
+     * Returns a list of file kinds that are allowed to be uploaded.
+     *
+     * @return array The allowed file kinds
+     * @since 3.1.16
+     */
+    public static function getAllowedFileKinds(): array
+    {
+        if (isset(self::$_allowedFileKinds)) {
+            return self::$_allowedFileKinds;
+        }
+
+        self::$_allowedFileKinds = [];
+        $allowedExtensions = array_flip(Craft::$app->getConfig()->getGeneral()->allowedFileExtensions);
+
+        foreach (static::getFileKinds() as $kind => $info) {
+            foreach ($info['extensions'] as $extension) {
+                if (isset($allowedExtensions[$extension])) {
+                    self::$_allowedFileKinds[$kind] = $info;
+                    continue 2;
+                }
+            }
+        }
+
+        return self::$_allowedFileKinds;
+    }
+
+    /**
+     * Returns the label of a given file kind.
+     *
+     * @param string $kind
+     * @return string
+     */
+    public static function getFileKindLabel(string $kind): string
+    {
+        self::_buildFileKinds();
+        return self::$_fileKinds[$kind]['label'] ?? Asset::KIND_UNKNOWN;
+    }
+
+    /**
+     * Return a file's kind by a file's extension.
+     *
+     * @param string $file The file name/path
+     * @return string The file kind, or "unknown" if unknown.
+     */
+    public static function getFileKindByExtension(string $file): string
+    {
+        if (($ext = pathinfo($file, PATHINFO_EXTENSION)) !== '') {
+            $ext = strtolower($ext);
+
+            foreach (static::getFileKinds() as $kind => $info) {
+                if (in_array($ext, $info['extensions'], true)) {
+                    return $kind;
+                }
+            }
+        }
+
+        return Asset::KIND_UNKNOWN;
+    }
+
+    /**
+     * Parses a file location in the format of `{folder:X}filename.ext` returns the folder ID + filename.
+     *
+     * @param string $location
+     * @return array
+     * @throws InvalidArgumentException if the file location is invalid
+     */
+    public static function parseFileLocation(string $location): array
+    {
+        if (!preg_match('/^{folder:(\d+)}(.+)$/', $location, $matches)) {
+            throw new InvalidArgumentException('Invalid file location format: ' . $location);
+        }
+
+        [, $folderId, $filename] = $matches;
+
+        return [(int)$folderId, $filename];
+    }
+
+    /**
+     * Builds the internal file kinds array, if it hasn't been built already.
+     */
+    private static function _buildFileKinds(): void
+    {
+        if (!isset(self::$_fileKinds)) {
+            self::$_fileKinds = [
+                Asset::KIND_ACCESS => [
+                    'label' => 'Access',
+                    'extensions' => [
+                        'accdb',
+                        'accde',
+                        'accdr',
+                        'accdt',
+                        'adp',
+                        'mdb',
+                    ],
+                ],
+                Asset::KIND_AUDIO => [
+                    'label' => Craft::t('app', 'Audio'),
+                    'extensions' => [
+                        '3gp',
+                        'aac',
+                        'act',
+                        'aif',
+                        'aifc',
+                        'aiff',
+                        'alac',
+                        'amr',
+                        'au',
+                        'dct',
+                        'dss',
+                        'dvf',
+                        'flac',
+                        'gsm',
+                        'iklax',
+                        'ivs',
+                        'm4a',
+                        'm4p',
+                        'mmf',
+                        'mp3',
+                        'mpc',
+                        'msv',
+                        'oga',
+                        'ogg',
+                        'opus',
+                        'ra',
+                        'tta',
+                        'vox',
+                        'wav',
+                        'wma',
+                        'wv',
+                    ],
+                ],
+                Asset::KIND_CAPTIONS_SUBTITLES => [
+                    'label' => Craft::t('app', 'Captions/Subtitles'),
+                    'extensions' => [
+                        'asc',
+                        'cap',
+                        'cin',
+                        'dfxp',
+                        'itt',
+                        'lrc',
+                        'mcc',
+                        'mpsub',
+                        'rt',
+                        'sami',
+                        'sbv',
+                        'scc',
+                        'smi',
+                        'srt',
+                        'stl',
+                        'sub',
+                        'tds',
+                        'ttml',
+                        'vtt',
+                    ],
+                ],
+                Asset::KIND_COMPRESSED => [
+                    'label' => Craft::t('app', 'Compressed'),
+                    'extensions' => [
+                        '7z',
+                        'bz2',
+                        'dmg',
+                        'gz',
+                        'rar',
+                        's7z',
+                        'tar',
+                        'tgz',
+                        'zip',
+                        'zipx',
+                    ],
+                ],
+                Asset::KIND_EXCEL => [
+                    'label' => 'Excel',
+                    'extensions' => [
+                        'xls',
+                        'xlsm',
+                        'xlsx',
+                        'xltm',
+                        'xltx',
+                    ],
+                ],
+                Asset::KIND_HTML => [
+                    'label' => 'HTML',
+                    'extensions' => [
+                        'htm',
+                        'html',
+                    ],
+                ],
+                Asset::KIND_ILLUSTRATOR => [
+                    'label' => 'Illustrator',
+                    'extensions' => [
+                        'ai',
+                    ],
+                ],
+                Asset::KIND_IMAGE => [
+                    'label' => Craft::t('app', 'Image'),
+                    'extensions' => [
+                        'avif',
+                        'bmp',
+                        'gif',
+                        'heic',
+                        'heif',
+                        'jfif',
+                        'jp2',
+                        'jpe',
+                        'jpeg',
+                        'jpg',
+                        'jpx',
+                        'pam',
+                        'pfm',
+                        'pgm',
+                        'png',
+                        'pnm',
+                        'ppm',
+                        'svg',
+                        'tif',
+                        'tiff',
+                        'webp',
+                    ],
+                ],
+                Asset::KIND_JAVASCRIPT => [
+                    'label' => 'JavaScript',
+                    'extensions' => [
+                        'js',
+                    ],
+                ],
+                Asset::KIND_JSON => [
+                    'label' => 'JSON',
+                    'extensions' => [
+                        'json',
+                    ],
+                ],
+                Asset::KIND_PDF => [
+                    'label' => 'PDF',
+                    'extensions' => [
+                        'pdf',
+                    ],
+                ],
+                Asset::KIND_PHOTOSHOP => [
+                    'label' => 'Photoshop',
+                    'extensions' => [
+                        'psb',
+                        'psd',
+                    ],
+                ],
+                Asset::KIND_PHP => [
+                    'label' => 'PHP',
+                    'extensions' => [
+                        'php',
+                    ],
+                ],
+                Asset::KIND_POWERPOINT => [
+                    'label' => 'PowerPoint',
+                    'extensions' => [
+                        'potx',
+                        'pps',
+                        'ppsm',
+                        'ppsx',
+                        'ppt',
+                        'pptm',
+                        'pptx',
+                    ],
+                ],
+                Asset::KIND_TEXT => [
+                    'label' => Craft::t('app', 'Text'),
+                    'extensions' => [
+                        'text',
+                        'txt',
+                    ],
+                ],
+                Asset::KIND_VIDEO => [
+                    'label' => Craft::t('app', 'Video'),
+                    'extensions' => [
+                        'asf',
+                        'asx',
+                        'avchd',
+                        'avi',
+                        'fla',
+                        'flv',
+                        'hevc',
+                        'm1s',
+                        'm2s',
+                        'm2t',
+                        'm2v',
+                        'm4v',
+                        'mkv',
+                        'mng',
+                        'mov',
+                        'mp2v',
+                        'mp4',
+                        'mpeg',
+                        'mpg',
+                        'ogg',
+                        'ogv',
+                        'qt',
+                        'rm',
+                        'vob',
+                        'webm',
+                        'wmv',
+                    ],
+                ],
+                Asset::KIND_WORD => [
+                    'label' => 'Word',
+                    'extensions' => [
+                        'doc',
+                        'docm',
+                        'docx',
+                        'dot',
+                        'dotm',
+                        'dotx',
+                    ],
+                ],
+                Asset::KIND_XML => [
+                    'label' => 'XML',
+                    'extensions' => [
+                        'xml',
+                    ],
+                ],
+            ];
+
+            // Merge with the extraFileKinds setting
+            self::$_fileKinds = ArrayHelper::merge(self::$_fileKinds, Craft::$app->getConfig()->getGeneral()->extraFileKinds);
+
+            // Fire a 'registerFileKinds' event
+            if (Event::hasHandlers(self::class, self::EVENT_REGISTER_FILE_KINDS)) {
+                $event = new RegisterAssetFileKindsEvent(['fileKinds' => self::$_fileKinds]);
+                Event::trigger(self::class, self::EVENT_REGISTER_FILE_KINDS, $event);
+                self::$_fileKinds = $event->fileKinds;
+            }
+
+            // Sort by label
+            ArrayHelper::multisort(self::$_fileKinds, 'label');
+        }
+    }
+
+    /**
+     * Return an image path to use in the Image Editor for an asset by its ID and size.
+     *
+     * @param int $assetId
+     * @param int $size
+     * @return string|false
+     * @throws Exception in case of failure
+     */
+    public static function getImageEditorSource(int $assetId, int $size): string|false
+    {
+        $asset = Craft::$app->getAssets()->getAssetById($assetId);
+
+        if (!$asset || !Image::canManipulateAsImage($asset->getExtension())) {
+            return false;
+        }
+
+        $volume = $asset->getVolume();
+
+        $imagePath = Craft::$app->getPath()->getImageEditorSourcesPath();
+        $assetSourcesDirectory = $imagePath . '/' . $assetId;
+        $targetSizedPath = $assetSourcesDirectory . '/' . $size;
+        $targetFilePath = $targetSizedPath . '/' . $assetId . '.' . $asset->getExtension();
+        FileHelper::createDirectory($targetSizedPath);
+
+        // You never know.
+        if (is_file($targetFilePath)) {
+            return $targetFilePath;
+        }
+
+        // Maybe we have larger sources available we can use.
+        if (FileHelper::createDirectory($assetSourcesDirectory)) {
+            $handle = opendir($assetSourcesDirectory);
+
+            if ($handle === false) {
+                throw new Exception("Unable to open directory: $assetSourcesDirectory");
+            }
+
+            while (($subDir = readdir($handle)) !== false) {
+                if ($subDir === '.' || $subDir === '..') {
+                    continue;
+                }
+                $existingSize = $subDir;
+                $existingAsset = $assetSourcesDirectory . DIRECTORY_SEPARATOR . $subDir . '/' . $assetId . '.' . $asset->getExtension();
+                if ($existingSize >= $size && is_file($existingAsset)) {
+                    Craft::$app->getImages()->loadImage($existingAsset)
+                        ->scaleToFit($size, $size, false)
+                        ->saveAs($targetFilePath);
+
+                    return $targetFilePath;
+                }
+            }
+            closedir($handle);
+        }
+
+        // No existing resources we could use.
+
+        // For remote files, check if maxCachedImageSizes setting would work for us.
+        $maxCachedSize = Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize;
+
+        if (!$volume->getFs() instanceof LocalFsInterface && $maxCachedSize > $size) {
+            // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
+            $localSource = TransformHelper::getLocalImageSource($asset);
+            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
+        } else {
+            // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
+            $localSource = $asset->getCopyOfFile();
+            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
+            FileHelper::unlink($localSource);
+        }
+
+        return $targetFilePath;
+    }
+
+    /**
+     * Returns the maximum allowed upload size in bytes per all config settings combined.
+     *
+     * @return int|float
+     */
+    public static function getMaxUploadSize(): float|int
+    {
+        $maxUpload = ConfigHelper::sizeInBytes(ini_get('upload_max_filesize'));
+        $maxPost = ConfigHelper::sizeInBytes(ini_get('post_max_size'));
+        $memoryLimit = ConfigHelper::sizeInBytes(ini_get('memory_limit'));
+
+        $uploadInBytes = min($maxUpload, $maxPost);
+
+        if ($memoryLimit > 0) {
+            $uploadInBytes = min($uploadInBytes, $memoryLimit);
+        }
+
+        $configLimit = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
+
+        if ($configLimit) {
+            $uploadInBytes = min($uploadInBytes, $configLimit);
+        }
+
+        return $uploadInBytes;
+    }
+
+    /**
+     * Returns scaled width & height values for a maximum container size.
+     *
+     * @param int $realWidth
+     * @param int $realHeight
+     * @param int $maxWidth
+     * @param int $maxHeight
+     * @return array The scaled width and height
+     * @since 3.4.21
+     */
+    public static function scaledDimensions(int $realWidth, int $realHeight, int $maxWidth, int $maxHeight): array
+    {
+        // Avoid division by 0 errors
+        if ($realWidth === 0 || $realHeight === 0) {
+            return [$maxWidth, $maxHeight];
+        }
+
+        $realRatio = $realWidth / $realHeight;
+        $boundingRatio = $maxWidth / $maxHeight;
+
+        if ($realRatio >= $boundingRatio) {
+            $scaledWidth = $maxWidth;
+            $scaledHeight = floor($realHeight * ($scaledWidth / $realWidth));
+        } else {
+            $scaledHeight = $maxHeight;
+            $scaledWidth = floor($realWidth * ($scaledHeight / $realHeight));
+        }
+
+        return [(int)$scaledWidth, (int)$scaledHeight];
+    }
+
+    /**
+     * Parses a srcset size (e.g. `100w` or `2x`).
+     *
+     * @param mixed $size
+     * @return array An array of the size value and unit (`w` or `x`)
+     * @throws InvalidArgumentException if the size can’t be parsed
+     * @since 3.5.0
+     */
+    public static function parseSrcsetSize(mixed $size): array
+    {
+        if (is_numeric($size)) {
+            $size = $size . 'w';
+        }
+        if (!is_string($size)) {
+            throw new InvalidArgumentException('Invalid srcset size');
+        }
+        $size = strtolower($size);
+        if (!preg_match('/^([\d\.]+)(w|x)$/', $size, $match)) {
+            throw new InvalidArgumentException("Invalid srcset size: $size");
+        }
+        return [(float)$match[1], $match[2]];
+    }
+
+    /**
+     * Save a file from a filesystem locally.
+     *
+     * @param BaseFsInterface $fs
+     * @param string $uriPath
+     * @param string $localPath
+     * @return int
+     * @throws FsException
+     * @since 4.0.0
+     */
+    public static function downloadFile(BaseFsInterface $fs, string $uriPath, string $localPath): int
+    {
+        $stream = $fs->getFileStream($uriPath);
+        $outputStream = fopen($localPath, 'wb');
+
+        $bytes = stream_copy_to_stream($stream, $outputStream);
+
+        fclose($stream);
+        fclose($outputStream);
+
+        return $bytes;
+    }
+
+    /**
+     * Returns the URL to an asset icon for a given extension.
+     *
+     * @param string $extension
+     * @return string
+     * @since 4.0.0
+     * @deprecated in 4.5.0
+     */
+    public static function iconUrl(string $extension): string
+    {
+        return UrlHelper::actionUrl('assets/icon', [
+            'extension' => $extension,
+        ]);
+    }
+
+    /**
+     * Returns the file path to an asset icon for a given extension.
+     *
+     * @param string $extension
+     * @return string
+     * @since 4.0.0
+     * @deprecated in 4.5.0. [[iconSvg()]] or [[Asset::getThumbSvg()]] should be used instead.
+     */
+    public static function iconPath(string $extension): string
+    {
+        $path = sprintf('%s%s%s.svg', Craft::$app->getPath()->getAssetsIconsPath(), DIRECTORY_SEPARATOR, strtolower($extension));
+
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        $svg = static::iconSvg($extension);
+
+        FileHelper::writeToFile($path, $svg);
+        return $path;
+    }
+
+    /**
+     * Returns the SVG contents for an asset icon with a given extension.
+     *
+     * @param string $extension
+     * @return string
+     * @since 4.5.0
+     */
+    public static function iconSvg(string $extension): string
+    {
+        if (!preg_match('/^\w+$/', $extension)) {
+            throw new InvalidArgumentException("$extension isn’t a valid file extension.");
+        }
+
+        $path = sprintf('%s%s%s.svg', Craft::$app->getPath()->getAssetsIconsPath(), DIRECTORY_SEPARATOR, strtolower($extension));
+
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        $svg = file_get_contents(Craft::getAlias('@app/elements/thumbs/file.svg'));
+
+        $extLength = strlen($extension);
+        if ($extLength <= 3) {
+            $textSize = '19';
+        } elseif ($extLength === 4) {
+            $textSize = '16';
+        } else {
+            $extension = substr($extension, 0, 3) . '…';
+            $textSize = '15';
+        }
+        $textNode = Html::tag('text', strtoupper($extension), [
+            'x' => 50,
+            'y' => 73,
+            'text-anchor' => 'middle',
+            'font-family' => 'sans-serif',
+            'fill' => 'hsl(210, 10%, 47%)',
+            'font-size' => $textSize,
+        ]);
+
+        return Html::appendToTag($svg, $textNode);
+    }
+
+    /**
+     * Returns whether the given filesystem is used to store temporary asset uploads.
+     *
+     * @param FsInterface $fs
+     * @return bool
+     */
+    public static function isTempUploadFs(FsInterface $fs): bool
+    {
+        if ($fs instanceof Temp) {
+            return true;
+        }
+
+        if (!$fs->handle) {
+            return false;
+        }
+
+        $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
+        return $fs->handle === $handle;
+    }
+
+    /**
+     * Resolves a possibly dynamic subpath for a given element, and returns the rendered subpath and
+     * matching volume folder (if one exists).
+     *
+     * @param Volume $volume
+     * @param string|null $subpath
+     * @param ElementInterface|null $element
+     * @return array{0:string,1:VolumeFolder|null}
+     * @throws Exception
+     * @throws InvalidSubpathException
+     * @since 5.9.0
+     */
+    public static function resolveSubpath(Volume $volume, ?string $subpath, ?ElementInterface $element = null): array
+    {
+        $assetsService = Craft::$app->getAssets();
+        $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
+
+        // Are we looking for the root folder?
+        $subpath = trim($subpath ?? '', '/');
+        if ($subpath === '') {
+            return [$subpath, $rootFolder];
+        }
+
+        if (str_contains($subpath, '{')) {
+            // Prepare the path by parsing tokens and normalizing slashes.
+            try {
+                if ($element?->duplicateOf) {
+                    $element = $element->duplicateOf->getCanonical();
+                }
+                $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
+            } catch (InvalidConfigException|RuntimeError $e) {
+                throw new InvalidSubpathException($subpath, null, 0, $e);
+            }
+
+            // Did any of the tokens return null?
+            if (
+                $renderedSubpath === '' ||
+                trim($renderedSubpath, '/') != $renderedSubpath ||
+                str_contains($renderedSubpath, '//') ||
+                Collection::make(explode('/', $renderedSubpath))
+                    ->contains(fn(string $segment) => ElementHelper::isTempSlug($segment))
+            ) {
+                throw new InvalidSubpathException($subpath);
+            }
+
+            // Sanitize the subpath
+            $segments = array_filter(explode('/', $renderedSubpath), fn(string $segment): bool => $segment !== ':ignore:');
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $segments = array_map(fn(string $segment): string => FileHelper::sanitizeFilename($segment, [
+                'asciiOnly' => $generalConfig->convertFilenamesToAscii,
+            ]), $segments);
+            $subpath = implode('/', $segments);
+        }
+
+        $folder = $assetsService->findFolder([
+            'volumeId' => $volume->id,
+            'path' => $subpath . '/',
+        ]);
+
+        return [$subpath, $folder];
+    }
+}

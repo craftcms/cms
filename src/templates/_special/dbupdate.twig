@@ -1,0 +1,12 @@
+{% extends "_layouts/message" %}
+{% set title = "Complete the Update"|t('app') %}
+
+{% block message %}
+    <p>{{ "To complete the update, some changes must be made to your database."|t('app') }}</p>
+    <form method="post" class="buttons">
+        {{ csrfInput() }}
+        {{ actionInput('updater') }}
+        {{ hiddenInput('return', craft.app.request.getPathInfo()) }}
+        <button type="submit" class="btn submit">{{ 'Finish up'|t('app') }}</button>
+    </form>
+{% endblock %}

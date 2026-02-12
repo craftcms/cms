@@ -1,0 +1,31 @@
+{% requireAdmin false %}
+
+{% extends "settings/users/_layout" %}
+{% set selectedNavItem = 'fields' %}
+{% import "_includes/forms" as forms %}
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    <form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
+        {{ actionInput('users/save-field-layout') }}
+        {{ csrfInput() }}
+
+        {{ forms.fieldLayoutDesignerField({
+            first: true,
+            fieldLayout: fieldLayout ?? craft.app.fields.getLayoutByType('craft\\elements\\User'),
+            withGeneratedFields: true,
+            withCardViewDesigner: true,
+            disabled: readOnly,
+        }) }}
+
+        {% if not readOnly %}
+            <div class="buttons">
+                <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+            </div>
+        {% endif %}
+    </form>
+{% endblock %}

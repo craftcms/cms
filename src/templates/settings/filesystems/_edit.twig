@@ -1,0 +1,112 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set readOnly = readOnly ?? false %}
+
+{% if not readOnly and oldHandle %}
+    {{ hiddenInput('oldHandle', oldHandle) }}
+{% endif %}
+
+{{ forms.textField({
+    first: true,
+    label: "Name"|t('app'),
+    id: 'name',
+    name: 'name',
+    value: (filesystem is defined ? filesystem.name : null),
+    autofocus: true,
+    required: true,
+    errors: (filesystem is defined ? filesystem.getErrors('name') : null),
+    data: {'error-key': 'name'},
+    disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+    first: true,
+    label: "Handle"|t('app'),
+    id: 'handle',
+    name: 'handle',
+    class: 'code',
+    autocorrect: false,
+    autocapitalize: false,
+    value: (filesystem is defined ? filesystem.handle : null),
+    required: true,
+    errors: (filesystem is defined ? filesystem.getErrors('handle') : null),
+    data: {'error-key': 'handle'},
+    disabled: readOnly,
+}) }}
+
+<hr>
+
+{% if fsOptions|length %}
+    {{ forms.selectField({
+        label: 'Filesystem Type'|t('app'),
+        instructions: "What type of filesystem is this?"|t('app'),
+        id: 'type',
+        name: 'type',
+        options: fsOptions,
+        value: className(filesystem),
+        toggle: true,
+        disabled: readOnly,
+    }) }}
+{% endif %}
+
+{% for fsType in fsTypes %}
+    {% set isCurrent = (fsType == className(filesystem)) %}
+    {% set fs = isCurrent ? filesystem : fsInstances[fsType] %}
+    {% set classes = [] %}
+    {% if not isCurrent %}
+        {% set classes = classes|merge(['hidden']) %}
+    {% endif %}
+
+    {% tag 'div' with {
+        id: fsType|id,
+        class: classes,
+    } %}
+        {% namespace 'types['~fsType|id~']' %}
+            {% autoescape false %}
+                {{ _self.fsUrlFields(fs, readOnly) }}
+                {{ readOnly ? fs.getReadOnlySettingsHtml() : fs.getSettingsHtml() }}
+            {% endautoescape %}
+        {% endnamespace %}
+    {% endtag %}
+{% endfor %}
+
+
+{% if filesystem is not defined or not filesystem.handle %}
+    {% js %}
+        new Craft.HandleGenerator("#{{ 'name'|namespaceInputId }}", "#{{ 'handle'|namespaceInputId }}");
+    {% endjs %}
+{% endif %}
+
+
+{% macro fsUrlFields(filesystem, disabled) %}
+    {% if filesystem.getShowHasUrlSetting() %}
+        {{ forms.lightswitchField({
+            label: 'Files in this filesystem have public URLs'|t('app'),
+            name: 'hasUrls',
+            id: 'has-urls',
+            on:   filesystem.hasUrls,
+            toggle: filesystem.getShowUrlSetting() ? "url-field-container" : null,
+            disabled: disabled,
+        }) }}
+    {% endif %}
+
+    {% if filesystem.getShowUrlSetting() %}
+        <div id="url-field-container" class="{% if not filesystem.hasUrls %}hidden{% endif %}">
+            {{ forms.autosuggestField({
+                label: "Base URL"|t('app'),
+                instructions: "The base URL to the files in this filesystem."|t('app'),
+                id: 'url',
+                class: ['ltr', 'fs-url'],
+                name: 'url',
+                suggestEnvVars: true,
+                suggestAliases: true,
+                value: (filesystem is defined ? filesystem.url : null),
+                required: true,
+                placeholder: "//example.com/path/to/folder",
+                errors: (filesystem is defined ? filesystem.getErrors('url') : null),
+                data: {'error-key': 'url'},
+                disabled: disabled,
+            }) }}
+        </div>
+    {% endif %}
+{% endmacro %}

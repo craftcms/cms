@@ -1,0 +1,215 @@
+{% import '_includes/forms.twig' as forms %}
+{% set orientation = craft.app.locale.getOrientation() -%}
+
+<div>
+  <h2>{{ 'General'|t('app') }}</h2>
+
+  {{ forms.languageMenuField({
+    id: 'preferredLanguage',
+    name: 'preferredLanguage',
+    label: 'Language'|t('app'),
+    instructions: 'The language that the control panel should use.'|t('app'),
+    options: craft.cp.getLanguageOptions(false, true, true),
+    value: userLanguage,
+    appOnly: true,
+  }) }}
+
+  {{ forms.languageMenuField({
+    id: 'preferredLocale',
+    name: 'preferredLocale',
+    label: 'Formatting Locale'|t('app'),
+    instructions: 'The locale that should be used for date and number formatting.'|t('app'),
+    options: [{'label' : 'Same as language'|t('app'), 'value' : '__blank__'}]|merge(craft.cp.getLanguageOptions(false, true)),
+    value: userLocale,
+  }) }}
+
+  {{ forms.selectField({
+    label: 'Week Start Day'|t('app'),
+    id: 'weekStartDay',
+    name: 'weekStartDay',
+    options: craft.app.locale.getWeekDayNames(),
+    value: currentUser.getPreference('weekStartDay', craft.app.config.general.defaultWeekStartDay)
+  }) }}
+</div>
+
+<hr>
+
+<div>
+  <h2>{{ 'Accessibility'|t('app') }}</h2>
+
+  {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
+  {{ forms.checkboxGroupField({
+    label: 'Display Settings'|t('app'),
+    options: [
+      {
+        label: 'Use shapes to represent statuses'|t('app'),
+        name: 'useShapes',
+        id: 'useShapes',
+        checked: currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
+      },
+      {
+        label: 'Underline links'|t('app'),
+        name: 'underlineLinks',
+        id: 'underlineLinks',
+        checked: currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
+      },
+    ],
+  }) }}
+
+  {{ forms.checkboxGroupField({
+    label: 'General Settings'|t('app'),
+    options: [
+      {
+        label: 'Disable autofocus'|t('app'),
+        name: 'disableAutofocus',
+        id: 'disableAutofocus',
+        checked: currentUser.getPreference('disableAutofocus') ?? a11yDefaults['disableAutofocus'] ?? false,
+      },
+    ],
+  }) }}
+
+  {{ forms.selectField({
+    label: 'Notification Duration'|t('app'),
+    instructions: 'How long notifications should be shown before they disappear automatically.'|t('app'),
+    name: 'notificationDuration',
+    id: 'notificationDuration',
+    options: [
+      {value: 2000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t('app', {num: 2})},
+      {value: 5000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t('app', {num: 5})},
+      {value: 10000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t('app', {num: 10})},
+      {value: 0, label: 'Show them indefinitely'|t('app')},
+    ],
+    value: currentUser.getPreference('notificationDuration') ?? a11yDefaults['notificationDuration'] ?? 5000,
+  }) }}
+
+  {{ forms.buttonGroupField({
+    id: 'notification-position',
+    name: 'notificationPosition',
+    label: 'Notification Position'|t('app'),
+    options: [
+      {
+        icon: orientation == 'ltr' ? 'notification-top-left' : 'notification-top-right',
+        value: 'start-start',
+        attributes: {
+          title: orientation == 'ltr' ? 'Top-Left'|t('app') : 'Top-Right'|t('app'),
+          aria: {
+            label: orientation == 'ltr' ? 'Top-Left'|t('app') : 'Top-Right'|t('app'),
+          },
+        },
+      },
+      {
+        icon: orientation == 'ltr' ? 'notification-top-right' : 'notification-top-left',
+        value: 'start-end',
+        attributes: {
+          title: orientation == 'ltr' ? 'Top-Right'|t('app') : 'Top-Left'|t('app'),
+          aria: {
+            label: orientation == 'ltr' ? 'Top-Right'|t('app') : 'Top-Left'|t('app'),
+          },
+        },
+      },
+      {
+        icon: orientation == 'ltr' ? 'notification-bottom-left' : 'notification-bottom-right',
+        value: 'end-start',
+        attributes: {
+          title: orientation == 'ltr' ? 'Bottom-Left'|t('app') : 'Bottom-Right'|t('app'),
+          aria: {
+            label: orientation == 'ltr' ? 'Bottom-Left'|t('app') : 'Bottom-Right'|t('app'),
+          },
+        },
+      },
+      {
+        icon: orientation == 'ltr' ? 'notification-bottom-right' : 'notification-bottom-left',
+        value: 'end-end',
+        attributes: {
+          title: orientation == 'ltr' ? 'Bottom-Right'|t('app') : 'Bottom-Left'|t('app'),
+          aria: {
+            label: orientation == 'ltr' ? 'Bottom-Right'|t('app') : 'Bottom-Left'|t('app'),
+          },
+        },
+      },
+    ],
+    value: currentUser.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start',
+  }) }}
+
+  {{ forms.buttonGroupField({
+    id: 'slideout-position',
+    name: 'slideoutPosition',
+    label: 'Slideout Position'|t('app'),
+    options: [
+      {
+        icon: orientation == 'ltr' ? 'slideout-left' : 'slideout-right',
+        value: 'start',
+        attributes: {
+          title: orientation == 'ltr' ? 'Left'|t('app') : 'Right'|t('app'),
+          aria: {
+            label: orientation == 'ltr' ? 'Left'|t('app') : 'Right'|t('app'),
+          },
+        },
+      },
+      {
+        icon: orientation == 'ltr' ? 'slideout-right' : 'slideout-left',
+        value: 'end',
+        attributes: {
+          title: orientation == 'ltr' ? 'Right'|t('app') : 'Left'|t('app'),
+          aria: {
+            label: orientation == 'ltr' ? 'Right'|t('app') : 'Left'|t('app'),
+          },
+        },
+      },
+    ],
+    value: currentUser.getPreference('slideoutPosition') ?? a11yDefaults['slideoutPosition'] ?? 'end',
+  }) }}
+
+</div>
+
+{% if currentUser.admin %}
+  <hr>
+
+  <div>
+    <h2>{{ 'Development'|t('app') }}</h2>
+
+    {{ forms.checkboxGroupField({
+      label: 'Development Settings'|t('app'),
+      options: [
+        {
+          label: 'Show field handles in edit forms'|t('app'),
+          name: 'showFieldHandles',
+          id: 'showFieldHandles',
+          checked: currentUser.getPreference('showFieldHandles')
+        },
+        {
+          label: 'Profile Twig templates when Dev Mode is disabled'|t('app'),
+          name: 'profileTemplates',
+          id: 'profileTemplates',
+          checked: currentUser.getPreference('profileTemplates')
+        },
+        {
+          label: 'Show full exception views when Dev Mode is disabled'|t('app'),
+          name: 'showExceptionView',
+          id: 'showExceptionView',
+          checked: currentUser.getPreference('showExceptionView')
+        },
+      ],
+    }) }}
+
+    {{ forms.checkboxGroupField({
+      label: 'Debug Toolbar'|t('app'),
+      options: [
+        {
+          label: 'Show the debug toolbar on the front end'|t('app'),
+          name: 'enableDebugToolbarForSite',
+          id: 'enableDebugToolbarForSite',
+          checked: currentUser.getPreference('enableDebugToolbarForSite')
+        },
+        {
+          label: 'Show the debug toolbar in the control panel'|t('app'),
+          name: 'enableDebugToolbarForCp',
+          id: 'enableDebugToolbarForCp',
+          checked: currentUser.getPreference('enableDebugToolbarForCp')
+        },
+      ],
+    }) }}
+  </div>
+{% endif %}
+
+{% hook 'cp.users.edit.prefs' %}

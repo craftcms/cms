@@ -1,0 +1,167 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set readOnly = readOnly ?? false %}
+
+{% if not readOnly and fieldId is defined and fieldId %}
+  {{ hiddenInput('fieldId', fieldId) }}
+{% endif %}
+
+{{ forms.textField({
+  first: true,
+  label: "Name"|t('app'),
+  instructions: "What this field will be called in the control panel."|t('app'),
+  id: 'name',
+  name: 'name',
+  value: field.name,
+  required: true,
+  autofocus: true,
+  errors: field.getErrors('name'),
+  data: {'error-key': 'name'},
+  disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+  label: "Handle"|t('app'),
+  instructions: "How you’ll refer to this field in the templates."|t('app'),
+  id: 'handle',
+  name: 'handle',
+  class: 'code',
+  autocorrect: false,
+  autocapitalize: false,
+  maxlength: 64,
+  value: field.handle,
+  required: true,
+  errors: field.getErrors('handle'),
+  data: {'error-key': 'handle'},
+  disabled: readOnly,
+}) }}
+
+{{ forms.textareaField({
+  label: "Default Instructions"|t('app'),
+  instructions: "Helper text to guide the author."|t('app'),
+  id: 'instructions',
+  class: 'nicetext',
+  name: 'instructions',
+  value: field.instructions,
+  errors: field.getErrors('instructions'),
+  data: {
+    'error-key': 'instructions',
+  },
+  disabled: readOnly,
+}) }}
+
+{{ forms.lightswitchField({
+  label: 'Use this field’s values as search keywords'|t('app'),
+  id: 'searchable',
+  name: 'searchable',
+  on: field.searchable,
+  disabled: readOnly,
+}) }}
+
+{{ forms.customSelectField({
+  label: "Field Type"|t('app'),
+  instructions: "What type of field is this?"|t('app'),
+  warning: (fieldId is not empty and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
+  id: 'type',
+  name: 'type',
+  options: fieldTypeOptions,
+  value: field is missing ? field.expectedType : className(field),
+  errors: field.getErrors('type'),
+  data: {
+    'error-key': 'type',
+  },
+  disabled: readOnly,
+}) }}
+
+{{ missingFieldPlaceholder|raw }}
+
+{% if craft.app.getIsMultiSite() %}
+  {% set translationMethods = field.supportedTranslationMethods %}
+  {% if translationMethods|length > 1 %}
+    <div id="translation-settings">
+      {{ forms.selectField({
+        label: "Translation Method"|t('app'),
+        instructions: "How should this field’s values be translated?"|t('app'),
+        id: 'translation-method',
+        name: 'translationMethod',
+        options: [
+          'none' in translationMethods ? { value: 'none', label: "Not translatable"|t('app') },
+          'site' in translationMethods ? { value: 'site', label: "Translate for each site"|t('app') },
+          'siteGroup' in translationMethods ? { value: 'siteGroup', label: "Translate for each site group"|t('app') },
+          'language' in translationMethods ? { value: 'language', label: "Translate for each language"|t('app') },
+          'custom' in translationMethods ? { value: 'custom', label: "Custom…"|t('app') }
+        ]|filter,
+        value: field.translationMethod,
+        toggle: true,
+        targetPrefix: 'translation-method-',
+        disabled: readOnly,
+      }) }}
+
+      {% if 'custom' in translationMethods %}
+        {% tag 'div' with {
+          id: 'translation-method-custom',
+          class: field.translationMethod != 'custom' ? 'hidden' : null,
+        } %}
+          {{ forms.textField({
+            label: "Translation Key Format"|t('app'),
+            instructions: "Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key. For example, to make the field translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.",
+            id: 'translation-key-format',
+            class: 'code',
+            name: 'translationKeyFormat',
+            value: field.translationKeyFormat,
+            errors: field.getErrors('translationKeyFormat'),
+            data: {'error-key': 'translationKeyFormat'},
+            disabled: readOnly,
+          }) }}
+        {% endtag %}
+      {% endif %}
+    </div>
+  {% endif %}
+{% endif %}
+
+<hr>
+
+<div id="settings">
+  <div id="{{ className(field)|id }}">
+    {% include 'settings/fields/_type-settings' with {
+      namespace: 'types['~className(field)|id~']'
+    } %}
+  </div>
+</div>
+
+
+{% if not (field.handle ?? false) %}
+  {% js %}
+    new Craft.HandleGenerator('#{{ 'name'|namespaceInputId|e('js') }}', '#{{ 'handle'|namespaceInputId|e('js') }}');
+  {% endjs %}
+{% endif %}
+
+{% js %}
+  (() => {
+    Craft.supportedTranslationMethods = {{ supportedTranslationMethods|json_encode|raw }};
+
+    Craft.updateTranslationMethodSettings = (type, container) => {
+      const $container = $(container);
+      if (!Craft.supportedTranslationMethods[type] || Craft.supportedTranslationMethods[type].length == 1) {
+        $container.addClass('hidden');
+      } else {
+        $container.removeClass('hidden');
+        // Rebuild the options based on the field type's supported translation methods
+        $container.find('select').html(
+          ($.inArray('none', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="none">{{ "Not translatable"|t('app')|e('js') }}</option>' : '') +
+          ($.inArray('site', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="site">{{ "Translate for each site"|t('app')|e('js') }}</option>' : '') +
+          ($.inArray('siteGroup', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="siteGroup">{{ "Translate for each site group"|t('app')|e('js') }}</option>' : '') +
+          ($.inArray('language', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="language">{{ "Translate for each language"|t('app')|e('js') }}</option>' : '') +
+          ($.inArray('custom', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="custom">{{ "Custom…"|t('app')|e('js') }}</option>' : '')
+        );
+      }
+    };
+
+    const $fieldTypeInput = $("#{{ 'type'|namespaceInputId|e('js') }}");
+    const $translationSettings = $("#{{ 'translation-settings'|namespaceInputId|e('js') }}");
+
+    $fieldTypeInput.on('change', (ev) => {
+      Craft.updateTranslationMethodSettings($fieldTypeInput.data('value'), $translationSettings);
+    });
+  })();
+{% endjs %}

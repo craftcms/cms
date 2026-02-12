@@ -1,0 +1,72 @@
+{% import "_includes/forms" as forms %}
+
+{% set targetPrefix = "datetime#{random()}-" %}
+{{ forms.radioGroupField({
+    id: 'dateTime',
+    name: 'dateTime',
+    options: options,
+    value: value,
+    toggle: true,
+    targetPrefix: ".#{targetPrefix}",
+    tip: value == 'showTime' ? 'Time fields are better suited for managing Time-only values.'|t('app'),
+    disabled: readOnly,
+}) }}
+
+{{ forms.selectField({
+    fieldClass: [
+        "#{targetPrefix}showTime",
+        "#{targetPrefix}showBoth",
+        value == 'showDate' ? 'hidden',
+    ]|filter,
+    label: "Minute Increment"|t('app'),
+    instructions: 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)'|t('app'),
+    id: 'minuteIncrement',
+    name: 'minuteIncrement',
+    options: incrementOptions,
+    value: field.minuteIncrement ? field.minuteIncrement : 30,
+    disabled: readOnly,
+}) }}
+
+{{ forms.lightswitchField({
+    fieldClass: [
+        "#{targetPrefix}showTime",
+        "#{targetPrefix}showBoth",
+        value == 'showDate' ? 'hidden',
+    ]|filter,
+    label: 'Show Time Zone'|t('app'),
+    instructions: 'Whether authors should be able to choose which time zone the time is in.'|t('app'),
+    id: 'show-time-zone',
+    name: 'showTimeZone',
+    on: field.showTimeZone,
+    disabled: readOnly,
+}) }}
+
+{{ forms.dateField({
+    fieldClass: [
+        "#{targetPrefix}showDate",
+        "#{targetPrefix}showBoth",
+        value == 'showTime' ? 'hidden',
+    ]|filter,
+    label: 'Min Date'|t('app'),
+    id: 'min',
+    name: 'min',
+    value: field.min,
+    errors: field.getErrors('min'),
+    data: {'error-key': 'min'},
+    disabled: readOnly,
+}) }}
+
+{{ forms.dateField({
+    fieldClass: [
+        "#{targetPrefix}showDate",
+        "#{targetPrefix}showBoth",
+        value == 'showTime' ? 'hidden',
+    ]|filter,
+    label: 'Max Date'|t('app'),
+    id: 'max',
+    name: 'max',
+    value: field.max,
+    errors: field.getErrors('max'),
+    data: {'error-key': 'max'},
+    disabled: readOnly,
+}) }}

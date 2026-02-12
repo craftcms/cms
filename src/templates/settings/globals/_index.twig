@@ -1,0 +1,58 @@
+{% requireAdmin false %}
+
+{% extends "_layouts/cp" %}
+
+{% set readOnly = readOnly ?? false %}
+
+{% block actionButton %}
+    {% if not readOnly %}
+        <a href="{{ url('settings/globals/new') }}" class="btn submit add icon">
+            {{ buttonLabel }}
+        </a>
+    {% endif %}
+{% endblock %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    <div id="sets-vue-admin-table"></div>
+{% endblock %}
+
+{% set tableData = [] %}
+{% for globalSet in globalSets %}
+    {% set tableData = tableData|merge([{
+        id: globalSet.id,
+        title: globalSet.name|t('site'),
+        url: url('settings/globals/' ~ globalSet.id),
+        handle: globalSet.handle,
+    }]) %}
+{% endfor %}
+
+{% js %}
+var columns = [
+    {
+        name: '__slot:title',
+        title: Craft.t('app', 'Global Set Name'),
+    },
+    {
+        name: '__slot:handle',
+        title: Craft.t('app', 'Handle'),
+    },
+];
+
+let config = {
+    columns: columns,
+    container: '#sets-vue-admin-table',
+    emptyMessage: Craft.t('app', 'No global sets exist yet.'),
+    tableData: {{ tableData|json_encode|raw }}
+}
+
+{% if not readOnly %}
+    config['deleteAction'] = 'globals/delete-set';
+    config['reorderAction'] = '{{ globalSets|length > 1 ? 'globals/reorder-sets' : ''}}';
+{% endif %}
+
+new Craft.VueAdminTable(config);
+{% endjs %}

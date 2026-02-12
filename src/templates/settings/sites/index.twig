@@ -1,0 +1,127 @@
+{% extends "_layouts/cp" %}
+{% set title = "Sites"|t('app') %}
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+
+{% set multiple = (sites|length > 1) and not readOnly %}
+{% set canSort = group and multiple and not readOnly %}
+
+
+{% block actionButton %}
+    {% if not readOnly %}
+        {{ tag('a', {
+            href: url('settings/sites/new', (group ? { groupId: group.id } : null)),
+            class:  ['btn', 'submit', 'add', 'icon', craft.app.sites.getRemainingSites() ? null : 'disabled'],
+            text: "New site"|t('app'),
+        }) }}
+    {% endif %}
+{% endblock %}
+
+
+{% block sidebar %}
+    <nav>
+        <ul id="groups">
+            <li><a href="{{ url('settings/sites') }}"{% if not group %} class="sel"{% endif %}>{{ "All Sites"|t('app') }}</a></li>
+            {% for g in craft.app.sites.getAllGroups() %}
+                <li>
+                    {{ tag('a', {
+                        href: url('settings/sites', {groupId: g.id}),
+                        class: group and g.id == group.id ? 'sel' : false,
+                        text: g.name|t('site'),
+                        data: {
+                            id: g.id,
+                            'raw-name': g.getName(false),
+                        },
+                    }) }}
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+
+    {% if not readOnly %}
+        <div class="buttons">
+            <button type="button" id="newgroupbtn" class="btn add icon">{{ "New group"|t('app') }}</button>
+
+            {% if group %}
+                <button type="button" id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings' }}" aria-label="{{ 'Settings' }}"></button>
+                <div class="menu">
+                    <ul>
+                        <li><a data-action="rename" role="button">{{ "Rename selected group"|t('app') }}</a></li>
+                        <li><a data-action="delete" role="button"{% if sites|length %} class="disabled" title="{{ 'You can only delete groups that have no sites.'|t('app') }}"{% endif %}>{{ "Delete selected group"|t('app') }}</a></li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    {% if sites|length %}
+        <div class="tablepane">
+            <table id="sites" class="data fullwidth">
+                <thead>
+                    <th scope="col">{{ "Name"|t('app') }}</th>
+                    <th scope="col">{{ "Handle"|t('app') }}</th>
+                    <th scope="col">{{ "Language"|t('app') }}</th>
+                    <th scope="col">{{ "Primary"|t('app') }}</th>
+                    <th scope="col">{{ "Base URL"|t('app') }}</th>
+                    {% if not group %}
+                        <th scope="col">{{ "Group"|t('app') }}</th>
+                    {% endif %}
+                    {% if canSort %}
+                        <td class="thin"></td>
+                        <td class="thin"></td>
+                    {% endif %}
+                    {% if multiple %}
+                        <td class="thin"></td>
+                    {% endif %}
+                </thead>
+                <tbody>
+                    {% for site in sites %}
+                        <tr data-id="{{ site.id }}" data-uid="{{ site.uid }}" data-name="{{ site.name|t('site') }}">
+                            <th scope="row" data-title="{{ 'Name'|t('app') }}">
+                                <a href="{{ url('settings/sites/' ~ site.id) }}">
+                                    <span class="status {{ site.enabled ? 'enabled' : 'disabled' }}"></span>{{ site.name|t('site') }}
+                                </a>
+                            </th>
+                            <td data-title="{{ 'Handle'|t('app') }}"><code>{{ site.handle }}</code></td>
+                            <td data-title="{{ 'Language'|t('app') }}"><code>{{ site.language }}</code></td>
+                            <td data-title="{{ 'Primary'|t('app') }}">{% if site.primary %}<div data-icon="check" aria-label="{{ 'Yes'|t('app') }}"></div>{% endif %}</td>
+                            <td data-title="{{ 'Base URL'|t('app') }}"><code>{{ site.baseUrl }}</code></td>
+                            {% if not group %}
+                                <td data-title="{{ 'Group'|t('app') }}">{{ site.group.name|t('site') }}</td>
+                            {% endif %}
+                            {% if canSort %}
+                                <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a></td>
+                                <td class="thin actions-container"></td>
+                            {% endif %}
+                            {% if multiple %}
+                                <td class="thin"><a class="delete icon{% if site.primary %} disabled{% endif %}" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="zilch">
+            <p>{{ 'No sites exist for this group yet.'|t('app') }}</p>
+        </div>
+    {% endif %}
+{% endblock %}
+
+
+{% js on ready %}
+    new Craft.SitesAdmin();
+
+    new Craft.SiteAdminTable({
+        tableSelector: '#sites',
+        minItems: 1,
+        sortable: true,
+        reorderAction: 'sites/reorder-sites',
+        deleteAction: 'sites/delete-site',
+    });
+{% endjs %}

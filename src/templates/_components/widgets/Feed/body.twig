@@ -1,0 +1,22 @@
+{% import "_includes/links" as links %}
+
+<ol class="widget__list" role="list" dir="{{ feed.direction }}">
+    {% for item in feed.items %}
+        <li class="widget__list-item">
+            {% if item.permalink ?? false %}
+                {{ links.externalLink({
+                    link: item.permalink,
+                    text: item.title,
+                }) }}
+                {% if item.date ?? false %}
+                    {{ tag('span', {
+                        class: 'light nowrap',
+                        text: item.date|timestamp('short'),
+                    }) }}
+                {% endif %}
+            {% else %}
+                &nbsp;
+            {% endif %}
+        </li>
+    {% endfor %}
+</ol>

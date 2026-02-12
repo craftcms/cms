@@ -1,0 +1,69 @@
+{% extends '_layouts/cp.twig' %}
+
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
+
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/tags/{id}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
+{% import '_includes/forms.twig' as forms %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    {% if not readOnly %}
+        {{ actionInput('tags/save-tag-group') }}
+        {{ redirectInput('settings/tags') }}
+
+        {% if tagGroup.id %}{{ hiddenInput('tagGroupId', tagGroup.id) }}{% endif %}
+    {% endif %}
+
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        instructions: "What this tag group will be called in the control panel."|t('app'),
+        id: 'name',
+        name: 'name',
+        value: tagGroup.name,
+        errors: tagGroup.getErrors('name'),
+        autofocus: true,
+        required: true,
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        instructions: "How you’ll refer to this tag group in the templates."|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        value: tagGroup.handle,
+        errors: tagGroup.getErrors('handle'),
+        required: true,
+        disabled: readOnly,
+    }) }}
+
+    <hr>
+
+    {{ forms.fieldLayoutDesignerField({
+        fieldLayout: tagGroup.getFieldLayout(),
+        disabled: readOnly,
+    }) }}
+{% endblock %}
+
+
+{% if not tagGroup.handle %}
+    {% js %}
+        new Craft.HandleGenerator('#name', '#handle');
+    {% endjs %}
+{% endif %}

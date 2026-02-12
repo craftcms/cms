@@ -1,0 +1,24 @@
+<div class="header">
+    <p>Steps leading up to the deprecation error:</p>
+</div>
+
+<table class="data fullwidth fixed-layout">
+    <tbody>
+        {% for trace in log.traces %}
+            <tr>
+                <th class="light topalign" style="width: 14px;">{{ loop.revindex }}</th>
+                <td>
+                    {% if loop.first %}
+                        <strong>Deprecation error:</strong> {{ log.message|md(inlineOnly=true)|raw }}
+                    {% else %}
+                        <span class="code">{{ trace.objectClass or trace.class ? ((trace.objectClass ?: trace.class)|e|replace('\\', '\\<wbr>')~'::<wbr>')|raw }}{{ trace.method }}({{ trace.args }})</span>
+                    {% endif %}
+
+                    {% if trace.file %}
+                        <br><span class="light">Called from <span class="code">{{ trace.file|e|replace('/', '/<wbr>')|raw }}:{{ trace.line }}</span></span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

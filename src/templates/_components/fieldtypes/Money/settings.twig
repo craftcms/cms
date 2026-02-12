@@ -1,0 +1,89 @@
+{% import "_includes/forms" as forms %}
+
+{% macro numberField(config, decimals) %}
+    {% from '_includes/forms' import textField %}
+    {{ hiddenInput("#{config.name}[locale]", craft.app.formattingLocale.id) }}
+    {% set config = config|merge({
+        name: "#{config.name}[value]",
+        value: config.value is not same as(null) ? config.value|number(decimals) : '',
+    }) %}
+    {{ textField(config) }}
+{% endmacro %}
+
+{% set currencyInput %}
+    {{ forms.select({
+        id: 'currency',
+        name: 'currency',
+        options: currencies|map(currency => {label: currency.getCode(), value: currency.getCode()}),
+        value: field.currency,
+        class: 'selectize',
+        disabled: readOnly,
+    }) }}
+{% endset %}
+
+{{ forms.field({
+    label: 'Currency'|t('app'),
+    required: true,
+    errors: field.getErrors('currency'),
+    data: {'error-key': 'currency'},
+    disabled: readOnly,
+}, currencyInput) }}
+
+{{ _self.numberField({
+    label: 'Default Value'|t('app'),
+    id: 'defaultValue',
+    name: 'defaultValue',
+    value: field.defaultValue,
+    size: 10,
+    errors: field.getErrors('defaultValue'),
+    data: {'error-key': 'defaultValue'},
+    disabled: readOnly,
+}, subUnits) }}
+
+{{ _self.numberField({
+    label: 'Min Value'|t('app'),
+    id: 'min',
+    name: 'min',
+    value: field.min,
+    size: 10,
+    errors: field.getErrors('min'),
+    data: {'error-key': 'min'},
+    disabled: readOnly,
+}, subUnits) }}
+
+{{ _self.numberField({
+    label: 'Max Value'|t('app'),
+    id: 'max',
+    name: 'max',
+    value: field.max,
+    size: 10,
+    errors: field.getErrors('max'),
+    data: {'error-key': 'max'},
+    disabled: readOnly,
+}, subUnits) }}
+
+{{ forms.lightswitchField({
+    label: 'Show Currency'|t('app'),
+    name: 'showCurrency',
+    on: field.showCurrency,
+    disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+    label: 'Size'|t('app'),
+    id: 'size',
+    name: 'size',
+    value: field.size,
+    size: 2,
+    errors: field.getErrors('size'),
+    data: {'error-key': 'size'},
+    disabled: readOnly,
+}) }}
+
+{% js %}
+(() => {
+    $('#{{ 'currency'|namespaceInputId|e('js') }}').selectize({
+        dropdownParent: 'body',
+    });
+})();
+{% endjs %}

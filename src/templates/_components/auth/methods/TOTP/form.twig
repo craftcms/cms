@@ -1,0 +1,26 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set formId = formId ?? "totp-form-#{random()}" %}
+
+<form id="{{ formId }}">
+  {% embed '_includes/forms/field.twig' with {
+    fieldClass: 'first',
+    label: 'Verification Code'|t('app'),
+    id: 'verification-code',
+  } %}
+    {% block input %}
+      {% import '_includes/forms.twig' as forms %}
+      <div class="flex flex-nowrap">
+        {{ forms.text({
+          class: 'code auth-totp-code',
+          id: 'verification-code',
+          maxlength: 6,
+        }) }}
+        {{ forms.submitButton({
+          label: 'Verify'|t('app'),
+          spinner: true,
+        }) }}
+      </div>
+    {% endblock %}
+  {% endembed %}
+</form>

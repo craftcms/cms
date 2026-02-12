@@ -1,0 +1,120 @@
+{% requireAdmin false %}
+
+{% extends "_layouts/cp" %}
+{% set title = "Fields"|t('app') %}
+
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    'Handle',
+    'Name',
+    'No fields exist yet.',
+    'No results.',
+    'No usages',
+    'This field’s values are used as search keywords.',
+    'Type',
+    'Used by',
+]) %}
+
+{% set crumbs = [
+    { label: "Settings"|t('app'), url: url('settings') }
+] %}
+
+{% set emptyMessage = "No fields exist yet."|t('app') %}
+
+
+{% block actionButton %}
+    {% if not readOnly %}
+        {% set newFieldUrl = url('settings/fields/new') %}
+        <a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New field"|t('app') }}</a>
+    {% endif %}
+{% endblock %}
+
+{% if readOnly %}
+  {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    <div id="fields-vue-admin-table"></div>
+{% endblock %}
+
+{% js %}
+  ((info) => {
+    const columns = [
+      { name: '__slot:title', title: Craft.t('app', 'Name'), sortField: true },
+      {
+        name: 'searchable',
+        titleClass: 'thin',
+        callback: value => {
+          if (!value) {
+            return null;
+          }
+          return `<div class="badge-icon" data-icon="search" title="${Craft.t('app', 'This field’s values are used as search keywords.')}" aria-label="${Craft.t('app', 'This field’s values are used as search keywords.')}" role="img"></div>`;
+        }
+      },
+    ];
+
+    if (info.isMultiSite) {
+      columns.push({
+        name: 'translatable',
+        titleClass: 'thin',
+        callback: value => {
+          if (!value) {
+            return null;
+          }
+          return `<div class="badge-icon" data-icon="language" title="${value}" aria-label="${value}" role="img"></div>`;
+        }
+      });
+    }
+
+    columns.push({
+      name: '__slot:handle',
+      title: Craft.t('app', 'Handle'),
+      sortField: true,
+    });
+
+    columns.push({
+      name: 'type',
+      title: Craft.t('app', 'Type'),
+      callback: (value) => {
+        let label = '<div class="flex flex-nowrap gap-s">' +
+          `<div class="cp-icon small">${value.icon}</div>`;
+        if (value.isMissing) {
+          label += `<span class="error">${value.label}</span>`;
+        } else {
+          label += `<span>${value.label}</span>`;
+        }
+        label += '</div>';
+        return label;
+      },
+      sortField: true,
+    });
+
+    columns.push({
+      name: 'usages',
+      title: Craft.t('app', 'Used by'),
+      callback: (value) => value || `<i class="light">${Craft.t('app', 'No usages')}</i>`,
+    });
+
+    let config = {
+      columns,
+      container: '#fields-vue-admin-table',
+      emptyMessage: info.emptyMessage,
+      tableDataEndpoint: 'fields/table-data',
+      search: true,
+    };
+
+  {% if not readOnly %}
+    config['deleteAction'] = 'fields/delete-field';
+  {% endif %}
+
+    new Craft.VueAdminTable(config);
+  })({{
+    {
+      isMultiSite: craft.app.isMultiSite,
+      emptyMessage: emptyMessage,
+    }|json_encode|raw
+  }});
+{% endjs %}

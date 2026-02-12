@@ -1,0 +1,34 @@
+{% requireAdmin false %}
+
+{% extends "_layouts/cp" %}
+{% set title = plugin.name %}
+{% set docTitle = title ~ ' - ' ~ "Plugins"|t('app') %}
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
+
+{% set crumbs = [
+    { label: "Settings"|t('app'), url: url('settings') },
+    { label: "Plugins"|t('app'), url: url('settings/plugins') }
+] %}
+
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: "settings/plugins/#{plugin.handle}"|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    {% if not readOnly %}
+        {{ actionInput('plugins/save-plugin-settings') }}
+        {{ hiddenInput('pluginHandle', plugin.handle) }}
+        {{ redirectInput('settings') }}
+    {% endif %}
+    {{ settingsHtml|raw }}
+{% endblock %}

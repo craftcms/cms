@@ -1,0 +1,15 @@
+{% if total %}
+    <p class="centeralign">
+        {% if total == 1 %}
+            {{ "One update available!"|t('app') }}
+        {% else %}
+            {{ "{total} updates available!"|t('app', { total: total }) }}
+        {% endif %}
+        <a class="go nowrap" href="{{ url('utilities/updates') }}">{{ "Go to Updates"|t('app') }}</a>
+    </p>
+{% else %}
+    <p class="centeralign">{{ "Congrats! You’re up to date."|t('app') }}</p>
+    <p class="centeralign">
+        <button type="button" class="btn" data-icon="refresh" aria-label="{{ 'Check again'|t('app') }}">{{ 'Check again'|t('app') }}</button>
+    </p>
+{% endif %}

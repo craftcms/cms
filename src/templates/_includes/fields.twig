@@ -1,0 +1,14 @@
+{% set element = element ?? null %}
+{% set namespace = namespace is defined ? namespace : 'fields' %}
+
+{% namespace namespace %}
+    {% for field in fields %}
+        {% include "_includes/field" with {
+            field: field,
+            required: field.required,
+            element: element,
+            static: static ?? false,
+            registerDeltas: registerDeltas ?? false,
+        } only %}
+    {% endfor %}
+{% endnamespace %}

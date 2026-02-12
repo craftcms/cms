@@ -1,0 +1,417 @@
+{#
+┌────────────────────────────────────────────────────────────────────────────────────┐
+│                                 #global-container                                  │
+│   ┌─────┐   ┌──────────────────────────────────────────────────────────────────┐   │
+│   │     │   │                         #page-container                          │   │
+│   │     │   │   ┌──────────────────────────────────────────────────────────┐   │   │
+│   │     │   │   │                      #global-header                      │   │   │
+│   │     │   │   └──────────────────────────────────────────────────────────┘   │   │
+│   │     │   │                                                                  │   │
+│   │     │   │   ┌──────────────────────────────────────────────────────────┐   │   │
+│   │     │   │   │                          #main                           │   │   │
+│   │  #  │   │   │   ┌──────────────────────────────────────────────────┐   │   │   │
+│   │  g  │   │   │   │                #header-container                 │   │   │   │
+│   │  l  │   │   │   └──────────────────────────────────────────────────┘   │   │   │
+│   │  o  │   │   │                                                          │   │   │
+│   │  b  │   │   │   ┌──────────────────────────────────────────────────┐   │   │   │
+│   │  a  │   │   │   │                  #main-content                   │   │   │   │
+│   │  l  │   │   │   │   ┌─────┐   ┌──────────────────────┐   ┌─────┐   │   │   │   │
+│   │  -  │   │   │   │   │     │   │                      │   │     │   │   │   │   │
+│   │  s  │   │   │   │   │  #  │   │                      │   │  #  │   │   │   │   │
+│   │  i  │   │   │   │   │  s  │   │                      │   │  d  │   │   │   │   │
+│   │  d  │   │   │   │   │  i  │   │                      │   │  e  │   │   │   │   │
+│   │  e  │   │   │   │   │  d  │   │       #content       │   │  t  │   │   │   │   │
+│   │  b  │   │   │   │   │  e  │   │                      │   │  a  │   │   │   │   │
+│   │  a  │   │   │   │   │  b  │   │                      │   │  i  │   │   │   │   │
+│   │  r  │   │   │   │   │  a  │   │                      │   │  l  │   │   │   │   │
+│   │     │   │   │   │   │  r  │   │                      │   │  s  │   │   │   │   │
+│   │     │   │   │   │   │     │   │                      │   │     │   │   │   │   │
+│   │     │   │   │   │   └─────┘   └──────────────────────┘   └─────┘   │   │   │   │
+│   │     │   │   │   │                                                  │   │   │   │
+│   │     │   │   │   └──────────────────────────────────────────────────┘   │   │   │
+│   │     │   │   │                                                          │   │   │
+│   │     │   │   └──────────────────────────────────────────────────────────┘   │   │
+│   │     │   │   ┌──────────────────────────────────────────────────────────┐   │   │
+│   │     │   │   │                      #global-footer                      │   │   │
+│   │     │   │   └──────────────────────────────────────────────────────────┘   │   │
+│   └─────┘   └──────────────────────────────────────────────────────────────────┘   │
+│                                                                                    │
+└────────────────────────────────────────────────────────────────────────────────────┘
+#}
+
+{% extends '_layouts/basecp.twig' %}
+
+{# The control panel only supports queue components that implement QueueInterface #}
+{% set queue = craft.app.queue %}
+{% js %}
+{% if queue is instance of("craft\\queue\\QueueInterface") %}
+    Craft.cp.setJobInfo({{ queue.getJobInfo(100)|json_encode|raw }}, false);
+    {% if queue.getHasReservedJobs() %}
+        Craft.cp.trackJobProgress(true);
+    {% elseif queue.getHasWaitingJobs() %}
+        Craft.cp.runQueue();
+    {% endif %}
+{% else %}
+    Craft.cp.enableQueue = false;
+{% endif %}
+{% endjs %}
+
+{% set sidebarState = craft.app.request.rawCookies.value("Craft-#{craft.app.systemUid}_sidebar") ?? 'expanded' %}
+{% set bodyAttributes = {
+    data: {
+        sidebar: sidebarState,
+    },
+}|merge(bodyAttributes ?? {}, recursive=true) -%}
+
+{% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
+
+{% set editionName = craft.app.edition.name %}
+{% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
+{% set licensedEdition = craft.app.getLicensedEdition() %}
+{% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
+{% set trialInfo = craft.cp.trialInfo() %}
+
+{% set contentNotice = (contentNotice ?? block('contentNotice') ?? '')|trim %}
+{% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
+{% set toolbar = (toolbar ?? block('toolbar') ?? '')|trim %}
+{% set actionButton = (actionButton ?? block('actionButton') ?? '')|trim %}
+{% set additionalButtons = additionalButtons ?? null %}
+{% set details = (details ?? block('details') ?? '')|trim %}
+{% set footer = (footer ?? block('footer') ?? '')|trim %}
+{% set crumbs = crumbs ?? null %}
+{% set contextMenu = (contextMenu ?? block('contextMenu') ?? '')|trim %}
+{% set actionMenu = actionMenu ?? '' %}
+{% set tabs = (tabs ?? [])|length > 1 ? tabs : null %}
+{% set errorSummary = errorSummary ?? null %}
+
+{% set mainContentClasses = [
+    sidebar ? 'has-sidebar',
+    details ? 'has-details',
+]|filter %}
+
+{% set bodyClass = (bodyClass ?? [])|explodeClass %}
+{% set showHeader = showHeader ?? true %}
+{% if not showHeader %}
+    {% set bodyClass = bodyClass|push('no-header') -%}
+{% endif %}
+{% if craft.app.hasModule('debug') %}
+    {% set bodyClass = bodyClass|push('has-debug-toolbar') %}
+{% endif %}
+
+{% set mainAttributes = {
+    id: 'main',
+    role: 'main',
+    tabindex: '-1',
+}|merge(mainAttributes ?? []) %}
+
+{% set formActions = craft.cp.prepFormActions(formActions ?? null) %}
+
+{% set mainFormAttributes = {
+    id: 'main-form',
+    method: 'post',
+    'accept-charset': 'UTF-8',
+    novalidate: true,
+    data: {
+        saveshortcut: saveShortcut ?? true,
+        'saveshortcut-redirect': (saveShortcutRedirect ?? false) ? saveShortcutRedirect|hash : false,
+        'saveshortcut-scroll': retainScrollOnSaveShortcut ?? false,
+        actions: formActions ?? false,
+        'confirm-unload': true,
+        delta: view.getIsDeltaRegistrationActive(),
+        'delta-names': view.getDeltaNames(),
+        'initial-delta-values': view.getInitialDeltaValues(),
+        'modified-delta-names': view.getModifiedDeltaNames()|merge(craft.app.request.getBodyParam('modifiedDeltaNames') ?? [])|unique|values,
+    },
+}|merge(mainFormAttributes ?? [], recursive=true) %}
+
+{% set userPhoto = include('_layouts/components/header-photo.twig') %}
+
+{% js at head %}
+// Remove the hash so the browser doesn't scroll to it
+window.LOCATION_HASH = document.location.hash ? decodeURIComponent(document.location.hash.substr(1)) : null;
+history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[0]);
+{% endjs %}
+
+{% block body %}
+    {% include '_layouts/components/skip-links' %}
+
+    <div id="global-container">
+        {% include '_layouts/components/global-sidebar' %}
+
+        <div id="page-container">
+            {% include '_layouts/components/alerts' %}
+
+            <div id="global-header" role="region" aria-label="{{ 'My Account'|t('app') }}">
+                <div class="flex flex-nowrap gap-xs">
+                    {% include '_layouts/components/crumbs' %}
+                    {% if contextMenu %}
+                        <div id="context-menu-container" class="context-menu-container">
+                            {{ contextMenu|raw }}
+                        </div>
+                    {% endif %}
+                </div>
+                <button
+                    type="button"
+                    id="announcements-btn"
+                    class="btn hidden"
+                    title="{{ 'What’s New'|t('app') }}"
+                >
+                    <span class="visually-hidden">{{ 'What’s New'|t('app') }}</span>
+                    {{ iconSvg('gift') }}
+                </button>
+
+                {# New account dropdown #}
+                <div class="account-toggle-wrapper">
+                    <button
+                        id="user-info"
+                        aria-controls="account-menu"
+                        class="btn menu-toggle"
+                        aria-label="{{ 'My Account'|t('app') }}"
+                        title="{{ 'My Account'|t('app') }}"
+                        data-disclosure-trigger
+                    >
+                        {{ userPhoto|raw }}
+                    </button>
+                    <div
+                        id="account-menu"
+                        class="menu menu--disclosure"
+                        data-align="right"
+                        data-align-to=".header-photo"
+                    >
+                        <ul>
+                            <li>
+                                <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
+                                    {% if currentUser.photoId %}
+                                        {{ userPhoto|raw }}
+                                    {% endif %}
+                                    <div class="flex-grow">
+                                        <div>{{ currentUser.username }}</div>
+                                        {% if not craft.app.config.general.useEmailAsUsername %}
+                                            <div class="smalltext">{{ currentUser.email }}</div>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                        <hr>
+                        <ul>
+                            <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="main-container">
+
+                <main {{ attr(mainAttributes) }}>
+
+                    {% if fullPageForm -%}
+                    <form {% block mainFormAttributes %}{{ attr(mainFormAttributes) }}{% endblock %}>
+                        {{- csrfInput() }}
+                        {%- endif %}
+
+                        {% if showHeader %}
+                            <div id="header-container">
+                                <header id="header">
+                                    {% block header %}
+                                        <div id="page-title" class="{% if toolbar %} has-toolbar{% endif %}">
+                                            {% block pageTitle %}
+                                                {% if title is defined and title|length %}
+                                                    <h1 id="page-heading" class="screen-title" title="{{ title }}">{{ title }}</h1>
+                                                {% endif %}
+                                                <div id="revision-indicators"></div>
+                                            {% endblock %}
+                                        </div>
+                                        {% if toolbar %}
+                                            <div id="toolbar" class="flex">
+                                                {{ toolbar|raw }}
+                                            </div>
+                                        {% endif %}
+                                        {% if actionButton or additionalButtons or actionMenu or details %}
+                                            <div id="action-buttons" class="flex">
+                                                {{ additionalButtons|raw }}
+                                                {{ actionButton|raw }}
+                                                {{ actionMenu|raw }}
+                                            </div>
+                                        {% endif %}
+                                    {% endblock %}
+                                </header><!-- #header -->
+                            </div>
+                        {% endif %}
+
+                        <div id="main-content" class="{{ mainContentClasses|join(' ') }}">
+                            {# sidebar #}
+                            {% if sidebar %}
+                                <div id="sidebar-container">
+                                    <div id="sidebar-toggle-container">
+                                        <button
+                                                type="button"
+                                                id="sidebar-toggle"
+                                                class="btn menubtn chromeless"
+                                                aria-controls="sidebar-container"
+                                                aria-expanded="false"
+                                        >
+                                            {{ 'Show sidebar'|t('app') }}
+                                        </button>
+                                    </div>
+                                    <div id="sidebar" class="sidebar">
+                                        {{ sidebar|raw }}
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {# content-container #}
+                            <div id="content-container" tabindex="-1">
+                                <div class="content-grid">
+
+                                    {% block main %}
+                                        <div class="content-grid__main">
+                                            {% if errorSummary is not empty %}
+                                                {{ errorSummary is defined ? errorSummary|raw }}
+                                            {% endif %}
+
+                                            <div id="content" class="content-pane">
+                                                {% if contentNotice or tabs %}
+                                                    <header id="content-header" class="pane-header">
+                                                        {{ contentNotice ? tag('div', {
+                                                            id: 'content-notice',
+                                                            html: contentNotice,
+                                                            role: 'status',
+                                                        }) }}
+                                                        {% if tabs %}
+                                                            {% include "_includes/tabs" with {
+                                                                containerAttributes: {
+                                                                    id: 'tabs',
+                                                                },
+                                                            } %}
+                                                        {% endif %}
+                                                    </header>
+                                                {% endif %}
+
+                                                {% block content %}
+                                                    {{ content is defined ? content|raw }}
+                                                {% endblock %}
+
+                                                {# footer #}
+                                                {% if footer %}
+                                                    <div id="footer" class="flex flex-justify">
+                                                        {{ footer|raw }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        {% if details is not empty %}
+                                            <div id="details-toggle-wrapper" class="content-grid__toggle" tabindex="-1">
+                                                {% embed '_includes/disclosure-toggle' with {
+                                                    id: 'details-toggle',
+                                                    controls: 'details-container',
+                                                    persist: true,
+                                                    storageMode: 'cookies',
+                                                    storageKey: 'sidebar-details',
+                                                } only %}
+                                                    {% block content %}
+                                                        <span class="details-toggle__inner">
+                                                            <span
+                                                                aria-hidden="true"
+                                                                class="cp-icon"
+                                                            >{{ iconSvg('angle-right') }}</span>
+                                                            <span class="visually-hidden">{{ 'Toggle details sidebar'|t('app') }}</span>
+                                                        </span>
+                                                    {% endblock %}
+                                                {% endembed %}
+                                            </div>
+                                        {% endif %}
+                                    {% endblock %}
+                                </div>
+                            </div><!-- #content-container -->
+
+                            {% if details is not empty %}
+                                <div id="details-container" tabindex="-1" data-state="{{ craft.app.request.rawCookies.value("Craft-#{craft.app.systemUid}_sidebar-details")}}">
+                                    <div id="details">
+                                        <div class="details">
+                                            {{ details|raw }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div><!-- #main-content -->
+
+                        {% if fullPageForm -%}
+                    </form><!-- #main-form -->
+                    {%- endif %}
+                </main><!-- #main -->
+            </div><!-- #main-container -->
+
+            <footer id="global-footer">
+                {% if trialInfo %}
+                    <div id="trial-info" class="readable">
+                        <span>
+                            {{ trialInfo.message }}
+                            {% set linkText = 'Buy now'|t('app') %}
+                            {{ tag('a', {
+                                class: 'go',
+                                href: trialInfo.cartUrl,
+                                target: '_blank',
+                                text: linkText,
+                                aria: {label: linkText},
+                            }) }}
+                        </span>
+                    </div>
+                {% endif %}
+                <div id="app-info">
+                    {% set fullEditionName = '{edition} edition'|t('app', {edition: editionName}) %}
+                    <span class="flex items-center">
+                        <span lang="en" class="flex items-center">
+                            Craft CMS
+                            <span id="edition-logo" title="{{ fullEditionName }}">
+                                <span aria-hidden="true">{{ editionName }}</span>
+                                <span class="visually-hidden">{{ fullEditionName }}</span>
+                            </span>
+                        </span>
+                        {{ craft.app.version }}
+                    </span>
+                    {% if canUpgradeEdition and not isTrial %}
+                        {% set linkText = 'Upgrade to Craft Pro'|t('app') %}
+                        <span>
+                            <a
+                                class="go"
+                                href="{{ url('plugin-store/upgrade-craft') }}"
+                                aria-label="{{ linkText }}"
+                            >{{ linkText }}</a>
+                        </span>
+                    {% endif %}
+                </div>
+            </footer>
+
+        </div><!-- #page-container -->
+    </div><!-- #global-container -->
+{% endblock %}
+
+
+{% block actionButton %}
+    {% if fullPageForm %}
+        <div class="btngroup">
+            {% block submitButton %}
+                <button type="submit" class="btn submit">{{ submitButtonLabel ?? 'Save'|t('app') }}</button>
+            {% endblock %}
+            {% if formActions ?? false %}
+                <button
+                    type="button"
+                    class="btn submit menubtn"
+                    aria-label="{{ 'More actions'|t('app') }}"
+                    aria-controls="form-action-menu"
+                    data-disclosure-trigger
+                ></button>
+                {% include '_layouts/components/form-action-menu' %}
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+
+{% if currentUser.can('performUpdates') and not craft.app.updates.getIsUpdateInfoCached() %}
+    {% js %}
+    Craft.cp.checkForUpdates();
+    {% endjs %}
+{% endif %}

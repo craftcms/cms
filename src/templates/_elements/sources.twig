@@ -1,0 +1,155 @@
+{% apply spaceless %}
+
+{% hook 'cp.elements.sources' %}
+
+{% macro sourceLink(key, source, isTopLevel, elementType, sortOptions, baseSortOptions, tableColumns, defaultTableColumns, viewModes) %}
+    {{ tag('a', {
+        role: 'button',
+        tabindex: '0',
+        data: {
+            key: key,
+            'label': source.label,
+            'has-thumbs': (source.hasThumbs ?? false) ? true : false,
+            'has-structure': (source.structureId ?? null)|boolean,
+            'default-sort': source.defaultSort ?? false,
+            'sort-opts': isTopLevel ? (sortOptions ?? false) : false,
+            'base-sort-opts': (isTopLevel and sortOptions is same as(null)) ? (baseSortOptions ?? false) : false,
+            'base-table-col-opts': isTopLevel and (tableColumns ?? false)
+                ? tableColumns|map((a, key) => a|merge({attr: key}))|values
+                : false,
+            'default-table-cols': isTopLevel and (defaultTableColumns ?? false)
+                ? defaultTableColumns|map(a => a[0])|filter(a => a != 'title')|values
+                : false,
+            'source-item': true,
+            'default-source-path': (source.defaultSourcePath ?? false) ? source.defaultSourcePath|json_encode : false,
+            sites: (source.sites ?? false) ? source.sites|join(',') : false,
+            criteria: source.criteria ?? {},
+            disabled: source.disabled ?? false,
+            'default-filter': source.defaultFilter ?? false,
+            'default-view-mode': source.defaultViewMode ?? false,
+            'view-modes': viewModes ?? [],
+            'field-layouts': source.fieldLayouts is defined ? source.fieldLayouts|map(layout => layout.getConfig()) : false,
+        }|merge(source.data ?? {}),
+        html: _self.sourceInnerHtml(source)
+    }) }}
+{% endmacro %}
+
+{% macro sourceInnerHtml(source) %}
+    {% if source.status is defined %}
+        <span class="status {{ source.status }}"></span>
+    {% elseif source.icon is defined %}
+        <span class="icon">
+            {{ (svg(source.icon, sanitize=true, namespace=true) ?: "<span data-icon='#{source.icon}'></span>")|raw }}
+        </span>
+    {% elseif source.iconMask is defined %}
+        <span class="icon icon-mask">
+            {{ (svg(source.iconMask, sanitize=true, namespace=true) ?: "<span data-icon='#{source.iconMask}'></span>")|raw }}
+        </span>
+    {% endif %}
+    <span class="label">
+        {% if source.label|trim is not same as('') %}
+            {{ (source.type ?? null) == 'custom' ? source.label|t('site') : source.label }}
+        {% else %}
+            {{ '(blank)'|t('app') }}
+        {% endif %}
+    </span>
+    {% if source.badgeCount ?? false %}
+        <span class="badge" aria-hidden="true">{{ source.badgeCount|number(decimals=0) }}</span>
+        {{ tag('span', {
+            class: 'visually-hidden',
+            data: {
+                notification: true,
+            },
+            text: source.badgeLabel ?? '{num, number} {num, plural, =1{notification} other{notifications}}'|t('app', {
+                num: source.badgeCount,
+            }),
+        }) }}
+    {% endif %}
+{% endmacro %}
+
+{% set nestedUnderHeading = false %}
+
+{% tag 'ul' with {
+    class: keyPrefix ? 'nested sources-list' : 'sources-list',
+    id: id ?? ''
+} %}
+    {% for source in sources %}
+        {% if (source.type ?? null) == 'heading' %}
+            {% set key = source.key ?? (source.heading | kebab) %}
+            {% set sourceId = 'sources-list-' ~ random() %}
+            {% if nestedUnderHeading %}
+                    </ul>
+                </li>
+            {% endif %}
+            <li class="heading">
+                <div class="source-item source-item--heading">
+                    <span class="type-heading-small">{{ source.heading|t('site') }}</span>
+                    {# Don't toggle blank headings #}
+                    {% if source.heading | length %}
+                        {% embed '_includes/disclosure-toggle' with {
+                            persist: true,
+                            storageKey: 'sources-list:' ~ key,
+                            controls: sourceId,
+                            attributes: {
+                                class: 'source-item__toggle'
+                            }
+                        } %}
+                            {% block content %}
+                                <span class="cp-icon puny">
+                                    {{ iconSvg('angle-down') }}
+                                </span>
+                                <span class="visually-hidden">{{ 'Expand {heading} sources' | t('app', {
+                                        heading: source.heading
+                                    }) }}</span>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endif %}
+                </div>
+                <ul id="{{ sourceId }}" class="sources-list">
+            {% set nestedUnderHeading = true %}
+        {% elseif (source.sites ?? null) is not same as([]) %}
+            {% set key = source.keyPath ?? (keyPrefix ~ source.key) %}
+            {% tag 'li' with {
+                class: [
+                    (source.nested ?? false) ? 'collapsible' : null,
+                    (source.disabled ?? false) ? 'hidden' : null,
+                ]|filter,
+            } %}
+                <div class="source-item source-item--link">
+                    {{ _self.sourceLink(key, source, isTopLevel, elementType, sortOptions ?? null, baseSortOptions ?? null, tableColumns ?? null, defaultTableColumns ?? null, viewModes ?? null) }}
+                    {% if source.nested is defined and source.nested is not empty %}
+                        {% embed '_includes/disclosure-toggle' with {
+                            persist: true,
+                            storageKey: 'sources-list:'~ key,
+                            controls: key,
+                            attributes: {
+                                class: 'source-item__toggle'
+                            }
+                        } %}
+                            {% block content %}
+                                <span class="cp-icon puny">
+                                    {{ iconSvg('angle-down') }}
+                                </span>
+                                <span class="visually-hidden">{{ 'Expand {heading} sources' | t('app', {
+                                        heading: source.label
+                                    }) }}</span>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endif %}
+                </div>
+                {% if source.nested is defined and source.nested is not empty %}
+                    {% include "_elements/sources" with {
+                        keyPrefix: key ~ '/',
+                        id: key,
+                        sources: source.nested
+                    } %}
+                {% endif %}
+            {% endtag %}
+        {% endif %}
+    {% endfor %}
+    {% if nestedUnderHeading %}
+            </ul>
+        </li>
+    {% endif %}
+{% endtag %}
+{% endapply %}

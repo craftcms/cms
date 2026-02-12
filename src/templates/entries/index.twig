@@ -1,0 +1,25 @@
+{% extends "_layouts/elementindex" %}
+{% set page = page ?? null %}
+
+{% if not page or not craft.app.elementSources.pageExists("craft\\elements\\Entry", page) %}
+  {% if sectionHandle is defined %}
+    {% set redirect = craft.app.entries.getSectionByHandle(sectionHandle).getCpIndexUri() ?? null %}
+    {% if redirect and redirect != craft.app.request.getPathInfo() %}
+      {% redirect redirect %}
+    {% endif %}
+  {% endif %}
+
+  {% set firstPage = craft.app.elementSources.getFirstPage("craft\\elements\\Entry") %}
+  {% if firstPage or page != 'entries' %}
+    {% redirect 'content/' ~ (firstPage ? firstPage|kebab : 'entries') %}
+  {% endif %}
+{% endif %}
+
+{% set title = "Entries"|t('app') %}
+{% set elementType = 'craft\\elements\\Entry' %}
+
+{% if sectionHandle is defined %}
+  {% js %}
+    window.defaultSectionHandle = "{{ sectionHandle|e('js') }}";
+  {% endjs %}
+{% endif %}

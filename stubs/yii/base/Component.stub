@@ -1,0 +1,22 @@
+<?php
+
+namespace yii\base;
+
+class Component
+{
+    /**
+     * @template T as Behavior
+     * @param string $name
+     * @param class-string<T>|array{class: class-string<T>}|T $behavior
+     * @return T
+     */
+    public function attachBehavior($name, $behavior) {}
+
+    /**
+     * @param array<class-string<Behavior>|array{class: class-string<Behavior>}|Behavior> $behaviors
+     * @return void
+     */
+    public function attachBehaviors($behaviors) {}
+}
+
+class Behavior {}

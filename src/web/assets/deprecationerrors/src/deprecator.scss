@@ -1,0 +1,14 @@
+@charset "UTF-8";
+@import '@craftcms/sass/mixins';
+
+#traces {
+  .body {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+
+    strong {
+      color: var(--fg-subtle);
+    }
+  }
+}

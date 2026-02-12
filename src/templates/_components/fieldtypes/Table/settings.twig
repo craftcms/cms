@@ -1,0 +1,56 @@
+{% import '_includes/forms' as forms %}
+
+{{ columnsField|raw }}
+{{ defaultsField|raw }}
+
+{{ forms.lightswitchField({
+    label: 'Static Rows'|t('app'),
+    instructions: 'Whether the table rows should be restricted to those defined by the “Default Values” setting.'|t('app'),
+    name: 'staticRows',
+    on: field.staticRows,
+    reverseToggle: 'dynamic-row-settings',
+    disabled: readOnly,
+}) }}
+
+<fieldset id="dynamic-row-settings"{% if field.staticRows %} class="hidden indent"{% endif %}>
+    {{ forms.textField({
+        label: "Min Rows"|t('app'),
+        instructions: "The minimum number of rows the field is allowed to have."|t('app'),
+        id: 'minRows',
+        name: 'minRows',
+        value: field.minRows,
+        size: 3,
+        errors: field.getErrors('minRows'),
+        data: {'error-key': 'minRows'},
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.textField({
+        label: "Max Rows"|t('app'),
+        instructions: "The maximum number of rows the field is allowed to have."|t('app'),
+        id: 'maxRows',
+        name: 'maxRows',
+        value: field.maxRows,
+        size: 3,
+        errors: field.getErrors('maxRows'),
+        data: {'error-key': 'maxRows'},
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.textField({
+        label: "Add Row Label"|t('app'),
+        instructions: "Insert the button label for adding a new row to the table."|t('app'),
+        id: 'addRowLabel',
+        name: 'addRowLabel',
+        value: field.addRowLabel,
+        size: 20,
+        errors: field.getErrors('addRowLabel'),
+        disabled: readOnly,
+    }) }}
+</fieldset>
+
+{% for colId, column in field.columns %}
+    {% if column.type == 'select' %}
+        {{ hiddenInput("columns[#{colId}][options]", column.options|json_encode) }}
+    {% endif %}
+{% endfor %}

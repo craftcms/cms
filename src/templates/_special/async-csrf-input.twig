@@ -1,0 +1,19 @@
+<script>
+  (function() {
+    fetch('{{ url }}', {
+      headers: {
+        'Accept': 'application/json',
+      }
+    }).then(response => response.json())
+      .then(data => {
+        document.querySelectorAll('craft-csrf-input')
+          .forEach(element => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = data.csrfTokenName;
+            input.value = data.csrfTokenValue;
+            element.replaceWith(input);
+          });
+      });
+  })();
+</script>

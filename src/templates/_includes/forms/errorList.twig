@@ -1,0 +1,16 @@
+{%- if errors %}
+    {% tag 'ul' with {
+        id: id ?? false,
+        class: 'errors',
+    } %}
+        {% for error in errors %}
+            <li>
+                {{ tag('span', {
+                    class: 'visually-hidden',
+                    text: 'Error:'|t('app'),
+                }) }}
+                {{ error|md(inlineOnly=true, encode=true)|raw }}
+            </li>
+        {% endfor %}
+    {% endtag %}
+{%- endif %}

@@ -1,0 +1,35 @@
+{% from '_includes/forms' import field %}
+
+{% set input %}
+    {% embed '_includes/forms/editableTable' with {
+        id: 'columns',
+        name: 'columns',
+        cols: cols,
+        rows: rows,
+        addRowLabel: 'Add a column'|t('app'),
+        initJs: false,
+        allowAdd: true,
+        allowReorder: true,
+        allowDelete: true,
+        static: readOnly ?? false,
+    } %}
+        {% block tablecell %}
+            {% if colId == 'type' %}
+                <div class="flex flex-nowrap">
+                    {{ parent() }}
+                    <button class="settings light{% if value != 'select' %} invisible{% endif %}" type="button" data-icon="settings"></button>
+                </div>
+            {% else %}
+                {{ parent() }}
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endset %}
+
+{{ field({
+    label: 'Table Columns'|t('app'),
+    instructions: 'Define the columns your table should have.'|t('app'),
+    id: 'columns',
+    errors: errors,
+    data: {'error-key': 'columns'},
+}, input) }}

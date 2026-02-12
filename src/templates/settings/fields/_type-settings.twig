@@ -1,0 +1,7 @@
+{% set readOnly = readOnly ?? false %}
+
+{% namespace namespace ?? null %}
+  {% autoescape false %}
+    {{ readOnly ? field.getReadOnlySettingsHtml() : field.getSettingsHtml() }}
+  {% endautoescape %}
+{% endnamespace %}

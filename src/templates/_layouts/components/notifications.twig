@@ -1,0 +1,12 @@
+<div id="notifications" role="status">
+  <h2 id="cp-notification-heading" class="visually-hidden hidden">{{ 'Notifications'|t('app') }}</h2>
+</div>
+
+{% for type in ['notice', 'success', 'error'] %}
+  {% set notification = craft.app.session.getFlash("cp-notification-#{type}") %}
+  {% if notification %}
+    {% js %}
+      Craft.cp.displayNotification({{ type|json_encode|raw }}, {{ notification[0]|json_encode|raw }}, {{ notification[1]|json_encode|raw }});
+    {% endjs %}
+  {% endif %}
+{% endfor %}

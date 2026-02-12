@@ -1,0 +1,41 @@
+{% import "_includes/forms" as forms %}
+
+<h2>{{ 'Clear Caches'|t('app') }}</h2>
+
+<form class="utility" method="post" accept-charset="UTF-8">
+    {{ actionInput('utilities/clear-caches-perform-action') }}
+    {{ csrfInput() }}
+
+    {{ forms.checkboxSelect({
+        name: 'caches',
+        options: cacheOptions,
+        showAllOption: true,
+        values: '*',
+        storageKey: 'cache-options',
+    }) }}
+
+    <div class="buttons">
+        <button type="submit" class="btn submit secondary">{{ 'Clear caches'|t('app') }}</button>
+        <div class="utility-status"></div>
+    </div>
+</form>
+
+<hr>
+
+<h2>{{ 'Invalidate Data Caches'|t('app') }}</h2>
+
+<form class="utility" method="post" accept-charset="UTF-8">
+    {{ actionInput('utilities/invalidate-tags') }}
+    {{ csrfInput() }}
+
+    {{ forms.checkboxSelect({
+        name: 'tags',
+        options: tagOptions,
+        showAllOption: false,
+    }) }}
+
+    <div class="buttons">
+        <button type="submit" class="btn submit secondary">{{ 'Invalidate caches'|t('app') }}</button>
+        <div class="utility-status"></div>
+    </div>
+</form>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <title>default_plugin</title>
+    <g id="Plugins" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="default_plugin" sketch:type="MSArtboardGroup" fill="#444444" opacity="0.15">
+            <path d="M30,35 L35,35 L35,55 L30,55 L30,35 L30,35 Z M64.9992187,35 L69.9992187,35 L69.9992187,50 L64.9992187,50 L64.9992187,35 L64.9992187,35 Z M69,15 L31,15 C18.3252602,21.8225 10,34.9375 10,50 C10,65.0625 18.3252602,78.1775 31,85 L69,85 C81.6747398,78.1775 90,65.0625 90,50 C90,34.9375 81.6722398,21.8225 69,15 L69,15 Z M68,80 L32,80 C27.067069,77.045 22.9422163,72.925 20,68 C16.7249384,62.5925 15,56.365 15,50 C15,43.635 16.7224385,37.4075 20,32 C22.9397164,27.075 27.067069,22.9525 32,20 L68,20 C72.932931,22.9525 77.0577837,27.075 80,32 C83.2750616,37.4075 85,43.635 85,50 C85,56.365 83.2800614,62.5925 80,68 C77.0602836,72.925 72.932931,77.045 68,80 L68,80 Z M50,75 C55.5229851,75 60.000625,72.7625 60,70 L60,60 L40,60 L40,70 C40,72.7625 44.4776399,75 50,75 L50,75 Z" id="Shape" sketch:type="MSShapeGroup"></path>
+        </g>
+    </g>
+</svg>

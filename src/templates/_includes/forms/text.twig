@@ -1,0 +1,78 @@
+{%- set type = type ?? 'text' %}
+{%- set autocomplete = autocomplete ?? false %}
+
+{%- set class = (class ?? [])|explodeClass|merge([
+    'text',
+    not (size ?? false) ? 'fullwidth' : null,
+]|filter) %}
+{%- set id = id ?? "text#{random()}" %}
+{%- set descriptionId = descriptionId ?? "#{id}-desc" %}
+
+{%- set orientation = orientation ?? inputAttributes.dir ?? craft.app.locale.getOrientation() %}
+{%- set expanded = expanded ?? ((role ?? false) == 'combobox' ? 'false' : false) %}
+
+{%- set suffix = suffix ?? unit ?? false %}
+{%- set hasSuffix = suffix is not same as(false) %}
+
+{%- set inputAttributes = {
+    class: class,
+    type: type,
+    id: id,
+    inputmode: inputmode ?? false,
+    size: size ?? false,
+    name: name ?? false,
+    value: value ?? false,
+    maxlength: maxlength ?? false,
+    autofocus: (autofocus ?? false) and currentUser and currentUser.getAutofocusPreferred() and not craft.app.request.isMobileBrowser(true),
+    autocomplete: autocomplete is boolean ? (autocomplete ? 'on' : 'off') : autocomplete,
+    autocorrect: (autocorrect ?? true) ? false : 'off',
+    autocapitalize: (autocapitalize ?? true) ? false : 'none',
+    disabled: disabled ?? false,
+    readonly: readonly ?? false,
+    title: title ?? false,
+    placeholder: placeholder ?? false,
+    step: step ?? false,
+    min: min ?? false,
+    max: max ?? false,
+    dir: orientation,
+    role: role ?? false,
+    aria: {
+        labelledby: (inputAttributes.aria.label ?? false) ? false : (labelledBy ?? false),
+        describedby: [
+            describedBy ?? null,
+            hasSuffix ? descriptionId : null,
+        ]|filter|join(' ') ?: false,
+        expanded: expanded,
+    },
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{%- endif %}
+
+{%- if showCharsLeft ?? false %}
+    {%- set inputAttributes = inputAttributes|merge({
+        data: {
+            'show-chars-left': showCharsLeft,
+        },
+        style: {
+            ("padding-#{orientation == 'ltr' ? 'right' : 'left'}"): (maxlength ?? false) ? "#{7.2*maxlength|length+14}px",
+        },
+    }, recursive=true) %}
+{%- endif %}
+
+{%- set input = tag('input', inputAttributes) %}
+
+{%- if hasSuffix %}
+    {{ tag('span', {
+        id: descriptionId,
+        hidden: true,
+        text: 'Value suffixed by “{suffix}”.'|t('app', {suffix: suffix}),
+    }) }}
+    <div class="flex">
+        <div class="textwrapper">{{ input|raw }}</div>
+        <div class="label light" aria-hidden="true">{{ suffix }}</div>
+    </div>
+{%- else %}
+    {{- input|raw }}
+{%- endif %}

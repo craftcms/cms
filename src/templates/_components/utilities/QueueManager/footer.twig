@@ -1,0 +1,4 @@
+<p v-if="!activeJob && jobs.length">
+    <template v-if="totalJobs == 1">{{ '1 job'|t('app') }}</template>
+    <template v-else>{{ '{total} jobs'|t('app', {total: '[[totalJobsFormatted]]'}) }}</template>
+</p>

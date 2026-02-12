@@ -1,0 +1,18 @@
+{% set height = asset.alt ? '70%' : '100%' %}
+{% set transcriptHeight = '30%' %}
+
+<video autoplay controls style="width: 100%; height: {{ height }};">
+  <source src="{{ url }}" type="{{ asset.mimeType }}">
+  Your browser does not support the video tag.
+</video>
+
+{% if asset.alt %}
+  <div class="video-transcript" tabindex="0" style="height: {{ transcriptHeight }};">
+    <div class="video-transcript__inner">
+      <h2 class="video-transcript__heading">{{ 'Transcript'|t('app') }}</h2>
+      <p class="video-transcript__text">
+        {{ asset.alt|nl2br }}
+      </p>
+    </div>
+  </div>
+{% endif %}

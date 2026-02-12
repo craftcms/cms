@@ -1,0 +1,7 @@
+{% extends "_layouts/message" %}
+{% set title = "Internal Server Error"|t('app') %}
+
+{% block message %}
+    <h2>{{ title }}</h2>
+    <p>{{ (message ?? null) ?: "An error occurred while processing your request."|t('app') }}</p>
+{% endblock %}

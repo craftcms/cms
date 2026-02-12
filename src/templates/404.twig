@@ -1,0 +1,7 @@
+{% extends "_layouts/message" %}
+{% set title = "Page Not Found"|t('app') %}
+
+{% block message %}
+    <h2>{{ title }}</h2>
+    <p>{{ (message ?? null) ?: "The requested URL was not found on this server."|t('app') }}</p>
+{% endblock %}

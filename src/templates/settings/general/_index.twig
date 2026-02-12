@@ -1,0 +1,112 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+{% set title = "General Settings"|t('app') %}
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
+
+{% set crumbs = [
+    { label: "Settings"|t('app'), url: url('settings') }
+] %}
+
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/general'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
+{# set defaults #}
+{% set system = {
+    name: null,
+    live: false,
+    retryDuration: null,
+    timeZone: 'UTC',
+}|merge(system) %}
+
+
+{% macro configWarning(setting, file) -%}
+    {{ "This is being overridden by the {setting} config setting."|t('app', {
+        setting: '<a href="https://craftcms.com/docs/5.x/reference/config/general.html#'~setting|lower~'" rel="noopener" target="_blank">'~setting~'</a>'
+    })|raw }}
+{%- endmacro %}
+
+{% from _self import configWarning %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
+{% block content %}
+    {% if not readOnly %}
+        {{ actionInput('system-settings/save-general-settings') }}
+        {{ redirectInput('settings') }}
+    {% endif %}
+
+    {{ forms.autosuggestField({
+        first: true,
+        label: "System Name"|t('app'),
+        id: 'name',
+        suggestEnvVars: true,
+        name: 'name',
+        value: system.name,
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.booleanMenuField({
+        label: "System Status"|t('app'),
+        warning: (craft.app.config.general.isSystemLive is same as(true) or craft.app.config.general.isSystemLive is same as(false) ? configWarning('isSystemLive')),
+        id: 'live',
+        name: 'live',
+        yesLabel: 'Online'|t('app'),
+        noLabel: 'Offline'|t('app'),
+        includeEnvVars: true,
+        value: system.live,
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.textField({
+        label: 'Retry Duration'|t('app'),
+        instructions: 'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.'|t('app'),
+        id: 'retry-duration',
+        name: 'retryDuration',
+        value: system.retryDuration,
+        inputmode: 'numeric',
+        size: 4,
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.timeZoneField({
+        label: "Time Zone"|t('app'),
+        warning: (craft.app.config.general.timezone ? configWarning('timezone')),
+        id: 'time-zone',
+        name: 'timeZone',
+        value: system.timeZone,
+        includeEnvVars: true,
+        disabled: readOnly,
+    }) }}
+
+    {% if CraftEdition >= CraftPro %}
+        <hr>
+
+        {% do view.registerTranslations('app', [
+            "Are you sure you want to delete the logo?",
+        ]) %}
+
+        {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
+
+        {{ forms.field({
+            label: "Site Icon"|t('app'),
+            instructions: "Square SVG file recommended. The logo will be displayed at {size} by {size}."|t('app', { size: '32px' }),
+            disabled: readOnly,
+        }, include('settings/general/_images/icon.twig', {'disabled': readOnly})) }}
+
+        {{ forms.field({
+            label: "Login Page Logo"|t('app'),
+            instructions: "SVG file recommended. The logo will be displayed at {size} wide."|t('app', { size: '288px' }),
+        }, include('settings/general/_images/logo.twig', {'disabled': readOnly})) }}
+
+        <div class="clear"></div>
+    {% endif %}
+{% endblock %}

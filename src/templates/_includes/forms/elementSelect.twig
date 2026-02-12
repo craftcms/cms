@@ -1,0 +1,146 @@
+{% set name = name ?? false %}
+{% if name %}
+    {{ hiddenInput(name, '') }}
+{% endif -%}
+
+{% set id = id ?? "elementselect#{random()}" -%}
+{% set elements = elements ?? [] -%}
+{% set jsClass = jsClass ?? 'Craft.BaseElementSelectInput' -%}
+{% set sources = sources ?? null -%}
+{% set condition = condition ?? null -%}
+{% set criteria = criteria ?? null -%}
+{% set searchCriteria = searchCriteria ?? null %}
+{% set sourceElementId = sourceElementId ?? null -%}
+{% set storageKey = storageKey ?? null -%}
+{% set defaultPlacement = defaultPlacement ?? 'end' %}
+{% set viewMode = viewMode ?? 'list' %}
+{% set prevalidate = prevalidate ?? false %}
+{% set fieldId = fieldId ?? null %}
+{% set single = single ?? false %}
+{% set limit = single ? 1 : (limit ?? null) %}
+{% set showActionMenu = showActionMenu ?? true %}
+{% set sortable = (not limit or limit > 1) and (sortable ?? true) %}
+{% set disabled = (disabled ?? false) ? true : false %}
+{% set maintainHierarchy = maintainHierarchy ?? false %}
+{% set registerJs = registerJs ?? true %}
+
+{% set allowAdd = allowAdd ?? true %}
+{% set allowRemove = allowRemove ?? true %}
+
+{% set containerAttributes = {
+    id: id,
+    class: ['elementselect']|merge((class ?? [])|explodeClass),
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{% set modalSettings = {
+    modalTitle: selectionLabel ?? 'Choose'|t('app'),
+}|merge(modalSettings ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% from "_includes/forms" import text %}
+
+{% tag 'div' with containerAttributes %}
+    {% if maintainHierarchy %}
+        {{ include('_elements/structurelist.twig', {
+            id,
+            elements,
+            context: 'field',
+            sortable: false,
+        }) }}
+    {% elseif viewMode in ['cards', 'cards-grid'] %}
+        {{ include('_elements/cards.twig', {
+            elements,
+            showInGrid: showInGrid ?? (viewMode == 'cards-grid'),
+            disabled,
+            context: 'field',
+            sortable: false,
+        }) }}
+    {% else %}
+        {{ include('_elements/list.twig', {
+            elements,
+            size: size ?? (viewMode in ['thumbs', 'large'] ? 'large' : 'small'),
+            inline: inline ?? (viewMode in ['list-inline', 'thumbs', 'large']),
+            disabled,
+            context: 'field',
+            sortable: false,
+        }) }}
+    {% endif %}
+
+    <div class="flex">
+        {% if allowAdd %}
+            {{ tag('button', {
+                type: 'button',
+                class: [
+                    'btn',
+                    'add',
+                    'icon',
+                    'dashed',
+                    'wrap',
+                    disabled ? 'disabled',
+                    limit and elements|length >= limit ? 'hidden',
+                ]|filter,
+                text: selectionLabel ?? 'Choose'|t('app'),
+                disabled: disabled,
+                aria: {
+                    label: selectionLabel ?? 'Choose'|t('app'),
+                    describedby: describedBy ?? false,
+                }
+            }) }}
+            {% if searchCriteria %}
+                <div class="texticon search icon elementselect__search-input-wrapper">
+                    {{ text({
+                        width: 'auto',
+                        placeholder: 'Search'|t('app'),
+                        describedBy: describedBy ?? false,
+                        role: 'combobox',
+                        labelledBy: labelId ?? false,
+                    }) }}
+                    <div class="spinner hidden"></div>
+                </div>
+            {% endif %}
+        {% endif %}
+        <div class="spinner hidden"></div>
+    </div>
+{% endtag %}
+
+{% if not disabled and registerJs %}
+    {% set jsSettings = {
+        id: id|namespaceInputId,
+        name: name ? name|namespaceInputName : null,
+        elementType: elementType,
+        sources: sources,
+        condition: condition ? condition.getConfig() : null,
+        referenceElementId: referenceElement.id ?? null,
+        referenceElementOwnerId: (referenceElement ?? null) is instance of('craft\\base\\NestedElementInterface')
+            ? referenceElement.getOwnerId()
+            : null,
+        referenceElementSiteId: referenceElement.siteId ?? null,
+        criteria: criteria,
+        searchCriteria,
+        allowAdd: allowAdd,
+        allowRemove: allowRemove,
+        allowSelfRelations: allowSelfRelations ?? false,
+        maintainHierarchy: maintainHierarchy,
+        branchLimit: branchLimit ?? null,
+        sourceElementId: sourceElementId,
+        disabledElementIds: disabledElementIds ?? null,
+        defaultPlacement,
+        viewMode: viewMode,
+        single: single,
+        limit: limit,
+        showSiteMenu: showSiteMenu ?? false,
+        modalStorageKey: storageKey,
+        fieldId: fieldId,
+        sortable: sortable,
+        showActionMenu: showActionMenu,
+        prevalidate: prevalidate,
+        modalSettings: modalSettings ?? {},
+    }|merge(jsSettings ?? {}) %}
+
+    {% js %}
+        new {{ jsClass }}({{ jsSettings|json_encode|raw }});
+    {% endjs %}
+{% endif %}

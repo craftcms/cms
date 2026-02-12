@@ -1,0 +1,37 @@
+{% macro list(items, selectedItem) %}
+  <ul>
+    {% for key, item in items %}
+      {% if item %}
+        {% tag 'li' with {
+          class: {
+            heading: item.heading is defined,
+          }|filter|keys,
+        } %}
+          {% if item.heading is defined %}
+            <span>{{ item.heading }}</span>
+            {{ _self.list(item.nested, selectedItem) }}
+          {% else %}
+            {{ tag('a', {
+              class: {
+                sel: (item.selected ?? false) or (selectedItem and key == selectedItem),
+              }|filter|keys,
+              href: url(item.url),
+              text: item.label,
+              aria: {
+                current: (item.selected ?? false) or (selectedItem and key == selectedItem) ? 'page' : false,
+              }
+            }) }}
+          {% endif %}
+        {% endtag %}
+      {% endif %}
+    {% endfor %}
+  </ul>
+{% endmacro %}
+
+{% tag 'nav' with {
+  aria: {
+    label: label ?? false,
+  },
+} %}
+  {{ _self.list(items, selectedItem ?? null) }}
+{% endtag %}

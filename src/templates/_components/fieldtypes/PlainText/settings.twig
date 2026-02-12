@@ -1,0 +1,84 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.selectField({
+    label: 'UI Mode'|t('app'),
+    instructions: 'How the field should be presented in the control panel.'|t('app'),
+    id: 'ui-mode',
+    name: 'uiMode',
+    options: [
+        {label: 'Normal'|t('app'), value: 'normal'},
+        {label: 'Enlarged'|t('app'), value: 'enlarged'},
+    ],
+    value: field.uiMode,
+    disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+    label: "Placeholder Text"|t('app'),
+    instructions: "The text that will be shown if the field doesn’t have a value."|t('app'),
+    id: 'placeholder',
+    name: 'placeholder',
+    value: field.placeholder,
+    errors: field.getErrors('placeholder'),
+    disabled: readOnly,
+}) }}
+
+{% embed '_includes/forms/field' with {
+    label: 'Field Limit'|t('app'),
+    instructions: "The maximum number of characters or bytes the field is allowed to have."|t('app'),
+    id: 'fieldLimit',
+    errors: field.getErrors(field.byteLimit ? 'byteLimit' : 'charLimit'),
+    disabled: readOnly,
+} %}
+    {% import "_includes/forms" as forms %}
+    {% block input %}
+        <div class="flex">
+            {{ forms.text({
+                id: 'fieldLimit',
+                name: 'fieldLimit',
+                value: field.charLimit ?? field.byteLimit,
+                size: 3,
+                disabled: readOnly,
+            }) }}
+            {{ forms.select({
+                id: 'limitUnit',
+                name: 'limitUnit',
+                options: [
+                    { value: 'chars', label: 'Characters'|t('app') },
+                    { value: 'bytes', label: 'Bytes'|t('app') },
+                ],
+                value: field.byteLimit ? 'bytes' : 'chars',
+                disabled: readOnly,
+            }) }}
+        </div>
+    {% endblock %}
+{% endembed %}
+
+<fieldset>
+    {{ forms.lightswitchField({
+        label: "Use a monospaced font"|t('app'),
+        name: 'code',
+        on: field.code,
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.lightswitchField({
+        label: "Allow line breaks"|t('app'),
+        name: 'multiline',
+        on: field.multiline,
+        toggle: 'initialRowsContainer',
+        disabled: readOnly,
+    }) }}
+</fieldset>
+
+<div id="initialRowsContainer" class="nested-fields{% if not field.multiline %} hidden{% endif %}" data-error-key="initialRows">
+    {{ forms.textField({
+        label: "Initial Rows"|t('app'),
+        id: 'initialRows',
+        name: 'initialRows',
+        value: field.initialRows,
+        size: 3,
+        errors: field.getErrors('initialRows'),
+        disabled: readOnly,
+    }) }}
+</div>

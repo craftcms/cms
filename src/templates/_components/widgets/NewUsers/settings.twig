@@ -1,0 +1,48 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.selectField({
+    label: "Date Range"|t('app'),
+    id: 'dateRange',
+    name: 'dateRange',
+    value: widget.dateRange,
+    options: [
+    {
+        label: 'Last {num, number} {num, plural, =1{day} other{days}}'|t('app', {num: 7}),
+        value: 'd7'
+    },
+    {
+        label: 'Last {num, number} {num, plural, =1{day} other{days}}'|t('app', {num: 30}),
+        value: 'd30'
+    },
+    {
+        label: 'Last Week'|t('app'),
+        value: 'lastweek',
+    },
+    {
+        label: 'Last Month'|t('app'),
+        value: 'lastmonth',
+    },
+    ],
+    errors: widget.getErrors('dateRange')
+}) }}
+
+
+{% set userGroups = craft.app.userGroups.getAllGroups() %}
+
+{% if userGroups|length > 0 %}
+
+    {% set userGroupsOptions = [{ label: 'All'|t('app'), value: '' }] %}
+    {% for userGroup in userGroups %}
+        {% set userGroupsOptions = userGroupsOptions|merge([{ label: userGroup.name|t('site'), value: userGroup.id }]) %}
+    {% endfor %}
+
+    {{ forms.selectField({
+        label: "User Group"|t('app'),
+        id: 'userGroupId',
+        name: 'userGroupId',
+        value: widget.userGroupId,
+        options: userGroupsOptions,
+        errors: widget.getErrors('userGroupId')
+    }) }}
+
+{% endif %}

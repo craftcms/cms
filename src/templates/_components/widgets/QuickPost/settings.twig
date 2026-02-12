@@ -1,0 +1,88 @@
+{% import "_includes/forms" as forms %}
+
+{% if sections %}
+    {% if craft.app.getIsMultiSite() %}
+        {% set editableSites = craft.app.sites.getEditableSites() %}
+
+        {% if editableSites|length > 1 %}
+            {% set siteInput %}
+                <div class="select">
+                    <select id="site-id" name="siteId">
+                        {% for site in editableSites %}
+                            <option value="{{ site.id }}"{% if site.id == siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endset %}
+
+            {{ forms.field({
+                id: 'site-id',
+                label: "Site"|t('app'),
+            }, siteInput) }}
+        {% endif %}
+    {% endif %}
+
+    {% set sectionOptions = [] %}
+    {% for s in sections %}
+        {% set sectionOptions = sectionOptions|merge([{ label: s.name|t('site'), value: s.id }]) %}
+    {% endfor %}
+    {{ forms.selectField({
+        label: "Section"|t('app'),
+        instructions: 'Which section do you want to save entries to?'|t('app'),
+        id: 'section',
+        name: 'section',
+        options: sectionOptions,
+        value: section.id ?? null,
+        toggle: true,
+        targetPrefix: 'section'
+    }) }}
+
+    {% for s in sections %}
+        {% set showSection = ((not section and loop.first) or (section.id ?? null) == s.id) %}
+        <div id="section{{ s.id }}"{% if not showSection %} class="hidden"{% endif %}>
+
+            {% set entryTypeOptions = [] %}
+            {% for et in s.getEntryTypes() %}
+                {% set entryTypeOptions = entryTypeOptions|merge([{ label: et.name|t('site'), value: et.id }]) %}
+            {% endfor %}
+
+            {% if entryTypeOptions|length == 1 %}
+                {{ hiddenInput("sections[#{s.id}][entryType]", entryType.id ?? null) }}
+            {% else %}
+                {{ forms.selectField({
+                    label: "Entry Type"|t('app'),
+                    instructions: "Which type of entries do you want to create?"|t('app'),
+                    id: 'entryType',
+                    name: 'sections['~s.id~'][entryType]',
+                    options: entryTypeOptions,
+                    value: entryType.id ?? null,
+                    toggle: true,
+                    targetPrefix: 'section'~s.id~'-type'
+                }) }}
+            {% endif %}
+        </div>
+    {% endfor %}
+    {{ forms.textField({
+        label: 'Widget Title'|t('app'),
+        id: 'custom-title',
+        name: 'customTitle',
+        value: widget.customTitle,
+        placeholder: 'Create a new {section} entry'|t('app', {
+            section: (section ?? sections|first).getUiLabel(),
+        }),
+    }) }}
+{% else %}
+    <p>{{ "No sections are available."|t('app') }}</p>
+{% endif %}
+
+{% js %}
+  (() => {
+    const $sectionSelect = $('#{{ 'section'|namespaceInputId }}');
+    const $titleInput = $('#{{ 'custom-title'|namespaceInputId }}');
+    $sectionSelect.on('change', () => {
+      $titleInput.attr('placeholder', Craft.t('app', 'Create a new {section} entry', {
+        section: $sectionSelect.find(`option[value="${$sectionSelect.val()}"]`).text(),
+      }));
+    });
+  })();
+{% endjs %}

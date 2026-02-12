@@ -1,0 +1,47 @@
+{% extends '_includes/forms/elementSelect.twig' %}
+
+{% set registerJs = false %}
+
+{% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
+
+{% set jsSettings = {
+    id: id|namespaceInputId,
+    name: name|namespaceInputName,
+    elementType: elementType,
+    sources: sources,
+    condition: condition ? condition.getConfig() : null,
+    referenceElementId: referenceElement.id ?? null,
+    referenceElementOwnerId: (referenceElement ?? null) is instance of('craft\\base\\NestedElementInterface')
+        ? referenceElement.getOwnerId()
+        : null,
+    referenceElementSiteId: referenceElement.siteId ?? null,
+    criteria: criteria,
+    searchCriteria: searchCriteria ?? null,
+    sourceElementId: sourceElementId,
+    defaultPlacement,
+    viewMode: viewMode,
+    limit: limit,
+    modalStorageKey: storageKey,
+    fieldId: fieldId,
+    prevalidate: prevalidate ?? false,
+    canUpload: canUpload,
+    fsType: fsType,
+    defaultFieldLayoutId: defaultFieldLayoutId,
+    modalSettings: {
+        hideSidebar: hideSidebar ?? false,
+        defaultSource: defaultSource ?? null,
+        defaultSourcePath: defaultSourcePath ?? null,
+        preferStoredSource: preferStoredSource ?? false,
+        showSourcePath: showSourcePath ?? true,
+        indexSettings: {
+            showFolders: showFolders ?? true,
+        },
+        modalTitle: selectionLabel,
+    },
+    describedBy: (describedBy ?? false) ? describedBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : null,
+    allowSelfRelations: allowSelfRelations ?? false,
+} %}
+
+{% js %}
+    new {{ jsClass }}({{ jsSettings|json_encode|raw }});
+{% endjs %}

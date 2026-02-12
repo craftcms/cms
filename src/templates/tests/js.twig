@@ -1,0 +1,12 @@
+{% extends "_layouts/basecp" %}
+{% set title = "Tests" %}
+{% do view.registerAssetBundle("craft\\web\\assets\\tests\\TestsAsset") %}
+
+{% block body %}
+    <div id="body">
+        <div id="qunit"></div>
+        <div id="qunit-fixture"></div>
+    </div>
+{% endblock %}
+
+{% css "#body { max-width: 800px; margin: 50px auto; }" %}

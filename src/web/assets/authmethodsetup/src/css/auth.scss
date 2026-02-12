@@ -1,0 +1,100 @@
+@charset "UTF-8";
+
+@import '@craftcms/sass/mixins';
+
+#auth-method-setup {
+  .auth-method {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--l);
+
+    h3 {
+      margin-block-end: var(--xs);
+    }
+
+    .auth-method-footer {
+      margin-block-start: var(--s);
+      display: flex;
+      flex-direction: row;
+      gap: var(--xs);
+
+      .auth-method-active,
+      .btn {
+        height: var(--touch-target-size);
+        border-radius: calc(var(--touch-target-size) / 2);
+      }
+    }
+
+    .auth-method-active {
+      display: inline-flex;
+      flex-flow: row nowrap;
+      align-items: center;
+      gap: var(--xs);
+      padding-inline: 1px var(--s);
+      padding-block: 0;
+      border: 1px solid var(--bg-enabled);
+      font-weight: 500;
+
+      [data-icon] {
+        width: calc(var(--touch-target-size) - 4px);
+        height: calc(var(--touch-target-size) - 4px);
+        border-radius: calc(var(--touch-target-size) / 2 - 2px);
+        background-color: var(--bg-enabled);
+        text-align: center;
+
+        &::before {
+          position: relative;
+          inset-block-start: -2px;
+          color: var(--white);
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+
+.auth-method-setup-success {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--s);
+  text-align: center;
+
+  .auth-method-setup-success-graphic {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--bg-enabled);
+    text-align: center;
+
+    &::before {
+      position: relative;
+      color: var(--white);
+      opacity: 1;
+      font-size: 34px;
+      line-height: 50px;
+    }
+  }
+
+  h1.auth-method-setup-success-message {
+    border-block-end: none !important;
+  }
+}
+
+ul.auth-method-recovery-codes-list {
+  @include fixed-width-font;
+  max-width: 20em;
+  margin-inline: auto;
+
+  @container (min-width: 20em) {
+    columns: 2;
+  }
+}
+
+.auth-method-recovery-codes-download {
+  display: flex;
+  justify-content: center;
+}

@@ -1,0 +1,13 @@
+{% if elements is not empty %}
+  {% include "_elements/structure" with {
+    context,
+    elements,
+    disabledElementIds,
+    collapsedElementIds,
+    structure,
+    sortable: context == 'index',
+    newChildUrl: context == 'index' and newChildUrl is defined ? newChildUrl : null,
+  } only %}
+{% else %}
+  <div class="zilch small">{{ 'Nothing yet.'|t('app') }}</div>
+{% endif %}

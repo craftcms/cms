@@ -1,0 +1,53 @@
+{% set containerId = "asset-image-preview#{random()}" %}
+{% set toggleId = "toggle-focal#{random()}" %}
+{% set enableFocalPoint = (
+  asset.mimeType != 'image/svg+xml' and
+  craft.app.elements.canSave(asset)
+) %}
+
+<div id="{{ containerId }}" class="button-fade asset-image-preview">
+    {% if enableFocalPoint %}
+        <div class="buttons">
+            <div class="btn" id="{{ toggleId }}">
+            </div>
+        </div>
+    {% endif %}
+    {{ tag('img', {
+        src: url,
+        width: asset.width,
+        height: asset.height,
+        alt: asset.alt,
+        data: {
+            uid: asset.uid,
+            focal: asset.focalPoint|join(';'),
+            maxWidth: asset.width,
+            maxHeight: asset.height,
+        },
+        onload: 'setTimeout(Craft.PreviewFileModal.resizePreviewImage, 100)',
+    }) }}
+</div>
+
+{% do view.registerAssetBundle("craft\\web\\assets\\focalpoint\\FocalPointAsset") %}
+{% do view.registerTranslations('app', [
+    'Enable focal point',
+    'Disable focal point',
+    'Saved',
+    'Saving…',
+]) %}
+
+{% if enableFocalPoint %}
+  {% js %}
+    (() => {
+      if (window.imageFocalPoint) {
+        window.imageFocalPoint.destruct();
+        delete window.imageFocalPoint;
+      }
+
+      const $container = $('#{{ containerId }}');
+      const $toggle = $('#{{ toggleId }}');
+      if ($container.length && $toggle.length) {
+        window.imageFocalPoint = new Craft.FocalPoint($container, $toggle, {{ editFocal|default(false) }});
+      }
+    })();
+  {% endjs %}
+{% endif %}

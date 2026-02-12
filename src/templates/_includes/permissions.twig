@@ -1,0 +1,110 @@
+{% requireEdition CraftTeam %}
+
+{% do view.registerTranslations('app', [
+    "Select All",
+    "Deselect All",
+]) %}
+
+{% do view.registerAssetBundle("craft\\web\\assets\\userpermissions\\UserPermissionsAsset") %}
+
+{% set wrapperClass = "user-permissions-#{random()}" %}
+
+{% set disabled = disabled ?? false %}
+
+{% macro permissionList(subject, groupPermissions, permissions, id, disabled) %}
+    {% from "_includes/forms" import checkbox %}
+    {% from _self import permissionList %}
+
+    <ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %}>
+        {% for permissionName, props in permissions %}
+            {% set isInGroupPermissions = permissionName|lower in groupPermissions %}
+
+            {% if (isInGroupPermissions) %}
+                {% set checked = true %}
+            {% else %}
+                {% if subject %}
+                    {% if craft.app.request.getActionSegments() == ['users', 'save-user'] %}
+                        {% set checked = permissionName in craft.app.request.getBodyParam('permissions', []) %}
+                    {% else %}
+                        {% set checked = subject.can(permissionName) %}
+                    {% endif %}
+                {% else %}
+                    {% set checked = false %}
+                {% endif %}
+            {% endif %}
+
+            <li>
+                {{ checkbox({
+                    label: props.label,
+                    name: 'permissions[]',
+                    value: permissionName,
+                    checked: checked,
+                    class: isInGroupPermissions ? 'group-permission',
+                    disabled: disabled or isInGroupPermissions,
+                }) }}
+
+                {% if props.info ?? false %}
+                    <div class="info">{{ props.info }}</div>
+                {% endif %}
+
+                {% if props.warning ?? false %}
+                    <div class="info warning">{{ props.warning }}</div>
+                {% endif %}
+
+                {% if props.nested ?? false %}
+                    {{ permissionList(subject, groupPermissions, props.nested, permissionName~'-nested', disabled or not checked) }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% from _self import permissionList %}
+
+{% for group in permissions %}
+    {% set headingId = "content-heading-#{random()}" %}
+
+    {# Include a placeholder for the user group being created? #}
+    {% if (includeGroupPlaceholder ?? false) and group.permissions.editUsers is defined %}
+        {% set group = group|merge({
+            permissions: {
+                editUsers: {
+                    nested: {
+                        assignNewUserGroup: {
+                            label: 'Assign users to this group'|t('app'),
+                        },
+                    },
+                },
+            },
+        }, recursive=true) %}
+    {% endif %}
+
+    <div class="user-permissions {{ wrapperClass }}">
+        {{ tag('h3', {
+            id: headingId,
+            class: {
+                'mt-0': loop.first,
+            }|filter|keys,
+            text: group.heading,
+        }) }}
+        {% if not disabled %}
+            {{ tag('button', {
+                type: 'button',
+                class: {
+                    'select-all': true,
+                    'mt-0': loop.first,
+                }|filter|keys,
+                aria: {
+                    describedby: headingId,
+                },
+            }) }}
+        {% endif %}
+        {{ permissionList(subject, groupPermissions ?? [], group.permissions, null, disabled) }}
+    </div>
+{% endfor %}
+
+{% js %}
+    $('.{{ wrapperClass }}').each((i, wrapper) => {
+        new Craft.UserPermissions(wrapper);
+    });
+{% endjs %}

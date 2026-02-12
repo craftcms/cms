@@ -1,0 +1,97 @@
+{% extends '_layouts/cp.twig' %}
+
+{% hook 'cp.layouts.elementindex' %}
+
+{% if showSiteMenu %}
+    {% if selectableSites is not defined %}
+        {% if siteIds is defined %}
+            {% set selectableSites = craft.app.sites.getEditableSites()|filter(s => s.id in siteIds) %}
+        {% else %}
+            {% set selectableSites = craft.app.sites.getEditableSites() %}
+        {% endif %}
+    {% endif %}
+
+    {% if selectedSite is not defined %}
+        {% if selectedSiteId is defined %}
+            {% set selectedSite = craft.app.sites.getSiteById(selectedSiteId) %}
+        {% elseif requestedSite and requestedSite in selectableSites %}
+            {% set selectedSite = requestedSite %}
+        {% else %}
+            {% set selectedSite = selectableSites|length ? selectableSites|first : craft.app.sites.getPrimarySite() %}
+        {% endif %}
+    {% endif %}
+
+    {% set docTitle = "#{title} - #{selectedSite.uiLabel}" %}
+    {% set siteMenuItems = siteMenuItems(selectableSites, selectedSite) %}
+
+    {% set crumbs = (crumbs ?? [])|unshift({
+        id: 'site-crumb',
+        icon: 'world',
+        iconAltText: 'Site'|t('app'),
+        label: selectedSite.name|t('site'),
+        menu: {
+            items: siteMenuItems,
+            label: 'Select site'|t('app')
+        }
+    }) %}
+{% endif %}
+
+{% block sidebar %}
+    {% if sources is not empty %}
+        {{ tag('a', {
+            class: 'btn skip-link',
+            href: '#elements',
+            html: 'Skip to {name}'|t('app', {
+                name: elementPluralDisplayName|lower,
+            })|capitalize,
+        }) }}
+
+        <nav aria-labelledby="source-heading">
+            <h2 id="source-heading" class="visually-hidden">{{ 'Sources'|t('app') }}</h2>
+            {% include "_elements/sources" %}
+        </nav>
+
+        <div id="source-actions" class="buttons"></div>
+    {% endif %}
+{% endblock %}
+
+
+{% block toolbar %}
+    {% include '_elements/toolbar' with {
+        showSiteMenu: false,
+    } %}
+{% endblock %}
+
+
+{% block content %}
+    <div class="main element-index">
+        <span class="visually-hidden" role="status" data-status-message></span>
+        <a class="skip-link btn" href="#footer">{{ 'Skip to footer'|t('app') }}</a>
+        <div id="elements" class="elements busy">
+            <div class="update-spinner spinner spinner-absolute"></div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block footer %}
+    {% include '_elements/footer' %}
+{% endblock %}
+
+
+{% block initJs %}
+    Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#page-container'), {
+        canHaveDrafts: {{ canHaveDrafts ? 'true' : 'false' }},
+        context: '{{ context }}',
+        criteria: Craft.defaultIndexCriteria,
+        defaultSource: {{ (defaultSource ?? null)|json_encode|raw }},
+        defaultSourcePath: {{ (defaultSourcePath ?? null)|json_encode|raw }},
+        elementTypeName: '{{ elementDisplayName|e("js") }}',
+        elementTypePluralName: '{{ elementPluralDisplayName|e("js") }}',
+        page: {{ (page ?? null)|json_encode|raw }},
+        storageKey: 'elementindex.{{ elementType|e("js") }}',
+        toolbarSelector: '#toolbar',
+    });
+{% endblock %}
+
+{% js block('initJs') %}

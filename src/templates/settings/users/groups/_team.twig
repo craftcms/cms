@@ -1,0 +1,35 @@
+{% extends 'settings/users/_layout' %}
+{% set selectedNavItem = 'teamGroup' %}
+{% import '_includes/forms' as forms %}
+
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
+
+
+{% block content %}
+  {% if not readOnly %}
+    {{ actionInput('user-settings/save-group') }}
+    {{ redirectInput('settings/users') }}
+  {% endif %}
+
+  <div id="permissions">
+    {% include "_includes/permissions" with {
+      subject: group ?? null,
+      permissions: craft.app.userPermissions.getAllPermissions(),
+      includeGroupPlaceholder: not group.id,
+      disabled: readOnly,
+    } only %}
+  </div>
+{% endblock %}
+
+{% js %}
+  {% if not group.handle %}
+    new Craft.HandleGenerator('#name', '#handle');
+  {% endif %}
+
+  {% if group.id %}
+    new Craft.ElevatedSessionForm('#main-form', [
+      '#permissions input[type="checkbox"]:not(:checked)'
+    ]);
+  {% endif %}
+{% endjs %}

@@ -1,0 +1,86 @@
+{% import '_includes/forms' as forms %}
+
+{% set hideLabelChangeJs -%}
+  if (this.checked) {
+    $(this).closest('.field').find('.text').addClass('disabled').prop('disabled', true);
+  } else {
+    $(this).closest('.field').find('.text').removeClass('disabled').prop('disabled', false);
+  }
+{%- endset %}
+
+{% block fieldSettings %}
+  {% block labelField %}
+    {% embed '_includes/forms/field' with {
+      id: 'label',
+      label: 'Label'|t('app'),
+      data: {
+        'error-key': 'label'
+      },
+    } %}
+      {% block heading %}
+        {{ parent() }}
+        <div class="flex-grow"></div>
+        {% include '_includes/forms/checkbox' with {
+          id: 'label-toggle',
+          name: 'labelHidden',
+          label: 'Hide'|t('app'),
+          checked: labelHidden,
+          inputAttributes: {
+            onchange: hideLabelChangeJs,
+          },
+        } %}
+      {% endblock %}
+      {% block input %}
+        {% include '_includes/forms/text' with {
+          id: 'label',
+          name: 'label',
+          value: not labelHidden ? field.label,
+          placeholder: defaultLabel,
+          disabled: labelHidden,
+        } %}
+      {% endblock %}
+    {% endembed %}
+  {% endblock %}
+
+  {% block instructionsField %}
+    {{ forms.textareaField({
+      label: 'Instructions'|t('app'),
+      id: 'instructions',
+      class: 'nicetext',
+      name: 'instructions',
+      value: field.instructions,
+      placeholder: defaultInstructions,
+      data: {
+        'error-key': 'instructions'
+      },
+    }) }}
+  {% endblock %}
+
+  {% block tipField %}
+    {{ forms.textareaField({
+      label: 'Tip'|t('app'),
+      id: 'tip',
+      class: 'nicetext',
+      name: 'tip',
+      value: field.tip,
+      rows: 1,
+      data: {
+        'error-key': 'tip'
+      },
+    }) }}
+  {% endblock %}
+
+  {% block warningField %}
+    {{ forms.textareaField({
+      label: 'Warning'|t('app'),
+      id: 'warning',
+      class: 'nicetext',
+      name: 'warning',
+      value: field.warning,
+      rows: 1,
+      data: {
+        'error-key': 'warning'
+      },
+    }) }}
+  {% endblock %}
+{% endblock %}

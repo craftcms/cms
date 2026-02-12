@@ -1,0 +1,44 @@
+{% extends "_layouts/base" %}
+
+{# Give the body a .mobile class for mobile devices #}
+{% if craft.app.request.isMobileBrowser(true) %}
+    {% set bodyClass = (bodyClass ?? [])|explodeClass|push('mobile') -%}
+{% endif %}
+
+{% do view.registerTranslations('app', [
+    "Show",
+    "Hide",
+]) %}
+
+{% set localeData = craft.app.locale %}
+{% set orientation = localeData.getOrientation() %}
+
+{% macro noAccessMessage(message) %}
+    <div class="modal-shade visible"></div>
+    <main class="message-container">
+        <div class="modal">
+            <div class="body">
+                <p>{{ message }}</p>
+            </div>
+        </div>
+    </main>
+{% endmacro %}
+
+{% block foot %}
+    <form id="x" method="post" accept-charset="UTF-8">
+        {{ csrfInput() }}
+    </form>
+    <noscript>
+        {{ _self.noAccessMessage('JavaScript must be enabled to access the Craft CMS control panel.'|t('app')) }}
+    </noscript>
+    <script type="text/javascript">
+        if (!('noModule' in HTMLScriptElement.prototype)) {
+            document.write("{{ _self.noAccessMessage('The Craft CMS control panel requires a newer web browser.'|t('app'))|e('js') }}");
+        }
+    </script>
+
+    {% js at head %}
+        // Picture element HTML5 shiv
+        document.createElement('picture');
+    {% endjs %}
+{% endblock %}

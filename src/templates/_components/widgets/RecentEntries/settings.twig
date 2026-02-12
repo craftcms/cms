@@ -1,0 +1,50 @@
+{% import "_includes/forms" as forms %}
+
+{% if craft.app.getIsMultiSite() %}
+    {% set editableSites = craft.app.sites.getEditableSites() %}
+
+    {% if editableSites|length > 1 %}
+        {% set siteInput %}
+            <div class="select">
+                <select id="site-id" name="siteId">
+                    {% for site in editableSites %}
+                        <option value="{{ site.id }}"{% if site.id == widget.siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endset %}
+
+        {{ forms.field({
+            id: 'site-id',
+            label: "Site"|t('app')
+        }, siteInput) }}
+    {% endif %}
+{% endif %}
+
+{% set sectionInput %}
+    <div class="select">
+        <select id="section" name="section">
+            <option value="*">{{ "All"|t('app') }}</option>
+            {% for section in craft.app.entries.getAllSections() %}
+                {% if section.type != 'single' %}
+                    <option value="{{ section.id }}"{% if section.id == widget.section %} selected{% endif %}>{{ section.name|t('site') }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+{% endset %}
+
+{{ forms.field({
+    label: "Section"|t('app'),
+    instructions: "Which section do you want to pull recent entries from?"|t('app'),
+    id: 'section',
+}, sectionInput) }}
+
+{{ forms.textField({
+    label: "Limit"|t('app'),
+    id: 'limit',
+    name: 'limit',
+    value: widget.limit,
+    size: 2,
+    errors: widget.getErrors('limit')
+}) }}

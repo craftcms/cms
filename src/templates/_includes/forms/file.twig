@@ -1,0 +1,17 @@
+{% set inputAttributes = {
+    type: 'file',
+    id: id ?? false,
+    class: (class ?? [])|explodeClass,
+    name: name ?? false,
+    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    disabled: disabled ?? false,
+    aria: {
+        describedby: describedBy ?? false,
+    }
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{{ tag('input', inputAttributes) }}

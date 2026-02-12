@@ -1,0 +1,26 @@
+{% set elements = elements ?? [] %}
+{% set id = id ?? null %}
+
+<ul class="elements structure">
+  {%- apply spaceless %}
+    {% nav element in elements %}
+      <li id="{{ id }}-element-{{ element.id }}">
+        {% set indent = (element.level - 1) * 35 %}
+        <div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
+          {{ elementChip(element, {
+            context: context ?? 'index',
+            inputName: inputName ?? ((name ?? false) ? ((single ?? false) ? name : "#{name}[]") : null),
+            showActionMenu: showActionMenu ?? false,
+            checkbox: selectable ?? false,
+          }) }}
+        </div>
+
+        {% ifchildren %}
+          <ul>
+            {% children %}
+          </ul>
+        {% endifchildren %}
+      </li>
+    {% endnav %}
+  {% endapply -%}
+</ul>

@@ -1,0 +1,9 @@
+{% from '_includes/forms' import fieldLayoutDesignerField %}
+
+{{ fieldLayoutDesignerField({
+    instructions: instructions ?? null,
+    customizableTabs: customizableTabs ?? true,
+    customizableUi: customizableUi ?? false,
+    pretendTabName: pretendTabName ?? 'Content'|t('app'),
+    fieldLayout: (fieldLayout ?? false) ?: null,
+}) }}

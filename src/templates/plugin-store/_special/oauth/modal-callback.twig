@@ -1,0 +1,16 @@
+{% extends "_layouts/basecp" %}
+
+{% set title = 'Modal Callback' %}
+
+{% js %}
+    Craft.sendApiRequest('GET', 'account', {
+        headers: {
+            'Authorization': "Bearer {{ craftIdAccessToken }}"
+        }
+    })
+    .then(function(responseData) {
+        window.opener.pluginStoreApp.updateCraftId(responseData, function() {
+            window.close();
+        });
+    })
+{% endjs %}

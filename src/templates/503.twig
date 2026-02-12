@@ -1,0 +1,7 @@
+{% extends "_layouts/message" %}
+{% set title = "Service Unavailable"|t('app') %}
+
+{% block message %}
+    <h2>{{ title }}</h2>
+    <p>{{ (message ?? null) ?: "Our site is temporarily unavailable. Please try again later."|t('app') }}</p>
+{% endblock %}

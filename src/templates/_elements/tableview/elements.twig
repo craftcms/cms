@@ -1,0 +1,132 @@
+{% apply spaceless %}
+
+{% set structure = structure is defined ? structure : null -%}
+{% set structureEditable = structureEditable is defined and not inlineEditing ? structureEditable : false -%}
+{% set padding = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' -%}
+{% set elementsService = craft.app.elements %}
+{% set hasStatusCol = attributes|contains(0, 'status') %}
+{% set showHeaderColumn = showHeaderColumn ?? false %}
+{% set context = context ?? 'index' %}
+{% set hyperlink = hyperlink ?? (context in ['index', 'embedded-index']) %}
+
+{% for element in elements %}
+    {% set totalDescendants = structure
+        ? (clone(elementQuery)
+            .structureId(element.structureId)
+            .descendantOf(element)
+            .siteId(element.siteId)
+            .status(null)
+            .drafts(null)
+            .draftOf(false)
+            .savedDraftsOnly()
+            .withCustomFields(false)
+            .count() ?? 0)
+        : 0 %}
+    {% set elementTitle = element.title ?: element.id %}
+    {% set showInputs = (inlineEditing ?? false) and elementsService.canSave(element, currentUser) %}
+    {% tag 'tr' with {
+      data: {
+        id: element.isProvisionalDraft ? element.getCanonicalId() : element.id,
+        title: elementTitle,
+        level: structure ? element.level : false,
+        descendants: structure ? totalDescendants : false,
+      },
+      class: {
+        disabled: (element.isProvisionalDraft ? element.getCanonicalId() : element.id) in disabledElementIds,
+      }|filter|keys,
+    } %}
+        {% if selectable %}
+            {% set checkboxLabelId = "checkbox-label-#{random()}" %}
+            <td class="checkbox-cell">
+                {{ tag('div', {
+                    class: 'checkbox',
+                    title: 'Select'|t('app'),
+                    tabindex: '0',
+                    aria: {
+                        checked: 'false',
+                        labelledby: checkboxLabelId,
+                    },
+                }) }}
+                {{ tag('span', {
+                    id: checkboxLabelId,
+                    class: 'visually-hidden',
+                    text: element.getUiLabel(),
+                    aria: {
+                        hidden: 'true',
+                    }
+                }) }}
+            </td>
+        {% endif %}
+        {% for attribute in attributes %}
+            {% if loop.first %}
+                {% tag 'th' with {
+                    data: {
+                        title: attribute[1].label,
+                        titlecell: '',
+                    },
+                    scope: 'row',
+                } %}
+                    {% tag 'div' with {
+                        style: {
+                            ("padding-#{padding}"): structure or sortable ? "#{(inlineEditing ? 0 : 24) + 44 * ((element.level ?: 1) - 1)}px" : null,
+                        }|filter,
+                    } %}
+                        {%- if (sortable or structureEditable) and not inlineEditing %}
+                            <a class="move icon" title="{{ 'Reorder'|t('app') }}">&nbsp;</a>
+                        {% endif %}
+                        {%- if structure and totalDescendants %}
+                            {% set toggleLabel = 'Show {title} children'|t('app', {title: elementTitle}) %}
+                            <button type="button" class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif
+                            %}" title="{{ 'Show/hide children'|t('app') }}" aria-label="{{ toggleLabel }}"
+                            aria-expanded="{{  element.id not in collapsedElementIds ? 'true' : 'false' }}"></button>
+                        {% endif %}
+                        {% set chip = elementChip(element, {
+                            context,
+                            showThumb: showHeaderColumn,
+                            showLabel: showHeaderColumn,
+                            showProvisionalDraftLabel: true,
+                            showStatus: showHeaderColumn and not hasStatusCol,
+                            attributes: {
+                                class: ['chromeless'],
+                            },
+                            hyperlink,
+                        }) %}
+                        {% if not showHeaderColumn %}
+                            {% set chip = chip|attr({class: 'hide-label'}) %}
+                        {% endif %}
+                        {{ chip|raw }}
+
+                        {%- if structure %}
+                            {% set textAlternative = 'Level {num}'|t('app', {
+                                num: element.level,
+                            }) %}
+                            {{ tag('span', {
+                                class: 'visually-hidden',
+                                data: {
+                                    'text-alternative': true,
+                                },
+                                text: textAlternative,
+                            }) }}
+                        {% endif  %}
+                    {% endtag %}
+                {% endtag %}
+            {% else %}
+                <td data-title="{{ attribute[1].label }}" data-attr="{{ attribute[0] }}">
+                    {% if showInputs %}
+                        {% set namespace = "#{nestedInputNamespace}[element-#{element.id}]" %}
+                        {% if attribute[0] starts with 'field:' or attribute[0] starts with 'fieldInstance:' %}
+                            {% set namespace = "#{namespace}[fields]" %}
+                        {% endif %}
+                        {% namespace namespace %}
+                            {{- element.getInlineAttributeInputHtml(attribute[0])|raw -}}
+                        {% endnamespace %}
+                    {% else %}
+                        {{- element.getAttributeHtml(attribute[0])|raw -}}
+                    {% endif %}
+                </td>
+            {% endif %}
+        {% endfor %}
+    {% endtag %}
+{% endfor %}
+
+{% endapply -%}

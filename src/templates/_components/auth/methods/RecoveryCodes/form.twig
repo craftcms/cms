@@ -1,0 +1,24 @@
+{% import '_includes/forms.twig' as forms %}
+
+{% set formId = formId ?? "recovery-codes-form-#{random()}" %}
+
+<form id="{{ formId }}">
+    {% embed '_includes/forms/field.twig' with {
+        fieldClass: 'first',
+        label: 'Recovery Code'|t('app'),
+    } %}
+        {% block input %}
+            {% import '_includes/forms.twig' as forms %}
+            <div class="flex flex-nowrap">
+                {{ forms.text({
+                    class: 'code auth-recovery-code',
+                    maxlength: 13,
+                }) }}
+                {{ forms.submitButton({
+                    label: 'Verify'|t('app'),
+                    spinner: true,
+                }) }}
+            </div>
+        {% endblock %}
+    {% endembed %}
+</form>

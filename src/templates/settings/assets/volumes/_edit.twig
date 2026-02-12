@@ -1,0 +1,186 @@
+{% import '_includes/forms.twig' as forms %}
+{% set readOnly = readOnly ?? false %}
+
+{% if not isNewVolume %}{{ hiddenInput('volumeId', volume.id) }}{% endif %}
+
+{{ forms.textField({
+    first: true,
+    label: "Name"|t('app'),
+    id: 'name',
+    name: 'name',
+    value: volume.name,
+    autofocus: true,
+    required: true,
+    errors: volume.getErrors('name'),
+    data: {'error-key': 'name'},
+    disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+    label: "Handle"|t('app'),
+    id: 'handle',
+    name: 'handle',
+    class: 'code',
+    autocorrect: false,
+    autocapitalize: false,
+    value: volume.handle,
+    required: true,
+    errors: volume.getErrors('handle'),
+    data: {'error-key': 'handle'},
+    disabled: readOnly,
+}) }}
+
+<hr>
+
+{{ forms.fsField({
+    label: 'Asset Filesystem'|t('app'),
+    instructions: 'Choose which filesystem assets should be stored in.'|t('app'),
+    id: 'fs-handle',
+    name: 'fsHandle',
+    includeEnvVars: true,
+    value: volume.getFsHandle(false),
+    options: fsOptions,
+    errors: volume.getErrors('fsHandle'),
+    data: {'error-key': 'fsHandle'},
+    disabled: readOnly,
+}) }}
+
+{{ forms.autosuggestField({
+    label: 'Subpath'|t('app'),
+    instructions: 'Where assets should be stored on the filesystem.'|t('app'),
+    id: 'subpath',
+    name: 'subpath',
+    suggestEnvVars: true,
+    value: volume.getSubpath(false, false),
+    errors: volume.getErrors('subpath'),
+    data: {'error-key': 'subpath'},
+    disabled: readOnly,
+}) }}
+
+{{ forms.fsField({
+    label: 'Transform Filesystem'|t('app'),
+    instructions: 'Choose which filesystem image transforms should be stored in.'|t('app'),
+    id: 'transform-fs-handle',
+    name: 'transformFsHandle',
+    includeEnvVars: true,
+    value: volume.transformFsHandle(false),
+    options: [{label: 'Same as asset filesystem'|t('app'), value: null}]|merge(craft.cp.getFsOptions()),
+    errors: volume.getErrors('transformFsHandle'),
+    data: {'error-key': 'transformFsHandle'},
+    disabled: readOnly,
+    selectizeOptions: {
+        extraPlugins: false,
+        allowEmptyOption: true,
+        placeholder: 'Same as asset filesystem'|t('app'),
+    },
+}) }}
+
+{{ forms.autosuggestField({
+    label: 'Transform Subpath'|t('app'),
+    instructions: 'Where transforms should be stored on the filesystem.'|t('app'),
+    id: 'transformSubpath',
+    name: 'transformSubpath',
+    suggestEnvVars: true,
+    value: volume.getTransformSubpath(false, false),
+    errors: volume.getErrors('transformSubpath'),
+    data: {'error-key': 'transformSubpath'},
+    disabled: readOnly,
+}) }}
+
+{% if craft.app.getIsMultiSite() %}
+    <hr>
+
+    {{ forms.selectField({
+        label: '{name} Translation Method'|t('app', {
+            name: 'Title'|t('app'),
+        }),
+        instructions: 'How should {name} values be translated?'|t('app', {
+            name: 'Title'|t('app'),
+        }),
+        id: 'title-translation-method',
+        name: 'titleTranslationMethod',
+        options: [
+            { value: 'none', label: 'Not translatable'|t('app') },
+            { value: 'site', label: 'Translate for each site'|t('app') },
+            { value: 'siteGroup', label: 'Translate for each site group'|t('app') },
+            { value: 'language', label: 'Translate for each language'|t('app') },
+            { value: 'custom', label: 'Custom…'|t('app') },
+        ]|filter,
+        value: volume.titleTranslationMethod,
+        toggle: true,
+        targetPrefix: 'title-translation-method-',
+        disabled: readOnly,
+    }) }}
+
+    <div id="title-translation-method-custom" {% if volume.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+        {{ forms.textField({
+            label: '{name} Translation Key Format'|t('app', {
+                name: 'Title'|t('app'),
+            }),
+            instructions: 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.'|t('app', {
+                name: 'Title'|t('app'),
+            }),
+            id: 'title-translation-key-format',
+            name: 'titleTranslationKeyFormat',
+            value: volume.titleTranslationKeyFormat,
+            errors: volume.getErrors('titleTranslationKeyFormat'),
+            data: {'error-key': 'titleTranslationKeyFormat'},
+            disabled: readOnly,
+        }) }}
+    </div>
+
+    {{ forms.selectField({
+        label: '{name} Translation Method'|t('app', {
+            name: 'Alternative Text'|t('app'),
+        }),
+        instructions: 'How should {name} values be translated?'|t('app', {
+            name: 'Alternative Text'|t('app'),
+        }),
+        id: 'alt-translation-method',
+        name: 'altTranslationMethod',
+        options: [
+            { value: 'none', label: 'Not translatable'|t('app') },
+            { value: 'site', label: 'Translate for each site'|t('app') },
+            { value: 'siteGroup', label: 'Translate for each site group'|t('app') },
+            { value: 'language', label: 'Translate for each language'|t('app') },
+            { value: 'custom', label: 'Custom…'|t('app') },
+        ]|filter,
+        value: volume.altTranslationMethod,
+        toggle: true,
+        targetPrefix: 'alt-translation-method-',
+        disabled: readOnly,
+    }) }}
+
+    <div id="alt-translation-method-custom" {% if volume.altTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+        {{ forms.textField({
+            label: '{name} Translation Key Format'|t('app', {
+                name: 'Alternative Text'|t('app'),
+            }),
+            instructions: 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.'|t('app', {
+                name: 'Alternative Text'|t('app'),
+            }),
+            id: 'alt-translation-key-format',
+            name: 'altTranslationKeyFormat',
+            value: volume.altTranslationKeyFormat,
+            errors: volume.getErrors('altTranslationKeyFormat'),
+            data: {'error-key': 'altTranslationKeyFormat'},
+            disabled: readOnly,
+        }) }}
+    </div>
+{% endif %}
+
+<hr>
+
+{{ forms.fieldLayoutDesignerField({
+    fieldLayout: volume.getFieldLayout(),
+    withGeneratedFields: true,
+    withCardViewDesigner: true,
+    disabled: readOnly,
+}) }}
+
+
+{% if volume is not defined or not volume.handle %}
+    {% js %}
+      new Craft.HandleGenerator("#{{ 'name'|namespaceInputId }}", "#{{ 'handle'|namespaceInputId }}");
+    {% endjs %}
+{% endif %}
