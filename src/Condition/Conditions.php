@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\conditions\ConditionInterface;
-use craft\base\conditions\ConditionRuleInterface;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
