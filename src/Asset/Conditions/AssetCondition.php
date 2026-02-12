@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\elements\conditions\assets;
+namespace CraftCms\Cms\Asset\Conditions;
 
 use craft\elements\conditions\ElementCondition;
 

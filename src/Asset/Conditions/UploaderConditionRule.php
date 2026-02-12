@@ -1,30 +1,48 @@
 <?php
 
-namespace craft\elements\conditions\assets;
+namespace CraftCms\Cms\Asset\Conditions;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
+use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
-use craft\helpers\Assets as AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\User\Elements\User;
 use function CraftCms\Cms\t;
 
 /**
- * Asset volume condition rule.
+ * Uploader condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class FileTypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class UploaderConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('File Type');
+        return t('Uploaded By');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function elementType(): string
+    {
+        return User::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function criteria(): ?array
+    {
+        return [
+            'assetUploaders' => true,
+        ];
     }
 
     /**
@@ -32,29 +50,7 @@ class FileTypeConditionRule extends BaseMultiSelectConditionRule implements Elem
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['kind'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function operators(): array
-    {
-        return [
-            self::OPERATOR_IN,
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function options(): array
-    {
-        $options = [];
-        foreach (AssetsHelper::getAllowedFileKinds() as $value => $kind) {
-            $options[] = ['value' => $value, 'label' => $kind['label']];
-        }
-        return $options;
+        return ['uploader', 'uploaderId'];
     }
 
     /**
@@ -63,7 +59,7 @@ class FileTypeConditionRule extends BaseMultiSelectConditionRule implements Elem
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
-        $query->kind($this->paramValue());
+        $query->uploader($this->getElementId());
     }
 
     /**
@@ -72,6 +68,6 @@ class FileTypeConditionRule extends BaseMultiSelectConditionRule implements Elem
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Asset $element */
-        return $this->matchValue($element->kind);
+        return $this->matchValue($element->uploaderId);
     }
 }

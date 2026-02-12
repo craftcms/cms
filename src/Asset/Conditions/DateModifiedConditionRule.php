@@ -1,29 +1,29 @@
 <?php
 
-namespace craft\elements\conditions\assets;
+namespace CraftCms\Cms\Asset\Conditions;
 
-use Craft;
-use craft\base\conditions\BaseLightswitchConditionRule;
+use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**
- * Asset savable condition rule.
+ * Date Modified condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.4.0
+ * @since 4.0.0
  */
-class SavableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class DateModifiedConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Savable');
+        return t('File Modification Date');
     }
 
     /**
@@ -31,7 +31,7 @@ class SavableConditionRule extends BaseLightswitchConditionRule implements Eleme
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['savable'];
+        return ['dateModified'];
     }
 
     /**
@@ -40,7 +40,7 @@ class SavableConditionRule extends BaseLightswitchConditionRule implements Eleme
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
-        $query->savable($this->value);
+        $query->dateModified($this->queryParamValue());
     }
 
     /**
@@ -48,7 +48,7 @@ class SavableConditionRule extends BaseLightswitchConditionRule implements Eleme
      */
     public function matchElement(ElementInterface $element): bool
     {
-        $savable = Craft::$app->getElements()->canSave($element);
-        return $savable === $this->value;
+        /** @var Asset $element */
+        return $this->matchValue($element->dateModified);
     }
 }

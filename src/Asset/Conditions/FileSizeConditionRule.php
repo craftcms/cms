@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\elements\conditions\assets;
+namespace CraftCms\Cms\Asset\Conditions;
 
 use craft\base\conditions\BaseNumberConditionRule;
 use craft\base\ElementInterface;

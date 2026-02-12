@@ -1,29 +1,31 @@
 <?php
 
-namespace craft\elements\conditions\assets;
+namespace CraftCms\Cms\Asset\Conditions;
 
-use craft\base\conditions\BaseTextConditionRule;
+use Craft;
+use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Arr;
 use function CraftCms\Cms\t;
 
 /**
- * Filename condition rule.
+ * Asset volume condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class FilenameConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
+class VolumeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Filename');
+        return t('Volume');
     }
 
     /**
@@ -31,7 +33,16 @@ class FilenameConditionRule extends BaseTextConditionRule implements ElementCond
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['filename'];
+        return ['volume', 'volumeId'];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function options(): array
+    {
+        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+        return Arr::pluck($volumes, 'name', 'uid');
     }
 
     /**
@@ -40,7 +51,8 @@ class FilenameConditionRule extends BaseTextConditionRule implements ElementCond
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
-        $query->filename($this->paramValue());
+        $volumes = Craft::$app->getVolumes();
+        $query->volumeId($this->paramValue(fn($uid) => $volumes->getVolumeByUid($uid)->id ?? null));
     }
 
     /**
@@ -49,6 +61,6 @@ class FilenameConditionRule extends BaseTextConditionRule implements ElementCond
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Asset $element */
-        return $this->matchValue($element->getFilename());
+        return $this->matchValue($element->getVolume()->uid);
     }
 }

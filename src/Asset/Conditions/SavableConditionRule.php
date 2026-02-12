@@ -1,29 +1,29 @@
 <?php
 
-namespace craft\elements\conditions\assets;
+namespace CraftCms\Cms\Asset\Conditions;
 
-use craft\base\conditions\BaseNumberConditionRule;
+use Craft;
+use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**
- * Height condition rule.
+ * Asset savable condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
+ * @since 4.4.0
  */
-class HeightConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
+class SavableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Height');
+        return t('Savable');
     }
 
     /**
@@ -31,7 +31,7 @@ class HeightConditionRule extends BaseNumberConditionRule implements ElementCond
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['height'];
+        return ['savable'];
     }
 
     /**
@@ -40,7 +40,7 @@ class HeightConditionRule extends BaseNumberConditionRule implements ElementCond
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
-        $query->height($this->paramValue());
+        $query->savable($this->value);
     }
 
     /**
@@ -48,7 +48,7 @@ class HeightConditionRule extends BaseNumberConditionRule implements ElementCond
      */
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var Asset $element */
-        return $this->matchValue($element->getHeight());
+        $savable = Craft::$app->getElements()->canSave($element);
+        return $savable === $this->value;
     }
 }

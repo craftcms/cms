@@ -1,29 +1,29 @@
 <?php
 
-namespace craft\elements\conditions\assets;
+namespace CraftCms\Cms\Asset\Conditions;
 
-use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use function CraftCms\Cms\t;
 
 /**
- * Asset viewable condition rule.
+ * “Has alternative text” condition rule for assets.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.4.0
+ * @since 4.0.0
  */
-class ViewableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class HasAltConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return t('Viewable');
+        return t('Has alternative text');
     }
 
     /**
@@ -31,7 +31,7 @@ class ViewableConditionRule extends BaseLightswitchConditionRule implements Elem
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['editable'];
+        return ['hasAlt'];
     }
 
     /**
@@ -40,7 +40,7 @@ class ViewableConditionRule extends BaseLightswitchConditionRule implements Elem
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
-        $query->editable($this->value);
+        $query->hasAlt($this->value);
     }
 
     /**
@@ -48,7 +48,7 @@ class ViewableConditionRule extends BaseLightswitchConditionRule implements Elem
      */
     public function matchElement(ElementInterface $element): bool
     {
-        $viewable = Craft::$app->getElements()->canView($element);
-        return $viewable === $this->value;
+        /** @var Asset $element */
+        return $this->matchValue($element->alt !== null);
     }
 }
