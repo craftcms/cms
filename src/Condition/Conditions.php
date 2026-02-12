@@ -54,8 +54,10 @@ final readonly class Conditions
         $rules = Arr::pull($config, 'conditionRules', []);
 
         return app()->make($class, [
-            'attributes' => $config,
-            'conditionRules' => $rules,
+            'config' => [
+                'attributes' => $config,
+                'conditionRules' => $rules,
+            ],
         ]);
     }
 
@@ -114,6 +116,6 @@ final readonly class Conditions
             throw new InvalidArgumentException("Invalid condition rule class: $class");
         }
 
-        return app()->make($class, ['attributes' => $config]);
+        return app()->make($class, compact('config'));
     }
 }

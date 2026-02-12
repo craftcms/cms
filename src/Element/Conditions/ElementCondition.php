@@ -266,7 +266,10 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
     #[Override]
     protected function config(): array
     {
-        return $this->toArray(['elementType', 'fieldContext']);
+        return [
+            'elementType' => $this->elementType,
+            'fieldContext' => $this->fieldContext,
+        ];
     }
 
     /**

@@ -159,7 +159,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
                     continue;
                 }
             }
-            $values[] = Query::escapeParam($value);
+            $values[] = Query::escapeParam((string) $value);
         }
 
         if (! $values) {

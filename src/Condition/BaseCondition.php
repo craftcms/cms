@@ -299,9 +299,14 @@ JS, [$view->namespaceInputId($this->id)]);
                     'indicator' => sprintf('#%s', $view->namespaceInputId("$this->id-spinner")),
                 ],
                 'data' => [
-                    'condition-config' => Json::encode(array_merge($this->toArray(), [
+                    'condition-config' => Json::encode(array_merge($this->getBuilderConfig(), [
+                        'class' => static::class,
                         'id' => $namespacedId,
                         'name' => $view->getNamespace(),
+                        'mainTag' => $this->mainTag,
+                        'sortable' => $this->sortable,
+                        'forProjectConfig' => $this->forProjectConfig,
+                        'addRuleLabel' => $this->addRuleLabel,
                     ])),
                 ],
             ]);

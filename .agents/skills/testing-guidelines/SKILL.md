@@ -23,11 +23,13 @@ Apply Craft CMS 6 testing patterns consistently and avoid common pitfalls around
 - Prefer factories and element queries over Eloquent models when asserting element behavior.
 - For element traits, create minimal test elements that override only what is needed.
 - Use Laravel event fakes/listeners to assert dispatch, cancellation, or data changes.
+- Use Pest's `->with()` data providers to consolidate tests that share the same structure but differ only in input/expected values. Use named dataset entries for clarity.
 
 ## When to Load References
 
 - Need code samples for entry creation, custom fields, or event tests.
 - Need the minimal trait-testing element example.
 - Unsure about the exact factory + query pattern for elements.
+- Need examples of Pest data providers with `->with()`.
 
 See `references/testing-guidelines.md` for full examples and snippets.
