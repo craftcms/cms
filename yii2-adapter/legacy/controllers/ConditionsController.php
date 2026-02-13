@@ -46,7 +46,7 @@ class ConditionsController extends Controller
         $config = Component::cleanseConfig($this->request->getBodyParam($baseConfig['name']));
         $newRuleType = Arr::pull($config, 'new-rule-type');
         $this->_condition = Conditions::createCondition($config);
-        Craft::configure($this->_condition, $baseConfig);
+        Craft::configure($this->_condition, Arr::except($baseConfig, 'class'));
 
         if ($newRuleType) {
             $newRuleType = Json::decodeIfJson($newRuleType);

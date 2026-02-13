@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Support\Arr;
@@ -53,12 +54,11 @@ final readonly class Conditions
         // Set condition rules last, in case any available rules are dependent on the condition config
         $rules = Arr::pull($config, 'conditionRules', []);
 
-        return app()->make($class, [
-            'config' => [
-                'attributes' => $config,
-                'conditionRules' => $rules,
-            ],
-        ]);
+        $condition = app()->make($class);
+        Component::configure($condition, Arr::only($config, array_keys($condition->getRules())));
+        $condition->setConditionRules($rules);
+
+        return $condition;
     }
 
     /**

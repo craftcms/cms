@@ -26,6 +26,8 @@ use Throwable;
 use yii\base\InvalidConfigException;
 use Yiisoft\Html\Html as YiiHtml;
 use Yiisoft\Html\NoEncode;
+use Yiisoft\Html\Tag\Button;
+use Yiisoft\Html\Tag\Input;
 
 /**
  * @mixin YiiHtml
@@ -268,6 +270,23 @@ final class Html
     public static function successMessageInput(string $message, array $options = []): string
     {
         return self::hiddenInput('successMessage', Crypt::encrypt($message), $options)->render();
+    }
+
+    public static function hiddenInput(
+        ?string $name = null,
+        bool|float|int|string|\Stringable|null $value = null,
+        array $attributes = [],
+    ): Input {
+        $tag = Input::hidden($name, $value);
+
+        return $attributes === [] ? $tag : $tag->addAttributes(self::normalizeTagAttributes($attributes));
+    }
+
+    public static function button(string $content = 'Button', array $attributes = []): Button
+    {
+        $tag = YiiHtml::button($content);
+
+        return $attributes === [] ? $tag : $tag->addAttributes(self::normalizeTagAttributes($attributes));
     }
 
     public static function tag($name, $content = '', $options = []): string

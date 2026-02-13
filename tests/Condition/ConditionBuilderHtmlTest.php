@@ -236,9 +236,7 @@ describe('BaseCondition::getBuilderInnerHtml() with rules', function () {
 
         expect($html)->toContain('rule-actions');
         expect($html)->toContain('Remove');
-        // The remove button's hx attribute is JSON-encoded by YiiHtml (via __callStatic),
-        // so the URL forward slash is escaped as \/
-        expect($html)->toContain('conditions\/remove-rule');
+        expect($html)->toContain('conditions/remove-rule');
     });
 
     it('renders a rule type switcher menu for each rule', function () {

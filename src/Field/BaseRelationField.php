@@ -229,7 +229,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ->leftJoin(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS_SITES, "elements_sites_$ns"), "elements_sites_$ns.elementId", '=', "elements_$ns.id")
             ->whereColumn("relations_$ns.sourceId", 'elements.id')
             ->where("relations_$ns.fieldId", $field->id)
-            ->whereNull("relations_$ns.dateDeleted")
+            ->whereNull("elements_$ns.dateDeleted")
             ->where(function (Builder $query) use ($ns) {
                 $query->whereNull("relations_$ns.sourceSiteId")
                     ->orWhereColumn("relations_$ns.sourceSiteId", 'elements_sites.siteId');
