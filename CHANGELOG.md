@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `slug` columns referenced in element queries’ `select`, `where`, or `orderBy` expressions now explicitly resolve to `elements_sites.slug`. ([#18416](https://github.com/craftcms/cms/issues/18416))
 - Fixed a bug where the control panel requests could trigger an infinite browser redirect loop. ([#18420](https://github.com/craftcms/cms/issues/18420))
 - Fixed a bug where `craft\helpers\App::parseBooleanEnv()` wasn’t handling `false` values properly. ([#18418](https://github.com/craftcms/cms/issues/18418))
 - Fixed a bug where `DECIMAL` field values with `0` precision weren’t gettnig typecasted properly in element queries.

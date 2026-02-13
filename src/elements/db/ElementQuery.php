@@ -1636,6 +1636,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             'dateUpdated' => 'elements.dateUpdated',
             'enabled' => 'elements.enabled',
             'id' => 'elements.id',
+            'slug' => 'elements_sites.slug',
             'uid' => 'elements.uid',
         ];
 
