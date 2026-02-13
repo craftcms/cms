@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\Event as YiiEvent;
 use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
@@ -32,8 +33,11 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
+use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use LogicException;
 use Throwable;
@@ -82,11 +86,13 @@ class View extends \yii\web\View
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterCpTemplateRoots} instead.
      */
     public const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering site template roots
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterSiteTemplateRoots} instead.
      */
     public const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
 
@@ -1066,11 +1072,7 @@ class View extends \yii\web\View
         unset($basePaths);
 
         // Check any registered template roots
-        if (TemplateMode::is(TemplateMode::Cp)) {
-            $roots = $this->getCpTemplateRoots();
-        } else {
-            $roots = $this->getSiteTemplateRoots();
-        }
+        $roots = TemplateMode::get()->templateRoots();
 
         if (!empty($roots)) {
             foreach ($roots as $templateRoot => $basePaths) {
@@ -1094,20 +1096,22 @@ class View extends \yii\web\View
      * Returns any registered control panel template roots.
      *
      * @return array
+     * @deprecated 6.0.0 use {@see TemplateMode::templateRoots()} instead.
      */
     public function getCpTemplateRoots(): array
     {
-        return $this->_getTemplateRoots('cp');
+        return TemplateMode::Cp->templateRoots();
     }
 
     /**
      * Returns any registered site template roots.
      *
      * @return array
+     * @deprecated 6.0.0 use {@see TemplateMode::templateRoots()} instead.
      */
     public function getSiteTemplateRoots(): array
     {
-        return $this->_getTemplateRoots('site');
+        return TemplateMode::Site->templateRoots();
     }
 
     /**
@@ -2534,45 +2538,6 @@ JS;
         return $this->_twigOptions;
     }
 
-    /**
-     * Returns any registered template roots.
-     *
-     * @param string $which 'cp' or 'site'
-     * @return array
-     */
-    private function _getTemplateRoots(string $which): array
-    {
-        if (isset($this->_templateRoots[$which])) {
-            return $this->_templateRoots[$which];
-        }
-
-        $this->_templateRoots[$which] = [];
-
-        if ($which === 'cp') {
-            $name = self::EVENT_REGISTER_CP_TEMPLATE_ROOTS;
-        } else {
-            $name = self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS;
-        }
-
-        if ($this->hasEventHandlers($name)) {
-            $event = new RegisterTemplateRootsEvent();
-            $this->trigger($name, $event);
-
-            foreach ($event->roots as $templatePath => $dir) {
-                $templatePath = strtolower(trim($templatePath, '/'));
-                if (!isset($this->_templateRoots[$which][$templatePath])) {
-                    $this->_templateRoots[$which][$templatePath] = [];
-                }
-                array_push($this->_templateRoots[$which][$templatePath], ...(array)$dir);
-            }
-
-            // Longest (most specific) first
-            krsort($this->_templateRoots[$which], SORT_STRING);
-        }
-
-        return $this->_templateRoots[$which];
-    }
-
     private function resourceHash(string $key): string
     {
         return sprintf('%x', crc32($key));
@@ -2718,5 +2683,28 @@ JS;
             single: $context['single'] ?? false,
             autoReload: $context['autoReload'] ?? true,
         );
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(RegisterCpTemplateRoots::class, function(RegisterCpTemplateRoots $event) {
+            if (!YiiEvent::hasHandlers(self::class, self::EVENT_REGISTER_CP_TEMPLATE_ROOTS)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterTemplateRootsEvent();
+            YiiEvent::trigger(self::class, self::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $yiiEvent);
+            $event->roots = $yiiEvent->roots;
+        });
+
+        Event::listen(RegisterSiteTemplateRoots::class, function(RegisterSiteTemplateRoots $event) {
+            if (!YiiEvent::hasHandlers(self::class, self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterTemplateRootsEvent();
+            YiiEvent::trigger(self::class, self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, $yiiEvent);
+            $event->roots = $yiiEvent->roots;
+        });
     }
 }

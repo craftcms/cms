@@ -524,6 +524,7 @@ class Yii2ServiceProvider extends ServiceProvider
         UserGroups::registerEvents();
         UserPermissions::registerEvents();
         Users::registerEvents();
+        View::registerEvents();
 
         /**
          * Controllers

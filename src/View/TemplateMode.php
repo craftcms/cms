@@ -6,6 +6,8 @@ namespace CraftCms\Cms\View;
 
 use Craft;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
+use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use Illuminate\Support\Facades\Context;
 
 enum TemplateMode: string
@@ -73,9 +75,34 @@ enum TemplateMode: string
 
     public function templatesPath(): string
     {
-        return rtrim(match ($this) {
+        return rtrim((string) match ($this) {
             self::Cp => Craft::$app->getPath()->getCpTemplatesPath(),
             self::Site => Craft::$app->getPath()->getSiteTemplatesPath(),
         }, '/\\');
+    }
+
+    public function templateRoots(): array
+    {
+        return once(function () {
+            $templateRoots = [];
+
+            event($event = match ($this) {
+                self::Cp => new RegisterCpTemplateRoots,
+                self::Site => new RegisterSiteTemplateRoots,
+            });
+
+            foreach ($event->roots as $templatePath => $dir) {
+                $templatePath = strtolower(trim($templatePath, '/'));
+
+                $templateRoots[$templatePath] ??= [];
+
+                array_push($templateRoots[$templatePath], ...(array) $dir);
+            }
+
+            // Longest (most specific) first
+            krsort($templateRoots, SORT_STRING);
+
+            return $templateRoots;
+        });
     }
 }
