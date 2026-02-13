@@ -824,6 +824,9 @@ JS, [
 
         $elementIds = [];
         $sortOrder = 0;
+        $managerKey = isset($this->field)
+            ? sprintf('field:%s', (string)($this->field->uid ?? $this->field->handle ?? $this->field->id))
+            : sprintf('attribute:%s', (string)$this->attribute);
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -843,7 +846,17 @@ JS, [
                 }
 
                 $sortOrder++;
-                if ($saveAll || !$element->id || $element->forceSave) {
+                $shouldSave = $saveAll || !$element->id || $element->forceSave;
+
+                if (
+                    $shouldSave &&
+                    isset($element->id) &&
+                    !$elementsService->shouldSaveNestedElement($owner, $element, $managerKey, $sortOrder)
+                ) {
+                    $shouldSave = false;
+                }
+
+                if ($shouldSave) {
                     $element->setOwner($owner);
                     $element->setSortOrder($sortOrder);
                     $element->resaving = $owner->resaving;

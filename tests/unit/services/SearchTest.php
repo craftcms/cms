@@ -96,6 +96,57 @@ class SearchTest extends TestCase
         self::assertSame(' wilkerson ', $this->_getSearchIndexValueByAttribute('lastname', $searchIndex));
     }
 
+    public function testQueueIndexElementBatchMergesDuplicateFieldHandles(): void
+    {
+        $this->_clearSearchQueueTables();
+        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail('user1');
+        self::assertNotNull($user);
+
+        $this->search->beginIndexQueueBatch();
+        $this->search->queueIndexElement($user, ['firstName']);
+        $this->search->queueIndexElement($user, ['lastName']);
+        $this->search->queueIndexElement($user, ['firstName']);
+        $this->search->endIndexQueueBatch();
+
+        $jobRows = (new Query())
+            ->from([Table::SEARCHINDEXQUEUE])
+            ->where(['elementId' => $user->id, 'siteId' => $user->siteId])
+            ->all();
+        self::assertCount(1, $jobRows);
+
+        $fieldRows = (new Query())
+            ->from([Table::SEARCHINDEXQUEUE_FIELDS])
+            ->where(['jobId' => $jobRows[0]['id']])
+            ->orderBy(['fieldHandle' => SORT_ASC])
+            ->column();
+        self::assertSame(['firstName', 'lastName'], $fieldRows);
+    }
+
+    public function testQueueIndexElementBatchPrefersAllFieldsWhenRequested(): void
+    {
+        $this->_clearSearchQueueTables();
+        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail('user2');
+        self::assertNotNull($user);
+
+        $this->search->beginIndexQueueBatch();
+        $this->search->queueIndexElement($user, ['firstName']);
+        $this->search->queueIndexElement($user, []);
+        $this->search->queueIndexElement($user, ['lastName']);
+        $this->search->endIndexQueueBatch();
+
+        $jobRows = (new Query())
+            ->from([Table::SEARCHINDEXQUEUE])
+            ->where(['elementId' => $user->id, 'siteId' => $user->siteId])
+            ->all();
+        self::assertCount(1, $jobRows);
+
+        $fieldRows = (new Query())
+            ->from([Table::SEARCHINDEXQUEUE_FIELDS])
+            ->where(['jobId' => $jobRows[0]['id']])
+            ->all();
+        self::assertCount(0, $fieldRows);
+    }
+
     /**
      * Provide an array with input user names
      *
@@ -163,5 +214,13 @@ class SearchTest extends TestCase
         }
 
         return $scoreKeys;
+    }
+
+    private function _clearSearchQueueTables(): void
+    {
+        Craft::$app->getDb()->transaction(function() {
+            Craft::$app->getDb()->createCommand()->delete(Table::SEARCHINDEXQUEUE_FIELDS)->execute();
+            Craft::$app->getDb()->createCommand()->delete(Table::SEARCHINDEXQUEUE)->execute();
+        });
     }
 }

@@ -549,6 +549,11 @@ class Elements extends Component
     private ?bool $_updateSearchIndex = null;
 
     /**
+     * @var ElementSaveOptimizationContext|null
+     */
+    private ?ElementSaveOptimizationContext $_saveOptimizationContext = null;
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -1257,6 +1262,29 @@ class Elements extends Component
                 $this->endBulkOp($bulkKey);
             }
         }
+    }
+
+    /**
+     * @internal
+     * @since 5.8.0
+     */
+    public function shouldSaveNestedElement(
+        ElementInterface $owner,
+        NestedElementInterface $element,
+        string $managerKey,
+        int $sortOrder,
+    ): bool {
+        if (!isset($owner->id, $element->id) || $this->_saveOptimizationContext === null) {
+            return true;
+        }
+
+        return $this->_saveOptimizationContext->rememberNestedSave(
+            (int)$owner->id,
+            $owner->siteId,
+            $managerKey,
+            (int)$element->id,
+            $sortOrder,
+        );
     }
 
     // Saving Elements
@@ -3883,6 +3911,8 @@ class Elements extends Component
         }
 
         $fieldLayout = $element->getFieldLayout();
+        $customFields = $fieldLayout?->getCustomFields() ?? [];
+        $generatedFields = $fieldLayout?->getGeneratedFields() ?? [];
         $dirtyFields = $element->getDirtyFields();
 
         // Get the element's site record
@@ -3922,26 +3952,30 @@ class Elements extends Component
             }
         }
 
-        $this->ensureBulkOp(function() use (
-            $element,
-            $isNewElement,
-            $originalFirstSave,
-            $originalIsNewForSite,
-            $originalPropagateAll,
-            $forceTouch,
-            $saveContent,
-            $trackChanges,
-            $dirtyAttributes,
-            $updateSearchIndex,
-            $fieldLayout,
-            $propagate,
-            $supportedSites,
-            $crossSiteValidate,
-            $runValidation,
-            $originalDateUpdated,
-            $dirtyFields,
-            &$siteSettingsRecord,
-        ) {
+        $saveOptimizationContext = $this->_beginSaveOptimizationContext();
+        try {
+            $this->ensureBulkOp(function() use (
+                $element,
+                $isNewElement,
+                $originalFirstSave,
+                $originalIsNewForSite,
+                $originalPropagateAll,
+                $forceTouch,
+                $saveContent,
+                $trackChanges,
+                $dirtyAttributes,
+                $updateSearchIndex,
+                $fieldLayout,
+                $customFields,
+                $generatedFields,
+                $propagate,
+                $supportedSites,
+                $crossSiteValidate,
+                $runValidation,
+                $originalDateUpdated,
+                $dirtyFields,
+                &$siteSettingsRecord,
+            ) {
             // Figure out whether we will be updating the search index (and memoize that for nested element saves)
             $oldUpdateSearchIndex = $this->_updateSearchIndex;
             $updateSearchIndex = $this->_updateSearchIndex = $updateSearchIndex ?? $this->_updateSearchIndex ?? true;
@@ -4070,8 +4104,6 @@ class Elements extends Component
                 }
 
                 $saveContent = $saveContent || $element->isNewForSite;
-                $generatedFields = $fieldLayout?->getGeneratedFields() ?? [];
-
                 if ($saveContent || !empty($dirtyFields) || !empty($generatedFields)) {
                     $oldContent = $siteSettingsRecord->content ?? []; // we'll need that if we're not saving all the content
                     if (is_string($oldContent)) {
@@ -4083,7 +4115,7 @@ class Elements extends Component
                     if ($fieldLayout) {
                         $validUids = [];
 
-                        foreach ($fieldLayout->getCustomFields() as $field) {
+                        foreach ($customFields as $field) {
                             $validUids[$field->layoutElement->uid] = true;
 
                             if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
@@ -4177,6 +4209,7 @@ class Elements extends Component
                                     $siteId,
                                     $siteElement,
                                     crossSiteValidate: $runValidation && $crossSiteValidate,
+                                    customFields: $customFields,
                                     siteSettingsRecord: $siteElementRecord,
                                 )) {
                                     throw new InvalidConfigException();
@@ -4276,7 +4309,7 @@ class Elements extends Component
                 }
 
                 // Invalidate any caches involving this element
-                $this->invalidateCachesForElement($element);
+                $this->_invalidateCachesForElementOptimized($element);
             }
 
             // Update search index
@@ -4312,6 +4345,19 @@ class Elements extends Component
                 $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
 
                 foreach ($dirtyAttributes as $attributeName) {
+                    if (
+                        $this->_saveOptimizationContext !== null &&
+                        !$this->_saveOptimizationContext->rememberChangedAttribute(
+                            $element->id,
+                            $element->siteId,
+                            $attributeName,
+                            $element->propagating,
+                            $userId,
+                        )
+                    ) {
+                        continue;
+                    }
+
                     Db::upsert(Table::CHANGEDATTRIBUTES, [
                         'elementId' => $element->id,
                         'siteId' => $element->siteId,
@@ -4325,6 +4371,20 @@ class Elements extends Component
                 if ($fieldLayout) {
                     foreach ($dirtyFields as $fieldHandle) {
                         if (($field = $fieldLayout->getFieldByHandle($fieldHandle)) !== null) {
+                            if (
+                                $this->_saveOptimizationContext !== null &&
+                                !$this->_saveOptimizationContext->rememberChangedField(
+                                    $element->id,
+                                    $element->siteId,
+                                    $field->id,
+                                    $field->layoutElement->uid,
+                                    $element->propagating,
+                                    $userId,
+                                )
+                            ) {
+                                continue;
+                            }
+
                             Db::upsert(Table::CHANGEDFIELDS, [
                                 'elementId' => $element->id,
                                 'siteId' => $element->siteId,
@@ -4338,7 +4398,10 @@ class Elements extends Component
                     }
                 }
             }
-        });
+            });
+        } finally {
+            $this->_endSaveOptimizationContext($saveOptimizationContext);
+        }
 
         // Fire an 'afterSaveElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ELEMENT)) {
@@ -4385,8 +4448,20 @@ class Elements extends Component
             /** @var NestedElementInterface $element */
             $owner = $element->getOwner();
             if ($owner) {
+                if (
+                    $this->_saveOptimizationContext !== null &&
+                    isset($owner->id) &&
+                    !$this->_saveOptimizationContext->rememberOwnerSearchIndex(
+                        (int)$owner->id,
+                        $owner->siteId,
+                        $field->handle,
+                    )
+                ) {
+                    return;
+                }
+
                 $this->updateSearchIndex($owner, [$field->handle], $propagate, true);
-                $this->invalidateCachesForElement($owner);
+                $this->_invalidateCachesForElementOptimized($owner);
             }
         }
     }
@@ -4412,6 +4487,7 @@ class Elements extends Component
         ElementInterface|false|null &$siteElement = null,
         bool $crossSiteValidate = false,
         bool $saveContent = true,
+        ?array $customFields = null,
         ?Element_SiteSettingsRecord &$siteSettingsRecord = null,
     ): bool {
         // Make sure the element actually supports the site it's being saved in
@@ -4528,9 +4604,10 @@ class Elements extends Component
                 $siteElement->setFieldValues($element->getFieldValues());
             } else {
                 $fieldLayout = $element->getFieldLayout();
+                $customFields ??= $fieldLayout?->getCustomFields() ?? [];
 
                 if ($fieldLayout !== null) {
-                    foreach ($fieldLayout->getCustomFields() as $field) {
+                    foreach ($customFields as $field) {
                         if (
                             $element->propagateAll ||
                             // If propagateRequired is set, is the field value invalid on the propagated site element?
@@ -4580,6 +4657,41 @@ class Elements extends Component
         }
 
         return true;
+    }
+
+    private function _beginSaveOptimizationContext(): ElementSaveOptimizationContext
+    {
+        $context = $this->_saveOptimizationContext ??= new ElementSaveOptimizationContext();
+        $wasInactive = $context->depth === 0;
+        $context->begin();
+
+        if ($wasInactive) {
+            Craft::$app->getSearch()->beginIndexQueueBatch();
+        }
+
+        return $context;
+    }
+
+    private function _endSaveOptimizationContext(ElementSaveOptimizationContext $context): void
+    {
+        if (!$context->end()) {
+            return;
+        }
+
+        $this->_saveOptimizationContext = null;
+        Craft::$app->getSearch()->endIndexQueueBatch();
+    }
+
+    private function _invalidateCachesForElementOptimized(ElementInterface $element): void
+    {
+        if (
+            $this->_saveOptimizationContext !== null &&
+            !$this->_saveOptimizationContext->rememberCacheInvalidation($element)
+        ) {
+            return;
+        }
+
+        $this->invalidateCachesForElement($element);
     }
 
     /**
