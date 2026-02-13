@@ -1,8 +1,7 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp/utilities/translate.ts';
+  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import dbBackupController from '@actions/Utilities/DbBackupController';
   import {useForm} from '@inertiajs/vue3';
-  // import {downloadFromUrl} from '@craftcms/cp/src/bridge';
 
   const form = useForm({
     downloadBackup: false,

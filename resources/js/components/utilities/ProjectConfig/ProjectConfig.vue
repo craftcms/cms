@@ -2,17 +2,20 @@
   import {computed} from 'vue';
   import {t} from '@craftcms/cp';
   import ProjectConfigDiff from './ProjectConfigDiff.vue';
-  import {
-    type ProjectConfigProps,
-    useProjectConfig,
-  } from '@/composables/useProjectConfig';
+  import {useProjectConfig} from '@/composables/useProjectConfig';
   import Pane from '@/components/Pane.vue';
   import {Form} from '@inertiajs/vue3';
   import {discard, rebuild} from '@actions/Utilities/ProjectConfigController';
   import SyncConfigButton from '@/components/utilities/ProjectConfig/SyncConfigButton.vue';
   import TransitionFade from '@/components/TransitionFade.vue';
 
-  const props = defineProps<ProjectConfigProps>();
+  const props = defineProps<{
+    readOnly: boolean;
+    invert: boolean;
+    yamlExists: boolean;
+    areChangesPending: boolean;
+    entireConfig: string;
+  }>();
 
   const {isDownloading, isDiscarding, discardChanges, downloadConfig} =
     useProjectConfig(props);

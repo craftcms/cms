@@ -108,8 +108,6 @@
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-pane-radius);
     border: var(--c-pane-border);
-    display: grid;
-    grid-template-rows: auto 400px auto;
   }
 
   .pane--code {

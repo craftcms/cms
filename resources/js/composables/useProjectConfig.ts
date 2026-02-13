@@ -6,14 +6,6 @@ import ProjectConfigController, {
   download,
 } from '@actions/Utilities/ProjectConfigController';
 
-export interface ProjectConfigProps {
-  readOnly: boolean;
-  invert: boolean;
-  yamlExists: boolean;
-  areChangesPending: boolean;
-  entireConfig: string;
-}
-
 interface UseProjectConfigReturn {
   isDownloading: Ref<boolean>;
   isDiscarding: Ref<boolean>;
@@ -21,9 +13,7 @@ interface UseProjectConfigReturn {
   downloadConfig: () => Promise<void>;
 }
 
-export function useProjectConfig(
-  props: ProjectConfigProps
-): UseProjectConfigReturn {
+export function useProjectConfig(): UseProjectConfigReturn {
   const isDownloading = ref(false);
   const isDiscarding = ref(false);
 

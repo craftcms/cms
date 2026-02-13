@@ -1,5 +1,5 @@
 import axios, {type RawAxiosRequestHeaders} from 'axios';
-import {Csrf} from '../../services/Csrf.js';
+import {Csrf} from '@src/services/Csrf';
 
 /**
  * @TODO
