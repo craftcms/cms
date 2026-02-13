@@ -3976,234 +3976,234 @@ class Elements extends Component
                 $dirtyFields,
                 &$siteSettingsRecord,
             ) {
-            // Figure out whether we will be updating the search index (and memoize that for nested element saves)
-            $oldUpdateSearchIndex = $this->_updateSearchIndex;
-            $updateSearchIndex = $this->_updateSearchIndex = $updateSearchIndex ?? $this->_updateSearchIndex ?? true;
+                // Figure out whether we will be updating the search index (and memoize that for nested element saves)
+                $oldUpdateSearchIndex = $this->_updateSearchIndex;
+                $updateSearchIndex = $this->_updateSearchIndex = $updateSearchIndex ?? $this->_updateSearchIndex ?? true;
 
-            $newSiteIds = $element->newSiteIds;
-            $element->newSiteIds = [];
+                $newSiteIds = $element->newSiteIds;
+                $element->newSiteIds = [];
 
-            $transaction = Craft::$app->getDb()->beginTransaction();
+                $transaction = Craft::$app->getDb()->beginTransaction();
 
-            try {
-                // No need to save the element record multiple times
-                if (!$element->propagating) {
-                    // Get the element record
-                    if (!$isNewElement) {
-                        $elementRecord = ElementRecord::findOne($element->id);
+                try {
+                    // No need to save the element record multiple times
+                    if (!$element->propagating) {
+                        // Get the element record
+                        if (!$isNewElement) {
+                            $elementRecord = ElementRecord::findOne($element->id);
 
-                        if (!$elementRecord) {
-                            $element->firstSave = $originalFirstSave;
-                            $element->isNewForSite = $originalIsNewForSite;
-                            $element->propagateAll = $originalPropagateAll;
-                            throw new ElementNotFoundException("No element exists with the ID '$element->id'");
+                            if (!$elementRecord) {
+                                $element->firstSave = $originalFirstSave;
+                                $element->isNewForSite = $originalIsNewForSite;
+                                $element->propagateAll = $originalPropagateAll;
+                                throw new ElementNotFoundException("No element exists with the ID '$element->id'");
+                            }
+                        } else {
+                            $elementRecord = new ElementRecord();
+                            $elementRecord->type = get_class($element);
                         }
-                    } else {
-                        $elementRecord = new ElementRecord();
-                        $elementRecord->type = get_class($element);
-                    }
 
-                    // Set the attributes
-                    $elementRecord->uid = $element->uid;
-                    $canonicalId = $element->getCanonicalId();
-                    $elementRecord->canonicalId = $canonicalId !== $element->id ? $canonicalId : null;
-                    $elementRecord->draftId = (int)$element->draftId ?: null;
-                    $elementRecord->revisionId = (int)$element->revisionId ?: null;
-                    $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
-                    $elementRecord->enabled = (bool)$element->enabled;
-                    $elementRecord->archived = (bool)$element->archived;
-                    $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
-                    $elementRecord->dateDeleted = Db::prepareDateForDb($element->dateDeleted);
+                        // Set the attributes
+                        $elementRecord->uid = $element->uid;
+                        $canonicalId = $element->getCanonicalId();
+                        $elementRecord->canonicalId = $canonicalId !== $element->id ? $canonicalId : null;
+                        $elementRecord->draftId = (int)$element->draftId ?: null;
+                        $elementRecord->revisionId = (int)$element->revisionId ?: null;
+                        $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
+                        $elementRecord->enabled = (bool)$element->enabled;
+                        $elementRecord->archived = (bool)$element->archived;
+                        $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
+                        $elementRecord->dateDeleted = Db::prepareDateForDb($element->dateDeleted);
 
-                    if ($isNewElement) {
-                        if (isset($element->dateCreated)) {
-                            $elementRecord->dateCreated = Db::prepareValueForDb($element->dateCreated);
+                        if ($isNewElement) {
+                            if (isset($element->dateCreated)) {
+                                $elementRecord->dateCreated = Db::prepareValueForDb($element->dateCreated);
+                            }
+                            if (isset($element->dateUpdated)) {
+                                $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
+                            }
+                        } elseif ($element->resaving && !$forceTouch) {
+                            // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
+                            $elementRecord->markAttributeDirty('dateUpdated');
+                        } else {
+                            // Force a new dateUpdated value
+                            $elementRecord->dateUpdated = Db::prepareValueForDb(DateTimeHelper::now());
                         }
-                        if (isset($element->dateUpdated)) {
-                            $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
-                        }
-                    } elseif ($element->resaving && !$forceTouch) {
-                        // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
-                        $elementRecord->markAttributeDirty('dateUpdated');
-                    } else {
-                        // Force a new dateUpdated value
-                        $elementRecord->dateUpdated = Db::prepareValueForDb(DateTimeHelper::now());
-                    }
 
-                    // Update our list of dirty attributes
-                    if ($trackChanges) {
-                        array_push($dirtyAttributes, ...array_keys($elementRecord->getDirtyAttributes([
+                        // Update our list of dirty attributes
+                        if ($trackChanges) {
+                            array_push($dirtyAttributes, ...array_keys($elementRecord->getDirtyAttributes([
                             'fieldLayoutId',
                             'enabled',
                             'archived',
                         ])));
-                    }
+                        }
 
-                    // Save the element record
-                    $elementRecord->save(false);
+                        // Save the element record
+                        $elementRecord->save(false);
 
-                    $dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
+                        $dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
 
-                    if ($dateCreated === false) {
-                        $element->firstSave = $originalFirstSave;
-                        $element->isNewForSite = $originalIsNewForSite;
-                        $element->propagateAll = $originalPropagateAll;
-                        throw new Exception('There was a problem calculating dateCreated.');
-                    }
+                        if ($dateCreated === false) {
+                            $element->firstSave = $originalFirstSave;
+                            $element->isNewForSite = $originalIsNewForSite;
+                            $element->propagateAll = $originalPropagateAll;
+                            throw new Exception('There was a problem calculating dateCreated.');
+                        }
 
-                    $dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
+                        $dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
 
-                    if ($dateUpdated === false) {
-                        throw new Exception('There was a problem calculating dateUpdated.');
-                    }
+                        if ($dateUpdated === false) {
+                            throw new Exception('There was a problem calculating dateUpdated.');
+                        }
 
-                    // Save the new dateCreated and dateUpdated dates on the model
-                    $element->dateCreated = $dateCreated;
-                    $element->dateUpdated = $dateUpdated;
+                        // Save the new dateCreated and dateUpdated dates on the model
+                        $element->dateCreated = $dateCreated;
+                        $element->dateUpdated = $dateUpdated;
 
-                    if ($isNewElement) {
-                        // Save the element ID on the element model
-                        $element->id = $elementRecord->id;
+                        if ($isNewElement) {
+                            // Save the element ID on the element model
+                            $element->id = $elementRecord->id;
 
-                        // If there's a temp ID, update the URI
-                        if ($element->tempId && $element->uri) {
-                            $element->uri = str_replace($element->tempId, (string)$element->id, $element->uri);
-                            $element->tempId = null;
+                            // If there's a temp ID, update the URI
+                            if ($element->tempId && $element->uri) {
+                                $element->uri = str_replace($element->tempId, (string)$element->id, $element->uri);
+                                $element->tempId = null;
+                            }
                         }
                     }
-                }
 
-                // Save the element’s site settings record
-                if ($siteSettingsRecord === null) {
-                    // First time we've saved the element for this site
-                    $siteSettingsRecord = new Element_SiteSettingsRecord();
-                    $siteSettingsRecord->elementId = $element->id;
-                    $siteSettingsRecord->siteId = $element->siteId;
-                }
+                    // Save the element’s site settings record
+                    if ($siteSettingsRecord === null) {
+                        // First time we've saved the element for this site
+                        $siteSettingsRecord = new Element_SiteSettingsRecord();
+                        $siteSettingsRecord->elementId = $element->id;
+                        $siteSettingsRecord->siteId = $element->siteId;
+                    }
 
-                $title = $element::hasTitles() ? $element->title : null;
-                $siteSettingsRecord->title = $title !== null && $title !== '' ? $title : null;
-                $siteSettingsRecord->slug = $element->slug;
-                $siteSettingsRecord->uri = $element->uri;
+                    $title = $element::hasTitles() ? $element->title : null;
+                    $siteSettingsRecord->title = $title !== null && $title !== '' ? $title : null;
+                    $siteSettingsRecord->slug = $element->slug;
+                    $siteSettingsRecord->uri = $element->uri;
 
-                // Avoid `enabled` getting marked as dirty if it’s not really changing
-                $enabledForSite = $element->getEnabledForSite();
-                if ($siteSettingsRecord->getIsNewRecord() || $siteSettingsRecord->enabled != $enabledForSite) {
-                    $siteSettingsRecord->enabled = $enabledForSite;
-                }
+                    // Avoid `enabled` getting marked as dirty if it’s not really changing
+                    $enabledForSite = $element->getEnabledForSite();
+                    if ($siteSettingsRecord->getIsNewRecord() || $siteSettingsRecord->enabled != $enabledForSite) {
+                        $siteSettingsRecord->enabled = $enabledForSite;
+                    }
 
-                // Update our list of dirty attributes
-                if ($trackChanges && !$element->isNewForSite) {
-                    array_push($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes([
+                    // Update our list of dirty attributes
+                    if ($trackChanges && !$element->isNewForSite) {
+                        array_push($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes([
                         'slug',
                         'uri',
                     ])));
-                    if ($siteSettingsRecord->isAttributeChanged('enabled')) {
-                        $dirtyAttributes[] = 'enabledForSite';
-                    }
-                }
-
-                $saveContent = $saveContent || $element->isNewForSite;
-                if ($saveContent || !empty($dirtyFields) || !empty($generatedFields)) {
-                    $oldContent = $siteSettingsRecord->content ?? []; // we'll need that if we're not saving all the content
-                    if (is_string($oldContent)) {
-                        $oldContent = $oldContent !== '' ? Json::decode($oldContent) : [];
+                        if ($siteSettingsRecord->isAttributeChanged('enabled')) {
+                            $dirtyAttributes[] = 'enabledForSite';
+                        }
                     }
 
-                    $content = [];
+                    $saveContent = $saveContent || $element->isNewForSite;
+                    if ($saveContent || !empty($dirtyFields) || !empty($generatedFields)) {
+                        $oldContent = $siteSettingsRecord->content ?? []; // we'll need that if we're not saving all the content
+                        if (is_string($oldContent)) {
+                            $oldContent = $oldContent !== '' ? Json::decode($oldContent) : [];
+                        }
 
-                    if ($fieldLayout) {
-                        $validUids = [];
+                        $content = [];
 
-                        foreach ($customFields as $field) {
-                            $validUids[$field->layoutElement->uid] = true;
+                        if ($fieldLayout) {
+                            $validUids = [];
 
-                            if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
-                                $value = $element->getFieldValue($field->handle);
-                                if ($element->isNewForSite && $field->isValueEmpty($value, $element)) {
-                                    // don't store empty values if element is new for site
-                                    // https://github.com/craftcms/cms/issues/16797
-                                    continue;
+                            foreach ($customFields as $field) {
+                                $validUids[$field->layoutElement->uid] = true;
+
+                                if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
+                                    $value = $element->getFieldValue($field->handle);
+                                    if ($element->isNewForSite && $field->isValueEmpty($value, $element)) {
+                                        // don't store empty values if element is new for site
+                                        // https://github.com/craftcms/cms/issues/16797
+                                        continue;
+                                    }
+                                    $serializedValue = $field->serializeValueForDb($value, $element);
+                                    if ($serializedValue !== null) {
+                                        $content[$field->layoutElement->uid] = $serializedValue;
+                                    } elseif (!$saveContent) {
+                                        // if serialized value is null, and we're not saving all the content,
+                                        // we need to register the fact that the new value is empty
+                                        unset($oldContent[$field->layoutElement->uid]);
+                                    }
                                 }
-                                $serializedValue = $field->serializeValueForDb($value, $element);
-                                if ($serializedValue !== null) {
-                                    $content[$field->layoutElement->uid] = $serializedValue;
-                                } elseif (!$saveContent) {
-                                    // if serialized value is null, and we're not saving all the content,
-                                    // we need to register the fact that the new value is empty
-                                    unset($oldContent[$field->layoutElement->uid]);
+                            }
+
+                            if ($oldContent) {
+                                foreach ($generatedFields as $field) {
+                                    if (isset($oldContent[$field['uid']])) {
+                                        $content[$field['uid']] = $oldContent[$field['uid']];
+                                    }
                                 }
                             }
                         }
 
-                        if ($oldContent) {
-                            foreach ($generatedFields as $field) {
-                                if (isset($oldContent[$field['uid']])) {
-                                    $content[$field['uid']] = $oldContent[$field['uid']];
+                        // if we're only saving dirty fields, merge in the existing values,
+                        // excluding any UUIDs that are no longer valid (see https://github.com/craftcms/cms/issues/17768)
+                        if (!$saveContent && $oldContent) {
+                            foreach ($oldContent as $uid => $value) {
+                                if (!isset($content[$uid]) && isset($validUids[$uid])) {
+                                    $content[$uid] = $value;
                                 }
                             }
                         }
+
+                        $siteSettingsRecord->content = $content ?: null;
                     }
 
-                    // if we're only saving dirty fields, merge in the existing values,
-                    // excluding any UUIDs that are no longer valid (see https://github.com/craftcms/cms/issues/17768)
-                    if (!$saveContent && $oldContent) {
-                        foreach ($oldContent as $uid => $value) {
-                            if (!isset($content[$uid]) && isset($validUids[$uid])) {
-                                $content[$uid] = $value;
-                            }
-                        }
+                    // Save the site settings record
+                    if (!$siteSettingsRecord->save(false)) {
+                        $element->firstSave = $originalFirstSave;
+                        $element->isNewForSite = $originalIsNewForSite;
+                        $element->propagateAll = $originalPropagateAll;
+                        throw new Exception('Couldn’t save elements’ site settings record.');
                     }
 
-                    $siteSettingsRecord->content = $content ?: null;
-                }
+                    $element->siteSettingsId = $siteSettingsRecord->id;
 
-                // Save the site settings record
-                if (!$siteSettingsRecord->save(false)) {
-                    $element->firstSave = $originalFirstSave;
-                    $element->isNewForSite = $originalIsNewForSite;
-                    $element->propagateAll = $originalPropagateAll;
-                    throw new Exception('Couldn’t save elements’ site settings record.');
-                }
+                    // Set all of the dirty attributes on the element, in case an event listener wants to know
+                    if ($trackChanges) {
+                        array_push($dirtyAttributes, ...$element->getDirtyAttributes());
+                        $element->setDirtyAttributes($dirtyAttributes, false);
+                    }
 
-                $element->siteSettingsId = $siteSettingsRecord->id;
+                    // It is now officially saved
+                    $element->afterSave($isNewElement);
 
-                // Set all of the dirty attributes on the element, in case an event listener wants to know
-                if ($trackChanges) {
-                    array_push($dirtyAttributes, ...$element->getDirtyAttributes());
-                    $element->setDirtyAttributes($dirtyAttributes, false);
-                }
+                    // Update the list of dirty attributes
+                    $dirtyAttributes = $element->getDirtyAttributes();
 
-                // It is now officially saved
-                $element->afterSave($isNewElement);
+                    /** @var array<int,ElementInterface> $siteElements */
+                    $siteElements = [];
+                    /** @var array<int,Element_SiteSettingsRecord> $siteSettingsRecords */
+                    $siteSettingsRecords = [];
 
-                // Update the list of dirty attributes
-                $dirtyAttributes = $element->getDirtyAttributes();
+                    // Update the element across the other sites?
+                    if ($propagate) {
+                        $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
 
-                /** @var array<int,ElementInterface> $siteElements */
-                $siteElements = [];
-                /** @var array<int,Element_SiteSettingsRecord> $siteSettingsRecords */
-                $siteSettingsRecords = [];
-
-                // Update the element across the other sites?
-                if ($propagate) {
-                    $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
-
-                    if (!empty($otherSiteIds)) {
-                        if (!$isNewElement) {
-                            $siteElements = $this->_localizedElementQuery($element)
+                        if (!empty($otherSiteIds)) {
+                            if (!$isNewElement) {
+                                $siteElements = $this->_localizedElementQuery($element)
                                 ->siteId($otherSiteIds)
                                 ->status(null)
                                 ->indexBy('siteId')
                                 ->all();
-                        }
+                            }
 
-                        foreach (array_keys($supportedSites) as $siteId) {
-                            // Skip the initial site
-                            if ($siteId != $element->siteId) {
-                                $siteElement = $siteElements[$siteId] ?? false;
-                                $siteElementRecord = null;
-                                if (!$this->_propagateElement(
+                            foreach (array_keys($supportedSites) as $siteId) {
+                                // Skip the initial site
+                                if ($siteId != $element->siteId) {
+                                    $siteElement = $siteElements[$siteId] ?? false;
+                                    $siteElementRecord = null;
+                                    if (!$this->_propagateElement(
                                     $element,
                                     $supportedSites,
                                     $siteId,
@@ -4212,93 +4212,93 @@ class Elements extends Component
                                     customFields: $customFields,
                                     siteSettingsRecord: $siteElementRecord,
                                 )) {
-                                    throw new InvalidConfigException();
+                                        throw new InvalidConfigException();
+                                    }
+                                    $siteElements[$siteId] = $siteElement;
+                                    $siteSettingsRecords[$siteId] = $siteElementRecord;
                                 }
-                                $siteElements[$siteId] = $siteElement;
-                                $siteSettingsRecords[$siteId] = $siteElementRecord;
                             }
                         }
                     }
-                }
 
-                // Save the generated fields after the element has been fully propagated,
-                // so Matrix/CB/etc. have had a chance to save their data via afterElementPropagate()
-                // (see https://github.com/craftcms/cms/issues/17938)
-                if (!$element->propagating && !empty($generatedFields)) {
-                    $siteElements[$element->siteId] = $element;
-                    $siteSettingsRecords[$element->siteId] = $siteSettingsRecord;
+                    // Save the generated fields after the element has been fully propagated,
+                    // so Matrix/CB/etc. have had a chance to save their data via afterElementPropagate()
+                    // (see https://github.com/craftcms/cms/issues/17938)
+                    if (!$element->propagating && !empty($generatedFields)) {
+                        $siteElements[$element->siteId] = $element;
+                        $siteSettingsRecords[$element->siteId] = $siteSettingsRecord;
 
-                    $element->on(Element::EVENT_AFTER_PROPAGATE, function() use ($generatedFields, $siteElements, $siteSettingsRecords) {
-                        foreach ($siteElements as $siteId => $siteElement) {
-                            $siteSettingsRecord = $siteSettingsRecords[$siteId];
-                            $content = $siteSettingsRecord->content ?? [];
-                            if (is_string($content)) {
-                                $content = $content !== '' ? Json::decode($content) : [];
-                            }
-                            $view = Craft::$app->getView();
-                            $generatedFieldValues = [];
-                            $updated = false;
-
-                            foreach ($generatedFields as $field) {
-                                $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement);
-
-                                // handle 'true'/'false'/'null'/int/float values
-                                $value = App::normalizeValue($value) ?? '';
-
-                                if ($value !== ($content[$field['uid']] ?? '')) {
-                                    $updated = true;
+                        $element->on(Element::EVENT_AFTER_PROPAGATE, function() use ($generatedFields, $siteElements, $siteSettingsRecords) {
+                            foreach ($siteElements as $siteId => $siteElement) {
+                                $siteSettingsRecord = $siteSettingsRecords[$siteId];
+                                $content = $siteSettingsRecord->content ?? [];
+                                if (is_string($content)) {
+                                    $content = $content !== '' ? Json::decode($content) : [];
                                 }
-                                if ($value !== '') {
-                                    $content[$field['uid']] = $value;
-                                    if (($field['handle'] ?? '') !== '') {
-                                        $generatedFieldValues[$field['handle']] = $value;
+                                $view = Craft::$app->getView();
+                                $generatedFieldValues = [];
+                                $updated = false;
+
+                                foreach ($generatedFields as $field) {
+                                    $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement);
+
+                                    // handle 'true'/'false'/'null'/int/float values
+                                    $value = App::normalizeValue($value) ?? '';
+
+                                    if ($value !== ($content[$field['uid']] ?? '')) {
+                                        $updated = true;
                                     }
-                                } else {
-                                    unset($content[$field['uid']]);
+                                    if ($value !== '') {
+                                        $content[$field['uid']] = $value;
+                                        if (($field['handle'] ?? '') !== '') {
+                                            $generatedFieldValues[$field['handle']] = $value;
+                                        }
+                                    } else {
+                                        unset($content[$field['uid']]);
+                                    }
+                                }
+
+                                if ($updated) {
+                                    $siteSettingsRecord->content = $content;
+                                    $siteSettingsRecord->save(false, ['content']);
+                                    $siteElement->setGeneratedFieldValues($generatedFieldValues);
                                 }
                             }
+                        });
+                    }
 
-                            if ($updated) {
-                                $siteSettingsRecord->content = $content;
-                                $siteSettingsRecord->save(false, ['content']);
-                                $siteElement->setGeneratedFieldValues($generatedFieldValues);
-                            }
-                        }
-                    });
-                }
-
-                // It's now fully saved and propagated
-                if (
+                    // It's now fully saved and propagated
+                    if (
                     !$element->propagating &&
                     !$element->duplicateOf &&
                     !$element->mergingCanonicalChanges
                 ) {
-                    $element->afterPropagate($isNewElement);
+                        $element->afterPropagate($isNewElement);
 
-                    // Track this element in bulk operations
-                    $this->trackElementInBulkOps($element);
+                        // Track this element in bulk operations
+                        $this->trackElementInBulkOps($element);
+                    }
+
+                    $transaction->commit();
+                } catch (Throwable $e) {
+                    $transaction->rollBack();
+                    $element->firstSave = $originalFirstSave;
+                    $element->isNewForSite = $originalIsNewForSite;
+                    $element->propagateAll = $originalPropagateAll;
+                    $element->dateUpdated = $originalDateUpdated;
+                    if ($e instanceof InvalidConfigException) {
+                        return false;
+                    }
+                    throw $e;
+                } finally {
+                    $this->_updateSearchIndex = $oldUpdateSearchIndex;
+                    $element->newSiteIds = $newSiteIds;
                 }
 
-                $transaction->commit();
-            } catch (Throwable $e) {
-                $transaction->rollBack();
-                $element->firstSave = $originalFirstSave;
-                $element->isNewForSite = $originalIsNewForSite;
-                $element->propagateAll = $originalPropagateAll;
-                $element->dateUpdated = $originalDateUpdated;
-                if ($e instanceof InvalidConfigException) {
-                    return false;
-                }
-                throw $e;
-            } finally {
-                $this->_updateSearchIndex = $oldUpdateSearchIndex;
-                $element->newSiteIds = $newSiteIds;
-            }
-
-            if (!$element->propagating) {
-                // Delete the rows that don't need to be there anymore
-                if (!$isNewElement) {
-                    Db::deleteIfExists(
+                if (!$element->propagating) {
+                    // Delete the rows that don't need to be there anymore
+                    if (!$isNewElement) {
+                        Db::deleteIfExists(
                         Table::ELEMENTS_SITES,
                         [
                             'and',
@@ -4306,46 +4306,46 @@ class Elements extends Component
                             ['not', ['siteId' => array_keys($supportedSites)]],
                         ]
                     );
+                    }
+
+                    // Invalidate any caches involving this element
+                    $this->_invalidateCachesForElementOptimized($element);
                 }
 
-                // Invalidate any caches involving this element
-                $this->_invalidateCachesForElementOptimized($element);
-            }
-
-            // Update search index
-            if ($updateSearchIndex && !$element->getIsRevision() && !ElementHelper::isRevision($element)) {
-                $searchableDirtyFields = array_filter(
+                // Update search index
+                if ($updateSearchIndex && !$element->getIsRevision() && !ElementHelper::isRevision($element)) {
+                    $searchableDirtyFields = array_filter(
                     $dirtyFields,
                     fn(string $handle) => $fieldLayout?->getFieldByHandle($handle)?->searchable,
                 );
 
-                if (
+                    if (
                     !$trackChanges ||
                     !empty($searchableDirtyFields) ||
                     !empty(array_intersect($dirtyAttributes, ElementHelper::searchableAttributes($element)))
                 ) {
-                    // Fire a 'beforeUpdateSearchIndex' event
-                    if ($this->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX)) {
-                        $event = new ElementEvent(['element' => $element]);
-                        $this->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $event);
-                        $isValid = $event->isValid;
-                    } else {
-                        $isValid = true;
-                    }
+                        // Fire a 'beforeUpdateSearchIndex' event
+                        if ($this->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX)) {
+                            $event = new ElementEvent(['element' => $element]);
+                            $this->trigger(self::EVENT_BEFORE_UPDATE_SEARCH_INDEX, $event);
+                            $isValid = $event->isValid;
+                        } else {
+                            $isValid = true;
+                        }
 
-                    if ($isValid) {
-                        $this->updateSearchIndex($element, $searchableDirtyFields, $propagate);
+                        if ($isValid) {
+                            $this->updateSearchIndex($element, $searchableDirtyFields, $propagate);
+                        }
                     }
                 }
-            }
 
-            // Update the changed attributes & fields
-            if ($trackChanges) {
-                $userId = Craft::$app->getUser()->getId();
-                $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
+                // Update the changed attributes & fields
+                if ($trackChanges) {
+                    $userId = Craft::$app->getUser()->getId();
+                    $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
 
-                foreach ($dirtyAttributes as $attributeName) {
-                    if (
+                    foreach ($dirtyAttributes as $attributeName) {
+                        if (
                         $this->_saveOptimizationContext !== null &&
                         !$this->_saveOptimizationContext->rememberChangedAttribute(
                             $element->id,
@@ -4355,10 +4355,10 @@ class Elements extends Component
                             $userId,
                         )
                     ) {
-                        continue;
-                    }
+                            continue;
+                        }
 
-                    Db::upsert(Table::CHANGEDATTRIBUTES, [
+                        Db::upsert(Table::CHANGEDATTRIBUTES, [
                         'elementId' => $element->id,
                         'siteId' => $element->siteId,
                         'attribute' => $attributeName,
@@ -4366,12 +4366,12 @@ class Elements extends Component
                         'propagated' => $element->propagating,
                         'userId' => $userId,
                     ]);
-                }
+                    }
 
-                if ($fieldLayout) {
-                    foreach ($dirtyFields as $fieldHandle) {
-                        if (($field = $fieldLayout->getFieldByHandle($fieldHandle)) !== null) {
-                            if (
+                    if ($fieldLayout) {
+                        foreach ($dirtyFields as $fieldHandle) {
+                            if (($field = $fieldLayout->getFieldByHandle($fieldHandle)) !== null) {
+                                if (
                                 $this->_saveOptimizationContext !== null &&
                                 !$this->_saveOptimizationContext->rememberChangedField(
                                     $element->id,
@@ -4382,10 +4382,10 @@ class Elements extends Component
                                     $userId,
                                 )
                             ) {
-                                continue;
-                            }
+                                    continue;
+                                }
 
-                            Db::upsert(Table::CHANGEDFIELDS, [
+                                Db::upsert(Table::CHANGEDFIELDS, [
                                 'elementId' => $element->id,
                                 'siteId' => $element->siteId,
                                 'fieldId' => $field->id,
@@ -4394,10 +4394,10 @@ class Elements extends Component
                                 'propagated' => $element->propagating,
                                 'userId' => $userId,
                             ]);
+                            }
                         }
                     }
                 }
-            }
             });
         } finally {
             $this->_endSaveOptimizationContext($saveOptimizationContext);
