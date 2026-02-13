@@ -3,21 +3,30 @@
   import MainNav from '@/components/MainNav.vue';
   import EditionInfo from '@/components/EditionInfo.vue';
   import DevModeIndicator from '@/components/DevModeIndicator.vue';
+  import {watch, computed, nextTick} from 'vue';
 
   const emit = defineEmits<{
     (e: 'close'): void;
     (e: 'dock'): void;
   }>();
-  withDefaults(
-    defineProps<{
-      mode: 'docked' | 'floating' | 'collapsed';
-      visibility: 'hidden' | 'visible';
-    }>(),
-    {
-      mode: 'floating',
-      visibility: 'hidden',
+
+  const { mode = 'floating', visibility = 'hidden' } = defineProps<{
+    mode: 'docked' | 'floating' | 'collapsed';
+    visibility: 'hidden' | 'visible';
+  }>();
+
+  const shouldManageFocus = computed(() => {
+    return mode === 'floating';
+  });
+
+  watch(() => visibility, async (newVal) => {
+    if (shouldManageFocus.value && newVal === 'visible') {
+      await nextTick();
+      const sidebar = document.querySelector('.cp-sidebar') as HTMLElement;
+      const firstFocusable = sidebar.querySelector('button, [href], [tabindex]:not([tabindex="-1"])') as HTMLElement;
+      firstFocusable?.focus();
     }
-  );
+  });
 </script>
 
 <template>
