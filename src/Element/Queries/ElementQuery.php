@@ -1053,6 +1053,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             }
         }
 
+        $this->applyStructureParams($this);
         $this->applyOrderByParams($this);
         $this->applyUniqueParams($this);
 

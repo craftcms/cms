@@ -120,10 +120,6 @@ trait QueriesStructures
 
     protected function initQueriesStructures(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
-            $this->applyStructureParams($elementQuery);
-        });
-
         $this->afterQuery(function (mixed $result) {
             if (! $result instanceof Collection) {
                 return $result;
