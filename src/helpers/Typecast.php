@@ -175,9 +175,7 @@ final class Typecast
 
     private static function resolveUnionType(ReflectionUnionType $type): array|false
     {
-        $names = array_map(function(ReflectionNamedType $t) {
-            return $t->getName();
-        }, $type->getTypes());
+        $names = array_map(fn(ReflectionNamedType $t) => $t->getName(), $type->getTypes());
 
         sort($names);
 
