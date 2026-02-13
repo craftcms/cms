@@ -12,7 +12,7 @@
       "_lit-element.js",
       "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
       "_nav-item.ts.js",
-      "_progress-CM21Jrvu.js",
+      "_progress-_2Azn7-n.js",
       "_Modal.js",
       "_index.js"
     ],
@@ -32,7 +32,7 @@
       "_lit-element.js",
       "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
       "_nav-item.ts.js",
-      "_progress-CM21Jrvu.js",
+      "_progress-_2Azn7-n.js",
       "__plugin-vue_export-helper.js"
     ],
     "css": [
@@ -112,9 +112,9 @@
       "_property.js"
     ]
   },
-  "_progress-CM21Jrvu.js": {
-    "file": "progress-CM21Jrvu.js",
-    "name": "progress-CM21Jrvu",
+  "_progress-_2Azn7-n.js": {
+    "file": "progress-_2Azn7-n.js",
+    "name": "progress-_2Azn7-n",
     "imports": [
       "_state.js",
       "_lit-element.js",
@@ -794,7 +794,7 @@
       "_custom-element.js",
       "_state.js",
       "resources/js/legacy.ts",
-      "_progress-CM21Jrvu.js",
+      "_progress-_2Azn7-n.js",
       "_property.js",
       "_index2.js"
     ]
@@ -813,7 +813,7 @@
       "_nav-item.ts.js",
       "_custom-element.js",
       "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_progress-CM21Jrvu.js"
+      "_progress-_2Azn7-n.js"
     ],
     "dynamicImports": [
       "node_modules/@lion/ui/components/form-core/translations/bg-BG.js",
@@ -935,7 +935,7 @@
       "_lit-element.js",
       "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
       "_nav-item.ts.js",
-      "_progress-CM21Jrvu.js",
+      "_progress-_2Azn7-n.js",
       "__plugin-vue_export-helper.js",
       "_index2.js",
       "_Modal.js",
@@ -964,7 +964,7 @@
       "_lit-element.js",
       "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
       "_nav-item.ts.js",
-      "_progress-CM21Jrvu.js",
+      "_progress-_2Azn7-n.js",
       "__plugin-vue_export-helper.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
       "_index.js",
@@ -989,7 +989,7 @@
       "_lit-element.js",
       "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
       "_nav-item.ts.js",
-      "_progress-CM21Jrvu.js",
+      "_progress-_2Azn7-n.js",
       "__plugin-vue_export-helper.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
       "_index2.js",
@@ -1013,7 +1013,7 @@
       "_lit-element.js",
       "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
       "_nav-item.ts.js",
-      "_progress-CM21Jrvu.js",
+      "_progress-_2Azn7-n.js",
       "__plugin-vue_export-helper.js",
       "_TransitionFade.js",
       "_Badge.vue_vue_type_script_setup_true_lang.js",
@@ -1036,7 +1036,7 @@
       "_lit-element.js",
       "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
       "_nav-item.ts.js",
-      "_progress-CM21Jrvu.js",
+      "_progress-_2Azn7-n.js",
       "__plugin-vue_export-helper.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
       "_Badge.vue_vue_type_script_setup_true_lang.js",
