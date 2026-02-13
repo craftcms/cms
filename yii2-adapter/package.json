@@ -10,7 +10,7 @@
     "check-prettier": "prettier --check ./legacy/web/assets",
     "fix-prettier": "prettier --write ./legacy/web/assets",
     "prepare": "husky",
-    "lint:styles": "stylelint \"src/**/*.scss\""
+    "lint:styles": "stylelint \"legacy/**/*.scss\""
   },
   "engines": {
     "node": ">=20"
