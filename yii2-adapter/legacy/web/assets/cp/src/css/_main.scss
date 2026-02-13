@@ -2882,7 +2882,7 @@ div.btn.submit input {
       color: var(--fg-subtle);
       cursor: default;
       overflow: auto;
-      word-wrap: break-word;
+      overflow-wrap: break-word;
       hyphens: auto;
 
       &[data-toggle='on'] {
@@ -6093,6 +6093,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   }
 
   .data {
+    overflow-wrap: break-word;
     word-wrap: break-word;
   }
 
