@@ -23,6 +23,7 @@ final class Site extends BaseModel
 
     protected $table = Table::SITES;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

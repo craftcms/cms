@@ -66,7 +66,7 @@ final class Config
             return $value($siteHandle);
         }
 
-        if (array_key_exists($siteHandle, $value)) {
+        if (array_key_exists((string) $siteHandle, $value)) {
             return $value[$siteHandle];
         }
 

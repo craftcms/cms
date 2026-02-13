@@ -80,6 +80,7 @@ final class SectionSiteSettings extends Component
         return $site;
     }
 
+    #[\Override]
     public function getRules(): array
     {
         return [

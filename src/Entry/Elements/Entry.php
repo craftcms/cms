@@ -144,6 +144,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return 'entry';
     }
 
+    #[\Override]
     public static function hasDrafts(): bool
     {
         return true;
@@ -1796,6 +1797,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $entry;
     }
 
+    #[\Override]
     public function hasRevisions(): bool
     {
         $section = $this->getSection();

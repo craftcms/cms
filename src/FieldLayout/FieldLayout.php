@@ -174,6 +174,7 @@ class FieldLayout extends Component
         return $layout;
     }
 
+    #[\Override]
     public function getRules(): array
     {
         return [
@@ -184,6 +185,7 @@ class FieldLayout extends Component
         ];
     }
 
+    #[\Override]
     public function getAttributes(): array
     {
         return array_merge($this->traitGetAttributes(), [

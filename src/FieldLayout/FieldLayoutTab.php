@@ -137,6 +137,7 @@ class FieldLayoutTab extends FieldLayoutComponent
         return Arr::except(parent::fields(), ['sortOrder']);
     }
 
+    #[\Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [

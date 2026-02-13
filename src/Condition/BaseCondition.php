@@ -573,6 +573,7 @@ JS,
             ]);
     }
 
+    #[\Override]
     public function getRules(): array
     {
         return [

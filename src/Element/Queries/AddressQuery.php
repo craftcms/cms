@@ -885,6 +885,7 @@ final class AddressQuery extends ElementQuery
         return $this;
     }
 
+    #[\Override]
     protected function fieldLayouts(): Collection
     {
         return new Collection([

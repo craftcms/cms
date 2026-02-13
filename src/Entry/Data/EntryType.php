@@ -195,6 +195,7 @@ JS, [
         return $items;
     }
 
+    #[\Override]
     public function getRules(): array
     {
         $rules = [

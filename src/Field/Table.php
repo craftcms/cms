@@ -259,6 +259,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -565,7 +566,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                     $cellValue = $defaults[$rowIndex][$colId] ?? '';
                 } elseif (array_key_exists($colId, $row)) {
                     $cellValue = $row[$colId];
-                } elseif ($col['handle'] && array_key_exists($col['handle'], $row)) {
+                } elseif ($col['handle'] && array_key_exists((string) $col['handle'], $row)) {
                     $cellValue = $row[$col['handle']];
                 } else {
                     $cellValue = null;

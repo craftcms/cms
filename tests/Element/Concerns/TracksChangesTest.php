@@ -16,6 +16,7 @@ class TestTracksChangesElement extends Element
         return 'Test Element';
     }
 
+    #[\Override]
     public static function find(): ElementQuery
     {
         return new ElementQuery(static::class);
@@ -24,6 +25,7 @@ class TestTracksChangesElement extends Element
 
 class TestTracksChangesEnabledElement extends TestTracksChangesElement
 {
+    #[\Override]
     public static function trackChanges(): bool
     {
         return true;

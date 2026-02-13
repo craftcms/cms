@@ -168,6 +168,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);

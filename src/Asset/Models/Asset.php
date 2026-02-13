@@ -22,6 +22,7 @@ final class Asset extends BaseModel
 
     public $incrementing = false;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

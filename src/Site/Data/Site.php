@@ -91,6 +91,7 @@ final class Site extends Component implements Chippable, Stringable
         return Sites::getSiteById($id);
     }
 
+    #[\Override]
     public function getRules(): array
     {
         return [
@@ -257,6 +258,7 @@ final class Site extends Component implements Chippable, Stringable
         ];
     }
 
+    #[\Override]
     public function toArray(array $fields = [], array $expand = [], bool $recursive = true): array
     {
         return array_merge(parent::toArray($fields, $expand, $recursive), [

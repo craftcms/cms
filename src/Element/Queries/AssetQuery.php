@@ -173,6 +173,7 @@ final class AssetQuery extends ElementQuery
         });
     }
 
+    #[\Override]
     public function createElement(array $row): ElementInterface
     {
         // Use the site-specific alt text, if set
@@ -185,6 +186,7 @@ final class AssetQuery extends ElementQuery
         return parent::createElement($row);
     }
 
+    #[\Override]
     protected function cacheTags(): array
     {
         $tags = [];
@@ -198,6 +200,7 @@ final class AssetQuery extends ElementQuery
         return $tags;
     }
 
+    #[\Override]
     protected function fieldLayouts(): Collection
     {
         if (! $this->volumeId) {

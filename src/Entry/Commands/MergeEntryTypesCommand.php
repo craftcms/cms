@@ -312,6 +312,7 @@ final class MergeEntryTypesCommand extends Command implements PromptsForMissingI
         return $modified;
     }
 
+    #[\Override]
     protected function promptForMissingArgumentsUsing(): array
     {
         $options = app(EntryTypes::class)->getAllEntryTypes()

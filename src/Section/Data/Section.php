@@ -111,6 +111,7 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
         return $this->id;
     }
 
+    #[\Override]
     public function getRules(): array
     {
         return [

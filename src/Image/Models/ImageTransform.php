@@ -14,6 +14,7 @@ final class ImageTransform extends BaseModel
 
     protected $table = Table::IMAGETRANSFORMS;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

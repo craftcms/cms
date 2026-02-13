@@ -129,12 +129,14 @@ final class UserQuery extends ElementQuery
      *     ->all();
      * ```
      */
+    #[\Override]
     public function status(array|string|null $value): static
     {
         /** @var static */
         return parent::status($value);
     }
 
+    #[\Override]
     protected function statusCondition(string $status): Closure
     {
         return match ($status) {
