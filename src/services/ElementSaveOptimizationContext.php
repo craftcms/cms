@@ -11,9 +11,6 @@ use craft\base\ElementInterface;
 
 /**
  * Request-scoped save optimization context.
- *
- * @internal
- * @since 5.8.0
  */
 final class ElementSaveOptimizationContext
 {

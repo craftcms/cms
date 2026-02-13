@@ -1265,8 +1265,10 @@ class Elements extends Component
     }
 
     /**
-     * @internal
-     * @since 5.8.0
+     * Returns whether a nested element save should run for the current save cycle.
+     *
+     * This prevents duplicate nested saves when the same owner, nested element,
+     * manager, and sort order have already been processed.
      */
     public function shouldSaveNestedElement(
         ElementInterface $owner,

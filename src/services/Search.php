@@ -120,13 +120,15 @@ class Search extends Component
 
     /**
      * @var int
-     * @since 5.8.0
+     *
+     * Tracks nested queue-batch scope depth so callers can start/end batching safely.
      */
     private int $_indexQueueBatchDepth = 0;
 
     /**
      * @var array<string,array{element:ElementInterface,allFields:bool,fieldHandles:array<string,bool>}>
-     * @since 5.8.0
+     *
+     * Collects queued element/index requests within a batch and merges field handles per element/site.
      */
     private array $_queuedIndexElements = [];
 
@@ -264,7 +266,7 @@ class Search extends Component
     }
 
     /**
-     * @since 5.8.0
+     * Starts a queue-index batching scope.
      */
     public function beginIndexQueueBatch(): void
     {
@@ -272,7 +274,7 @@ class Search extends Component
     }
 
     /**
-     * @since 5.8.0
+     * Ends a queue-index batching scope and flushes merged requests when the outermost scope ends.
      */
     public function endIndexQueueBatch(): void
     {
