@@ -42,6 +42,7 @@ final class RepairSectionStructureCommand extends RepairCommand implements Promp
         return $this->repairStructure($section->structureId, Entry::find()->section($section));
     }
 
+    /** @return array<string, \Closure(): mixed> */
     #[\Override]
     protected function promptForMissingArgumentsUsing(): array
     {

@@ -320,7 +320,9 @@ final class UserPermissions
 
         // Cache the new permissions
         $this->permissionsByUserId ??= collect();
-        $this->permissionsByUserId[$userId] = $groupPermissions->merge($permissions)->unique();
+        /** @var Collection<string> $userPermissions */
+        $userPermissions = $groupPermissions->merge($permissions)->unique();
+        $this->permissionsByUserId[$userId] = $userPermissions;
 
         event(new UserPermissionsSaved($userId, $permissions));
 

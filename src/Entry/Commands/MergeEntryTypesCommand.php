@@ -312,6 +312,7 @@ final class MergeEntryTypesCommand extends Command implements PromptsForMissingI
         return $modified;
     }
 
+    /** @return array<string, \Closure(): mixed> */
     #[\Override]
     protected function promptForMissingArgumentsUsing(): array
     {

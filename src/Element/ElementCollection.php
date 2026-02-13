@@ -146,6 +146,7 @@ final class ElementCollection extends Collection
      * Any elements with a matching ID and site ID will be replaced.
      *
      * @param  iterable<array-key,TElement>  $items
+     * @return self<TKey, TElement>
      */
     #[Override]
     public function merge($items): self

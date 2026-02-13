@@ -63,6 +63,7 @@ final class DeleteCommand extends Command implements PromptsForMissingInput
         return self::SUCCESS;
     }
 
+    /** @return array<string, \Closure(): mixed> */
     #[\Override]
     protected function promptForMissingArgumentsUsing(): array
     {
