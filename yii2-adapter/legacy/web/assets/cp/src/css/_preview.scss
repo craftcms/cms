@@ -21,16 +21,18 @@
     height: 44px;
 
     @supports (backdrop-filter: blur(10px)) {
-      position: absolute;
-      z-index: 2;
-      inset-block-start: 0;
-      inset-inline-start: 0;
-      width: 100%;
-      background-color: color.adjust(mixins.$grey100, $alpha: -0.25);
-      backdrop-filter: blur(10px);
+      & {
+        position: absolute;
+        z-index: 2;
+        inset-block-start: 0;
+        inset-inline-start: 0;
+        width: 100%;
+        background-color: color.adjust(mixins.$grey100, $alpha: -0.25);
+        backdrop-filter: blur(10px);
 
-      & + .lp-content {
-        padding-block-start: #{44 + 24}px;
+        & + .lp-content {
+          padding-block-start: #{44 + 24}px;
+        }
       }
     }
 
