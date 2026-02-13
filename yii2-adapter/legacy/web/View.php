@@ -197,11 +197,6 @@ class View extends \yii\web\View
     private array $_objectTemplates = [];
 
     /**
-     * @var array|null
-     */
-    private ?array $_templateRoots = null;
-
-    /**
      * @var string|null
      */
     private ?string $_namespace = null;
