@@ -5,8 +5,8 @@ import {classMap} from 'lit/directives/class-map.js';
 import '@shoelace-style/shoelace/dist/components/visually-hidden/visually-hidden.js';
 
 /**
- * @summary A badge indicator component. Used in various places to indicate that 
- * something is new or has been updated. The indicator can have an optional 
+ * @summary A badge indicator component. Used in various places to indicate that
+ * something is new or has been updated. The indicator can have an optional
  * notification count.
  */
 
@@ -30,7 +30,8 @@ export default class CraftBadgeIndicator extends LitElement {
 
   constructor() {
     super();
-    this.id = this.id || Math.floor(Math.random() * 1000000000).toString();
+    this.id =
+      this.id || `badge-${Math.floor(Math.random() * 1000000000).toString()}`;
   }
 
   private showCount() {
@@ -57,35 +58,39 @@ export default class CraftBadgeIndicator extends LitElement {
     return `${this.id}-label`;
   }
 
-  private getBadgeContents() {
+  private renderBadgeContents() {
     return html`
       ${this.showCount()
         ? html`
-          <span class="number">${this.truncatedNumber()}</span>
-          <sl-visually-hidden> ${this.badgeCountSuffix}</sl-visually-hidden>
-        ` : nothing}
+            <span class="number">${this.truncatedNumber()}</span>
+            <sl-visually-hidden>${this.badgeCountSuffix}</sl-visually-hidden>
+          `
+        : nothing}
       ${this.altText
         ? html`
-          <sl-visually-hidden id=${this.getLabelId()}>${this.altText}</sl-visually-hidden>
-        ` : nothing}
+            <sl-visually-hidden id=${this.getLabelId()}
+              >${this.altText}</sl-visually-hidden
+            >
+          `
+        : nothing}
     `;
   }
 
   override render() {
     return html`
-      <div 
+      <div
         part="badge"
         id=${this.id}
         class="${classMap({
-          'secondary': this.variant === 'secondary',
-          'inverse': this.variant === 'inverse',
           'badge-indicator': true,
           'badge-indicator--with-number': this.showCount(),
+          'badge-indicator--secondary': this.variant === 'secondary',
+          'badge-indicator--inverse': this.variant === 'inverse'
         })}"
         role="${this.getBadgeRole()}"
-        aria-labelledby="${this.altText ? this.getLabelId() : nothing }"
+        aria-labelledby="${this.altText ? this.getLabelId() : nothing}"
       >
-        ${this.getBadgeContents()}
+        ${this.renderBadgeContents()}
       </div>
     `;
   }

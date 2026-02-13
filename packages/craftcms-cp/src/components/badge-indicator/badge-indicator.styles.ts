@@ -16,18 +16,18 @@ export default css`
     border: 2px solid var(--c-fg-white);
   }
 
-  .secondary {
+  .badge-indicator--secondary {
     --badge-color: var(--c-color-brand-bg-emphasis);
   }
 
-  .inverse {
+  .badge-indicator--inverse {
     --badge-color: var(--c-color-neutral-bg-normal);
     --text-color: var(--c-fg-text);
   }
   
   .badge-indicator--with-number {
     --badge-size: var(--c-size-icon-md);
-    padding: calc(6rem / 16);
+    padding: calc(2rem / 16);
   }
   
   .number {
