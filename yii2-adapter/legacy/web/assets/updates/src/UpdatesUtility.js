@@ -117,7 +117,7 @@ import './updates.scss';
           $('<input/>', {
             type: 'hidden',
             name: 'install[' + updates[i].updateInfo.handle + ']',
-            value: updates[i].updateInfo.latestVersion,
+            value: `^${updates[i].updateInfo.latestVersion}`,
           })
         );
         $form.append(

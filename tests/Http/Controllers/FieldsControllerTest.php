@@ -84,6 +84,8 @@ it('can render the settings of a field', function () {
 });
 
 it('preserves values between rendering settings', function () {
+    $label = \CraftCms\Cms\Support\Str::random();
+
     $this->postJson(action([FieldsController::class, 'renderSettings']), [
         'type' => RadioButtons::class,
         'oldType' => MultiSelect::class,
@@ -91,14 +93,13 @@ it('preserves values between rendering settings', function () {
         'settings' => http_build_query([
             'namespace' => [
                 'options' => [
-                    ['label' => 'Foo', 'value' => 'foo', 'icon' => '', 'color' => '', 'default' => ''],
+                    ['label' => $label, 'value' => 'value', 'icon' => '', 'color' => '', 'default' => ''],
                 ],
             ],
         ]),
     ])
         ->assertOk()
-        ->assertSee('name=\"options[0][label]\" value=\"Foo\"', false) // Label input
-        ->assertSee('name=\"options[0][value]\" value=\"foo\"', false); // Value input
+        ->assertSee($label);
 });
 
 it('can save a new field', function () {

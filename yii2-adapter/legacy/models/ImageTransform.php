@@ -18,6 +18,7 @@ use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Cms;
 use DateTime;
+use Illuminate\Support\Facades\Log;
 use function CraftCms\Cms\t;
 
 /**
@@ -177,6 +178,7 @@ class ImageTransform extends Model
         $rules = parent::defineRules();
         $rules[] = [['id', 'width', 'height', 'quality'], 'number', 'integerOnly' => true];
         $rules[] = [['parameterChangeTime'], DateTimeValidator::class];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['handle'], 'string', 'max' => 255];
         $rules[] = [['name', 'handle', 'mode', 'position'], 'required'];
         $rules[] = [['handle'], 'string', 'max' => 255];
@@ -299,7 +301,7 @@ class ImageTransform extends Model
     public function setTransformer(string $transformer): void
     {
         if (!is_subclass_of($transformer, ImageTransformerInterface::class)) {
-            Craft::warning("Invalid image transformer: $transformer", __METHOD__);
+            Log::warning("Invalid image transformer: $transformer", [__METHOD__]);
             $transformer = self::DEFAULT_TRANSFORMER;
         }
 

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use craft\elements\Entry;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Elements\Entry;
 
 beforeEach(function () {
     $this->elementSources = app(ElementSources::class);

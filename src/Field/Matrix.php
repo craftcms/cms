@@ -4,41 +4,40 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\errors\InvalidFieldException;
 use craft\events\BulkElementsEvent;
-use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\Cp;
 use craft\helpers\Gql;
-use craft\helpers\Queue;
-use craft\queue\jobs\ApplyNewPropagationMethod;
-use craft\queue\jobs\ResaveElements;
-use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
-use CraftCms\Cms\Database\Queries\EntryQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -54,15 +53,16 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use InvalidArgumentException;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -87,27 +87,18 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
     public const string VIEW_MODE_INDEX = 'index';
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Matrix');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'binary';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function supportedTranslationMethods(): array
     {
@@ -117,27 +108,18 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): array|string|null
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
@@ -272,9 +254,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
      */
     private NestedElementManager $_entryManager;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // Config normalization
@@ -295,11 +274,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         if (array_key_exists('maxBlocks', $config)) {
             $config['maxEntries'] = Arr::pull($config, 'maxBlocks');
         }
-
-        if (! empty($config['showCardsInGrid']) && ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS) {
-            $config['viewMode'] = self::VIEW_MODE_CARDS_GRID;
-        }
-        $config['showCardsInGrid'] = ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS_GRID;
 
         parent::__construct($config);
 
@@ -330,17 +304,11 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function settingsAttributes(): array
     {
         return Arr::except(parent::settingsAttributes(), 'localizeEntries');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettings(): array
     {
         $settings = parent::getSettings();
@@ -353,7 +321,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'entryTypes' => ['array', 'min:1'],
@@ -369,7 +337,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         ]);
     }
 
-    public function afterValidate(Validator $validator): void
+    public function afterValidate(?Validator $validator = null): void
     {
         foreach ($this->siteSettings as $uid => &$siteSettings) {
             unset($siteSettings['errors']);
@@ -382,7 +350,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                     $error = str_replace(t('the input value'), t('Entry URI Format'), $error);
                     $siteSettings['errors']['uriFormat'][] = $error;
 
-                    $validator->errors()->add("siteSettings[$uid].uriFormat", $error);
+                    $validator?->errors()->add("siteSettings[$uid].uriFormat", $error);
                 }
             }
 
@@ -439,22 +407,18 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     {
         $entryTypes = $this->_entryTypes;
 
-        // Fire a 'defineEntryTypes' event
-        if ($this->hasComponentListeners(self::EVENT_DEFINE_ENTRY_TYPES)) {
-            $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event = new DefineEntryTypesForField(
-                field: $this,
-                entryTypes: $entryTypes,
-                element: $element,
-                value: $value,
-            ));
-            $entryTypes = $event->entryTypes;
-        }
+        $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event = new DefineEntryTypesForField(
+            field: $this,
+            entryTypes: $entryTypes,
+            element: $element,
+            value: $value,
+        ));
 
-        if (empty($entryTypes)) {
+        if (empty($event->entryTypes)) {
             throw new InvalidConfigException('At least one entry type is required.');
         }
 
-        return array_values($entryTypes);
+        return array_values($event->entryTypes);
     }
 
     /**
@@ -471,17 +435,11 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         )));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldLayoutProviders(): array
     {
         return $this->_entryTypes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUriFormatForElement(NestedElementInterface $element): ?string
     {
         $site = $element->getSite();
@@ -489,9 +447,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $this->siteSettings[$site->uid]['uriFormat'] ?? null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getRouteForElement(NestedElementInterface $element): mixed
     {
         $site = $element->getSite();
@@ -506,9 +461,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSupportedSitesForElement(NestedElementInterface $element): array
     {
         try {
@@ -524,9 +476,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $this->entryManager()->getSupportedSiteIds($owner);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canViewElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -534,9 +483,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $owner && Craft::$app->getElements()->canView($owner, $user);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canSaveElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -562,9 +508,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canDuplicateElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -577,9 +520,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return ! $this->maxEntriesReached($owner);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canDeleteElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -591,9 +531,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): bool
     {
         return false;
@@ -622,17 +559,11 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $value->count();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -649,7 +580,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             'allowOverrides' => true,
             'create' => true,
             'jsClass' => 'Craft.GroupedEntryTypeSelectInput',
-            'errors' => $this->getErrors('entryTypes'),
+            'errors' => $this->errors()->get('entryTypes'),
             'data' => [
                 'error-key' => 'entryTypes',
                 'disabled' => $readOnly,
@@ -687,18 +618,12 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
@@ -765,9 +690,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $query;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): array
     {
@@ -791,9 +713,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $serialized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): array
     {
@@ -817,35 +736,23 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $serialized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): string
     {
         return EmptyFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->entryManager()->getIsTranslatable($element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function actionMenuItems(): array
     {
@@ -916,7 +823,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu.on('show', () => {
+    disclosureMenu?.on('show', () => {
       let blocks = getBlocks();
       let expandLabel, collapseLabel;
       if (blocks.is('.sel')) {
@@ -997,13 +904,13 @@ JS);
 
   if (!field.length) {
     setTimeout(() => {
-      menu.data('disclosureMenu').removeItem(btn[0]);
+      menu.data('disclosureMenu')?.removeItem(btn[0]);
     }, 1);
     return;
   }
 
   const getEntries = () => {
-    const entries = field.find($entrySelector);
+    const entries = field.find($entrySelector)
     const selectedEntries = entries.filter('.sel');
     return (selectedEntries.length ? selectedEntries : entries).toArray();
   };
@@ -1018,13 +925,13 @@ JS);
           revisionId: element.data('revisionId'),
           ownerId: element.data('ownerId'),
           siteId: element.data('siteId'),
-        };
+        }
     }));
   });
 
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu.on('show', () => {
+    disclosureMenu?.on('show', () => {
       const entries = getEntries();
       let copyLabel;
       if ($(entries).is('.sel')) {
@@ -1101,7 +1008,7 @@ JS;
 
   if (!field.length) {
     setTimeout(() => {
-      menu.data('disclosureMenu').removeItem(btn[0]);
+      menu.data('disclosureMenu')?.removeItem(btn[0]);
     }, 1);
     return;
   }
@@ -1114,7 +1021,7 @@ JS;
 
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu.on('show', () => {
+    disclosureMenu?.on('show', () => {
       disclosureMenu.toggleItem(btn[0], !!getEntries().length);
     });
   }, 1);
@@ -1131,9 +1038,6 @@ JS, [
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTranslationDescription(?ElementInterface $element): ?string
     {
@@ -1141,8 +1045,6 @@ JS, [
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InvalidConfigException
      */
     #[Override]
@@ -1151,9 +1053,6 @@ JS, [
         return $this->inputHtmlInternal($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
@@ -1212,7 +1111,7 @@ JS, [
         $createDefaultEntries = (
             $this->minEntries != 0 &&
             count($entryTypeInfo) === 1 &&
-            ! $element->hasErrors($this->handle)
+            ! $element->errors()->has($this->handle)
         );
         $staticEntries = (
             $static ||
@@ -1331,7 +1230,7 @@ JS,
                 'maxElements' => $this->maxEntries,
             ];
 
-            if ($owner->hasErrors($this->handle)) {
+            if ($owner->errors()->has($this->handle)) {
                 $config['prevalidate'] = true;
             }
         }
@@ -1347,7 +1246,8 @@ JS,
             ]),
             'showHeaderColumn' => Collection::make($entryTypes)->contains(fn (EntryType $entryType) => (
                 $entryType->hasTitleField ||
-                $entryType->titleFormat
+                $entryType->titleFormat ||
+                $entryType->uiLabelFormat !== '{title}'
             )),
             'pageSize' => $this->pageSize ?? 50,
             'storageKey' => sprintf('field:%s', $this->uid),
@@ -1380,24 +1280,22 @@ JS,
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
-    public function getElementValidationRules(): array
+    public function getElementRules(ElementInterface $element): array
     {
+        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+            return [];
+        }
+
         return [
-            [
-                $this->validateEntries(...),
-                'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
-                'skipOnEmpty' => false,
-            ],
+            fn (
+                string $attribute,
+                EntryQuery|ElementCollection $value,
+                Closure $fail,
+            ) => $this->validateEntries($element, $attribute, $value, $fail),
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
@@ -1405,10 +1303,8 @@ JS,
         return $value->count() === 0;
     }
 
-    private function validateEntries(ElementInterface $element): void
+    private function validateEntries(ElementInterface $element, string $attribute, EntryQuery|ElementCollection $value, Closure $fail): void
     {
-        /** @var EntryQuery|ElementCollection $value */
-        $value = $element->getFieldValue($this->handle);
         $new = 0;
 
         if ($value instanceof EntryQuery) {
@@ -1421,17 +1317,15 @@ JS,
                 ->all();
 
             $invalidEntryIds = [];
-            $scenario = $element->getScenario();
 
             foreach ($entries as $entry) {
                 $entry->setOwner($element);
 
-                /** @var Entry $entry */
                 if (
-                    $scenario === Element::SCENARIO_ESSENTIALS ||
-                    ($entry->enabled && $scenario === Element::SCENARIO_LIVE)
+                    $element->inScenarios(Element::SCENARIO_ESSENTIALS) ||
+                    ($entry->enabled && $element->inScenarios(Element::SCENARIO_LIVE))
                 ) {
-                    $entry->setScenario($scenario);
+                    $entry->setScenario($element->getScenario());
                 }
 
                 if (! $entry->validate()) {
@@ -1452,7 +1346,7 @@ JS,
                 if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
                     // in card/index modes, we want to show a top level error to let users know
                     // that there are validation errors in the nested entries
-                    $element->addError($this->handle, t('Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
+                    $fail(t('Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
                         'count' => count($invalidEntryIds),
                         'fieldName' => $this->getUiLabel(),
                     ]));
@@ -1463,32 +1357,37 @@ JS,
         }
 
         if (
-            $element->getScenario() === Element::SCENARIO_LIVE &&
+            $element->inScenarios(Element::SCENARIO_LIVE) &&
             ($this->minEntries || $this->maxEntries)
         ) {
-            $arrayValidator = new ArrayValidator([
-                'min' => $this->minEntries ?: null,
-                'max' => $this->maxEntries ?: null,
-                'tooFew' => $this->minEntries ? t('{attribute} should contain at least {min, number} {min, plural, one{entry} other{entries}}.', [
+            $rules = array_filter([
+                $this->minEntries ? "min:$this->minEntries" : null,
+                $this->maxEntries ? "max:$this->maxEntries" : null,
+            ]);
+
+            $messages = array_filter([
+                "$attribute.min" => $this->minEntries ? t('{attribute} should contain at least {min, number} {min, plural, one{entry} other{entries}}.', [
                     'attribute' => t($this->name, category: 'site'),
                     'min' => $this->minEntries, // Need to pass this in now
                 ]) : null,
-                'tooMany' => $this->maxEntries ? t('{attribute} should contain at most {max, number} {max, plural, one{entry} other{entries}}.', [
+                "$attribute.max" => $this->maxEntries ? t('{attribute} should contain at most {max, number} {max, plural, one{entry} other{entries}}.', [
                     'attribute' => t($this->name, category: 'site'),
                     'max' => $this->maxEntries, // Need to pass this in now
                 ]) : null,
-                'skipOnEmpty' => false,
             ]);
 
-            if (! $arrayValidator->validate($entries, $error)) {
-                $element->addError($this->handle, $error);
+            $v = ValidatorFacade::make(
+                data: [$attribute => $entries],
+                rules: [$attribute => $rules],
+                messages: $messages
+            );
+
+            foreach ($v->errors()->get($attribute) as $error) {
+                $fail($error);
             }
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
@@ -1496,8 +1395,6 @@ JS,
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return EagerLoadingMap
      */
     public function getEagerLoadingMap(array $sourceElements): array
@@ -1540,9 +1437,6 @@ JS,
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
     {
@@ -1565,9 +1459,6 @@ JS,
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterMergeFrom(FieldInterface $outgoingField): void
     {
@@ -1581,9 +1472,6 @@ JS,
         parent::afterMergeFrom($outgoingField);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -1606,10 +1494,7 @@ JS,
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getEagerLoadingGqlConditions(): array
     {
         return [
@@ -1617,9 +1502,6 @@ JS,
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
@@ -1627,8 +1509,6 @@ JS,
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InvalidArgumentException
      */
     public function getGqlFragmentEntityByName(string $fragmentName): GqlInlineFragmentInterface
@@ -1647,9 +1527,6 @@ JS,
     // Events
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterSave(bool $isNew): void
     {
@@ -1659,15 +1536,15 @@ JS,
                 ?? PropagationMethod::All;
             $oldPropagationKeyFormat = $this->oldSettings['propagationKeyFormat'] ?? null;
             if ($this->propagationMethod !== $oldPropagationMethod || $this->propagationKeyFormat !== $oldPropagationKeyFormat) {
-                Queue::push(new ApplyNewPropagationMethod([
-                    'description' => I18N::prep('Applying new propagation method to {name} entries', [
-                        'name' => $this->name,
-                    ]),
-                    'elementType' => Entry::class,
-                    'criteria' => [
+                dispatch(new ApplyNewPropagationMethod(
+                    elementType: Entry::class,
+                    criteria: [
                         'fieldId' => $this->id,
                     ],
-                ]));
+                    description: I18N::prep('Applying new propagation method to {name} entries', [
+                        'name' => $this->name,
+                    ]),
+                ));
             } else {
                 $resaveSiteIds = [];
 
@@ -1680,12 +1557,9 @@ JS,
                 }
 
                 if (! empty($resaveSiteIds)) {
-                    Queue::push(new ResaveElements([
-                        'description' => I18N::prep('Resaving {name} entries', [
-                            'name' => $this->name,
-                        ]),
-                        'elementType' => Entry::class,
-                        'criteria' => [
+                    dispatch(new ResaveElements(
+                        elementType: Entry::class,
+                        criteria: [
                             'fieldId' => $this->id,
                             'siteId' => $resaveSiteIds,
                             'unique' => true,
@@ -1694,7 +1568,10 @@ JS,
                             'provisionalDrafts' => null,
                             'revisions' => null,
                         ],
-                    ]));
+                        description: I18N::prep('Resaving {name} entries', [
+                            'name' => $this->name,
+                        ]),
+                    ));
                 }
             }
         }
@@ -1702,9 +1579,6 @@ JS,
         parent::afterSave($isNew);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
@@ -1739,9 +1613,6 @@ JS,
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeElementDelete(ElementInterface $element): bool
     {
@@ -1755,9 +1626,6 @@ JS,
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
@@ -1776,9 +1644,6 @@ JS,
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterElementRestore(ElementInterface $element): void
     {

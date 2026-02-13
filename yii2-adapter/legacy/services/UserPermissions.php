@@ -13,12 +13,14 @@ use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\RegisterUserPermissions;
 use CraftCms\Cms\User\Events\UserGroupPermissionsSaved;
 use CraftCms\Cms\User\Events\UserPermissionsSaved;
 use CraftCms\Cms\User\UserPermissions as UserPermissionsService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use yii\base\Component;
 
@@ -229,9 +231,10 @@ class UserPermissions extends Component
                 Craft::$app->getUserPermissions()->trigger(self::EVENT_REGISTER_PERMISSIONS, $yiiEvent);
 
                 $event->permissions = collect($yiiEvent->permissions)->map(function(array $group) {
-                    $group['permissions'] = self::keyPermissions($group['permissions']);
-
-                    return PermissionGroup::from($group);
+                    return new PermissionGroup(
+                        heading: $group['heading'],
+                        permissions: collect(self::keyPermissions($group['permissions'])),
+                    );
                 });
             }
         });
@@ -255,16 +258,18 @@ class UserPermissions extends Component
         });
     }
 
-    private static function keyPermissions(array $permissions): array
+    private static function keyPermissions(array $permissions): Collection
     {
         return collect($permissions)->map(function(array $permission, string $key) {
-            $permission['key'] = $key;
-
-            if (isset($permission['nested'])) {
-                $permission['nested'] = self::keyPermissions($permission['nested']);
-            }
-
-            return $permission;
-        })->all();
+            return new Permission(
+                key: $key,
+                label: $permission['label'],
+                info: $permission['info'] ?? null,
+                warning: $permission['warning'] ?? null,
+                nested: isset($permission['nested'])
+                    ? self::keyPermissions($permission['nested'])
+                    : collect(),
+            );
+        });
     }
 }

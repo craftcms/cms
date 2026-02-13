@@ -9,16 +9,16 @@ namespace craft\services;
 
 use Craft;
 use craft\base\MemoizableArray;
-use craft\elements\Asset;
 use craft\events\VolumeEvent;
-use craft\models\FieldLayout;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -28,9 +28,10 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Component;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
@@ -301,7 +302,7 @@ class Volumes extends Component
         }
 
         if ($runValidation && !$volume->validate()) {
-            Craft::info('Volume not saved due to validation error.', __METHOD__);
+            Log::info('Volume not saved due to validation error.', [__METHOD__]);
             return false;
         }
 
@@ -407,8 +408,9 @@ class Volumes extends Component
             $assets = Asset::find()
                 ->volumeId($volumeModel->id)
                 ->trashed()
-                ->andWhere(['assets.deletedWithVolume' => true])
+                ->where('assets.deletedWithVolume', true)
                 ->all();
+
             Craft::$app->getElements()->restoreElements($assets);
         }
 

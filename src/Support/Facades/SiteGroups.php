@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Illuminate\Support\Collection getAllGroups()
  * @method static \CraftCms\Cms\Site\Data\SiteGroup|null getGroupById(int $groupId)
  * @method static \CraftCms\Cms\Site\Data\SiteGroup|null getGroupByUid(string $uid)
- * @method static bool saveGroup(\CraftCms\Cms\Site\Data\SiteGroup $group)
+ * @method static bool saveGroup(\CraftCms\Cms\Site\Data\SiteGroup $group, bool $runValidation = true)
  * @method static void handleChangedGroup(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
  * @method static void handleDeletedGroup(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
  * @method static bool deleteGroupById(int $groupId)

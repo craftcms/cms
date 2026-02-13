@@ -13,7 +13,6 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 
 use function CraftCms\Cms\t;
@@ -81,10 +80,9 @@ trait EditUserTrait
 
         $currentUser = Auth::user();
 
-        if (Event::hasListeners(DefineEditUserScreens::class)) {
-            Event::dispatch($event = new DefineEditUserScreens($currentUser, $user, $screens));
-            $screens = $event->screens;
-        }
+        event($event = new DefineEditUserScreens($currentUser, $user, $screens));
+
+        $screens = $event->screens;
 
         if ($user->getIsCurrent() && $user->getHasPassword()) {
             $screens[self::SCREEN_PASSWORD] = ['label' => t('Password & Verification')];

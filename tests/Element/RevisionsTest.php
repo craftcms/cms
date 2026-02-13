@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use craft\elements\Entry as EntryElement;
 use CraftCms\Cms\Element\Events\CreatingRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
 use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;

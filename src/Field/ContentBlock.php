@@ -5,29 +5,26 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutProviderInterface;
 use craft\base\NestedElementInterface;
-use craft\behaviors\EventBehavior;
-use craft\elements\ContentBlock as ContentBlockElement;
-use craft\elements\db\ContentBlockQuery;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\elements\NestedElementManager;
 use craft\errors\InvalidFieldException;
-use craft\events\CancelableEvent;
 use craft\gql\resolvers\elements\ContentBlock as ContentBlockResolver;
 use craft\gql\types\generators\ContentBlock as ContentBlockGenerator;
 use craft\gql\types\input\ContentBlock as ContentBlockInputType;
 use craft\helpers\Gql;
-use craft\models\FieldLayout;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Queries\ContentBlockQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -37,8 +34,8 @@ use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Validator;
+use InvalidArgumentException;
 use Override;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -54,21 +51,18 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
 
     private const string VIEW_MODE_INLINE = 'inline';
 
-    /** {@inheritdoc} */
     #[Override]
     public static function displayName(): string
     {
         return t('Content Block');
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public static function icon(): string
     {
         return 'block';
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public static function supportedTranslationMethods(): array
     {
@@ -78,14 +72,12 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', ContentBlockElement::class);
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public static function dbType(): array|string|null
     {
@@ -126,7 +118,6 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->_contentBlockManager;
     }
 
-    /** {@inheritdoc} */
     public function getSettings(): array
     {
         $fieldLayout = $this->getFieldLayout();
@@ -139,13 +130,13 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    public function afterValidate(Validator $validator): void
+    public function afterValidate(?Validator $validator = null): void
     {
         $fieldLayout = $this->getFieldLayout();
         $fieldLayout->validate();
 
         if (! $this->ensureNoRecursion($this)) {
-            $validator->errors()->add('fieldLayout', t('Including a Content Block field recursively is not allowed.'));
+            $validator?->errors()->add('fieldLayout', t('Including a Content Block field recursively is not allowed.'));
         }
     }
 
@@ -154,25 +145,21 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return array_all($field->getFieldLayout()->getCustomFields(), fn ($customField) => ! ($customField instanceof self && ($customField->id === $this->id || ! $this->ensureNoRecursion($customField))));
     }
 
-    /** {@inheritdoc} */
     public function getFieldLayoutProviders(): array
     {
         return [$this];
     }
 
-    /** {@inheritdoc} */
     public function getUriFormatForElement(NestedElementInterface $element): ?string
     {
         return null;
     }
 
-    /** {@inheritdoc} */
     public function getRouteForElement(NestedElementInterface $element): mixed
     {
         return null;
     }
 
-    /** {@inheritdoc} */
     public function getFieldLayout(): FieldLayout
     {
         $this->_fieldLayout ??= new FieldLayout([
@@ -261,7 +248,6 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         $this->_fieldLayout = $layout;
     }
 
-    /** {@inheritdoc} */
     public function getSupportedSitesForElement(NestedElementInterface $element): array
     {
         try {
@@ -277,7 +263,6 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->contentBlockManager()->getSupportedSiteIds($owner);
     }
 
-    /** {@inheritdoc} */
     public function canViewElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -285,7 +270,6 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $owner && Craft::$app->getElements()->canView($owner, $user);
     }
 
-    /** {@inheritdoc} */
     public function canSaveElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -311,31 +295,26 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return false;
     }
 
-    /** {@inheritdoc} */
     public function canDuplicateElement(NestedElementInterface $element, User $user): bool
     {
         return false;
     }
 
-    /** {@inheritdoc} */
     public function canDeleteElement(NestedElementInterface $element, User $user): bool
     {
         return false;
     }
 
-    /** {@inheritdoc} */
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): bool
     {
         return false;
     }
 
-    /** {@inheritdoc} */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /** {@inheritdoc} */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -352,14 +331,12 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ]);
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
@@ -445,7 +422,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
                     // (see https://github.com/craftcms/cms/pull/18161)
                     ->revisions($element->getIsRevision())
                     ->indexBy('ownerId')
-                    ->collect();
+                    ->get();
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
@@ -489,26 +466,21 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
 
         // Existing element?
         if ($owner?->id) {
-            $query->attachBehavior(self::class, new EventBehavior([
-                ElementQuery::EVENT_BEFORE_PREPARE => function (
-                    CancelableEvent $event,
-                    ContentBlockQuery $query,
-                ) use ($owner) {
-                    $query->owner($owner);
+            $query->beforeQuery(function (ContentBlockQuery $query) use ($owner) {
+                $query->owner($owner);
 
-                    // Clear out id=false if this query was populated previously
-                    if ($query->id === false) {
-                        $query->id = null;
-                    }
+                // Clear out id=false if this query was populated previously
+                if ($query->id === false) {
+                    $query->id = null;
+                }
 
-                    // If the owner is a revision, allow revision elements to be returned as well
-                    if ($owner->getIsRevision()) {
-                        $query
-                            ->revisions(null)
-                            ->trashed(null);
-                    }
-                },
-            ], true));
+                // If the owner is a revision, allow revision elements to be returned as well
+                if ($owner->getIsRevision()) {
+                    $query
+                        ->revisions(null)
+                        ->trashed(null);
+                }
+            });
 
             // Prepare the query for lazy eager loading
             $query->prepForEagerLoading($this->handle, $owner);
@@ -531,7 +503,6 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         }
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
@@ -545,7 +516,6 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
@@ -559,35 +529,30 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->contentBlockManager()->getIsTranslatable($element);
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function showStatus(): bool
     {
         return false;
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function useFieldset(): bool
     {
         return $this->viewMode !== self::VIEW_MODE_INLINE;
     }
 
-    /** {@inheritdoc} */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -603,7 +568,6 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->inputHtmlInternal($value, $element, false);
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
@@ -667,49 +631,48 @@ JS, [
         ]);
     }
 
-    /** {@inheritdoc} */
     #[Override]
-    public function getElementValidationRules(): array
+    public function getElementRules(ElementInterface $element): array
     {
+        if (! $element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE)) {
+            return [];
+        }
+
         return [
-            [
-                $this->validateContentBlock(...),
-                'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
-                'skipOnEmpty' => false,
-            ],
+            fn (string $attribute, ContentBlockElement $value) => $this->validateContentBlock($element, $value),
         ];
     }
 
-    private function validateContentBlock(ElementInterface $element): void
+    private function validateContentBlock(ElementInterface $element, ContentBlockElement $value): void
     {
-        /** @var ContentBlockElement $value */
-        $value = $element->getFieldValue($this->handle);
-        $scenario = $element->getScenario();
         $value->setOwner($element);
 
-        if (in_array($scenario, [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_LIVE])) {
-            $value->setScenario($scenario);
+        if ($element->inScenarios(Element::SCENARIO_ESSENTIALS, Element::SCENARIO_LIVE)) {
+            $value->setScenario($element->getScenario());
         }
 
         if (! $value->validate()) {
-            $element->addModelErrors($value, $this->handle);
+            // Merge errors from the ContentBlockElement onto the parent element
+            // We need to use the Laravel MessageBag directly since Element uses Laravel validation
+            foreach ($value->errors()->getMessages() as $attribute => $errors) {
+                foreach ($errors as $error) {
+                    $element->errors()->add("$this->handle.$attribute", $error);
+                }
+            }
+
             if ($value->id) {
                 $element->addInvalidNestedElementIds([$value->id]);
             }
         }
     }
 
-    /** {@inheritdoc} */
     #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return $this->contentBlockManager()->getSearchKeywords($element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): array
     {
         return [
@@ -720,7 +683,6 @@ JS, [
         ];
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
@@ -730,7 +692,6 @@ JS, [
     // Events
     // -------------------------------------------------------------------------
 
-    /** {@inheritdoc} */
     #[Override]
     public function afterSave(bool $isNew): void
     {
@@ -738,7 +699,6 @@ JS, [
         parent::afterSave($isNew);
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
@@ -746,7 +706,6 @@ JS, [
         parent::afterElementPropagate($element, $isNew);
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function beforeElementDelete(ElementInterface $element): bool
     {
@@ -760,7 +719,6 @@ JS, [
         return true;
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
@@ -779,7 +737,6 @@ JS, [
         return true;
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public function afterElementRestore(ElementInterface $element): void
     {

@@ -397,10 +397,13 @@ Craft.NestedElementManager = Garnish.Base.extend(
     },
 
     async onSortChange($draggee) {
-      const elementId = parseInt($draggee.find('.element').data('id'));
+      const elementIds = $draggee
+        .find('.element')
+        .toArray()
+        .map((element) => parseInt($(element).data('id')));
 
       try {
-        const response = await this.updateSortOrder(elementId);
+        const response = await this.updateSortOrder(elementIds);
         Craft.cp.displayNotice(response.data.message);
       } catch (e) {
         Craft.cp.displayError(e?.response?.data?.message);
@@ -412,13 +415,14 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
     },
 
-    async updateSortOrder(elementId) {
-      elementId = parseInt(elementId);
+    async updateSortOrder(elementIds) {
+      elementIds = Array.isArray(elementIds) ? elementIds : [elementIds];
+      elementIds = elementIds.map((id) => parseInt(id));
       const allIds = this.getElementIds();
 
       const data = Object.assign(await this.getBaseActionData(), {
-        elementIds: [elementId],
-        offset: this.getBaseElementOffset() + allIds.indexOf(elementId),
+        elementIds,
+        offset: this.getBaseElementOffset() + allIds.indexOf(elementIds[0]),
       });
 
       return await Craft.sendActionRequest('POST', 'nested-elements/reorder', {

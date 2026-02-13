@@ -19,7 +19,7 @@ use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Traits\Conditionable;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -523,6 +523,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
+     *
+     * @deprecated 6.0.0. Set hashing.bcrypt.rounds or BCRYPT_ROUNDS environment variable instead.
      */
     public int $blowfishHashCost = 13;
 
@@ -552,7 +554,7 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * ->buildId(\craft\helpers\App::env('GIT_SHA'))
+     * ->buildId(\CraftCms\Cms\Support\Env::get('GIT_SHA'))
      * ```
      * ```shell Environment Override
      * CRAFT_BUILD_ID=$GIT_SHA
@@ -1496,6 +1498,45 @@ class GeneralConfig extends BaseConfig
     public ?string $httpProxy = null;
 
     /**
+     * @var bool Whether to automatically generate IDE helper files for custom fields.
+     *
+     * When enabled, Craft will generate PHPDoc metadata files in the IDE helper path
+     * whenever field layouts are saved. This improves IDE autocompletion for custom fields.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->ideHelperEnabled(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_IDE_HELPER_ENABLED=true
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public bool $ideHelperEnabled = true;
+
+    /**
+     * @var string The path where IDE helper files should be written, relative to the project root.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->ideHelperPath('vendor/_craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_IDE_HELPER_PATH=vendor/_craft
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public string $ideHelperPath = 'vendor/_craft';
+
+    /**
      * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed
      *            and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
      *
@@ -2000,7 +2041,7 @@ class GeneralConfig extends BaseConfig
      * @var string The path within the `templates` folder where element partial templates will live.
      *
      * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
-     * [[\craft\elements\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\craft\base\Element::render()]].
      *
      * For example, you could render all the entries within a Matrix field like so:
      *
@@ -2641,6 +2682,57 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $runQueueAutomatically = true;
+
+    /**
+     * @var string The name of the queue that Craft jobs should be sent to.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->queueName('craft')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_QUEUE_NAME=craft
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public string $queueName = 'default';
+
+    /**
+     * @var string The name of the queue that Craft lower priority jobs should be sent to.
+     *             By default, all jobs go to the same queue. Make sure to update `trackedQueueNames`
+     *             as well if you change this setting.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->lowPriorityQueueName('craft-low-prio')
+     * ->trackedQueueNames(['craft', 'craft-low-prio'])
+     * ```
+     * ```shell Environment Override
+     * CRAFT_LOW_PRIORITY_QUEUE_NAME=craft-low-prio
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public string $lowPriorityQueueName = 'default';
+
+    /**
+     * @var array<string> The queue names that should have their job progress tracked.
+     *
+     * By default, only jobs on the `craft` queue are tracked. Add additional queue names
+     * if you want to track progress for jobs on other queues.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->trackedQueueNames(['craft', 'default'])
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public array $trackedQueueNames = ['default'];
 
     /**
      * @var bool Whether the system should run in Safe Mode.
@@ -3439,6 +3531,8 @@ class GeneralConfig extends BaseConfig
     {
         // (Re-)normalize everything.
         $this
+            // IDE Helper defaults to the same value as devMode
+            ->ideHelperEnabled(config('app.debug'))
             // file extensions
             ->allowedFileExtensions($this->allowedFileExtensions)
             ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)
@@ -3902,7 +3996,7 @@ class GeneralConfig extends BaseConfig
      * This should be set to something unique to the deployment, e.g. a Git SHA or a deployment timestamp.
      *
      * ```php
-     * ->buildId(\craft\helpers\App::env('GIT_SHA'))
+     * ->buildId(\CraftCms\Cms\Support\Env::get('GIT_SHA'))
      * ```
      *
      * @group Environment
@@ -4138,15 +4232,11 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultCpLanguage(?string $value): self
     {
-        if (
-            $value !== null &&
-            class_exists(Craft::class, false) &&
-            isset(Craft::$app)
-        ) {
+        if ($value !== null) {
             try {
                 $value = I18N::normalizeLanguage($value);
                 /** @phpstan-ignore catch.neverThrown */
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 throw new InvalidConfigException($e->getMessage(), 0, $e);
             }
         }
@@ -4795,14 +4885,12 @@ class GeneralConfig extends BaseConfig
      */
     public function extraAppLocales(array $value): self
     {
-        if (class_exists(Craft::class, false)) {
-            foreach ($value as &$localeId) {
-                try {
-                    $localeId = I18N::normalizeLanguage($localeId);
-                    /** @phpstan-ignore catch.neverThrown */
-                } catch (\InvalidArgumentException $e) {
-                    throw new InvalidConfigException($e->getMessage(), 0, $e);
-                }
+        foreach ($value as &$localeId) {
+            try {
+                $localeId = I18N::normalizeLanguage($localeId);
+                /** @phpstan-ignore catch.neverThrown */
+            } catch (InvalidArgumentException $e) {
+                throw new InvalidConfigException($e->getMessage(), 0, $e);
             }
         }
 
@@ -5039,7 +5127,48 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed
+     * Whether to automatically generate IDE helper files for custom fields.
+     *
+     * When enabled, Craft will generate PHPDoc metadata files in the IDE helper path
+     * whenever field layouts are saved. This improves IDE autocompletion for custom fields.
+     *
+     * ```php
+     * ->ideHelperEnabled(false)
+     * ```
+     *
+     * @group System
+     *
+     * @see $ideHelperEnabled
+     * @since 6.0.0
+     */
+    public function ideHelperEnabled(bool $value = true): self
+    {
+        $this->ideHelperEnabled = $value;
+
+        return $this;
+    }
+
+    /**
+     * The path where IDE helper files should be written, relative to the project root.
+     *
+     * ```php
+     * ->ideHelperPath('vendor/_craft')
+     * ```
+     *
+     * @group System
+     *
+     * @see $ideHelperPath
+     * @since 6.0.0
+     */
+    public function ideHelperPath(string $value): self
+    {
+        $this->ideHelperPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it's installed
      * and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
      *
      * ```php
@@ -5569,7 +5698,7 @@ class GeneralConfig extends BaseConfig
      * The path within the `templates` folder where element partial templates will live.
      *
      * Partial templates are used to render elements when calling [[\craft\elements\db\ElementQuery::render()]],
-     * [[\craft\elements\ElementCollection::render()]], or [[\craft\base\Element::render()]].
+     * [[\CraftCms\Cms\Element\ElementCollection::render()]], or [[\craft\base\Element::render()]].
      *
      * For example, you could render all the entries within a Matrix field like so:
      *
@@ -6304,6 +6433,60 @@ class GeneralConfig extends BaseConfig
     public function runQueueAutomatically(bool $value = true): self
     {
         $this->runQueueAutomatically = $value;
+
+        return $this;
+    }
+
+    /**
+     * The name of the queue that Craft jobs should be sent to.
+     *
+     * ```php
+     * ->queueName('craft')
+     * ```
+     *
+     * @group System
+     *
+     * @see $queueName
+     */
+    public function queueName(string $value): self
+    {
+        $this->queueName = $value;
+
+        return $this;
+    }
+
+    /**
+     * The name of the queue that Craft jobs should be sent to.
+     *
+     * ```php
+     * ->lowPriorityQueueName('craft-low-prio')
+     * ```
+     *
+     * @group System
+     *
+     * @see $lowPriorityQueueName
+     */
+    public function lowPriorityQueueName(string $value): self
+    {
+        $this->lowPriorityQueueName = $value;
+
+        return $this;
+    }
+
+    /**
+     * The queue names that should have their job progress tracked.
+     *
+     * ```php
+     * ->trackedQueueNames(['craft', 'default'])
+     * ```
+     *
+     * @group System
+     *
+     * @see $trackedQueueNames
+     */
+    public function trackedQueueNames(array $value): self
+    {
+        $this->trackedQueueNames = $value;
 
         return $this;
     }

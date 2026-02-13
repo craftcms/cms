@@ -7,8 +7,8 @@
 
 namespace craft\gql\types\elements;
 
-use craft\elements\Entry as EntryElement;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

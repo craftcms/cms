@@ -7,7 +7,7 @@
 
 namespace craft\base;
 
-use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
  * ElementAction is the base class for classes representing element actions in terms of objects.

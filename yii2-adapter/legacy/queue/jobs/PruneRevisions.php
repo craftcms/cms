@@ -1,23 +1,25 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue\jobs;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\queue\BaseJob;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 
 /**
  * PruneRevisions job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.5.0
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Element\Jobs\PruneRevisions} instead.
  */
 class PruneRevisions extends BaseJob
 {
@@ -38,46 +40,26 @@ class PruneRevisions extends BaseJob
 
     /**
      * @var int|null The maximum number of revisions an element can have
+     *
      * @since 3.5.13
      */
     public ?int $maxRevisions = null;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function execute($queue): void
     {
-        if (!$this->maxRevisions) {
-            // Make sure maxRevisions is still set
-            if (!Cms::config()->maxRevisions) {
-                return;
-            }
-            $this->maxRevisions = Cms::config()->maxRevisions;
-        }
-
-        $extraRevisions = $this->elementType::find()
-            ->revisionOf($this->canonicalId)
-            ->siteId($this->siteId)
-            ->status(null)
-            ->orderBy(['num' => SORT_DESC])
-            ->offset($this->maxRevisions)
-            ->all();
-
-        if (empty($extraRevisions)) {
-            return;
-        }
-
-        $total = count($extraRevisions);
-        $elementsService = Craft::$app->getElements();
-
-        foreach ($extraRevisions as $i => $extraRevision) {
-            $this->setProgress($queue, ($i + 1) / $total);
-            $elementsService->deleteElement($extraRevision, true);
-        }
+        new \CraftCms\Cms\Element\Jobs\PruneRevisions(
+            $this->elementType,
+            $this->canonicalId,
+            $this->siteId,
+            $this->maxRevisions,
+        )->handle();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defaultDescription(): ?string
     {

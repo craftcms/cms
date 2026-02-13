@@ -7,8 +7,6 @@ namespace CraftCms\Cms\Field;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Serializable;
-use craft\elements\db\ElementQueryInterface;
-use craft\fieldlayoutelements\CustomField;
 use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
@@ -16,10 +14,10 @@ use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\HasComponentEvents;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
-use CraftCms\Cms\Component\Concerns\ValidatableComponent;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Events\ComponentEvent;
@@ -27,6 +25,7 @@ use CraftCms\Cms\Database\Expressions\Cast;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -37,19 +36,18 @@ use CraftCms\Cms\Field\Events\DefineFieldHtml;
 use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\FieldElementEvent;
 use CraftCms\Cms\Field\Events\FieldEvent;
-use CraftCms\Cms\Shared\Rules\HandleRule;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
-use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -57,19 +55,19 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
+use Override;
 use RuntimeException;
 use Stringable;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 
 use function CraftCms\Cms\t;
 
-abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, Stringable
+abstract class Field extends Component implements Actionable, FieldInterface, Iconic, Stringable
 {
     use ConfigurableComponent;
     use HasComponentEvents;
     use Macroable;
     use SavableComponent;
-    use ValidatableComponent;
 
     // Translation methods
     // @TODO: Replace const with the enum everywhere
@@ -352,21 +350,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
      */
     public function __construct($config = [])
     {
-        Typecast::properties(static::class, $config);
-
-        foreach ($config as $name => $value) {
-            if (! property_exists($this, $name)) {
-                if (method_exists($this, $method = 'set'.Str::studly($name))) {
-                    $this->$method($value);
-
-                    continue;
-                }
-
-                continue;
-            }
-
-            $this->$name = $value;
-        }
+        parent::__construct($config);
 
         // Validate the translation method
         $supportedTranslationMethods = static::supportedTranslationMethods() ?: [self::TRANSLATION_METHOD_NONE];
@@ -379,7 +363,6 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
         }
     }
 
-    /** {@inheritdoc} */
     public static function get(int|string $id): ?static
     {
         /** @var ?static $field */
@@ -388,25 +371,21 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
         return $field;
     }
 
-    /** {@inheritdoc} */
     public static function icon(): string
     {
         return 'i-cursor';
     }
 
-    /** {@inheritdoc} */
     public static function isMultiInstance(): bool
     {
         return static::dbType() !== null;
     }
 
-    /** {@inheritdoc} */
     public static function isRequirable(): bool
     {
         return true;
     }
 
-    /** {@inheritdoc} */
     public static function supportedTranslationMethods(): array
     {
         if (static::dbType() === null) {
@@ -424,15 +403,11 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
         ];
     }
 
-    /**
-     * {@inheritdoc} */
     public static function phpType(): string
     {
         return 'mixed';
     }
 
-    /**
-     * {@inheritdoc} */
     public static function dbType(): array|string|null
     {
         return Query::TYPE_TEXT;
@@ -512,7 +487,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
         ];
     }
 
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [
             'name' => ['required'],
@@ -537,31 +512,26 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
         ];
     }
 
-    /** {@inheritdoc} */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /** {@inheritdoc} */
     public function getUiLabel(): string
     {
         return t($this->name, category: 'site');
     }
 
-    /** {@inheritdoc} */
     public function getHandle(): ?string
     {
         return $this->handle;
     }
 
-    /** {@inheritdoc} */
     public function getIcon(): ?string
     {
         return static::icon();
     }
 
-    /** {@inheritdoc} */
     public function getCpEditUrl(): ?string
     {
         if (! $this->id || ! Auth::user()?->isAdmin()) {
@@ -571,18 +541,13 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic, S
         return UrlHelper::cpUrl("settings/fields/edit/$this->id");
     }
 
-    /** {@inheritdoc} */
     public function getActionMenuItems(): array
     {
         $items = $this->actionMenuItems();
 
-        if ($this->hasComponentListeners(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-            $this->dispatchComponentEvent(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event = new DefineFieldActionMenuItems($this, $items));
+        $this->dispatchComponentEvent(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event = new DefineFieldActionMenuItems($this, $items));
 
-            return $event->items;
-        }
-
-        return $items;
+        return $event->items;
     }
 
     protected function actionMenuItems(): array
@@ -624,7 +589,6 @@ JS, [
         return $items;
     }
 
-    /** {@inheritdoc} */
     public function getOrientation(?ElementInterface $element): string
     {
         $locale = match (true) {
@@ -639,7 +603,6 @@ JS, [
         return $locale->getOrientation();
     }
 
-    /** {@inheritdoc} */
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
@@ -649,7 +612,6 @@ JS, [
         return $this->translationMethod !== self::TRANSLATION_METHOD_NONE;
     }
 
-    /** {@inheritdoc} */
     public function getTranslationDescription(?ElementInterface $element): ?string
     {
         if (! $this->getIsTranslatable($element)) {
@@ -659,19 +621,16 @@ JS, [
         return ElementHelper::translationDescription($this->translationMethod);
     }
 
-    /** {@inheritdoc} */
     public function getTranslationKey(ElementInterface $element): string
     {
         return ElementHelper::translationKey($element, $this->translationMethod, $this->translationKeyFormat);
     }
 
-    /** {@inheritdoc} */
     public function showStatus(): bool
     {
         return true;
     }
 
-    /** {@inheritdoc} */
     public function getStatus(ElementInterface $element): ?array
     {
         if ($element->isFieldModified($this->handle)) {
@@ -691,54 +650,44 @@ JS, [
         return null;
     }
 
-    /** {@inheritdoc} */
     public function getInputId(): string
     {
         return Html::id($this->handle);
     }
 
-    /** {@inheritdoc} */
     public function getLabelId(): string
     {
         return sprintf('%s-label', $this->getInputId());
     }
 
-    /** {@inheritdoc} */
     public function useFieldset(): bool
     {
         return false;
     }
 
-    /** {@inheritdoc} */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $value;
     }
 
-    /** {@inheritdoc} */
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->normalizeValue($value, $element);
     }
 
-    /** {@inheritdoc} */
     public function getInputHtml(mixed $value, ?ElementInterface $element): string
     {
         $html = $this->inputHtml($value, $element, false);
 
-        if ($this->hasComponentListeners(static::EVENT_DEFINE_INPUT_HTML)) {
-            $this->dispatchComponentEvent(static::EVENT_DEFINE_INPUT_HTML, $event = new DefineFieldHtml(
-                field: $this,
-                value: $value,
-                inline: false,
-                element: $element,
-                html: $html,
-            ));
+        $this->dispatchComponentEvent(static::EVENT_DEFINE_INPUT_HTML, $event = new DefineFieldHtml(
+            field: $this,
+            value: $value,
+            inline: false,
+            element: $element,
+            html: $html,
+        ));
 
-            return $event->html;
-        }
-
-        return $html;
+        return $event->html;
     }
 
     /**
@@ -748,19 +697,15 @@ JS, [
     {
         $html = $this->inputHtml($value, $element, true);
 
-        if ($this->hasComponentListeners(static::EVENT_DEFINE_INPUT_HTML)) {
-            $this->dispatchComponentEvent(static::EVENT_DEFINE_INPUT_HTML, $event = new DefineFieldHtml(
-                field: $this,
-                value: $value,
-                inline: true,
-                element: $element,
-                html: $html,
-            ));
+        $this->dispatchComponentEvent(static::EVENT_DEFINE_INPUT_HTML, $event = new DefineFieldHtml(
+            field: $this,
+            value: $value,
+            inline: true,
+            element: $element,
+            html: $html,
+        ));
 
-            return $event->html;
-        }
-
-        return $html;
+        return $event->html;
     }
 
     /**
@@ -779,43 +724,38 @@ JS, [
         return Html::textarea($this->handle, $value)->render();
     }
 
-    /**
-     * {@inheritdoc} */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         // Just return the input HTML with disabled inputs by default
         return Html::disableInputs(fn () => $this->getInputHtml($value, $element));
     }
 
-    /**
-     * {@inheritdoc} */
-    public function getElementValidationRules(): array
+    public function prepareForElementValidation(mixed $value): mixed
+    {
+        return $value;
+    }
+
+    public function getElementRules(ElementInterface $element): array
     {
         return [];
     }
 
-    /**
-     * {@inheritdoc} */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         // Default to yii\validators\Validator::isEmpty()'s behavior
         return $value === null || $value === [] || $value === '';
     }
 
-    /**
-     * {@inheritdoc} */
     public function getSearchKeywords(mixed $value, ElementInterface $element): string
     {
-        if ($this->hasComponentListeners(self::EVENT_DEFINE_KEYWORDS)) {
-            $this->dispatchComponentEvent(self::EVENT_DEFINE_KEYWORDS, $event = new DefineFieldKeywords(
-                field: $this,
-                element: $element,
-                value: $value,
-            ));
+        $this->dispatchComponentEvent(self::EVENT_DEFINE_KEYWORDS, $event = new DefineFieldKeywords(
+            field: $this,
+            element: $element,
+            value: $value,
+        ));
 
-            if ($event->handled) {
-                return $event->keywords;
-            }
+        if ($event->handled) {
+            return $event->keywords;
         }
 
         return $this->searchKeywords($value, $element);
@@ -917,10 +857,7 @@ JS, [
      */
     public function afterMergeInto(FieldInterface $persistingField)
     {
-        // Fire an 'afterMergeInto' event
-        if ($this->hasComponentListeners(self::EVENT_AFTER_MERGE_INTO)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_MERGE_INTO, new FieldEvent($persistingField));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_MERGE_INTO, new FieldEvent($persistingField));
     }
 
     /**
@@ -937,13 +874,9 @@ JS, [
                 ]);
         }
 
-        // Fire an 'afterMergeFrom' event
-        if ($this->hasComponentListeners(self::EVENT_AFTER_MERGE_FROM)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_MERGE_FROM, new FieldEvent($outgoingField));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_MERGE_FROM, new FieldEvent($outgoingField));
     }
 
-    /** {@inheritdoc} */
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If the object explicitly defines its savable value, use that
@@ -964,7 +897,6 @@ JS, [
         return $value;
     }
 
-    /** {@inheritdoc} */
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         // Dates should be stored in UTC w/o the time zone
@@ -975,7 +907,6 @@ JS, [
         return $this->serializeValue($value, $element);
     }
 
-    /** {@inheritdoc} */
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         $value = $this->serializeValue($from->getFieldValue($this->handle), $from);
@@ -991,13 +922,11 @@ JS, [
         $this->copyValue($from, $to);
     }
 
-    /** {@inheritdoc} */
     public function getElementConditionRuleType(): array|string|null
     {
         return null;
     }
 
-    /** {@inheritdoc} */
     public function getValueSql(?string $key = null): string|Expression|null
     {
         if (! isset($this->layoutElement)) {
@@ -1038,7 +967,7 @@ JS, [
         }
 
         $castType = null;
-        if (DB::getDriverName() === 'mysql') {
+        if (DB::isMysql()) {
             // If the field uses an optimized DB type, cast it so its values can be indexed
             // (see "Functional Key Parts" on https://dev.mysql.com/doc/refman/8.0/en/create-index.html)
             $castType = match (DbHelper::parseColumnType($dbType)) {
@@ -1101,7 +1030,6 @@ JS, [
         return static::dbType();
     }
 
-    /** {@inheritdoc} */
     public function modifyElementIndexQuery(ElementQueryInterface $query): void
     {
         if ($this instanceof EagerLoadingFieldInterface) {
@@ -1109,25 +1037,21 @@ JS, [
         }
     }
 
-    /** {@inheritdoc} */
     public function setIsFresh(?bool $isFresh = null): void
     {
         $this->_isFresh = $isFresh;
     }
 
-    /** {@inheritdoc} */
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return true;
     }
 
-    /** {@inheritdoc} */
     public function getContentGqlType(): Type|array
     {
         return Type::string();
     }
 
-    /** {@inheritdoc} */
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
@@ -1137,7 +1061,6 @@ JS, [
         ];
     }
 
-    /** {@inheritdoc} */
     public function getContentGqlQueryArgumentType(): Type|array
     {
         return [
@@ -1149,7 +1072,6 @@ JS, [
     // Events
     // -------------------------------------------------------------------------
 
-    /** {@inheritdoc} */
     public function beforeSave(bool $isNew): bool
     {
         // Set the field context if it’s not set
@@ -1157,126 +1079,89 @@ JS, [
             $this->context = Fields::getFieldContext();
         }
 
-        if ($this->hasComponentListeners(self::EVENT_BEFORE_SAVE)) {
-            $this->dispatchComponentEvent(self::EVENT_BEFORE_SAVE, $event = new ComponentEvent($this, $isNew));
+        $this->dispatchComponentEvent(self::EVENT_BEFORE_SAVE, $event = new ComponentEvent($this, $isNew));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
     public function afterSave(bool $isNew): void
     {
-        if ($this->hasComponentListeners(self::EVENT_AFTER_SAVE)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_SAVE, new ComponentEvent($this, $isNew));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_SAVE, new ComponentEvent($this, $isNew));
     }
 
-    /**
-     * {@inheritdoc} */
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
-        if ($this->hasComponentListeners(self::EVENT_BEFORE_ELEMENT_SAVE)) {
-            $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_SAVE, $event = new FieldElementEvent(
-                field: $this,
-                element: $element,
-                isNew: $isNew
-            ));
+        $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_SAVE, $event = new FieldElementEvent(
+            field: $this,
+            element: $element,
+            isNew: $isNew
+        ));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
-    /**
-     * {@inheritdoc} */
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
-        if ($this->hasComponentListeners(self::EVENT_AFTER_ELEMENT_SAVE)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent(
-                field: $this,
-                element: $element,
-                isNew: $isNew
-            ));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent(
+            field: $this,
+            element: $element,
+            isNew: $isNew
+        ));
     }
 
-    /** {@inheritdoc} */
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
-        if ($this->hasComponentListeners(self::EVENT_AFTER_ELEMENT_PROPAGATE)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_PROPAGATE, new FieldElementEvent(
-                field: $this,
-                element: $element,
-                isNew: $isNew
-            ));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_PROPAGATE, new FieldElementEvent(
+            field: $this,
+            element: $element,
+            isNew: $isNew
+        ));
     }
 
-    /** {@inheritdoc} */
     public function beforeElementDelete(ElementInterface $element): bool
     {
-        if ($this->hasComponentListeners(self::EVENT_BEFORE_ELEMENT_DELETE)) {
-            $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_DELETE, $event = new FieldElementEvent(
-                field: $this,
-                element: $element,
-            ));
+        $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_DELETE, $event = new FieldElementEvent(
+            field: $this,
+            element: $element,
+        ));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
-    /** {@inheritdoc} */
     public function afterElementDelete(ElementInterface $element): void
     {
-        if ($this->hasComponentListeners(self::EVENT_AFTER_ELEMENT_DELETE)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent(
-                field: $this,
-                element: $element,
-            ));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent(
+            field: $this,
+            element: $element,
+        ));
     }
 
-    /** {@inheritdoc} */
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
         return true;
     }
 
-    /** {@inheritdoc} */
     public function afterElementDeleteForSite(ElementInterface $element): void
     {
         // carry on
     }
 
-    /** {@inheritdoc} */
     public function beforeElementRestore(ElementInterface $element): bool
     {
-        if ($this->hasComponentListeners(self::EVENT_BEFORE_ELEMENT_RESTORE)) {
-            $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_RESTORE, $event = new FieldElementEvent(
-                field: $this,
-                element: $element,
-            ));
+        $this->dispatchComponentEvent(self::EVENT_BEFORE_ELEMENT_RESTORE, $event = new FieldElementEvent(
+            field: $this,
+            element: $element,
+        ));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
-    /** {@inheritdoc} */
     public function afterElementRestore(ElementInterface $element): void
     {
-        if ($this->hasComponentListeners(self::EVENT_AFTER_ELEMENT_RESTORE)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_RESTORE, new FieldElementEvent(
-                field: $this,
-                element: $element,
-            ));
-        }
+        $this->dispatchComponentEvent(self::EVENT_AFTER_ELEMENT_RESTORE, new FieldElementEvent(
+            field: $this,
+            element: $element,
+        ));
     }
 
     /**
@@ -1322,6 +1207,7 @@ JS, [
      *
      * @return string The display name of this class.
      */
+    #[Override]
     public static function displayName(): string
     {
         $classNameParts = explode('\\', static::class);
@@ -1329,29 +1215,12 @@ JS, [
         return array_pop($classNameParts);
     }
 
+    #[Override]
     public static function isSelectable(): bool
     {
         return true;
     }
 
-    public function toArray(): array
-    {
-        return collect($this->attributes())->mapWithKeys(function (string $attribute) {
-            if (property_exists($this, $attribute)) {
-                return [$attribute => $this->$attribute];
-            }
-
-            if (method_exists($this, $method = 'get'.Str::studly($attribute))) {
-                return [$attribute => $this->$method()];
-            }
-
-            return '__invalid__';
-        })->reject(fn ($value) => $value === '__invalid__')->all();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function propagateValue(ElementInterface $from, ElementInterface $to): void
     {
         $to->setFieldValue($this->handle, $from->getFieldValue($this->handle));

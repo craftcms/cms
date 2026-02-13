@@ -55,7 +55,9 @@ jobs:
       - name: Update facade docblocks
         run: |
           php -f vendor/bin/facade.php -- \
+            CraftCms\\Cms\\Support\\Facades\\Addresses \
             CraftCms\\Cms\\Support\\Facades\\Announcements \
+            CraftCms\\Cms\\Support\\Facades\\Conditions \
             CraftCms\\Cms\\Support\\Facades\\Deprecator \
             CraftCms\\Cms\\Support\\Facades\\Entries \
             CraftCms\\Cms\\Support\\Facades\\EntryTypes \
@@ -63,6 +65,7 @@ jobs:
             CraftCms\\Cms\\Support\\Facades\\I18N \
             CraftCms\\Cms\\Support\\Facades\\ProjectConfig \
             CraftCms\\Cms\\Support\\Facades\\Sections \
+            CraftCms\\Cms\\Support\\Facades\\Security \
             CraftCms\\Cms\\Support\\Facades\\SiteGroups \
             CraftCms\\Cms\\Support\\Facades\\Sites \
             CraftCms\\Cms\\Support\\Facades\\Structures \

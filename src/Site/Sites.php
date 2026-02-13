@@ -6,11 +6,10 @@ namespace CraftCms\Cms\Site;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Asset;
-use craft\helpers\Queue;
-use craft\queue\jobs\PropagateElements;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Jobs\PropagateElements;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
@@ -29,7 +28,6 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Updates\Updates;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
@@ -38,7 +36,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -387,7 +385,7 @@ final class Sites
      * @throws SiteNotFoundException if $site->id is invalid
      * @throws Throwable if reasons
      */
-    public function saveSite(Site $site): bool
+    public function saveSite(Site $site, bool $runValidation = true): bool
     {
         $isNewSite = ! $site->id;
 
@@ -397,12 +395,16 @@ final class Sites
 
         $primarySite = $this->allSitesById->isEmpty() ? null : $this->getPrimarySite();
 
-        if (Event::hasListeners(SavingSite::class)) {
-            Event::dispatch(new SavingSite(
-                site: $site,
-                isNew: $isNewSite,
-                oldPrimarySiteId: $primarySite->id ?? null,
-            ));
+        event(new SavingSite(
+            site: $site,
+            isNew: $isNewSite,
+            oldPrimarySiteId: $primarySite->id ?? null,
+        ));
+
+        if ($runValidation && ! $site->validate()) {
+            Log::info('Site not saved due to validation error.', [__METHOD__]);
+
+            return false;
         }
 
         if ($isNewSite) {
@@ -514,24 +516,22 @@ final class Sites
             ];
 
             foreach ($elementTypes as $elementType) {
-                Queue::push(new PropagateElements([
-                    'elementType' => $elementType,
-                    'criteria' => [
+                dispatch(new PropagateElements(
+                    elementType: $elementType,
+                    criteria: [
                         'siteId' => $oldPrimarySiteId,
                     ],
-                    'siteId' => $site->id,
-                    'isNewSite' => true,
-                ]));
+                    siteId: $site->id,
+                    isNewSite: true,
+                ));
             }
         }
 
-        if (Event::hasListeners(SiteSaved::class)) {
-            Event::dispatch(new SiteSaved(
-                site: $site,
-                isNew: $isNewSite,
-                oldPrimarySiteId: $oldPrimarySiteId,
-            ));
-        }
+        event(new SiteSaved(
+            site: $site,
+            isNew: $isNewSite,
+            oldPrimarySiteId: $oldPrimarySiteId,
+        ));
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
@@ -547,11 +547,7 @@ final class Sites
      */
     public function reorderSites(array $siteIds): bool
     {
-        if (Event::hasListeners(ReorderingSites::class)) {
-            Event::dispatch(new ReorderingSites(
-                siteIds: $siteIds,
-            ));
-        }
+        event(new ReorderingSites(siteIds: $siteIds));
 
         $uidsByIds = DB::table(Table::SITES)->uidsByIds($siteIds);
 
@@ -567,11 +563,7 @@ final class Sites
             );
         }
 
-        if (Event::hasListeners(SitesReordered::class)) {
-            Event::dispatch(new SitesReordered(
-                siteIds: $siteIds,
-            ));
-        }
+        event(new SitesReordered(siteIds: $siteIds));
 
         return true;
     }
@@ -613,15 +605,10 @@ final class Sites
             throw new Exception('You cannot delete the primary site.');
         }
 
-        if (Event::hasListeners(DeletingSite::class)) {
-            Event::dispatch($event = new DeletingSite(
-                site: $site,
-                transferContentTo: $transferContentTo,
-            ));
+        event($event = new DeletingSite(site: $site, transferContentTo: $transferContentTo));
 
-            if (! $event->isValid) {
-                return false;
-            }
+        if (! $event->isValid) {
+            return false;
         }
 
         // TODO: Move this code into entries module, etc.
@@ -756,9 +743,7 @@ final class Sites
         /** @var Site $site */
         $site = $this->getSiteById($siteRecord->id);
 
-        if (Event::hasListeners(ApplyingSiteDelete::class)) {
-            Event::dispatch(new ApplyingSiteDelete($site));
-        }
+        event(new ApplyingSiteDelete($site));
 
         DB::transaction(function () use ($siteRecord) {
             DB::table(Table::SITES)->softDelete($siteRecord->id);
@@ -775,9 +760,7 @@ final class Sites
             $this->setCurrentSite($this->primarySite);
         }
 
-        if (Event::hasListeners(SiteDeleted::class)) {
-            Event::dispatch(new SiteDeleted($site));
-        }
+        event(new SiteDeleted($site));
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
@@ -853,12 +836,7 @@ final class Sites
             $result->dateCreated = Date::parse($result->dateCreated);
             $result->dateUpdated = Date::parse($result->dateUpdated);
 
-            $result = (array) $result;
-
-            // @TODO: Use Site::from() when Codeception tests are removed
-            Typecast::properties(Site::class, $result);
-
-            $site = new Site(...$result);
+            $site = new Site($result);
             $this->allSitesById[$site->id] = $site;
 
             if ($site->getEnabled()) {
@@ -975,8 +953,6 @@ final class Sites
         // Set the new primary site by forcing a reload from the DB.
         $this->refreshSites();
 
-        if (Event::hasListeners(PrimarySiteChanged::class)) {
-            Event::dispatch(new PrimarySiteChanged($this->primarySite));
-        }
+        event(new PrimarySiteChanged($this->primarySite));
     }
 }

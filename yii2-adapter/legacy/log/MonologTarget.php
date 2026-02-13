@@ -28,6 +28,7 @@ use yii\web\HttpException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @property-read string $contextMessage
  * @since 4.0.0
+ * @deprecated 6.0.0
  */
 class MonologTarget extends PsrTarget
 {

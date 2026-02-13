@@ -36,6 +36,8 @@
       "import": "./dist/cp.mjs",
       "require": "./dist/cp.cjs"
     },
+    "./src/*": "./src/*",
+    "./dist/*": "./dist/*",
     "./styles/*": "./dist/styles/*",
     "./utilities/*": "./dist/utilities/*",
     "./components/*": "./dist/components/*",

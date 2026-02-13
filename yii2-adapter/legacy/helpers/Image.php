@@ -11,11 +11,12 @@ use Craft;
 use craft\errors\ImageException;
 use craft\image\Svg;
 use CraftCms\Cms\Cms;
+use Illuminate\Support\Facades\Log;
 use Imagick;
 use Imagine\Image\Format;
+use InvalidArgumentException;
 use Throwable;
 use TypeError;
-use yii\base\InvalidArgumentException;
 
 /**
  * Class Image
@@ -286,7 +287,7 @@ class Image
             $image = Craft::$app->getImages()->loadImage($filePath);
             return [$image->getWidth(), $image->getHeight()];
         } catch (Throwable $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+            Log::warning($e->getMessage(), [__METHOD__]);
             return [0, 0];
         }
     }
@@ -387,7 +388,7 @@ class Image
                     return false;
             }
         } catch (ImageException $exception) {
-            Craft::info($exception->getMessage(), __METHOD__);
+            Log::info($exception->getMessage(), [__METHOD__]);
         }
 
         return $dimensions;

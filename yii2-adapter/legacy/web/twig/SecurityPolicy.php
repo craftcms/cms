@@ -7,9 +7,8 @@
 
 namespace craft\web\twig;
 
+use ReflectionClass;
 use ReflectionException;
-use ReflectionMethod;
-use ReflectionProperty;
 use Twig\Markup;
 use Twig\Sandbox\SecurityNotAllowedFilterError;
 use Twig\Sandbox\SecurityNotAllowedFunctionError;
@@ -38,6 +37,8 @@ class SecurityPolicy implements SecurityPolicyInterface
     private array $allowedMethods = [];
     /** @var array<class-string,string[]> */
     private array $allowedProperties = [];
+    /** @var class-string[] */
+    private array $allowedClasses = [];
 
     public function __construct(
         array $allowedTags = [],
@@ -45,12 +46,14 @@ class SecurityPolicy implements SecurityPolicyInterface
         array $allowedFunctions = [],
         array $allowedMethods = [],
         array $allowedProperties = [],
+        array $allowedClasses = [],
     ) {
         $this->setAllowedTags($allowedTags);
         $this->setAllowedFilters($allowedFilters);
         $this->setAllowedFunctions($allowedFunctions);
         $this->setAllowedMethods($allowedMethods);
         $this->setAllowedProperties($allowedProperties);
+        $this->setAllowedClasses($allowedClasses);
     }
 
     /**
@@ -99,6 +102,22 @@ class SecurityPolicy implements SecurityPolicyInterface
     public function setAllowedFunctions(array $functions): void
     {
         $this->allowedFunctions = $functions;
+    }
+
+    /**
+     * @return class-string[]
+     */
+    public function getAllowedClasses(): array
+    {
+        return $this->allowedClasses;
+    }
+
+    /**
+     * @param class-string[] $classes
+     */
+    public function setAllowedClasses(array $classes): void
+    {
+        $this->allowedClasses = $classes;
     }
 
     /**
@@ -169,13 +188,11 @@ class SecurityPolicy implements SecurityPolicyInterface
             return;
         }
 
-        // see if the method has the AllowedInSandbox attribute
-        try {
-            $ref = new ReflectionMethod($obj, $method);
-            if (!empty($ref->getAttributes(AllowedInSandbox::class))) {
-                return;
-            }
-        } catch (ReflectionException) {
+        if (
+            $this->isClassAllowed($obj) ||
+            $this->checkForAllowedAttributeInMethod($obj, $method)
+        ) {
+            return;
         }
 
         $method = strtolower($method);
@@ -189,15 +206,41 @@ class SecurityPolicy implements SecurityPolicyInterface
         throw new SecurityNotAllowedMethodError(sprintf('Calling "%s" method on a "%s" object is not allowed.', $method, $class), $class, $method);
     }
 
-    public function checkPropertyAllowed($obj, $property): void
+    private function checkForAllowedAttributeInMethod($obj, string $method, bool $checkInterfaces = true): bool
     {
-        // see if the property has the AllowedInSandbox attribute
         try {
-            $ref = new ReflectionProperty($obj, $property);
-            if (!empty($ref->getAttributes(AllowedInSandbox::class))) {
-                return;
+            $classRef = new ReflectionClass($obj);
+            $methodRef = $classRef->getMethod($method);
+
+            if (!empty($methodRef->getAttributes(AllowedInSandbox::class))) {
+                return true;
+            }
+
+            $parentClass = $classRef->getParentClass();
+            if ($parentClass && $this->checkForAllowedAttributeInMethod($parentClass, $method, false)) {
+                return true;
+            }
+
+            if ($checkInterfaces) {
+                foreach ($classRef->getInterfaceNames() as $interfaceName) {
+                    if ($this->checkForAllowedAttributeInMethod($interfaceName, $method, false)) {
+                        return true;
+                    }
+                }
             }
         } catch (ReflectionException) {
+        }
+
+        return false;
+    }
+
+    public function checkPropertyAllowed($obj, $property): void
+    {
+        if (
+            $this->isClassAllowed($obj) ||
+            $this->checkForAllowedAttributeInProperty($obj, $property)
+        ) {
+            return;
         }
 
         foreach ($this->allowedProperties as $class => $properties) {
@@ -216,5 +259,75 @@ class SecurityPolicy implements SecurityPolicyInterface
 
         $class = get_class($obj);
         throw new SecurityNotAllowedPropertyError(sprintf('Calling "%s" property on a "%s" object is not allowed.', $property, $class), $class, $property);
+    }
+
+    private function checkForAllowedAttributeInProperty($obj, string $property, bool $checkInterfaces = true): bool
+    {
+        try {
+            $classRef = new ReflectionClass($obj);
+            $propertyRef = $classRef->getProperty($property);
+
+            if (!empty($propertyRef->getAttributes(AllowedInSandbox::class))) {
+                return true;
+            }
+
+            $parentClass = $classRef->getParentClass();
+            if ($parentClass && $this->checkForAllowedAttributeInProperty($parentClass, $property, false)) {
+                return true;
+            }
+
+            if ($checkInterfaces) {
+                foreach ($classRef->getInterfaceNames() as $interfaceName) {
+                    if ($this->checkForAllowedAttributeInProperty($interfaceName, $property, false)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (ReflectionException) {
+        }
+
+        return false;
+    }
+
+    private function isClassAllowed($obj): bool
+    {
+        // see if the class has the AllowedInSandbox attribute
+        if ($this->checkForAllowedAttributeInClass($obj)) {
+            return true;
+        }
+
+        foreach ($this->allowedClasses as $class) {
+            if ($obj instanceof $class) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function checkForAllowedAttributeInClass($obj, bool $checkInterfaces = true): bool
+    {
+        try {
+            $ref = new ReflectionClass($obj);
+            if (!empty($ref->getAttributes(AllowedInSandbox::class))) {
+                return true;
+            }
+
+            $parentClass = $ref->getParentClass();
+            if ($parentClass && $this->checkForAllowedAttributeInClass($parentClass, false)) {
+                return true;
+            }
+
+            if ($checkInterfaces) {
+                foreach ($ref->getInterfaceNames() as $interfaceName) {
+                    if ($this->checkForAllowedAttributeInClass($interfaceName, false)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (ReflectionException) {
+        }
+
+        return false;
     }
 }

@@ -55,7 +55,6 @@ use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use CraftCms\Cms\Cms;
@@ -64,6 +63,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Gql\Models\GqlSchema as GqlSchemaModel;
 use CraftCms\Cms\Gql\Models\GqlToken as GqlTokenModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -97,10 +97,11 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\UnknownMethodException;
 use function CraftCms\Cms\t;
 
@@ -916,7 +917,7 @@ class Gql extends Component
         }
 
         if ($runValidation && !$token->validate()) {
-            Craft::info('Token not saved due to validation error.', __METHOD__);
+            Log::info('Token not saved due to validation error.', [__METHOD__]);
             return false;
         }
 
@@ -988,7 +989,7 @@ class Gql extends Component
         $isNewSchema = !$schema->id;
 
         if ($runValidation && !$schema->validate()) {
-            Craft::info('Schema not saved due to validation error.', __METHOD__);
+            Log::info('Schema not saved due to validation error.', [__METHOD__]);
             return false;
         }
 
@@ -1218,7 +1219,7 @@ class Gql extends Component
      * Returns the content arguments for a given element type and field layouts.
      *
      * @param class-string<BaseElementInterface> $elementType
-     * @param FieldLayout[] $fieldLayouts
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout[] $fieldLayouts
      *
      * @return array
      * @since 5.0.0

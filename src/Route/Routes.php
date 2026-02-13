@@ -16,7 +16,6 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Event;
 
 #[Singleton]
 final class Routes
@@ -70,7 +69,13 @@ final class Routes
         $this->projectConfigRoutes = [];
 
         foreach ($routes as $uid => $route) {
-            $route = Route::from(array_merge($route, ['uid' => $uid]));
+            $route = new Route(
+                uriParts: $route['uriParts'] ?? [],
+                template: $route['template'],
+                siteUid: $route['siteUid'] ?? null,
+                uid: $uid,
+                sortOrder: $route['sortOrder'] ?? null,
+            );
 
             $uri = $route->getUri();
 
@@ -95,9 +100,7 @@ final class Routes
      */
     public function saveRoute(Route $route): string
     {
-        if (Event::hasListeners(SavingRoute::class)) {
-            Event::dispatch(new SavingRoute($route));
-        }
+        event(new SavingRoute($route));
 
         if ($route->uid !== null) {
             $sortOrder = $this->projectConfig->get(
@@ -114,9 +117,7 @@ final class Routes
             'Save route',
         );
 
-        if (Event::hasListeners(RouteSaved::class)) {
-            Event::dispatch(new RouteSaved($route));
-        }
+        event(new RouteSaved($route));
 
         $this->projectConfigRoutes = null;
 
@@ -131,28 +132,24 @@ final class Routes
             return true;
         }
 
-        if (Event::hasListeners(DeletingRoute::class)) {
-            Event::dispatch(new DeletingRoute(new Route(
-                uriParts: $route['uriParts'],
-                template: $route['template'],
-                siteUid: $route['siteUid'],
-                uid: $routeUid,
-            )));
-        }
+        event(new DeletingRoute(new Route(
+            uriParts: $route['uriParts'],
+            template: $route['template'],
+            siteUid: $route['siteUid'],
+            uid: $routeUid,
+        )));
 
         $this->projectConfig->remove(
             ProjectConfig::PATH_ROUTES.'.'.$routeUid,
             'Delete route',
         );
 
-        if (Event::hasListeners(RouteDeleted::class)) {
-            Event::dispatch(new RouteDeleted(new Route(
-                uriParts: $route['uriParts'],
-                template: $route['template'],
-                siteUid: $route['siteUid'],
-                uid: $routeUid,
-            )));
-        }
+        event(new RouteDeleted(new Route(
+            uriParts: $route['uriParts'],
+            template: $route['template'],
+            siteUid: $route['siteUid'],
+            uid: $routeUid,
+        )));
 
         $this->projectConfigRoutes = null;
 

@@ -2,62 +2,18 @@
 
 namespace craft\fields\conditions;
 
-use craft\base\conditions\BaseMultiSelectConditionRule;
-use CraftCms\Cms\Address\Addresses;
-use CraftCms\Cms\Field\Country;
-use yii\base\InvalidConfigException;
-
-/**
- * Options field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.6.0
- */
-class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements FieldConditionRuleInterface
-{
-    use FieldConditionRuleTrait;
-
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Options field condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.6.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Conditions\CountryFieldConditionRule} instead.
      */
-    protected function options(): array
+    class CountryFieldConditionRule
     {
-        return app(Addresses::class)->getCountryList(app()->getLocale());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function inputHtml(): string
-    {
-        if (!$this->field() instanceof Country) {
-            throw new InvalidConfigException();
-        }
-
-        return parent::inputHtml();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function elementQueryParam(): ?array
-    {
-        if (!$this->field() instanceof Country) {
-            return null;
-        }
-
-        return $this->paramValue();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function matchFieldValue($value): bool
-    {
-        if (!$this->field() instanceof Country) {
-            return true;
-        }
-
-        return $this->matchValue($value);
     }
 }
+
+class_alias(\CraftCms\Cms\Field\Conditions\CountryFieldConditionRule::class, CountryFieldConditionRule::class);

@@ -10,12 +10,12 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
-use CraftCms\Cms\Shared\Rules\LanguageRule;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Validation\Rules\LanguageRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -208,13 +208,13 @@ final readonly class InstallController
             }
         }
 
-        $site = new Site(
-            name: $request->input('site.name'),
-            handle: 'default',
-            language: $request->input('site.language'),
-            baseUrl: $siteUrl,
-            hasUrls: true,
-        );
+        $site = new Site([
+            'name' => $request->input('site.name'),
+            'handle' => 'default',
+            'language' => $request->input('site.language'),
+            'baseUrl' => $siteUrl,
+            'hasUrls' => true,
+        ]);
 
         $migration = new Install(
             username: $username,
@@ -274,7 +274,7 @@ final readonly class InstallController
             'schema' => ['nullable', 'string'],
         ]);
 
-        $defaultPort = $data['driver'] === 'mysql' ? 3306 : 5432;
+        $defaultPort = in_array($data['driver'], ['mysql', 'mariadb']) ? 3306 : 5432;
 
         $data['host'] ??= Config::get("database.connections.{$data['driver']}.host") ?: '127.0.0.1';
         $data['port'] ??= Config::get("database.connections.{$data['driver']}.port") ?: $defaultPort;

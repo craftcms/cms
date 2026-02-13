@@ -6,14 +6,15 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Entry;
-use craft\fields\conditions\TextFieldConditionRule;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -22,19 +23,13 @@ use function CraftCms\Cms\t;
  */
 final class PlainText extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Plain Text');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return 'string|null';
@@ -77,9 +72,6 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
      */
     public ?int $byteLimit = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct(array $config = [])
     {
         // Config normalization
@@ -89,11 +81,15 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
             } else {
                 $config['byteLimit'] = (int) $config['fieldLimit'] ?: null;
             }
-            unset($config['limitUnit'], $config['fieldLimit']);
         }
 
         // remove unused settings
-        unset($config['maxLengthUnit'], $config['columnType']);
+        unset(
+            $config['limitUnit'],
+            $config['fieldLimit'],
+            $config['maxLengthUnit'],
+            $config['columnType'],
+        );
 
         parent::__construct($config);
 
@@ -102,9 +98,6 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettings(): array
     {
         $settings = parent::getSettings();
@@ -115,8 +108,8 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         return $settings;
     }
 
-    #[\Override]
-    public static function getRules(): array
+    #[Override]
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'initialRows' => ['nullable', 'integer', 'min:1'],
@@ -125,17 +118,11 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -149,19 +136,13 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, true);
@@ -174,22 +155,19 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
                 $value = Str::unescapeShortcodes(Str::shortcodesToEmoji($value));
             }
 
-            $value = trim((string) preg_replace('/\R/u', "\n", (string) $value));
+            $value = trim(Str::convertLineBreaks($value));
         }
 
         return $value !== '' ? $value : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, false);
     }
 
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_inputHtml($value, $element, true);
@@ -207,25 +185,28 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
-    public function getElementValidationRules(): array
+    #[Override]
+    public function getElementRules(ElementInterface $element): array
     {
-        return [
-            [
-                'string',
-                'max' => $this->byteLimit ?? $this->charLimit ?? null,
-                'encoding' => $this->byteLimit ? '8bit' : 'UTF-8',
-            ],
-        ];
+        $rules = ['string'];
+
+        if ($this->byteLimit) {
+            $rules[] = function ($attribute, $value, $fail) {
+                if (mb_strlen($value, '8bit') > $this->byteLimit) {
+                    $fail(t('{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
+                        'attribute' => $this->getUiLabel(),
+                        'max' => $this->byteLimit,
+                    ]));
+                }
+            };
+        } elseif ($this->charLimit) {
+            $rules[] = ["max:$this->charLimit"];
+        }
+
+        return $rules;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value !== null) {
@@ -238,18 +219,12 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): string
     {
         return TextFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         $previewHtml = parent::getPreviewHtml($value, $element);
@@ -263,10 +238,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {

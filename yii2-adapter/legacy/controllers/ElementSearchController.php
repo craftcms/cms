@@ -9,12 +9,14 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementCondition;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\InvalidTypeException;
 use craft\helpers\Component;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Search;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -59,11 +61,14 @@ class ElementSearchController extends Controller
             ->limit(5);
 
         if ($criteria) {
+            // Remove unsupported criteria attributes
+            $criteria = ElementHelper::cleanseQueryCriteria($criteria);
+
             Craft::configure($query, Component::cleanseConfig($criteria));
         }
 
         if ($conditionConfig) {
-            $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
+            $condition = Conditions::createCondition($conditionConfig);
 
             if ($condition instanceof ElementCondition) {
                 $referenceElementId = $this->request->getBodyParam('referenceElementId');

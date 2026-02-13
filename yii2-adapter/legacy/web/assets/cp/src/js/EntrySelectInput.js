@@ -40,14 +40,17 @@ Craft.EntrySelectInput = Craft.BaseElementSelectInput.extend({
 
   showElementEditor: function (entry) {
     return new Promise((resolve, reject) => {
-      const slideout = Craft.createElementEditor('craft\\elements\\Entry', {
-        siteId: this.settings.criteria.siteId,
-        elementId: entry.id,
-        draftId: entry.draftId,
-        params: {
-          fresh: 1,
-        },
-      });
+      const slideout = Craft.createElementEditor(
+        'CraftCms\\Cms\\Entry\\Elements\\Entry',
+        {
+          siteId: this.settings.criteria.siteId,
+          elementId: entry.id,
+          draftId: entry.draftId,
+          params: {
+            fresh: 1,
+          },
+        }
+      );
 
       let submitted = false;
 

@@ -8,30 +8,29 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\console\Controller;
-use craft\elements\Address;
-use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\events\MultiElementActionEvent;
 use craft\helpers\Console;
 use craft\helpers\ElementHelper;
-use craft\helpers\Queue;
 use craft\models\CategoryGroup;
-use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\models\Volume;
-use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Jobs\ResaveElements;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
@@ -655,17 +654,18 @@ class ResaveController extends Controller
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {
-            Queue::push(new ResaveElements([
-                'elementType' => $elementType,
-                'criteria' => $criteria,
-                'set' => $this->set,
-                'to' => $this->to,
-                'ifEmpty' => $this->ifEmpty,
-                'ifInvalid' => $this->ifInvalid,
-                'touch' => $this->touch,
-                'updateSearchIndex' => $this->updateSearchIndex,
-                'batchSize' => $this->batchSize,
-            ]));
+            dispatch(new ResaveElements(
+                elementType: $elementType,
+                criteria: $criteria,
+                updateSearchIndex: $this->updateSearchIndex,
+                set: $this->set,
+                to: $this->to,
+                ifEmpty: $this->ifEmpty,
+                ifInvalid: $this->ifInvalid,
+                touch: $this->touch,
+                batchSize: $this->batchSize,
+            ));
+
             $this->output($elementType::pluralDisplayName() . ' queued to be resaved.');
             return ExitCode::OK;
         }
@@ -818,7 +818,7 @@ class ResaveController extends Controller
                 if ($e->exception) {
                     $this->stdout('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);
                     $fail = true;
-                } elseif ($element->hasErrors()) {
+                } elseif ($element->errors()->isNotEmpty()) {
                     $this->stdout('failed: ' . implode(', ', $element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
                     $fail = true;
                 } else {

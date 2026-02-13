@@ -3,12 +3,15 @@
 namespace CraftCms\Yii2Adapter;
 
 use Craft;
+use craft\base\Event as YiiEvent;
+use craft\base\FieldLayoutComponent;
 use craft\console\controllers\HelpController;
 use craft\controllers\UsersController;
+use craft\elements\Asset;
 use craft\elements\Category;
+use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
-use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DefineGqlArgumentsEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -23,7 +26,7 @@ use craft\events\RegisterGqlTypesEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
-use craft\fieldlayoutelements\TitleField;
+use craft\fieldlayoutelements\BaseField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\linktypes\Category as CategoryLinkType;
 use craft\fields\Tags as TagsField;
@@ -43,12 +46,11 @@ use craft\gql\queries\GlobalSet as GlobalSetQuery;
 use craft\gql\queries\Tag as TagQuery;
 use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\TagRelation;
-use craft\helpers\Queue;
 use craft\models\CategoryGroup;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
-use craft\queue\jobs\PropagateElements;
 use craft\services\Addresses;
+use craft\services\Auth;
 use craft\services\Dashboard;
 use craft\services\Drafts;
 use craft\services\Elements;
@@ -71,19 +73,26 @@ use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
 use craft\web\twig\GlobalsExtension;
+use craft\web\twig\variables\Cp;
 use craft\web\twig\variables\Cp as CpVariable;
 use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
-use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
+use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition\Events\EditionChanged;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Jobs\PropagateElements;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
+use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
@@ -108,6 +117,10 @@ use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
+use CraftCms\Yii2Adapter\Mixins\ElementMixin;
+use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
+use CraftCms\Yii2Adapter\Mixins\UserMixin;
+use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Login;
@@ -121,16 +134,14 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use PDOException;
 use RuntimeException;
-use SensitiveParameter;
 use Symfony\Component\Finder\Finder;
-use Webauthn\PublicKeyCredentialRequestOptions;
-use yii\base\Event as YiiEvent;
 use yii\BaseYii;
 use yii\caching\TagDependency as YiiTagDependency;
 use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\IntlMessageFormatter;
 use Yiisoft\Translator\Message\Php\MessageSource;
 use Yiisoft\Translator\Translator;
+
 use function CraftCms\Cms\t;
 
 class Yii2ServiceProvider extends ServiceProvider
@@ -166,6 +177,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
             if (!is_array($config)) {
                 Config::set($key, []);
+
                 continue;
             }
 
@@ -173,7 +185,7 @@ class Yii2ServiceProvider extends ServiceProvider
                 continue;
             }
 
-            Deprecator::log("config-{$file}", "Using multi-environment config files is deprecated.", $file->getPathname());
+            Deprecator::log("config-{$file}", 'Using multi-environment config files is deprecated.', $file->getPathname());
 
             $merged = Arr::merge($config['*'], $config[$environment] ?? []);
 
@@ -220,61 +232,13 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->dispatchComponentEvent($name, $event);
         });
 
-        ElementQuery::macro('getCachedResult', function() {
-            Deprecator::log('ElementQuery-getCachedResult', 'Calling ->getCachedResult on an ElementQuery is deprecated. Use ->getResultOverride() instead.');
-
-            /** @var ElementQuery $this */
-            return $this->getResultOverride();
-        });
-
-        ElementQuery::macro('setCachedResult', function(array $elements) {
-            Deprecator::log('ElementQuery-setCachedResult', 'Calling ->setCachedResult on an ElementQuery is deprecated. Use ->setResultOverride() instead.');
-
-            /** @var ElementQuery $this */
-            $this->setResultOverride($elements);
-        });
-
-        ElementQuery::macro('clearCachedResult', function() {
-            Deprecator::log('ElementQuery-clearCachedResult', 'Calling ->clearCachedResult on an ElementQuery is deprecated. Use ->clearResultOverride() instead.');
-
-            /** @var ElementQuery $this */
-            $this->clearResultOverride();
-        });
-
-        ElementQuery::macro('collect', function() {
-            Deprecator::log('ElementQuery-collect', 'Calling ->collect on an ElementQuery is deprecated. ElementQuery now returns a collection by default.');
-
-            return $this->get();
-        });
-
-        User::macro(
-            'authenticate',
-            function(#[SensitiveParameter] string $password) {
-                Deprecator::log('User-authenticate', 'Calling ->authenticate on a User is deprecated. Use app(Auth::class)->authenticate() instead.');
-
-                return app(Auth::class)->authenticate($this, [
-                    'password' => $password,
-                ]);
-            },
-        );
-
-        User::macro(
-            'authenticateWithPasskey',
-            function(PublicKeyCredentialRequestOptions|array|string $requestOptions, string $response): bool {
-                Deprecator::log('User-authenticateWithPasskey', 'Calling ->authenticateWithPasskey on a User is deprecated. Use app(UserProvider::class)->validatePasskey() instead.');
-
-                return app(Auth::class)->authenticateWithPasskey($this, $requestOptions, $response);
-            },
-        );
-
-        User::macro(
-            'handleInvalidLoginParam',
-            function(): void {
-                Deprecator::log('User-handleInvalidLoginParam', 'Calling ->handleInvalidLoginParam on a User is deprecated. Use app(Auth::class)->handleInvalidLogin($user) instead.');
-
-                app(Auth::class)->handleInvalidLogin($this);
-            },
-        );
+        Element::mixin(new ValidateMixin());
+        Element::mixin(new ElementMixin());
+        Field::mixin(new ValidateMixin());
+        FieldLayoutComponent::mixin(new ValidateMixin());
+        ElementQuery::mixin(new ElementQueryMixin());
+        User::mixin(new UserMixin());
+        Widget::mixin(new ValidateMixin());
     }
 
     protected function registerLegacyApp(): void
@@ -315,6 +279,7 @@ class Yii2ServiceProvider extends ServiceProvider
             $app->language = app()->getLocale();
 
             Craft::$app = $app;
+            Craft::populateCustomFieldBehavior();
 
             $this->bootEvents();
             self::bootYiiEvents();
@@ -397,8 +362,15 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         app('Craft');
 
-        $this->ensureNewMigrationTable();
-        $this->ensureNewSessionsTable();
+        /**
+         * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.
+         */
+        Event::listen(FieldCachesInvalidated::class, fn() => Craft::populateCustomFieldBehavior());
+
+        $this->app->booted(function() {
+            $this->ensureNewMigrationTable();
+            $this->ensureNewSessionsTable();
+        });
 
         if (!$this->app->runningInConsole()) {
             return;
@@ -424,7 +396,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         foreach ($commands as $command) {
             if (str_contains($command['description'], '. ')) {
-                $command['description'] = Str::before($command['description'], ". ") . '. ';
+                $command['description'] = Str::before($command['description'], '. ') . '. ';
             }
 
             $signature = str_replace('/', ':', $command['name']);
@@ -500,7 +472,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
             $definitionSignature .= "={$definition['default']}";
         } elseif ($type === 'option' && ($definition['required'] ?? true)) {
-            $definitionSignature .= "=";
+            $definitionSignature .= '=';
         }
 
         if ($definition['description']) {
@@ -517,10 +489,25 @@ class Yii2ServiceProvider extends ServiceProvider
     private function bootEvents(): void
     {
         /**
+         * Elements
+         */
+        \craft\base\Element::registerEvents();
+        Asset::registerEvents();
+        Entry::registerEvents();
+        \craft\elements\User::registerEvents();
+
+        /**
+         * FieldLayouts
+         */
+        BaseField::registerEvents();
+        FieldLayout::registerEvents();
+        FieldLayoutComponent::registerEvents();
+
+        /**
          * Services
          */
         Addresses::registerEvents();
-        \craft\services\Auth::registerEvents();
+        Auth::registerEvents();
         Drafts::registerEvents();
         Entries::registerEvents();
         Fields::registerEvents();
@@ -549,7 +536,22 @@ class Yii2ServiceProvider extends ServiceProvider
         AssetIndexes::registerEvents();
         ClearCaches::registerEvents();
 
-        Event::listen(EditionChanged::class, function(EditionChanged $event) {
+        /**
+         * Variables
+         */
+        Cp::registerEvents();
+
+        Event::listen(function(RegisterCpNavItems $event) {
+            if (YiiEvent::hasHandlers(CpVariable::class, 'registerCpNavItems')) {
+                $yiiEvent = new RegisterCpNavItemsEvent(['navItems' => $event->navItems]);
+
+                YiiEvent::trigger(CpVariable::class, 'registerCpNavItems', $yiiEvent);
+
+                $event->navItems = $yiiEvent->navItems;
+            }
+        });
+
+        Event::listen(function(EditionChanged $event) {
             /** @var \craft\web\Application $craft */
             $craft = app('Craft');
 
@@ -587,7 +589,6 @@ class Yii2ServiceProvider extends ServiceProvider
         /**
          * Deprecated concepts
          */
-
         Event::listen(RegisterFieldTypes::class, function(RegisterFieldTypes $event) {
             if (self::supportsCategories()) {
                 $event->types->add(CategoriesField::class);
@@ -648,14 +649,14 @@ class Yii2ServiceProvider extends ServiceProvider
             ]));
 
             foreach ($elementTypes as $elementType) {
-                Queue::push(new PropagateElements([
-                    'elementType' => $elementType,
-                    'criteria' => [
+                dispatch(new PropagateElements(
+                    elementType: $elementType,
+                    criteria: [
                         'siteId' => $event->oldPrimarySiteId,
                     ],
-                    'siteId' => $event->site->id,
-                    'isNewSite' => true,
-                ]));
+                    siteId: $event->site->id,
+                    isNewSite: true,
+                ));
             }
         });
 
@@ -974,20 +975,14 @@ class Yii2ServiceProvider extends ServiceProvider
             Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
         }
 
-        YiiEvent::on(
-            FieldLayout::class,
-            FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
-            function(DefineFieldLayoutFieldsEvent $event) {
-                /** @var FieldLayout $fieldLayout */
-                $fieldLayout = $event->sender;
-                switch ($fieldLayout->type) {
-                    case Category::class:
-                    case Tag::class:
-                        $event->fields[] = TitleField::class;
-                        break;
-                }
-            },
-        );
+        Event::listen(function(DefineNativeFields $event) {
+            switch ($event->fieldLayout->type) {
+                case Category::class:
+                case Tag::class:
+                    $event->fields[] = TitleField::class;
+                    break;
+            }
+        });
 
         if (self::supportsTags()) {
             app(ProjectConfig::class)
@@ -998,7 +993,9 @@ class Yii2ServiceProvider extends ServiceProvider
     }
 
     private static ?bool $supportsCategories = null;
+
     private static ?bool $supportsGlobalSets = null;
+
     private static ?bool $supportsTags = null;
 
     public static function supportsCategories(): bool
@@ -1034,8 +1031,6 @@ class Yii2ServiceProvider extends ServiceProvider
 
     /**
      * Return category group permissions.
-     *
-     * @return array
      */
     private static function categorySchemaComponents(): array
     {
@@ -1078,8 +1073,6 @@ class Yii2ServiceProvider extends ServiceProvider
 
     /**
      * Return global set permissions.
-     *
-     * @return array
      */
     private static function globalSetSchemaComponents(): array
     {
@@ -1110,8 +1103,6 @@ class Yii2ServiceProvider extends ServiceProvider
 
     /**
      * Return tag group permissions.
-     *
-     * @return array
      */
     private static function tagSchemaComponents(): array
     {

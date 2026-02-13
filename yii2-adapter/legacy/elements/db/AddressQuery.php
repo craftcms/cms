@@ -10,9 +10,9 @@ namespace craft\elements\db;
 use Craft;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
-use craft\elements\Address;
 use craft\helpers\Db;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Elements\Address;
 
 /**
  * AddressQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
@@ -28,8 +28,9 @@ use CraftCms\Cms\Address\Addresses;
  * @replace {elements} addresses
  * @replace {twig-method} craft.addresses()
  * @replace {myElement} myAddress
- * @replace {element-class} \craft\elements\Address
- * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\Queries\AddressQuery} instead.
+ * @replace {element-class} \CraftCms\Cms\Address\Elements\Address
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Queries\AddressQuery} instead.
+ * @phpstan-ignore class.missingExtends
  */
 class AddressQuery extends ElementQuery implements NestedElementQueryInterface
 {
@@ -42,7 +43,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses that are located in AU
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->countryCode('AU')
      *     ->all();
      * ```
@@ -62,7 +63,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses that are located in Western Australia
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->administrativeArea('WA')
      *     ->all();
      * ```
@@ -82,7 +83,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses by locality
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->locality('Perth')
      *     ->all();
      * ```
@@ -102,7 +103,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses by dependent locality
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->dependentLocality('Darlington')
      *     ->all();
      * ```
@@ -122,7 +123,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses by postal code
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->postalCode('10001')
      *     ->all();
      * ```
@@ -142,7 +143,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses by sorting code
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->sortingCode('ABCD')
      *     ->all();
      * ```
@@ -162,7 +163,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses by organization
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->organization('Pixel & Tonic')
      *     ->all();
      * ```
@@ -182,7 +183,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses by organization tax ID
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->organizationTaxId('123-456-789')
      *     ->all();
      * ```
@@ -203,7 +204,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses by address line 1
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->addressLine1('23 Craft st')
      *     ->all();
      * ```
@@ -223,7 +224,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses by address line 2
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->addressLine2('Apt 5B')
      *     ->all();
      * ```
@@ -243,7 +244,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses by address line 3
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->addressLine3('Suite 212')
      *     ->all();
      * ```
@@ -263,7 +264,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses by full name
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->fullName('John Doe')
      *     ->all();
      * ```
@@ -283,7 +284,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses by first name
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->firstName('Doe')
      *     ->all();
      * ```
@@ -303,7 +304,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      * ---
      * ```php
      * // fetch addresses by last name
-     * $addresses = \craft\elements\Address::find()
+     * $addresses = \CraftCms\Cms\Address\Elements\Address::find()
      *     ->lastName('Doe')
      *     ->all();
      * ```

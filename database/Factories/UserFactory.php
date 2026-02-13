@@ -98,7 +98,7 @@ final class UserFactory extends Factory
             }
 
             if (! Craft::$app->getElements()->saveElement($element = $model->asElement())) {
-                dump($element->getErrors());
+                dump($element->errors()->all());
                 throw new RuntimeException('Could not save user.');
             }
 

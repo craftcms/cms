@@ -4,14 +4,19 @@ export default css`
   .nav-item {
     display: grid;
     gap: var(--c-spacing-md);
-    grid-template-columns: calc(24rem / 16) 1fr auto;
+    grid-template-columns: 1fr auto;
     align-items: center;
     text-decoration: none;
     color: inherit;
-    padding-inline: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
     padding-block: var(--c-spacing-sm);
     border-radius: var(--c-radius-md);
     position: relative;
+  }
+
+  .nav-item--prefixed {
+    padding-inline: var(--c-spacing-sm);
+    grid-template-columns: calc(24rem / 16) 1fr auto;
   }
 
   :host([active]) .nav-item {
@@ -24,7 +29,7 @@ export default css`
       height: 76%;
       border-radius: calc(2rem / 16);
       background-color: currentColor;
-      transform: translateX(-200%);
+      transform: translateX(-150%);
     }
   }
 

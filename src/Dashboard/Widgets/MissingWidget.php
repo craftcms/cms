@@ -11,9 +11,6 @@ final class MissingWidget extends Widget implements MissingComponentInterface
 {
     use MissingComponentTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getBodyHtml(): ?string
     {

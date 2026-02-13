@@ -8,14 +8,14 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\elements\Entry;
-use craft\models\FieldLayout;
 use craft\test\DbFixtureTrait;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
@@ -110,7 +110,7 @@ abstract class BaseElementFixture extends DbFixture
             }
 
             if (!$this->saveElement($element)) {
-                throw new InvalidElementException($element, implode(' ', $element->getErrorSummary(true)));
+                throw new InvalidElementException($element, implode(' ', $element->errors()->all()));
             }
 
             if ($dateDeleted) {

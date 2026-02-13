@@ -145,7 +145,6 @@ final class CpModalResponse implements Responsable
         );
     }
 
-    /** {@inheritdoc} */
     public function toResponse($request): JsonResponse
     {
         $view = Craft::$app->getView();

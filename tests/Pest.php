@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Database\Queries\AssetQuery;
-use CraftCms\Cms\Database\Queries\EntryQuery;
-use CraftCms\Cms\Database\Queries\UserQuery;
+use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;

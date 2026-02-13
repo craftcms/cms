@@ -93,10 +93,10 @@ it('can save an entry type', function () {
 
     expect(EntryType::count())->toBe(0);
 
-    $entryType = new EntryTypeData(
-        name: 'Pages',
-        handle: 'pages',
-    );
+    $entryType = new EntryTypeData([
+        'name' => 'Pages',
+        'handle' => 'pages',
+    ]);
 
     $this->entryTypes->saveEntryType($entryType);
 
@@ -121,10 +121,10 @@ it('can delete an entry type by id', function () {
     Event::listen(ApplyingDeleteEntryType::class, fn () => null);
     Event::listen(EntryTypeDeleted::class, fn () => null);
 
-    $this->entryTypes->saveEntryType($entryType = new EntryTypeData(
-        name: 'Pages',
-        handle: 'pages',
-    ));
+    $this->entryTypes->saveEntryType($entryType = new EntryTypeData([
+        'name' => 'Pages',
+        'handle' => 'pages',
+    ]));
 
     expect(EntryType::count())->toBe(1);
 
@@ -137,10 +137,10 @@ it('can delete an entry type by id', function () {
 });
 
 it('can delete an entry type', function () {
-    $this->entryTypes->saveEntryType($entryType = new EntryTypeData(
-        name: 'Pages',
-        handle: 'pages',
-    ));
+    $this->entryTypes->saveEntryType($entryType = new EntryTypeData([
+        'name' => 'Pages',
+        'handle' => 'pages',
+    ]));
 
     expect(EntryType::count())->toBe(1);
 

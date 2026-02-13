@@ -7,9 +7,7 @@
 
 namespace crafttests\unit\helpers;
 
-use craft\base\FieldLayoutElement;
 use craft\errors\MissingComponentException;
-use craft\fieldlayoutelements\HorizontalRule;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\test\mockclasses\components\ComponentExample;
@@ -19,6 +17,7 @@ use craft\test\TestCase;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use Exception;
 use Throwable;
 use UnitTester;
@@ -139,9 +138,6 @@ class ComponentHelperTest extends TestCase
             [true, PlainText::class, FieldInterface::class],
             // fails because the class doesn't exist
             [false, 'foo\\bar\\Baz', MissingComponentException::class],
-            // fails because it’s not a ComponentInterface
-            [false, HorizontalRule::class, null, InvalidConfigException::class],
-            [false, HorizontalRule::class, FieldLayoutElement::class, InvalidConfigException::class],
             // fails because it's the wrong interface
             [false, PlainText::class, FieldLayoutElement::class, InvalidConfigException::class],
         ];

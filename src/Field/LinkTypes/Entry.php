@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use craft\elements\Entry as EntryElement;
 use craft\helpers\Cp;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Collection;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -50,7 +51,7 @@ final class Entry extends BaseElementLinkType
         parent::__construct($config);
     }
 
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): string
     {
         return
@@ -71,7 +72,7 @@ final class Entry extends BaseElementLinkType
             ]);
     }
 
-    #[\Override]
+    #[Override]
     protected function availableSourceKeys(): array
     {
         // find the sections that don't have a URL format in any site
@@ -110,7 +111,7 @@ final class Entry extends BaseElementLinkType
         return array_values(array_unique($sources));
     }
 
-    #[\Override]
+    #[Override]
     protected function selectionCriteria(): array
     {
         $criteria = parent::selectionCriteria();
@@ -122,10 +123,7 @@ final class Entry extends BaseElementLinkType
         return $criteria;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function elementSelectConfig(): array
     {
         $config = parent::elementSelectConfig();

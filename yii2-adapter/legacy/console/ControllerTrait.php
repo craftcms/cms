@@ -207,7 +207,7 @@ trait ControllerTrait
             $model->$attribute = $input;
 
             if (!$model->validate([$attribute])) {
-                $error = $model->getFirstError($attribute);
+                $error = $model->errors()->first($attribute);
 
                 return false;
             }

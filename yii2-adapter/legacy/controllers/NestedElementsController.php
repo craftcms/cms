@@ -10,11 +10,11 @@ namespace craft\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\web\Controller;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use Illuminate\Support\Facades\DB;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -87,7 +87,8 @@ class NestedElementsController extends Controller
                 ->status(null)
                 ->asArray()
                 ->select(['id', 'sortOrder'])
-                ->pairs();
+                ->pluck('sortOrder', 'id')
+                ->all();
         } else {
             $oldSortOrders = $this->nestedElements
                 ->keyBy(fn(ElementInterface $element) => $element->id)
@@ -156,12 +157,13 @@ class NestedElementsController extends Controller
         }
 
         // If the element primarily belongs to a different element, just delete the ownership
-        /** @phpstan-ignore method.notFound */
+        /** @var NestedElementInterface $element */
         if ($element->getPrimaryOwnerId() !== $this->owner->id) {
             DB::table(Table::ELEMENTS_OWNERS)
                 ->where('ownerId', $this->owner->id)
                 ->where('elementId', $element->id)
                 ->delete();
+
             $success = true;
         } else {
             $success = $elementsService->deleteElement($element);

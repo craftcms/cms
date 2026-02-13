@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 /**
  * Table attribute Element Query preparation event
@@ -17,6 +17,7 @@ use craft\elements\db\ElementQueryInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.14
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\PrepQueryForTableAttribute} instead.
  */
 class ElementIndexTableAttributeEvent extends Event
 {

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Data;
 
 use craft\base\Serializable;
+use craft\web\twig\AllowedInSandbox;
+use Stringable;
 
 /**
  * @property string $hex
@@ -20,7 +22,8 @@ use craft\base\Serializable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Top Shelf Craft <michael@michaelrog.com>
  */
-final class ColorData implements \Stringable, Serializable
+#[AllowedInSandbox]
+final class ColorData implements Serializable, Stringable
 {
     /**
      * @see _hsl()
@@ -40,9 +43,6 @@ final class ColorData implements \Stringable, Serializable
         return $this->_hex;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function serialize(): mixed
     {
         return $this->_hex;

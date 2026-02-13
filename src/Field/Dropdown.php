@@ -21,42 +21,24 @@ use function CraftCms\Cms\t;
  */
 final class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface, SortableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $optgroups = true;
 
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $optionIcons = true;
 
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $optionColors = true;
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
         return t('Dropdown');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'ballot-check';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getStatus(ElementInterface $element): ?array
     {
@@ -75,18 +57,12 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
         return parent::getStatus($element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->inputHtmlInternal($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
     {
@@ -145,18 +121,12 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
         return $encValue === null || $encValue === '' ? '__blank__' : $encValue;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function optionsSettingLabel(): string
     {
         return t('Dropdown Options');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function isOptionSelected(array $option, mixed $value, array &$selectedValues, bool &$selectedBlankOption): bool
     {

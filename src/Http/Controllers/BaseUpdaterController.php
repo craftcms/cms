@@ -15,9 +15,12 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Container\Attributes\Give;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -59,10 +62,10 @@ abstract class BaseUpdaterController
             return;
         }
 
-        if (! is_null($data = $this->request->input('data'))) {
-            $data = Craft::$app->getSecurity()->validateData($this->request->input('data', ''));
-
-            if ($data === false) {
+        if (! is_null($this->request->input('data'))) {
+            try {
+                $data = Crypt::decrypt($this->request->input('data', ''));
+            } catch (DecryptException) {
                 throw ValidationException::withMessages([
                     'data' => t('Invalid data.'),
                 ]);
@@ -503,7 +506,7 @@ abstract class BaseUpdaterController
      */
     private function hashedData(): string
     {
-        return Craft::$app->getSecurity()->hashData(Json::encode($this->data));
+        return Crypt::encrypt(Json::encode($this->data));
     }
 
     /**

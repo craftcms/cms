@@ -8,17 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutComponent;
 use craft\base\NestedElementInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\errors\InvalidTypeException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
-use craft\fieldlayoutelements\BaseField;
-use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -26,7 +21,6 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
-use craft\models\FieldLayoutForm;
 use craft\services\Drafts;
 use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
@@ -35,10 +29,15 @@ use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Revisions;
+use CraftCms\Cms\FieldLayout\FieldLayoutForm;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -51,8 +50,10 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
@@ -369,7 +370,7 @@ class ElementsController extends Controller
         [$docTitle, $title] = $this->_editElementTitles($element);
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
-        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? UrlHelper::cpReferralUrl() ?? ElementHelper::postEditUrl($element);
+        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? ElementHelper::postEditUrl($element);
 
         // Site statuses
         if ($canEditMultipleSites) {
@@ -380,7 +381,8 @@ class ElementsController extends Controller
             ];
         }
 
-        $security = Craft::$app->getSecurity();
+        $previewToken = $previewTargets ? Str::random(extendedChars: true) : null;
+
         $notice = null;
         if ($element->isProvisionalDraft) {
             $notice = fn() => $this->_draftNotice();
@@ -455,19 +457,20 @@ class ElementsController extends Controller
                         'elementType' => get_class($element),
                         'enablePreview' => $enablePreview,
                         'enabledForSite' => $element->enabled && $enabledForSite,
-                        'hashedCpEditUrl' => $security->hashData('{cpEditUrl}'),
+                        'hashedCpEditUrl' => Crypt::encrypt('{cpEditUrl}'),
                         'isLive' => $isCurrent && !$element->getIsDraft() && $element->enabled && $enabledForSite && $hasRoute,
                         'isProvisionalDraft' => $element->isProvisionalDraft,
                         'isUnpublishedDraft' => $isUnpublishedDraft,
                         'previewTargets' => $previewTargets,
-                        'previewToken' => $previewTargets ? $security->generateRandomString() : null,
-                        'previewParamValue' => $previewTargets ? $security->hashData(Str::random(10)) : null,
+                        'previewToken' => $previewToken,
+                        'hashedPreviewToken' => $previewToken ? Crypt::encrypt($previewToken) : null,
+                        'previewParamValue' => $previewTargets ? Crypt::encrypt(Str::random(10)) : null,
                         'revisionId' => $element->revisionId,
                         'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
                         'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
                         'siteId' => $element->siteId,
                         'siteStatuses' => $siteStatuses,
-                        'siteToken' => (!app()->isLive() || !$element->getSite()->getEnabled()) ? $security->hashData((string)$element->siteId) : null,
+                        'siteToken' => (!app()->isLive() || !$element->getSite()->getEnabled()) ? Crypt::encrypt((string)$element->siteId) : null,
                         'visibleLayoutElements' => $form?->getVisibleElements() ?? [],
                         'staticLayoutElements' => $form?->getStaticElements() ?? [],
                         'updatedTimestamp' => $element->dateUpdated?->getTimestamp(),
@@ -706,7 +709,7 @@ JS, [
                     ->preferSites([$element->siteId])
                     ->unique()
                     ->status(null)
-                    ->andWhere(['!=', 'elements.dateCreated', Db::prepareDateForDb($element->dateUpdated)])
+                    ->where('elements.dateCreated', '!=', Db::prepareDateForDb($element->dateUpdated))
                     ->with(['revisionCreator']),
             ]);
     }
@@ -808,7 +811,7 @@ JS, [
                     ->status(null)
                     ->orderBy(['dateUpdated' => SORT_DESC])
                     ->with(['draftCreator'])
-                    ->collect()
+                    ->get()
                     ->filter(fn(ElementInterface $draft) => $elementsService->canView($draft, $user))
                     ->all();
             }
@@ -827,7 +830,7 @@ JS, [
                 ->status(null)
                 ->offset(1)
                 ->limit($generalConfig->maxRevisions ? min($generalConfig->maxRevisions - 1, 10) : 10)
-                ->orderBy(['dateCreated' => SORT_DESC])
+                ->orderByDesc('dateCreated')
                 ->with(['revisionCreator']);
 
             $revisions = $revisionsQuery->all();
@@ -958,7 +961,7 @@ JS, [
             ];
         }
 
-        if ($hasMoreRevisions) {
+        if ($hasMoreRevisions && $revisionsPageUrl) {
             $items[] = ['type' => MenuItemType::HR];
             $items[] = [
                 'label' => t('View all revisions'),
@@ -1012,7 +1015,7 @@ JS, [
                     'class' => ['btn', 'formsubmit'],
                     'data' => [
                         'action' => 'elements/save-draft',
-                        'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
+                        'redirect' => Crypt::encrypt('{cpEditUrl}'),
                         'params' => ['dropProvisional' => 1],
                     ],
                 ]);
@@ -1047,7 +1050,7 @@ JS, [
                 'class' => ['btn', 'secondary', 'formsubmit', 'tooltip-draft-btn'],
                 'data' => [
                     'action' => 'elements/apply-draft',
-                    'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
+                    'redirect' => Crypt::encrypt('{cpEditUrl}'),
                 ],
             ]);
         }
@@ -1187,8 +1190,8 @@ JS, [
     {
         $html = '';
 
-        if ($element->hasErrors()) {
-            $allErrors = $element->getErrors();
+        if ($element->errors()->isNotEmpty()) {
+            $allErrors = $element->errors()->getMessages();
             $allKeys = array_keys($allErrors);
 
             // only show "top-level" errors
@@ -1459,7 +1462,7 @@ JS, [
                 crossSiteValidate: ($namespace === null && Sites::isMultiSite() && $elementsService->canCreateDrafts($element, $user)),
             );
         } catch (UnsupportedSiteException $e) {
-            $element->addError('siteId', $e->getMessage());
+            $element->errors()->add('siteId', $e->getMessage());
             $success = false;
         } finally {
             if ($isNotNew) {
@@ -1602,7 +1605,7 @@ JS, [
             try {
                 $success = $elementsService->saveElement($element);
             } catch (UnsupportedSiteException $e) {
-                $element->addError('siteId', $e->getMessage());
+                $element->errors()->add('siteId', $e->getMessage());
                 $success = false;
             }
 
@@ -1734,7 +1737,7 @@ JS, [
                     $element = $this->_element($info);
 
                     if (!$element instanceof ElementInterface) {
-                        Craft::warning(sprintf('Unable to duplicate element: %s', Json::encode($info)), __METHOD__);
+                        Log::warning(sprintf('Unable to duplicate element: %s', Json::encode($info)), [__METHOD__]);
                         continue;
                     }
 
@@ -1950,7 +1953,7 @@ JS, [
                 ->one();
 
             if ($existingProvisionalDraft) {
-                Craft::warning("Overwriting an existing provisional draft for element/user $element->id/$user->id", __METHOD__);
+                Log::warning("Overwriting an existing provisional draft for element/user $element->id/$user->id", [__METHOD__]);
                 $elementsService->deleteElement($existingProvisionalDraft, true);
             }
         }
@@ -2035,7 +2038,7 @@ JS, [
                 'docTitle' => $docTitle,
                 'title' => $title,
                 'previewTargets' => $previewTargets,
-                'previewParamValue' => $previewTargets ? Craft::$app->getSecurity()->hashData(Str::random(10)) : null,
+                'previewParamValue' => $previewTargets ? Crypt::encrypt(Str::random(10)) : null,
                 'deltaNames' => Craft::$app->getView()->getDeltaNames(),
                 'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
                 'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
@@ -2420,16 +2423,12 @@ JS, [
 
             $elementInfo = [];
 
-            foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml, $isStatic]) {
-                /** @var FieldLayoutComponent $layoutElement */
-                /** @var bool $isConditional */
-                /** @var string|bool $elementHtml */
-                /** @var bool $isStatic */
-                if ($isConditional) {
+            foreach ($tab->elements as $formElement) {
+                if ($formElement->isConditional) {
                     $elementInfo[] = [
-                        'uid' => $layoutElement->uid,
-                        'html' => $elementHtml,
-                        'static' => $isStatic,
+                        'uid' => $formElement->layoutElement->uid,
+                        'html' => $formElement->html,
+                        'static' => $formElement->isStatic,
                     ];
                 }
             }
@@ -2943,7 +2942,9 @@ JS, [
             'element' => $element->toArray($element->attributes()),
         ];
         $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element), [
-            'details' => !$element->dateDeleted ? Cp::elementChipHtml($element) : null,
+            'details' => !$element->dateDeleted
+                ? Cp::elementChipHtml($element, ['hyperlink' => true])
+                : null,
         ]);
 
         if ($supportsAddAnother && $this->_addAnother) {
@@ -2987,7 +2988,7 @@ JS, [
         $data = [
             'modelName' => 'element',
             'element' => $element->toArray($element->attributes()),
-            'errors' => $element->getErrors(),
+            'errors' => $element->errors()->getMessages(),
             'errorSummary' => $this->_errorSummary($element),
             'invalidNestedElementIds' => $element->getInvalidNestedElementIds(),
         ];

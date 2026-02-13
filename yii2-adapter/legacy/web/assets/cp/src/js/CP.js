@@ -1,3 +1,4 @@
+import {QueueService} from '@craftcms/cp/dist/services/Queue.ts.mjs';
 /** global: Craft */
 /** global: Garnish */
 /** global: $ */
@@ -58,7 +59,6 @@ Craft.CP = Garnish.Base.extend(
 
     enableQueue: true,
     totalJobs: 0,
-    jobInfo: null,
     displayedJobInfo: null,
     displayedJobInfoUnchanged: 1,
     trackJobProgressTimeout: null,
@@ -76,6 +76,9 @@ Craft.CP = Garnish.Base.extend(
     elementCopyNotification: null,
 
     resizeTimeout: null,
+
+    /** @type QueueService */
+    QueueService: window.Craft.$queue ?? null,
 
     init: function () {
       this.elementThumbLoader = new Craft.ElementThumbLoader();
@@ -1669,176 +1672,48 @@ Craft.CP = Garnish.Base.extend(
       );
     },
 
+    /** @deprecated since 6.0. */
     runQueue: function () {
-      if (!this.enableQueue) {
-        return;
-      }
-
       if (Craft.runQueueAutomatically) {
-        Craft.queue.push(
-          () =>
-            new Promise((resolve, reject) => {
-              Craft.sendActionRequest('POST', 'queue/run')
-                .then(() => {
-                  this.trackJobProgress(false, true);
-                  resolve();
-                })
-                .catch(reject);
-            })
-        );
+        Craft.queue.push(() => this.QueueService.runQueue());
       } else {
-        this.trackJobProgress(false, true);
+        this.QueueService.startTracking(false, true);
       }
     },
 
+    /** @deprecated since 6.0. Use QueueService.startTracking() instead */
     trackJobProgress: function (delay, force) {
-      // Ignore if we're already tracking jobs, or the queue is disabled
-      if ((this.trackJobProgressTimeout && !force) || !this.enableQueue) {
-        return;
-      }
-
-      this.cancelJobTracking();
-
-      if (delay) {
-        // Determine the delay based on how long the displayed job info has remained unchanged
-        if (delay === true) {
-          delay = this.getNextJobDelay();
-        }
-        this.trackJobProgressTimeout = setTimeout(
-          this._trackJobProgressInternal.bind(this),
-          delay
-        );
-      } else {
-        this._trackJobProgressInternal();
-      }
+      this.QueueService.startTracking(delay, force);
     },
 
-    getNextJobDelay: function () {
-      return Math.min(60000, this.displayedJobInfoUnchanged * 500);
-    },
-
-    _trackJobProgressInternal: function () {
-      if (!Craft.remainingSessionTime) {
-        // Try again after login
-        Garnish.once(Craft.AuthManager, 'login', () => {
-          this._trackJobProgressInternal();
-        });
-        return;
-      }
-
-      this.trackingJobProgress = true;
-
-      Craft.queue.push(async () => {
-        // has this been cancelled?
-        if (!this.trackingJobProgress) {
-          return;
-        }
-
-        // Tell other browser windows to stop tracking job progress
-        if (Craft.broadcaster) {
-          Craft.broadcaster.postMessage({
-            event: 'beforeTrackJobProgress',
-          });
-        }
-
-        this.jobProgressCancelToken = axios.CancelToken.source();
-
-        let data;
-        try {
-          const response = await Craft.sendActionRequest(
-            'POST',
-            'queue/get-job-info?limit=50&dontExtendSession=1',
-            {
-              cancelToken: this.jobProgressCancelToken.token,
-            }
-          );
-          data = response.data;
-        } catch (e) {
-          if (e?.response?.status === 400) {
-            // Try again after login
-            Garnish.once(Craft.AuthManager, 'login', () => {
-              this._trackJobProgressInternal();
-            });
-          } else if (this.trackingJobProgress) {
-            // only throw if we weren't expecting this
-            throw e;
-          }
-          return;
-        } finally {
-          this.trackingJobProgress = false;
-          this.trackJobProgressTimeout = null;
-          this.jobProgressCancelToken = null;
-        }
-
-        this.setJobData(data);
-
-        if (this.jobInfo.length) {
-          // Check again after a delay
-          this.trackJobProgress(true);
-        }
-
-        // Notify the other browser tabs about the jobs
-        if (Craft.broadcaster) {
-          Craft.broadcaster.postMessage({
-            event: 'trackJobProgress',
-            jobData: data,
-          });
-        }
-      });
-    },
-
+    /** @deprecated since 6.0. Use QueueService.setJobData() instead */
     setJobData: function (data) {
-      this.totalJobs = data.total;
-      this.setJobInfo(data.jobs);
+      this.QueueService.setJobData(data);
     },
 
+    get jobInfo() {
+      return this.QueueService.jobInfo;
+    },
+
+    /** @deprecated since 6.0. Use QueueService.setJobData() instead */
     setJobInfo: function (jobInfo) {
-      if (!this.enableQueue) {
-        return;
-      }
-
-      this.jobInfo = jobInfo;
-
-      // Update the displayed job info
-      var oldInfo = this.displayedJobInfo;
-      this.displayedJobInfo = this.getDisplayedJobInfo();
-
-      // Same old same old?
-      if (
-        oldInfo &&
-        this.displayedJobInfo &&
-        oldInfo.id === this.displayedJobInfo.id &&
-        oldInfo.progress === this.displayedJobInfo.progress &&
-        oldInfo.progressLabel === this.displayedJobInfo.progressLabel &&
-        oldInfo.status === this.displayedJobInfo.status
-      ) {
-        this.displayedJobInfoUnchanged++;
-      } else {
-        // Reset the counter
-        this.displayedJobInfoUnchanged = 1;
-      }
-
-      this.updateJobIcon();
+      this.QueueService.setJobData({
+        jobs: jobInfo,
+        total: jobInfo.length,
+      });
 
       // Fire a setJobInfo event
       this.trigger('setJobInfo');
     },
 
+    /** @deprecated since 6.0. Use QueueService.stopTracking() instead */
     cancelJobTracking: function () {
-      this.trackingJobProgress = false;
-
-      if (this.trackJobProgressTimeout) {
-        clearTimeout(this.trackJobProgressTimeout);
-        this.trackJobProgressTimeout = null;
-      }
-
-      if (this.jobProgressCancelToken) {
-        this.jobProgressCancelToken.cancel();
-      }
+      this.QueueService.stopTracking();
     },
 
     /**
      * Returns info for the job that should be displayed in the control panel sidebar
+     * @deprecated since 6.0.
      */
     getDisplayedJobInfo: function () {
       if (!this.enableQueue) {
@@ -1867,7 +1742,9 @@ Craft.CP = Garnish.Base.extend(
       return null;
     },
 
+    /** @deprecated since 6.0. */
     updateJobIcon: function () {
+      console.warn('craft.cp.updateJobIcon is deprecated in 6.0.');
       if (!this.enableQueue || !this.$nav.length) {
         return;
       }
@@ -2397,6 +2274,7 @@ Craft.cp = new Craft.CP();
 
 /**
  * Job progress icon class
+ * @deprecated since 6.0. Use <cp-queue-indicator> component instead.
  */
 var JobProgressIcon = Garnish.Base.extend({
   $li: null,

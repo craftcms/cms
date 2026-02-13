@@ -7,8 +7,8 @@ import {
   type AppearanceKey,
   Variant,
   type VariantKey,
-} from '@/types/index.js';
-import variantsStyles from '@/styles/variants.styles';
+} from '@src/types/index.js';
+import variantsStyles from '@src/styles/variants.styles.js';
 
 export default class CraftCallout extends LitElement {
   static override styles: CSSResultGroup = [variantsStyles, styles];
@@ -31,16 +31,19 @@ export default class CraftCallout extends LitElement {
   @property({reflect: true})
   rounded: 'all' | 'start' | 'end' | 'none' = 'all';
 
+  @property({reflect: true, type: Boolean})
+  inline: boolean = false;
+
   getDefaultIcon() {
     switch (this.variant) {
       case Variant.Info:
         return 'lightbulb';
       case Variant.Success:
-        return 'check-circle';
+        return 'circle-check';
       case Variant.Warning:
-        return 'exclamation-circle';
+        return 'circle-exclamation';
       case Variant.Danger:
-        return 'exclamation-triangle';
+        return 'triangle-exclamation';
       default:
         return null;
     }

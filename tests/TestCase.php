@@ -18,9 +18,11 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -37,7 +39,12 @@ class TestCase extends Orchestra
         parent::setUp();
 
         app()->setLocale('en-US');
+
+        // Reset timezone to a consistent value for tests
+        // This is needed because AppServiceProvider::setTimezone() runs during boot,
+        // before RefreshDatabase has prepared the database, potentially reading stale data
         Config::set('app.timezone', 'America/Los_Angeles');
+        date_default_timezone_set('America/Los_Angeles');
 
         Edition::set(Edition::Pro);
 
@@ -52,8 +59,13 @@ class TestCase extends Orchestra
 
         $this->withoutVite();
 
-        // Always start with an admin user
-        User::first()->update(['admin' => true]);
+        // Always start with a fresh default admin user
+        User::first()->update([
+            'username' => 'craftcms',
+            'password' => Hash::make('craftcms2018!!'),
+            'email' => 'support@craftcms.com',
+            'admin' => true,
+        ]);
     }
 
     protected function connectionsToTransact(): array
@@ -86,16 +98,21 @@ class TestCase extends Orchestra
 
     protected function migrateDatabases(): void
     {
+        // Clear any stale cached info from previous test runs
+        // This must happen before db:wipe to ensure fresh state
+        Context::forgetHidden('craft.info');
+        Context::forgetHidden('craft.isInstalled');
+
         $this->artisan('db:wipe');
 
-        $site = new Site(
-            name: 'Craft test site',
-            handle: 'defaultSite',
-            language: 'en-US',
-            baseUrl: 'https://localhost/',
-            primary: true,
-            hasUrls: true,
-        );
+        $site = new Site([
+            'name' => 'Craft test site',
+            'handle' => 'defaultSite',
+            'language' => 'en-US',
+            'baseUrl' => 'https://localhost/',
+            'primary' => true,
+            'hasUrls' => true,
+        ]);
 
         $migration = new Install(
             username: 'craftcms',
@@ -130,7 +147,7 @@ class TestCase extends Orchestra
             return;
         }
 
-        $dotenv = Dotenv::createImmutable(__DIR__);
+        $dotenv = Dotenv::createMutable(__DIR__);
         $dotenv->load();
 
         $configKey = 'database.connections.'.env('DB_CONNECTION');
@@ -143,8 +160,8 @@ class TestCase extends Orchestra
                 'database' => env('DB_DATABASE'),
                 'username' => env('DB_USERNAME'),
                 'password' => env('DB_PASSWORD'),
-                'charset' => env('DB_CHARSET', $configKey === 'mysql' ? 'utf8mb4' : 'utf8'),
-                'collation' => env('DB_COLLATION', $configKey === 'mysql' ? 'utf8mb4_unicode_ci' : null),
+                'charset' => env('DB_CHARSET', in_array($configKey, ['mysql', 'mariadb']) ? 'utf8mb4' : 'utf8'),
+                'collation' => env('DB_COLLATION', in_array($configKey, ['mysql', 'mariadb']) ? 'utf8mb4_unicode_ci' : null),
                 'prefix' => env('DB_PREFIX'),
             ]),
         );

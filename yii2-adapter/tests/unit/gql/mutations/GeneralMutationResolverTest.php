@@ -9,19 +9,21 @@ namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
 use Craft;
-use craft\base\Element;
 use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
 use craft\gql\base\MutationResolver;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\models\GqlSchema;
+use craft\records\Section;
 use craft\services\Elements;
 use craft\test\TestCase;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Support\Str;
+use crafttests\fixtures\SectionsFixture;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
@@ -229,12 +231,18 @@ class GeneralMutationResolverTest extends TestCase
      */
     public function testSavingElementWithoutValidationError(): void
     {
+        $this->tester->haveFixtures([
+            'sections' => SectionsFixture::class,
+        ]);
+
         $elementService = $this->make(Elements::class, [
             'saveElement' => false,
         ]);
         Craft::$app->set('elements', $elementService);
 
         $entry = new Entry();
+        $entry->title = 'Entry title';
+        $entry->sectionId = Section::find()->one()->id;
 
         $scenario = Element::SCENARIO_DEFAULT;
         $entry->setScenario($scenario);

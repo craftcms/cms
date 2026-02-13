@@ -6,17 +6,19 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Entry;
 use craft\helpers\Cp;
-use craft\validators\ColorValidator;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
-use CraftCms\Cms\Shared\Rules\ColorRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Validation\Rules\ColorRule;
+use Deprecated;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
+use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
@@ -28,37 +30,25 @@ use function CraftCms\Cms\t;
  */
 final class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Color');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'palette';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', ColorData::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function dbType(): string
     {
         return sprintf('%s(7)', Schema::TYPE_CHAR);
@@ -76,9 +66,6 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
      */
     public bool $allowCustomColors = false;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // presets => palette
@@ -143,7 +130,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * @return string[]
      */
-    #[\Deprecated(message: 'in 5.6.0')]
+    #[Deprecated(message: 'in 5.6.0')]
     public function getPresets(): array
     {
         return array_values(array_filter(array_map(fn (array $color) => $color['color'], $this->palette)));
@@ -152,7 +139,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * @param  string[]  $presets
      */
-    #[\Deprecated(message: 'in 5.6.0')]
+    #[Deprecated(message: 'in 5.6.0')]
     public function setPresets(array $presets): void
     {
         $this->palette = array_map(
@@ -161,17 +148,11 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -204,7 +185,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                 'allowReorder' => true,
                 'allowDelete' => true,
                 'addRowLabel' => t('Add a color'),
-                'errors' => $this->getErrors('palette'),
+                'errors' => $this->errors()->get('palette'),
                 'data' => ['error-key' => 'palette'],
                 'static' => $readOnly,
             ]).
@@ -217,8 +198,8 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
             ]);
     }
 
-    #[\Override]
-    public static function getRules(): array
+    #[Override]
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'allowCustomColors' => ['required', 'boolean'],
@@ -229,26 +210,20 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    public static function getMessages(): array
+    public function getMessages(): array
     {
         return [
             'palette.required_if' => t('Palette cannot be blank if custom colors aren’t allowed.'),
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value instanceof ColorData) {
@@ -293,34 +268,24 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
-    public function getElementValidationRules(): array
+    #[Override]
+    public function getElementRules(ElementInterface $element): array
     {
         return [
-            ColorValidator::class,
-            [
-                function (ElementInterface $element) {
-                    if (! $this->allowCustomColors) {
-                        /** @var ColorData $value */
-                        $value = $element->getFieldValue($this->handle);
-                        if (Collection::make($this->palette)->doesntContain(fn (array $color) => $color['color'] === $value->getHex())) {
-                            $element->addError("field:$this->handle", t('{attribute} is invalid.', [
-                                'attribute' => $this->getUiLabel(),
-                            ]));
-                        }
+            new ColorRule,
+            Rule::when(! $this->allowCustomColors, [
+                function ($attribute, ColorData $value, $fail) {
+                    if (Collection::make($this->palette)->doesntContain(fn (array $color) => $color['color'] === $value->getHex())) {
+                        $fail(t('{attribute} is invalid.', [
+                            'attribute' => $this->getUiLabel(),
+                        ]));
                     }
                 },
-            ],
+            ]),
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $id = $this->getInputId();
@@ -426,10 +391,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $html.Html::endTag('div');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ColorData|null $value */
@@ -453,10 +415,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $html;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ColorData|null $value */
@@ -484,10 +443,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $html;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {

@@ -2,8 +2,8 @@
 
 namespace craft\i18n;
 
+use InvalidArgumentException;
 use yii\base\BaseObject;
-use yii\base\InvalidArgumentException;
 
 /**
  * Stores locale info.

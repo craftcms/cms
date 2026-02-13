@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
@@ -17,16 +16,10 @@ use craft\base\NestedElementInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\controllers\AppController;
 use craft\db\QueryAbortedException;
-use craft\elements\Address;
-use craft\elements\Asset;
 use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\errors\ElementNotFoundException;
-use craft\errors\FieldNotFoundException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\BulkOpEvent;
@@ -38,7 +31,6 @@ use craft\events\InvalidateElementCachesEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
@@ -46,18 +38,26 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
-use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\validators\SlugValidator;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
-use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
@@ -69,6 +69,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Database\ConnectionInterface;
@@ -76,7 +77,10 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -84,10 +88,10 @@ use UnitEnum;
 use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\web\ForbiddenHttpException;
+use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\t;
 
 /**
@@ -577,7 +581,7 @@ class Elements extends Component
      * @throws InvalidArgumentException if $elementType is not a valid element
      * @since 3.5.0
      */
-    public function createElementQuery(string $elementType): ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery
+    public function createElementQuery(string $elementType): ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery
     {
         if (!is_subclass_of($elementType, ElementInterface::class)) {
             throw new InvalidArgumentException("$elementType is not a valid element.");
@@ -917,7 +921,7 @@ class Elements extends Component
     public function getElementById(
         int $elementId,
         ?string $elementType = null,
-        array|int|string $siteId = null,
+        array|int|string|null $siteId = null,
         array $criteria = [],
     ): ?ElementInterface {
         return $this->_elementById('id', $elementId, $elementType, $siteId, $criteria);
@@ -1301,7 +1305,7 @@ class Elements extends Component
      * ]);
      * $success = Craft::$app->elements->saveElement($entry);
      * if (!$success) {
-     *     Craft::error('Couldn’t save the entry "'.$entry->title.'"', __METHOD__);
+     *     \Illuminate\Support\Facades\Log::error('Couldn’t save the entry "'.$entry->title.'"', [__METHOD__]);
      * }
      * ```
      *
@@ -1592,7 +1596,7 @@ class Elements extends Component
     /**
      * Resaves all elements that match a given element query.
      *
-     * @param ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $query The element query to fetch elements with
+     * @param ElementQueryInterface|\CraftCms\Cms\Element\Queries\ElementQuery $query The element query to fetch elements with
      * @param bool $continueOnError Whether to continue going if an error occurs
      * @param bool $skipRevisions Whether elements that are (or belong to) a revision should be skipped
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
@@ -1603,7 +1607,7 @@ class Elements extends Component
      * @since 3.2.0
      */
     public function resaveElements(
-        ElementQueryInterface|\CraftCms\Cms\Database\Queries\ElementQuery $query,
+        ElementQueryInterface $query,
         bool $continueOnError = false,
         bool $skipRevisions = true,
         ?bool $updateSearchIndex = null,
@@ -1930,12 +1934,12 @@ class Elements extends Component
         $mainClone->validate();
 
         // If there are any errors on the URI, re-validate as disabled
-        if ($mainClone->hasErrors('uri') && $mainClone->enabled) {
+        if ($mainClone->errors()->has('uri') && $mainClone->enabled) {
             $mainClone->enabled = false;
             $mainClone->validate();
         }
 
-        if ($mainClone->hasErrors()) {
+        if ($mainClone->errors()->isNotEmpty()) {
             throw new InvalidElementException($mainClone,
                 'Element ' . $element->id . ' could not be duplicated because it doesn\'t validate.');
         }
@@ -2038,9 +2042,9 @@ class Elements extends Component
                         if ($element::hasUris()) {
                             // Make sure it has a valid slug
                             (new SlugValidator())->validateAttribute($siteClone, 'slug');
-                            if ($siteClone->hasErrors('slug')) {
+                            if ($siteClone->errors()->has('slug')) {
                                 throw new InvalidElementException($siteClone,
-                                    "Element $element->id could not be duplicated for site $siteElement->siteId: " . $siteClone->getFirstError('slug'));
+                                    "Element $element->id could not be duplicated for site $siteElement->siteId: " . $siteClone->errors()->first('slug'));
                             }
 
                             // Set a unique URI on the site clone
@@ -2461,17 +2465,17 @@ class Elements extends Component
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
                 $refTagPrefix = "\{$refHandle:";
 
-                Queue::push(new FindAndReplace([
-                    'description' => I18N::prep('Updating element references'),
-                    'find' => $refTagPrefix . $mergedElement->id . ':',
-                    'replace' => $refTagPrefix . $prevailingElement->id . ':',
-                ]));
+                dispatch(new FindAndReplace(
+                    find: $refTagPrefix . $mergedElement->id . ':',
+                    replace: $refTagPrefix . $prevailingElement->id . ':',
+                    description: I18N::prep('Updating element references'),
+                ));
 
-                Queue::push(new FindAndReplace([
-                    'description' => I18N::prep('Updating element references'),
-                    'find' => $refTagPrefix . $mergedElement->id . '}',
-                    'replace' => $refTagPrefix . $prevailingElement->id . '}',
-                ]));
+                dispatch(new FindAndReplace(
+                    find: $refTagPrefix . $mergedElement->id . '}',
+                    replace: $refTagPrefix . $prevailingElement->id . ':',
+                    description: $refTagPrefix . $prevailingElement->id . '}',
+                ));
             }
 
             // Fire an 'afterMergeElements' event
@@ -2678,7 +2682,8 @@ class Elements extends Component
             ->siteId(['not', $firstElement->siteId])
             ->unique()
             ->select(['elements.id'])
-            ->column();
+            ->pluck('id')
+            ->all();
 
         $multiSiteElementIdsIdx = array_flip($multiSiteElementIds);
         $multiSiteElements = [];
@@ -2819,8 +2824,7 @@ class Elements extends Component
                 // Make sure it still passes essential validation
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 if (!$element->validate()) {
-                    Craft::warning("Unable to restore element $element->id: doesn't pass essential validation: " . print_r($element->errors,
-                            true), __METHOD__);
+                    Log::warning("Unable to restore element $element->id: doesn't pass essential validation: " . print_r($element->errors, true), [__METHOD__]);
                     DB::rollBack();
                     return false;
                 }
@@ -2829,8 +2833,7 @@ class Elements extends Component
                     if ($siteElement !== $element) {
                         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
                         if (!$siteElement->validate()) {
-                            Craft::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: " . print_r($element->errors,
-                                    true), __METHOD__);
+                            Log::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: " . print_r($element->errors, true), [__METHOD__]);
                             throw new Exception("Element $element->id doesn't pass essential validation for site $element->siteId.");
                         }
                     }
@@ -2954,13 +2957,13 @@ class Elements extends Component
 
                 // just to be safe...
                 if (!$resultElement) {
-                    Craft::warning(sprintf(
+                    Log::warning(sprintf(
                         'Couldn’t load %s element %s%s for site %s',
                         $element::class,
                         $element->getCanonicalId(),
                         $result->draftId ? " (draft {$result->draftId})" : '',
                         $result->siteId,
-                    ), __METHOD__);
+                    ), [__METHOD__]);
                     continue;
                 }
 
@@ -3217,7 +3220,7 @@ class Elements extends Component
 
                     if ($refType === 'id') {
                         $elementQuery->id($refNames);
-                    } else {
+                    } elseif (method_exists($elementQuery, 'ref')) {
                         $elementQuery->ref($refNames);
                     }
 
@@ -3518,15 +3521,9 @@ class Elements extends Component
                         $query = $this->createElementQuery($map['elementType']);
 
                         // Default to no order, offset, or limit, but allow the element type/path criteria to override
-                        if ($query instanceof \CraftCms\Cms\Database\Queries\ElementQuery) {
-                            $query->reorder();
-                            $query->offset(null);
-                            $query->limit(null);
-                        } else {
-                            $query->orderBy = null;
-                            $query->offset = null;
-                            $query->limit = null;
-                        }
+                        $query->reorder();
+                        $query->offset(null);
+                        $query->limit(null);
 
                         $criteria = array_merge(
                             $map['criteria'] ?? [],
@@ -3546,9 +3543,7 @@ class Elements extends Component
                         if (!$query->id) {
                             $query->id = array_keys($uniqueTargetElementIds);
                         } else {
-                            $query->andWhere([
-                                'elements.id' => array_keys($uniqueTargetElementIds),
-                            ]);
+                            $query->whereIn('elements.id', array_keys($uniqueTargetElementIds));
                         }
                     }
 
@@ -3678,7 +3673,7 @@ class Elements extends Component
                         // Pass the instantiated elements to afterPopulate()
                         $query->asArray = false;
                         if ($query instanceof ElementQueryInterface) {
-                            $query->afterPopulate($flatTargetElements);
+                            $query->afterHydrate(collect($flatTargetElements));
                         }
                     }
 
@@ -3916,7 +3911,7 @@ class Elements extends Component
             foreach ($element->getActiveValidators('title') as $validator) {
                 $validator->validateAttributes($element, ['title']);
             }
-            if ($element->hasErrors('title')) {
+            if ($element->errors()->has('title')) {
                 // Set a default title
                 if ($isNewElement) {
                     $element->title = t('New {type}', ['type' => $element::displayName()]);
@@ -3984,7 +3979,7 @@ class Elements extends Component
             $runValidation,
             $originalDateUpdated,
             $dirtyFields,
-            $siteSettingsRecord,
+            &$siteSettingsRecord,
         ) {
             // Figure out whether we will be updating the search index (and memoize that for nested element saves)
             $oldUpdateSearchIndex = $this->_updateSearchIndex;
@@ -4236,7 +4231,11 @@ class Elements extends Component
                     $siteElements[$element->siteId] = $element;
                     $siteSettingsRecords[$element->siteId] = $siteSettingsRecord;
 
-                    $element->on(Element::EVENT_AFTER_PROPAGATE, function() use ($generatedFields, $siteElements, $siteSettingsRecords) {
+                    Event::listen(function(AfterPropagate $event) use ($element, $generatedFields, $siteElements, $siteSettingsRecords) {
+                        if ($event->element->id !== $element->id) {
+                            return;
+                        }
+
                         foreach ($siteElements as $siteId => $siteElement) {
                             $siteSettingsRecord = $siteSettingsRecords[$siteId];
                             $content = $siteSettingsRecord->content ?? [];
@@ -4249,6 +4248,10 @@ class Elements extends Component
 
                             foreach ($generatedFields as $field) {
                                 $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement);
+
+                                // handle 'true'/'false'/'null'/int/float values
+                                $value = normalizeValue($value) ?? '';
+
                                 if ($value !== ($content[$field['uid']] ?? '')) {
                                     $updated = true;
                                 }
@@ -4604,15 +4607,15 @@ class Elements extends Component
 
         if (!$success) {
             // if the element we're trying to save has validation errors, notify original element about them
-            if ($siteElement->hasErrors()) {
+            if ($siteElement->errors()->isNotEmpty()) {
                 return $this->_crossSiteValidationErrors($siteElement, $element);
             } else {
                 // Log the errors
                 $error = 'Couldn’t propagate element to other site due to validation errors:';
-                foreach ($siteElement->getFirstErrors() as $attributeError) {
+                foreach ($siteElement->errors()->all() as $attributeError) {
                     $error .= "\n- " . $attributeError;
                 }
-                Craft::error($error);
+                Log::error($error);
                 throw new Exception('Couldn’t propagate element to other site.');
             }
         }
@@ -4660,7 +4663,7 @@ class Elements extends Component
                 Html::endTag('a');
         }
 
-        $element->addError('global', $message);
+        $element->errors()->add('global', $message);
 
         return false;
     }
@@ -4724,8 +4727,7 @@ class Elements extends Component
             return $this->parseRefs((string)$value);
         } catch (Throwable $e) {
             // Log it
-            Craft::error("An exception was thrown when parsing the ref tag \"$fullMatch\":\n" . $e->getMessage(),
-                __METHOD__);
+            Log::error("An exception was thrown when parsing the ref tag \"$fullMatch\":\n" . $e->getMessage(), [__METHOD__]);
 
             // Replace the token with the default value
             return $fallback;
@@ -4750,10 +4752,14 @@ class Elements extends Component
             }
         }
 
-        return (
-            $this->_siteAuthCheck($element, $user) &&
-            ($this->_authCheck($element, $user, self::EVENT_AUTHORIZE_VIEW) ?? $element->canView($user))
-        );
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_VIEW);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('view', $element);
     }
 
     /**
@@ -4774,10 +4780,14 @@ class Elements extends Component
             }
         }
 
-        return (
-            $this->_siteAuthCheck($element, $user) &&
-            ($this->_authCheck($element, $user, self::EVENT_AUTHORIZE_SAVE) ?? $element->canSave($user))
-        );
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_SAVE);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('save', $element);
     }
 
     /**
@@ -4820,7 +4830,14 @@ class Elements extends Component
             }
         }
 
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE) ?? $element->canDuplicate($user);
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('duplicate', $element);
     }
 
     /**
@@ -4841,8 +4858,14 @@ class Elements extends Component
             }
         }
 
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT)
-            ?? $element->canDuplicateAsDraft($user);
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('duplicateAsDraft', $element);
     }
 
     /**
@@ -4865,7 +4888,14 @@ class Elements extends Component
             }
         }
 
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_COPY) ?? $element->canCopy($user);
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_COPY);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('copy', $element);
     }
 
     /**
@@ -4888,7 +4918,14 @@ class Elements extends Component
             }
         }
 
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE) ?? $element->canDelete($user);
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('delete', $element);
     }
 
     /**
@@ -4911,8 +4948,14 @@ class Elements extends Component
             }
         }
 
-        return $this->_authCheck($element, $user,
-            self::EVENT_AUTHORIZE_DELETE_FOR_SITE) ?? $element->canDeleteForSite($user);
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE_FOR_SITE);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('deleteForSite', $element);
     }
 
     /**
@@ -4935,8 +4978,14 @@ class Elements extends Component
             }
         }
 
-        return $this->_authCheck($element, $user,
-            self::EVENT_AUTHORIZE_CREATE_DRAFTS) ?? $element->canCreateDrafts($user);
+        // Fire deprecated Yii events for plugin compatibility
+        $eventResult = $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_CREATE_DRAFTS);
+        if ($eventResult !== null) {
+            return $eventResult;
+        }
+
+        // Delegate to Laravel Gate
+        return Gate::forUser($user)->allows('createDrafts', $element);
     }
 
     private function _authCheck(ElementInterface $element, User $user, string $eventName): ?bool
@@ -4952,14 +5001,5 @@ class Elements extends Component
 
         $this->trigger($eventName, $event);
         return $event->authorized;
-    }
-
-    private function _siteAuthCheck(ElementInterface $element, User $user): bool
-    {
-        return (
-            !$element::isLocalized() ||
-            !Sites::isMultiSite() ||
-            $user->can(sprintf('editSite:%s', $element->getSite()->uid))
-        );
     }
 }

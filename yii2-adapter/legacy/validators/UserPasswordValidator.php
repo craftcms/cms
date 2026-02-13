@@ -7,7 +7,7 @@
 
 namespace craft\validators;
 
-use Craft;
+use Illuminate\Support\Facades\Hash;
 use yii\validators\StringValidator;
 use function CraftCms\Cms\t;
 
@@ -87,7 +87,7 @@ class UserPasswordValidator extends StringValidator
 
         if ($this->forceDifferent && $this->currentPassword) {
             $newPassword = $model->$attribute;
-            if (Craft::$app->getSecurity()->validatePassword($newPassword, $this->currentPassword)) {
+            if (Hash::check($newPassword, $this->currentPassword)) {
                 $this->addError($model, $attribute, $this->sameAsCurrent);
             }
         }

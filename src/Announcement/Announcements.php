@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Announcement;
 
-use craft\helpers\Queue;
-use craft\queue\jobs\Announcement as AnnouncementJob;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Announcement\Jobs\SendAnnouncement;
 use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
@@ -30,7 +29,7 @@ final readonly class Announcements
      * Pushes a new announcement out to all control panel users.
      *
      * ::: tip
-     * Run the heading and body through [[\craft\i18n\Translation::prep()]] rather than [[\CraftCms\Cms\t()]]
+     * Run the heading and body through {@see \CraftCms\Cms\Support\Facades\I18N::prep} rather than {@see \CraftCms\Cms\t()}
      * so they can be lazy-translated for users’ preferred languages rather than the current app language.
      * :::
      *
@@ -41,13 +40,12 @@ final readonly class Announcements
      */
     public function push(string $heading, string $body, ?string $pluginHandle = null, bool $adminsOnly = false): void
     {
-        /** @todo: Laravel queue */
-        Queue::push(new AnnouncementJob([
-            'heading' => $heading,
-            'body' => $body,
-            'pluginHandle' => $pluginHandle,
-            'adminsOnly' => $adminsOnly,
-        ]));
+        dispatch(new SendAnnouncement(
+            heading: $heading,
+            body: $body,
+            pluginHandle: $pluginHandle,
+            adminsOnly: $adminsOnly,
+        ));
     }
 
     /**

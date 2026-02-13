@@ -17,8 +17,8 @@ use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Utils\SchemaPrinter;
+use InvalidArgumentException;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
 use yii\web\BadRequestHttpException;
 
@@ -177,7 +177,7 @@ class GraphqlController extends Controller
         $token->name = $this->name ?? $this->prompt('Token name:', [
                 'required' => true,
             ]);
-        $token->accessToken = Craft::$app->getSecurity()->generateRandomString(32);
+        $token->accessToken = Str::random(32, extendedChars: true);
 
         if (isset($this->expiry)) {
             $expiry = DateTimeHelper::toDateTime($this->expiry);

@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Tests\TestClasses;
 
 use Closure;
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\Validation\Contracts\Validatable;
+use Override;
 
 final class TestPlugin extends Plugin
 {
@@ -18,7 +19,7 @@ final class TestPlugin extends Plugin
 
     public ?string $packageName = 'craftcms/test-plugin';
 
-    #[\Override]
+    #[Override]
     public static function editions(): array
     {
         return [
@@ -27,8 +28,8 @@ final class TestPlugin extends Plugin
         ];
     }
 
-    #[\Override]
-    protected function createSettingsModel(): ?ValidatableComponentInterface
+    #[Override]
+    protected function createSettingsModel(): ?Validatable
     {
         if (! self::$useSettings) {
             return null;
@@ -37,13 +38,13 @@ final class TestPlugin extends Plugin
         return new TestPluginSettings;
     }
 
-    #[\Override]
+    #[Override]
     public function beforeSaveSettings(): bool
     {
         return self::$beforeSaveSettings;
     }
 
-    #[\Override]
+    #[Override]
     public function afterSaveSettings(): void
     {
         if ($closure = self::$onAfterSaveSettings) {

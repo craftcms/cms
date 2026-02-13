@@ -1147,7 +1147,7 @@ i em {
 }
 
 .break-word {
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .light {
@@ -1462,7 +1462,7 @@ td.right {
   }
 
   td {
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     width: 100%;
   }
 }
@@ -5700,7 +5700,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   padding: var(--pane-padding);
   border: var(--pane-border);
   border-radius: var(--pane-border-radius);
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   box-sizing: border-box;
 
   &.secondary {
@@ -5740,6 +5740,57 @@ table.data tbody tr:not(.disabled).active-drop-target {
   &.chromeless {
     background-color: transparent !important;
     box-shadow: none;
+  }
+
+  &.tip,
+  &.warning {
+    padding-inline-start: 50px;
+
+    &::before {
+      @include mixins.icon;
+      opacity: 1;
+      position: absolute;
+      inset-block-start: 24px;
+      inset-inline-start: 18px;
+      font-size: 18px;
+      width: 24px;
+    }
+
+    &.dismissible {
+      padding-inline-end: 48px;
+    }
+
+    .tip-dismiss-btn {
+      position: absolute;
+      inset-block-start: 23px;
+      inset-inline-end: 18px;
+
+      & + p {
+        margin-block-start: 0;
+      }
+    }
+  }
+
+  &.tip {
+    border-color: var(--sky-600) !important;
+    background-color: var(--sky-050) !important;
+    color: var(--fg-notice);
+
+    &::before {
+      content: 'lightbulb';
+      color: var(--fg-notice);
+    }
+  }
+
+  &.warning {
+    border-color: var(--amber-600) !important;
+    background-color: var(--amber-050) !important;
+    color: var(--fg-warning);
+
+    &::before {
+      content: 'alert';
+      color: var(--fg-warning);
+    }
   }
 
   &.padding-xs {
@@ -6043,7 +6094,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
 
   .data {
     overflow-wrap: break-word;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   & > .field .heading,
@@ -6483,7 +6534,7 @@ $min2ColWidth: 400px;
   pointer-events: none;
 
   &.so-lp {
-    position: absolute;
+    position: fixed;
     inset-block-start: var(--m);
     inset-inline-start: var(--m);
     width: calc(100% - var(--m) * 2);
@@ -6542,7 +6593,7 @@ $min2ColWidth: 400px;
       transition:
         inset-inline-start linear 250ms,
         inset-inline-end linear 250ms;
-      will-change: inset-inline-start, inset-inline-end;
+      will-change: transform;
     }
   }
 
@@ -8136,21 +8187,19 @@ textarea.text.fullwidth {
     }
 
     @container (max-width: calc(399rem/16)) {
-      & {
-        flex-direction: column;
+      flex-direction: column;
+      align-items: stretch;
+
+      & > .select,
+      & > .select select,
+      & > div[data-link-type] .text,
+      & > div[data-link-type] .chip {
+        display: flex;
+        width: 100%;
+      }
+
+      & > div[data-link-type] ul.elements {
         align-items: stretch;
-
-        & > .select,
-        & > .select select,
-        & > div[data-link-type] .text,
-        & > div[data-link-type] .chip {
-          display: flex;
-          width: 100%;
-        }
-
-        & > div[data-link-type] ul.elements {
-          align-items: stretch;
-        }
       }
     }
   }
@@ -9127,7 +9176,7 @@ body .selectize-dropdown {
     flex-direction: row;
     padding-block: 3px !important;
     padding-inline: 7px !important;
-    word-break: break-word;
+    overflow-wrap: anywhere;
 
     &.active {
       @include mixins.active-token-styles;
@@ -9700,7 +9749,7 @@ body.licensing-issues {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    word-wrap: normal;
+    overflow-wrap: normal;
     cursor: default;
     user-select: none;
     position: relative;

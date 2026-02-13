@@ -14,7 +14,6 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use SensitiveParameter;
 
 #[Scoped]
@@ -29,17 +28,11 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
         private Auth $auth,
     ) {}
 
-    /**
-     * {@inheritDoc}
-     */
     public function retrieveById($identifier): ?User
     {
         return User::find()->addSelect('password')->id($identifier)->one();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function retrieveByToken($identifier, #[SensitiveParameter] $token): ?User
     {
         $user = $this->retrieveById($identifier);
@@ -55,9 +48,6 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function updateRememberToken(Authenticatable $user, #[SensitiveParameter] $token): void
     {
         DB::table(Table::USERS)
@@ -65,9 +55,6 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
             ->update(['rememberToken' => $token]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function retrieveByCredentials(#[SensitiveParameter] array $credentials): ?User
     {
         $credentials = array_filter(
@@ -82,26 +69,16 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
 
         $loginName = $credentials['loginName'];
 
-        $user = null;
-        if (Event::hasListeners(RetrievingLoginUser::class)) {
-            Event::dispatch($event = new RetrievingLoginUser($loginName));
-            $user = $event->user;
-        }
+        event($event = new RetrievingLoginUser($loginName));
 
-        $user ??= $this->users->getUserByUsernameOrEmail($loginName);
+        $user = $event->user ?? $this->users->getUserByUsernameOrEmail($loginName);
 
-        if (Event::hasListeners(LoginUserRetrieved::class)) {
-            Event::dispatch($event = new LoginUserRetrieved($loginName, $user));
+        event($event = new LoginUserRetrieved($loginName, $user));
 
-            return $event->user;
-        }
-
-        return $user;
+        return $event->user;
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @param  User  $user
      */
     public function validateCredentials(Authenticatable $user, #[SensitiveParameter] array $credentials): bool
@@ -109,9 +86,6 @@ final readonly class UserProvider implements \Illuminate\Contracts\Auth\UserProv
         return $this->auth->authenticate($user, $credentials);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function rehashPasswordIfRequired(
         Authenticatable $user,
         #[SensitiveParameter] array $credentials,

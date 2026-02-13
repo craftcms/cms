@@ -9,26 +9,28 @@ namespace craft\models;
 
 use Craft;
 use craft\base\BaseFsInterface;
-use craft\base\FieldLayoutProviderInterface;
 use craft\base\FsInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\elements\Asset;
 use craft\fs\MissingFs;
 use craft\helpers\UrlHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use Generator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
@@ -245,6 +247,7 @@ class Volume extends Model implements
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class];
         $rules[] = [['name', 'handle', 'fsHandle'], 'required'];
         $rules[] = [
@@ -372,7 +375,7 @@ class Volume extends Model implements
             }
             $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
             if (!$fs) {
-                Craft::error("Invalid filesystem handle: $this->_fsHandle for the $this->name volume.");
+                Log::error("Invalid filesystem handle: $this->_fsHandle for the $this->name volume.");
                 return new MissingFs(['handle' => $this->_fsHandle]);
             }
             $this->_fs = $fs;
@@ -532,7 +535,7 @@ class Volume extends Model implements
      */
     public function getSubpath(bool $ensureTrailing = true, bool $parse = true): string
     {
-        $subpath = $parse ? Env::parse($this->_subpath) : $this->_subpath;
+        $subpath = $parse ? (Env::parse($this->_subpath) ?? '') : $this->_subpath;
 
         if ($ensureTrailing && $subpath !== '' && !str_ends_with($subpath, '/')) {
             $subpath .= '/';

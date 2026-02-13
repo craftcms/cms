@@ -77,6 +77,9 @@ final readonly class Table
 
     public const string PROJECTCONFIG = 'projectconfig';
 
+    public const string JOBPROGRESS = 'jobprogress';
+
+    #[\Deprecated(message: "in 6.0.0. The queue table has been removed. Use Laravel's queue system instead.")]
     public const string QUEUE = 'queue';
 
     public const string RECOVERYCODES = 'recoverycodes';

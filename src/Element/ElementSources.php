@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use Craft;
-use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\db\CoalesceColumnsExpression;
-use craft\elements\conditions\ElementConditionInterface;
-use craft\errors\FieldNotFoundException;
-use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
-use craft\models\FieldLayout;
+use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Database\Expressions\JsonExtract;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
 use CraftCms\Cms\Element\Events\DefineSourceTableAttributes;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
 
 use function CraftCms\Cms\t;
 
@@ -103,10 +103,16 @@ final class ElementSources
             ->sources($elementType, $context)
             ->when(
                 ! $withDisabled,
-                fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false))
+                fn (Collection $sources) => $sources->reject(fn (array $source): bool => (bool) ($source['disabled'] ?? false)),
             );
 
-        if ($page && isset($sources[0]['page'])) {
+        if (
+            $page &&
+            isset($sources[0]['page']) &&
+            // ignore if there's only one page and it has a blank name; otherwise there's no way to fix
+            // (https://github.com/craftcms/cms/issues/18321)
+            ($sources[0]['page'] !== '' || count($this->getPages($elementType)) !== 1)
+        ) {
             $pageNameId = $this->pageNameId($page);
             $sources = $sources->filter(fn (array $source) => (
                 isset($source['page']) &&
@@ -252,17 +258,42 @@ final class ElementSources
      * Returns the unique pages found for the given element type’s sources.
      *
      * @param  class-string<ElementInterface>  $elementType  The element type class
-     * @param  string  $context  The context
-     * @param  bool  $withDisabled  Whether disabled sources should be included
      * @return Collection<string>
      */
-    public function getPages(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): Collection
+    public function getPages(string $elementType): Collection
     {
-        return $this->getSources($elementType, $context, $withDisabled)
-            ->map(fn (array $source) => $source['page'] ?? null)
-            ->filter()
-            ->unique()
-            ->values();
+        $pages = [];
+        foreach ($this->sourceConfigs($elementType) ?? [] as $source) {
+            // divide all sources into pages
+            if (isset($source['page'])) {
+                $pages[$source['page']][] = $source;
+            }
+        }
+
+        // Remove pages that only have disabled sources
+        $pages = array_filter(
+            $pages,
+            fn (array $sources) => collect($sources)->contains(fn (array $source) => ! ($source['disabled'] ?? false)),
+        );
+
+        // Remove pages that only have headings, disabled sources, and sources not available for the user
+        $pages = array_filter($pages, fn (array $sources) => collect($sources)->contains(function (array $source) {
+            if ($source['type'] === self::TYPE_HEADING) {
+                return false;
+            }
+
+            if ($source['disabled'] ?? false) {
+                return false;
+            }
+
+            if (! $this->showCustomSource($source)) {
+                return false;
+            }
+
+            return true;
+        }));
+
+        return collect($pages)->keys();
     }
 
     /**
@@ -332,7 +363,7 @@ final class ElementSources
 
         return array_any(
             $user->getGroups(),
-            fn ($group) => in_array($group->uid, $source['userGroups'], true)
+            fn ($group) => in_array($group->uid, $source['userGroups'], true),
         );
     }
 
@@ -448,7 +479,7 @@ final class ElementSources
      * Returns all the field layouts available for the given element source.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @return Collection<FieldLayout>
+     * @return Collection<\CraftCms\Cms\FieldLayout\FieldLayout>
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): Collection
     {
@@ -468,7 +499,7 @@ final class ElementSources
         }
 
         /** @var ElementConditionInterface $condition */
-        $condition = Craft::$app->getConditions()->createCondition($source['condition']);
+        $condition = Conditions::createCondition($source['condition']);
         $query = $elementType::find();
         $condition->modifyQuery($query);
 
@@ -490,15 +521,13 @@ final class ElementSources
 
         $sortOptions = $this->getSortOptionsForFieldLayouts($fieldLayouts);
 
-        if (Event::hasListeners(DefineSourceSortOptions::class)) {
-            Event::dispatch($event = new DefineSourceSortOptions(
-                elementType: $elementType,
-                source: $sourceKey,
-                sortOptions: $sortOptions,
-            ));
+        event($event = new DefineSourceSortOptions(
+            elementType: $elementType,
+            source: $sourceKey,
+            sortOptions: $sortOptions,
+        ));
 
-            $sortOptions = $event->sortOptions;
-        }
+        $sortOptions = $event->sortOptions;
 
         // Combine duplicate attributes. If any attributes map to multiple sort
         // options and each option has a string orderBy value, cmobine them
@@ -524,7 +553,7 @@ final class ElementSources
      * Returns additional sort options that should be available for an element index source that includes the given
      * field layouts.
      *
-     * @param  FieldLayout[]|Collection<FieldLayout>  $fieldLayouts
+     * @param  \CraftCms\Cms\FieldLayout\FieldLayout[]|Collection<\CraftCms\Cms\FieldLayout\FieldLayout>  $fieldLayouts
      * @return Collection<array>
      */
     public function getSortOptionsForFieldLayouts(array|Collection $fieldLayouts): Collection
@@ -543,6 +572,19 @@ final class ElementSources
                 $sortOption['attribute'] ??= $sortOption['orderBy'];
                 $sortOption['defaultDir'] ??= 'asc';
                 $sortOptions[] = $sortOption;
+            }
+
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if (($field['name'] ?? '') === '') {
+                    continue;
+                }
+
+                $sortOptions[] = [
+                    'label' => t($field['name'], category: 'site'),
+                    'attribute' => "generatedField:{$field['uid']}",
+                    'orderBy' => new JsonExtract('elements_sites.content', [$field['uid']]),
+                    'defaultDir' => 'asc',
+                ];
             }
         }
 
@@ -565,17 +607,13 @@ final class ElementSources
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
         $attributes = $this->getTableAttributesForFieldLayouts($fieldLayouts);
 
-        if (Event::hasListeners(DefineSourceTableAttributes::class)) {
-            Event::dispatch($event = new DefineSourceTableAttributes(
-                elementType: $elementType,
-                source: $sourceKey,
-                attributes: $attributes,
-            ));
+        event($event = new DefineSourceTableAttributes(
+            elementType: $elementType,
+            source: $sourceKey,
+            attributes: $attributes,
+        ));
 
-            return $event->attributes;
-        }
-
-        return $attributes;
+        return $event->attributes;
     }
 
     /**
@@ -708,7 +746,7 @@ final class ElementSources
 
         return Arr::first(
             $sourceConfigs,
-            fn ($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey
+            fn ($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey,
         );
     }
 
@@ -720,7 +758,7 @@ final class ElementSources
     public function getPageSettings(string $elementType): array
     {
         return $this->projectConfig->get(
-            sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType)
+            sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType),
         ) ?? [];
     }
 

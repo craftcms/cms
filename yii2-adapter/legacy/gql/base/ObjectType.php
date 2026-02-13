@@ -7,9 +7,9 @@
 
 namespace craft\gql\base;
 
-use craft\elements\db\ElementQueryInterface;
 use craft\errors\GqlException;
 use craft\helpers\Gql as GqlHelper;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use Throwable;

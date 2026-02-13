@@ -1034,4 +1034,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 );
 
 // Register it!
-Craft.registerElementIndexClass('craft\\elements\\Asset', Craft.AssetIndex);
+Craft.registerElementIndexClass(
+  'CraftCms\\Cms\\Asset\\Elements\\Asset',
+  Craft.AssetIndex
+);

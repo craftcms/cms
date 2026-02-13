@@ -1,3 +1,6 @@
+import {QueueService} from '@src/services/Queue';
+import {ConfigService} from '@src/services/Config';
+
 declare const d3: any | undefined;
 declare const d3FormatLocaleDefinition: any | undefined;
 
@@ -34,36 +37,7 @@ type Site = {
   uid: string;
 };
 
-interface CraftGlobal {
-  csrfTokenName?: string;
-  csrfTokenValue?: string;
-  ProgressBar: ProgressBarInterface;
-  IntervalManager: IntervalManagerInterface;
-  t(message: string, params?: object, category?: string): string;
-  sendActionRequest(
-    method: string,
-    action: string,
-    options?: object
-  ): Promise<any>;
-  initUiElements($container: JQuery): void;
-  expandPostArray(arr: object): any;
-  escapeHtml(str: string): string;
-  sites: Site[];
-  Preview: any;
-  cp: any;
-  setCookie(name: string, value: string, options?: object): void;
-  getCookie(name: string): string;
-  baseApiUrl: string;
-  apiParams: null | Record<any, any>;
-  httpProxy?: null | Record<string, any>;
-  registeredAssetBundles?: Array<string>;
-  registeredJsFiles?: Array<string>;
-}
-
-declare var Craft: CraftGlobal;
-
-declare global {
-  interface Window {
-    Craft: CraftGlobal;
-  }
+export interface CpGlobal {
+  $queue: QueueService;
+  $config: ConfigService;
 }

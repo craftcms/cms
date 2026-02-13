@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Data;
 
 use Craft;
-use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;
-use craft\elements\Entry;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -18,54 +17,71 @@ use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
-use Spatie\LaravelData\Attributes\WithCastable;
-use Spatie\LaravelData\Dto;
-use Spatie\LaravelData\Support\Validation\ValidationContext;
 use Stringable;
 
 use function CraftCms\Cms\t;
 
-final class EntryType extends Dto implements Actionable, Chippable, Colorable, CpEditable, Describable, FieldLayoutProviderInterface, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
+final class EntryType extends Component implements Actionable, Chippable, Colorable, CpEditable, Describable, FieldLayoutProviderInterface, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
 {
     use HasFieldLayout;
 
+    public ?int $id = null;
+
+    public ?string $name = null;
+
+    public ?string $handle = null;
+
+    public ?string $description = null;
+
+    public ?string $icon = null;
+
+    public ?Color $color = null;
+
+    public string $uiLabelFormat = '{title}';
+
+    public bool $hasTitleField = true;
+
+    public TranslationMethod $titleTranslationMethod = TranslationMethod::Site;
+
+    public ?string $titleTranslationKeyFormat = null;
+
+    public ?string $titleFormat = null;
+
+    public ?bool $allowLineBreaksInTitles = false;
+
+    public ?bool $showSlugField = true;
+
+    public TranslationMethod $slugTranslationMethod = TranslationMethod::Site;
+
+    public ?string $slugTranslationKeyFormat = null;
+
+    public ?bool $showStatusField = true;
+
+    public ?string $uid = null;
+
+    public bool $validateHandleUniqueness = true;
+
+    public ?string $group = null;
+
+    public ?self $original = null;
+
     public function __construct(
-        public ?int $id = null,
-        ?int $fieldLayoutId = null,
-        public ?string $name = null,
-        public ?string $handle = null,
-        public ?string $description = null,
-        public ?string $icon = null,
-        #[WithCastable(Color::class)]
-        public ?Color $color = null,
-        public string $uiLabelFormat = '{title}',
-        public bool $hasTitleField = true,
-        public TranslationMethod $titleTranslationMethod = TranslationMethod::Site,
-        public ?string $titleTranslationKeyFormat = null,
-        public ?string $titleFormat = null,
-        public ?bool $showSlugField = true,
-        public TranslationMethod $slugTranslationMethod = TranslationMethod::Site,
-        public ?string $slugTranslationKeyFormat = null,
-        public ?bool $showStatusField = true,
-        public ?string $uid = null,
-        public bool $validateHandleUniqueness = true,
-        public ?string $group = null,
-        public ?self $original = null,
+        array|object $config = [],
     ) {
-        $this->fieldLayoutId = $fieldLayoutId;
-        $this->showSlugField = (bool) $showSlugField;
-        $this->showStatusField = (bool) $showStatusField;
+        parent::__construct($config);
 
         if ($this->titleFormat === '') {
             $this->titleFormat = null;
@@ -90,41 +106,26 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
         return Entry::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUiLabel(): string
     {
         return t($this->name, category: 'site');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIcon(): ?string
     {
         return $this->icon;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIndicators(): array
     {
         if (! isset($this->original)) {
@@ -153,17 +154,11 @@ final class EntryType extends Dto implements Actionable, Chippable, Colorable, C
         return $indicators;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getColor(): ?Color
     {
         return $this->color;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getActionMenuItems(): array
     {
         if (! $this->id) {
@@ -200,7 +195,7 @@ JS, [
         return $items;
     }
 
-    public static function rules(?ValidationContext $context = null, bool $validateHandleUniqueness = true): array
+    public function getRules(): array
     {
         $rules = [
             'id' => ['nullable', 'integer'],
@@ -238,8 +233,8 @@ JS, [
             ],
         ];
 
-        if ($validateHandleUniqueness) {
-            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle')->ignore($context->payload['entryTypeId'] ?? null)->withoutTrashed('dateDeleted');
+        if ($this->validateHandleUniqueness) {
+            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle')->ignore($this->id)->withoutTrashed('dateDeleted');
         }
 
         return $rules;
@@ -253,33 +248,21 @@ JS, [
         return (string) $this->handle ?: self::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getHandle(): ?string
     {
         return $this->handle;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldContext(): string
     {
         return 'global';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getEagerLoadingPrefix(): string
     {
         return $this->handle;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCpEditUrl(): ?string
     {
         if (! $this->id || ! Auth::user()?->isAdmin()) {
@@ -305,6 +288,7 @@ JS, [
             'titleTranslationMethod' => $this->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'titleFormat' => $this->titleFormat ?: null,
+            'allowLineBreaksInTitles' => $this->allowLineBreaksInTitles,
             'showSlugField' => $this->showSlugField,
             'slugTranslationMethod' => $this->slugTranslationMethod->value,
             'slugTranslationKeyFormat' => $this->slugTranslationKeyFormat ?: null,

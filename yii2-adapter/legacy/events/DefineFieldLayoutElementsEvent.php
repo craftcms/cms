@@ -8,18 +8,18 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\base\FieldLayoutElement;
 
 /**
  * DefineFieldLayoutElementsEvent event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\FieldLayout\Events\DefineUIElements} instead.
  */
 class DefineFieldLayoutElementsEvent extends Event
 {
     /**
-     * @var FieldLayoutElement[]|string[]|array[] The elements that should be available to the field layout designer.
+     * @var \CraftCms\Cms\FieldLayout\FieldLayoutElement[]|string[]|array[] The elements that should be available to the field layout designer.
      */
     public array $elements = [];
 }

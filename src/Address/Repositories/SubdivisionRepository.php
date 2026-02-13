@@ -18,7 +18,6 @@ use Override;
  */
 class SubdivisionRepository extends BaseSubdivisionRepository
 {
-    /** {@inheritdoc} */
     #[Override]
     public function getList(array $parents, $locale = null): array
     {

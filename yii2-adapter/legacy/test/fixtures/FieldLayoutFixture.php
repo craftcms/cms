@@ -9,20 +9,20 @@ namespace craft\test\fixtures;
 
 use Craft;
 use craft\base\ModelInterface;
-use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Component;
-use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
 use craft\test\DbFixtureTrait;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use PDO;
 use Throwable;
 use yii\base\Exception as YiiBaseException;
-use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\test\DbFixture;
 use yii\test\FileFixtureTrait;
@@ -40,7 +40,7 @@ abstract class FieldLayoutFixture extends DbFixture
     use FileFixtureTrait;
 
     /**
-     * @var FieldLayout[]
+     * @var \CraftCms\Cms\FieldLayout\FieldLayout[]
      */
     private array $_layouts = [];
 

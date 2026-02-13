@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \CraftCms\Cms\Site\Data\Site|null getSiteByHandle(string $siteHandle, bool|null $withDisabled = null)
  * @method static \Illuminate\Support\Collection getSitesByLanguage(string $language, bool|null $withDisabled = null)
  * @method static int getRemainingSites()
- * @method static bool saveSite(\CraftCms\Cms\Site\Data\Site $site)
+ * @method static bool saveSite(\CraftCms\Cms\Site\Data\Site $site, bool $runValidation = true)
  * @method static void handleChangedSite(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
  * @method static bool reorderSites(int[] $siteIds)
  * @method static bool deleteSiteById(int $siteId, int|null $transferContentTo = null)

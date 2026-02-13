@@ -197,33 +197,33 @@ it('can save a site', function () {
 it('can save a new site', function () {
     expect(Site::count())->toBe(1);
 
-    $this->sites->saveSite($site = new SiteData(
-        name: 'New site',
-        handle: 'new-site',
-        language: 'nl',
-        groupId: SiteGroup::first()->id,
-    ));
+    $this->sites->saveSite($site = new SiteData([
+        'name' => 'New site',
+        'handle' => 'newSite',
+        'language' => 'nl',
+        'groupId' => SiteGroup::first()->id,
+    ]));
 
     expect(Site::count())->toBe(2);
-    tap(Site::query()->where('handle', 'new-site')->firstOrFail(), function (Site $site) {
+    tap(Site::query()->where('handle', 'newSite')->firstOrFail(), function (Site $site) {
         expect($site->name)->toBe('New site');
-        expect($site->handle)->toBe('new-site');
+        expect($site->handle)->toBe('newSite');
         expect($site->language)->toBe('nl');
         expect($site->groupId)->toBe(SiteGroup::first()->id);
     });
 
     $projectConfigData = $this->projectConfig->get(ProjectConfig::PATH_SITES.'.'.$site->uid);
     expect($projectConfigData['name'])->toBe('New site');
-    expect($projectConfigData['handle'])->toBe('new-site');
+    expect($projectConfigData['handle'])->toBe('newSite');
 });
 
 it('can reorder sites', function () {
-    $this->sites->saveSite($otherSite = new SiteData(
-        name: 'New site',
-        handle: 'new-site',
-        language: 'nl',
-        groupId: SiteGroup::first()->id,
-    ));
+    $this->sites->saveSite($otherSite = new SiteData([
+        'name' => 'New site',
+        'handle' => 'newSite',
+        'language' => 'nl',
+        'groupId' => SiteGroup::first()->id,
+    ]));
 
     $defaultSite = Site::first();
 
@@ -244,12 +244,12 @@ it('can reorder sites', function () {
 });
 
 it('can delete a site by id', function () {
-    $this->sites->saveSite($newSite = new SiteData(
-        name: 'New site',
-        handle: 'new-site',
-        language: 'nl',
-        groupId: SiteGroup::first()->id,
-    ));
+    $this->sites->saveSite($newSite = new SiteData([
+        'name' => 'New site',
+        'handle' => 'newSite',
+        'language' => 'nl',
+        'groupId' => SiteGroup::first()->id,
+    ]));
 
     expect(Site::count())->toBe(2);
 
@@ -266,12 +266,12 @@ it('can delete a site', function () {
         SiteDeleted::class,
     ]);
 
-    $this->sites->saveSite($newSite = new SiteData(
-        name: 'New site',
-        handle: 'new-site',
-        language: 'nl',
-        groupId: SiteGroup::first()->id,
-    ));
+    $this->sites->saveSite($newSite = new SiteData([
+        'name' => 'New site',
+        'handle' => 'newSite',
+        'language' => 'nl',
+        'groupId' => SiteGroup::first()->id,
+    ]));
 
     expect(Site::count())->toBe(2);
 
@@ -286,12 +286,12 @@ it('can delete a site', function () {
 });
 
 it('can prevent deletion through an event', function () {
-    $this->sites->saveSite($newSite = new SiteData(
-        name: 'New site',
-        handle: 'new-site',
-        language: 'nl',
-        groupId: SiteGroup::first()->id,
-    ));
+    $this->sites->saveSite($newSite = new SiteData([
+        'name' => 'New site',
+        'handle' => 'newSite',
+        'language' => 'nl',
+        'groupId' => SiteGroup::first()->id,
+    ]));
 
     Event::listen(DeletingSite::class, function (DeletingSite $event) {
         $event->isValid = false;
@@ -307,12 +307,12 @@ it('can prevent deletion through an event', function () {
 });
 
 it('can restore a site by id', function () {
-    $this->sites->saveSite($newSite = new SiteData(
-        name: 'New site',
-        handle: 'new-site',
-        language: 'nl',
-        groupId: SiteGroup::first()->id,
-    ));
+    $this->sites->saveSite($newSite = new SiteData([
+        'name' => 'New site',
+        'handle' => 'newSite',
+        'language' => 'nl',
+        'groupId' => SiteGroup::first()->id,
+    ]));
 
     $this->sites->deleteSiteById($newSite->id);
 

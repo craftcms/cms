@@ -17,54 +17,36 @@ use function CraftCms\Cms\t;
  */
 final class QueueManager extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
         return t('Queue Manager');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function id(): string
     {
         return 'queue-manager';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'play';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function toolbarHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/utilities/QueueManager/toolbar.twig');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function footerHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/utilities/QueueManager/footer.twig');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function contentHtml(): string
     {

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
@@ -117,14 +118,17 @@ it('can save a section', function () {
 
     expect(Section::count())->toBe(0);
 
-    $this->sections->saveSection(new SectionData(
-        name: 'Test section',
-        handle: 'test-section',
-        type: SectionType::Channel,
-        siteSettings: [
-            Sites::getCurrentSite()->id => new SectionSiteSettingsData,
-        ]
-    ));
+    $this->sections->saveSection(new SectionData([
+        'name' => 'Test section',
+        'handle' => 'testSection',
+        'type' => SectionType::Channel,
+        'entryTypes' => [EntryType::factory()->create()->id],
+        'siteSettings' => [
+            new SectionSiteSettingsData([
+                'siteId' => Sites::getCurrentSite()->id,
+            ]),
+        ],
+    ]));
 
     expect(Section::count())->toBe(1);
 

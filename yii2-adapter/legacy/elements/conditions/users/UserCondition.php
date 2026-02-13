@@ -2,41 +2,20 @@
 
 namespace craft\elements\conditions\users;
 
-use craft\elements\conditions\ElementCondition;
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 
-/**
- * User query condition.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class UserCondition extends ElementCondition
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * User query condition.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Conditions\UserCondition} instead.
      */
-    protected function selectableConditionRules(): array
+    class UserCondition extends ElementCondition
     {
-        $types = array_merge(parent::selectableConditionRules(), [
-            AdminConditionRule::class,
-            CredentialedConditionRule::class,
-            EmailConditionRule::class,
-            FirstNameConditionRule::class,
-            GroupConditionRule::class,
-            LastLoginDateConditionRule::class,
-            LastNameConditionRule::class,
-        ]);
-
-        if (!Cms::config()->useEmailAsUsername) {
-            $types[] = UsernameConditionRule::class;
-        }
-
-        if (Sites::isMultiSite()) {
-            $types[] = AffiliatedSiteConditionRule::class;
-        }
-
-        return $types;
     }
 }
+
+class_alias(\CraftCms\Cms\User\Conditions\UserCondition::class, UserCondition::class);

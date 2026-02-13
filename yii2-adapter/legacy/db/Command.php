@@ -7,10 +7,10 @@
 
 namespace craft\db;
 
-use Craft;
 use craft\helpers\Db;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Support\Facades\Log;
 use yii\db\Query as YiiQuery;
 
 /**
@@ -280,7 +280,7 @@ class Command extends \yii\db\Command
     {
         if ($this->db->enableLogging) {
             $rawSql = $this->getRawSql();
-            Craft::debug("SQL query:\n" . $rawSql, $category);
+            Log::debug("SQL query:\n" . $rawSql, [$category]);
         }
         if (!$this->db->enableProfiling) {
             return [false, $rawSql ?? null];

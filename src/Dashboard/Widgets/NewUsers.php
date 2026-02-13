@@ -17,9 +17,6 @@ use function CraftCms\Cms\t;
 
 final class NewUsers extends Widget
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
@@ -28,9 +25,6 @@ final class NewUsers extends Widget
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function isSelectable(): bool
     {
@@ -38,9 +32,6 @@ final class NewUsers extends Widget
         return Edition::get()->value >= Edition::Pro->value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -57,9 +48,6 @@ final class NewUsers extends Widget
      */
     public ?string $dateRange = null;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitle(): ?string
     {
@@ -78,9 +66,6 @@ final class NewUsers extends Widget
         return parent::getTitle();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getBodyHtml(): ?string
     {
@@ -98,9 +83,6 @@ final class NewUsers extends Widget
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSettingsHtml(): string
     {

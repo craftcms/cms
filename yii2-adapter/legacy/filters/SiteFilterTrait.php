@@ -11,7 +11,7 @@ use Craft;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 
 /**
  * Trait to make a filter site-aware.
@@ -20,6 +20,7 @@ use yii\base\InvalidArgumentException;
  * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
+ * @deprecated 6.0.0
  */
 trait SiteFilterTrait
 {

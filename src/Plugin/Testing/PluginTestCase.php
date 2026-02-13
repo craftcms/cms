@@ -11,6 +11,7 @@ use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as BaseTestCase;
+use Override;
 
 abstract class PluginTestCase extends BaseTestCase
 {
@@ -24,14 +25,14 @@ abstract class PluginTestCase extends BaseTestCase
         /** Install migration adds their own */
         Schema::drop('migrations');
 
-        $site = new Site(
-            name: 'Craft test site',
-            handle: 'default',
-            language: 'en-US',
-            baseUrl: 'https://localhost/',
-            primary: true,
-            hasUrls: true,
-        );
+        $site = new Site([
+            'name' => 'Craft test site',
+            'handle' => 'default',
+            'language' => 'en-US',
+            'baseUrl' => 'https://localhost/',
+            'primary' => true,
+            'hasUrls' => true,
+        ]);
 
         $migration = new Install(
             username: 'craftcms',
@@ -43,7 +44,7 @@ abstract class PluginTestCase extends BaseTestCase
         $migration->up();
     }
 
-    #[\Override]
+    #[Override]
     protected function getPackageProviders($app): array
     {
         return [

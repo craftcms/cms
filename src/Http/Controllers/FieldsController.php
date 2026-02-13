@@ -6,15 +6,9 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutComponent;
-use craft\base\FieldLayoutElement;
-use craft\base\FieldLayoutProviderInterface;
-use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
-use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
@@ -26,6 +20,12 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
@@ -167,7 +167,6 @@ final class FieldsController
             'uid' => $fieldUid,
             'name' => $request->input('name'),
             'handle' => $request->input('handle'),
-            'columnSuffix' => $oldField->columnSuffix ?? null,
             'instructions' => $request->input('instructions'),
             'searchable' => (bool) $request->input('searchable', true),
             'translationMethod' => $request->input('translationMethod', Field::TRANSLATION_METHOD_NONE),
@@ -264,9 +263,9 @@ final class FieldsController
             }
 
             if (! $field->validate($validateAttributes)) {
-                if ($field->hasErrors('name')) {
-                    $field->addErrors(['label' => $field->getErrors('name')]);
-                    $field->clearErrors('name');
+                if ($field->errors()->has('name')) {
+                    $field->errors()->merge(['label' => $field->errors()->get('name')]);
+                    $field->errors()->forget('name');
                 }
 
                 return $this->asModelFailure($field, t('Couldn’t apply changes.'), 'field');
@@ -290,7 +289,7 @@ final class FieldsController
             'thumbAlignment' => ['nullable', 'string'],
         ]);
 
-        $fieldLayoutConfig = $request->input('fieldLayoutConfig');
+        $fieldLayoutConfig = Component::cleanseConfig($request->input('fieldLayoutConfig'));
         $fieldLayout = $fields->createLayout($fieldLayoutConfig);
 
         return new JsonResponse([

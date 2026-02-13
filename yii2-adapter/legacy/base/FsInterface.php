@@ -9,7 +9,7 @@ namespace craft\base;
 
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 
 /**
  * FsInterface defines the common interface to be implemented by filesystem classes.
@@ -20,7 +20,7 @@ use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-interface FsInterface extends BaseFsInterface, ValidatableComponentInterface, SavableComponentInterface, ConfigurableComponentInterface, ModelInterface
+interface FsInterface extends BaseFsInterface, Validatable, SavableComponentInterface, ConfigurableComponentInterface, ModelInterface
 {
     /**
      * Returns whether the “Files in this filesystem have public URLs” setting should be shown.

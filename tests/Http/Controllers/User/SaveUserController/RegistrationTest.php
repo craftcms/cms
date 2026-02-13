@@ -209,7 +209,7 @@ it('does not auto-login user after registration', function () {
 
 it('can upload a photo for new user', function () {
     // @TODO: Bulk ops cause issues
-    if (\Illuminate\Support\Facades\DB::getDriverName() === 'mysql') {
+    if (\Illuminate\Support\Facades\DB::isMysql()) {
         $this->markTestSkipped('Bulk ops cause issues with MySQL');
     }
 

@@ -7,8 +7,8 @@
 
 namespace craft\base\imagetransforms;
 
-use craft\elements\Asset;
 use craft\models\ImageTransform;
+use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
  * EagerLoadTransformerInterface defines the common interface to be implemented by all image drivers that can eager-load transforms.

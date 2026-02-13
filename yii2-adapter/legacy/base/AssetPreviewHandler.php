@@ -7,7 +7,7 @@
 
 namespace craft\base;
 
-use craft\elements\Asset;
+use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
  * AssetPreviewer is the base class for classes that provide asset previewing functionality.

@@ -6,115 +6,123 @@ namespace CraftCms\Cms\Site\Data;
 
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Shared\Rules\HandleRule;
-use CraftCms\Cms\Shared\Rules\LanguageRule;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Validation\Rules\HandleRule;
+use CraftCms\Cms\Validation\Rules\LanguageRule;
 use DateTimeInterface;
-use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
 use RuntimeException;
-use Spatie\LaravelData\Attributes\MapInputName;
-use Spatie\LaravelData\Attributes\Validation\Rule;
-use Spatie\LaravelData\Attributes\Validation\Url;
-use Spatie\LaravelData\Attributes\WithCast;
-use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
-use Spatie\LaravelData\Dto;
-use Spatie\LaravelData\Support\Validation\ValidationContext;
 use Stringable;
 
 use function CraftCms\Cms\t;
 
-final class Site extends Dto implements Chippable, Stringable
+final class Site extends Component implements Chippable, Stringable
 {
-    /**
-     * @var string|null Base URL
-     *
-     * @see getBaseUrl()
-     * @see setBaseUrl()
-     */
-    private ?string $baseUrl;
+    private ?string $_baseUrl = null;
 
-    /**
-     * @var bool|string Enabled
-     *
-     * @see getEnabled()
-     * @see setEnabled()
-     */
-    private bool|string $enabled;
-
-    public function __construct(
-        public private(set) string $name,
-        #[Rule(new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']))]
-        #[AllowedInSandbox]
-        public string $handle,
-        public private(set) string $language,
-        #[MapInputName('siteId')]
-        #[AllowedInSandbox]
-        public ?int $id = null,
-        #[MapInputName('group')]
-        public ?int $groupId = null,
-        ?string $baseUrl = null,
-        #[AllowedInSandbox]
-        public ?bool $primary = false {
-            get => (bool) $this->primary;
-        },
-        #[AllowedInSandbox]
-        public bool $hasUrls = true,
-        public int $sortOrder = 1,
-        public ?string $uid = null,
-        #[WithCast(DateTimeInterfaceCast::class, format: ['Y-m-d H:i:s'], type: Carbon::class)]
-        public ?DateTimeInterface $dateCreated = null,
-        #[WithCast(DateTimeInterfaceCast::class, format: ['Y-m-d H:i:s'], type: Carbon::class)]
-        public ?DateTimeInterface $dateUpdated = null,
-        bool|string $enabled = true
-    ) {
-        $this->setBaseUrl($this->hasUrls ? $baseUrl : null);
-        $this->setEnabled($this->primary ? true : $enabled);
+    public ?string $baseUrl {
+        get => $this->getBaseUrl();
+        set {
+            $this->setBaseUrl($value);
+        }
     }
+
+    private bool|string $_enabled = true;
+
+    public bool|string $enabled {
+        get => $this->getEnabled();
+        set {
+            $this->setEnabled($value);
+        }
+    }
+
+    private ?string $_name = null;
+
+    public ?string $name {
+        get => $this->getName();
+        set {
+            $this->setName($value);
+        }
+    }
+
+    #[AllowedInSandbox]
+    public ?string $handle = null;
+
+    private ?string $_language = null;
+
+    public ?string $language {
+        get => $this->getLanguage();
+        set {
+            $this->setLanguage($value);
+        }
+    }
+
+    #[AllowedInSandbox]
+    public ?int $id = null;
+
+    public ?int $groupId = null;
+
+    #[AllowedInSandbox]
+    public ?bool $primary = false {
+        get => (bool) $this->primary;
+    }
+
+    #[AllowedInSandbox]
+    public bool $hasUrls = true;
+
+    public int $sortOrder = 1;
+
+    public ?string $uid = null;
+
+    public ?DateTimeInterface $dateCreated = null;
+
+    public ?DateTimeInterface $dateUpdated = null;
 
     public static function get(int|string $id): ?static
     {
         return Sites::getSiteById($id);
     }
 
-    public static function rules(?ValidationContext $context = null): array
+    public function getRules(): array
     {
         return [
             'language' => [
                 'required',
-                new LanguageRule(false),
+                new LanguageRule(false, parseValue: true),
             ],
-            'handle' => array_filter([
+            'handle' => [
                 'required',
                 'string',
                 new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                Cms::isInstalled() ? new Unique(Table::SITES, 'handle')->ignore($context?->payload['id'] ?? null)->withoutTrashed('dateDeleted') : null,
-            ]),
-            'name' => array_filter([
+                Rule::when(
+                    Cms::isInstalled(),
+                    [new Unique(Table::SITES, 'handle')->ignore($this->id)->withoutTrashed('dateDeleted')],
+                ),
+            ],
+            'name' => [
                 'required',
                 'string',
-                Cms::isInstalled() ? new Unique(Table::SITES, 'name')->ignore($context?->payload['id'] ?? null)->withoutTrashed('dateDeleted') : null,
-            ]),
+                Rule::when(
+                    Cms::isInstalled(),
+                    [new Unique(Table::SITES, 'name')->ignore($this->id)->withoutTrashed('dateDeleted')],
+                ),
+            ],
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUiLabel(): string
     {
         return t($this->getName(), category: 'site');
@@ -126,12 +134,12 @@ final class Site extends Dto implements Chippable, Stringable
     #[AllowedInSandbox]
     public function getName(bool $parse = true): string
     {
-        return ($parse ? Env::parse($this->name) : $this->name) ?? '';
+        return ($parse ? Env::parse($this->_name) : $this->_name) ?? '';
     }
 
-    public function setName(string $name): void
+    public function setName(?string $name): void
     {
-        $this->name = $name;
+        $this->_name = $name ?? '';
     }
 
     /**
@@ -142,22 +150,22 @@ final class Site extends Dto implements Chippable, Stringable
     #[AllowedInSandbox]
     public function getBaseUrl(bool $parse = true): ?string
     {
-        if (! $this->baseUrl) {
+        if (! $this->_baseUrl) {
             return null;
         }
 
         if (! $parse) {
-            return $this->baseUrl;
+            return $this->_baseUrl;
         }
 
-        $parsed = Env::parse($this->baseUrl);
+        $parsed = Env::parse($this->_baseUrl);
 
         return $parsed ? rtrim($parsed, '/').'/' : null;
     }
 
     public function setBaseUrl(?string $baseUrl): void
     {
-        $this->baseUrl = $baseUrl;
+        $this->_baseUrl = $baseUrl;
     }
 
     #[AllowedInSandbox]
@@ -168,15 +176,15 @@ final class Site extends Dto implements Chippable, Stringable
         }
 
         if ($parse) {
-            return Env::parseBoolean($this->enabled) ?? true;
+            return Env::parseBoolean($this->_enabled) ?? true;
         }
 
-        return $this->enabled;
+        return $this->_enabled;
     }
 
     public function setEnabled(bool|string $name): void
     {
-        $this->enabled = $name;
+        $this->_enabled = $name;
     }
 
     /**
@@ -187,15 +195,15 @@ final class Site extends Dto implements Chippable, Stringable
     #[AllowedInSandbox]
     public function getLanguage(bool $parse = true): string
     {
-        return ($parse ? Env::parse($this->language) : $this->language) ?? '';
+        return ($parse ? Env::parse($this->_language) : $this->_language) ?? '';
     }
 
     /**
      * Sets the site’s language.
      */
-    public function setLanguage(string $language): void
+    public function setLanguage(?string $language): void
     {
-        $this->language = $language;
+        $this->_language = $language ?? '';
     }
 
     /**
@@ -247,5 +255,18 @@ final class Site extends Dto implements Chippable, Stringable
             'primary' => $this->primary,
             'enabled' => $this->getEnabled(false),
         ];
+    }
+
+    public function toArray(array $fields = [], array $expand = [], bool $recursive = true): array
+    {
+        return array_merge(parent::toArray($fields, $expand, $recursive), [
+            'nameRaw' => $this->getName(false),
+            'uiLabel' => $this->getUiLabel(),
+            'languageRaw' => $this->getLanguage(false),
+            'locale' => $this->getLocale(),
+            'baseUrlRaw' => $this->getBaseUrl(false),
+            'enabledRaw' => $this->getEnabled(false),
+            'group' => $this->groupId ? $this->getGroup() : null,
+        ]);
     }
 }

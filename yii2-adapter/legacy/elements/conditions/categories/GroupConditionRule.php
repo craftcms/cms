@@ -6,9 +6,9 @@ use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\Category;
-use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\CategoryQuery;
-use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use function CraftCms\Cms\t;
 

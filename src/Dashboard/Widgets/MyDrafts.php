@@ -15,18 +15,12 @@ use function CraftCms\Cms\t;
 
 final class MyDrafts extends Widget
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('My Drafts');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function allowMultipleInstances(): bool
     {
@@ -38,9 +32,6 @@ final class MyDrafts extends Widget
      */
     public int $limit = 10;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -48,16 +39,13 @@ final class MyDrafts extends Widget
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [
             'limit' => ['required', 'integer', 'min:1'],
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSettingsHtml(): string
     {
@@ -71,13 +59,10 @@ final class MyDrafts extends Widget
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getBodyHtml(): string
     {
-        /** @var \craft\elements\ElementCollection<Entry> $drafts */
+        /** @var \CraftCms\Cms\Element\ElementCollection<Entry> $drafts */
         $drafts = Entry::find()
             ->drafts()
             ->status(null)

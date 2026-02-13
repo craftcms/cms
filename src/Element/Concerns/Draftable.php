@@ -9,15 +9,29 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\AuthorizeCreateDrafts;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 
-/** @phpstan-ignore trait.unused */
+/**
+ * Draftable provides draft functionality for elements.
+ *
+ * This trait contains properties and methods for managing element drafts, including
+ * draft metadata (name, notes, creator), provisional draft handling, and lifecycle
+ * methods for saving and deleting drafts.
+ *
+ * @internal
+ */
 trait Draftable
 {
     /**
      * @var int|null The ID of the draft’s row in the `drafts` table
      */
     public ?int $draftId = null;
+
+    /**
+     * @var bool Whether the element is a draft that is about to be applied to the canonical element.
+     *
+     * @since 5.9.0
+     */
+    public bool $applyingDraft = false;
 
     /**
      * @var bool Whether this is a provisional draft.
@@ -124,40 +138,24 @@ trait Draftable
         DB::table(Table::DRAFTS)->delete($this->draftId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canCreateDrafts(UserElement $user): bool
     {
-        if (Event::hasListeners(AuthorizeCreateDrafts::class)) {
-            Event::dispatch($event = new AuthorizeCreateDrafts($this, $user));
+        event($event = new AuthorizeCreateDrafts($this, $user));
 
-            return $event->authorized;
-        }
-
-        return false;
+        return $event->authorized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canDuplicateAsDraft(UserElement $user): bool
     {
         // if anything, this will be more lenient than canDuplicate()
         return Craft::$app->getElements()->canDuplicate($this, $user);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIsDraft(): bool
     {
         return ! empty($this->draftId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function hasDrafts(): bool
     {
         return false;

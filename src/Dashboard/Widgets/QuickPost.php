@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
-use craft\elements\Entry;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
@@ -14,24 +14,19 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
+use Override;
 
 use function CraftCms\Cms\t;
 
 final class QuickPost extends Widget
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Quick Post');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'file-circle-plus';
@@ -90,8 +85,8 @@ final class QuickPost extends Widget
         parent::__construct($config);
     }
 
-    #[\Override]
-    public static function getRules(): array
+    #[Override]
+    public function getRules(): array
     {
         return [
             'section' => ['required', 'integer'],
@@ -99,10 +94,7 @@ final class QuickPost extends Widget
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): string
     {
         // Find the sections the user has permission to create entries in
@@ -127,10 +119,7 @@ final class QuickPost extends Widget
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getTitle(): string
     {
         if (isset($this->customTitle)) {
@@ -147,10 +136,7 @@ final class QuickPost extends Widget
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getBodyHtml(): string
     {
         $section = $this->section();
@@ -180,7 +166,7 @@ final class QuickPost extends Widget
     try {
       const response = await Craft.sendActionRequest('POST', 'entries/create', {
         data: $params,
-      });
+      })
       entry = response.data.entry;
     } finally {
       button.removeClass('loading');
@@ -192,7 +178,7 @@ final class QuickPost extends Widget
       params: {
         fresh: 1,
       },
-    });
+    })
 
     slideout.on('submit', ({data}) => {
       // Are there any Recent Entries widgets to notify?

@@ -14,10 +14,7 @@ use CommerceGuys\Addressing\Country\CountryRepository;
 use CommerceGuys\Addressing\Formatter\DefaultFormatter;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
-use craft\base\FieldLayoutProviderInterface;
-use craft\elements\Address;
-use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Address\Events\DefineAddressCountries;
 use CraftCms\Cms\Address\Events\DefineAddressFieldLabel;
 use CraftCms\Cms\Address\Events\DefineAddressSubdivisions;
@@ -25,11 +22,14 @@ use CraftCms\Cms\Address\Events\DefineAddressUsedFields;
 use CraftCms\Cms\Address\Events\DefineAddressUsedSubdivisionFields;
 use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 
 use function CraftCms\Cms\t;
 
@@ -73,13 +73,9 @@ final readonly class Addresses implements FieldLayoutProviderInterface
      */
     public function defineAddressSubdivisions(array $parents, array $options = []): array
     {
-        if (Event::hasListeners(DefineAddressSubdivisions::class)) {
-            Event::dispatch($event = new DefineAddressSubdivisions($parents, $options));
+        event($event = new DefineAddressSubdivisions($parents, $options));
 
-            return $event->subdivisions;
-        }
-
-        return $options;
+        return $event->subdivisions;
     }
 
     /**
@@ -90,13 +86,9 @@ final readonly class Addresses implements FieldLayoutProviderInterface
         $locale ??= app()->getLocale();
         $countries = $this->countryRepository->getList($locale);
 
-        if (Event::hasListeners(DefineAddressCountries::class)) {
-            Event::dispatch($event = new DefineAddressCountries($locale, $countries));
+        event($event = new DefineAddressCountries($locale, $countries));
 
-            return $event->countries;
-        }
-
-        return $countries;
+        return $event->countries;
     }
 
     /**
@@ -110,13 +102,9 @@ final readonly class Addresses implements FieldLayoutProviderInterface
     {
         $fields = $this->addressFormatRepository->get($countryCode)->getUsedFields();
 
-        if (Event::hasListeners(DefineAddressUsedFields::class)) {
-            Event::dispatch($event = new DefineAddressUsedFields($countryCode, $fields));
+        event($event = new DefineAddressUsedFields($countryCode, $fields));
 
-            return $event->fields;
-        }
-
-        return $fields;
+        return $event->fields;
     }
 
     /**
@@ -130,13 +118,9 @@ final readonly class Addresses implements FieldLayoutProviderInterface
     {
         $fields = $this->addressFormatRepository->get($countryCode)->getUsedSubdivisionFields();
 
-        if (Event::hasListeners(DefineAddressUsedSubdivisionFields::class)) {
-            Event::dispatch($event = new DefineAddressUsedSubdivisionFields($countryCode, $fields));
+        event($event = new DefineAddressUsedSubdivisionFields($countryCode, $fields));
 
-            return $event->fields;
-        }
-
-        return $fields;
+        return $event->fields;
     }
 
     /**
@@ -163,13 +147,9 @@ final readonly class Addresses implements FieldLayoutProviderInterface
             AddressField::FAMILY_NAME => t('Last Name'),
         };
 
-        if (Event::hasListeners(DefineAddressFieldLabel::class)) {
-            Event::dispatch($event = new DefineAddressFieldLabel($countryCode, $field, $label));
+        event($event = new DefineAddressFieldLabel($countryCode, $field, $label));
 
-            return $event->label;
-        }
-
-        return $label;
+        return $event->label;
     }
 
     /**
@@ -234,15 +214,11 @@ final readonly class Addresses implements FieldLayoutProviderInterface
         };
     }
 
-    /** {@inheritdoc} */
     public function getHandle(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldLayout(): FieldLayout
     {
         $fieldLayout = $this->fields->getLayoutByType(Address::class);
@@ -271,7 +247,7 @@ final readonly class Addresses implements FieldLayoutProviderInterface
     public function saveFieldLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
         if ($runValidation && ! $layout->validate()) {
-            Craft::info('Field layout not saved due to validation error.', __METHOD__);
+            Log::info('Field layout not saved due to validation error.', [__METHOD__]);
 
             return false;
         }

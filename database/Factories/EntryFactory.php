@@ -4,25 +4,31 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories;
 
+use CraftCms\Cms\Database\Factories\Concerns\HasFieldFactory;
+use CraftCms\Cms\Element\Element as BaseElement;
 use CraftCms\Cms\Element\Models\Element;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
 final class EntryFactory extends Factory
 {
+    use HasFieldFactory;
+
     protected $model = Entry::class;
 
     #[Override]
     public function definition(): array
     {
         return [
-            'id' => Element::factory()->set('type', \craft\elements\Entry::class),
+            'id' => Element::factory()->set('type', EntryElement::class),
             'sectionId' => Section::factory(),
             'typeId' => EntryType::factory(),
-            'status' => \craft\elements\Entry::STATUS_LIVE,
+            'status' => EntryElement::STATUS_LIVE,
             'postDate' => $created = $this->faker->dateTime(),
             'dateCreated' => $created,
             'dateUpdated' => $created,
@@ -88,5 +94,36 @@ final class EntryFactory extends Factory
                 ? fake()->dateTime()
                 : fake()->dateTimeBetween('+1 day', '+1 year'),
         ]);
+    }
+
+    public function createElement(array $attributes = []): EntryElement
+    {
+        $model = $this->create($attributes);
+
+        return EntryElement::find()->id($model->id)->one();
+    }
+
+    #[Override]
+    protected function getElementClass(): string
+    {
+        return EntryElement::class;
+    }
+
+    #[Override]
+    protected function attachFieldLayoutToModel(mixed $model, FieldLayout $fieldLayout): void
+    {
+        $model->element->update([
+            'fieldLayoutId' => $fieldLayout->id,
+        ]);
+
+        $model->entryType->update([
+            'fieldLayoutId' => $fieldLayout->id,
+        ]);
+    }
+
+    #[Override]
+    protected function queryElement(int $id): BaseElement
+    {
+        return EntryElement::find()->id($id)->one();
     }
 }

@@ -6,8 +6,6 @@ namespace CraftCms\Cms\Element;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Queue;
-use craft\queue\jobs\PruneRevisions;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\CreatingRevision;
@@ -15,16 +13,16 @@ use CraftCms\Cms\Element\Events\RevertedToRevision;
 use CraftCms\Cms\Element\Events\RevertingToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Jobs\PruneRevisions;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
+use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
@@ -99,28 +97,32 @@ final readonly class Revisions
                 $creatorId = Auth::user()?->id;
             }
 
-            if (Event::hasListeners(CreatingRevision::class)) {
-                Event::dispatch($event = new CreatingRevision(
-                    canonical: $canonical,
-                    revisionNum: $num,
-                    creatorId: $creatorId,
-                    revisionNotes: $notes,
-                ));
+            event($event = new CreatingRevision(
+                canonical: $canonical,
+                revisionNum: $num,
+                creatorId: $creatorId,
+                revisionNotes: $notes,
+            ));
 
-                // only bail early if we have at least one revision
-                if ($event->handled && $lastRevisionInfo) {
-                    return $lastRevisionInfo->id;
-                }
-
-                $notes = $event->revisionNotes;
-                $creatorId = $event->creatorId;
-                $canonical = $event->canonical;
+            // only bail early if we have at least one revision
+            if ($event->handled && $lastRevisionInfo) {
+                return $lastRevisionInfo->id;
             }
+
+            $notes = $event->revisionNotes;
+            $creatorId = $event->creatorId;
+            $canonical = $event->canonical;
 
             $elementsService = Craft::$app->getElements();
 
             DB::beginTransaction();
             try {
+                // Even if no existing revision info was found, there could be an orphaned row in there
+                DB::table(Table::REVISIONS)
+                    ->where('canonicalId', $canonical->id)
+                    ->where('num', $num)
+                    ->delete();
+
                 // Create the revision row
                 $newAttributes['revisionId'] = DB::table(Table::REVISIONS)->insertGetId([
                     'canonicalId' => $canonical->id,
@@ -151,26 +153,24 @@ final readonly class Revisions
                 throw $e;
             }
 
-            if (Event::hasListeners(RevisionCreated::class)) {
-                Event::dispatch(new RevisionCreated(
-                    canonical: $canonical,
-                    revisionNum: $num,
-                    creatorId: $creatorId,
-                    revisionNotes: $notes,
-                    revision: $revision,
-                ));
-            }
+            event(new RevisionCreated(
+                canonical: $canonical,
+                revisionNum: $num,
+                creatorId: $creatorId,
+                revisionNotes: $notes,
+                revision: $revision,
+            ));
         } finally {
             $mutex->release();
         }
 
         // Prune any excess revisions
         if (Cms::config()->maxRevisions) {
-            Queue::push(new PruneRevisions([
-                'elementType' => $canonical::class,
-                'canonicalId' => $canonical->id,
-                'siteId' => $canonical->siteId,
-            ]), 2049);
+            dispatch(new PruneRevisions(
+                elementType: $canonical::class,
+                canonicalId: $canonical->id,
+                siteId: $canonical->siteId,
+            ))->onQueue(Cms::config()->lowPriorityQueueName);
         }
 
         return $revision->id;
@@ -191,15 +191,13 @@ final readonly class Revisions
         /** @var ElementInterface $revision */
         $canonical = $revision->getCanonical();
 
-        if (Event::hasListeners(RevertingToRevision::class)) {
-            Event::dispatch(new RevertingToRevision(
-                canonical: $canonical,
-                revisionNum: $revision->revisionNum,
-                creatorId: $creatorId,
-                revisionNotes: $revision->revisionNotes,
-                revision: $revision,
-            ));
-        }
+        event(new RevertingToRevision(
+            canonical: $canonical,
+            revisionNum: $revision->revisionNum,
+            creatorId: $creatorId,
+            revisionNotes: $revision->revisionNotes,
+            revision: $revision,
+        ));
 
         // "Duplicate" the revision with the source element’s ID and UID
         $newSource = Craft::$app->getElements()->updateCanonicalElement($revision, [
@@ -207,15 +205,13 @@ final readonly class Revisions
             'revisionNotes' => t('Reverted content from revision {num}.', ['num' => $revision->revisionNum]),
         ]);
 
-        if (Event::hasListeners(RevertedToRevision::class)) {
-            Event::dispatch(new RevertedToRevision(
-                canonical: $canonical,
-                revisionNum: $revision->revisionNum,
-                creatorId: $creatorId,
-                revisionNotes: $revision->revisionNotes,
-                revision: $revision,
-            ));
-        }
+        event(new RevertedToRevision(
+            canonical: $canonical,
+            revisionNum: $revision->revisionNum,
+            creatorId: $creatorId,
+            revisionNotes: $revision->revisionNotes,
+            revision: $revision,
+        ));
 
         return $newSource;
     }

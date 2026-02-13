@@ -9,7 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\elements\Entry;
+use CraftCms\Cms\Entry\Elements\Entry;
 use yii\base\Exception;
 use function CraftCms\Cms\t;
 
@@ -60,7 +60,7 @@ class MoveToSection extends ElementAction
 
           new Craft.EntryMover(entryIds, elementIndex);
         },
-    });
+    })
 })();
 JS, [static::class]);
 

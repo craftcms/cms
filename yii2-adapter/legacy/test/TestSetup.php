@@ -17,7 +17,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\i18n\Locale;
 use craft\mail\Mailer;
-use craft\queue\Queue;
+use craft\queue\QueueComponent;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Categories;
@@ -67,11 +67,11 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use Illuminate\Support\Facades\Event as LaravelEvent;
+use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
 use yii\base\ErrorException;
 use yii\base\Event;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
 use yii\db\Exception;
@@ -420,7 +420,7 @@ class TestSetup
             }
         }
 
-        $site = new Site(...$siteConfig);
+        $site = new Site($siteConfig);
 
         LaravelEvent::listen(PostCreateTables::class, function() {
             Artisan::call('craft:add-categories-support', [
@@ -540,7 +540,7 @@ class TestSetup
             [Path::class, ['getPath', 'path']],
             [Plugins::class, ['getPlugins', 'plugins']],
             [\craft\services\ProjectConfig::class, ['getProjectConfig', 'projectConfig']],
-            [Queue::class, ['getQueue', 'queue']],
+            [QueueComponent::class, ['getQueue', 'queue']],
             [Relations::class, ['getRelations', 'relations']],
             [Routes::class, ['getRoutes', 'routes']],
             [Search::class, ['getSearch', 'search']],
