@@ -115,6 +115,7 @@ class SearchTest extends TestCase
         self::assertCount(1, $jobRows);
 
         $fieldRows = (new Query())
+            ->select(['fieldHandle'])
             ->from([Table::SEARCHINDEXQUEUE_FIELDS])
             ->where(['jobId' => $jobRows[0]['id']])
             ->orderBy(['fieldHandle' => SORT_ASC])
@@ -141,6 +142,7 @@ class SearchTest extends TestCase
         self::assertCount(1, $jobRows);
 
         $fieldRows = (new Query())
+            ->select(['fieldHandle'])
             ->from([Table::SEARCHINDEXQUEUE_FIELDS])
             ->where(['jobId' => $jobRows[0]['id']])
             ->all();
