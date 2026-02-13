@@ -8,7 +8,14 @@
         @inertiaHead
     </head>
     <body>
-        @inertia
+        @hasSection('content')
+            {{-- Non-Inertia (legacy) page: render content inside the app div --}}
+            <div id="app" data-page="{{ json_encode($page ?? \CraftCms\Cms\Cp\Cp::nonInertiaPageData()) }}">
+                @yield('content')
+            </div>
+        @else
+            @inertia
+        @endif
         <script>
           let CpConfig = {!! json_encode(\CraftCms\Cms\Cp\Cp::config()) !!};
         </script>

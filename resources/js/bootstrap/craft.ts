@@ -1,8 +1,9 @@
 import {ConfigService} from '@craftcms/cp/src/services/Config.js';
 import {QueueService} from '@craftcms/cp/src/services/Queue.js';
-import {createInertiaApp} from '@inertiajs/vue3';
+import {createInertiaApp, router} from '@inertiajs/vue3';
 import {resolvePageComponent} from 'laravel-vite-plugin/inertia-helpers';
 import {createApp, type DefineComponent, h} from 'vue';
+import AppLayout from '@/layout/AppLayout.vue';
 import QueueManager from '@/components/utilities/QueueManager/QueueManager.vue';
 import {Axios, Config, Queue} from '@/types/keys';
 import axios from 'axios';
@@ -71,12 +72,31 @@ const Craft = {
     bootingCallbacks.forEach((callback) => callback(this));
     bootingCallbacks = [];
 
+    // Capture any pre-rendered legacy content before Inertia mounts
+    const appEl = document.getElementById('app');
+    const legacyContent = appEl?.innerHTML || '';
+
     await createInertiaApp({
-      resolve: (name) =>
-        resolvePageComponent(
+      resolve: (name) => {
+        // For non-Inertia (legacy) pages, return a dynamic component
+        // that wraps the server-rendered content in the standard layout
+        if (name === 'NonInertiaPage') {
+          return {
+            default: {
+              layout: AppLayout,
+              template: `<div v-html="content"></div>`,
+              data() {
+                return {content: legacyContent};
+              },
+            },
+          };
+        }
+
+        return resolvePageComponent(
           `../pages/${name}.vue`,
           import.meta.glob<DefineComponent>('../pages/**/*.vue')
-        ),
+        );
+      },
       setup({el, App, props, plugin}) {
         const app = createApp({render: () => h(App, props)}).use(plugin);
 
@@ -102,6 +122,16 @@ const Craft = {
           useScriptElementForInitialPage: true,
         },
       },
+    });
+
+    // Handle non-Inertia responses (e.g. navigating to a legacy page via
+    // an Inertia link) by performing a full page reload
+    router.on('invalid', (event) => {
+      const response = (event as CustomEvent).detail?.response;
+      if (response?.status === 200) {
+        event.preventDefault();
+        window.location.href = response.request?.responseURL ?? window.location.href;
+      }
     });
 
     console.log('Calling booted callbacks', bootedCallbacks);

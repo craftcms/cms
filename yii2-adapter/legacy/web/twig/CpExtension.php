@@ -13,6 +13,7 @@ use Craft;
 use craft\helpers\Cp;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Cp as CraftCp;
 use CraftCms\Cms\Edition;
 use Illuminate\Foundation\ViteException;
 use Illuminate\Support\Collection;
@@ -66,6 +67,8 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('siteMenuItems', [Cp::class, 'siteMenuItems']),
             new TwigFunction('statusIndicator', [Cp::class, 'statusIndicatorHtml'], ['is_safe' => ['html']]),
             new TwigFunction('readOnlyNotice', [Cp::class, 'readOnlyNoticeHtml'], ['is_safe' => ['html']]),
+            new TwigFunction('cpConfig', [CraftCp::class, 'config']),
+            new TwigFunction('nonInertiaPageData', [CraftCp::class, 'nonInertiaPageData']),
             new TwigFunction('vite', [$this, 'vite'], ['is_safe' => ['html']]),
         ];
     }
