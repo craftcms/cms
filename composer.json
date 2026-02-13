@@ -67,7 +67,7 @@
     "symfony/yaml": "^5.2.3|^6.0|^7.0",
     "thamtech/yii2-ratelimiter-advanced": "^0.5.0",
     "theiconic/name-parser": "^1.2",
-    "twig/twig": "~3.21.1",
+    "twig/twig": "~3.23.0",
     "voku/portable-ascii": "^2.0",
     "web-auth/webauthn-lib": "~4.9.0",
     "webonyx/graphql-php": "~14.11.10",
