@@ -16,6 +16,7 @@ use craft\web\Response;
 use craft\web\TemplateResponseFormatter;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Crypt;
 use UnitTester;
 use yii\base\Action;

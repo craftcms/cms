@@ -124,4 +124,9 @@ it('dispatches the correct event for template roots', function () {
 
     Event::assertDispatched(RegisterCpTemplateRoots::class);
     Event::assertNotDispatched(RegisterSiteTemplateRoots::class);
+
+    TemplateMode::Site->templateRoots();
+
+    Event::assertDispatchedOnce(RegisterCpTemplateRoots::class);
+    Event::assertDispatchedOnce(RegisterSiteTemplateRoots::class);
 });

@@ -114,7 +114,7 @@ class Mailer extends \yii\symfonymailer\Mailer
         $originalSettings = [];
 
         $originalTemplateMode = TemplateMode::get();
-        TemplateMode::set(TemplateMode::Cp);
+        TemplateMode::set(TemplateMode::Site);
 
         try {
             if ($message instanceof Message && isset($message->siteId)) {

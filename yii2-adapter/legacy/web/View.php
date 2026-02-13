@@ -1872,6 +1872,8 @@ JS;
      * Sets the base path that templates should be found in.
      *
      * @param string $templatesPath
+     *
+     * @deprecated 6.0.0 use {@see TemplateMode::templatesPath()} instead.
      */
     public function setTemplatesPath(string $templatesPath): void
     {
