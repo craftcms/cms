@@ -33,6 +33,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -264,8 +265,8 @@ final class Assets extends BaseRelationField
     public function getElementRules(ElementInterface $element): array
     {
         $rules = parent::getElementRules($element);
-        $rules[] = fn ($attribute, AssetQuery $value, Closure $fail, Validator $validator) => $this->validateFileType($element, $value, $attribute, $validator);
-        $rules[] = fn ($attribute, AssetQuery $value, Closure $fail, Validator $validator) => $this->validateFileSize($element, $attribute, $validator);
+        $rules[] = fn ($attribute, ElementQuery $value, Closure $fail, Validator $validator) => $this->validateFileType($element, $value, $attribute, $validator);
+        $rules[] = fn ($attribute, ElementQuery $value, Closure $fail, Validator $validator) => $this->validateFileSize($element, $attribute, $validator);
 
         return $rules;
     }
@@ -273,7 +274,7 @@ final class Assets extends BaseRelationField
     /**
      * Validates the files to make sure they are one of the allowed file kinds.
      */
-    public function validateFileType(ElementInterface $element, AssetQuery $value, string $attribute, Validator $validator): void
+    public function validateFileType(ElementInterface $element, ElementQuery $value, string $attribute, Validator $validator): void
     {
         // Make sure the field restricts file types
         if (! $this->restrictFiles) {
