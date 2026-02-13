@@ -3728,8 +3728,12 @@ JS, [
      * @return array
      * @since 5.0.0
      */
-    public static function normalizeMenuItems(array $items): array
+    public static function normalizeMenuItems(array|Collection $items): array
     {
+        if ($items instanceof Collection) {
+            $items = $items->all();
+        }
+        
         return array_map(function(array $item) {
             if (!isset($item['type'])) {
                 if (isset($item['url'])) {

@@ -13,6 +13,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use Illuminate\Foundation\ViteException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Vite;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -93,8 +94,12 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
-    private function findCrumb(array $items): array
+    private function findCrumb(array|Collection $items): array
     {
+        if ($items instanceof Collection) {
+            $items = $items->all();
+        }
+
         foreach ($items as $item) {
             if (array_key_exists('selected', $item)) {
                 if ($item['selected']) {
