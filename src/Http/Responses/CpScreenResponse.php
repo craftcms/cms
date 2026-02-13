@@ -8,12 +8,12 @@ use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
-use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -532,7 +532,7 @@ final class CpScreenResponse implements Responsable
     public function toolbarTemplate(string $template, array $variables = []): self
     {
         return $this->toolbarHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
         );
     }
 
@@ -578,7 +578,7 @@ final class CpScreenResponse implements Responsable
     public function additionalButtonsTemplate(string $template, array $variables = []): self
     {
         return $this->additionalButtonsHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
         );
     }
 
@@ -598,7 +598,7 @@ final class CpScreenResponse implements Responsable
     public function contentTemplate(string $template, array $variables = []): self
     {
         return $this->contentHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
         );
     }
 
@@ -618,7 +618,7 @@ final class CpScreenResponse implements Responsable
     public function metaSidebarTemplate(string $template, array $variables = []): self
     {
         return $this->metaSidebarHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
         );
     }
 
@@ -638,7 +638,7 @@ final class CpScreenResponse implements Responsable
     public function pageSidebarTemplate(string $template, array $variables = []): self
     {
         return $this->pageSidebarHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
         );
     }
 
@@ -658,7 +658,7 @@ final class CpScreenResponse implements Responsable
     public function noticeTemplate(string $template, array $variables = []): self
     {
         return $this->noticeHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
         );
     }
 
@@ -678,7 +678,7 @@ final class CpScreenResponse implements Responsable
     public function errorSummaryTemplate(string $template, array $variables = []): self
     {
         return $this->errorSummary(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
         );
     }
 
@@ -711,7 +711,7 @@ final class CpScreenResponse implements Responsable
 
         $tabs = count($this->tabs) > 1 ? $view->namespaceInputs(fn () => $view->renderTemplate('_includes/tabs.twig', [
             'tabs' => $this->tabs,
-        ], View::TEMPLATE_MODE_CP), $namespace) : null;
+        ], TemplateMode::Cp->value), $namespace) : null;
 
         $content = $view->namespaceInputs(function () {
             $components = [];
@@ -855,7 +855,7 @@ final class CpScreenResponse implements Responsable
                 'sidebar' => $pageSidebar,
                 'errorSummary' => $errorSummary,
             ],
-            View::TEMPLATE_MODE_CP
+            TemplateMode::Cp->value
         ));
     }
 

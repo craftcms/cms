@@ -18,6 +18,7 @@ use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\View\TemplateMode;
 use crafttests\fixtures\SitesFixture;
 use ReflectionException;
 use Throwable;
@@ -194,7 +195,7 @@ class ViewTest extends TestCase
      */
     public function testSetSiteTemplateMode(): void
     {
-        $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $this->view->setTemplateMode(TemplateMode::Site->value);
         self::assertSame(
             Aliases::get('@crafttestsfolder/templates'),
             CraftTest::normalizePathSeparators($this->view->templatesPath)
@@ -216,7 +217,7 @@ class ViewTest extends TestCase
      */
     public function testSetCpTemplateMode(): void
     {
-        $this->view->setTemplateMode(View::TEMPLATE_MODE_CP);
+        $this->view->setTemplateMode(TemplateMode::Cp->value);
         self::assertSame(
             Craft::$app->getPath()->getCpTemplatesPath(),
             $this->view->templatesPath
@@ -480,9 +481,9 @@ TWIG;
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
 
             // Cp Paths
-            ['@craftcms/resources/templates/index.twig', '', View::TEMPLATE_MODE_CP],
-            ['@craftcms/resources/templates/index.twig', 'index', View::TEMPLATE_MODE_CP],
-            ['@craftcms/resources/templates/entries/index.twig', 'entries', View::TEMPLATE_MODE_CP],
+            ['@craftcms/resources/templates/index.twig', '', TemplateMode::Cp->value],
+            ['@craftcms/resources/templates/index.twig', 'index', TemplateMode::Cp->value],
+            ['@craftcms/resources/templates/entries/index.twig', 'entries', TemplateMode::Cp->value],
         ];
     }
 
@@ -626,7 +627,7 @@ TWIG;
         $this->view = Craft::createObject(View::class);
 
         // By default we want to be in site mode.
-        $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $this->view->setTemplateMode(TemplateMode::Site->value);
     }
 
     /**

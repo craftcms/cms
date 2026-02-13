@@ -8,6 +8,7 @@ use Craft;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\View\Factory as ViewFactory;
@@ -76,11 +77,11 @@ final class TwigCacheCommand extends Command
             $this->components->task('    '.$file->getRelativePathname(), null, OutputInterface::VERBOSITY_VERY_VERBOSE);
 
             try {
-                Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
+                TemplateMode::set(TemplateMode::Site);
                 Craft::$app->getView()->getTwig()->load($file->getRelativePathname());
             } catch (TemplateLoaderException) {
                 try {
-                    Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
+                    TemplateMode::set(TemplateMode::Cp);
                     Craft::$app->getView()->getTwig()->load($file->getRelativePathname());
                 } catch (Error $e) {
                     $this->error($e->getMessage());

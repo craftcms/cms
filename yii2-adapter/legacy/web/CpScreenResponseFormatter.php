@@ -13,6 +13,7 @@ use craft\helpers\UrlHelper;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Crypt;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -77,7 +78,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         $tabs = count($behavior->tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
             'tabs' => $behavior->tabs,
-        ], View::TEMPLATE_MODE_CP), $namespace) : null;
+        ], TemplateMode::Cp->value), $namespace) : null;
 
         $content = $view->namespaceInputs(function() use ($behavior) {
             $components = [];
@@ -211,7 +212,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'sidebar' => $pageSidebar,
                 'errorSummary' => $errorSummary,
             ],
-            'templateMode' => View::TEMPLATE_MODE_CP,
+            'templateMode' => TemplateMode::Cp->value,
         ]);
 
         (new TemplateResponseFormatter())->format($response);

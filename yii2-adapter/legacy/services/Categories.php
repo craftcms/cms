@@ -17,7 +17,6 @@ use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
-use craft\web\View;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -28,6 +27,7 @@ use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -591,7 +591,7 @@ class Categories extends Component
         }
 
         $template = (string)$categoryGroupSiteSettings[$siteId]->template;
-        return Craft::$app->getView()->doesTemplateExist($template, View::TEMPLATE_MODE_SITE);
+        return Craft::$app->getView()->doesTemplateExist($template, TemplateMode::Site->value);
     }
 
     /**
