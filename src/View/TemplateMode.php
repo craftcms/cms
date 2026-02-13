@@ -17,7 +17,15 @@ enum TemplateMode: string
 
     public static function get(): self
     {
-        return Context::getHidden(self::class, self::Site);
+        if ($mode = Context::getHidden(self::class)) {
+            return $mode;
+        }
+
+        $mode = request()->isCpRequest() ? self::Cp : self::Site;
+
+        Context::addHidden(self::class, $mode);
+
+        return $mode;
     }
 
     public static function set(self $mode): void

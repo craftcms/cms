@@ -621,7 +621,7 @@ class View extends \yii\web\View
     public function renderPageTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
         if ($templateMode === null) {
-            $templateMode = TemplateMode::get();
+            $templateMode = TemplateMode::get()->value;
         }
 
         if (!$this->beforeRenderPageTemplate($template, $variables, $templateMode)) {

@@ -9,10 +9,22 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Event;
 
-it('defaults to site mode', function () {
+it('defaults to site mode for non-cp requests', function () {
     Context::forgetHidden(TemplateMode::class);
 
     expect(TemplateMode::get())->toBe(TemplateMode::Site);
+
+    // Verify the result was cached in context
+    expect(Context::getHidden(TemplateMode::class))->toBe(TemplateMode::Site);
+});
+
+it('defaults to cp mode for cp requests', function () {
+    Context::forgetHidden(TemplateMode::class);
+
+    $cpTrigger = Cms::config()->cpTrigger;
+    $this->get("/{$cpTrigger}/test");
+
+    expect(TemplateMode::get())->toBe(TemplateMode::Cp);
 });
 
 it('can set and get the current mode', function () {
