@@ -20,9 +20,15 @@ class I18N extends \yii\i18n\I18N
 {
     /**
      * @var array|null All of the known locales
-     * @see getAllLocales()
+     * @see getAllLocaleIds()
      */
     private ?array $_allLocaleIds = null;
+
+    /**
+     * @var array[]
+     * @see getAllLocaleIds()
+     */
+    private array $_localeAliases;
 
     /**
      * @var bool[]
@@ -60,8 +66,10 @@ class I18N extends \yii\i18n\I18N
      */
     public function getLocaleById(string $localeId): Locale
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        return new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
+        // make sure we've defined $this->_localeAliases
+        $this->getAllLocaleIds();
+
+        return new Locale($localeId, $this->_localeAliases[$localeId] ?? []);
     }
 
     /**
@@ -73,20 +81,31 @@ class I18N extends \yii\i18n\I18N
     public function getAllLocaleIds(): array
     {
         if (!isset($this->_allLocaleIds)) {
-            $this->_allLocaleIds = ResourceBundle::getLocales('');
+            $allLocaleIds = ResourceBundle::getLocales('');
+            $this->_localeAliases = Craft::$app->getConfig()->getGeneral()->localeAliases;
 
             // Hyphens, not underscores
-            foreach ($this->_allLocaleIds as $i => $locale) {
-                $this->_allLocaleIds[$i] = str_replace('_', '-', $locale);
+            foreach ($allLocaleIds as $i => $locale) {
+                $allLocaleIds[$i] = str_replace('_', '-', $locale);
+            }
+
+            $allLocaleIds = array_flip($allLocaleIds);
+
+            // `nb` wasn’t added until ICU 69
+            if (!isset($allLocaleIds['nb']) && isset($allLocaleIds['no'])) {
+                $this->_localeAliases['nb'] ??= [
+                    'aliasOf' => 'no',
+                    'displayName' => 'Norwegian',
+                ];
             }
 
             // Merge in any custom aliases
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-            if (!empty($generalConfig->localeAliases)) {
-                $this->_allLocaleIds = array_merge($this->_allLocaleIds, array_keys($generalConfig->localeAliases));
-                $this->_allLocaleIds = array_unique($this->_allLocaleIds);
-                sort($this->_allLocaleIds);
+            if (!empty($this->_localeAliases)) {
+                $allLocaleIds = array_merge($allLocaleIds, array_flip(array_keys($this->_localeAliases)));
+                ksort($allLocaleIds);
             }
+
+            $this->_allLocaleIds = array_keys($allLocaleIds);
         }
 
         return $this->_allLocaleIds;
@@ -102,10 +121,9 @@ class I18N extends \yii\i18n\I18N
     {
         $locales = [];
         $localeIds = $this->getAllLocaleIds();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         foreach ($localeIds as $localeId) {
-            $locales[] = new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
+            $locales[] = new Locale($localeId, $this->_localeAliases[$localeId] ?? []);
         }
 
         return $locales;
@@ -127,11 +145,13 @@ class I18N extends \yii\i18n\I18N
             return $this->_appLocales;
         }
 
+        // make sure we've defined $this->_localeAliases
+        $this->getAllLocaleIds();
+
         $this->_appLocales = [];
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         foreach ($this->getAppLocaleIds() as $localeId) {
-            $this->_appLocales[] = new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
+            $this->_appLocales[] = new Locale($localeId, $this->_localeAliases[$localeId] ?? []);
         }
 
         return $this->_appLocales;
@@ -228,11 +248,13 @@ class I18N extends \yii\i18n\I18N
      */
     public function getSiteLocales(): array
     {
+        // make sure we've defined $this->_localeAliases
+        $this->getAllLocaleIds();
+
         $locales = [];
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         foreach ($this->getSiteLocaleIds() as $localeId) {
-            $locales[] = new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
+            $locales[] = new Locale($localeId, $this->_localeAliases[$localeId] ?? []);
         }
 
         return $locales;

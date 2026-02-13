@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- The `no` locale is now treated as a fallback for `nb` on environments where `nb` isn’t supported. ([#18431](https://github.com/craftcms/cms/pull/18431))
+- Fixed a bug where some Matrix bulk action labels weren’t getting translated.
+
 ## 5.9.10 - 2026-02-12
 
 - `slug` columns referenced in element queries’ `select`, `where`, or `orderBy` expressions now explicitly resolve to `elements_sites.slug`. ([#18416](https://github.com/craftcms/cms/issues/18416))
