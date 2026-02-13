@@ -14,9 +14,9 @@ use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\Response;
 use craft\web\TemplateResponseFormatter;
-use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Crypt;
 use UnitTester;
 use yii\base\Action;
@@ -65,7 +65,7 @@ class ControllerTest extends TestCase
     public function testTemplateRendering(): void
     {
         // We need to render a template from the site dir.
-        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        Craft::$app->getView()->setTemplateMode(TemplateMode::Site->value);
 
         $response = $this->controller->renderTemplate('template.twig');
         (new TemplateResponseFormatter())->format($response);
@@ -84,7 +84,7 @@ class ControllerTest extends TestCase
     public function testTemplateRenderingIfHeadersAlreadySet(): void
     {
         // We need to render a template from the site dir.
-        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        Craft::$app->getView()->setTemplateMode(TemplateMode::Site->value);
         Craft::$app->getResponse()->getHeaders()->set('content-type', 'HEADERS');
 
         $response = $this->controller->renderTemplate('template.twig');

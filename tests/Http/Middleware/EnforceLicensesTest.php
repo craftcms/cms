@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\License\License;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 
 beforeEach(function () {
     $this->middleware = app(EnforceLicenses::class);
+
+    TemplateMode::set(TemplateMode::Cp);
 });
 
 it('passes through if no user is authenticated', function () {

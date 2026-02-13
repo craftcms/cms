@@ -25,6 +25,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Yii2Adapter\IdentityWrapper;
 use crafttests\fixtures\FieldLayoutFixture;
 use crafttests\fixtures\GlobalSetFixture;
@@ -113,7 +114,7 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             implode(',', [Edition::Solo->value, Edition::Team->value, Edition::Pro->value]),
             '{{ [CraftSolo, CraftTeam, CraftPro]|join(",") }}',
-            templateMode: View::TEMPLATE_MODE_CP,
+            templateMode: TemplateMode::Cp->value,
         );
     }
 
@@ -1155,7 +1156,7 @@ EOL;
         string $expectedString,
         string $renderString,
         array $variables = [],
-        string $templateMode = View::TEMPLATE_MODE_SITE,
+        string $templateMode = TemplateMode::Site->value,
     ) {
         $result = $this->view->renderString($renderString, $variables, $templateMode);
         self::assertSame(

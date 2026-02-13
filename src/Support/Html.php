@@ -8,12 +8,12 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\image\SvgAllowedAttributes;
-use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\Security;
+use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
 use Exception;
@@ -187,7 +187,7 @@ final class Html
                 [
                     'url' => UrlHelper::actionUrl('users/session-info'),
                 ],
-                View::TEMPLATE_MODE_CP,
+                TemplateMode::Cp->value,
             )
         );
 

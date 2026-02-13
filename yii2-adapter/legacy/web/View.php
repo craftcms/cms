@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\Event as YiiEvent;
 use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
@@ -32,7 +33,11 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
+use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use LogicException;
 use Throwable;
@@ -81,11 +86,13 @@ class View extends \yii\web\View
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterCpTemplateRoots} instead.
      */
     public const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering site template roots
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterSiteTemplateRoots} instead.
      */
     public const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
 
@@ -117,11 +124,13 @@ class View extends \yii\web\View
 
     /**
      * @const TEMPLATE_MODE_CP
+     * @deprecated 6.0.0 use {@see TemplateMode::Cp} instead.
      */
     public const TEMPLATE_MODE_CP = 'cp';
 
     /**
      * @const TEMPLATE_MODE_SITE
+     * @deprecated 6.0.0 use {@see TemplateMode::Site} instead.
      */
     public const TEMPLATE_MODE_SITE = 'site';
 
@@ -186,36 +195,6 @@ class View extends \yii\web\View
      * @var TemplateWrapper[]
      */
     private array $_objectTemplates = [];
-
-    /**
-     * @var string|null
-     */
-    private ?string $_templateMode = null;
-
-    /**
-     * @var array|null
-     */
-    private ?array $_templateRoots = null;
-
-    /**
-     * @var string|null The root path to look for templates in
-     */
-    private ?string $_templatesPath = null;
-
-    /**
-     * @var string[]
-     */
-    private array $_defaultTemplateExtensions;
-
-    /**
-     * @var string[]
-     */
-    private array $_indexTemplateFilenames;
-
-    /**
-     * @var string
-     */
-    private string $_privateTemplateTrigger;
 
     /**
      * @var string|null
@@ -373,11 +352,10 @@ class View extends \yii\web\View
         parent::init();
 
         // Set the initial template mode based on whether this is a control panel or site request
-        $request = Craft::$app->getRequest();
-        if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {
-            $this->setTemplateMode(self::TEMPLATE_MODE_CP);
+        if (app()->runningInConsole() || request()->isCpRequest()) {
+            TemplateMode::set(TemplateMode::Cp);
         } else {
-            $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
+            TemplateMode::set(TemplateMode::Site);
         }
 
         // Register the control panel hooks
@@ -395,7 +373,9 @@ class View extends \yii\web\View
      */
     public function getTwig(?string $templateMode = null): Environment
     {
-        return ($templateMode ?? $this->_templateMode) === self::TEMPLATE_MODE_CP
+        $mode = TemplateMode::tryFrom($templateMode) ?? TemplateMode::get();
+
+        return $mode === TemplateMode::Cp
             ? $this->_cpTwig ?? ($this->_cpTwig = $this->createTwig())
             : $this->_siteTwig ?? ($this->_siteTwig = $this->createTwig());
     }
@@ -408,7 +388,7 @@ class View extends \yii\web\View
      */
     public function setTwig(Environment $twig): void
     {
-        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
+        if (TemplateMode::is(TemplateMode::Cp)) {
             $this->_cpTwig = $twig;
         } else {
             $this->_siteTwig = $twig;
@@ -437,7 +417,7 @@ class View extends \yii\web\View
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
 
-        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
+        if (TemplateMode::is(TemplateMode::Cp)) {
             $twig->addExtension(new CpExtension());
         } elseif (Cms::isInstalled()) {
             $twig->addExtension(new FeExtension());
@@ -448,7 +428,7 @@ class View extends \yii\web\View
         }
 
         // Add plugin-supplied extensions
-        $registeredExtensions = $this->_templateMode === self::TEMPLATE_MODE_CP
+        $registeredExtensions = TemplateMode::is(TemplateMode::Cp)
             ? $this->_cpTwigExtensions
             : $this->_siteTwigExtensions;
         foreach ($registeredExtensions as $extension) {
@@ -476,7 +456,7 @@ class View extends \yii\web\View
         // Fire an 'afterCreateTwig' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_TWIG)) {
             $this->trigger(self::EVENT_AFTER_CREATE_TWIG, new CreateTwigEvent([
-                'templateMode' => $this->_templateMode ?? self::TEMPLATE_MODE_SITE,
+                'templateMode' => TemplateMode::get()->value,
                 'twig' => $twig,
             ]));
         }
@@ -570,7 +550,7 @@ class View extends \yii\web\View
     public function renderTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
         if ($templateMode === null) {
-            $templateMode = $this->getTemplateMode();
+            $templateMode = TemplateMode::get()->value;
         }
 
         if (!$this->beforeRenderTemplate($template, $variables, $templateMode)) {
@@ -579,8 +559,8 @@ class View extends \yii\web\View
 
         Log::debug("Rendering template: $template", [__METHOD__]);
 
-        $oldTemplateMode = $this->getTemplateMode();
-        $this->setTemplateMode($templateMode);
+        $oldTemplateMode = TemplateMode::get();
+        TemplateMode::set(TemplateMode::from($templateMode));
 
         // Render and return
         $renderingTemplate = $this->_renderingTemplate;
@@ -590,7 +570,7 @@ class View extends \yii\web\View
             $output = $this->getTwig()->render($template, $variables);
         } finally {
             $this->_renderingTemplate = $renderingTemplate;
-            $this->setTemplateMode($oldTemplateMode);
+            TemplateMode::set($oldTemplateMode);
         }
 
         $this->afterRenderTemplate($template, $variables, $templateMode, $output);
@@ -641,7 +621,7 @@ class View extends \yii\web\View
     public function renderPageTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
         if ($templateMode === null) {
-            $templateMode = $this->getTemplateMode();
+            $templateMode = TemplateMode::get()->value;
         }
 
         if (!$this->beforeRenderPageTemplate($template, $variables, $templateMode)) {
@@ -651,8 +631,8 @@ class View extends \yii\web\View
         ob_start();
         ob_implicit_flush(false);
 
-        $oldTemplateMode = $this->getTemplateMode();
-        $this->setTemplateMode($templateMode);
+        $oldTemplateMode = TemplateMode::get();
+        TemplateMode::set(TemplateMode::from($templateMode));
 
         $isRenderingPageTemplate = $this->_isRenderingPageTemplate;
         $this->_isRenderingPageTemplate = true;
@@ -663,7 +643,7 @@ class View extends \yii\web\View
             $this->endPage();
         } finally {
             $this->_isRenderingPageTemplate = $isRenderingPageTemplate;
-            $this->setTemplateMode($oldTemplateMode);
+            TemplateMode::set($oldTemplateMode);
             $output = ob_get_clean();
         }
 
@@ -682,15 +662,15 @@ class View extends \yii\web\View
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
      */
-    public function renderString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE, bool $escapeHtml = false): string
+    public function renderString(string $template, array $variables = [], string $templateMode = TemplateMode::Site->value, bool $escapeHtml = false): string
     {
         // If there are no dynamic tags, just return the template
         if (!str_contains($template, '{')) {
             return $template;
         }
 
-        $oldTemplateMode = $this->templateMode;
-        $this->setTemplateMode($templateMode);
+        $oldTemplateMode = TemplateMode::get();
+        TemplateMode::set(TemplateMode::from($templateMode));
 
         $twig = $this->getTwig();
         if (!$escapeHtml) {
@@ -706,7 +686,7 @@ class View extends \yii\web\View
             if (!$escapeHtml) {
                 $twig->setDefaultEscaperStrategy();
             }
-            $this->setTemplateMode($oldTemplateMode);
+            TemplateMode::set($oldTemplateMode);
         }
     }
 
@@ -723,7 +703,7 @@ class View extends \yii\web\View
      * @see renderString()
      * @since 4.17.0
      */
-    public function renderSandboxedString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE, bool $escapeHtml = false): string
+    public function renderSandboxedString(string $template, array $variables = [], string $templateMode = TemplateMode::Site->value, bool $escapeHtml = false): string
     {
         return $this->sandbox(fn() => $this->renderString($template, $variables, $templateMode, $escapeHtml), $templateMode);
     }
@@ -747,15 +727,15 @@ class View extends \yii\web\View
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
      */
-    public function renderObjectTemplate(string $template, mixed $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
+    public function renderObjectTemplate(string $template, mixed $object, array $variables = [], string $templateMode = TemplateMode::Site->value): string
     {
         // If there are no dynamic tags, just return the template
         if (!str_contains($template, '{')) {
             return trim($template);
         }
 
-        $oldTemplateMode = $this->templateMode;
-        $this->setTemplateMode($templateMode);
+        $oldTemplateMode = TemplateMode::get();
+        TemplateMode::set(TemplateMode::from($templateMode));
         $twig = $this->getTwig();
 
         // Temporarily disable strict variables if it's enabled
@@ -816,7 +796,7 @@ class View extends \yii\web\View
         } finally {
             $this->_renderingTemplate = $lastRenderingTemplate;
             $twig->setDefaultEscaperStrategy();
-            $this->setTemplateMode($oldTemplateMode);
+            TemplateMode::set($oldTemplateMode);
 
             // Re-enable strict variables
             if ($strictVariables) {
@@ -858,7 +838,7 @@ class View extends \yii\web\View
         string $template,
         mixed $object,
         array $variables = [],
-        string $templateMode = self::TEMPLATE_MODE_SITE,
+        string $templateMode = TemplateMode::Site->value,
     ): string {
         return $this->sandbox(fn() => $this->renderObjectTemplate($template, $object, $variables, $templateMode), $templateMode);
     }
@@ -1028,15 +1008,15 @@ class View extends \yii\web\View
     public function resolveTemplate(string $name, ?string $templateMode = null, bool $publicOnly = false): string|false
     {
         if ($templateMode !== null) {
-            $oldTemplateMode = $this->getTemplateMode();
-            $this->setTemplateMode($templateMode);
+            $oldTemplateMode = TemplateMode::get();
+            TemplateMode::set(TemplateMode::from($templateMode));
         }
 
         try {
             return $this->_resolveTemplateInternal($name, $publicOnly);
         } finally {
             if (isset($oldTemplateMode)) {
-                $this->setTemplateMode($oldTemplateMode);
+                TemplateMode::set($oldTemplateMode);
             }
         }
     }
@@ -1054,7 +1034,7 @@ class View extends \yii\web\View
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', Str::convertToUtf8($name))), '/');
 
-        $key = $this->_templatesPath . ':' . $name;
+        $key = TemplateMode::get()->templatesPath() . ':' . $name;
 
         // Is this template path already cached?
         if (isset($this->_templatePaths[$key])) {
@@ -1068,15 +1048,15 @@ class View extends \yii\web\View
         $basePaths = [];
 
         // Should we be looking for a localized version of the template?
-        if ($this->_templateMode === self::TEMPLATE_MODE_SITE && Cms::isInstalled()) {
+        if (TemplateMode::is(TemplateMode::Site) && Cms::isInstalled()) {
             /** @noinspection PhpUnhandledExceptionInspection */
-            $sitePath = $this->_templatesPath . DIRECTORY_SEPARATOR . Sites::getCurrentSite()->handle;
+            $sitePath = TemplateMode::get()->templatesPath() . DIRECTORY_SEPARATOR . Sites::getCurrentSite()->handle;
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
             }
         }
 
-        $basePaths[] = $this->_templatesPath;
+        $basePaths[] = TemplateMode::get()->templatesPath();
 
         foreach ($basePaths as $basePath) {
             if (($path = $this->_resolveTemplate($basePath, $name, $publicOnly)) !== null) {
@@ -1087,11 +1067,7 @@ class View extends \yii\web\View
         unset($basePaths);
 
         // Check any registered template roots
-        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
-            $roots = $this->getCpTemplateRoots();
-        } else {
-            $roots = $this->getSiteTemplateRoots();
-        }
+        $roots = TemplateMode::get()->templateRoots();
 
         if (!empty($roots)) {
             foreach ($roots as $templateRoot => $basePaths) {
@@ -1115,20 +1091,22 @@ class View extends \yii\web\View
      * Returns any registered control panel template roots.
      *
      * @return array
+     * @deprecated 6.0.0 use {@see TemplateMode::templateRoots()} instead.
      */
     public function getCpTemplateRoots(): array
     {
-        return $this->_getTemplateRoots('cp');
+        return TemplateMode::Cp->templateRoots();
     }
 
     /**
      * Returns any registered site template roots.
      *
      * @return array
+     * @deprecated 6.0.0 use {@see TemplateMode::templateRoots()} instead.
      */
     public function getSiteTemplateRoots(): array
     {
-        return $this->_getTemplateRoots('site');
+        return TemplateMode::Site->templateRoots();
     }
 
     /**
@@ -1850,10 +1828,11 @@ JS;
      * Returns the current template mode (either `site` or `cp`).
      *
      * @return string Either `site` or `cp`.
+     * @deprecated 6.0.0 use {@see TemplateMode::get()} instead.
      */
     public function getTemplateMode(): string
     {
-        return $this->_templateMode;
+        return TemplateMode::get()->value;
     }
 
     /**
@@ -1864,61 +1843,41 @@ JS;
      * - the default template file extensions that should be automatically added when looking for templates
      * - the "index" template filenames that should be checked when looking for templates
      *
-     * @param string $templateMode Either 'site' or 'cp'
+     * @param string|TemplateMode $templateMode Either 'site' or 'cp'
      * @throws Exception if $templateMode is invalid
+     * @deprecated 6.0.0 use {@see TemplateMode::set()} instead.
      */
-    public function setTemplateMode(string $templateMode): void
+    public function setTemplateMode(string|TemplateMode $templateMode): void
     {
-        // Ignore if it's already set to that
-        if ($templateMode === $this->_templateMode) {
-            return;
-        }
-
-        // Validate
-        if (!in_array($templateMode, [
-            self::TEMPLATE_MODE_CP,
-            self::TEMPLATE_MODE_SITE,
-        ], true)
-        ) {
-            throw new Exception('"' . $templateMode . '" is not a valid template mode');
-        }
+        $templateMode = is_string($templateMode)
+            ? TemplateMode::from($templateMode)
+            : $templateMode;
 
         // Set the new template mode
-        $this->_templateMode = $templateMode;
-
-        // Update everything
-        if ($templateMode == self::TEMPLATE_MODE_CP) {
-            $this->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
-            $this->_defaultTemplateExtensions = ['twig', 'html'];
-            $this->_indexTemplateFilenames = ['index'];
-            $this->_privateTemplateTrigger = '_';
-        } else {
-            $this->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
-            $generalConfig = Cms::config();
-            $this->_defaultTemplateExtensions = $generalConfig->defaultTemplateExtensions;
-            $this->_indexTemplateFilenames = $generalConfig->indexTemplateFilenames;
-            $this->_privateTemplateTrigger = $generalConfig->privateTemplateTrigger;
-        }
+        TemplateMode::set($templateMode);
     }
 
     /**
      * Returns the base path that templates should be found in.
      *
      * @return string
+     * @deprecated 6.0.0 use {@see TemplateMode::templatesPath()} instead.
      */
     public function getTemplatesPath(): string
     {
-        return $this->_templatesPath;
+        return TemplateMode::get()->templatesPath();
     }
 
     /**
      * Sets the base path that templates should be found in.
      *
      * @param string $templatesPath
+     *
+     * @deprecated 6.0.0 use {@see TemplateMode::templatesPath()} instead.
      */
     public function setTemplatesPath(string $templatesPath): void
     {
-        $this->_templatesPath = rtrim($templatesPath, '/\\');
+        // Noop
     }
 
     /**
@@ -2186,7 +2145,7 @@ JS;
      */
     public function endPage($ajaxMode = false): void
     {
-        if (!$ajaxMode && $this->_templateMode === static::TEMPLATE_MODE_CP) {
+        if (!$ajaxMode && TemplateMode::is(TemplateMode::Cp)) {
             $this->_setJsProperty('registeredJsFiles', $this->_registeredJsFiles);
             $this->_setJsProperty('registeredAssetBundles', $this->_registeredAssetBundles);
         }
@@ -2511,7 +2470,7 @@ JS;
 
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name !== '') {
-            if ($publicOnly && preg_match(sprintf('/(^|\/)%s/', preg_quote($this->_privateTemplateTrigger, '/')), $name)) {
+            if ($publicOnly && preg_match(sprintf('/(^|\/)%s/', preg_quote(TemplateMode::get()->privateTemplateTrigger(), '/')), $name)) {
                 return null;
             }
 
@@ -2522,7 +2481,7 @@ JS;
                 return $testPath;
             }
 
-            foreach ($this->_defaultTemplateExtensions as $extension) {
+            foreach (TemplateMode::get()->defaultTemplateExtensions() as $extension) {
                 $testPath = $basePath . DIRECTORY_SEPARATOR . $name . '.' . $extension;
 
                 if (is_file($testPath)) {
@@ -2531,8 +2490,8 @@ JS;
             }
         }
 
-        foreach ($this->_indexTemplateFilenames as $filename) {
-            foreach ($this->_defaultTemplateExtensions as $extension) {
+        foreach (TemplateMode::get()->indexTemplateFilenames() as $filename) {
+            foreach (TemplateMode::get()->defaultTemplateExtensions() as $extension) {
                 $testPath = $basePath . ($name !== '' ? DIRECTORY_SEPARATOR . $name : '') . DIRECTORY_SEPARATOR . $filename . '.' . $extension;
 
                 if (is_file($testPath)) {
@@ -2574,45 +2533,6 @@ JS;
         }
 
         return $this->_twigOptions;
-    }
-
-    /**
-     * Returns any registered template roots.
-     *
-     * @param string $which 'cp' or 'site'
-     * @return array
-     */
-    private function _getTemplateRoots(string $which): array
-    {
-        if (isset($this->_templateRoots[$which])) {
-            return $this->_templateRoots[$which];
-        }
-
-        $this->_templateRoots[$which] = [];
-
-        if ($which === 'cp') {
-            $name = self::EVENT_REGISTER_CP_TEMPLATE_ROOTS;
-        } else {
-            $name = self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS;
-        }
-
-        if ($this->hasEventHandlers($name)) {
-            $event = new RegisterTemplateRootsEvent();
-            $this->trigger($name, $event);
-
-            foreach ($event->roots as $templatePath => $dir) {
-                $templatePath = strtolower(trim($templatePath, '/'));
-                if (!isset($this->_templateRoots[$which][$templatePath])) {
-                    $this->_templateRoots[$which][$templatePath] = [];
-                }
-                array_push($this->_templateRoots[$which][$templatePath], ...(array)$dir);
-            }
-
-            // Longest (most specific) first
-            krsort($this->_templateRoots[$which], SORT_STRING);
-        }
-
-        return $this->_templateRoots[$which];
     }
 
     private function resourceHash(string $key): string
@@ -2760,5 +2680,28 @@ JS;
             single: $context['single'] ?? false,
             autoReload: $context['autoReload'] ?? true,
         );
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(RegisterCpTemplateRoots::class, function(RegisterCpTemplateRoots $event) {
+            if (!YiiEvent::hasHandlers(self::class, self::EVENT_REGISTER_CP_TEMPLATE_ROOTS)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterTemplateRootsEvent();
+            YiiEvent::trigger(self::class, self::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $yiiEvent);
+            $event->roots = $yiiEvent->roots;
+        });
+
+        Event::listen(RegisterSiteTemplateRoots::class, function(RegisterSiteTemplateRoots $event) {
+            if (!YiiEvent::hasHandlers(self::class, self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterTemplateRootsEvent();
+            YiiEvent::trigger(self::class, self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, $yiiEvent);
+            $event->roots = $yiiEvent->roots;
+        });
     }
 }

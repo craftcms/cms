@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use Craft;
-use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Events\Render;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\View\TemplateMode;
 use Twig\Markup;
 
 /**
@@ -46,11 +46,11 @@ trait Renderable
         if (! empty($templates)) {
             $view = Craft::$app->getView();
             foreach (Arr::sort($templates, 'priority') as $template) {
-                if (! $view->doesTemplateExist($template['template'], View::TEMPLATE_MODE_SITE)) {
+                if (! $view->doesTemplateExist($template['template'], TemplateMode::Site->value)) {
                     continue;
                 }
 
-                $output = $view->renderTemplate($template['template'], $variables, View::TEMPLATE_MODE_SITE);
+                $output = $view->renderTemplate($template['template'], $variables, TemplateMode::Site->value);
 
                 return new Markup($output, 'UTF-8');
             }

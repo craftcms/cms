@@ -34,6 +34,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
+use CraftCms\Cms\View\TemplateMode;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -637,7 +638,7 @@ class Cp extends Component
         // Get all the template files sorted by path length
         $roots = Arr::merge([
             '' => [Craft::$app->getPath()->getSiteTemplatesPath()],
-        ], Craft::$app->getView()->getSiteTemplateRoots());
+        ], TemplateMode::Site->templateRoots());
 
         $suggestions = [];
         $templates = [];

@@ -56,3 +56,4 @@ parameters:
         - vendor/craftcms/cms/src/Database/Migrations
     configDirectories:
         - tests
+    tmpDir: tmp/yii2-adapter

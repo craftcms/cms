@@ -47,6 +47,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -2446,7 +2447,7 @@ JS, [
             $tabHtml = $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
                 'tabs' => $tabs,
                 'selectedTab' => $selectedTab,
-            ], View::TEMPLATE_MODE_CP), $namespace);
+            ], TemplateMode::Cp->value), $namespace);
         } else {
             $tabHtml = null;
         }
