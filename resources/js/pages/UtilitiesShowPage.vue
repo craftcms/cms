@@ -2,7 +2,6 @@
   import IndexLayout from '@/layout/IndexLayout.vue';
   import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
   import CpLink from '@/components/CpLink.vue';
-  import {useBridgedAssets} from '@/composables/useBridgedAssets';
 
   interface UtilityItem {
     id: string;
@@ -13,7 +12,7 @@
     badgeCount: number;
   }
 
-  const props = defineProps<{
+  defineProps<{
     id: string;
     title: string;
     contentHtml?: string;
@@ -24,11 +23,6 @@
     bridgedHeadHtml?: string;
     bridgedBodyHtml?: string;
   }>();
-
-  useBridgedAssets(
-    () => props.bridgedHeadHtml,
-    () => props.bridgedBodyHtml
-  );
 </script>
 
 <template>

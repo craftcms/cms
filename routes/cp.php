@@ -33,7 +33,6 @@ use CraftCms\Cms\Http\Controllers\Users\PermissionsController;
 use CraftCms\Cms\Http\Controllers\Users\PreferencesController;
 use CraftCms\Cms\Http\Controllers\Users\UsersController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
-use CraftCms\Cms\Http\Middleware\BridgeAssetBundles;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
@@ -62,7 +61,7 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
     Route::get('utilities/{id}/{extra?}', [UtilitiesController::class, 'show'])
-        ->middleware([HandleInertiaRequests::class, BridgeAssetBundles::class])
+        ->middleware([HandleInertiaRequests::class])
         ->where('extra', '.*')
         ->name('utilities.show');
 
