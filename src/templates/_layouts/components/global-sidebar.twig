@@ -23,7 +23,8 @@
     {% tag 'a' with linkAttributes %}
         <span class="sidebar-action__prefix">
             <span class="nav-icon" aria-hidden="true">
-                {%- if item.icon ?? false -%}
+                {% set icon = item.icon ?? false %}
+                {%- if icon !== false and icon !== null and icon !== '' -%}
                     {{ iconSvg(item.icon) }}
                 {%- elseif item.fontIcon ?? false -%}
                     <span data-icon="{{ item.fontIcon }}"></span>
