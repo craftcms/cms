@@ -6,6 +6,7 @@
     "./vendor/bin/rector",
     "./vendor/bin/pint --parallel"
   ],
-  "*.scss": ["stylelint --fix --allow-empty-input"],
+  "yii2-adapter/**/*.scss": ["stylelint --fix --allow-empty-input -c yii2-adapter/.stylelint.json"],
+  "!(yii2-adapter)/**/*.scss": ["stylelint --fix --allow-empty-input"],
   "!(yii2-adapter)/**/*.{html,json,css,scss}": "prettier --ignore-unknown --write"
 }
