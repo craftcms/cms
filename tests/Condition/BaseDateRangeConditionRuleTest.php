@@ -41,7 +41,7 @@ function createEntryWithDate(DateTime $date): Entry
 {
     $model = EntryModel::factory()->create(['postDate' => $date]);
 
-    return Entry::find()->id($model->id)->one();
+    return Entry::find()->id($model->id)->status(null)->one();
 }
 
 beforeEach(function () {
