@@ -26,6 +26,7 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Facades\Auth;
@@ -188,7 +189,7 @@ params: $params,
 })
 });
 JS, [
-            $view->namespaceInputId($editId),
+            InputNamespace::namespaceInputId($editId),
             ['entryTypeId' => $this->id],
         ]);
 

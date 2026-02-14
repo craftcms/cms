@@ -23,6 +23,7 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Formatter;
@@ -198,7 +199,7 @@ trait HasControlPanelUI
   });
 })();
 JS, [
-                $view->namespaceInputId($validateId),
+                InputNamespace::namespaceInputId($validateId),
             ]);
         }
 
@@ -235,7 +236,7 @@ $('#' + $id).on('activate', () => {
   Craft.createElementEditor($elementType, $settings)
 });
 JS, [
-                $view->namespaceInputId($editId),
+                InputNamespace::namespaceInputId($editId),
                 static::class,
                 [
                     'elementId' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
@@ -265,7 +266,7 @@ JS, [
   });
 })();
 JS, [
-                    $view->namespaceInputId($copyId),
+                    InputNamespace::namespaceInputId($copyId),
                     [
                         'type' => static::class,
                         'id' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,

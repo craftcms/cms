@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
@@ -148,7 +149,7 @@ abstract class BaseElementLinkType extends BaseLinkType
   });
 })();
 JS, [
-            'id' => $view->namespaceInputId($id),
+            'id' => InputNamespace::namespaceInputId($id),
             'refHandle' => static::elementType()::refHandle(),
         ]);
 

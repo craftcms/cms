@@ -20,6 +20,7 @@ use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -726,7 +727,7 @@ class CustomField extends BaseField
             ($element->id ?? false) &&
             ! $static
         );
-        $html = $view->namespaceInputs(fn () => (string) parent::formHtml($element, $static), 'fields');
+        $html = InputNamespace::namespaceInputs(fn () => (string) parent::formHtml($element, $static), 'fields');
         $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
 
         return $html;

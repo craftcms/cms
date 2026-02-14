@@ -18,6 +18,7 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Throwable;
@@ -180,7 +181,7 @@ class MatrixController extends Controller
         $view = $this->getView();
         /** @var Entry[] $entries */
         $entries = $value->all();
-        $html = $view->namespaceInputs(fn() => $view->renderTemplate('_components/fieldtypes/Matrix/block.twig', [
+        $html = InputNamespace::namespaceInputs(fn() => $view->renderTemplate('_components/fieldtypes/Matrix/block.twig', [
             'name' => $field->handle,
             'entryTypes' => $field->getEntryTypesForField($entries, $owner),
             'entry' => $entry,
@@ -236,7 +237,7 @@ class MatrixController extends Controller
                     throw new ForbiddenHttpException('User not authorized to view this element.');
                 }
 
-                $html .= $view->namespaceInputs(fn() => $view->renderTemplate('_components/fieldtypes/Matrix/block.twig', [
+                $html .= InputNamespace::namespaceInputs(fn() => $view->renderTemplate('_components/fieldtypes/Matrix/block.twig', [
                     'name' => $field->handle,
                     'entryTypes' => $entryTypes,
                     'entry' => $entry,

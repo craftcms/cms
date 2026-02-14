@@ -10,6 +10,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -42,7 +43,7 @@ final readonly class AddressesController
             'locality' => $request->input('locality'),
         ]);
 
-        $html = $this->craft->getView()->namespaceInputs(
+        $html = InputNamespace::namespaceInputs(
             fn () => Cp::addressFieldsHtml($address), $request->input('namespace')
         );
 

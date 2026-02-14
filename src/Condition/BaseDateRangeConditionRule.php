@@ -10,6 +10,7 @@ use craft\helpers\DateRange;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use DateTime;
 use Exception;
@@ -163,8 +164,8 @@ Garnish.requestAnimationFrame(() => {
 });
 JS,
             [
-                $view->namespaceInputId($buttonId),
-                $view->namespaceInputId($inputId),
+                InputNamespace::namespaceInputId($buttonId),
+                InputNamespace::namespaceInputId($inputId),
             ]
         );
 

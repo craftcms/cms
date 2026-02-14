@@ -7,6 +7,7 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use Override;
 use yii\helpers\Markdown;
@@ -86,7 +87,7 @@ class Tip extends BaseUiElement
         }
 
         $id = sprintf('tip%s', mt_rand());
-        $namespacedId = Craft::$app->getView()->namespaceInputId($id);
+        $namespacedId = InputNamespace::namespaceInputId($id);
 
         $classes = [
             'pane',

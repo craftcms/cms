@@ -12,6 +12,7 @@ use CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -356,7 +357,7 @@ abstract class BaseField extends FieldLayoutElement
             $element->getIsCrossSiteCopyable()
         ) {
             // prepare namespace for the purpose of copying
-            $namespace = Craft::$app->getView()->getNamespace();
+            $namespace = InputNamespace::get();
 
             $actionMenuItems = array_filter([
                 [
@@ -539,7 +540,7 @@ abstract class BaseField extends FieldLayoutElement
     {
         return Arr::merge(parent::containerAttributes($element, $static), [
             'data' => [
-                'base-input-name' => Craft::$app->getView()->namespaceInputName($this->baseInputName()),
+                'base-input-name' => InputNamespace::namespaceInputName($this->baseInputName()),
                 'error-key' => $this->errorKey(),
             ],
         ]);
@@ -795,7 +796,7 @@ abstract class BaseField extends FieldLayoutElement
   });
 })();
 JS, [
-            $view->namespaceInputId($config['id']),
+            InputNamespace::namespaceInputId($config['id']),
             $config['promptLabel'],
             $config['attribute'],
         ]);

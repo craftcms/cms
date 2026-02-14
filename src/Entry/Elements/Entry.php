@@ -67,6 +67,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -1873,7 +1874,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
   });
 })();
 JS, [
-                $view->namespaceInputId($entryTypeEditId),
+                InputNamespace::namespaceInputId($entryTypeEditId),
                 ['entryTypeId' => $this->typeId],
                 isset($this->fieldId),
             ]);
@@ -1895,7 +1896,7 @@ JS, [
       });
     })();
     JS, [
-                    $view->namespaceInputId($sectionEditId),
+                    InputNamespace::namespaceInputId($sectionEditId),
                     ['sectionId' => $this->sectionId],
                 ]);
             }
@@ -1921,7 +1922,7 @@ JS, [
       });
     })();
     JS, [
-                    $view->namespaceInputId($fieldEditId),
+                    InputNamespace::namespaceInputId($fieldEditId),
                     ['fieldId' => $this->fieldId],
                 ]);
             }

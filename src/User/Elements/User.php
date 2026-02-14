@@ -43,6 +43,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
@@ -1627,7 +1628,7 @@ $('#' + $id).on('activate', () => {
   });
 });
 JS, [
-                        $view->namespaceInputId($copyImpersonationUrlId),
+                        InputNamespace::namespaceInputId($copyImpersonationUrlId),
                         $this->id,
                         t('Copy the impersonation URL, and open it in a new private window.'),
                     ]);
@@ -1716,7 +1717,7 @@ $('#' + $id).on('activate', () => {
 });
 JS,
                         [
-                            $view->namespaceInputId($deleteId),
+                            InputNamespace::namespaceInputId($deleteId),
                             $this->id,
                             /** @phpstan-ignore-next-line */
                             Crypt::encrypt(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
@@ -1748,7 +1749,7 @@ $('#' + $id).on('activate', () => {
   });
 });
 JS, [
-            $view->namespaceInputId($id),
+            InputNamespace::namespaceInputId($id),
             $this->id,
             t('Copy the activation URL'),
         ]);

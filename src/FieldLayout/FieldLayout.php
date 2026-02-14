@@ -29,6 +29,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Concerns\Validates;
@@ -1179,7 +1180,7 @@ class FieldLayout extends Component
                         $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, true, $isStatic);
                         $hasVisibleFields = true;
                     } else {
-                        $html = $view->namespaceInputs(fn () => $layoutElement->formHtml($element, $isStatic) ?? '', $namespace);
+                        $html = InputNamespace::namespaceInputs(fn () => $layoutElement->formHtml($element, $isStatic) ?? '', $namespace);
 
                         if ($html) {
                             $errorKey = null;
