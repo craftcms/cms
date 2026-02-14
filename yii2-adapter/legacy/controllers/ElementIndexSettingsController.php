@@ -355,7 +355,10 @@ class ElementIndexSettingsController extends BaseElementsController
         $sourcesService = app(ElementSources::class);
         $sourcesService->saveSources($elementType, $newSourceConfigs);
         if ($multiPage) {
-            $sourcesService->savePageSettings($elementType, array_map('array_filter', $pageSettings));
+            $sourcesService->savePageSettings($elementType, array_map(
+                fn(array $settings) => array_filter($settings, fn($setting) => $setting !== null && $setting !== ''),
+                $pageSettings,
+            ));
         }
 
         Craft::$app->getSession()->setSuccess(t('Source settings saved'));

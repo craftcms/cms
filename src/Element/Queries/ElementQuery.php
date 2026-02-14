@@ -240,10 +240,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         // Prepare a new column mapping
         // (for use in SELECT and ORDER BY clauses)
         $this->columnMap = [
-            'id' => 'elements.id',
-            'enabled' => 'elements.enabled',
             'dateCreated' => 'elements.dateCreated',
             'dateUpdated' => 'elements.dateUpdated',
+            'enabled' => 'elements.enabled',
+            'id' => 'elements.id',
+            'slug' => 'elements_sites.slug',
             'uid' => 'elements.uid',
         ];
 

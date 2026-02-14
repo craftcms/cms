@@ -1007,7 +1007,7 @@ JS, [
                 $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
             } elseif ($castType === 'DECIMAL') {
                 [$precision, $scale] = DbHelper::parseColumnPrecisionAndScale($dbType) ?? [null, null];
-                if ($precision && $scale) {
+                if ($precision !== null && $scale !== null) {
                     $castType .= "($precision,$scale)";
                 }
             }

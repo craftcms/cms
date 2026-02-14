@@ -2036,7 +2036,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     canPasteInternal(elementInfo) {
-      if (!elementInfo.length || !this.$source || this.showingActionTriggers) {
+      if (!elementInfo.length || !this.$source) {
         return false;
       }
 
