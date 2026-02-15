@@ -810,6 +810,9 @@ Moved the following controllers:
 
 ## View
 
+- Added `CraftCms\Cms\View\AssetRegistry`.
+- Added `CraftCms\Cms\Support\Facades\AssetRegistry`.
+- Added `CraftCms\Cms\View\Enums\Position` enum.
 - Added `CraftCms\Cms\View\InputNamespace`.
 - Added `CraftCms\Cms\Support\Facades\InputNamespace`.
 - Added `CraftCms\Cms\View\TemplateHooks`.
@@ -817,6 +820,19 @@ Moved the following controllers:
 - Added `CraftCms\Cms\View\TemplateMode` enum.
 - Added `CraftCms\Cms\View\Events\RegisterCpTemplateRoots`.
 - Added `CraftCms\Cms\View\Events\RegisterSiteTemplateRoots`.
+- Deprecated `craft\web\View::registerJs()`. `CraftCms\Cms\View\AssetRegistry::js()` should be used instead.
+- Deprecated `craft\web\View::registerJsWithVars()`. `CraftCms\Cms\View\AssetRegistry::jsWithVars()` should be used instead.
+- Deprecated `craft\web\View::registerJsFile()`. `CraftCms\Cms\View\AssetRegistry::jsFile()` should be used instead.
+- Deprecated `craft\web\View::registerCss()`. `CraftCms\Cms\View\AssetRegistry::css()` should be used instead.
+- Deprecated `craft\web\View::registerCssFile()`. `CraftCms\Cms\View\AssetRegistry::cssFile()` should be used instead.
+- Deprecated `craft\web\View::registerScript()`. `CraftCms\Cms\View\AssetRegistry::script()` should be used instead.
+- Deprecated `craft\web\View::registerScriptWithVars()`. `CraftCms\Cms\View\AssetRegistry::scriptWithVars()` should be used instead.
+- Deprecated `craft\web\View::registerHtml()`. `CraftCms\Cms\View\AssetRegistry::html()` should be used instead.
+- Deprecated `craft\web\View::registerMetaTag()`. `CraftCms\Cms\View\AssetRegistry::metaTag()` should be used instead.
+- Deprecated `craft\web\View::registerLinkTag()`. `CraftCms\Cms\View\AssetRegistry::linkTag()` should be used instead.
+- Deprecated `craft\web\View::registerTranslations()`. `CraftCms\Cms\View\AssetRegistry::translations()` should be used instead.
+- Deprecated `craft\web\View::registerJsImport()`. `CraftCms\Cms\View\AssetRegistry::jsImport()` should be used instead.
+- Deprecated `craft\web\View::registerIcons()`. `CraftCms\Cms\View\AssetRegistry::icons()` should be used instead.
 - Deprecated `craft\web\View::getNamespace()`. `CraftCms\Cms\View\InputNamespace::get()` should be used instead.
 - Deprecated `craft\web\View::setNamespace()`. `CraftCms\Cms\View\InputNamespace::set()` should be used instead.
 - Deprecated `craft\web\View::namespaceInputs()`. `CraftCms\Cms\View\InputNamespace::namespaceInputs()` should be used instead.

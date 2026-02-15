@@ -1174,6 +1174,7 @@ class View extends \yii\web\View
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::js()} instead.
      */
     public function registerJs($js, $position = self::POS_READY, $key = null): void
     {
@@ -1220,6 +1221,7 @@ class View extends \yii\web\View
      * $js as the key. If two JS code blocks are registered with the same key, the latter
      * will overwrite the former.
      * @since 3.7.31
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::jsWithVars()} instead.
      */
     public function registerJsWithVars(callable $jsFn, array $vars, int $position = self::POS_READY, ?string $key = null): void
     {
@@ -1671,6 +1673,7 @@ class View extends \yii\web\View
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::jsFile()} instead.
      */
     public function registerJsFile($url, $options = [], $key = null): void
     {
@@ -1705,6 +1708,7 @@ class View extends \yii\web\View
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::metaTag()} instead.
      */
     public function registerMetaTag($options, $key = null): void
     {
@@ -1713,6 +1717,7 @@ class View extends \yii\web\View
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::linkTag()} instead.
      */
     public function registerLinkTag($options, $key = null): void
     {
@@ -1721,6 +1726,7 @@ class View extends \yii\web\View
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::css()} instead.
      */
     public function registerCss($css, $options = [], $key = null): void
     {
@@ -1729,6 +1735,7 @@ class View extends \yii\web\View
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::cssFile()} instead.
      */
     public function registerCssFile($url, $options = [], $key = null): void
     {
@@ -1748,6 +1755,7 @@ class View extends \yii\web\View
      * @param string|null $key the key that identifies the generic `<script>` code block. If null, it will use
      * $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
      * will overwrite the former.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::script()} instead.
      */
     public function registerScript(string $script, int $position = self::POS_END, array $options = [], ?string $key = null): void
     {
@@ -1781,6 +1789,7 @@ class View extends \yii\web\View
      * $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
      * will overwrite the former.
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::scriptWithVars()} instead.
      */
     public function registerScriptWithVars(callable $scriptFn, array $vars, int $position = self::POS_END, array $options = [], ?string $key = null): void
     {
@@ -1801,6 +1810,7 @@ class View extends \yii\web\View
      * @param string|null $key the key that identifies the HTML code. If null, it will use a hash of the HTML as the key.
      * If two HTML code blocks are registered with the same position and key, the latter will overwrite the former.
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::html()} instead.
      */
     public function registerHtml(string $html, int $position = self::POS_END, ?string $key = null): void
     {
@@ -1825,6 +1835,7 @@ class View extends \yii\web\View
      * @param string $key The module specifier.
      * @param string $value  The URL or path to the resource the key will resolve to.
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::jsImport()} instead.
     */
     public function registerJsImport(string $key, string $value): void
     {
@@ -1908,6 +1919,7 @@ class View extends \yii\web\View
      *
      * @param string $category The category the messages are in
      * @param string[] $messages The messages to be translated
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::translations()} instead.
      */
     public function registerTranslations(string $category, array $messages): void
     {
@@ -1943,6 +1955,7 @@ JS;
      *
      * @param string[] $icons The icons to be registered
      * @since 5.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::icons()} instead.
      */
     public function registerIcons(array $icons): void
     {
