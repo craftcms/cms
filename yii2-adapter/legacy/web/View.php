@@ -34,6 +34,8 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use CraftCms\Cms\View\TemplateMode;
@@ -224,54 +226,39 @@ class View extends \yii\web\View
     private array $_initialDeltaValues = [];
 
     /**
-     * @var array
-     * @see startJsBuffer()
-     * @see clearJsBuffer()
+     * @var int JS buffer depth counter — tracks nesting level for startJsBuffer/clearJsBuffer.
      */
-    private array $_jsBuffers = [];
+    private int $_jsBufferDepth = 0;
 
     /**
-     * @var array
-     * @see startScriptBuffer()
-     * @see clearScriptBuffer()
+     * @var int Script buffer depth counter.
      */
-    private array $_scriptBuffers = [];
+    private int $_scriptBufferDepth = 0;
 
     /**
-     * @var array
-     * @see startCssBuffer()
-     * @see clearCssBuffer()
+     * @var int CSS buffer depth counter.
      */
-    private array $_cssBuffers = [];
+    private int $_cssBufferDepth = 0;
 
     /**
-     * @var array
-     * @see startCssFileBuffer()
-     * @see clearCssFileBuffer()
+     * @var int CSS file buffer depth counter.
      */
-    private array $_cssFileBuffers = [];
+    private int $_cssFileBufferDepth = 0;
 
     /**
-     * @var array
-     * @see startJsFileBuffer()
-     * @see clearJsFileBuffer()
+     * @var int JS file buffer depth counter.
      */
-    private array $_jsFileBuffers = [];
+    private int $_jsFileBufferDepth = 0;
 
     /**
-     * @var array
-     * @see startHtmlBuffer()
-     * @see clearHtmlBuffer()
+     * @var int HTML buffer depth counter.
      */
-    private array $_htmlBuffers = [];
+    private int $_htmlBufferDepth = 0;
 
     /**
-     * @var array
-     * @see startMetaTagBuffer()
-     * @see clearMetaTagBuffer()
-     * @since 4.5.8
+     * @var int Meta tag buffer depth counter.
      */
-    private array $_metaTagBuffers = [];
+    private int $_metaTagBufferDepth = 0;
 
     /**
      * @var array
@@ -281,11 +268,9 @@ class View extends \yii\web\View
     private array $_assetBundleBuffers = [];
 
     /**
-     * @var array
-     * @see startJsImportBuffer()
-     * @see clearJsImportBuffer()
+     * @var int JS import buffer depth counter.
      */
-    private array $_jsImportBuffers = [];
+    private int $_jsImportBufferDepth = 0;
 
     /**
      * @var array|null the registered generic `<script>` code blocks
@@ -310,6 +295,78 @@ class View extends \yii\web\View
      * @see registerIcons()
      */
     private array $_icons = [];
+
+    /**
+     * @var array<string, string> JS registered at POS_READY, keyed by key.
+     * These are kept in the adapter (not the registry) because they require
+     * jQuery wrapping at render time.
+     */
+    private array $_readyJs = [];
+
+    /**
+     * @var array<string, string> JS registered at POS_LOAD, keyed by key.
+     * These are kept in the adapter (not the registry) because they require
+     * jQuery wrapping at render time.
+     */
+    private array $_loadJs = [];
+
+    /**
+     * @var array<string, string> JS registered at POS_BEGIN, keyed by key.
+     * These are kept in the adapter (not the registry) because the registry
+     * only has Head and Body positions — POS_BEGIN content must render at
+     * the body-begin placeholder, separate from body-end content.
+     */
+    private array $_beginJs = [];
+
+    /**
+     * @var array<string, string> HTML registered at POS_BEGIN, keyed by key.
+     * Kept in the adapter for the same reason as $_beginJs.
+     */
+    private array $_beginHtml = [];
+
+    /**
+     * @var array<string, string> Script tags registered at POS_BEGIN, keyed by key.
+     * Kept in the adapter for the same reason as $_beginJs.
+     */
+    private array $_beginScripts = [];
+
+    /**
+     * @var array<string, string> JS file tags registered at POS_BEGIN, keyed by key.
+     * Kept in the adapter for the same reason as $_beginJs.
+     */
+    private array $_beginJsFiles = [];
+
+    /**
+     * @var list<array{ready: array<string, string>, load: array<string, string>, begin: array<string, string>}>
+     * Buffer stack for POS_READY/POS_LOAD/POS_BEGIN JS.
+     */
+    private array $_readyLoadBuffers = [];
+
+    /**
+     * @var list<array<string, string>> Buffer stack for $_beginScripts.
+     */
+    private array $_scriptBeginBuffers = [];
+
+    /**
+     * @var list<array<string, string>> Buffer stack for $_beginJsFiles.
+     */
+    private array $_jsFileBeginBuffers = [];
+
+    /**
+     * @var list<array<string, string>> Buffer stack for $_beginHtml.
+     */
+    private array $_htmlBeginBuffers = [];
+
+    /**
+     * @var array<string, int> Maps JS keys to their original Yii2 position (POS_HEAD or POS_BEGIN)
+     * when both map to Position::Head. Used by clearJsBuffer to reconstruct accurate position keys.
+     */
+    private array $_jsOriginalPositions = [];
+
+    /**
+     * @var list<array<string, int>> Buffer stack for $_jsOriginalPositions.
+     */
+    private array $_jsOriginalPositionBuffers = [];
 
     /**
      * @var callable[][]
@@ -339,6 +396,13 @@ class View extends \yii\web\View
      * @see setRegisteredJsfiles()
      */
     private array $_registeredJsFiles = [];
+
+    private ?AssetRegistry $_registry = null;
+
+    private function registry(): AssetRegistry
+    {
+        return $this->_registry ??= app(AssetRegistry::class);
+    }
 
     /**
      * @inheritdoc
@@ -1112,8 +1176,25 @@ class View extends \yii\web\View
     {
         // Trim any whitespace and ensure it ends with a semicolon.
         $js = Str::finish(trim($js, " \t\n\r\0\x0B"), ';');
+        $key = $key ?: md5($js);
 
-        parent::registerJs($js, $position, $key);
+        match ($position) {
+            self::POS_HEAD => (function() use ($js, $key, $position) {
+                $this->registry()->js($js, Position::Head, $key);
+                $this->_jsOriginalPositions[$key] = $position;
+            })(),
+            self::POS_BEGIN => (function() use ($js, $key, $position) {
+                $this->_beginJs[$key] = $js;
+                $this->_jsOriginalPositions[$key] = $position;
+            })(),
+            self::POS_END => (function() use ($js, $key, $position) {
+                $this->registry()->js($js, Position::Body, $key);
+                $this->_jsOriginalPositions[$key] = $position;
+            }
+            )(),
+            self::POS_READY => $this->_readyJs[$key] = $js,
+            self::POS_LOAD => $this->_loadJs[$key] = $js,
+        };
     }
 
     /**
@@ -1153,8 +1234,20 @@ class View extends \yii\web\View
      */
     public function startJsBuffer(): void
     {
-        $this->_jsBuffers[] = $this->js;
-        $this->js = [];
+        $this->registry()->startBuffer('js');
+        $this->_jsBufferDepth++;
+
+        $this->_readyLoadBuffers[] = [
+            'ready' => $this->_readyJs,
+            'load' => $this->_loadJs,
+            'begin' => $this->_beginJs,
+        ];
+        $this->_readyJs = [];
+        $this->_loadJs = [];
+        $this->_beginJs = [];
+
+        $this->_jsOriginalPositionBuffers[] = $this->_jsOriginalPositions;
+        $this->_jsOriginalPositions = [];
     }
 
     /**
@@ -1163,19 +1256,66 @@ class View extends \yii\web\View
      *
      * @param bool $scriptTag Whether the returned JavaScript code should be wrapped in a `<script>` tag.
      * @param bool $combine Whether the JavaScript code should be returned in a combined blob. (Position and key info will be lost.)
-     * @return string|array|false The JavaScript code that was registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     * @return string|array|false The JavaScript code that was registered while the buffer was active, or `false` if there wasn't an active buffer.
      * @see startJsBuffer()
      */
     public function clearJsBuffer(bool $scriptTag = true, bool $combine = true): string|array|false
     {
-        if (empty($this->_jsBuffers)) {
+        if ($this->_jsBufferDepth === 0) {
             return false;
         }
 
-        $bufferedJs = $this->js;
+        // Capture what was registered during the buffer and restore pre-buffer state
+        $registryState = $this->registry()->clearBuffer('js');
+        $this->_jsBufferDepth--;
 
-        // Set the active queue to the last one
-        $this->js = array_pop($this->_jsBuffers);
+        // Capture and restore the adapter's ready/load/begin JS
+        $bufferedReadyJs = $this->_readyJs;
+        $bufferedLoadJs = $this->_loadJs;
+        $bufferedBeginJs = $this->_beginJs;
+
+        if (!empty($this->_readyLoadBuffers)) {
+            $previousReadyLoad = array_pop($this->_readyLoadBuffers);
+            $this->_readyJs = $previousReadyLoad['ready'];
+            $this->_loadJs = $previousReadyLoad['load'];
+            $this->_beginJs = $previousReadyLoad['begin'];
+        } else {
+            $this->_readyJs = [];
+            $this->_loadJs = [];
+            $this->_beginJs = [];
+        }
+
+        // Capture and restore the original position map
+        $bufferedPositions = $this->_jsOriginalPositions;
+        $this->_jsOriginalPositions = array_pop($this->_jsOriginalPositionBuffers) ?? [];
+
+        // Build the buffered JS array in the Yii2 position format
+        $bufferedJs = [];
+
+        // Split Position::Head entries back to their original Yii2 position
+        if (!empty($registryState['js'][Position::Head->value])) {
+            foreach ($registryState['js'][Position::Head->value] as $key => $js) {
+                $originalPos = $bufferedPositions[$key] ?? self::POS_HEAD;
+                $bufferedJs[$originalPos][$key] = $js;
+            }
+        }
+        // Position::Body entries map back to POS_END
+        if (!empty($registryState['js'][Position::Body->value])) {
+            foreach ($registryState['js'][Position::Body->value] as $key => $js) {
+                $originalPos = $bufferedPositions[$key] ?? self::POS_END;
+                $bufferedJs[$originalPos][$key] = $js;
+            }
+        }
+        // POS_BEGIN entries come from the adapter-local _beginJs array
+        if (!empty($bufferedBeginJs)) {
+            $bufferedJs[self::POS_BEGIN] = $bufferedBeginJs;
+        }
+        if (!empty($bufferedReadyJs)) {
+            $bufferedJs[self::POS_READY] = $bufferedReadyJs;
+        }
+        if (!empty($bufferedLoadJs)) {
+            $bufferedJs[self::POS_LOAD] = $bufferedLoadJs;
+        }
 
         if ($combine) {
             $js = '';
@@ -1212,26 +1352,46 @@ class View extends \yii\web\View
      */
     public function startScriptBuffer(): void
     {
-        $this->_scriptBuffers[] = $this->_scripts;
-        $this->_scripts = [];
+        $this->registry()->startBuffer('scripts');
+        $this->_scriptBufferDepth++;
+
+        $this->_scriptBeginBuffers[] = $this->_beginScripts;
+        $this->_beginScripts = [];
     }
 
     /**
      * Clears and ends a buffer started via [[startScriptBuffer()]], returning any `<script>` tags that were registered
      * while the buffer was active.
      *
-     * @return array|false The `<script>` tags that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     * @return array|false The `<script>` tags that were registered while the buffer was active, or `false` if there wasn't an active buffer.
      * @see startScriptBuffer()
      * @since 3.7.0
      */
     public function clearScriptBuffer(): array|false
     {
-        if (empty($this->_scriptBuffers)) {
+        if ($this->_scriptBufferDepth === 0) {
             return false;
         }
 
-        $bufferedScripts = $this->_scripts;
-        $this->_scripts = array_pop($this->_scriptBuffers);
+        // Capture what was registered during the buffer and restore pre-buffer state
+        $registryState = $this->registry()->clearBuffer('scripts');
+        $this->_scriptBufferDepth--;
+
+        $bufferedBeginScripts = $this->_beginScripts;
+        $this->_beginScripts = array_pop($this->_scriptBeginBuffers) ?? [];
+
+        // Map registry positions back to Yii2 positions
+        $bufferedScripts = [];
+        if (!empty($registryState['scripts'][Position::Head->value])) {
+            $bufferedScripts[self::POS_HEAD] = $registryState['scripts'][Position::Head->value];
+        }
+        if (!empty($bufferedBeginScripts)) {
+            $bufferedScripts[self::POS_BEGIN] = $bufferedBeginScripts;
+        }
+        if (!empty($registryState['scripts'][Position::Body->value])) {
+            $bufferedScripts[self::POS_END] = $registryState['scripts'][Position::Body->value];
+        }
+
         return $bufferedScripts;
     }
 
@@ -1245,27 +1405,28 @@ class View extends \yii\web\View
      */
     public function startCssBuffer(): void
     {
-        $this->_cssBuffers[] = $this->css;
-        $this->css = [];
+        $this->registry()->startBuffer('css');
+        $this->_cssBufferDepth++;
     }
 
     /**
      * Clears and ends a buffer started via [[startCssBuffer()]], returning any `<style>` tags that were registered
      * while the buffer was active.
      *
-     * @return array|false The `<style>` tags that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     * @return array|false The `<style>` tags that were registered while the buffer was active, or `false` if there wasn't an active buffer.
      * @see startCssBuffer()
      * @since 3.7.0
      */
     public function clearCssBuffer(): array|false
     {
-        if (empty($this->_cssBuffers)) {
+        if ($this->_cssBufferDepth === 0) {
             return false;
         }
 
-        $bufferedCss = $this->css;
-        $this->css = array_pop($this->_cssBuffers);
-        return $bufferedCss;
+        $registryState = $this->registry()->clearBuffer('css');
+        $this->_cssBufferDepth--;
+
+        return $registryState['css'];
     }
 
     /**
@@ -1278,27 +1439,28 @@ class View extends \yii\web\View
      */
     public function startCssFileBuffer(): void
     {
-        $this->_cssFileBuffers[] = $this->cssFiles;
-        $this->cssFiles = [];
+        $this->registry()->startBuffer('cssFiles');
+        $this->_cssFileBufferDepth++;
     }
 
     /**
      * Clears and ends a buffer started via [[startCssFileBuffer()]], returning any `<link rel="stylesheet">` tags that were registered
      * while the buffer was active.
      *
-     * @return array|false The `<link rel="stylesheet">` tags that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     * @return array|false The `<link rel="stylesheet">` tags that were registered while the buffer was active, or `false` if there wasn't an active buffer.
      * @see startCssFileBuffer()
      * @since 4.0.0
      */
     public function clearCssFileBuffer(): array|false
     {
-        if (empty($this->_cssFileBuffers)) {
+        if ($this->_cssFileBufferDepth === 0) {
             return false;
         }
 
-        $bufferedCssFiles = $this->cssFiles;
-        $this->cssFiles = array_pop($this->_cssFileBuffers);
-        return $bufferedCssFiles;
+        $registryState = $this->registry()->clearBuffer('cssFiles');
+        $this->_cssFileBufferDepth--;
+
+        return $registryState['cssFiles'];
     }
 
     /**
@@ -1311,26 +1473,44 @@ class View extends \yii\web\View
      */
     public function startJsFileBuffer(): void
     {
-        $this->_jsFileBuffers[] = $this->jsFiles;
-        $this->jsFiles = [];
+        $this->registry()->startBuffer('jsFiles');
+        $this->_jsFileBufferDepth++;
+
+        $this->_jsFileBeginBuffers[] = $this->_beginJsFiles;
+        $this->_beginJsFiles = [];
     }
 
     /**
      * Clears and ends a buffer started via [[startJsFileBuffer()]], returning any `<script>` tags that were registered
      * while the buffer was active.
      *
-     * @return array|false The `<script>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     * @return array|false The `<script>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn't an active buffer.
      * @see startJsFileBuffer()
      * @since 4.0.0
      */
     public function clearJsFileBuffer(): array|false
     {
-        if (empty($this->_jsFileBuffers)) {
+        if ($this->_jsFileBufferDepth === 0) {
             return false;
         }
 
-        $bufferedJsFiles = $this->jsFiles;
-        $this->jsFiles = array_pop($this->_jsFileBuffers);
+        $registryState = $this->registry()->clearBuffer('jsFiles');
+        $this->_jsFileBufferDepth--;
+
+        $bufferedBeginJsFiles = $this->_beginJsFiles;
+        $this->_beginJsFiles = array_pop($this->_jsFileBeginBuffers) ?? [];
+
+        // Map registry positions back to Yii2 positions
+        $bufferedJsFiles = [];
+        if (!empty($registryState['jsFiles'][Position::Head->value])) {
+            $bufferedJsFiles[self::POS_HEAD] = $registryState['jsFiles'][Position::Head->value];
+        }
+        if (!empty($bufferedBeginJsFiles)) {
+            $bufferedJsFiles[self::POS_BEGIN] = $bufferedBeginJsFiles;
+        }
+        if (!empty($registryState['jsFiles'][Position::Body->value])) {
+            $bufferedJsFiles[self::POS_END] = $registryState['jsFiles'][Position::Body->value];
+        }
 
         foreach ($bufferedJsFiles as $files) {
             foreach (array_keys($files) as $key) {
@@ -1349,8 +1529,11 @@ class View extends \yii\web\View
      */
     public function startHtmlBuffer(): void
     {
-        $this->_htmlBuffers[] = $this->_html;
-        $this->_html = [];
+        $this->registry()->startBuffer('html');
+        $this->_htmlBufferDepth++;
+
+        $this->_htmlBeginBuffers[] = $this->_beginHtml;
+        $this->_beginHtml = [];
     }
 
     /**
@@ -1362,12 +1545,28 @@ class View extends \yii\web\View
      */
     public function clearHtmlBuffer(): array|false
     {
-        if (empty($this->_htmlBuffers)) {
+        if ($this->_htmlBufferDepth === 0) {
             return false;
         }
 
-        $bufferedHtml = $this->_html;
-        $this->_html = array_pop($this->_htmlBuffers);
+        $registryState = $this->registry()->clearBuffer('html');
+        $this->_htmlBufferDepth--;
+
+        $bufferedBeginHtml = $this->_beginHtml;
+        $this->_beginHtml = array_pop($this->_htmlBeginBuffers) ?? [];
+
+        // Map registry positions back to Yii2 positions
+        $bufferedHtml = [];
+        if (!empty($registryState['html'][Position::Head->value])) {
+            $bufferedHtml[self::POS_HEAD] = $registryState['html'][Position::Head->value];
+        }
+        if (!empty($bufferedBeginHtml)) {
+            $bufferedHtml[self::POS_BEGIN] = $bufferedBeginHtml;
+        }
+        if (!empty($registryState['html'][Position::Body->value])) {
+            $bufferedHtml[self::POS_END] = $registryState['html'][Position::Body->value];
+        }
+
         return $bufferedHtml;
     }
 
@@ -1381,27 +1580,28 @@ class View extends \yii\web\View
      */
     public function startMetaTagBuffer(): void
     {
-        $this->_metaTagBuffers[] = $this->metaTags;
-        $this->metaTags = [];
+        $this->registry()->startBuffer('metaTags');
+        $this->_metaTagBufferDepth++;
     }
 
     /**
      * Clears and ends a buffer started via [[startMetaTagBuffer()]], returning any `<meta>` tags that were registered
      * while the buffer was active.
      *
-     * @return array|false The `<meta>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     * @return array|false The `<meta>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn't an active buffer.
      * @see startMetaTagBuffer()
      * @since 4.5.8
      */
     public function clearMetaTagBuffer(): array|false
     {
-        if (empty($this->_metaTagBuffers)) {
+        if ($this->_metaTagBufferDepth === 0) {
             return false;
         }
 
-        $bufferedMetaTags = $this->metaTags;
-        $this->metaTags = array_pop($this->_metaTagBuffers);
-        return $bufferedMetaTags;
+        $registryState = $this->registry()->clearBuffer('metaTags');
+        $this->_metaTagBufferDepth--;
+
+        return $registryState['metaTags'];
     }
 
     /**
@@ -1447,27 +1647,23 @@ class View extends \yii\web\View
      */
     public function startJsImportBuffer(): void
     {
-        $this->_jsImportBuffers[] = $this->_jsImports;
-        $this->_jsImports = [];
+        $this->registry()->startBuffer('jsImports');
+        $this->_jsImportBufferDepth++;
     }
 
     /**
-     * Clears and ends a buffer started via [[startJsImportBuffer()]], returning any JavaScript imports that were registered
-     * while the buffer was active.
-     *
-     * @return array|false The JavaScript imports that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
-     * @see startAssetBundleBuffer()
-     * @since 5.6.0
+     * @inheritdoc
      */
     public function clearJsImportBuffer(): array|false
     {
-        if (empty($this->_jsImportBuffers)) {
+        if ($this->_jsImportBufferDepth === 0) {
             return false;
         }
 
-        $bufferedJsImports = $this->_jsImports;
-        $this->_jsImports = array_pop($this->_jsImportBuffers);
-        return $bufferedJsImports;
+        $registryState = $this->registry()->clearBuffer('jsImports');
+        $this->_jsImportBufferDepth--;
+
+        return $registryState['jsImports'];
     }
 
     /**
@@ -1484,7 +1680,56 @@ class View extends \yii\web\View
             $this->_registeredJsFiles[$hash] = true;
         }
 
-        parent::registerJsFile($url, $options, $key);
+        // Map Yii2 position to registry position
+        $position = (int) ($options['position'] ?? self::POS_END);
+        unset($options['position']);
+
+        $key ??= $url;
+
+        if ($position === self::POS_BEGIN) {
+            $this->_beginJsFiles[$key] = Html::javaScriptFile($url, $options)->render();
+            return;
+        }
+
+        $registryPosition = match ($position) {
+            self::POS_HEAD => Position::Head->value,
+            default => Position::Body->value,
+        };
+        $options['position'] = $registryPosition;
+
+        $this->registry()->jsFile($url, $options, $key);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerMetaTag($options, $key = null): void
+    {
+        $this->registry()->metaTag($options, $key);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerLinkTag($options, $key = null): void
+    {
+        $this->registry()->linkTag($options, $key);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerCss($css, $options = [], $key = null): void
+    {
+        $this->registry()->css($css, $options, $key);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerCssFile($url, $options = [], $key = null): void
+    {
+        $this->registry()->cssFile($url, $options, $key);
     }
 
     /**
@@ -1503,8 +1748,19 @@ class View extends \yii\web\View
      */
     public function registerScript(string $script, int $position = self::POS_END, array $options = [], ?string $key = null): void
     {
-        $key = $key ?: md5($script);
-        $this->_scripts[$position][$key] = Html::script($script, $options)->render();
+        $key ??= md5($script);
+
+        if ($position === self::POS_BEGIN) {
+            $this->_beginScripts[$key] = Html::script($script, $options)->render();
+            return;
+        }
+
+        $registryPosition = match ($position) {
+            self::POS_HEAD => Position::Head,
+            default => Position::Body,
+        };
+
+        $this->registry()->script($script, $registryPosition, $options, $key);
     }
 
     /**
@@ -1545,10 +1801,19 @@ class View extends \yii\web\View
      */
     public function registerHtml(string $html, int $position = self::POS_END, ?string $key = null): void
     {
-        if ($key === null) {
-            $key = md5($html);
+        $key ??= md5($html);
+
+        if ($position === self::POS_BEGIN) {
+            $this->_beginHtml[$key] = $html;
+            return;
         }
-        $this->_html[$position][$key] = $html;
+
+        $registryPosition = match ($position) {
+            self::POS_HEAD => Position::Head,
+            default => Position::Body,
+        };
+
+        $this->registry()->html($html, $registryPosition, $key);
     }
 
     /**
@@ -1560,7 +1825,7 @@ class View extends \yii\web\View
     */
     public function registerJsImport(string $key, string $value): void
     {
-        $this->_jsImports[$key] = $value;
+        $this->registry()->jsImport($key, $value);
     }
 
     /**
@@ -1591,15 +1856,7 @@ class View extends \yii\web\View
         // Register any asset bundles
         $this->registerAllAssetFiles();
 
-        $html = $this->renderHeadHtml();
-
-        if ($clear === true) {
-            $this->metaTags = [];
-            $this->linkTags = [];
-            $this->css = [];
-            $this->cssFiles = [];
-            unset($this->jsFiles[self::POS_HEAD], $this->js[self::POS_HEAD]);
-        }
+        $html = $this->registry()->headHtml(clear: $clear);
 
         return $html;
     }
@@ -1619,20 +1876,21 @@ class View extends \yii\web\View
         // Register any asset bundles
         $this->registerAllAssetFiles();
 
-        // Get the rendered body begin+end HTML
-        $html = $this->renderBodyBeginHtml() .
-            $this->renderBodyEndHtml(true);
+        // Include both body-begin and body-end content
+        $html = $this->renderBodyBeginHtml() . $this->renderBodyEndHtml(true);
 
         // Clear out the queued up files
         if ($clear === true) {
-            unset(
-                $this->jsFiles[self::POS_BEGIN],
-                $this->jsFiles[self::POS_END],
-                $this->js[self::POS_BEGIN],
-                $this->js[self::POS_END],
-                $this->js[self::POS_READY],
-                $this->js[self::POS_LOAD]
-            );
+            // Clear registry body content (head was not touched)
+            $this->registry()->bodyHtml(clear: true);
+
+            // Clear adapter's internal begin/ready/load JS
+            $this->_beginJs = [];
+            $this->_beginHtml = [];
+            $this->_beginScripts = [];
+            $this->_beginJsFiles = [];
+            $this->_readyJs = [];
+            $this->_loadJs = [];
         }
 
         return $html;
@@ -1655,6 +1913,7 @@ class View extends \yii\web\View
 
         foreach ($messages as $message) {
             $translation = t($message, category: $category);
+
             if ($translation !== $message) {
                 $jsMessage = Json::encode($message);
                 $jsTranslation = Json::encode($translation);
@@ -1684,10 +1943,7 @@ JS;
      */
     public function registerIcons(array $icons): void
     {
-        $this->_icons = [
-            ...$this->_icons,
-            ...array_flip($icons),
-        ];
+        $this->registry()->icons($icons);
     }
 
     /**
@@ -2246,24 +2502,7 @@ JS;
      */
     protected function renderHeadHtml(): string
     {
-        $lines = [];
-        if (!empty($this->title)) {
-            $lines[] = '<title>' . Html::encode($this->title) . '</title>';
-        }
-
-        if (!empty($this->_jsImports)) {
-            $lines[] = '<script type="importmap">{"imports": ' . Json::encode($this->_jsImports) . '}</script>';
-        }
-        if (!empty($this->_scripts[self::POS_HEAD])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
-        }
-        if (!empty($this->_html[self::POS_HEAD])) {
-            $lines[] = implode("\n", $this->_html[self::POS_HEAD]);
-        }
-
-        $html = parent::renderHeadHtml();
-
-        return empty($lines) ? $html : implode("\n", $lines) . $html;
+        return $this->registry()->headHtml(clear: false);
     }
 
     /**
@@ -2272,16 +2511,24 @@ JS;
     protected function renderBodyBeginHtml(): string
     {
         $lines = [];
-        if (!empty($this->_scripts[self::POS_BEGIN])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_BEGIN]);
-        }
-        if (!empty($this->_html[self::POS_BEGIN])) {
-            $lines[] = implode("\n", $this->_html[self::POS_BEGIN]);
+
+        if (!empty($this->_beginScripts)) {
+            $lines[] = implode("\n", $this->_beginScripts);
         }
 
-        $html = parent::renderBodyBeginHtml();
+        if (!empty($this->_beginHtml)) {
+            $lines[] = implode("\n", $this->_beginHtml);
+        }
 
-        return empty($lines) ? $html : implode("\n", $lines) . $html;
+        if (!empty($this->_beginJsFiles)) {
+            $lines[] = implode("\n", $this->_beginJsFiles);
+        }
+
+        if (!empty($this->_beginJs)) {
+            $lines[] = Html::script(implode("\n", $this->_beginJs))->render();
+        }
+
+        return empty($lines) ? '' : implode("\n", $lines);
     }
 
     /**
@@ -2289,29 +2536,32 @@ JS;
      */
     protected function renderBodyEndHtml($ajaxMode): string
     {
-        $lines = [];
-        if (!empty($this->_scripts[self::POS_END])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_END]);
-        }
-        if (!empty($this->_html[self::POS_END])) {
-            $lines[] = implode("\n", $this->_html[self::POS_END]);
-        }
+        $html = $this->registry()->bodyHtml(clear: false);
 
-        if (!empty($this->_icons)) {
-            $icons = [];
-            foreach (array_keys($this->_icons) as $icon) {
-                $icons[$icon] = Cp::iconSvg($icon);
+        // Append POS_READY/POS_LOAD JS (kept in adapter, not registry)
+        if ($ajaxMode) {
+            $scripts = [];
+            if (!empty($this->_readyJs)) {
+                $scripts[] = implode("\n", $this->_readyJs);
             }
-            $iconsJs = Json::encode($icons);
-            $this->js[self::POS_END][] = <<<JS
-Craft.icons = $iconsJs;
-JS;
-            $this->_icons = [];
+            if (!empty($this->_loadJs)) {
+                $scripts[] = implode("\n", $this->_loadJs);
+            }
+            if (!empty($scripts)) {
+                $html .= ($html !== '' ? "\n" : '') . Html::script(implode("\n", $scripts))->render();
+            }
+        } else {
+            if (!empty($this->_readyJs)) {
+                $js = "jQuery(function ($) {\n" . implode("\n", $this->_readyJs) . "\n});";
+                $html .= ($html !== '' ? "\n" : '') . Html::script($js)->render();
+            }
+            if (!empty($this->_loadJs)) {
+                $js = "jQuery(window).on('load', function () {\n" . implode("\n", $this->_loadJs) . "\n});";
+                $html .= ($html !== '' ? "\n" : '') . Html::script($js)->render();
+            }
         }
 
-        $html = parent::renderBodyEndHtml($ajaxMode);
-
-        return empty($lines) ? $html : implode("\n", $lines) . $html;
+        return $html;
     }
 
     /**

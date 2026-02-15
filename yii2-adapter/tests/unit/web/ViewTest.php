@@ -651,6 +651,9 @@ TWIG;
     {
         parent::_before();
 
+        // Clear the asset registry to prevent state leaking between tests
+        app(\CraftCms\Cms\View\AssetRegistry::class)->clear();
+
         $this->view = Craft::createObject(View::class);
 
         // By default we want to be in site mode.
