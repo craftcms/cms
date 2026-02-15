@@ -9,7 +9,6 @@
 
 namespace craft\base;
 
-use Craft;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\mysql\Schema;
@@ -30,7 +29,6 @@ use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Auth;
 use craft\services\Categories;
-use craft\services\Conditions;
 use craft\services\Config;
 use craft\services\Dashboard;
 use craft\services\Deprecator;
@@ -73,6 +71,7 @@ use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Condition\Conditions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
@@ -838,6 +837,7 @@ trait ApplicationTrait
      * @return Conditions The conditions service
      *
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Condition\Conditions} instead.
      */
     public function getConditions(): Conditions
     {

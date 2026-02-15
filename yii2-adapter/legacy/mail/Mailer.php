@@ -10,13 +10,13 @@ namespace craft\mail;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\Template;
-use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -113,8 +113,8 @@ class Mailer extends \yii\symfonymailer\Mailer
         $generateTransformsBeforePageLoad = $generalConfig->generateTransformsBeforePageLoad;
         $originalSettings = [];
 
-        $originalTemplateMode = $view->getTemplateMode();
-        $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $originalTemplateMode = TemplateMode::get();
+        TemplateMode::set(TemplateMode::Site);
 
         try {
             if ($message instanceof Message && isset($message->siteId)) {
@@ -193,11 +193,11 @@ class Mailer extends \yii\symfonymailer\Mailer
                 // Is there a custom HTML template set?
                 if (Edition::get()->value >= Edition::Pro->value && $this->template) {
                     $template = $this->template;
-                    $templateMode = View::TEMPLATE_MODE_SITE;
+                    $templateMode = TemplateMode::Site->value;
                 } else {
                     // Default to the _special/email.html template
                     $template = '_special/email.twig';
-                    $templateMode = View::TEMPLATE_MODE_CP;
+                    $templateMode = TemplateMode::Cp->value;
                 }
 
                 try {
@@ -238,7 +238,7 @@ class Mailer extends \yii\symfonymailer\Mailer
                 Sites::setCurrentSite($currentSite);
             }
 
-            $view->setTemplateMode($originalTemplateMode);
+            TemplateMode::set($originalTemplateMode);
 
             if ($twig) {
                 $view->setTwig($twig);

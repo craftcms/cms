@@ -145,7 +145,7 @@ trait QueriesCustomFields
                 // see https://github.com/craftcms/cms/issues/15609
                 /** @var \Illuminate\Database\Connection $connection */
                 $connection = $this->query->getConnection();
-                if ($connection->getDriverName() === 'mysql' && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
+                if ($connection->isMysql() && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
                     $this->columnsToCast[$alias] = 'CHAR(255)';
                 }
             }

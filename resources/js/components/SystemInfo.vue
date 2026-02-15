@@ -12,9 +12,8 @@
   <component
     :is="tag"
     class="system-info"
-    :href="site.url || ''"
-    :target="site.url ? '_blank' : ''"
-    tabindex="0"
+    :href="site.url"
+    :target="site.url ? '_blank' : null"
   >
     <div class="system-info__icon">
       <img :src="system.icon.url" alt="" v-if="system.icon" />

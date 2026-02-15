@@ -185,9 +185,6 @@ final class AssetQuery extends ElementQuery
         return parent::createElement($row);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function cacheTags(): array
     {
         $tags = [];
@@ -201,9 +198,6 @@ final class AssetQuery extends ElementQuery
         return $tags;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function fieldLayouts(): Collection
     {
         if (! $this->volumeId) {

@@ -19,19 +19,10 @@ use function CraftCms\Cms\t;
 
 class PhotoField extends BaseNativeField
 {
-    /**
-     * {@inheritdoc}
-     */
     public bool $mandatory = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public string $attribute = 'photo';
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // We didn't start removing autofocus from fields() until 3.5.6
@@ -43,9 +34,6 @@ class PhotoField extends BaseNativeField
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -57,9 +45,6 @@ class PhotoField extends BaseNativeField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Photo');
@@ -104,9 +89,6 @@ JS, [
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

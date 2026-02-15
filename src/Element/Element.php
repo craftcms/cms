@@ -186,8 +186,6 @@ abstract class Element extends Component implements ElementInterface
     public bool $hardDelete = false;
 
     /**
-     * {@inheritdoc}
-     *
      * @return array<string, array<string>|null>
      */
     #[Override]
@@ -200,50 +198,32 @@ abstract class Element extends Component implements ElementInterface
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Element');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function lowerDisplayName(): string
     {
         return mb_strtolower(static::displayName());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function pluralDisplayName(): string
     {
         return t('Elements');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function pluralLowerDisplayName(): string
     {
         return mb_strtolower(static::pluralDisplayName());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function refHandle(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function hasTitles(): bool
     {
         return false;
@@ -263,9 +243,6 @@ abstract class Element extends Component implements ElementInterface
      */
     private $_serializeFields = false;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // Make sure the field layout ID is set before any custom fields
@@ -276,9 +253,6 @@ abstract class Element extends Component implements ElementInterface
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function __clone()
     {
@@ -338,9 +312,6 @@ abstract class Element extends Component implements ElementInterface
         return (bool) $this->fieldByHandle($name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function __get($name)
     {
@@ -366,9 +337,6 @@ abstract class Element extends Component implements ElementInterface
         return parent::__get($name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function __set($name, $value)
     {
@@ -392,9 +360,6 @@ abstract class Element extends Component implements ElementInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function __call($name, $params)
     {
@@ -409,18 +374,12 @@ abstract class Element extends Component implements ElementInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function defineBehaviors(): array
     {
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function init(): void
     {
@@ -458,9 +417,6 @@ abstract class Element extends Component implements ElementInterface
         return $values;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function attributes(): array
     {
@@ -516,9 +472,6 @@ abstract class Element extends Component implements ElementInterface
         return array_keys($names);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -541,9 +494,6 @@ abstract class Element extends Component implements ElementInterface
         return $fields;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function toArray(array $fields = [], array $expand = [], $recursive = true): array
     {
         if ($recursive) {
@@ -559,9 +509,6 @@ abstract class Element extends Component implements ElementInterface
         return $arr;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function extraFields(): array
     {
@@ -584,9 +531,6 @@ abstract class Element extends Component implements ElementInterface
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getIterator(): Traversable
     {
@@ -607,9 +551,6 @@ abstract class Element extends Component implements ElementInterface
         return new ArrayIterator($attributes);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getAttributeLabel($attribute): string
     {
@@ -621,9 +562,6 @@ abstract class Element extends Component implements ElementInterface
         return parent::getAttributeLabel($attribute);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function attributeLabels(): array
     {
@@ -664,9 +602,6 @@ abstract class Element extends Component implements ElementInterface
         return static::hasTitles();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterValidate(?LaravelValidator $validator = null): void
     {
@@ -759,17 +694,12 @@ abstract class Element extends Component implements ElementInterface
         })->all());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function createAnother(): ?ElementInterface
     {
         return null;
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @param  string|int  $offset
      */
     #[Override]
@@ -782,9 +712,6 @@ abstract class Element extends Component implements ElementInterface
         return (bool) $this->fieldByHandle($offset);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setAttributesFromRequest(array $values): void
     {
         $this->setAttributes($values);

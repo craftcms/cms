@@ -42,9 +42,6 @@ final class EntryQuery extends ElementQuery
     use QueriesRef;
     use QueriesSections;
 
-    /**
-     * {@inheritdoc}
-     */
     protected array $defaultOrderBy = [
         'entries.postDate' => SORT_DESC,
         'elements.id' => SORT_DESC,
@@ -293,9 +290,6 @@ final class EntryQuery extends ElementQuery
         }, boolean: $value ? 'and' : 'and not');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function cacheTags(): array
     {
         $tags = [];
@@ -316,9 +310,6 @@ final class EntryQuery extends ElementQuery
         return $tags;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function fieldLayouts(): Collection
     {
         $this->normalizeTypeId($this);

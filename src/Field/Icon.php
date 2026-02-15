@@ -35,36 +35,24 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     private static array $_icons;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Icon');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'icons';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', IconData::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): string
     {
@@ -96,9 +84,6 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     public bool $fullGraphqlData = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // Default includeProIcons to true for existing Icon fields
@@ -118,17 +103,11 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -176,9 +155,6 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $html;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
@@ -193,9 +169,6 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return new IconData($value, self::iconStyles($value));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -209,9 +182,6 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
@@ -222,9 +192,6 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
@@ -232,9 +199,6 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $value ? Html::tag('div', Cp::iconSvg($value->name), ['class' => 'cp-icon']) : '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
@@ -242,18 +206,12 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $this->getPreviewHtml($value, $element ?? new Entry);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
     {
         /** @var IconData|null $value */
         return $value ? Html::tag('div', Cp::iconSvg($value->name), ['class' => 'cp-icon']) : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): Type|array
     {

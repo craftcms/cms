@@ -8,7 +8,7 @@
 namespace craft\auth\sso;
 
 use Craft;
-use craft\web\View;
+use CraftCms\Cms\View\TemplateMode;
 use yii\base\Exception;
 use yii\web\Request;
 use yii\web\Response;
@@ -41,7 +41,7 @@ class CraftProvider extends BaseProvider
                 'provider' => $this,
                 'actionPath' => 'auth/request',
             ],
-            View::TEMPLATE_MODE_CP
+            TemplateMode::Cp->value
         );
     }
 

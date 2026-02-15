@@ -19,14 +19,8 @@ use function CraftCms\Cms\t;
 
 class AffiliatedSiteField extends BaseNativeField
 {
-    /**
-     * {@inheritdoc}
-     */
     public string $attribute = 'affiliatedSiteId';
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // We didn't start removing autofocus from fields() until 3.5.6
@@ -39,9 +33,6 @@ class AffiliatedSiteField extends BaseNativeField
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -54,26 +45,17 @@ class AffiliatedSiteField extends BaseNativeField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Affiliated Site');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function instructions(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Determines which site the user will receive emails from, when sent via the control panel.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ! $element instanceof User) {
@@ -98,9 +80,6 @@ class AffiliatedSiteField extends BaseNativeField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

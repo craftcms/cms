@@ -16,45 +16,30 @@ use function CraftCms\Cms\t;
  */
 final class PhpInfo extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('PHP Info');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function id(): string
     {
         return 'php-info';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function isSelectable(): bool
     {
         return function_exists('phpinfo');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'circle-info';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function contentHtml(): string
     {

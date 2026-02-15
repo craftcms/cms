@@ -41,27 +41,18 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 {
     private static array $typeOptions;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Table');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'table';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
@@ -93,9 +84,6 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return self::$typeOptions;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): string
     {
@@ -138,9 +126,6 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
      */
     public ?array $defaults = [[]];
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // Config normalization
@@ -269,17 +254,11 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return (bool) $this->maxRows;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -391,7 +370,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                 $row['rowId'] ??= Str::uuid()->toString();
 
                 return $row;
-            }, $this->defaults),
+            }, $this->defaults ?? []),
             'initJs' => false,
             'static' => $readOnly,
             'includeRowId' => true,
@@ -405,9 +384,6 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeSave(bool $isNew): bool
     {
@@ -425,18 +401,12 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -445,9 +415,6 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return $this->_getInputHtml($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -487,18 +454,12 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
@@ -537,7 +498,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 
         if ($this->staticRows) {
             // get the order of the default rows
-            $order = ArrayHelper::getColumn($this->defaults, 'rowId');
+            $order = ArrayHelper::getColumn($this->defaults ?? [], 'rowId');
             $missingValueRowIds = null;
 
             if (! empty($order)) {
@@ -620,9 +581,6 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
@@ -657,9 +615,6 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return $serialized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
@@ -705,9 +660,6 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return $serialized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
@@ -728,18 +680,12 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return implode(' ', $keywords);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_getInputHtml($value, $element, true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): Type
     {
@@ -748,9 +694,6 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return Type::listOf($type);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlMutationArgumentType(): Type
     {

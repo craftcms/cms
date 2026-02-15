@@ -7,7 +7,9 @@
 3. Creating test elements
 4. Creating an entry with a custom field
 5. Testing element concerns (traits)
-6. Testing Laravel events
+6. Pest data providers
+7. Database best practices
+8. Testing Laravel events
 
 ## CP URLs
 
@@ -107,6 +109,56 @@ test('returns custom route', function () {
 This pattern allows testing trait behavior without needing factories or database state. See `tests/Element/Concerns/` for examples.
 
 **Important**: When writing integration tests for a trait using a concrete subclass (like `Entry`), assert against the subclass's actual behavior, not the trait's default return values. For example, `Entry` overrides `getCardTitle()`, `getCrumbs()`, and status values — your assertions must account for these overrides.
+
+## Pest data providers
+
+Use Pest's `->with()` to consolidate tests that share the same structure but differ in inputs and expected values. This reduces duplication and makes it easy to add new cases. Always use named dataset entries for readable test output.
+
+```php
+it('validates handles', function (string $handle, bool $expected) {
+    expect(HandleRule::isValid($handle))->toBe($expected);
+})->with([
+    'valid lowercase' => ['fooBar', true],
+    'starts with number' => ['1foo', false],
+    'contains spaces' => ['foo bar', false],
+]);
+```
+
+When dataset values cannot be expressed as simple scalars (e.g. they require runtime evaluation), use closures:
+
+```php
+it('matches with TYPE_TODAY', function (Closure $createDate, bool $expected) {
+    $entry = createEntryWithDate($createDate());
+    $rule = createDateRangeRule(['rangeType' => DateRange::TYPE_TODAY]);
+
+    expect($rule->matchElement($entry))->toBe($expected);
+})->with([
+    'created today' => [fn () => DateTimeHelper::today()->modify('+12 hours'), true],
+    'created yesterday' => [fn () => DateTimeHelper::yesterday(), false],
+]);
+```
+
+Use array parameters when different cases need different subsets of attributes:
+
+```php
+it('matches with relative date types', function (string $rangeType, array $ruleAttributes, bool $expected) {
+    $entry = createEntryWithDate(DateTimeHelper::now());
+    $rule = createDateRangeRule(['rangeType' => $rangeType, ...$ruleAttributes]);
+
+    expect($rule->matchElement($entry))->toBe($expected);
+})->with([
+    'before 1 day from now' => [DateRange::TYPE_BEFORE, ['periodValue' => 1, 'periodType' => DateRange::PERIOD_DAYS_FROM_NOW], true],
+    'before with no periodValue' => [DateRange::TYPE_BEFORE, ['periodValue' => null], true],
+]);
+```
+
+**When to use data providers:**
+- Multiple tests share the same assertion logic with different inputs/outputs.
+- You find yourself copy-pasting a test body and only changing values.
+
+**When NOT to use data providers:**
+- Tests have structurally different assertions (e.g. one checks `toBeEmpty()`, another checks `toContain()`).
+- The test body would need complex branching logic to handle different cases.
 
 ## Database best practices
 

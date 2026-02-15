@@ -274,7 +274,7 @@ final readonly class InstallController
             'schema' => ['nullable', 'string'],
         ]);
 
-        $defaultPort = $data['driver'] === 'mysql' ? 3306 : 5432;
+        $defaultPort = in_array($data['driver'], ['mysql', 'mariadb']) ? 3306 : 5432;
 
         $data['host'] ??= Config::get("database.connections.{$data['driver']}.host") ?: '127.0.0.1';
         $data['port'] ??= Config::get("database.connections.{$data['driver']}.port") ?: $defaultPort;

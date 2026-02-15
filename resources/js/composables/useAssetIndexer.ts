@@ -11,7 +11,8 @@ import {
 interface UseAssetIndexerOptions {
   existingSessions?: IndexingSession[];
   maxConcurrentConnections?: number;
-  autoResume?: boolean; }
+  autoResume?: boolean;
+}
 
 // =============================================================================
 // Global state — shared across all components that call useAssetIndexer()

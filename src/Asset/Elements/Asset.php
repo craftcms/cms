@@ -25,7 +25,6 @@ use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\Restore;
 use craft\elements\actions\ShowInFolder;
 use craft\elements\conditions\assets\AssetCondition;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\AssetException;
 use craft\errors\FileException;
@@ -62,6 +61,7 @@ use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -212,9 +212,6 @@ class Asset extends Element
 
     private static string $_displayName;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
@@ -229,62 +226,41 @@ class Asset extends Element
         return self::$_displayName;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function lowerDisplayName(): string
     {
         return t('asset');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function pluralDisplayName(): string
     {
         return t('Assets');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function pluralLowerDisplayName(): string
     {
         return t('assets');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function refHandle(): string
     {
         return 'asset';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function hasTitles(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function hasThumbs(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function isLocalized(): bool
     {
@@ -292,8 +268,6 @@ class Asset extends Element
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return AssetQuery The newly created [[AssetQuery]] instance.
      */
     #[Override]
@@ -303,8 +277,6 @@ class Asset extends Element
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return AssetCondition
      */
     #[Override]
@@ -313,9 +285,6 @@ class Asset extends Element
         return Craft::createObject(AssetCondition::class, [self::class]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -340,9 +309,6 @@ class Asset extends Element
         return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
@@ -363,27 +329,18 @@ class Asset extends Element
         return sprintf('%s_Asset', $volume->handle);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function baseGqlType(): Type
     {
         return AssetInterface::getType();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function gqlScopesByContext(mixed $context): array
     {
         return ['volumes.'.$context->uid];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSources(string $context): array
     {
@@ -430,9 +387,6 @@ class Asset extends Element
         return $sources;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function findSource(string $sourceKey, ?string $context): ?array
     {
         if (preg_match('/^volume:[\w\-]+(?:\/.+)?\/folder:([\w\-]+)$/', $sourceKey, $match)) {
@@ -470,9 +424,6 @@ class Asset extends Element
         return $path;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineFieldLayouts(?string $source): array
     {
@@ -487,9 +438,6 @@ class Asset extends Element
         return array_map(fn (Volume $volume) => $volume->getFieldLayout(), $volumes);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -565,18 +513,12 @@ class Asset extends Element
         return $actions;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSearchableAttributes(): array
     {
         return ['filename', 'extension', 'kind', 'alt'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function sortOptions(): array
     {
@@ -589,9 +531,6 @@ class Asset extends Element
         return parent::sortOptions();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSortOptions(): array
     {
@@ -620,9 +559,6 @@ class Asset extends Element
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function tableAttributes(): array
     {
@@ -633,9 +569,6 @@ class Asset extends Element
         return parent::tableAttributes();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineTableAttributes(): array
     {
@@ -662,9 +595,6 @@ class Asset extends Element
         return $attributes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineDefaultTableAttributes(string $source): array
     {
@@ -677,9 +607,6 @@ class Asset extends Element
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
@@ -690,9 +617,6 @@ class Asset extends Element
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineCardAttributes(): array
     {
@@ -752,9 +676,6 @@ class Asset extends Element
         return $attributes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function attributePreviewHtml(array $attribute): mixed
     {
@@ -764,9 +685,6 @@ class Asset extends Element
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
     {
@@ -858,9 +776,6 @@ class Asset extends Element
         return array_merge($assets, $elementQuery->all());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
     {
@@ -1213,9 +1128,6 @@ class Asset extends Element
 
     private ?int $_oldVolumeId = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // alt='' actually means something, so we should preserve it.
@@ -1227,9 +1139,6 @@ class Asset extends Element
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function __toString(): string
     {
@@ -1299,9 +1208,6 @@ class Asset extends Element
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function init(): void
     {
@@ -1314,9 +1220,6 @@ class Asset extends Element
         $this->_oldVolumeId = $this->_volumeId;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function setAttributesFromRequest(array $values): void
     {
@@ -1348,9 +1251,6 @@ class Asset extends Element
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function cacheTags(): array
     {
@@ -1366,9 +1266,6 @@ class Asset extends Element
         return $tags;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function crumbs(): array
     {
@@ -1431,7 +1328,6 @@ class Asset extends Element
     }
 
     /**
-     * {@inheritdoc}
      * ---
      * ```php
      * $url = $asset->cpEditUrl;
@@ -1459,17 +1355,11 @@ class Asset extends Element
         return UrlHelper::cpUrl($path);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getPostEditUrl(): string
     {
         return UrlHelper::cpUrl('assets');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function safeActionMenuItems(): array
     {
@@ -1900,27 +1790,18 @@ JS, [
         return $urls;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getIsTitleTranslatable(): bool
     {
         return $this->getVolume()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitleTranslationDescription(): ?string
     {
         return ElementHelper::translationDescription($this->getVolume()->titleTranslationMethod);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitleTranslationKey(): string
     {
@@ -1939,9 +1820,6 @@ JS, [
         return ElementHelper::translationKey($this, $volume->altTranslationMethod, $volume->altTranslationKeyFormat);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getFieldLayout(): ?FieldLayout
     {
@@ -2146,9 +2024,6 @@ JS, [
         return Html::encodeSpaces(Assets::generateUrl($this));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function thumbUrl(int $size): ?string
     {
         if ($this->isFolder) {
@@ -2166,9 +2041,6 @@ JS, [
         return Craft::$app->getAssets()->getThumbUrl($this, $width, $height, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function thumbSvg(): string
     {
         if ($this->isFolder) {
@@ -2178,9 +2050,6 @@ JS, [
         return Assets::iconSvg($this->getExtension());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function thumbAlt(): ?string
     {
         if ($this->isFolder) {
@@ -2195,9 +2064,6 @@ JS, [
         return $this->alt;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function hasCheckeredThumb(): bool
     {
@@ -2236,9 +2102,6 @@ JS, [
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewTargets(): array
     {
@@ -2285,9 +2148,6 @@ JS, [
         return pathinfo($this->_filename, PATHINFO_EXTENSION);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function couldHaveAnimatedThumb(): bool
     {
@@ -2574,7 +2434,7 @@ JS, [
     {
         if (is_array($value)) {
             if (! isset($value['x'], $value['y'])) {
-                throw new \InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
+                throw new InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
             }
             $value = [
                 'x' => (float) $value['x'],
@@ -2583,7 +2443,7 @@ JS, [
         } elseif ($value !== null) {
             $focal = explode(';', $value);
             if (count($focal) !== 2) {
-                throw new \InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
+                throw new InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
             }
             $value = [
                 'x' => (float) $focal[0],
@@ -2606,9 +2466,6 @@ JS, [
     // Indexes, etc.
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getAttributeHtml(string $attribute): string|Stringable
     {
@@ -2619,9 +2476,6 @@ JS, [
         return parent::getAttributeHtml($attribute);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function attributeHtml(string $attribute): string
     {
@@ -2664,9 +2518,6 @@ JS, [
         return parent::attributeHtml($attribute);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getInlineAttributeInputHtml(string $attribute): string
     {
@@ -2677,9 +2528,6 @@ JS, [
         return parent::getInlineAttributeInputHtml($attribute);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inlineAttributeInputHtml(string $attribute): string
     {
@@ -2853,9 +2701,6 @@ Craft.sendActionRequest('POST', 'assets/preview-thumb', {
 JS;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSidebarHtml(bool $static): string
     {
@@ -2866,9 +2711,6 @@ JS;
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function metaFieldsHtml(bool $static): string
     {
@@ -2889,9 +2731,6 @@ JS;
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function metadata(): array
     {
@@ -2959,18 +2798,12 @@ JS;
         return Html::ul()->items(...$items)->class('path')->render();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getGqlTypeName(): string
     {
         return self::gqlTypeName($this->getVolume());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function attributes(): array
     {
@@ -2995,9 +2828,6 @@ JS;
         return array_keys($names);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function extraFields(): array
     {
@@ -3027,9 +2857,6 @@ JS;
     // Events
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeSave(bool $isNew): bool
     {
@@ -3095,8 +2922,6 @@ JS;
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InvalidConfigException
      */
     #[Override]
@@ -3201,9 +3026,6 @@ JS;
         parent::afterSave($isNew);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeDelete(): bool
     {
@@ -3222,9 +3044,6 @@ JS;
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterDelete(): void
     {
@@ -3240,9 +3059,6 @@ JS;
         parent::afterDelete();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeRestore(): bool
     {
@@ -3250,9 +3066,6 @@ JS;
         return $this->keptFile && parent::beforeRestore();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getHtmlAttributes(string $context): array
     {
@@ -3283,9 +3096,6 @@ JS;
         return parent::getHtmlAttributes($context);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function htmlAttributes(string $context): array
     {

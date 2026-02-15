@@ -73,33 +73,21 @@ trait HasCanonical
      */
     private ?string $_canonicalUid = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIsCanonical(): bool
     {
         return ! isset($this->_canonicalId);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIsDerivative(): bool
     {
         return ! $this->getIsCanonical();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCanonical(bool $anySite = false): ElementInterface
     {
         if ($this->getIsCanonical()) {
@@ -130,9 +118,6 @@ trait HasCanonical
         return $this->$prop ?: $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setCanonical(ElementInterface $element): void
     {
         if ($this->getIsCanonical()) {
@@ -142,26 +127,17 @@ trait HasCanonical
         $this->_canonical = $element;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCanonicalId(): ?int
     {
         return $this->_canonicalId ?? $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setCanonicalId(?int $canonicalId): void
     {
         $this->_canonicalId = $canonicalId !== $this->id ? $canonicalId : null;
         $this->_canonical = null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCanonicalUid(): ?string
     {
         if ($this->getIsCanonical()) {
@@ -185,17 +161,11 @@ trait HasCanonical
         return $this->_canonicalUid;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIsUnpublishedDraft(): bool
     {
         return $this->getIsDraft() && $this->getIsCanonical();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function mergeCanonicalChanges(): void
     {
         if (($canonical = $this->getCanonical()) === $this) {

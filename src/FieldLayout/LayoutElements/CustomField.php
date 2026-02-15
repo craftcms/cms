@@ -6,11 +6,11 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\helpers\Cp;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -94,9 +94,6 @@ class CustomField extends BaseField
      */
     private mixed $_elementEditCondition = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct(?FieldInterface $field = null, $config = [])
     {
         // ensure we set the field last, so it has access to other properties that need to be set first
@@ -113,9 +110,6 @@ class CustomField extends BaseField
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isMultiInstance(): bool
     {
@@ -128,9 +122,6 @@ class CustomField extends BaseField
         return $field::isMultiInstance();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function attribute(): string
     {
         if (isset($this->handle)) {
@@ -146,9 +137,6 @@ class CustomField extends BaseField
         return $field->handle;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function key(): string
     {
@@ -164,18 +152,12 @@ class CustomField extends BaseField
         return "$prefix:$uid";
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function showAttribute(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function value(?ElementInterface $element = null): mixed
     {
@@ -192,9 +174,6 @@ class CustomField extends BaseField
         return $element->getFieldValue($field->handle);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function requirable(): bool
     {
@@ -207,9 +186,6 @@ class CustomField extends BaseField
         return $field::isRequirable();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function thumbable(): bool
     {
@@ -222,9 +198,6 @@ class CustomField extends BaseField
         return $field instanceof ThumbableFieldInterface;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewable(): bool
     {
@@ -237,9 +210,6 @@ class CustomField extends BaseField
         return $field instanceof PreviewableFieldInterface;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewOptions(): ?array
     {
@@ -275,9 +245,6 @@ class CustomField extends BaseField
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getThumbOptions(): ?array
     {
@@ -313,9 +280,6 @@ class CustomField extends BaseField
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function thumbHtml(ElementInterface $element, int $size): ?string
     {
         try {
@@ -331,9 +295,6 @@ class CustomField extends BaseField
         return $field->getThumbHtml($element->getFieldValue($field->handle), $element, $size);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewHtml(ElementInterface $element): string
     {
@@ -350,9 +311,6 @@ class CustomField extends BaseField
         return $field->getPreviewHtml($element->getFieldValue($field->handle), $element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function keywords(): array
     {
@@ -439,9 +397,6 @@ class CustomField extends BaseField
         return $this->_originalHandle;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasConditions(): bool
     {
@@ -513,9 +468,6 @@ class CustomField extends BaseField
         $this->_elementEditCondition = $elementEditCondition;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -527,9 +479,6 @@ class CustomField extends BaseField
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function selectorAttributes(): array
     {
@@ -548,9 +497,6 @@ class CustomField extends BaseField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function settingsHtml(): ?string
     {
@@ -563,9 +509,6 @@ class CustomField extends BaseField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -585,9 +528,6 @@ class CustomField extends BaseField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($this->_originalName !== '' && $this->_originalName !== null && $this->_originalName !== '__blank__') {
@@ -597,9 +537,6 @@ class CustomField extends BaseField
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function showLabel(): bool
     {
@@ -617,9 +554,6 @@ class CustomField extends BaseField
         return $field->name !== '__blank__';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectorIcon(): ?string
     {
         try {
@@ -659,9 +593,6 @@ class CustomField extends BaseField
         return $indicators;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function showStatus(): bool
     {
@@ -674,9 +605,6 @@ class CustomField extends BaseField
         return $field->showStatus();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
@@ -695,9 +623,6 @@ class CustomField extends BaseField
         return $status ? Str::toString($status[0]) : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function statusLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
@@ -716,17 +641,11 @@ class CustomField extends BaseField
         return $status ? $status[1] : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function defaultInstructions(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->_originalInstructions ? t($this->_originalInstructions, category: 'site') : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function conditionalSettingsHtml(): string
     {
@@ -797,9 +716,6 @@ class CustomField extends BaseField
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
@@ -816,9 +732,6 @@ class CustomField extends BaseField
         return $html;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function useFieldset(): bool
     {
@@ -831,9 +744,6 @@ class CustomField extends BaseField
         return $field->useFieldset();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function id(): string
     {
@@ -846,9 +756,6 @@ class CustomField extends BaseField
         return $field->getInputId();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function labelId(): string
     {
@@ -861,9 +768,6 @@ class CustomField extends BaseField
         return $field->getLabelId();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         try {
@@ -893,9 +797,6 @@ class CustomField extends BaseField
         return $html !== '' ? $html : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function orientation(?ElementInterface $element = null, bool $static = false): string
     {
@@ -908,9 +809,6 @@ class CustomField extends BaseField
         return $field->getOrientation($element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
@@ -923,9 +821,6 @@ class CustomField extends BaseField
         return $field->getIsTranslatable($element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         try {
@@ -937,9 +832,6 @@ class CustomField extends BaseField
         return $field->getTranslationDescription($element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isCrossSiteCopyable(ElementInterface $element): bool
     {
@@ -952,9 +844,6 @@ class CustomField extends BaseField
         return $field instanceof CrossSiteCopyableFieldInterface && $field->getIsTranslatable($element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

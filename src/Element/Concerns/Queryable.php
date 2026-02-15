@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use Craft;
-use craft\elements\conditions\ElementCondition;
-use craft\elements\conditions\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Arr;
@@ -22,8 +22,6 @@ use CraftCms\Cms\Support\Arr;
 trait Queryable
 {
     /**
-     * {@inheritdoc}
-     *
      * @return ElementQuery<static>
      */
     public static function find(): ElementQueryInterface
@@ -31,17 +29,11 @@ trait Queryable
         return new ElementQuery(static::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function findOne(mixed $criteria = null): ?static
     {
         return static::findByCondition($criteria, true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function findAll(mixed $criteria = null): array
     {
         return static::findByCondition($criteria, false);
@@ -62,9 +54,6 @@ trait Queryable
             ->first();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function createCondition(): ElementConditionInterface
     {
         return Craft::createObject(ElementCondition::class, [static::class]);

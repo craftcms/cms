@@ -190,18 +190,12 @@ final class UpdaterController extends BaseUpdaterController
         return $this->runMigrations($handles) ?? $this->sendFinished();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function pageTitle(): string
     {
         return t('Updater');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function initialData(): array
     {
@@ -256,9 +250,6 @@ final class UpdaterController extends BaseUpdaterController
         return $data;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function initialState(bool $force = false): array
     {
@@ -298,9 +289,6 @@ final class UpdaterController extends BaseUpdaterController
         return $this->actionState($nextAction);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function postComposerInstallState(): array
     {
@@ -323,9 +311,6 @@ final class UpdaterController extends BaseUpdaterController
         return UrlHelper::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function actionStatus(string $action): string
     {
@@ -339,9 +324,6 @@ final class UpdaterController extends BaseUpdaterController
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function sendFinished(array $state = []): Response
     {

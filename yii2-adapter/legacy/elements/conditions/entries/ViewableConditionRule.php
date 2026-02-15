@@ -2,53 +2,18 @@
 
 namespace craft\elements\conditions\entries;
 
-use Craft;
-use craft\base\conditions\BaseLightswitchConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\EntryQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use function CraftCms\Cms\t;
-
-/**
- * Entry viewable condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.4.0
- */
-class ViewableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Entry viewable condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Conditions\ViewableConditionRule} instead.
      */
-    public function getLabel(): string
+    class ViewableConditionRule
     {
-        return t('Viewable');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['editable'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var EntryQuery $query */
-        $query->editable($this->value);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        $viewable = Craft::$app->getElements()->canView($element);
-        return $viewable === $this->value;
     }
 }
+
+class_alias(\CraftCms\Cms\Entry\Conditions\ViewableConditionRule::class, ViewableConditionRule::class);

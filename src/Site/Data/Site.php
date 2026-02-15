@@ -118,17 +118,11 @@ final class Site extends Component implements Chippable, Stringable
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUiLabel(): string
     {
         return t($this->getName(), category: 'site');

@@ -6,11 +6,11 @@ namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use Craft;
 use craft\helpers\UrlHelper;
-use craft\web\View;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
@@ -60,7 +60,7 @@ final readonly class LoginController extends AuthenticationController
         $html = $view->renderTemplate('_special/login-modal.twig', [
             'staticEmail' => $staticEmail,
             'forElevatedSession' => $forElevatedSession,
-        ], View::TEMPLATE_MODE_CP);
+        ], TemplateMode::Cp->value);
 
         return new JsonResponse([
             'html' => $html,

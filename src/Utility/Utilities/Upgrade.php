@@ -17,9 +17,6 @@ use function CraftCms\Cms\t;
  */
 final class Upgrade extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
@@ -28,27 +25,18 @@ final class Upgrade extends Utility
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function id(): string
     {
         return 'upgrade';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'square-arrow-up';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function contentHtml(): string
     {

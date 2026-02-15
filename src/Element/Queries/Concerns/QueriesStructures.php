@@ -120,10 +120,6 @@ trait QueriesStructures
 
     protected function initQueriesStructures(): void
     {
-        $this->beforeQuery(function (ElementQuery $elementQuery) {
-            $this->applyStructureParams($elementQuery);
-        });
-
         $this->afterQuery(function (mixed $result) {
             if (! $result instanceof Collection) {
                 return $result;
@@ -612,7 +608,7 @@ trait QueriesStructures
                 // Use index hints to specify index so Mysql does not select the less
                 // performant one (dateDeleted).
                 ->when(
-                    DB::getDriverName() === 'mysql',
+                    DB::isMysql(),
                     fn (Builder $query) => $query->useIndex('primary'),
                 )
                 ->whereColumn('id', 'structureelements.structureId')

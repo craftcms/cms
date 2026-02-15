@@ -62,6 +62,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utilities\Updates;
+use CraftCms\Cms\View\TemplateMode;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -147,7 +148,7 @@ class Cp
      */
     public static function renderTemplate(string $template, array $variables = []): string
     {
-        return Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP);
+        return Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value);
     }
 
     /**
@@ -1606,7 +1607,7 @@ JS, [
                 $sortOptionsKey => $sortOptions,
                 'tableColumns' => $tableColumns,
                 'defaultTableColumns' => $config['defaultTableColumns'],
-            ], View::TEMPLATE_MODE_CP)) .
+            ], TemplateMode::Cp->value)) .
             Html::endTag('div') .
             Html::beginTag('div', ['class' => 'main']) .
             Html::beginTag('div', ['class' => ['toolbar', 'flex']]) .
@@ -1618,7 +1619,7 @@ JS, [
                 'showSiteMenu' => $config['showSiteMenu'],
                 'siteIds' => $siteIds,
                 'canHaveDrafts' => $elementType::hasDrafts(),
-            ], View::TEMPLATE_MODE_CP) .
+            ], TemplateMode::Cp->value) .
             Html::endTag('div') . // .toolbar
             Html::tag('div', options: ['class' => 'elements']) .
             Html::endTag('div'); // .main
@@ -1627,7 +1628,7 @@ JS, [
             $html .= Html::beginTag('div', [
                 'class' => ['footer', 'flex', 'flex-justify'],
             ]) .
-                $view->renderTemplate('_elements/footer', templateMode: View::TEMPLATE_MODE_CP) .
+                $view->renderTemplate('_elements/footer', templateMode: TemplateMode::Cp->value) .
                 Html::endTag('div'); // .footer
         }
 
@@ -3603,7 +3604,7 @@ JS, [
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/disclosuremenu.twig', $config, View::TEMPLATE_MODE_CP);
+        return Craft::$app->getView()->renderTemplate('_includes/disclosuremenu.twig', $config, TemplateMode::Cp->value);
     }
 
     /**
@@ -3641,7 +3642,7 @@ JS, [
         return Craft::$app->getView()->renderTemplate('_includes/menuitem.twig', [
             'item' => $config,
             'menuId' => $menuId,
-        ], View::TEMPLATE_MODE_CP);
+        ], TemplateMode::Cp->value);
     }
 
     /**

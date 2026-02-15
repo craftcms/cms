@@ -2,53 +2,18 @@
 
 namespace craft\elements\conditions\addresses;
 
-use craft\base\conditions\BaseTextConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AddressQuery;
-use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use function CraftCms\Cms\t;
-
-/**
- * Address address line 1 condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- */
-class AddressLine1ConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Address address line 1 condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Conditions\AddressLine1ConditionRule} instead.
      */
-    public function getLabel(): string
+    class AddressLine1ConditionRule
     {
-        return t('Address Line 1');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['addressLine1'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AddressQuery $query */
-        $query->addressLine1($this->paramValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var Address $element */
-        return $this->matchValue($element->addressLine1);
     }
 }
+
+class_alias(\CraftCms\Cms\Address\Conditions\AddressLine1ConditionRule::class, AddressLine1ConditionRule::class);

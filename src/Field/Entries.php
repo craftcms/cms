@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementCondition;
 use craft\elements\db\EntryQuery;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
@@ -15,6 +14,7 @@ use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -43,63 +43,39 @@ final class Entries extends BaseRelationField
      */
     public bool $showUnpermittedEntries = false;
 
-    /**
-     * {@inheritdoc}
-     */
     protected string $settingsTemplate = '_components/fieldtypes/Entries/settings.twig';
 
-    /**
-     * {@inheritdoc}
-     */
     protected ?string $inputJsClass = 'Craft.EntrySelectInput';
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Entries');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'newspaper';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function elementType(): string
     {
         return Entry::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function defaultSelectionLabel(): string
     {
         return t('Add an entry');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct(array $config = [])
     {
         // Default showUnpermittedSections and showUnpermittedEntries to true for existing Entries fields
@@ -111,9 +87,6 @@ final class Entries extends BaseRelationField
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputTemplateVariables(array|ElementQueryInterface|null $value = null, ?ElementInterface $element = null): array
     {
@@ -132,18 +105,12 @@ final class Entries extends BaseRelationField
         return $variables;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryEntries($schema);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -159,9 +126,6 @@ final class Entries extends BaseRelationField
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
@@ -191,9 +155,6 @@ final class Entries extends BaseRelationField
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getInputSelectionCriteria(): array
     {
@@ -206,9 +167,6 @@ final class Entries extends BaseRelationField
         return $criteria;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function createSelectionCondition(): ElementCondition
     {
         $condition = Entry::createCondition();
@@ -217,9 +175,6 @@ final class Entries extends BaseRelationField
         return $condition;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
@@ -241,9 +196,6 @@ final class Entries extends BaseRelationField
         return Cp::chipHtml($mockup);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getInputSources(?ElementInterface $element = null): array|string|null
     {

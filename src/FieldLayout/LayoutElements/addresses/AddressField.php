@@ -21,44 +21,29 @@ use function CraftCms\Cms\t;
  */
 class AddressField extends BaseField
 {
-    /**
-     * {@inheritdoc}
-     */
     public function attribute(): string
     {
         return 'address';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function mandatory(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasCustomWidth(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewable(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewHtml(ElementInterface $element): string
     {
@@ -68,36 +53,24 @@ class AddressField extends BaseField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function showLabel(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         // we need it for the card view designer
         return t('Address');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function selectorLabel(): ?string
     {
         return t('Address');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
@@ -208,18 +181,12 @@ class AddressField extends BaseField
         return Cp::addressFieldsHtml($element, $static);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         // Not actually needed since we're overriding formHtml()
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {

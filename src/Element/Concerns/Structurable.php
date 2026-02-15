@@ -355,9 +355,6 @@ trait Structurable
             && $this->lft === $element->rgt + 1;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function beforeMoveInStructure(int $structureId): bool
     {
         // Fire a 'beforeMoveInStructure' event
@@ -366,9 +363,6 @@ trait Structurable
         return $event->isValid;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function afterMoveInStructure(int $structureId): void
     {
         // Fire an 'afterMoveInStructure' event

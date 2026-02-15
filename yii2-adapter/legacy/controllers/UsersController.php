@@ -15,7 +15,6 @@ use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
 use craft\web\Controller;
-use craft\web\View;
 use CraftCms\Cms\Auth\Events\LoginUserRetrieved;
 use CraftCms\Cms\Auth\Events\RetrievingLoginUser;
 use CraftCms\Cms\User\Elements\User;
@@ -23,6 +22,7 @@ use CraftCms\Cms\User\Events\AssigningGroupsAndPermissions;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
 use CraftCms\Cms\User\Events\DefineUserContentSummary;
 use CraftCms\Cms\User\Events\GroupsAndPermissionsAssigned;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
@@ -140,7 +140,7 @@ class UsersController extends Controller
         $this->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
 
         $this->response->setNoCacheHeaders();
-        return $this->renderTemplate('_special/setup-2fa.twig', templateMode: View::TEMPLATE_MODE_CP);
+        return $this->renderTemplate('_special/setup-2fa.twig', templateMode: TemplateMode::Cp->value);
     }
 
     public static function registerEvents(): void

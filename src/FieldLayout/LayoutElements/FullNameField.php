@@ -16,19 +16,10 @@ use function CraftCms\Cms\t;
 
 class FullNameField extends TextField
 {
-    /**
-     * {@inheritdoc}
-     */
     public string $attribute = 'fullName';
 
-    /**
-     * {@inheritdoc}
-     */
     public bool $requirable = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         parent::__construct(Arr::except($config, [
@@ -39,9 +30,6 @@ class FullNameField extends TextField
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -53,9 +41,6 @@ class FullNameField extends TextField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
@@ -121,9 +106,6 @@ class FullNameField extends TextField
             HtmlHelper::endTag('div');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function settingsHtml(): ?string
     {
@@ -135,9 +117,6 @@ class FullNameField extends TextField
         return parent::settingsHtml();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Full Name');

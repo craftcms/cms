@@ -1,5 +1,31 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- The `no` locale is now treated as a fallback for `nb` on environments where `nb` isn’t supported. ([#18431](https://github.com/craftcms/cms/pull/18431))
+- Element indexes now show “Paste” buttons alongside bulk element action buttons. ([#18427](https://github.com/craftcms/cms/issues/18427))
+- Impoved the performance of `craft\helpers\Typecast`. ([#18426](https://github.com/craftcms/cms/pull/18426))
+- Fixed a bug where some Matrix bulk action labels weren’t getting translated.
+- Fixed a bug where global nav items weren’t showing an icon if the icon was set to `0`.
+
+## 5.9.10 - 2026-02-12
+
+- `slug` columns referenced in element queries’ `select`, `where`, or `orderBy` expressions now explicitly resolve to `elements_sites.slug`. ([#18416](https://github.com/craftcms/cms/issues/18416))
+- Fixed a bug where the control panel requests could trigger an infinite browser redirect loop. ([#18420](https://github.com/craftcms/cms/issues/18420))
+- Fixed a bug where `craft\helpers\App::parseBooleanEnv()` wasn’t handling `false` values properly. ([#18418](https://github.com/craftcms/cms/issues/18418))
+- Fixed a bug where `DECIMAL` field values with `0` precision weren’t gettnig typecasted properly in element queries.
+
+## 5.9.9 - 2026-02-11
+
+> [!WARNING]  
+> Relational condition rules’ element ID templates are now rendered in a sandboxed Twig environment, when `enableTwigSandbox` is enabled.
+
+- Added `craft\helpers\ElementHelper::cleanseQueryCriteria()`.
+- Fixed an error that could occur when editing an element with a Table field. ([#18408](https://github.com/craftcms/cms/pull/18408))
+- Fixed an error that occurred when editing a Table field with no default rows. ([#18407](https://github.com/craftcms/cms/issues/18407))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-fp5j-j7j4-mcxc)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-g7j6-fmwx-7vp8)
+
 ## 5.9.8 - 2026-02-10
 
 - Element edit pages no longer redirect to their referral URL on save. ([#18404](https://github.com/craftcms/cms/issues/18404))

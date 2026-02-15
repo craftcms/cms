@@ -23,17 +23,11 @@ trait HasSources
      */
     private static array $sources = [];
 
-    /**
-     * {@inheritdoc}
-     */
     public static function multiPageSources(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function sources(string $context): array
     {
         if (! isset(self::$sources[static::class][$context])) {
@@ -60,33 +54,21 @@ trait HasSources
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function findSource(string $sourceKey, ?string $context): ?array
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function sourcePath(string $sourceKey, string $stepKey, ?string $context): ?array
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function modifyCustomSource(array $config): array
     {
         return $config;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function fieldLayouts(?string $source): array
     {
         $fieldLayouts = static::defineFieldLayouts($source);

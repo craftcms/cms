@@ -20,27 +20,18 @@ final class Feed extends Widget
 
     public int $limit = 5;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Feed');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'rss';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getRules(): array
     {
@@ -51,9 +42,6 @@ final class Feed extends Widget
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSettingsHtml(): string
     {
@@ -63,18 +51,12 @@ final class Feed extends Widget
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitle(): ?string
     {
         return $this->title;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getBodyHtml(): string
     {

@@ -8,11 +8,10 @@ use BackedEnum;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use craft\helpers\DateTimeHelper;
-use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
 use DateTimeInterface;
 use InvalidArgumentException;
-use ReflectionException;
+use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionUnionType;
@@ -133,7 +132,7 @@ final class Typecast
                 }
                 if (is_string($value)) {
                     try {
-                        $decoded = JsonHelper::decode($value) ?? [];
+                        $decoded = Json::decode($value) ?? [];
                         if (is_array($decoded)) {
                             $value = $decoded;
                         }
@@ -184,43 +183,54 @@ final class Typecast
 
     private static function propertyType(string $class, string $property): array|false
     {
-        if (! isset(self::$types[$class][$property])) {
-            self::$types[$class][$property] = self::_propertyType($class, $property);
+        if (! isset(self::$types[$class])) {
+            self::resolveClassTypes($class);
         }
 
-        return self::$types[$class][$property];
+        return self::$types[$class][$property] ?? false;
     }
 
-    private static function _propertyType(string $class, string $property): array|false
+    private static function resolveClassTypes(string $class): void
     {
-        try {
-            $ref = new ReflectionProperty($class, $property);
-        } catch (ReflectionException) {
-            // The property doesn’t exist
-            return false;
-        }
+        self::$types[$class] = [];
 
-        if (! $ref->isPublic() || $ref->isStatic()) {
-            return false;
-        }
+        $properties = new ReflectionClass($class)->getProperties(ReflectionProperty::IS_PUBLIC);
 
-        $type = $ref->getType();
-
-        if ($type instanceof ReflectionNamedType) {
-            return [$type->getName(), $type->allowsNull()];
-        }
-
-        if ($type instanceof ReflectionUnionType) {
-            $names = array_map(fn (ReflectionNamedType $type) => $type->getName(), $type->getTypes());
-            sort($names);
-            // Special case for int|float
-            if ($names === [self::TYPE_FLOAT, self::TYPE_INT] || $names === [self::TYPE_FLOAT, self::TYPE_INT, self::TYPE_NULL]) {
-                return [self::TYPE_INT_FLOAT, in_array(self::TYPE_NULL, $names)];
+        foreach ($properties as $ref) {
+            if ($ref->isStatic()) {
+                continue;
             }
-            // Special case for int|string
-            if ($names === [self::TYPE_INT, self::TYPE_STRING] || $names === [self::TYPE_INT, self::TYPE_NULL, self::TYPE_STRING]) {
-                return [self::TYPE_INT_STRING, in_array(self::TYPE_NULL, $names)];
+
+            $type = $ref->getType();
+
+            if ($type instanceof ReflectionNamedType) {
+                self::$types[$class][$ref->getName()] = [$type->getName(), $type->allowsNull()];
+            } elseif ($type instanceof ReflectionUnionType) {
+                $resolved = self::resolveUnionType($type);
+
+                if ($resolved !== false) {
+                    self::$types[$class][$ref->getName()] = $resolved;
+                }
             }
+        }
+    }
+
+    private static function resolveUnionType(ReflectionUnionType $type): array|false
+    {
+        $names = array_map(fn (ReflectionNamedType $t) => $t->getName(), $type->getTypes());
+
+        sort($names);
+
+        $allowsNull = in_array(self::TYPE_NULL, $names);
+
+        // Special case for int|float
+        if ($names === [self::TYPE_FLOAT, self::TYPE_INT] || $names === [self::TYPE_FLOAT, self::TYPE_INT, self::TYPE_NULL]) {
+            return [self::TYPE_INT_FLOAT, $allowsNull];
+        }
+
+        // Special case for int|string
+        if ($names === [self::TYPE_INT, self::TYPE_STRING] || $names === [self::TYPE_INT, self::TYPE_NULL, self::TYPE_STRING]) {
+            return [self::TYPE_INT_STRING, $allowsNull];
         }
 
         return false;

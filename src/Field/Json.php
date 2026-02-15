@@ -24,45 +24,30 @@ use function CraftCms\Cms\t;
  */
 final class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return 'JSON';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'brackets-curly';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return 'array|null';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): string
     {
         return Schema::TYPE_JSON;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): ?JsonData
     {
@@ -77,9 +62,6 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
         return new JsonData($value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): ?JsonData
     {
@@ -99,18 +81,12 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
         return new JsonData($value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
@@ -165,9 +141,6 @@ JS, [
             Html::endTag('div');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -186,9 +159,6 @@ JS, [
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
@@ -200,9 +170,6 @@ JS, [
         return Html::tag('code', $value->getJson());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {

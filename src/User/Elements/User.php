@@ -10,7 +10,6 @@ use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\NestedElementManager;
@@ -27,6 +26,7 @@ use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -176,9 +176,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAuthIdentifierName(): string
     {
         return 'id';
@@ -189,80 +186,53 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('User');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function lowerDisplayName(): string
     {
         return t('user');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function pluralDisplayName(): string
     {
         return t('Users');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function pluralLowerDisplayName(): string
     {
         return t('users');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function refHandle(): string
     {
         return 'user';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function trackChanges(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function hasThumbs(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function hasStatuses(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function statuses(): array
     {
@@ -288,9 +258,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function find(): UserQuery
     {
@@ -298,8 +265,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return UserCondition
      */
     #[Override]
@@ -308,9 +273,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return Craft::createObject(UserCondition::class, [self::class]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSources(string $context): array
     {
@@ -385,9 +347,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $sources;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -412,18 +371,12 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $actions;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSearchableAttributes(): array
     {
         return ['username', 'fullName', 'firstName', 'lastName', 'email'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSortOptions(): array
     {
@@ -475,9 +428,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineTableAttributes(): array
     {
@@ -497,9 +447,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineDefaultTableAttributes(string $source): array
     {
@@ -512,9 +459,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
@@ -526,9 +470,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineCardAttributes(): array
     {
@@ -592,9 +533,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -811,25 +749,16 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      */
     private bool $sendVerificationEmailAfterRequest = false;
 
-    /**
-     * {@inheritdoc}
-     */
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function hasVerifiedEmail(): bool
     {
         return is_null($this->unverifiedEmail);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function markEmailAsVerified(): bool
     {
         try {
@@ -841,9 +770,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function sendEmailVerificationNotification(): void
     {
         /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
@@ -852,17 +778,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         $this->notify(new VerifyEmailNotification($broker->createToken($this)));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getEmailForVerification(): string
     {
         return $this->unverifiedEmail ?? $this->email;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function init(): void
     {
@@ -910,9 +830,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return parent::__toString();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getPostEditUrl(): ?string
     {
         if (
@@ -925,9 +842,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return 'users';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function crumbs(): array
     {
@@ -943,17 +857,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function uiLabel(): ?string
     {
         return $this->getName() ?: $this->email;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function attributes(): array
     {
@@ -970,9 +878,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $names;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function extraFields(): array
     {
@@ -984,9 +889,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $names;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function attributeLabels(): array
     {
@@ -1004,18 +906,12 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $labels;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function safeAttributes(): array
     {
         return Arr::except(parent::safeAttributes(), ['photoId']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function setAttributesFromRequest($values): void
     {
@@ -1055,9 +951,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         parent::setAttributesFromRequest($values);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function setAttributes($values, $safeOnly = true): void
     {
@@ -1114,9 +1007,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return Craft::$app->getSso()->identityExists($this->id);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getFieldLayout(): ?FieldLayout
     {
@@ -1169,9 +1059,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return $this->_addressManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterRestore(): void
     {
@@ -1355,9 +1242,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return Sites::getSiteById($this->affiliatedSiteId, true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getStatus(): ?string
     {
@@ -1386,9 +1270,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return self::STATUS_INACTIVE;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function thumbUrl(int $size): ?string
     {
         $photo = $this->getPhoto();
@@ -1400,9 +1281,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function thumbSvg(): ?string
     {
         if (! $this->uid) {
@@ -1441,26 +1319,17 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 XML;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function thumbAlt(): string
     {
         return $this->getPhoto()->alt ?? $this->getName();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function hasRoundedThumb(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function createAnother(): ElementInterface
     {
         return new self;
@@ -1568,9 +1437,6 @@ XML;
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function cpEditUrl(): ?string
     {
         if (Craft::$app->getRequest()->getIsCpRequest() && $this->getIsCurrent()) {
@@ -1584,9 +1450,6 @@ XML;
         return UrlHelper::cpUrl("users/$this->id");
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function safeActionMenuItems(): array
     {
@@ -1783,9 +1646,6 @@ JS, [
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function destructiveActionMenuItems(): array
     {
@@ -1985,9 +1845,6 @@ JS, [
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
@@ -2029,9 +1886,6 @@ JS, [
     // Indexes, etc.
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function attributeHtml(string $attribute): string|Stringable
     {
@@ -2089,9 +1943,6 @@ JS, [
         return parent::attributeHtml($attribute);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function htmlAttributes(string $context): array
     {
@@ -2105,18 +1956,12 @@ JS, [
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function statusFieldHtml(): string
     {
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function metadata(): array
     {
@@ -2164,8 +2009,6 @@ JS, [
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @since 3.3.0
      */
     #[Override]
@@ -2177,9 +2020,6 @@ JS, [
     // Events
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     final public function beforeSave(bool $isNew): bool
     {
@@ -2198,8 +2038,6 @@ JS, [
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InvalidConfigException
      * @throws Exception
      */
@@ -2312,9 +2150,6 @@ JS, [
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeDelete(): bool
     {

@@ -214,15 +214,11 @@ final readonly class Addresses implements FieldLayoutProviderInterface
         };
     }
 
-    /** {@inheritdoc} */
     public function getHandle(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldLayout(): FieldLayout
     {
         $fieldLayout = $this->fields->getLayoutByType(Address::class);

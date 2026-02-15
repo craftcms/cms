@@ -17,18 +17,12 @@ use function CraftCms\Cms\t;
  */
 class HorizontalRule extends FieldLayoutElement
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isMultiInstance(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function selectorHtml(): string
     {
         $label = t('Horizontal Rule');
@@ -50,9 +44,6 @@ class HorizontalRule extends FieldLayoutElement
 HTML;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Html::tag('hr');

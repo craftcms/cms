@@ -17,8 +17,6 @@ class Html extends FieldLayoutElement
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws NotSupportedException
      */
     public function selectorHtml(): string
@@ -26,9 +24,6 @@ class Html extends FieldLayoutElement
         throw new NotSupportedException(sprintf('%s should not be included in user-modifyable field layouts.', self::class));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return HtmlHelper::tag('div', $this->html);

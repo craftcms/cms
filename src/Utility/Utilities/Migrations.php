@@ -16,36 +16,24 @@ use function CraftCms\Cms\t;
  */
 final class Migrations extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
         return t('Migrations');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function id(): string
     {
         return 'migrations';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'up';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function badgeCount(): int
     {
@@ -54,9 +42,6 @@ final class Migrations extends Utility
             ->getPendingMigrations());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function contentHtml(): string
     {

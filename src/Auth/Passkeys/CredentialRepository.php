@@ -16,9 +16,6 @@ use function CraftCms\Cms\t;
 
 final class CredentialRepository implements PublicKeyCredentialSourceRepository
 {
-    /**
-     * {@inheritdoc}
-     */
     public function findOneByCredentialId(string $publicKeyCredentialId): ?PublicKeyCredentialSource
     {
         $model = $this->findByCredentialId($publicKeyCredentialId);
@@ -30,9 +27,6 @@ final class CredentialRepository implements PublicKeyCredentialSourceRepository
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function findAllForUserEntity(PublicKeyCredentialUserEntity $publicKeyCredentialUserEntity): array
     {
         // Get the user ID by their UID.
@@ -69,9 +63,6 @@ final class CredentialRepository implements PublicKeyCredentialSourceRepository
         $model->save();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function saveCredentialSource(PublicKeyCredentialSource $publicKeyCredentialSource): void
     {
         $this->savedNamedCredentialSource($publicKeyCredentialSource);

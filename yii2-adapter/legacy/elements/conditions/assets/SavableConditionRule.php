@@ -2,53 +2,18 @@
 
 namespace craft\elements\conditions\assets;
 
-use Craft;
-use craft\base\conditions\BaseLightswitchConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AssetQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use function CraftCms\Cms\t;
-
-/**
- * Asset savable condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.4.0
- */
-class SavableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Asset savable condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Conditions\SavableConditionRule} instead.
      */
-    public function getLabel(): string
+    class SavableConditionRule
     {
-        return t('Savable');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['savable'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AssetQuery $query */
-        $query->savable($this->value);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        $savable = Craft::$app->getElements()->canSave($element);
-        return $savable === $this->value;
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\Conditions\SavableConditionRule::class, SavableConditionRule::class);

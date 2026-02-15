@@ -11,6 +11,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -20,6 +21,8 @@ beforeEach(function () {
     loadTestPlugin();
 
     $this->plugins = app(Plugins::class);
+
+    TemplateMode::set(TemplateMode::Cp);
 });
 
 afterEach(function () {

@@ -2,53 +2,18 @@
 
 namespace craft\elements\conditions\entries;
 
-use craft\base\conditions\BaseDateRangeConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\EntryQuery;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Entry\Elements\Entry;
-use function CraftCms\Cms\t;
-
-/**
- * Element expiry date condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Element expiry date condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Conditions\ExpiryDateConditionRule} instead.
      */
-    public function getLabel(): string
+    class ExpiryDateConditionRule
     {
-        return t('Expiry Date');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['expiryDate'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var EntryQuery $query */
-        $query->expiryDate($this->queryParamValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var Entry $element */
-        return $this->matchValue($element->expiryDate);
     }
 }
+
+class_alias(\CraftCms\Cms\Entry\Conditions\ExpiryDateConditionRule::class, ExpiryDateConditionRule::class);

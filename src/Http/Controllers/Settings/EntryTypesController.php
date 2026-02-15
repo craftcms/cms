@@ -257,7 +257,7 @@ final class EntryTypesController
         $entryType->titleTranslationKeyFormat = $request->input('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
         $entryType->titleFormat = $request->input('titleFormat', $entryType->titleFormat);
         $entryType->allowLineBreaksInTitles = $request->boolean('allowLineBreaksInTitles', $entryType->allowLineBreaksInTitles);
-        $entryType->showSlugField = $request->input('showSlugField', $entryType->showSlugField);
+        $entryType->showSlugField = $request->boolean('showSlugField', $entryType->showSlugField);
         $entryType->slugTranslationMethod = $request->enum('slugTranslationMethod', TranslationMethod::class, $entryType->slugTranslationMethod);
         $entryType->slugTranslationKeyFormat = $request->input('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);
         $entryType->showStatusField = $request->boolean('showStatusField', $entryType->showStatusField);

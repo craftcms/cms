@@ -27,9 +27,16 @@ final class I18N
     /**
      * @var Collection<string> All of the known locales
      *
-     * @see getAllLocales()
+     * @see getAllLocaleIds()
      */
     private ?Collection $allLocaleIds = null;
+
+    /**
+     * @var array[]
+     *
+     * @see getAllLocaleIds()
+     */
+    private array $localeAliases;
 
     /**
      * @var Collection<string, bool>
@@ -96,9 +103,12 @@ final class I18N
      */
     public function getLocaleById(string $localeId): Locale
     {
+        // make sure we've defined $this->_localeAliases
+        $this->getAllLocaleIds();
+
         return new Locale(...array_merge([
             'id' => $localeId,
-        ], $this->generalConfig->localeAliases[$localeId] ?? []));
+        ], $this->localeAliases[$localeId] ?? []));
     }
 
     /**
@@ -110,15 +120,34 @@ final class I18N
      */
     public function getAllLocaleIds(): Collection
     {
-        return $this->allLocaleIds ??= collect(ResourceBundle::getLocales(''))
-            ->map(fn (string $locale) => str_replace('_', '-', $locale))
-            ->unless(
-                empty($this->generalConfig->localeAliases),
-                fn (Collection $localeIds) => $localeIds
-                    ->merge(array_keys($this->generalConfig->localeAliases))
-                    ->unique()
-                    ->sort(),
-            );
+        if (isset($this->allLocaleIds)) {
+            return $this->allLocaleIds;
+        }
+
+        $allLocaleIds = ResourceBundle::getLocales('');
+        $this->localeAliases = $this->generalConfig->localeAliases;
+
+        // Hyphens, not underscores
+        foreach ($allLocaleIds as $i => $locale) {
+            $allLocaleIds[$i] = str_replace('_', '-', $locale);
+        }
+
+        $allLocaleIds = array_flip($allLocaleIds);
+
+        // `nb` wasn’t added until ICU 69
+        if (! isset($allLocaleIds['nb']) && isset($allLocaleIds['no'])) {
+            $this->localeAliases['nb'] ??= [
+                'aliasOf' => 'no',
+                'displayName' => 'Norwegian',
+            ];
+        }
+
+        if (! empty($this->localeAliases)) {
+            $allLocaleIds = array_merge($allLocaleIds, array_flip(array_keys($this->localeAliases)));
+            ksort($allLocaleIds);
+        }
+
+        return $this->allLocaleIds = collect(array_keys($allLocaleIds));
     }
 
     /**
@@ -132,7 +161,7 @@ final class I18N
     {
         return $this->getAllLocaleIds()->map(fn (string $localeId) => new Locale(...array_merge([
             'id' => $localeId,
-        ], $this->generalConfig->localeAliases[$localeId] ?? [])));
+        ], $this->localeAliases[$localeId] ?? [])));
     }
 
     /**
@@ -158,9 +187,12 @@ final class I18N
      */
     public function getAppLocales(): Collection
     {
+        // make sure we've defined $this->_localeAliases
+        $this->getAllLocaleIds();
+
         return $this->appLocales ??= $this->getAppLocaleIds()->map(fn (string $localeId) => new Locale(...array_merge([
             'id' => $localeId,
-        ], $this->generalConfig->localeAliases[$localeId] ?? [])));
+        ], $this->localeAliases[$localeId] ?? [])));
     }
 
     /**
@@ -239,9 +271,12 @@ final class I18N
      */
     public function getSiteLocales(): Collection
     {
+        // make sure we've defined $this->_localeAliases
+        $this->getAllLocaleIds();
+
         return $this->getSiteLocaleIds()->map(fn (string $localeId) => new Locale(...array_merge([
             'id' => $localeId,
-        ], $this->generalConfig->localeAliases[$localeId] ?? [])));
+        ], $this->localeAliases[$localeId] ?? [])));
     }
 
     /**

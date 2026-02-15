@@ -9,6 +9,7 @@ namespace craft\validators;
 
 use Craft;
 use craft\web\View;
+use CraftCms\Cms\View\TemplateMode;
 use yii\validators\Validator;
 use function CraftCms\Cms\t;
 
@@ -24,7 +25,7 @@ class TemplateValidator extends Validator
      * @var string The template mode to use when looking for the template
      * @phpstan-var View::TEMPLATE_MODE_SITE|View::TEMPLATE_MODE_CP
      */
-    public string $templateMode = View::TEMPLATE_MODE_SITE;
+    public string $templateMode = TemplateMode::Site->value;
 
     /**
      * @inheritdoc

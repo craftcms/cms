@@ -18,27 +18,18 @@ final class MissingField extends Field implements MissingComponentInterface
 {
     use MissingComponentTrait;
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'question';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function dbType(): array|string|null
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {

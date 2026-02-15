@@ -2,62 +2,18 @@
 
 namespace craft\elements\conditions\users;
 
-use craft\base\conditions\BaseLightswitchConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\UserQuery;
-use CraftCms\Cms\Edition;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\User\Elements\User;
-use function CraftCms\Cms\t;
-
-/**
- * Admin condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class AdminConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Admin condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Conditions\AdminConditionRule} instead.
      */
-    public function getLabel(): string
+    class AdminConditionRule
     {
-        return t('Admin');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function isSelectable(): bool
-    {
-        return Edition::get()->value >= Edition::Pro->value;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['admin'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var UserQuery $query */
-        $query->admin($this->value);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var User $element */
-        return $this->matchValue($element->admin);
     }
 }
+
+class_alias(\CraftCms\Cms\User\Conditions\AdminConditionRule::class, AdminConditionRule::class);

@@ -784,8 +784,8 @@
       "_nav-item.ts.js",
       "_custom-element.js",
       "_preload-helper.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_CpQueueIndicator.js"
+      "_CpQueueIndicator.js",
+      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs"
     ],
     "dynamicImports": [
       "node_modules/@lion/ui/components/form-core/translations/bg-BG.js",
@@ -1057,8 +1057,8 @@
       "_custom-element.js",
       "_nav-item.ts.js",
       "_preload-helper.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
       "_CpQueueIndicator.js",
+      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
       "_AppLayout.js"
     ]
   }

@@ -25,25 +25,16 @@ class Markdown extends BaseUiElement
      */
     public bool $displayInPane = true;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectorLabel(): string
     {
         return Str::firstLine($this->content) ?: 'Markdown';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectorIcon(): ?string
     {
         return 'markdown';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function selectorLabelAttributes(): array
     {
@@ -56,27 +47,18 @@ class Markdown extends BaseUiElement
         return $attr;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasCustomWidth(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasSettings(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function settingsHtml(): ?string
     {
         return
@@ -95,9 +77,6 @@ class Markdown extends BaseUiElement
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $content = Html::tag('div', MarkdownHelper::process(Html::encode($this->content)), [

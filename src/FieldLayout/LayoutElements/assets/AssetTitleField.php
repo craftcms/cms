@@ -14,9 +14,6 @@ use Override;
 
 class AssetTitleField extends TitleField
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
@@ -27,9 +24,6 @@ class AssetTitleField extends TitleField
         return $element->getVolume()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (! $element instanceof Asset) {

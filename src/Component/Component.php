@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component;
 
+use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Support\Typecast;
@@ -13,7 +14,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Yiisoft\Arrays\ArrayableInterface;
 use Yiisoft\Arrays\ArrayableTrait;
 
-abstract class Component implements Arrayable, ArrayableInterface, Validatable
+abstract class Component implements Arrayable, ArrayableInterface, ComponentInterface, Validatable
 {
     use ArrayableTrait;
     use Validates;
@@ -43,6 +44,23 @@ abstract class Component implements Arrayable, ArrayableInterface, Validatable
         }
 
         return $component;
+    }
+
+    /**
+     * Returns the display name of this class.
+     *
+     * @return string The display name of this class.
+     */
+    public static function displayName(): string
+    {
+        $classNameParts = explode('\\', static::class);
+
+        return array_pop($classNameParts);
+    }
+
+    public static function isSelectable(): bool
+    {
+        return true;
     }
 
     public function __get(string $name)

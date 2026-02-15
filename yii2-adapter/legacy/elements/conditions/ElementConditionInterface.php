@@ -1,57 +1,24 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\conditions;
 
-use craft\base\conditions\ConditionInterface;
-use craft\base\ElementInterface;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-
-/**
- * ElementConditionInterface defines the common interface to be implemented by element conditions.
- *
- * A base implementation is provided by [[ElementCondition]].
- *
- * @mixin ElementCondition
- * @phpstan-require-extends ElementCondition
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-interface ElementConditionInterface extends ConditionInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Returns the possible field layouts that the condition could be working with.
+     * ElementConditionInterface defines the common interface to be implemented by element conditions.
      *
-     * @return \CraftCms\Cms\FieldLayout\FieldLayout[]
-     * @since 5.0.0
+     * A base implementation is provided by [[ElementCondition]].
+     *
+     * @mixin ElementCondition
+     * @phpstan-require-extends ElementCondition
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface} instead.
      */
-    public function getFieldLayouts(): array;
-
-    /**
-     * Sets the possible field layouts that the condition could be working with.
-     *
-     * @param array<\CraftCms\Cms\FieldLayout\FieldLayout|array> $fieldLayouts
-     *
-     * @since 5.1.0
-     */
-    public function setFieldLayouts(array $fieldLayouts): void;
-
-    /**
-     * Modifies a given query based on the configured condition rules.
-     *
-     * @param ElementQueryInterface $query
-     */
-    public function modifyQuery(ElementQueryInterface $query): void;
-
-    /**
-     * Returns whether the given element matches the condition.
-     *
-     * @param ElementInterface $element
-     * @return bool
-     */
-    public function matchElement(ElementInterface $element): bool;
+    interface ElementConditionInterface
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface::class, ElementConditionInterface::class);

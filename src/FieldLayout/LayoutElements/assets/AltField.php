@@ -18,19 +18,10 @@ use function CraftCms\Cms\t;
 
 class AltField extends TextareaField
 {
-    /**
-     * {@inheritdoc}
-     */
     public string $attribute = 'alt';
 
-    /**
-     * {@inheritdoc}
-     */
     public bool $requirable = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         parent::__construct(Arr::except($config, [
@@ -43,9 +34,6 @@ class AltField extends TextareaField
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -57,18 +45,12 @@ class AltField extends TextareaField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewable(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewHtml(ElementInterface $element): string
     {
@@ -79,9 +61,6 @@ class AltField extends TextareaField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
     {
@@ -90,17 +69,11 @@ class AltField extends TextareaField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Alternative Text');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
@@ -111,9 +84,6 @@ class AltField extends TextareaField
         return $element->getVolume()->altTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (! $element instanceof Asset) {
@@ -123,9 +93,6 @@ class AltField extends TextareaField
         return ElementHelper::translationDescription($element->getVolume()->altTranslationMethod);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isCrossSiteCopyable(ElementInterface $element): bool
     {

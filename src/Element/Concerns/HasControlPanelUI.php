@@ -64,9 +64,6 @@ trait HasControlPanelUI
      */
     public function prepareEditScreen(Response|CpScreenResponse $response, string $containerId): void {}
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAdditionalButtons(): string|Stringable
     {
         event($event = new DefineAdditionalButtons($this));
@@ -74,9 +71,6 @@ trait HasControlPanelUI
         return $event->html;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAltActions(): array
     {
         $isUnpublishedDraft = $this->getIsUnpublishedDraft();
@@ -140,9 +134,6 @@ trait HasControlPanelUI
         return $event->altActions;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getActionMenuItems(): array
     {
         $items = [
@@ -416,9 +407,6 @@ JS, [
         return $items;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getHtmlAttributes(string $context): array
     {
         $htmlAttributes = Arr::merge($this->htmlAttributes($context), [
@@ -444,9 +432,6 @@ JS, [
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAttributeHtml(string $attribute): string|Stringable
     {
         event($event = new DefineAttributeHtml($this, $attribute));
@@ -454,9 +439,6 @@ JS, [
         return $event->html ?? $this->attributeHtml($attribute);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getInlineAttributeInputHtml(string $attribute): string|Stringable
     {
         event($event = new DefineInlineAttributeInputHtml($this, $attribute));
@@ -513,9 +495,6 @@ JS, [
         return app(ElementAttributeRenderer::class)->renderInlineInput($this, $attribute);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSidebarHtml(bool $static): string|Stringable
     {
         $components = [];
@@ -686,9 +665,6 @@ JS, [
         return $fieldLayout && ! empty($fieldLayout->getTabs());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getMetadata(): array
     {
         $metadata = $this->metadata();
@@ -760,8 +736,6 @@ JS, [
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @see crumbs()
      */
     public function getCrumbs(): array
@@ -797,33 +771,21 @@ JS, [
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUiLabel(): string
     {
         return $this->_uiLabel ?? $this->uiLabel() ?? (string) $this;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setUiLabel(?string $label): void
     {
         $this->_uiLabel = $label;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUiLabelPath(): array
     {
         return $this->_uiLabelPath;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setUiLabelPath(array $path): void
     {
         $this->_uiLabelPath = $path;
@@ -839,33 +801,21 @@ JS, [
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getChipLabelHtml(): string|Stringable
     {
         return Html::encode($this->getUiLabel());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function showStatusIndicator(): bool
     {
         return static::hasStatuses();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCardTitle(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCardBodyHtml(): ?string
     {
         $this->viewMode = 'cards';
@@ -881,9 +831,6 @@ JS, [
         return $html;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getRef(): ?string
     {
         return null;

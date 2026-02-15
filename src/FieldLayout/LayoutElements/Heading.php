@@ -21,34 +21,22 @@ class Heading extends BaseUiElement
      */
     public string $heading = '';
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectorLabel(): string
     {
         return $this->heading ?: t('Heading');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectorIcon(): ?string
     {
         return 'hashtag';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasSettings(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function settingsHtml(): ?string
     {
         return Cp::textFieldHtml([
@@ -59,9 +47,6 @@ class Heading extends BaseUiElement
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Html::tag('h2', Html::encode(t($this->heading, category: 'site')));

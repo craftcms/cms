@@ -39,49 +39,31 @@ final class UserGroup extends Component implements Actionable, Chippable, CpEdit
 
     public ?string $uid = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public static function get(int|string $id): ?self
     {
         return UserGroups::getGroupById($id);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUiLabel(): string
     {
         return t($this->name, category: 'site');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getHandle(): ?string
     {
         return $this->handle;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCpEditUrl(): ?string
     {
         if (! $this->id || ! Auth::user()?->isAdmin()) {
@@ -91,9 +73,6 @@ final class UserGroup extends Component implements Actionable, Chippable, CpEdit
         return "settings/users/groups/$this->id";
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getActionMenuItems(): array
     {
         $items = [];

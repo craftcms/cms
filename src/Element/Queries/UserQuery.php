@@ -31,9 +31,6 @@ final class UserQuery extends ElementQuery
 
     public const string STATUS_CREDENTIALED = 'credentialed';
 
-    /**
-     * {@inheritdoc}
-     */
     protected array $defaultOrderBy = [
         'users.username' => SORT_ASC,
         'users.active' => SORT_DESC,
@@ -138,9 +135,6 @@ final class UserQuery extends ElementQuery
         return parent::status($value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function statusCondition(string $status): Closure
     {
         return match ($status) {

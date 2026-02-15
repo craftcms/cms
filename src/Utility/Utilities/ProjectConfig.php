@@ -16,36 +16,24 @@ use function CraftCms\Cms\t;
  */
 final class ProjectConfig extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
         return t('Project Config');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function id(): string
     {
         return 'project-config';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'gear';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function contentHtml(): string
     {

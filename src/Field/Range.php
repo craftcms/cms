@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Cp;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
@@ -26,45 +26,30 @@ use function CraftCms\Cms\t;
  */
 final class Range extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Range');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'slider';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return 'int|null';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): string
     {
         return Query::TYPE_INTEGER;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
@@ -98,9 +83,6 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
      */
     public ?string $suffix = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         unset($config['numberInputSize']);
@@ -126,17 +108,11 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -150,18 +126,12 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): int|null|float
     {
@@ -199,9 +169,6 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -217,9 +184,6 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -230,17 +194,11 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): string
     {
         return NumberFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
@@ -257,9 +215,6 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         return $formatted;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
@@ -275,18 +230,12 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         return $this->getPreviewHtml($value, $element ?? new Entry);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): Type
     {
         return NumberType::getType();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {

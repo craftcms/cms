@@ -9,8 +9,8 @@ use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
-use craft\web\View;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\View\TemplateMode;
 use Override;
 use Throwable;
 
@@ -26,12 +26,10 @@ class Template extends BaseUiElement
             return self::$twig;
         }
 
-        $view = Craft::$app->getView();
-        $templateMode = $view->getTemplateMode();
-        $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
-        self::$twig = Craft::$app->getView()->createTwig();
-        self::$twig->addExtension(new CpExtension);
-        $view->setTemplateMode($templateMode);
+        TemplateMode::with(TemplateMode::Site, function () {
+            self::$twig = Craft::$app->getView()->createTwig();
+            self::$twig->addExtension(new CpExtension);
+        });
 
         return self::$twig;
     }
@@ -44,27 +42,18 @@ class Template extends BaseUiElement
     /**
      * @var string The template mode to use when loading the template.
      */
-    public string $templateMode = View::TEMPLATE_MODE_SITE;
+    public string $templateMode = TemplateMode::Site->value;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectorLabel(): string
     {
         return $this->template ?: t('Template');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function selectorIcon(): ?string
     {
         return 'file-code';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function selectorLabelAttributes(): array
     {
@@ -76,27 +65,18 @@ class Template extends BaseUiElement
         return $attr;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasCustomWidth(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasSettings(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function settingsHtml(): ?string
     {
         return Cp::autosuggestFieldHtml([
@@ -111,9 +91,6 @@ class Template extends BaseUiElement
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (! $this->template) {
@@ -121,8 +98,8 @@ class Template extends BaseUiElement
         }
 
         $view = Craft::$app->getView();
-        $templateMode = $view->getTemplateMode();
-        $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $templateMode = TemplateMode::get();
+        TemplateMode::set(TemplateMode::Site);
         $twig = $view->getTwig();
         $view->setTwig(self::twig());
 
@@ -135,7 +112,7 @@ class Template extends BaseUiElement
             return $this->_error($e->getMessage(), 'error');
         } finally {
             $view->setTwig($twig);
-            $view->setTemplateMode($templateMode);
+            TemplateMode::set($templateMode);
         }
 
         if ($content === '') {
@@ -145,9 +122,6 @@ class Template extends BaseUiElement
         return Html::tag('div', $content, $this->containerAttributes($element, $static));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function alwaysRefresh(): bool
     {

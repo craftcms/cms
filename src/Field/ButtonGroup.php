@@ -18,23 +18,14 @@ use function CraftCms\Cms\t;
  */
 final class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $optionIcons = true;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Button Group');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -46,9 +37,6 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
      */
     public bool $iconsOnly = false;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSettingsHtml(): string
     {
@@ -61,27 +49,18 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         return $this->_inputHtml($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {

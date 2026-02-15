@@ -210,17 +210,11 @@ JS, [
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function validateValue(string $value, ?string &$error = null): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function isValueEmpty(string $value): bool
     {
@@ -251,9 +245,6 @@ JS, [
             ->exists();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function normalizeValue(ElementInterface|int|string $value): string
     {

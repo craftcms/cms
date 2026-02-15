@@ -27,36 +27,24 @@ use function CraftCms\Cms\t;
  */
 final class SystemReport extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('System Report');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function id(): string
     {
         return 'system-report';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'list-check';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function contentHtml(): string
     {

@@ -147,7 +147,7 @@ class TestCase extends Orchestra
             return;
         }
 
-        $dotenv = Dotenv::createImmutable(__DIR__);
+        $dotenv = Dotenv::createMutable(__DIR__);
         $dotenv->load();
 
         $configKey = 'database.connections.'.env('DB_CONNECTION');
@@ -160,8 +160,8 @@ class TestCase extends Orchestra
                 'database' => env('DB_DATABASE'),
                 'username' => env('DB_USERNAME'),
                 'password' => env('DB_PASSWORD'),
-                'charset' => env('DB_CHARSET', $configKey === 'mysql' ? 'utf8mb4' : 'utf8'),
-                'collation' => env('DB_COLLATION', $configKey === 'mysql' ? 'utf8mb4_unicode_ci' : null),
+                'charset' => env('DB_CHARSET', in_array($configKey, ['mysql', 'mariadb']) ? 'utf8mb4' : 'utf8'),
+                'collation' => env('DB_COLLATION', in_array($configKey, ['mysql', 'mariadb']) ? 'utf8mb4_unicode_ci' : null),
                 'prefix' => env('DB_PREFIX'),
             ]),
         );

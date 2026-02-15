@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Localization;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -41,49 +41,34 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
 
     public const string FORMAT_NONE = 'none';
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Number');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'input-numeric';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return 'int|float|null';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): string
     {
-        if (DB::getDriverName() === 'mysql') {
+        if (DB::isMysql()) {
             return sprintf('%s(65,16)', Query::TYPE_DECIMAL);
         }
 
         return Query::TYPE_DECIMAL;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
@@ -144,9 +129,6 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
      */
     public ?string $previewCurrency = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // Config normalization
@@ -182,17 +164,11 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -206,9 +182,6 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
@@ -240,9 +213,6 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): int|null|float
     {
@@ -257,9 +227,6 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         return $this->decimals === 0 ? (int) $value : $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -320,9 +287,6 @@ JS;
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -333,9 +297,6 @@ JS;
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): array|string
     {
         if ($this->decimals) {
@@ -348,9 +309,6 @@ JS;
         return NumberFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function dbTypeForValueSql(): string
     {
@@ -365,9 +323,6 @@ JS;
         return Schema::TYPE_DECIMAL;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
@@ -392,9 +347,6 @@ JS;
         return $formatted;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
@@ -417,18 +369,12 @@ JS;
         return $this->getPreviewHtml($value, $element ?? new Entry);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): Type
     {
         return NumberType::getType();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {

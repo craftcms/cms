@@ -470,7 +470,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Returns the element condition rule class that should be used for this field.
      *
-     * The rule class must be an instance of [[\craft\fields\conditions\FieldConditionRuleInterface]].
+     * The rule class must be an instance of [[\CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface]].
      *
      * @phpstan-return string|array{class:string}|null
      */

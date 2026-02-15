@@ -46,9 +46,6 @@ abstract class BaseField extends FieldLayoutElement
      */
     public bool $required = false;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         if (Arr::pull($config, 'labelHidden')) {
@@ -169,9 +166,6 @@ abstract class BaseField extends FieldLayoutElement
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function selectorHtml(): string
     {
         return Html::tag('div', $this->selectorInnerHtml(), $this->selectorAttributes());
@@ -312,27 +306,18 @@ abstract class BaseField extends FieldLayoutElement
         return $indicators;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasCustomWidth(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function hasSettings(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function settingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings.twig', [
@@ -343,9 +328,6 @@ abstract class BaseField extends FieldLayoutElement
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $inputHtml = $this->inputHtml($element, $static);
@@ -552,9 +534,6 @@ abstract class BaseField extends FieldLayoutElement
         return $ids ? implode(' ', $ids) : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {

@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\Cp;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -25,36 +25,24 @@ use function CraftCms\Cms\t;
  */
 final class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Email');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'at';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return 'string|null';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): string
     {
@@ -66,9 +54,6 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
      */
     public ?string $placeholder = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         if (($config['placeholder'] ?? null) === '') {
@@ -77,17 +62,11 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -106,27 +85,18 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         return $value !== '' ? $value : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         return $value !== null ? Str::idnToUtf8Email($value) : null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -159,17 +129,11 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): string
     {
         return TextFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
@@ -181,9 +145,6 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
         return "<a href=\"mailto:$value\">$value</a>";
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {

@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Http\Responses;
 
 use Craft;
 use craft\web\assets\htmx\HtmxAsset;
-use craft\web\View;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Traits\Conditionable;
@@ -121,7 +121,7 @@ final class CpModalResponse implements Responsable
     public function contentTemplate(string $template, array $variables = []): self
     {
         return $this->contentHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
         );
     }
 
@@ -141,11 +141,10 @@ final class CpModalResponse implements Responsable
     public function errorSummaryTemplate(string $template, array $variables = []): self
     {
         return $this->errorSummary(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
         );
     }
 
-    /** {@inheritdoc} */
     public function toResponse($request): JsonResponse
     {
         $view = Craft::$app->getView();

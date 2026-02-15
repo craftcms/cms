@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\View\TemplateMode;
 use yii\base\Behavior;
 
 /**
@@ -137,7 +138,7 @@ class CpModalResponseBehavior extends Behavior
     public function contentTemplate(string $template, array $variables = []): Response
     {
         return $this->contentHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn() => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
         );
     }
 
@@ -163,7 +164,7 @@ class CpModalResponseBehavior extends Behavior
     public function errorSummaryTemplate(string $template, array $variables = []): Response
     {
         return $this->errorSummary(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn() => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
         );
     }
 }

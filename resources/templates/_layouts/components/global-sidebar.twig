@@ -18,7 +18,8 @@
   <craft-nav-item {{ attr(linkAttributes) }}>
 
     <span class="nav-icon" slot="icon">
-      {%- if item.icon ?? false -%}
+      {% set icon = item.icon ?? false %}
+      {%- if icon is not same as(false) and icon is not same as(null) and icon is not same as('') -%}
         {{ iconSvg(item.icon) }}
       {%- elseif item.fontIcon ?? false -%}
         <span data-icon="{{ item.fontIcon }}"></span>

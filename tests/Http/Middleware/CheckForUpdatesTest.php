@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -12,6 +13,8 @@ beforeEach(function () {
     $this->updates = $this->mock(Updates::class);
 
     Cms::config()->enableCsrfProtection = false;
+
+    TemplateMode::set(TemplateMode::Cp);
 });
 
 it('passes through when no updates pending', function () {

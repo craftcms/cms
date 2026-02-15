@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Field;
 use CommerceGuys\Addressing\Country\Country as CountryModel;
 use CommerceGuys\Addressing\Exception\UnknownCountryException;
 use craft\base\ElementInterface;
-use craft\fields\conditions\CountryFieldConditionRule;
 use craft\helpers\Cp;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Field\Conditions\CountryFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -23,45 +23,30 @@ use function CraftCms\Cms\t;
  */
 final class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Country');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'flag';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return 'string|null';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): string
     {
         return Schema::TYPE_STRING;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
@@ -80,9 +65,6 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -97,9 +79,6 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
@@ -107,17 +86,11 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
         return $value?->getCountryCode();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): string
     {
         return CountryFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
@@ -125,9 +98,6 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
         return $value?->getName() ?? '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {

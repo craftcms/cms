@@ -8,12 +8,12 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\image\SvgAllowedAttributes;
-use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\Security;
+use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
 use Exception;
@@ -26,6 +26,8 @@ use Throwable;
 use yii\base\InvalidConfigException;
 use Yiisoft\Html\Html as YiiHtml;
 use Yiisoft\Html\NoEncode;
+use Yiisoft\Html\Tag\Button;
+use Yiisoft\Html\Tag\Input;
 
 /**
  * @mixin YiiHtml
@@ -185,7 +187,7 @@ final class Html
                 [
                     'url' => UrlHelper::actionUrl('users/session-info'),
                 ],
-                View::TEMPLATE_MODE_CP,
+                TemplateMode::Cp->value,
             )
         );
 
@@ -268,6 +270,23 @@ final class Html
     public static function successMessageInput(string $message, array $options = []): string
     {
         return self::hiddenInput('successMessage', Crypt::encrypt($message), $options)->render();
+    }
+
+    public static function hiddenInput(
+        ?string $name = null,
+        bool|float|int|string|\Stringable|null $value = null,
+        array $attributes = [],
+    ): Input {
+        $tag = Input::hidden($name, $value);
+
+        return $attributes === [] ? $tag : $tag->addAttributes(self::normalizeTagAttributes($attributes));
+    }
+
+    public static function button(string $content = 'Button', array $attributes = []): Button
+    {
+        $tag = YiiHtml::button($content);
+
+        return $attributes === [] ? $tag : $tag->addAttributes(self::normalizeTagAttributes($attributes));
     }
 
     public static function tag($name, $content = '', $options = []): string

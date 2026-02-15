@@ -88,17 +88,11 @@ trait Localizable
      */
     public bool $isNewSite = false;
 
-    /**
-     * {@inheritdoc}
-     */
     public static function isLocalized(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getRootOwner(): ElementInterface
     {
         if (! $this instanceof NestedElementInterface) {
@@ -111,8 +105,6 @@ trait Localizable
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @since 3.5.0
      */
     public function getLocalized(): ElementQueryInterface|ElementQuery|ElementCollection
@@ -133,9 +125,6 @@ trait Localizable
             ->revisions(null);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIsCrossSiteCopyable(): bool
     {
         if (isset($this->isCrossSiteCopyable)) {
@@ -159,8 +148,6 @@ trait Localizable
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InvalidConfigException if [[siteId]] is invalid
      */
     public function getSite(): Site
@@ -173,8 +160,6 @@ trait Localizable
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @since 3.5.0
      */
     public function getLanguage(): string
@@ -182,9 +167,6 @@ trait Localizable
         return $this->getSite()->getLanguage();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSupportedSites(): array
     {
         if (static::isLocalized()) {
@@ -194,49 +176,31 @@ trait Localizable
         return [Sites::getPrimarySite()->id];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIsTitleTranslatable(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getTitleTranslationDescription(): ?string
     {
         return ElementHelper::translationDescription(Field::TRANSLATION_METHOD_SITE);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getTitleTranslationKey(): string
     {
         return ElementHelper::translationKey($this, Field::TRANSLATION_METHOD_SITE);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIsSlugTranslatable(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSlugTranslationDescription(): ?string
     {
         return ElementHelper::translationDescription(Field::TRANSLATION_METHOD_SITE);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSlugTranslationKey(): string
     {
         return ElementHelper::translationKey($this, Field::TRANSLATION_METHOD_SITE);

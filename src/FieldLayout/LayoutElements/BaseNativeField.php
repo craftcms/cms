@@ -62,44 +62,29 @@ abstract class BaseNativeField extends BaseField
      */
     public bool $translatable = false;
 
-    /**
-     * {@inheritdoc}
-     */
     public function attribute(): string
     {
         return $this->attribute;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function mandatory(): bool
     {
         return $this->mandatory;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function requirable(): bool
     {
         return $this->requirable;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function id(): string
     {
         return $this->id ?? parent::id();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
@@ -108,36 +93,24 @@ abstract class BaseNativeField extends BaseField
         return Arr::merge($attributes, $this->containerAttributes);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputContainerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return $this->inputContainerAttributes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function labelAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return $this->labelAttributes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function orientation(?ElementInterface $element = null, bool $static = false): string
     {
         return $this->orientation ?? parent::orientation($element, $static);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {

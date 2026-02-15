@@ -123,9 +123,6 @@ final class Entry extends BaseElementLinkType
         return $criteria;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function elementSelectConfig(): array
     {

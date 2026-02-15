@@ -23,27 +23,18 @@ use function CraftCms\Cms\t;
  */
 final class AssetIndexes extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Asset Indexes');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function id(): string
     {
         return 'asset-indexes';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -64,9 +55,6 @@ final class AssetIndexes extends Utility
         return $event->volumes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function contentHtml(): string
     {

@@ -27,18 +27,12 @@ final class CraftSupport extends Widget
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Craft Support');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function isSelectable(): bool
     {
@@ -46,36 +40,24 @@ final class CraftSupport extends Widget
         return parent::isSelectable() && Auth::user()?->isAdmin();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function allowMultipleInstances(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'life-ring';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitle(): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getBodyHtml(): ?string
     {

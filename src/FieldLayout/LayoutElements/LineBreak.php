@@ -17,18 +17,12 @@ use function CraftCms\Cms\t;
  */
 class LineBreak extends FieldLayoutElement
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isMultiInstance(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function selectorHtml(): string
     {
         $label = t('Line Break');
@@ -50,9 +44,6 @@ class LineBreak extends FieldLayoutElement
 HTML;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Html::tag('div', '', ['class' => 'line-break']);

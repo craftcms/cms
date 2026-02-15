@@ -500,7 +500,7 @@ final class Plugins
                 // Implicitly committed.
             }
 
-            if (DB::getDriverName() === 'mysql') {
+            if (DB::isMysql()) {
                 // Explicitly remove the plugins row just in case the transaction was implicitly committed
                 DB::table(Table::PLUGINS)->where('handle', $handle)->delete();
             }

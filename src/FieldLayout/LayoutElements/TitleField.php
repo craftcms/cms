@@ -16,39 +16,18 @@ use function CraftCms\Cms\t;
 
 class TitleField extends TextField
 {
-    /**
-     * {@inheritdoc}
-     */
     public bool $mandatory = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public string $attribute = 'title';
 
-    /**
-     * {@inheritdoc}
-     */
     public bool $translatable = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public ?int $maxlength = 255;
 
-    /**
-     * {@inheritdoc}
-     */
     public bool $required = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public bool $autofocus = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // We didn't start removing autofocus from fields() until 3.5.6
@@ -62,9 +41,6 @@ class TitleField extends TextField
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function fields(): array
     {
@@ -78,17 +54,11 @@ class TitleField extends TextField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Title');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
@@ -123,18 +93,12 @@ JS, [
         return parent::formHtml($element, $static);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isCrossSiteCopyable(ElementInterface $element): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {

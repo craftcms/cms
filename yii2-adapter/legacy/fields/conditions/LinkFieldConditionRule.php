@@ -2,104 +2,18 @@
 
 namespace craft\fields\conditions;
 
-use craft\helpers\Cp;
-use CraftCms\Cms\Field\Data\LinkData;
-use CraftCms\Cms\Field\Link;
-use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
-use Illuminate\Contracts\Database\Query\Builder;
-use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
-use function CraftCms\Cms\t;
-
-/**
- * Options field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.8.0
- */
-class LinkFieldConditionRule extends TextFieldConditionRule
-{
-    private const OPERATOR_TYPE = 'type';
-
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var string|null The selected link type
+     * Options field condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 5.8.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Conditions\LinkFieldConditionRule} instead.
      */
-    public ?string $linkType = null;
-
-    protected function operators(): array
+    class LinkFieldConditionRule
     {
-        return [
-            ...parent::operators(),
-            self::OPERATOR_TYPE,
-        ];
-    }
-
-    public function getConfig(): array
-    {
-        return [
-            ...parent::getConfig(),
-            'linkType' => $this->linkType,
-        ];
-    }
-
-    protected function operatorLabel(string $operator): string
-    {
-        return match ($operator) {
-            self::OPERATOR_TYPE => t('is of type'),
-            default => parent::operatorLabel($operator),
-        };
-    }
-
-    protected function inputHtml(): string
-    {
-        if ($this->operator === self::OPERATOR_TYPE) {
-            /** @var Link $field */
-            $field = $this->field();
-            $linkTypeOptions = array_map(
-                fn(BaseLinkType $linkType) => ['value' => $linkType::id(), 'label' => $linkType::displayName()],
-                $field->getLinkTypes(),
-            );
-
-            return Cp::selectHtml([
-                'name' => 'linkType',
-                'options' => $linkTypeOptions,
-                'value' => $this->linkType,
-            ]);
-        }
-
-        return parent::inputHtml();
-    }
-
-    public function modifyQuery(Builder $query): void
-    {
-        if ($this->operator === self::OPERATOR_TYPE) {
-            /** @phpstan-ignore-next-line */
-            $valueSql = array_map(fn(Link $field) => $field->getValueSql('type'), $this->fieldInstances());
-
-            $query->where(new Coalesce($valueSql), $this->linkType);
-        } else {
-            parent::modifyQuery($query);
-        }
-    }
-
-    protected function matchFieldValue($value): bool
-    {
-        if (!$this->field() instanceof Link) {
-            return true;
-        }
-
-        if ($this->operator === self::OPERATOR_TYPE) {
-            /** @var LinkData|null $value */
-            return $value?->getType() === $this->linkType;
-        }
-
-        return parent::matchFieldValue($value);
-    }
-
-    protected function defineRules(): array
-    {
-        return [
-            ...parent::defineRules(),
-            [['linkType'], 'safe'],
-        ];
     }
 }
+
+class_alias(\CraftCms\Cms\Field\Conditions\LinkFieldConditionRule::class, LinkFieldConditionRule::class);

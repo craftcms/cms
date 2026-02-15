@@ -17,6 +17,7 @@ use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\View\TemplateMode;
 use ErrorException;
 use Illuminate\Support\Facades\Cache;
 use RequirementsChecker;
@@ -119,7 +120,7 @@ class TemplatesController extends Controller
     {
         // If this is a site request, make sure the offline template exists
         if ($this->request->getIsSiteRequest() && !$this->getView()->doesTemplateExist('offline')) {
-            $templateMode = View::TEMPLATE_MODE_CP;
+            $templateMode = TemplateMode::Cp->value;
         }
 
         // Output the offline template
@@ -216,7 +217,7 @@ class TemplatesController extends Controller
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($template)) {
             $view = $this->getView();
-            $view->setTemplateMode(View::TEMPLATE_MODE_CP);
+            TemplateMode::set(TemplateMode::Cp);
 
             if ($view->doesTemplateExist($statusCode)) {
                 $template = $statusCode;

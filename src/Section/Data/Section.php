@@ -101,17 +101,11 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
         return Sections::getSectionById($id);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUiLabel(): string
     {
         return t($this->name, category: 'site');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getId(): ?int
     {
         return $this->id;
@@ -298,9 +292,6 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
             $this->propagationMethod !== PropagationMethod::None;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCpEditUrl(): ?string
     {
         if (! $this->id || ! Auth::user()?->isAdmin()) {
@@ -338,9 +329,6 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
         return $this->page ?: null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getIcon(): string
     {
         return 'newspaper';

@@ -9,6 +9,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
@@ -3532,7 +3533,7 @@ class GeneralConfig extends BaseConfig
         // (Re-)normalize everything.
         $this
             // IDE Helper defaults to the same value as devMode
-            ->ideHelperEnabled(config('app.debug'))
+            ->ideHelperEnabled(Env::get('APP_DEBUG', false))
             // file extensions
             ->allowedFileExtensions($this->allowedFileExtensions)
             ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)

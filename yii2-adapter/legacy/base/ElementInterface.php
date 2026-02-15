@@ -8,11 +8,11 @@
 namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\InvalidFieldException;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;

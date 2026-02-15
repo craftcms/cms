@@ -13,7 +13,6 @@ use craft\base\NestedElementInterface;
 use craft\elements\NestedElementManager;
 use craft\errors\InvalidFieldException;
 use craft\events\BulkElementsEvent;
-use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
@@ -38,6 +37,7 @@ use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -87,27 +87,18 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
     public const string VIEW_MODE_INDEX = 'index';
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Matrix');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'binary';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function supportedTranslationMethods(): array
     {
@@ -117,27 +108,18 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', EntryQuery::class, ElementCollection::class, Entry::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): array|string|null
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
@@ -272,9 +254,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
      */
     private NestedElementManager $_entryManager;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // Config normalization
@@ -325,17 +304,11 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function settingsAttributes(): array
     {
         return Arr::except(parent::settingsAttributes(), 'localizeEntries');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettings(): array
     {
         $settings = parent::getSettings();
@@ -462,17 +435,11 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         )));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getFieldLayoutProviders(): array
     {
         return $this->_entryTypes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUriFormatForElement(NestedElementInterface $element): ?string
     {
         $site = $element->getSite();
@@ -480,9 +447,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $this->siteSettings[$site->uid]['uriFormat'] ?? null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getRouteForElement(NestedElementInterface $element): mixed
     {
         $site = $element->getSite();
@@ -497,9 +461,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSupportedSitesForElement(NestedElementInterface $element): array
     {
         try {
@@ -515,9 +476,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $this->entryManager()->getSupportedSiteIds($owner);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canViewElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -525,9 +483,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $owner && Craft::$app->getElements()->canView($owner, $user);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canSaveElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -553,9 +508,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canDuplicateElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -568,9 +520,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return ! $this->maxEntriesReached($owner);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canDeleteElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -582,9 +531,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): bool
     {
         return false;
@@ -613,17 +559,11 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $value->count();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -678,18 +618,12 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
@@ -756,9 +690,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $query;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): array
     {
@@ -782,9 +713,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $serialized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): array
     {
@@ -808,35 +736,23 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $serialized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): string
     {
         return EmptyFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->entryManager()->getIsTranslatable($element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function actionMenuItems(): array
     {
@@ -1122,9 +1038,6 @@ JS, [
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTranslationDescription(?ElementInterface $element): ?string
     {
@@ -1132,8 +1045,6 @@ JS, [
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InvalidConfigException
      */
     #[Override]
@@ -1142,9 +1053,6 @@ JS, [
         return $this->inputHtmlInternal($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
@@ -1372,9 +1280,6 @@ JS,
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getElementRules(ElementInterface $element): array
     {
@@ -1391,9 +1296,6 @@ JS,
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
@@ -1486,9 +1388,6 @@ JS,
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
@@ -1496,8 +1395,6 @@ JS,
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return EagerLoadingMap
      */
     public function getEagerLoadingMap(array $sourceElements): array
@@ -1540,9 +1437,6 @@ JS,
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
     {
@@ -1565,9 +1459,6 @@ JS,
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterMergeFrom(FieldInterface $outgoingField): void
     {
@@ -1581,9 +1472,6 @@ JS,
         parent::afterMergeFrom($outgoingField);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -1606,9 +1494,6 @@ JS,
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getEagerLoadingGqlConditions(): array
     {
@@ -1617,9 +1502,6 @@ JS,
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
@@ -1627,8 +1509,6 @@ JS,
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InvalidArgumentException
      */
     public function getGqlFragmentEntityByName(string $fragmentName): GqlInlineFragmentInterface
@@ -1647,9 +1527,6 @@ JS,
     // Events
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterSave(bool $isNew): void
     {
@@ -1702,9 +1579,6 @@ JS,
         parent::afterSave($isNew);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
@@ -1739,9 +1613,6 @@ JS,
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeElementDelete(ElementInterface $element): bool
     {
@@ -1755,9 +1626,6 @@ JS,
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
@@ -1776,9 +1644,6 @@ JS,
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterElementRestore(ElementInterface $element): void
     {

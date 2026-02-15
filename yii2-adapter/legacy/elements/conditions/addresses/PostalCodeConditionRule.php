@@ -2,53 +2,18 @@
 
 namespace craft\elements\conditions\addresses;
 
-use craft\base\conditions\BaseTextConditionRule;
-use craft\base\ElementInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AddressQuery;
-use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use function CraftCms\Cms\t;
-
-/**
- * Address postal code condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- */
-class PostalCodeConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Address postal code condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Address\Conditions\PostalCodeConditionRule} instead.
      */
-    public function getLabel(): string
+    class PostalCodeConditionRule
     {
-        return t('Postal Code');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExclusiveQueryParams(): array
-    {
-        return ['postalCode'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function modifyQuery(ElementQueryInterface $query): void
-    {
-        /** @var AddressQuery $query */
-        $query->postalCode($this->paramValue());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function matchElement(ElementInterface $element): bool
-    {
-        /** @var Address $element */
-        return $this->matchValue($element->postalCode);
     }
 }
+
+class_alias(\CraftCms\Cms\Address\Conditions\PostalCodeConditionRule::class, PostalCodeConditionRule::class);

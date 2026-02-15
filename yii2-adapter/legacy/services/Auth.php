@@ -9,12 +9,12 @@ namespace craft\services;
 
 use Craft;
 use craft\events\RegisterComponentTypesEvent;
-use craft\web\View;
 use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
 use CraftCms\Cms\Auth\Events\SettingPassword;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
@@ -84,15 +84,9 @@ class Auth extends Component
             return '';
         }
 
-        $view = Craft::$app->getView();
-        $templateMode = $view->getTemplateMode();
-        $view->setTemplateMode(View::TEMPLATE_MODE_CP);
-
-        try {
+        return TemplateMode::with(TemplateMode::Cp, function() use ($method) {
             return $method->getAuthFormHtml();
-        } finally {
-            $view->setTemplateMode($templateMode);
-        }
+        });
     }
 
     /**
