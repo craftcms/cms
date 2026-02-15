@@ -276,12 +276,8 @@ class ViewTest extends TestCase
      */
     public function testHookInvocation(): void
     {
-        $this->setInaccessibleProperty($this->view, '_hooks', [
-            'demoHook' => [
-                fn() => '22',
-                fn($val) => $val[0],
-            ],
-        ]);
+        $this->view->hook('demoHook', fn() => '22');
+        $this->view->hook('demoHook', fn($val) => $val[0]);
 
         $var = ['333'];
         self::assertSame('22333', $this->view->invokeHook('demoHook', $var));

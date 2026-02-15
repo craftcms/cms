@@ -38,6 +38,7 @@ use CraftCms\Cms\View\AssetRegistry;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
+use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
@@ -369,11 +370,6 @@ class View extends \yii\web\View
     private array $_jsOriginalPositionBuffers = [];
 
     /**
-     * @var callable[][]
-     */
-    private array $_hooks = [];
-
-    /**
      * @var string|null
      */
     private ?string $_renderingTemplate = null;
@@ -402,6 +398,13 @@ class View extends \yii\web\View
     private function registry(): AssetRegistry
     {
         return $this->_registry ??= app(AssetRegistry::class);
+    }
+
+    private ?TemplateHooks $_templateHooks = null;
+
+    private function templateHooks(): TemplateHooks
+    {
+        return $this->_templateHooks ??= app(TemplateHooks::class);
     }
 
     /**
@@ -2288,14 +2291,11 @@ JS;
      * @param callable $method The callback function.
      * @param bool $append whether to append the method handler to the end of the existing method list for the hook. If `false`, the method will be
      * inserted at the beginning of the existing method list.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\TemplateHooks::register()} instead.
      */
     public function hook(string $hook, callable $method, bool $append = true): void
     {
-        if ($append || empty($this->_hooks[$hook])) {
-            $this->_hooks[$hook][] = $method;
-        } else {
-            array_unshift($this->_hooks[$hook], $method);
-        }
+        $this->templateHooks()->register($hook, $method, $append);
     }
 
     /**
@@ -2306,24 +2306,11 @@ JS;
      * @param string $hook The hook name.
      * @param array $context The current template context.
      * @return string Whatever the hooks returned.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\TemplateHooks::invoke()} instead.
      */
     public function invokeHook(string $hook, array &$context): string
     {
-        $return = '';
-
-        if (isset($this->_hooks[$hook])) {
-            $handled = false;
-
-            /** @var callable(array $context, bool &$handled):string $method */
-            foreach ($this->_hooks[$hook] as $method) {
-                $return .= $method($context, $handled);
-                if ($handled) {
-                    break;
-                }
-            }
-        }
-
-        return $return;
+        return $this->templateHooks()->invoke($hook, $context);
     }
 
     /**

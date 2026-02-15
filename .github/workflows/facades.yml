@@ -71,6 +71,7 @@ jobs:
             CraftCms\\Cms\\Support\\Facades\\SiteGroups \
             CraftCms\\Cms\\Support\\Facades\\Sites \
             CraftCms\\Cms\\Support\\Facades\\Structures \
+            CraftCms\\Cms\\Support\\Facades\\TemplateHooks \
             CraftCms\\Cms\\Support\\Facades\\Updates \
             CraftCms\\Cms\\Support\\Facades\\UserGroups \
             CraftCms\\Cms\\Support\\Facades\\UserPermissions \

@@ -25,7 +25,7 @@ class HookNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write('echo \Craft::$app->getView()->invokeHook(')
+            ->write('echo \CraftCms\Cms\Support\Facades\TemplateHooks::invoke(')
             ->subcompile($this->getNode('hook'))
             ->raw(", \$context);\n\n");
     }
