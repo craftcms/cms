@@ -115,7 +115,7 @@ class TestCase extends Orchestra
         Widget::flushMacros();
 
         // ElementQuery has its own $macros property (not via Macroable trait)
-        (new \ReflectionProperty(ElementQuery::class, 'macros'))->setValue(null, []);
+        new \ReflectionProperty(ElementQuery::class, 'macros')->setValue(null, []);
 
         // Reset static array caches that grow unboundedly across tests
         $resets = [
@@ -143,7 +143,7 @@ class TestCase extends Orchestra
         }
 
         foreach ($resets as [$class, $property, $default]) {
-            (new \ReflectionProperty($class, $property))->setValue(null, $default);
+            new \ReflectionProperty($class, $property)->setValue(null, $default);
         }
     }
 
