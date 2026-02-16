@@ -24,6 +24,7 @@ use CraftCms\Cms\Translation\TranslationServiceProvider;
 use CraftCms\Cms\Twig\TwigServiceProvider;
 use CraftCms\Cms\Updates\UpdatesServiceProvider;
 use CraftCms\Cms\User\UserServiceProvider;
+use CraftCms\Cms\View\ViewServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
 
 final class CraftServiceProvider extends AggregateServiceProvider

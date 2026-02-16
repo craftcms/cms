@@ -8,7 +8,6 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\Event as YiiEvent;
 use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
@@ -26,7 +25,6 @@ use craft\web\twig\SecurityPolicy;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -40,7 +38,6 @@ use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use LogicException;
@@ -390,17 +387,7 @@ class View extends \yii\web\View
     {
         parent::init();
 
-        // Set the initial template mode based on whether this is a control panel or site request
-        if (app()->runningInConsole() || request()->isCpRequest()) {
-            TemplateMode::set(TemplateMode::Cp);
-        } else {
-            TemplateMode::set(TemplateMode::Site);
-        }
-
         // Register the control panel hooks
-        $this->hook('cp.layouts.elementindex', [$this, 'prepareElementIndexVariables']);
-        $this->hook('cp.elements.toolbar', [$this, 'prepareElementToolbarVariables']);
-        $this->hook('cp.elements.sources', [$this, 'prepareElementSourcesVariables']);
         $this->hook('cp.elements.element', [$this, 'elementChipHtml']);
     }
 
@@ -2740,95 +2727,6 @@ JS;
         }
         $js .= '}';
         $this->registerJs($js, self::POS_HEAD);
-    }
-
-    public function prepareElementIndexVariables(array &$context): null
-    {
-        /** @var class-string<ElementInterface> $elementType */
-        $elementType = $context['elementType'];
-
-        $context['title'] ??= $elementType::pluralDisplayName();
-        $context['context'] = 'index';
-
-        $elementSourcesService = app(ElementSources::class);
-        $context['sources'] = $elementSourcesService->getSources(
-            $elementType,
-            withDisabled: true,
-            page: $context['page'] ?? null,
-        )->all();
-
-        $context['showSiteMenu'] = Sites::isMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
-        if ($context['showSiteMenu'] === 'auto') {
-            $context['showSiteMenu'] = $elementType::isLocalized();
-        }
-
-        $context['elementDisplayName'] = $elementType::displayName();
-        $context['elementPluralDisplayName'] = $elementType::pluralDisplayName();
-        $context['canHaveDrafts'] ??= $elementType::hasDrafts();
-
-        if (isset($context['page'])) {
-            if (isset($context['sources'][0]['page'])) {
-                $context['title'] = Craft::t('site', $context['sources'][0]['page']);
-            }
-            $context['selectedSubnavItem'] = $elementSourcesService->pageNameId($context['page']);
-        }
-
-        return null;
-    }
-
-    public function prepareElementToolbarVariables(array &$context): null
-    {
-        /** @var class-string<ElementInterface> $elementType */
-        $elementType = $context['elementType'];
-
-        $context['context'] ??= 'index';
-        $context['isAdministrative'] = match ($context['context']) {
-            'index', 'embedded-index' => true,
-            default => false,
-        };
-        $context['showStatusMenu'] ??= 'auto';
-        if ($context['showStatusMenu'] === 'auto') {
-            $context['showStatusMenu'] = $elementType::hasStatuses();
-        }
-        $context['showSiteMenu'] = Sites::isMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
-        if ($context['showSiteMenu'] === 'auto') {
-            $context['showSiteMenu'] = $elementType::isLocalized();
-        }
-        $context['idPrefix'] = sprintf('elementtoolbar%s-', mt_rand());
-
-        if ($context['showStatusMenu']) {
-            $context['elementStatuses'] ??= $elementType::statuses();
-            if (count($context['elementStatuses']) < 2) {
-                $context['showStatusMenu'] = false;
-            }
-        }
-
-        return null;
-    }
-
-    public function prepareElementSourcesVariables(array &$context): null
-    {
-        /** @var class-string<ElementInterface> $elementType */
-        $elementType = $context['elementType'];
-
-        $context['keyPrefix'] ??= '';
-        $context['isTopLevel'] = $context['keyPrefix'] === '';
-
-        if ($context['isTopLevel']) {
-            $context['baseSortOptions'] ??= Collection::make($elementType::sortOptions())
-                ->map(fn($option, $key) => [
-                    'label' => $option['label'] ?? $option,
-                    'attr' => $option['attribute'] ?? $option['orderBy'] ?? $key,
-                    'defaultDir' => $option['defaultDir'] ?? 'asc',
-                ])
-                ->values()
-                ->all();
-            $context['tableColumns'] ??= app(ElementSources::class)->getAvailableTableAttributes($elementType)->all();
-        }
-
-        $context['viewModes'] ??= $elementType::indexViewModes();
-
-        return null;
     }
 
     /**
