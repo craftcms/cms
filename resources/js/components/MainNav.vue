@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import useCraftData from '@/composables/useCraftData';
 
-  const {nav} = useCraftData();
+  const {nav, queue} = useCraftData();
 </script>
 
 <template>
@@ -36,7 +36,12 @@
         </craft-nav-list>
       </template>
     </craft-nav-item>
-    <cp-queue-indicator></cp-queue-indicator>
+    <cp-queue-indicator
+      .enabled="queue.enabled"
+      .displayedJob="queue.displayedJob"
+      .hasReservedJobs="queue.hasReservedJobs"
+      .hasWaitingJobs="queue.hasWaitingJobs"
+    ></cp-queue-indicator>
   </craft-nav-list>
 </template>
 

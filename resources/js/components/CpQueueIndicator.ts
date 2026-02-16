@@ -1,5 +1,5 @@
 import {css, html, LitElement, nothing} from 'lit';
-import {customElement, state} from 'lit/decorators.js';
+import {customElement, property} from 'lit/decorators.js';
 import {JobStatus} from '@craftcms/cp/src/types/queue.js';
 import type {JobInfo, JobUpdateDetail} from '@craftcms/cp';
 
@@ -22,14 +22,26 @@ class CpQueueIndicator extends LitElement {
     }
   `;
 
-  @state() private displayedJob: JobInfo | null = null;
+  @property({type: Boolean}) enabled: boolean = true;
+  @property({type: Object, attribute: 'displayed-job'})
+  displayedJob: JobInfo | null = null;
+  @property({type: Boolean, attribute: 'has-reserved-jobs'})
+  hasReservedJobs: boolean = false;
+  @property({type: Boolean, attribute: 'has-waiting-jobs'})
+  hasWaitingJobs: boolean = false;
 
   override connectedCallback() {
     super.connectedCallback();
-    window.Craft?.$queue?.addEventListener(
+    window.Cp?.$queue?.addEventListener(
       'job-update',
       this.#handleJobUpdate as EventListener
     );
+
+    if (this.hasReservedJobs) {
+      window.Cp?.$queue.startTracking();
+    } else if (this.hasWaitingJobs) {
+      window.Cp?.$queue.runQueue();
+    }
 
     // Set initial visibility based on current state
     this.#updateVisibility();
@@ -37,14 +49,13 @@ class CpQueueIndicator extends LitElement {
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    window.Craft?.$queue?.removeEventListener(
+    window.Cp?.$queue?.removeEventListener(
       'job-update',
       this.#handleJobUpdate as EventListener
     );
   }
 
   #handleJobUpdate = (event: CustomEvent<JobUpdateDetail>) => {
-    console.log('handling update');
     this.displayedJob = event.detail.displayedJob;
     this.#updateVisibility();
   };
@@ -68,9 +79,9 @@ class CpQueueIndicator extends LitElement {
   }
 
   get #queueManagerUrl(): string | null {
-    if (!window.Craft?.$queue?.canAccessQueueManager) return null;
-    if (window.Craft?.getUrl) {
-      return window.Craft.getUrl('utilities/queue-manager');
+    if (!window.Cp?.$queue?.canAccessQueueManager) return null;
+    if (window.Cp?.getUrl) {
+      return window.Cp.getUrl('utilities/queue-manager');
     }
     return '/admin/utilities/queue-manager';
   }
@@ -83,7 +94,7 @@ class CpQueueIndicator extends LitElement {
     const url = this.#queueManagerUrl;
 
     return html`
-      <craft-nav-item .url=${url}>
+      <craft-nav-item .href=${url}>
         <craft-progress
           slot="prefix"
           progress=${this.#progress}

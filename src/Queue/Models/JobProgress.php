@@ -29,4 +29,17 @@ final class JobProgress extends BaseModel
     {
         return $this->progressLabel ? t($this->progressLabel) : null;
     }
+
+    public function attributesToArray(): array
+    {
+        $attributes = parent::attributesToArray();
+
+        $attributes['description'] = t($this->description);
+
+        if ($this->status instanceof JobStatus) {
+            $attributes['status'] = $this->status->jsonSerialize();
+        }
+
+        return $attributes;
+    }
 }

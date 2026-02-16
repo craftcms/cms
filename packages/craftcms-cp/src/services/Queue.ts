@@ -184,7 +184,7 @@ export class QueueService extends EventTarget {
       case 'trackJobProgress':
         // Another tab finished polling - use their data
         if (data.jobData) {
-          this.setJobData(data.jobData);
+          this.setJobData(data.jobData.jobs);
         }
         // Schedule our next poll with extra delay to avoid conflicts
         if (this.jobInfo.length > 0) {
@@ -302,7 +302,7 @@ export class QueueService extends EventTarget {
     const priorities: JobStatusKey[] = [
       JobStatus.Reserved,
       JobStatus.Failed,
-      JobStatus.Waiting,
+      JobStatus.Pending,
     ];
 
     for (const status of priorities) {
@@ -312,7 +312,7 @@ export class QueueService extends EventTarget {
         }
 
         // Skip delayed waiting jobs
-        return !(status === JobStatus.Waiting && j.delay > 0);
+        return !(status === JobStatus.Pending && j.delay > 0);
       });
 
       if (job) {

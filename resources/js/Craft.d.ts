@@ -2,7 +2,7 @@
  * This is just a temp file copied from @craftcms/webpack to make typescript
  * happy for the moment.
  */
-import type {CpGlobal} from '@craftcms/cp/src/types/globals';
+import type {CpServices} from '@craftcms/cp/src/types/globals.d.ts';
 
 // Set up interfaces and types
 interface ProgressBarInterface {
@@ -38,7 +38,7 @@ type Site = {
   uid: string;
 };
 
-interface CraftGlobal extends CpGlobal {
+interface CpGlobal extends CpServices {
   csrfTokenName?: string;
   csrfTokenValue?: string;
   ProgressBar: ProgressBarInterface;
@@ -68,14 +68,14 @@ interface CraftGlobal extends CpGlobal {
 }
 
 // Declare existing variables, mock the things we'll use.
-declare var Craft: CraftGlobal;
+declare var Cp: CpGlobal;
 
 declare global {
   interface Window {
     bootedCallbacks: Array<(craft: any) => void>;
     bootingCallbacks: Array<(craft: any) => void>;
     CpConfig: Record<string, any>;
-    Craft?: CraftGlobal;
+    Cp?: CpGlobal;
   }
 }
 

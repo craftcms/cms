@@ -7,10 +7,13 @@ namespace CraftCms\Cms\Http\Middleware;
 use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use craft\queue\QueueInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Rebrand;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Queue\Enums\JobStatus;
+use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Updates\Updates;
@@ -60,6 +63,7 @@ class HandleInertiaRequests extends Middleware
         $currentSite = Sites::getCurrentSite();
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
+        $progressService = app(JobProgress::class);
 
         if (! $updates->isCraftUpdatePending()) {
             $currentUser = Craft::$app->getUser()->getIdentity();
@@ -105,6 +109,12 @@ class HandleInertiaRequests extends Middleware
                 'actionUrl' => UrlHelper::actionUrl(),
                 'baseApiUrl' => Api::craftApiEndpoint(),
                 'nav' => $nav->getItems(),
+                'queue' => [
+                    'enabled' => Craft::$app->get('queue') instanceof QueueInterface,
+                    'displayedJob' => $progressService->getDisplayedJob(),
+                    'hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
+                    'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
+                ],
             ],
         ];
     }

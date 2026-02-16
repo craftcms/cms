@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script>window.Craft = {};</script>
+        <script>window.Cp = {};</script>
         @vite(['resources/css/cp.css', 'resources/js/cp.ts'], 'vendor/craft/build')
         @inertiaHead
     </head>
@@ -13,7 +13,7 @@
           let CpConfig = {!! json_encode(\CraftCms\Cms\Cp\Cp::config()) !!};
         </script>
         <script
-            src="data:text/javascript;base64,{{ base64_encode('Craft.config(CpConfig); Craft.start()') }}"
+            src="data:text/javascript;base64,{{ base64_encode('Cp.config(CpConfig); Cp.start()') }}"
             defer
         ></script>
     </body>

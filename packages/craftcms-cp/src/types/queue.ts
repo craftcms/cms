@@ -1,9 +1,11 @@
 /** Job status constants matching server-side values */
 export const JobStatus = {
-  Waiting: 1,
+  Pending: 1,
   Reserved: 2,
   Done: 3,
   Failed: 4,
+  Delayed: 5,
+  Cancelled: 6,
 } as const;
 
 export type JobStatusKey = (typeof JobStatus)[keyof typeof JobStatus];

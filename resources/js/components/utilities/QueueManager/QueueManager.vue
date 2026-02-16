@@ -13,7 +13,12 @@
       hasReservedJobs?: boolean;
       hasWaitingJobs?: boolean;
     }>(),
-    {activeJob: null, totalJobs: 0}
+    {
+      activeJob: null,
+      totalJobs: 0,
+      hasReservedJobs: false,
+      hasWaitingJobs: false,
+    }
   );
 
   const queue = inject(Queue);

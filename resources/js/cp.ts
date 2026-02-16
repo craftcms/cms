@@ -1,12 +1,12 @@
 import '@craftcms/cp';
-import Craft from './bootstrap/craft.js';
+import Cp from './bootstrap/cp.js';
 import './components/CpGlobalSidebar.js';
 import './components/CpQueueIndicator.js';
 
 // @ts-ignore
-window.Craft = {
-  ...(window.Craft || {}),
-  ...Craft,
+window.Cp = {
+  ...(window.Cp || {}),
+  ...Cp,
 };
 
-console.log('window.Craft defined', window.Craft);
+console.log('window.Cp defined', window.Cp);

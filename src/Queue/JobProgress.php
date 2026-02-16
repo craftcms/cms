@@ -106,6 +106,22 @@ final readonly class JobProgress
     }
 
     /**
+     * Gets the job to be displayed in the sidebar
+     */
+    public function getDisplayedJob(): ?JobProgressModel
+    {
+        return JobProgressModel::query()
+            ->orderBy('dateCreated')
+            ->whereIn('status', [
+                JobStatus::Reserved,
+                JobStatus::Failed,
+                JobStatus::Pending,
+            ])
+            ->whereNull('delay')
+            ->first();
+    }
+
+    /**
      * Gets all active jobs (pending, delayed, or reserved).
      *
      * @return Collection<JobProgressModel>

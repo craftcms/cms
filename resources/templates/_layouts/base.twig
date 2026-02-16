@@ -51,16 +51,21 @@
         // Fix for Firefox autofocus CSS bug
         // See: http://stackoverflow.com/questions/18943276/html-5-autofocus-messes-up-css-loading/18945951#18945951
     </script>
-      <script>window.bootedCallbacks = [];</script>
+      <script>window.Cp = {};</script>
     {% endblock %}
 </head>
 <body {{ attr(bodyAttributes) }}>
-    {{ beginBody() }}
-    {% include '_layouts/components/global-live-region' %}
-    {% block body %}{% endblock %}
-    {% include '_layouts/components/notifications' %}
-    {% block foot %}{% endblock %}
+  {{ beginBody() }}
+  {% include '_layouts/components/global-live-region' %}
+  {% block body %}{% endblock %}
+  {% include '_layouts/components/notifications' %}
+  {% block foot %}{% endblock %}
   {{ vite(['resources/css/cp.css', 'resources/js/legacy.ts']) }}
-    {{ endBody() }}
+
+  {{ endBody() }}
+  <script
+    src="data:text/javascript;base64,{{ 'Cp.config(Craft); Cp.init()' | base64_encode }}"
+    defer
+  ></script>
 </body>
 </html>

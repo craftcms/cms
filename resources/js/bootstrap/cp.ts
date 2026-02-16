@@ -24,7 +24,7 @@ const config = ConfigService.getInstance();
 const queue = QueueService.getInstance();
 
 // Create our object
-const Craft = {
+const Cp = {
   initialConfig: {},
 
   get $config() {
@@ -51,17 +51,21 @@ const Craft = {
     this.initialConfig = config;
   },
 
-  async start() {
+  init() {
     config.initialize(this.initialConfig);
     queue.initialize({
       enabled: true,
       appId: config.get('systemUid', ''),
       canAccessQueueManager: config.get('canAccessQueueManager', false),
     });
+  },
+
+  async start() {
+    this.init();
 
     axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
     axios.defaults.headers.common['X-CSRF-TOKEN'] =
-      Craft.$config.get('csrfToken');
+      this.$config.get('csrfToken');
 
     console.groupCollapsed('Craft configuration');
     console.log(config.all().entries());
@@ -110,4 +114,4 @@ const Craft = {
   },
 };
 
-export default Craft;
+export default Cp;
