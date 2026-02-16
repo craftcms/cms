@@ -1365,13 +1365,13 @@ class View extends \yii\web\View
         // Map registry positions back to Yii2 positions
         $bufferedScripts = [];
         if (!empty($registryState['scripts'][Position::Head->value])) {
-            $bufferedScripts[self::POS_HEAD] = $registryState['scripts'][Position::Head->value];
+            $bufferedScripts[self::POS_HEAD] = array_map(fn($v) => (string) $v, $registryState['scripts'][Position::Head->value]);
         }
         if (!empty($bufferedBeginScripts)) {
-            $bufferedScripts[self::POS_BEGIN] = $bufferedBeginScripts;
+            $bufferedScripts[self::POS_BEGIN] = array_map(fn($v) => (string) $v, $bufferedBeginScripts);
         }
         if (!empty($registryState['scripts'][Position::Body->value])) {
-            $bufferedScripts[self::POS_END] = $registryState['scripts'][Position::Body->value];
+            $bufferedScripts[self::POS_END] = array_map(fn($v) => (string) $v, $registryState['scripts'][Position::Body->value]);
         }
 
         return $bufferedScripts;
@@ -1408,7 +1408,7 @@ class View extends \yii\web\View
         $registryState = $this->registry()->clearBuffer('css');
         $this->_cssBufferDepth--;
 
-        return $registryState['css'];
+        return array_map(fn($v) => (string) $v, $registryState['css']);
     }
 
     /**
