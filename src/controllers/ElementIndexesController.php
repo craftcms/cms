@@ -412,16 +412,16 @@ class ElementIndexesController extends BaseElementsController
 
         $conditionsService = Craft::$app->getConditions();
 
+        if (!$conditionConfig && $serialized) {
+            parse_str($serialized, $conditionConfig);
+            $conditionConfig = $conditionConfig['condition'];
+        }
+
         if ($conditionConfig) {
             $conditionConfig = Component::cleanseConfig($conditionConfig);
             /** @var ElementConditionInterface $condition */
             $condition = $conditionsService->createCondition($conditionConfig);
-        } elseif ($serialized) {
-            parse_str($serialized, $conditionConfig);
-            /** @var ElementConditionInterface $condition */
-            $condition = $conditionsService->createCondition($conditionConfig['condition']);
         } else {
-            /** @var ElementConditionInterface $condition */
             $condition = $this->elementType()::createCondition();
         }
 
