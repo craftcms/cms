@@ -100,8 +100,6 @@
     />
   </template>
   <template v-else-if="jobs.length">
-    <div class="grow"></div>
-
     <TransitionFade>
       <template v-if="messages.error">
         <craft-callout

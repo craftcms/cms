@@ -32,7 +32,7 @@
      * we set the nav state accordingly
      */
     navState.value = newValue ? 'expanded' : 'collapsed';
-  });
+  }, {immediate: true});
 </script>
 
 <template>
@@ -69,7 +69,7 @@
         </div>
       </div>
       <div
-        class="bg-white border border-border-subtle rounded-sm shadow-sm overflow-auto"
+        class="bg-white border border-border-subtle rounded-sm shadow-sm @container"
       >
         <slot></slot>
       </div>

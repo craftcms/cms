@@ -28,7 +28,7 @@ export interface IndexingSession {
   /** Unique session identifier */
   readonly id: number;
   /** Map of volume IDs to volume names being indexed */
-  readonly indexedVolumes: Record<number, string>;
+  readonly indexedVolumes: string;
   /** Total number of entries to process */
   readonly totalEntries: number;
   /** Number of entries processed so far */

@@ -36,9 +36,7 @@
 
 <template>
   <div class="p-4" v-if="hasSessions">
-    <Pane appearance="outline" :padding="0">
-      <IndexingSessions />
-    </Pane>
+    <IndexingSessions />
   </div>
 
   <template v-if="volumeOptions">

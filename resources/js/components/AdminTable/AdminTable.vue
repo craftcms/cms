@@ -81,90 +81,89 @@
 
 <template>
   <div class="admin-table-wrapper">
-    <div>
-      <table
-        :class="{
-          'cp-table': true,
-          'cp-table--compact': spacing === 'compact',
-          'cp-table--relaxed': spacing === 'relaxed',
-          'cp-table--auto': layout === 'auto',
-        }"
-      >
-        <thead>
-          <tr
-            v-for="headerGroup in table.getHeaderGroups()"
-            :key="headerGroup.id"
-          >
-            <template v-if="!readOnly && reorderable">
-              <th class="cell cell--header">
-                <span class="sr-only">Reorder</span>
-              </th>
-            </template>
-            <th
-              v-for="header in headerGroup.headers"
-              :key="header.id"
-              :colSpan="header.colSpan"
-              :style="{width: `${header.getSize()}px`}"
-              class="cell cell--header"
-            >
-              <FlexRender
-                v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
-                :props="header.getContext()"
-              />
+    <table
+      :class="{
+        'cp-table': true,
+        'cp-table--compact': spacing === 'compact',
+        'cp-table--relaxed': spacing === 'relaxed',
+        'cp-table--auto': layout === 'auto',
+      }"
+    >
+      <thead>
+        <tr
+          v-for="headerGroup in table.getHeaderGroups()"
+          :key="headerGroup.id"
+        >
+          <template v-if="!readOnly && reorderable">
+            <th class="cell cell--header">
+              <span class="sr-only">Reorder</span>
             </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="row in table.getRowModel().rows"
-            :key="row.id"
-            :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
+          </template>
+          <th
+            v-for="header in headerGroup.headers"
+            :key="header.id"
+            :colSpan="header.colSpan"
+            :style="{width: `${header.getSize()}px`}"
+            class="cell cell--header"
+          >
+            <FlexRender
+              v-if="!header.isPlaceholder"
+              :render="header.column.columnDef.header"
+              :props="header.getContext()"
+            />
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="row in table.getRowModel().rows"
+          :key="row.id"
+          :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
+          :class="{
+            'row--dragging': !readOnly && getDragState(row.id) === 'dragging',
+          }"
+        >
+          <template v-if="reorderable && !readOnly">
+            <td class="cell cell--drag-handle">
+              <div class="flex justify-center">
+                <ReorderButton></ReorderButton>
+              </div>
+
+              <!-- Drop indicator spans entire row, positioned from this cell -->
+              <DropIndicator :edge="getDropState(row.id).edge" />
+
+              <Teleport
+                v-if="getDragState(row.id).type === 'dragging'"
+                :to="getDragState(row.id).container"
+              >
+                <slot name="drag-preview" :row="row"></slot>
+              </Teleport>
+            </td>
+          </template>
+          <td
+            v-for="cell in row.getVisibleCells()"
+            :key="cell.id"
+            :style="{width: `${cell.column.getSize()}px`}"
             :class="{
-              'row--dragging': !readOnly && getDragState(row.id) === 'dragging',
+              cell: true,
+              'cell--wrap': cell.column.columnDef.meta?.wrap,
             }"
           >
-            <template v-if="reorderable && !readOnly">
-              <td class="cell cell--drag-handle">
-                <div class="flex justify-center">
-                  <ReorderButton></ReorderButton>
-                </div>
-
-                <!-- Drop indicator spans entire row, positioned from this cell -->
-                <DropIndicator :edge="getDropState(row.id).edge" />
-
-                <Teleport
-                  v-if="getDragState(row.id).type === 'dragging'"
-                  :to="getDragState(row.id).container"
-                >
-                  <slot name="drag-preview" :row="row"></slot>
-                </Teleport>
-              </td>
-            </template>
-            <td
-              v-for="cell in row.getVisibleCells()"
-              :key="cell.id"
-              :style="{width: `${cell.column.getSize()}px`}"
-              :class="{
-                cell: true,
-                'cell--wrap': cell.column.columnDef.meta?.wrap,
-              }"
-            >
-              <FlexRender
-                :render="cell.column.columnDef.cell"
-                :props="cell.getContext()"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            <FlexRender
+              :render="cell.column.columnDef.cell"
+              :props="cell.getContext()"
+            />
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
 <style scoped lang="scss">
   .admin-table-wrapper {
-    overflow: hidden;
+    overflow-y: clip;
+    overflow-x: auto;
   }
 
   .cell {

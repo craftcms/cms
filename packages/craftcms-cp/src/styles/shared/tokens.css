@@ -113,7 +113,7 @@
   --c-radius-xl: 12px;
   --c-radius-full: calc(Infinity * 1px);
 
-  --c-spacing: 0.125rem; /* 2px */
+  --c-spacing: 0.25rem; /* 4px */
   --c-spacing-1px: 1px;
   --c-spacing-xs: calc(var(--c-spacing) * 0.5);
   --c-spacing-sm: calc(var(--c-spacing) * 1);
@@ -121,10 +121,6 @@
   --c-spacing-lg: calc(var(--c-spacing) * 4);
   --c-spacing-xl: calc(var(--c-spacing) * 8);
   --c-spacing-2xl: calc(var(--c-spacing) * 16);
-
-  @media screen and (min-width: 1024px) {
-    --c-spacing: 0.25rem; /* 4px */
-  }
 
   --c-size-touch-target: calc(34rem / 16);
 

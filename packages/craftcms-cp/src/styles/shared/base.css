@@ -69,9 +69,30 @@ hr {
   }
 }
 
+.index-grid__aside,
+.index-grid__main {
+  display: flex;
+  gap: var(--c-spacing-md);
+  align-items: center;
+}
+
+.index-grid__aside {
+}
+
 .index-grid--header {
   align-items: center;
-  height: calc(40rem / 16);
+  min-height: calc(40rem / 16);
+  padding-block: var(--c-spacing-lg);
+
+  @container (width >= 768px) {
+    padding-block-end: var(--c-spacing-md);
+  }
+}
+
+.index-grid--header .index-grid__main {
+  @container (width >= 768px) {
+    justify-self: end;
+  }
 }
 
 /**
@@ -115,10 +136,14 @@ Modify with `cp-table--auto` to apply table-layout: auto
  */
 .cp-table {
   text-align: left;
-  table-layout: fixed;
+  table-layout: auto;
   width: 100%;
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
+
+  @container (width >= 840px) {
+    table-layout: fixed;
+  }
 
   thead {
     background-color: var(--c-color-neutral-bg-normal);

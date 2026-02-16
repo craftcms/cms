@@ -104,7 +104,6 @@
     --_bg-color: var(--c-pane-bg);
 
     background-color: var(--_bg-color);
-    overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-pane-radius);
     border: var(--c-pane-border);
@@ -131,7 +130,6 @@
   .pane__body {
     padding-inline: var(--_pane-spacing);
     padding-block: var(--_pane-spacing) calc(var(--_pane-spacing) * 1.5);
-    overflow: sroll;
   }
 
   .pane__footer {

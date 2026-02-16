@@ -18,9 +18,9 @@ export default css`
 
   :host([show-status]) {
     display: grid;
-    grid-template-columns: 1fr minmax(5%, 4rem);
+    grid-template-columns: 1fr auto;
     align-items: center;
-    gap: var(--c-spacing-sm);
+    gap: 0.5em;
   }
 
   :host([hidden]) {
