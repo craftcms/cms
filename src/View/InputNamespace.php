@@ -15,7 +15,7 @@ final class InputNamespace
     /**
      * Returns the active namespace.
      *
-     * This is the default namespaces that will be used when {@see namespaceInputs()}, {@see namespaceInputName()},
+     * This is the default namespace that will be used when {@see namespaceInputs()}, {@see namespaceInputName()},
      * and {@see namespaceInputId()} are called, if their $namespace arguments are null.
      */
     public function get(): ?string
@@ -26,8 +26,10 @@ final class InputNamespace
     /**
      * Sets the active namespace.
      *
-     * This is the default namespaces that will be used when {@see namespaceInputs()}, {@see namespaceInputName()},
-     * and {@see namespaceInputId()} are called, if their|null $namespace arguments are null.
+     * This is the default namespace that will be used when {@see namespaceInputs()}, {@see namespaceInputName()},
+     * and {@see namespaceInputId()} are called, if their `$namespace` arguments are null.
+     *
+     * @param  string|null  $namespace  The new namespace. Set to null to remove the namespace.
      */
     public function set(?string $namespace): self
     {
@@ -36,6 +38,16 @@ final class InputNamespace
         return $this;
     }
 
+    /**
+     * Temporarily sets the active namespace for the duration of the given callback.
+     *
+     * The previous namespace will be restored after the callback has executed,
+     * even if an exception is thrown.
+     *
+     * @param  string|null  $namespace  The namespace to set during the callback execution.
+     * @param  callable  $callback  The callback to execute. Receives the `InputNamespace` instance as its argument.
+     * @return mixed The value returned by the callback.
+     */
     public function with(?string $namespace, callable $callback): mixed
     {
         $original = $this->namespace;
