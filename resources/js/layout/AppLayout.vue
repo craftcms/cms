@@ -140,8 +140,8 @@
           <slot name="header">
             <div :class="{container: true, 'container--full': fullWidth}">
               <div class="pt-4 pb-2">
-                <div class="index-grid">
-                  <div>
+                <div class="index-grid index-grid--header">
+                  <div class="flex gap-2 items-center">
                     <slot name="title">
                       <h1 class="text-xl">{{ title }}</h1>
                     </slot>
@@ -207,6 +207,7 @@
 
   .cp__main {
     container-type: size;
+    padding-block-end: var(--c-spacing-2xl);
   }
 
   .cp__header {
@@ -230,6 +231,10 @@
       grid-template-areas: 'header header' 'sidebar main';
       grid-template-rows: auto 1fr;
       min-height: 100vh;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
     }
 
     .cp__header {
@@ -242,6 +247,7 @@
 
     .cp__main {
       grid-area: main;
+      overflow: auto;
     }
   }
 </style>

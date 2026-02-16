@@ -43,7 +43,7 @@
     </template>
 
     <div class="index-grid">
-      <div class="">
+      <div>
         <craft-button
           v-if="!isLarge"
           type="button"

@@ -69,6 +69,11 @@ hr {
   }
 }
 
+.index-grid--header {
+  align-items: center;
+  height: calc(40rem / 16);
+}
+
 /**
 Prose class, wrap around WYSIWYG text or markdown text.
 Previously `.readable`

@@ -43,6 +43,7 @@
             :active="utility.id === id"
             :indicator="!!utility.badgeCount"
             block
+            flush
           >
             {{ utility.displayName }}
           </CpLink>
