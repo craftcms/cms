@@ -47,6 +47,8 @@ final class TemplateHooks
     public function invoke(string $hook, array &$context): string
     {
         $return = '';
+
+        /** @var bool - Needed because PHPstan will otherwise type it as `false` */
         $handled = false;
 
         foreach ($this->hooks[$hook] ?? [] as $handler) {

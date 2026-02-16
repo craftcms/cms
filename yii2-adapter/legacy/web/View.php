@@ -274,30 +274,6 @@ class View extends \yii\web\View
     private int $_jsImportBufferDepth = 0;
 
     /**
-     * @var array|null the registered generic `<script>` code blocks
-     * @see registerScript()
-     */
-    private ?array $_scripts = null;
-
-    /**
-     * @var array the registered generic HTML code blocks
-     * @see registerHtml()
-     */
-    private array $_html = [];
-
-    /**
-     * @var array the registered imports for JavaScript as modules
-     * @see registerJsImport()
-     */
-    private array $_jsImports = [];
-
-    /**
-     * @var string[] The icons that should be registered to the page.
-     * @see registerIcons()
-     */
-    private array $_icons = [];
-
-    /**
      * @var array<string, string> JS registered at POS_READY, keyed by key.
      * These are kept in the adapter (not the registry) because they require
      * jQuery wrapping at render time.
@@ -1198,6 +1174,7 @@ class View extends \yii\web\View
             )(),
             self::POS_READY => $this->_readyJs[$key] = $js,
             self::POS_LOAD => $this->_loadJs[$key] = $js,
+            default => null,
         };
     }
 
