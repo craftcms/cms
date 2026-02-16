@@ -37,7 +37,7 @@ async function generateBundle(config = {}) {
       },
       minify: !isDeveloping,
       external: ['lit', '@lion/ui', '@awesome.me/webawesome'],
-      format: ['esm', 'cjs'],
+      format: ['esm'],
       sourcemap: true,
       dts: true,
       ...config,
