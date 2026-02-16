@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Tests\User;
+namespace CraftCms\Cms\Tests\Feature\User;
 
 use Carbon\CarbonInterval;
 use CraftCms\Cms\Cms;

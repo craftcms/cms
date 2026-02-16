@@ -398,10 +398,10 @@ class View extends \yii\web\View
         }
 
         // Register the control panel hooks
-        $this->hook('cp.layouts.elementindex', [$this, '_prepareElementIndexVariables']);
-        $this->hook('cp.elements.toolbar', [$this, '_prepareElementToolbarVariables']);
-        $this->hook('cp.elements.sources', [$this, '_prepareElementSourcesVariables']);
-        $this->hook('cp.elements.element', [$this, '_elementChipHtml']);
+        $this->hook('cp.layouts.elementindex', [$this, 'prepareElementIndexVariables']);
+        $this->hook('cp.elements.toolbar', [$this, 'prepareElementToolbarVariables']);
+        $this->hook('cp.elements.sources', [$this, 'prepareElementSourcesVariables']);
+        $this->hook('cp.elements.element', [$this, 'elementChipHtml']);
     }
 
     /**
@@ -2742,7 +2742,7 @@ JS;
         $this->registerJs($js, self::POS_HEAD);
     }
 
-    private function _prepareElementIndexVariables(array &$context): null
+    public function prepareElementIndexVariables(array &$context): null
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $context['elementType'];
@@ -2776,7 +2776,7 @@ JS;
         return null;
     }
 
-    private function _prepareElementToolbarVariables(array &$context): null
+    public function prepareElementToolbarVariables(array &$context): null
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $context['elementType'];
@@ -2806,7 +2806,7 @@ JS;
         return null;
     }
 
-    private function _prepareElementSourcesVariables(array &$context): null
+    public function prepareElementSourcesVariables(array &$context): null
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $context['elementType'];
@@ -2837,7 +2837,7 @@ JS;
      * @param array $context
      * @return string|null
      */
-    private function _elementChipHtml(array $context): ?string
+    public function elementChipHtml(array $context): ?string
     {
         Deprecator::log('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\Tests\Queue\TestClasses\TestBatchedElementJob;
+use CraftCms\Cms\Tests\Feature\Queue\TestClasses\TestBatchedElementJob;
 use Illuminate\Support\Facades\Queue;
 
 it('can be dispatched to the queue', function () {

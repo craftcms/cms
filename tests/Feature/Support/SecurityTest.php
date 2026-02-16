@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Tests\Support;
+namespace CraftCms\Cms\Tests\Feature\Support;
 
 use CraftCms\Cms\Support\Security;
 

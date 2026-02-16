@@ -421,7 +421,7 @@ test('UnwrapNoscript', function (): void {
 });
 
 test('Svg', function (): void {
-    $path = dirname(__DIR__, 1).'/_data/assets/files/craft-logo.svg';
+    $path = dirname(__DIR__, 2).'/_data/assets/files/craft-logo.svg';
     $contents = file_get_contents($path);
 
     $svg = Html::svg($path);

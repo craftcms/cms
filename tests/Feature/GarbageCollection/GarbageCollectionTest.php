@@ -39,7 +39,7 @@ it('runs on a lottery', function () {
 });
 
 it('uses every action at least once', function () {
-    $actions = collect(File::allFiles(__DIR__.'/../../src/GarbageCollection/Actions'))
+    $actions = collect(File::allFiles(__DIR__.'/../../../src/GarbageCollection/Actions'))
         ->map(fn ($file) => 'CraftCms\\Cms\\GarbageCollection\\Actions\\'.Str::replaceLast('.php', '',
             $file->getFilename()))
         ->filter(fn ($action) => $action !== GarbageCollectionAction::class);

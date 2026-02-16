@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Tests\Queue\TestClasses;
+namespace CraftCms\Cms\Tests\Feature\Queue\TestClasses;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Queue\JobProgress;
-use CraftCms\Cms\Tests\Queue\TestClasses\TestBatchedJob;
+use CraftCms\Cms\Tests\Feature\Queue\TestClasses\TestBatchedJob;
 use Illuminate\Support\Facades\Queue;
 
 it('has default batch size of 100', function () {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Tests\Queue\TestClasses;
+namespace CraftCms\Cms\Tests\Feature\Queue\TestClasses;
 
 use CraftCms\Cms\Queue\BatchedJob;
 use CraftCms\Cms\Queue\JobProgress;

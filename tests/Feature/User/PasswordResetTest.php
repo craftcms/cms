@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Tests\User;
+namespace CraftCms\Cms\Tests\Feature\User;
 
 use CraftCms\Cms\Notifications\Channels\CraftChannel;
 use CraftCms\Cms\Support\Facades\Users;

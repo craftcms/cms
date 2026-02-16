@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Tests\Auth\Events;
+namespace CraftCms\Cms\Tests\Feature\Auth\Events;
 
 use CraftCms\Cms\Auth\Events\AuthorizingElement;
 use CraftCms\Cms\Entry\Elements\Entry;

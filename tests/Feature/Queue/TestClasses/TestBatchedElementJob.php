@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Tests\Queue\TestClasses;
+namespace CraftCms\Cms\Tests\Feature\Queue\TestClasses;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Queue\BatchedElementJob;
