@@ -337,7 +337,6 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ]);
 
         $linkTypes = $this->getLinkTypes();
-        Craft::$app->getView();
 
         foreach ($types->all() as $typeId => $typeClass) {
             /** @var BaseLinkType $linkType */
