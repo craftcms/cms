@@ -49,6 +49,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -578,7 +579,7 @@ JS, [
             $element->revisionId,
             $element->siteId,
             $redirectUrl,
-        ], View::POS_END);
+        ], Position::Body);
 
         [$docTitle, $title] = $this->_editElementTitles($element);
 

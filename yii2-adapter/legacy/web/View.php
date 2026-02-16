@@ -1200,10 +1200,11 @@ class View extends \yii\web\View
      * The buffer’s contents can be cleared and returned later via [[clearJsBuffer()]].
      *
      * @see clearJsBuffer()
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startJsBuffer()} instead.
      */
     public function startJsBuffer(): void
     {
-        $this->registry()->startBuffer('js');
+        $this->registry()->startJsBuffer();
         $this->_jsBufferDepth++;
 
         $this->_readyLoadBuffers[] = [
@@ -1225,8 +1226,10 @@ class View extends \yii\web\View
      *
      * @param bool $scriptTag Whether the returned JavaScript code should be wrapped in a `<script>` tag.
      * @param bool $combine Whether the JavaScript code should be returned in a combined blob. (Position and key info will be lost.)
+     *
      * @return string|array|false The JavaScript code that was registered while the buffer was active, or `false` if there wasn't an active buffer.
      * @see startJsBuffer()
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearJsBuffer()} instead.
      */
     public function clearJsBuffer(bool $scriptTag = true, bool $combine = true): string|array|false
     {
@@ -1235,7 +1238,7 @@ class View extends \yii\web\View
         }
 
         // Capture what was registered during the buffer and restore pre-buffer state
-        $registryState = $this->registry()->clearBuffer('js');
+        $registryState = $this->registry()->clearJsBuffer(scriptTag: false, combine: false);
         $this->_jsBufferDepth--;
 
         // Capture and restore the adapter's ready/load/begin JS
@@ -1318,10 +1321,11 @@ class View extends \yii\web\View
      *
      * @see clearScriptBuffer()
      * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startScriptBuffer()} instead.
      */
     public function startScriptBuffer(): void
     {
-        $this->registry()->startBuffer('scripts');
+        $this->registry()->startScriptBuffer();
         $this->_scriptBufferDepth++;
 
         $this->_scriptBeginBuffers[] = $this->_beginScripts;
@@ -1335,6 +1339,7 @@ class View extends \yii\web\View
      * @return array|false The `<script>` tags that were registered while the buffer was active, or `false` if there wasn't an active buffer.
      * @see startScriptBuffer()
      * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearScriptBuffer()} instead.
      */
     public function clearScriptBuffer(): array|false
     {
@@ -1343,7 +1348,7 @@ class View extends \yii\web\View
         }
 
         // Capture what was registered during the buffer and restore pre-buffer state
-        $registryState = $this->registry()->clearBuffer('scripts');
+        $registryState = $this->registry()->clearScriptBuffer();
         $this->_scriptBufferDepth--;
 
         $bufferedBeginScripts = $this->_beginScripts;
@@ -1371,10 +1376,11 @@ class View extends \yii\web\View
      *
      * @see clearCssBuffer()
      * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startCssBuffer()} instead.
      */
     public function startCssBuffer(): void
     {
-        $this->registry()->startBuffer('css');
+        $this->registry()->startCssBuffer();
         $this->_cssBufferDepth++;
     }
 
@@ -1385,6 +1391,7 @@ class View extends \yii\web\View
      * @return array|false The `<style>` tags that were registered while the buffer was active, or `false` if there wasn't an active buffer.
      * @see startCssBuffer()
      * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearCssBuffer()} instead.
      */
     public function clearCssBuffer(): array|false
     {
@@ -1392,7 +1399,7 @@ class View extends \yii\web\View
             return false;
         }
 
-        $registryState = $this->registry()->clearBuffer('css');
+        $registryState = $this->registry()->clearCssBuffer();
         $this->_cssBufferDepth--;
 
         return array_map(fn($v) => (string) $v, $registryState);
@@ -1405,10 +1412,11 @@ class View extends \yii\web\View
      *
      * @see clearCssFileBuffer()
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startCssFileBuffer()} instead.
      */
     public function startCssFileBuffer(): void
     {
-        $this->registry()->startBuffer('cssFiles');
+        $this->registry()->startCssFileBuffer();
         $this->_cssFileBufferDepth++;
     }
 
@@ -1419,6 +1427,7 @@ class View extends \yii\web\View
      * @return array|false The `<link rel="stylesheet">` tags that were registered while the buffer was active, or `false` if there wasn't an active buffer.
      * @see startCssFileBuffer()
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearCssFileBuffer()} instead.
      */
     public function clearCssFileBuffer(): array|false
     {
@@ -1426,7 +1435,7 @@ class View extends \yii\web\View
             return false;
         }
 
-        $registryState = $this->registry()->clearBuffer('cssFiles');
+        $registryState = $this->registry()->clearCssFileBuffer();
         $this->_cssFileBufferDepth--;
 
         return $registryState;
@@ -1439,10 +1448,11 @@ class View extends \yii\web\View
      *
      * @see clearJsFileBuffer()
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startJsFileBuffer()} instead.
      */
     public function startJsFileBuffer(): void
     {
-        $this->registry()->startBuffer('jsFiles');
+        $this->registry()->startJsFileBuffer();
         $this->_jsFileBufferDepth++;
 
         $this->_jsFileBeginBuffers[] = $this->_beginJsFiles;
@@ -1456,6 +1466,7 @@ class View extends \yii\web\View
      * @return array|false The `<script>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn't an active buffer.
      * @see startJsFileBuffer()
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearJsFileBuffer()} instead.
      */
     public function clearJsFileBuffer(): array|false
     {
@@ -1463,7 +1474,7 @@ class View extends \yii\web\View
             return false;
         }
 
-        $registryState = $this->registry()->clearBuffer('jsFiles');
+        $registryState = $this->registry()->clearJsFileBuffer();
         $this->_jsFileBufferDepth--;
 
         $bufferedBeginJsFiles = $this->_beginJsFiles;
@@ -1495,10 +1506,11 @@ class View extends \yii\web\View
      * Starts a buffer for any html tags registered with [[registerHtml()]].
      *
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startHtmlBuffer()} instead.
      */
     public function startHtmlBuffer(): void
     {
-        $this->registry()->startBuffer('html');
+        $this->registry()->startHtmlBuffer();
         $this->_htmlBufferDepth++;
 
         $this->_htmlBeginBuffers[] = $this->_beginHtml;
@@ -1511,6 +1523,7 @@ class View extends \yii\web\View
      *
      * @return array|false The html that was registered while the buffer was active or `false` if there wasn't an active buffer.
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearHtmlBuffer()} instead.
      */
     public function clearHtmlBuffer(): array|false
     {
@@ -1518,7 +1531,7 @@ class View extends \yii\web\View
             return false;
         }
 
-        $registryState = $this->registry()->clearBuffer('html');
+        $registryState = $this->registry()->clearHtmlBuffer();
         $this->_htmlBufferDepth--;
 
         $bufferedBeginHtml = $this->_beginHtml;
@@ -1550,7 +1563,7 @@ class View extends \yii\web\View
      */
     public function startMetaTagBuffer(): void
     {
-        $this->registry()->startBuffer('metaTags');
+        $this->registry()->startMetaTagBuffer();
         $this->_metaTagBufferDepth++;
     }
 
@@ -1561,7 +1574,7 @@ class View extends \yii\web\View
      * @return array|false The `<meta>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn't an active buffer.
      * @see startMetaTagBuffer()
      * @since 4.5.8
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearMetaTagBuffer() instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearMetaTagBuffer()} instead.
      */
     public function clearMetaTagBuffer(): array|false
     {
@@ -1569,7 +1582,7 @@ class View extends \yii\web\View
             return false;
         }
 
-        $registryState = $this->registry()->clearBuffer('metaTags');
+        $registryState = $this->registry()->clearMetaTagBuffer();
         $this->_metaTagBufferDepth--;
 
         return $registryState;
@@ -1617,7 +1630,7 @@ class View extends \yii\web\View
      *
      * @see clearJsImportBuffer()
      * @since 5.6.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startBuffer('jsImports')} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startJsImportBuffer()} instead.
      */
     public function startJsImportBuffer(): void
     {
@@ -1627,7 +1640,7 @@ class View extends \yii\web\View
 
     /**
      * @inheritdoc
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearBuffer('jsImports')} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearJsImportBuffer()} instead.
      */
     public function clearJsImportBuffer(): array|false
     {
@@ -2300,7 +2313,9 @@ JS;
      * Sets the JS files that should be marked as already registered.
      *
      * @param string[] $keys
+     *
      * @since 3.0.10
+     * @deprecated 6.0.0
      */
     public function setRegisteredJsFiles(array $keys): void
     {
@@ -2312,6 +2327,7 @@ JS;
      *
      * @param string[] $names Asset bundle names
      * @since 3.0.10
+     * @deprecated 6.0.0
      */
     public function setRegisteredAssetBundles(array $names): void
     {

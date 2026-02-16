@@ -16,6 +16,14 @@ use Stringable;
 
 use function CraftCms\Cms\t;
 
+/**
+ * Manages the registration and rendering of front-end assets (JavaScript, CSS, HTML, meta tags, etc.)
+ * for a single request lifecycle.
+ *
+ * Assets are registered via dedicated methods (e.g. [[js()]], [[css()]], [[jsFile()]]) and rendered
+ * into the page via [[headHtml()]] and [[bodyHtml()]]. A per-key buffering system allows capturing
+ * assets registered during a block of code without them appearing in the final output.
+ */
 #[Scoped]
 final class AssetRegistry
 {
@@ -58,6 +66,17 @@ final class AssetRegistry
      */
     private array $buffers = [];
 
+    /**
+     * Registers inline JavaScript code.
+     *
+     * The code will be rendered inside a `<script>` tag when [[headHtml()]] or [[bodyHtml()]]
+     * is called, depending on the given position. If the same key is registered twice, the
+     * latter value overwrites the former.
+     *
+     * @param  string  $js  The JavaScript code to register.
+     * @param  Position  $position  Where on the page the code should appear.
+     * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$js`.
+     */
     public function js(string $js, Position $position = Position::Body, ?string $key = null): void
     {
         $js = Str::finish(trim($js), ';');
@@ -65,6 +84,17 @@ final class AssetRegistry
         $this->js[$position->value][$key ?? md5($js)] = $js;
     }
 
+    /**
+     * Registers inline JavaScript code using a callback and pre-JSON-encoded variables.
+     *
+     * Each value in `$vars` is JSON-encoded and passed to `$fn` as positional arguments.
+     * The string returned by `$fn` is then registered via [[js()]].
+     *
+     * @param  callable  $fn  A callback that receives the JSON-encoded variables and returns JS code.
+     * @param  array  $vars  Variables to JSON-encode and pass to `$fn`.
+     * @param  Position  $position  Where on the page the code should appear.
+     * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the resulting JS.
+     */
     public function jsWithVars(callable $fn, array $vars, Position $position = Position::Body, ?string $key = null): void
     {
         $encodedVars = array_map(fn (mixed $var): string => Json::encode($var), $vars);
@@ -73,6 +103,17 @@ final class AssetRegistry
         $this->js($js, $position, $key);
     }
 
+    /**
+     * Registers an external JavaScript file.
+     *
+     * The file is rendered as a `<script src="...">` tag. Position can be set via an
+     * `options['position']` key (defaults to [[Position::Body]]). All other options are
+     * passed through as HTML attributes on the `<script>` tag.
+     *
+     * @param  string  $url  The URL of the JavaScript file.
+     * @param  array  $options  HTML attributes and options. A `position` key sets the page position.
+     * @param  string|null  $key  A unique key for deduplication. Defaults to `$url`.
+     */
     public function jsFile(string $url, array $options = [], ?string $key = null): void
     {
         $position = Position::tryFrom((int) Arr::pull($options, 'position', Position::Body->value)) ?? Position::Body;
@@ -80,21 +121,62 @@ final class AssetRegistry
         $this->jsFiles[$position->value][$key ?? $url] = Html::javaScriptFile($url, $options);
     }
 
+    /**
+     * Registers an external CSS stylesheet file.
+     *
+     * The file is rendered as a `<link rel="stylesheet">` tag in the `<head>`.
+     *
+     * @param  string  $url  The URL of the CSS file.
+     * @param  array  $options  HTML attributes to add to the `<link>` tag.
+     * @param  string|null  $key  A unique key for deduplication. Defaults to `$url`.
+     */
     public function cssFile(string $url, array $options = [], ?string $key = null): void
     {
         $this->cssFiles[$key ?? $url] = Html::cssFile($url, $options);
     }
 
+    /**
+     * Registers inline CSS code.
+     *
+     * The code is rendered inside a `<style>` tag in the `<head>`.
+     *
+     * @param  string  $css  The CSS code to register.
+     * @param  array  $options  HTML attributes to add to the `<style>` tag.
+     * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$css`.
+     */
     public function css(string $css, array $options = [], ?string $key = null): void
     {
         $this->css[$key ?? md5($css)] = Html::style($css, $options);
     }
 
+    /**
+     * Registers an inline `<script>` tag with arbitrary content (e.g. JSON-LD, application/ld+json).
+     *
+     * Unlike [[js()]], the content is not assumed to be executable JavaScript and will not
+     * have a semicolon appended. Use this for structured data or non-standard script types.
+     *
+     * @param  string  $script  The content of the `<script>` tag.
+     * @param  Position  $position  Where on the page the tag should appear.
+     * @param  array  $options  HTML attributes to add to the `<script>` tag (e.g. `['type' => 'application/ld+json']`).
+     * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$script`.
+     */
     public function script(string $script, Position $position = Position::Body, array $options = [], ?string $key = null): void
     {
         $this->scripts[$position->value][$key ?? md5($script)] = Html::script($script, $options);
     }
 
+    /**
+     * Registers an inline `<script>` tag using a callback and pre-JSON-encoded variables.
+     *
+     * Each value in `$vars` is JSON-encoded and passed to `$fn` as positional arguments.
+     * The string returned by `$fn` is then registered via [[script()]].
+     *
+     * @param  callable  $fn  A callback that receives the JSON-encoded variables and returns script content.
+     * @param  array  $vars  Variables to JSON-encode and pass to `$fn`.
+     * @param  Position  $position  Where on the page the tag should appear.
+     * @param  array  $options  HTML attributes to add to the `<script>` tag.
+     * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the resulting script.
+     */
     public function scriptWithVars(callable $fn, array $vars, Position $position = Position::Body, array $options = [], ?string $key = null): void
     {
         $encodedVars = array_map(fn (mixed $var): string => Json::encode($var), $vars);
@@ -103,16 +185,41 @@ final class AssetRegistry
         $this->script($script, $position, $options, $key);
     }
 
+    /**
+     * Registers arbitrary HTML to be rendered in the page.
+     *
+     * @param  string  $html  The HTML to register.
+     * @param  Position  $position  Where on the page the HTML should appear.
+     * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$html`.
+     */
     public function html(string $html, Position $position = Position::Body, ?string $key = null): void
     {
         $this->html[$position->value][$key ?? md5($html)] = $html;
     }
 
+    /**
+     * Registers a JavaScript import mapping for the import map.
+     *
+     * Registered imports are rendered as a `<script type="importmap">` tag in [[headHtml()]].
+     *
+     * @param  string  $key  The module specifier (e.g. `lodash`).
+     * @param  string  $value  The URL the specifier should resolve to.
+     */
     public function jsImport(string $key, string $value): void
     {
         $this->jsImports[$key] = $value;
     }
 
+    /**
+     * Registers JavaScript translation messages.
+     *
+     * For each message whose translation differs from the original, a line of JavaScript is
+     * registered that populates `Craft.translations[category][message]`. Messages that don't
+     * have a translation are skipped.
+     *
+     * @param  array  $messages  The message strings to translate.
+     * @param  string  $category  The translation category (e.g. `'app'` or `'site'`).
+     */
     public function translations(array $messages, string $category = 'app'): void
     {
         $jsCategory = Json::encode($category);
@@ -147,23 +254,54 @@ final class AssetRegistry
     }
 
     /**
-     * @param  list<string>  $icons
+     * Registers icon SVGs to be injected as `Craft.icons` in the page's JavaScript.
+     *
+     * Duplicate icon names are automatically deduplicated.
+     *
+     * @param  list<string>  $icons  The icon names to register.
      */
     public function icons(array $icons): void
     {
         $this->icons = array_values(array_unique([...$this->icons, ...$icons]));
     }
 
+    /**
+     * Registers a `<meta>` tag.
+     *
+     * The tag is rendered in [[headHtml()]].
+     *
+     * @param  array  $attributes  The HTML attributes for the `<meta>` tag (e.g. `['name' => 'description', 'content' => '...']`).
+     * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the serialized attributes.
+     */
     public function metaTag(array $attributes, ?string $key = null): void
     {
         $this->metaTags[$key ?? md5(serialize($attributes))] = Html::tag('meta', attributes: $attributes);
     }
 
+    /**
+     * Registers a `<link>` tag.
+     *
+     * The tag is rendered in [[headHtml()]].
+     *
+     * @param  array  $attributes  The HTML attributes for the `<link>` tag (e.g. `['rel' => 'canonical', 'href' => '...']`).
+     * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the serialized attributes.
+     */
     public function linkTag(array $attributes, ?string $key = null): void
     {
         $this->linkTags[$key ?? md5(serialize($attributes))] = Html::tag('link', attributes: $attributes);
     }
 
+    /**
+     * Renders all assets registered for the `<head>` section of the page.
+     *
+     * Output order: import map, scripts, HTML, meta tags, link tags, CSS files,
+     * inline CSS, JS files, and inline JS.
+     *
+     * By default, rendered assets are cleared from the registry after output.
+     *
+     * @param  bool  $clear  Whether to clear the rendered head assets from the registry.
+     * @return string The rendered HTML for the `<head>`.
+     */
     public function headHtml(bool $clear = true): string
     {
         $head = Position::Head->value;
@@ -203,6 +341,17 @@ final class AssetRegistry
         return $parts->implode(PHP_EOL);
     }
 
+    /**
+     * Renders all assets registered for the end of the `<body>` section of the page.
+     *
+     * Output order: scripts, HTML, JS files, and inline JS. Registered icons are
+     * serialized into a `Craft.icons` JS assignment before rendering.
+     *
+     * By default, rendered assets are cleared from the registry after output.
+     *
+     * @param  bool  $clear  Whether to clear the rendered body assets from the registry.
+     * @return string The rendered HTML for the end of the `<body>`.
+     */
     public function bodyHtml(bool $clear = true): string
     {
         $body = Position::Body->value;
@@ -238,11 +387,13 @@ final class AssetRegistry
     }
 
     /**
-     * Starts a buffer for the specified array property keys. Each key gets
-     * its current state pushed onto an independent stack, and is then emptied.
-     * Nesting is supported — each key has its own stack depth.
+     * Begins buffering one or more asset property keys.
      *
-     * @param  list<string>  $keys  The property names to buffer (e.g. ['js'], ['css', 'cssFiles'])
+     * For each key, the current state is pushed onto a stack and then emptied so that
+     * any new registrations are captured in isolation. Nesting is supported — each key
+     * maintains its own independent stack depth.
+     *
+     * @param  array|string  $keys  The property names to buffer (e.g. `'js'`, `['css', 'cssFiles']`).
      */
     public function startBuffer(array|string $keys): void
     {
@@ -253,15 +404,17 @@ final class AssetRegistry
     }
 
     /**
-     * Ends a buffer for the specified array property keys. For each key,
-     * captures the current value (what was registered during the buffer),
-     * pops and restores the previous state from the stack.
+     * Clears and ends a buffer started via [[startBuffer()]], returning any assets that were
+     * registered while the buffer was active.
      *
-     * When called with just one key it returns the captured state, otherwise
-     * it returns an array of captured states keyed by the buffer keys.
+     * The previous state (before the buffer was started) is restored. When a single key is
+     * given, its captured value is returned directly. When multiple keys are given, an
+     * associative array keyed by property name is returned.
      *
-     * @param  list<string>  $keys  The property names to clear (must match a previous startBuffer call)
-     * @return array<string, mixed>|mixed The captured state for each key
+     * @param  array|string  $keys  One or more property keys to clear (must match the keys passed to [[startBuffer()]]).
+     * @return mixed The captured assets — a single value for a single key, or `['key' => value, ...]` for multiple keys.
+     *
+     * @see startBuffer()
      */
     public function clearBuffer(array|string $keys): mixed
     {
@@ -284,7 +437,61 @@ final class AssetRegistry
     }
 
     /**
-     * Starts a buffer for any html tags registered with [[html()]].
+     * Starts a buffer for any inline CSS registered with [[css()]].
+     *
+     * The buffer's contents can be cleared and returned later via [[clearCssBuffer()]].
+     *
+     * @see clearCssBuffer()
+     */
+    public function startCssBuffer(): void
+    {
+        $this->startBuffer('css');
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startCssBuffer()]], returning any inline CSS
+     * that was registered while the buffer was active.
+     *
+     * @return array<string, Stringable|string> The CSS entries keyed by their registration key.
+     *
+     * @see startCssBuffer()
+     */
+    public function clearCssBuffer(): array
+    {
+        return $this->clearBuffer('css');
+    }
+
+    /**
+     * Starts a buffer for any CSS files registered with [[cssFile()]].
+     *
+     * The buffer's contents can be cleared and returned later via [[clearCssFileBuffer()]].
+     *
+     * @see clearCssFileBuffer()
+     */
+    public function startCssFileBuffer(): void
+    {
+        $this->startBuffer('cssFiles');
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startCssFileBuffer()]], returning any CSS file
+     * registrations that were captured while the buffer was active.
+     *
+     * @return array<string, Stringable|string> The CSS file entries keyed by their registration key.
+     *
+     * @see startCssFileBuffer()
+     */
+    public function clearCssFileBuffer(): array
+    {
+        return $this->clearBuffer('cssFiles');
+    }
+
+    /**
+     * Starts a buffer for any HTML registered with [[html()]].
+     *
+     * The buffer's contents can be cleared and returned later via [[clearHtmlBuffer()]].
+     *
+     * @see clearHtmlBuffer()
      */
     public function startHtmlBuffer(): void
     {
@@ -292,10 +499,12 @@ final class AssetRegistry
     }
 
     /**
-     * Clears and ends a buffer started via [[startHtmlBuffer()]], returning any html tags that were registered
-     * while the buffer was active.
+     * Clears and ends a buffer started via [[startHtmlBuffer()]], returning any HTML
+     * that was registered while the buffer was active.
      *
-     * @return array The html that was registered while the buffer was active.
+     * @return array<int, array<string, string>> The HTML entries keyed by position and registration key.
+     *
+     * @see startHtmlBuffer()
      */
     public function clearHtmlBuffer(): array|false
     {
@@ -303,9 +512,9 @@ final class AssetRegistry
     }
 
     /**
-     * Starts a buffer for any JavaScript code registered with [[js()]].
+     * Starts a buffer for any inline JavaScript registered with [[js()]].
      *
-     * The buffer’s contents can be cleared and returned later via [[clearJsBuffer()]].
+     * The buffer's contents can be cleared and returned later via [[clearJsBuffer()]].
      *
      * @see clearJsBuffer()
      */
@@ -315,14 +524,18 @@ final class AssetRegistry
     }
 
     /**
-     * Clears and ends a buffer started via [[startBuffer('js')]], returning any JavaScript code that was registered while
-     * the buffer was active.
+     * Clears and ends a buffer started via [[startJsBuffer()]], returning any JavaScript code
+     * that was registered while the buffer was active.
      *
-     * @param  bool  $scriptTag  Whether the returned JavaScript code should be wrapped in a `<script>` tag.
-     * @param  bool  $combine  Whether the JavaScript code should be returned in a combined blob. (Position and key info will be lost.)
-     * @return string|array The JavaScript code that was registered while the buffer was active.
+     * By default, all captured JS is combined into a single string wrapped in a `<script>` tag.
+     * Set `$combine` to `false` to receive an array keyed by [[Position]] value.
+     * Set `$scriptTag` to `false` to receive raw JS without `<script>` tag wrapping.
      *
-     * @see startBuffer()
+     * @param  bool  $scriptTag  Whether the returned code should be wrapped in a `<script>` tag.
+     * @param  bool  $combine  Whether all positions should be combined into a single blob (position info is lost).
+     * @return string|array The captured JS — a string when combined, or an array keyed by position value when not.
+     *
+     * @see startJsBuffer()
      */
     public function clearJsBuffer(bool $scriptTag = true, bool $combine = true): string|array
     {
@@ -354,9 +567,34 @@ final class AssetRegistry
     }
 
     /**
-     * Starts a buffer for any JavaScript imports registered with [[jsImport()]].
+     * Starts a buffer for any JavaScript files registered with [[jsFile()]].
      *
-     * The buffer’s contents can be cleared and returned later via [[clearJsImportBuffer()]].
+     * The buffer's contents can be cleared and returned later via [[clearJsFileBuffer()]].
+     *
+     * @see clearJsFileBuffer()
+     */
+    public function startJsFileBuffer(): void
+    {
+        $this->startBuffer('jsFiles');
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startJsFileBuffer()]], returning any JavaScript file
+     * registrations that were captured while the buffer was active.
+     *
+     * @return array<int, array<string, Stringable|string>> The JS file entries keyed by position and registration key.
+     *
+     * @see startJsFileBuffer()
+     */
+    public function clearJsFileBuffer(): array
+    {
+        return $this->clearBuffer('jsFiles');
+    }
+
+    /**
+     * Starts a buffer for any JavaScript import mappings registered with [[jsImport()]].
+     *
+     * The buffer's contents can be cleared and returned later via [[clearJsImportBuffer()]].
      *
      * @see clearJsImportBuffer()
      */
@@ -366,9 +604,10 @@ final class AssetRegistry
     }
 
     /**
-     * Clears a buffer for any JavaScript imports registered with [[jsImport()]].
+     * Clears and ends a buffer started via [[startJsImportBuffer()]], returning any JavaScript
+     * import mappings that were registered while the buffer was active.
      *
-     * Clears the `jsImports` buffer's contents and returns them.
+     * @return array<string, string> The import map entries keyed by module specifier.
      *
      * @see startJsImportBuffer()
      */
@@ -390,10 +629,10 @@ final class AssetRegistry
     }
 
     /**
-     * Clears and ends a buffer started via [[startMetaTagBuffer()]], returning any `<meta>` tags that were registered
-     * while the buffer was active.
+     * Clears and ends a buffer started via [[startMetaTagBuffer()]], returning any `<meta>` tags
+     * that were registered while the buffer was active.
      *
-     * @return array The `<meta>` tags that were registered while the buffer was active (indexed by position).
+     * @return array<string, Stringable|string> The meta tag entries keyed by their registration key.
      *
      * @see startMetaTagBuffer()
      */
@@ -403,10 +642,39 @@ final class AssetRegistry
     }
 
     /**
-     * Applies previously captured buffer state back into the registry,
-     * merging with any existing registrations.
+     * Starts a buffer for any `<script>` tags registered with [[script()]].
      *
-     * @param  array<string, mixed>  $buffer  The captured state from clearBuffer()
+     * The buffer’s contents can be cleared and returned later via [[clearScriptBuffer()]].
+     *
+     * @see clearScriptBuffer()
+     */
+    public function startScriptBuffer(): void
+    {
+        $this->startBuffer('scripts');
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startScriptBuffer()]], returning any `<script>` tags
+     * that were registered while the buffer was active.
+     *
+     * @return array<int, array<string, Stringable|string>> The script entries keyed by position and registration key.
+     *
+     * @see startScriptBuffer()
+     */
+    public function clearScriptBuffer(): array
+    {
+        return $this->clearBuffer('scripts');
+    }
+
+    /**
+     * Applies previously captured buffer state back into the registry, merging with any
+     * existing registrations.
+     *
+     * Position-keyed properties (`js`, `scripts`, `jsFiles`, `html`) are merged per-position.
+     * Flat-keyed properties (`cssFiles`, `css`, `jsImports`, `metaTags`, `linkTags`) are
+     * merged by key. Icons are deduplicated and appended.
+     *
+     * @param  array<string, mixed>  $buffer  The captured state from [[clearBuffer()]], keyed by property name.
      */
     public function applyBuffer(array $buffer): void
     {
@@ -430,7 +698,7 @@ final class AssetRegistry
     }
 
     /**
-     * Resets all registered assets back to their initial state.
+     * Resets all registered assets and active buffers, returning the registry to a clean state.
      */
     public function clear(): void
     {

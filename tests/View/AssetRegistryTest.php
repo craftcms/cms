@@ -877,6 +877,118 @@ describe('mixed buffer types at different nesting depths', function () {
     });
 });
 
+describe('startCssBuffer / clearCssBuffer', function () {
+    it('captures and restores inline CSS', function () {
+        $this->registry->css('.before {}');
+
+        $this->registry->startCssBuffer();
+        $this->registry->css('.during {}');
+        $captured = $this->registry->clearCssBuffer();
+
+        expect($captured)->not->toBeEmpty()
+            ->and($this->registry->headHtml())->toContain('.before')
+            ->and($this->registry->headHtml())->not->toContain('.during');
+    });
+});
+
+describe('startCssFileBuffer / clearCssFileBuffer', function () {
+    it('captures and restores CSS file registrations', function () {
+        $this->registry->cssFile('/before.css');
+
+        $this->registry->startCssFileBuffer();
+        $this->registry->cssFile('/during.css');
+        $captured = $this->registry->clearCssFileBuffer();
+
+        expect($captured)->not->toBeEmpty()
+            ->and($this->registry->headHtml())->toContain('/before.css')
+            ->and($this->registry->headHtml())->not->toContain('/during.css');
+    });
+});
+
+describe('startHtmlBuffer / clearHtmlBuffer', function () {
+    it('captures and restores HTML registrations', function () {
+        $this->registry->html('<div>before</div>');
+
+        $this->registry->startHtmlBuffer();
+        $this->registry->html('<div>during</div>');
+        $captured = $this->registry->clearHtmlBuffer();
+
+        expect($captured)->not->toBeEmpty()
+            ->and($this->registry->bodyHtml())->toContain('<div>before</div>')
+            ->and($this->registry->bodyHtml())->not->toContain('<div>during</div>');
+    });
+});
+
+describe('startJsBuffer / clearJsBuffer', function () {
+    it('captures and restores inline JS', function () {
+        $this->registry->js('var before = 1');
+
+        $this->registry->startJsBuffer();
+        $this->registry->js('var during = 1');
+        $result = $this->registry->clearJsBuffer(scriptTag: false);
+
+        expect($result)->toContain('var during = 1;')
+            ->and($this->registry->bodyHtml())->toContain('var before = 1;')
+            ->and($this->registry->bodyHtml())->not->toContain('var during = 1;');
+    });
+});
+
+describe('startJsFileBuffer / clearJsFileBuffer', function () {
+    it('captures and restores JS file registrations', function () {
+        $this->registry->jsFile('/before.js');
+
+        $this->registry->startJsFileBuffer();
+        $this->registry->jsFile('/during.js');
+        $captured = $this->registry->clearJsFileBuffer();
+
+        expect($captured)->not->toBeEmpty()
+            ->and($this->registry->bodyHtml())->toContain('/before.js')
+            ->and($this->registry->bodyHtml())->not->toContain('/during.js');
+    });
+});
+
+describe('startJsImportBuffer / clearJsImportBuffer', function () {
+    it('captures and restores JS import registrations', function () {
+        $this->registry->jsImport('before', '/before.js');
+
+        $this->registry->startJsImportBuffer();
+        $this->registry->jsImport('during', '/during.js');
+        $captured = $this->registry->clearJsImportBuffer();
+
+        expect($captured)->toHaveKey('during')
+            ->and($this->registry->headHtml())->toContain('"before"')
+            ->and($this->registry->headHtml())->not->toContain('"during"');
+    });
+});
+
+describe('startMetaTagBuffer / clearMetaTagBuffer', function () {
+    it('captures and restores meta tag registrations', function () {
+        $this->registry->metaTag(['name' => 'before', 'content' => 'yes'], 'before');
+
+        $this->registry->startMetaTagBuffer();
+        $this->registry->metaTag(['name' => 'during', 'content' => 'yes'], 'during');
+        $captured = $this->registry->clearMetaTagBuffer();
+
+        expect($captured)->toHaveKey('during')
+            ->and($this->registry->headHtml())->toContain('name="before"')
+            ->and($this->registry->headHtml())->not->toContain('name="during"');
+    });
+});
+
+describe('startScriptBuffer / clearScriptBuffer', function () {
+    it('captures and restores script registrations', function () {
+        $this->registry->script('before()');
+
+        $this->registry->startScriptBuffer();
+        $this->registry->script('during()');
+        $captured = $this->registry->clearScriptBuffer();
+
+        expect($captured)->not->toBeEmpty()
+            ->and($this->registry->bodyHtml())->toContain('before()')
+            ->and($this->registry->bodyHtml())->not->toContain('during()');
+    });
+});
+
 describe('clearJsBuffer', function () {
     it('returns combined JS wrapped in a script tag by default', function () {
         $this->registry->startBuffer('js');
