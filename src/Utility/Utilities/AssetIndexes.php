@@ -8,7 +8,6 @@ use Craft;
 use craft\helpers\App;
 use craft\models\Volume;
 use craft\services\AssetIndexer;
-use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
@@ -71,7 +70,7 @@ final class AssetIndexes extends Utility
         $dateFormat = I18N::getLocale()->getDateTimeFormat('short', Locale::FORMAT_PHP);
         $existingIndexingSessions = $assetIndexer->getExistingIndexingSessions();
 
-        return VueComponent::render('AssetIndexes', [
+        return Html::tag('AssetIndexes', options: [
             ':existingSessions' => $existingIndexingSessions,
             ':volumeOptions' => $volumeOptions,
             ':dateFormat' => $dateFormat,

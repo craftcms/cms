@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use CraftCms\Cms\Cp\VueComponent;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Utility\Utility;
 
 use function CraftCms\Cms\t;
@@ -35,6 +35,6 @@ final class FindAndReplace extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        return VueComponent::render('FindReplace');
+        return Html::tag('FindReplace');
     }
 }

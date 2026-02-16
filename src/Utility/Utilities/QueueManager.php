@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\Queue\Data\ProgressData;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Utility\Utility;
 
 use function CraftCms\Cms\t;
@@ -42,7 +42,7 @@ final class QueueManager extends Utility
     {
         $progressService = app(JobProgress::class);
 
-        return VueComponent::render('QueueManagerToolbar', [
+        return Html::tag('QueueManagerToolbar', options: [
             ':activeJob' => self::getActiveJob($progressService),
             ':jobs' => $progressService->getJobInfo(),
         ]);
@@ -60,7 +60,7 @@ final class QueueManager extends Utility
         $progressService = app(JobProgress::class);
         $jobsData = app(JobProgress::class)->getJobInfo();
 
-        return VueComponent::render('QueueManager', [
+        return Html::tag('QueueManager', options: [
             ':initialData' => $jobsData,
             ':activeJob' => self::getActiveJob($progressService),
             ':hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utility;
 
@@ -53,7 +53,7 @@ final class Migrations extends Utility
             $migrator->getPendingMigrations(),
         );
 
-        return VueComponent::render('Migrations', [
+        return Html::tag('Migrations', options: [
             ':migrationHistory' => $migrationHistory,
             ':newMigrations' => $newMigrations,
         ]);

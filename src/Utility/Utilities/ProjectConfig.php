@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Utility\Utility;
 use Symfony\Component\Yaml\Yaml;
 
@@ -50,11 +50,11 @@ final class ProjectConfig extends Utility
             $invert = false;
         }
 
-        return VueComponent::render('ProjectConfig', [
-            ':read-only' => $projectConfig->readOnly ? 'true' : 'false',
-            ':invert' => $invert ? 'true' : 'false',
+        return Html::tag('ProjectConfig', options: [
+            ':read-only' => $projectConfig->readOnly,
+            ':invert' => $invert,
             ':yaml-exists' => ($projectConfig->writeYamlAutomatically || $projectConfig->getDoesExternalConfigExist()) ? 'true' : 'false',
-            ':are-changes-pending' => $areChangesPending ? 'true' : 'false',
+            ':are-changes-pending' => $areChangesPending,
             'entire-config' => Yaml::dump($projectConfig->get(), 20, 2),
         ]);
     }

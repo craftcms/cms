@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use CraftCms\Cms\Cp\VueComponent;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Updates\Updates as UpdatesService;
 use CraftCms\Cms\Utility\Utility;
 
@@ -42,6 +42,6 @@ final class Updates extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        return VueComponent::render('Updates');
+        return Html::tag('Updates');
     }
 }

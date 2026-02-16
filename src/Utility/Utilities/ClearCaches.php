@@ -8,9 +8,9 @@ use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\VueComponent;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
 use CraftCms\Cms\Utility\Events\RegisterTagOptions;
@@ -70,7 +70,7 @@ final class ClearCaches extends Utility
 
         $cacheOptions = Arr::sort($cacheOptions, 'label');
 
-        return VueComponent::render('ClearCaches', [
+        return Html::tag('ClearCaches', options: [
             ':cacheOptions' => $cacheOptions,
             ':tagOptions' => $tagOptions,
         ]);
