@@ -10,6 +10,7 @@ use craft\web\assets\craftsupport\CraftSupportAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Support\Facades\Auth;
 use Override;
@@ -108,7 +109,7 @@ final class CraftSupport extends Widget
 
 EOD;
 
-        $view->registerJsWithVars(fn ($id, $settings) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id, $settings) => <<<JS
 new Craft.CraftSupportWidget($id, $settings)
 JS, [
             $this->id,

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -82,7 +83,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
             return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
         }
 
-        Craft::$app->getView()->registerJsWithVars(
+        AssetRegistry::jsWithVars(
             fn($type, $redirect) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({

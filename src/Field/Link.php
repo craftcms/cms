@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use Craft;
 use craft\base\ElementInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\LinkDataType;
@@ -32,6 +31,7 @@ use CraftCms\Cms\Field\LinkTypes\Phone;
 use CraftCms\Cms\Field\LinkTypes\Sms;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -564,9 +564,8 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         }
 
         $id = $this->getInputId();
-        $view = Craft::$app->getView();
 
-        $view->registerJsWithVars(fn ($id) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id) => <<<JS
 new Craft.LinkField($('#' + $id));
 JS, [
             InputNamespace::namespaceInputId($id),
@@ -586,7 +585,7 @@ $('#$namespacedId-type').on('change', e => {
     .attr('inputmode', type);
 });
 JS;
-            $view->registerJs($js);
+            AssetRegistry::js($js);
 
             $innerHtml = Cp::selectHtml([
                 'id' => "$id-type",

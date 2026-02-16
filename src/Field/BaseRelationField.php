@@ -36,6 +36,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -528,7 +529,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         $variables = $this->settingsTemplateVariables();
         $view = Craft::$app->getView();
 
-        $view->registerJsWithVars(fn ($args) => <<<JS
+        AssetRegistry::jsWithVars(fn ($args) => <<<JS
 new Craft.ElementFieldSettings(...$args)
 JS, [
             [

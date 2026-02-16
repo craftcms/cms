@@ -1262,15 +1262,15 @@ class View extends \yii\web\View
         $bufferedJs = [];
 
         // Split Position::Head entries back to their original Yii2 position
-        if (!empty($registryState['js'][Position::Head->value])) {
-            foreach ($registryState['js'][Position::Head->value] as $key => $js) {
+        if (!empty($registryState[Position::Head->value])) {
+            foreach ($registryState[Position::Head->value] as $key => $js) {
                 $originalPos = $bufferedPositions[$key] ?? self::POS_HEAD;
                 $bufferedJs[$originalPos][$key] = $js;
             }
         }
         // Position::Body entries map back to POS_END
-        if (!empty($registryState['js'][Position::Body->value])) {
-            foreach ($registryState['js'][Position::Body->value] as $key => $js) {
+        if (!empty($registryState[Position::Body->value])) {
+            foreach ($registryState[Position::Body->value] as $key => $js) {
                 $originalPos = $bufferedPositions[$key] ?? self::POS_END;
                 $bufferedJs[$originalPos][$key] = $js;
             }
@@ -1351,14 +1351,14 @@ class View extends \yii\web\View
 
         // Map registry positions back to Yii2 positions
         $bufferedScripts = [];
-        if (!empty($registryState['scripts'][Position::Head->value])) {
-            $bufferedScripts[self::POS_HEAD] = array_map(fn($v) => (string) $v, $registryState['scripts'][Position::Head->value]);
+        if (!empty($registryState[Position::Head->value])) {
+            $bufferedScripts[self::POS_HEAD] = array_map(fn($v) => (string) $v, $registryState[Position::Head->value]);
         }
         if (!empty($bufferedBeginScripts)) {
             $bufferedScripts[self::POS_BEGIN] = array_map(fn($v) => (string) $v, $bufferedBeginScripts);
         }
-        if (!empty($registryState['scripts'][Position::Body->value])) {
-            $bufferedScripts[self::POS_END] = array_map(fn($v) => (string) $v, $registryState['scripts'][Position::Body->value]);
+        if (!empty($registryState[Position::Body->value])) {
+            $bufferedScripts[self::POS_END] = array_map(fn($v) => (string) $v, $registryState[Position::Body->value]);
         }
 
         return $bufferedScripts;
@@ -1395,7 +1395,7 @@ class View extends \yii\web\View
         $registryState = $this->registry()->clearBuffer('css');
         $this->_cssBufferDepth--;
 
-        return array_map(fn($v) => (string) $v, $registryState['css']);
+        return array_map(fn($v) => (string) $v, $registryState);
     }
 
     /**
@@ -1429,7 +1429,7 @@ class View extends \yii\web\View
         $registryState = $this->registry()->clearBuffer('cssFiles');
         $this->_cssFileBufferDepth--;
 
-        return $registryState['cssFiles'];
+        return $registryState;
     }
 
     /**
@@ -1471,14 +1471,14 @@ class View extends \yii\web\View
 
         // Map registry positions back to Yii2 positions
         $bufferedJsFiles = [];
-        if (!empty($registryState['jsFiles'][Position::Head->value])) {
-            $bufferedJsFiles[self::POS_HEAD] = $registryState['jsFiles'][Position::Head->value];
+        if (!empty($registryState[Position::Head->value])) {
+            $bufferedJsFiles[self::POS_HEAD] = $registryState[Position::Head->value];
         }
         if (!empty($bufferedBeginJsFiles)) {
             $bufferedJsFiles[self::POS_BEGIN] = $bufferedBeginJsFiles;
         }
-        if (!empty($registryState['jsFiles'][Position::Body->value])) {
-            $bufferedJsFiles[self::POS_END] = $registryState['jsFiles'][Position::Body->value];
+        if (!empty($registryState[Position::Body->value])) {
+            $bufferedJsFiles[self::POS_END] = $registryState[Position::Body->value];
         }
 
         foreach ($bufferedJsFiles as $files) {
@@ -1526,14 +1526,14 @@ class View extends \yii\web\View
 
         // Map registry positions back to Yii2 positions
         $bufferedHtml = [];
-        if (!empty($registryState['html'][Position::Head->value])) {
-            $bufferedHtml[self::POS_HEAD] = $registryState['html'][Position::Head->value];
+        if (!empty($registryState[Position::Head->value])) {
+            $bufferedHtml[self::POS_HEAD] = $registryState[Position::Head->value];
         }
         if (!empty($bufferedBeginHtml)) {
             $bufferedHtml[self::POS_BEGIN] = $bufferedBeginHtml;
         }
-        if (!empty($registryState['html'][Position::Body->value])) {
-            $bufferedHtml[self::POS_END] = $registryState['html'][Position::Body->value];
+        if (!empty($registryState[Position::Body->value])) {
+            $bufferedHtml[self::POS_END] = $registryState[Position::Body->value];
         }
 
         return $bufferedHtml;
@@ -1546,6 +1546,7 @@ class View extends \yii\web\View
      *
      * @see clearMetaTagBuffer()
      * @since 4.5.8
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startMetaTagBuffer()} instead.
      */
     public function startMetaTagBuffer(): void
     {
@@ -1560,6 +1561,7 @@ class View extends \yii\web\View
      * @return array|false The `<meta>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn't an active buffer.
      * @see startMetaTagBuffer()
      * @since 4.5.8
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearMetaTagBuffer() instead.
      */
     public function clearMetaTagBuffer(): array|false
     {
@@ -1570,7 +1572,7 @@ class View extends \yii\web\View
         $registryState = $this->registry()->clearBuffer('metaTags');
         $this->_metaTagBufferDepth--;
 
-        return $registryState['metaTags'];
+        return $registryState;
     }
 
     /**
@@ -1580,6 +1582,7 @@ class View extends \yii\web\View
      *
      * @see clearAssetBundleBuffer()
      * @since 5.3.0
+     * @deprecated 6.0.0. AssetBundle support is deprecated
      */
     public function startAssetBundleBuffer(): void
     {
@@ -1594,6 +1597,7 @@ class View extends \yii\web\View
      * @return array|false The asset bundles that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
      * @see startAssetBundleBuffer()
      * @since 5.3.0
+     * @deprecated 6.0.0. AssetBundle support is deprecated
      */
     public function clearAssetBundleBuffer(): array|false
     {
@@ -1613,15 +1617,17 @@ class View extends \yii\web\View
      *
      * @see clearJsImportBuffer()
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startBuffer('jsImports')} instead.
      */
     public function startJsImportBuffer(): void
     {
-        $this->registry()->startBuffer('jsImports');
+        $this->registry()->startJsImportBuffer();
         $this->_jsImportBufferDepth++;
     }
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearBuffer('jsImports')} instead.
      */
     public function clearJsImportBuffer(): array|false
     {
@@ -1629,10 +1635,10 @@ class View extends \yii\web\View
             return false;
         }
 
-        $registryState = $this->registry()->clearBuffer('jsImports');
+        $registryState = $this->registry()->clearJsImportBuffer();
         $this->_jsImportBufferDepth--;
 
-        return $registryState['jsImports'];
+        return $registryState;
     }
 
     /**

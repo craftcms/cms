@@ -64,6 +64,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -1859,8 +1860,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 'label' => t('Entry type settings'),
             ];
 
-            $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn ($id, $params, $isNestedEntry) => <<<JS
+            AssetRegistry::jsWithVars(fn ($id, $params, $isNestedEntry) => <<<JS
 (() => {
   $('#' + $id).on('activate', function() {
     const params = $params;
@@ -1888,8 +1888,7 @@ JS, [
                     'label' => t('Section settings'),
                 ];
 
-                $view = Craft::$app->getView();
-                $view->registerJsWithVars(fn ($id, $params) => <<<JS
+                AssetRegistry::jsWithVars(fn ($id, $params) => <<<JS
     (() => {
       $('#' + $id).on('activate', function() {
         new Craft.CpScreenSlideout('sections/edit-section', {params: $params})
@@ -1914,8 +1913,7 @@ JS, [
                     'label' => Craft::t('app', 'Field settings'),
                 ];
 
-                $view = Craft::$app->getView();
-                $view->registerJsWithVars(fn ($id, $params) => <<<JS
+                AssetRegistry::jsWithVars(fn ($id, $params) => <<<JS
     (() => {
       $('#' + $id).on('activate', function() {
         new Craft.CpScreenSlideout('fields/edit-field', {params: $params})
@@ -2293,7 +2291,7 @@ if (revertRevisionBtn.length > 0) {
   revertRevisionBtn.replaceWith(tooltipBtn);
 }
 JS;
-            Craft::$app->getView()->registerJs($js);
+            AssetRegistry::js($js);
         }
     }
 

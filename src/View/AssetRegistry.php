@@ -6,13 +6,13 @@ namespace CraftCms\Cms\View;
 
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Stringable;
-use Yiisoft\Html\Html;
 
 use function CraftCms\Cms\t;
 
@@ -113,7 +113,7 @@ final class AssetRegistry
         $this->jsImports[$key] = $value;
     }
 
-    public function translations(string $category, array $messages): void
+    public function translations(array $messages, string $category = 'app'): void
     {
         $jsCategory = Json::encode($category);
 
@@ -257,21 +257,149 @@ final class AssetRegistry
      * captures the current value (what was registered during the buffer),
      * pops and restores the previous state from the stack.
      *
+     * When called with just one key it returns the captured state, otherwise
+     * it returns an array of captured states keyed by the buffer keys.
+     *
      * @param  list<string>  $keys  The property names to clear (must match a previous startBuffer call)
-     * @return array<string, mixed> The captured state for each key
+     * @return array<string, mixed>|mixed The captured state for each key
      */
-    public function clearBuffer(array|string $keys): array
+    public function clearBuffer(array|string $keys): mixed
     {
         $captured = [];
 
-        foreach (Arr::wrap($keys) as $key) {
+        $keys = Arr::wrap($keys);
+
+        foreach ($keys as $key) {
             $captured[$key] = $this->{$key};
             $this->{$key} = ! empty($this->buffers[$key])
                 ? array_pop($this->buffers[$key])
                 : [];
         }
 
+        if (count($keys) === 1) {
+            return $captured[$keys[0]];
+        }
+
         return $captured;
+    }
+
+    /**
+     * Starts a buffer for any html tags registered with [[html()]].
+     */
+    public function startHtmlBuffer(): void
+    {
+        $this->startBuffer('html');
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startHtmlBuffer()]], returning any html tags that were registered
+     * while the buffer was active.
+     *
+     * @return array The html that was registered while the buffer was active.
+     */
+    public function clearHtmlBuffer(): array|false
+    {
+        return $this->clearBuffer('html');
+    }
+
+    /**
+     * Starts a buffer for any JavaScript code registered with [[js()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearJsBuffer()]].
+     *
+     * @see clearJsBuffer()
+     */
+    public function startJsBuffer(): void
+    {
+        $this->startBuffer('js');
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startBuffer('js')]], returning any JavaScript code that was registered while
+     * the buffer was active.
+     *
+     * @param  bool  $scriptTag  Whether the returned JavaScript code should be wrapped in a `<script>` tag.
+     * @param  bool  $combine  Whether the JavaScript code should be returned in a combined blob. (Position and key info will be lost.)
+     * @return string|array The JavaScript code that was registered while the buffer was active.
+     *
+     * @see startBuffer()
+     */
+    public function clearJsBuffer(bool $scriptTag = true, bool $combine = true): string|array
+    {
+        $bufferedJs = $this->clearBuffer('js');
+
+        if ($combine) {
+            $js = '';
+
+            foreach (Position::cases() as $pos) {
+                if (! empty($bufferedJs[$pos->value])) {
+                    $js .= implode("\n", $bufferedJs[$pos->value])."\n";
+                }
+            }
+
+            if ($scriptTag && ! empty($js)) {
+                return Html::script($js, ['type' => 'text/javascript'])->render();
+            }
+
+            return $js;
+        }
+
+        if ($scriptTag) {
+            foreach ($bufferedJs as $pos => $js) {
+                $bufferedJs[$pos] = Html::script(implode("\n", $js), ['type' => 'text/javascript'])->render();
+            }
+        }
+
+        return $bufferedJs;
+    }
+
+    /**
+     * Starts a buffer for any JavaScript imports registered with [[jsImport()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearJsImportBuffer()]].
+     *
+     * @see clearJsImportBuffer()
+     */
+    public function startJsImportBuffer(): void
+    {
+        $this->startBuffer('jsImports');
+    }
+
+    /**
+     * Clears a buffer for any JavaScript imports registered with [[jsImport()]].
+     *
+     * Clears the `jsImports` buffer's contents and returns them.
+     *
+     * @see startJsImportBuffer()
+     */
+    public function clearJsImportBuffer(): array
+    {
+        return $this->clearBuffer('jsImports');
+    }
+
+    /**
+     * Starts a buffer for any `<meta>` tags registered with [[metaTag()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearMetaTagBuffer()]].
+     *
+     * @see clearMetaTagBuffer()
+     */
+    public function startMetaTagBuffer(): void
+    {
+        $this->startBuffer('metaTags');
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startMetaTagBuffer()]], returning any `<meta>` tags that were registered
+     * while the buffer was active.
+     *
+     * @return array The `<meta>` tags that were registered while the buffer was active (indexed by position).
+     *
+     * @see startMetaTagBuffer()
+     */
+    public function clearMetaTagBuffer(): array
+    {
+        return $this->clearBuffer('metaTags');
     }
 
     /**

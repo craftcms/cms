@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use Craft;
 use craft\helpers\Cp;
 use craft\helpers\DateRange;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use DateTime;
@@ -143,14 +143,13 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
             $optionLists[] = Html::tag('ul', implode('', $options), ['class' => 'padded']);
         }
 
-        $rangeTypeOptionsHtml = implode(Html::tag('hr', options: ['class' => 'padded']), $optionLists);
+        $rangeTypeOptionsHtml = implode(Html::tag('hr', attributes: ['class' => 'padded']), $optionLists);
 
         $buttonId = 'date-range-btn';
         $inputId = 'date-range-input';
         $menuId = 'date-range-menu';
 
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(
+        AssetRegistry::jsWithVars(
             fn ($buttonId, $inputId) => <<<JS
 Garnish.requestAnimationFrame(() => {
   const \$button = $('#' + $buttonId);
@@ -191,7 +190,7 @@ JS,
         if ($this->rangeType === DateRange::TYPE_RANGE) {
             $html .= Html::tag(
                 'div',
-                options: ['class' => ['flex', 'flex-nowrap']],
+                attributes: ['class' => ['flex', 'flex-nowrap']],
                 content: Html::label(t('From'), 'start-date-date').
                 Html::tag('div',
                     Cp::dateHtml([
@@ -203,7 +202,7 @@ JS,
             ).
                 Html::tag(
                     'div',
-                    options: ['class' => ['flex', 'flex-nowrap']],
+                    attributes: ['class' => ['flex', 'flex-nowrap']],
                     content: Html::label(t('To'), 'end-date-date').
                     Html::tag('div',
                         Cp::dateHtml([
@@ -220,7 +219,7 @@ JS,
             $html .= Html::hiddenLabel(t('Period Value'), $periodValueId).
                 Html::tag(
                     'div',
-                    options: ['class' => ['flex', 'flex-nowrap']],
+                    attributes: ['class' => ['flex', 'flex-nowrap']],
                     content: Cp::textHtml([
                         'id' => $periodValueId,
                         'name' => 'periodValue',

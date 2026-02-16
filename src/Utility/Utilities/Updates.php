@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\web\assets\updates\UpdatesAsset;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Updates\Updates as UpdatesService;
 use CraftCms\Cms\Utility\Utility;
 
@@ -45,7 +46,7 @@ final class Updates extends Utility
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(UpdatesAsset::class);
-        $view->registerJs('new Craft.UpdatesUtility();');
+        AssetRegistry::js('new Craft.UpdatesUtility();');
 
         return $view->renderTemplate('_components/utilities/Updates.twig');
     }

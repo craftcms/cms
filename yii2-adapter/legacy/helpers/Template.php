@@ -13,6 +13,7 @@ use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
 use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Twig\TwigMapper;
 use Illuminate\Support\Facades\Auth;
@@ -346,10 +347,10 @@ class Template
     {
         // Is this a JS file?
         if (preg_match('/^[^\r\n]+\.js(\.gz)?$/i', $js) || UrlHelper::isAbsoluteUrl($js)) {
-            Craft::$app->getView()->registerJsFile($js, $options, $key);
+            AssetRegistry::jsFile($js, $options, $key);
         } else {
             $position = $options['position'] ?? View::POS_READY;
-            Craft::$app->getView()->registerJs($js, $position, $key);
+            AssetRegistry::js($js, $position, $key);
         }
     }
 

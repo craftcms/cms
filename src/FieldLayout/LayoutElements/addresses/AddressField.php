@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\addresses;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use InvalidArgumentException;
@@ -79,10 +79,8 @@ class AddressField extends BaseField
             throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));
         }
 
-        $view = Craft::$app->getView();
-
         if (! $static) {
-            $view->registerJsWithVars(fn ($namespace) => <<<JS
+            AssetRegistry::jsWithVars(fn ($namespace) => <<<JS
     (() => {
         const initFields = (values) => {
             const fields = {};
