@@ -65,6 +65,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -2116,7 +2117,6 @@ JS, [
     public function metaFieldsHtml(bool $static): string
     {
         $fields = [];
-        $view = Craft::$app->getView();
         $section = $this->getSection();
         $user = Auth::user();
 
@@ -2224,11 +2224,10 @@ JS, [
                 })();
             }
 
-            $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
-            $view->setIsDeltaRegistrationActive(true);
-            $view->registerDeltaName('postDate');
-            $view->registerDeltaName('expiryDate');
-            $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
+            DeltaRegistry::withActive(true, function () {
+                DeltaRegistry::registerName('postDate');
+                DeltaRegistry::registerName('expiryDate');
+            });
 
             // Post Date
             $fields['postDate'] = Cp::dateTimeFieldHtml([

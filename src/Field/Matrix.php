@@ -47,6 +47,7 @@ use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -1151,7 +1152,7 @@ JS, [
             // so when we get our initialSerializedValue() for the ElementEditor,
             // the entry is already there which means the field is reported as not changed since the init
             // and so not passed to PHP for save
-            $view->setInitialDeltaValue($this->handle, null);
+            DeltaRegistry::setInitialValue($this->handle, null);
 
             $js .= "\n".<<<'JS'
 input.on('afterInit', async () => {

@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
@@ -232,7 +233,6 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        $view = Craft::$app->getView();
         $formatter = I18N::getFormatter();
 
         try {
@@ -259,7 +259,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
                 }
             } else {
                 // Override the initial value being set to null by CustomField::inputHtml()
-                $view->setInitialDeltaValue($this->handle, [
+                DeltaRegistry::setInitialValue($this->handle, [
                     'locale' => I18N::getFormattingLocale()->id,
                     'value' => '',
                 ]);

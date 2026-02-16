@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -70,7 +70,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     private function _inputHtml(SingleOptionFieldData $value, ?ElementInterface $element, bool $static): string
     {
         if (! $value->valid) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+            DeltaRegistry::setInitialValue($this->handle, null);
         }
 
         $id = $this->getInputId();

@@ -38,6 +38,7 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -918,7 +919,7 @@ JS, [
 
             if ($initialValue !== null) {
                 // make sure the field gets updated on save, even if it hasn't changed
-                Craft::$app->getView()->setInitialDeltaValue($this->handle, $initialValue);
+                DeltaRegistry::setInitialValue($this->handle, $initialValue);
             }
         }
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 
 use function CraftCms\Cms\t;
 
@@ -87,7 +87,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
 
         if (! $value->valid) {
             if (! $static) {
-                Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
+                DeltaRegistry::setInitialValue($this->handle, $this->encodeValue($value->value));
             }
 
             $default = $this->defaultValue();
