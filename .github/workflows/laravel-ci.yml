@@ -166,7 +166,10 @@ jobs:
         uses: ramsey/composer-install@v3
 
       - name: Execute CMS tests
-        run: ./vendor/bin/pest --ci
+        run: ./vendor/bin/pest --ci --testsuite=Tests
+
+      - name: Execute Arch tests
+        run: ./vendor/bin/pest --ci --testsuite=Arch
 
       - name: Set version
         run: composer config version "6.x-dev"
