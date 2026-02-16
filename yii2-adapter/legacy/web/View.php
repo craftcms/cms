@@ -398,10 +398,10 @@ class View extends \yii\web\View
         }
 
         // Register the control panel hooks
-        $this->hook('cp.layouts.elementindex', [$this, '_prepareElementIndexVariables']);
-        $this->hook('cp.elements.toolbar', [$this, '_prepareElementToolbarVariables']);
-        $this->hook('cp.elements.sources', [$this, '_prepareElementSourcesVariables']);
-        $this->hook('cp.elements.element', [$this, '_elementChipHtml']);
+        $this->hook('cp.layouts.elementindex', [$this, 'prepareElementIndexVariables']);
+        $this->hook('cp.elements.toolbar', [$this, 'prepareElementToolbarVariables']);
+        $this->hook('cp.elements.sources', [$this, 'prepareElementSourcesVariables']);
+        $this->hook('cp.elements.element', [$this, 'elementChipHtml']);
     }
 
     /**
@@ -1365,13 +1365,13 @@ class View extends \yii\web\View
         // Map registry positions back to Yii2 positions
         $bufferedScripts = [];
         if (!empty($registryState['scripts'][Position::Head->value])) {
-            $bufferedScripts[self::POS_HEAD] = $registryState['scripts'][Position::Head->value];
+            $bufferedScripts[self::POS_HEAD] = array_map(fn($v) => (string) $v, $registryState['scripts'][Position::Head->value]);
         }
         if (!empty($bufferedBeginScripts)) {
-            $bufferedScripts[self::POS_BEGIN] = $bufferedBeginScripts;
+            $bufferedScripts[self::POS_BEGIN] = array_map(fn($v) => (string) $v, $bufferedBeginScripts);
         }
         if (!empty($registryState['scripts'][Position::Body->value])) {
-            $bufferedScripts[self::POS_END] = $registryState['scripts'][Position::Body->value];
+            $bufferedScripts[self::POS_END] = array_map(fn($v) => (string) $v, $registryState['scripts'][Position::Body->value]);
         }
 
         return $bufferedScripts;
@@ -1408,7 +1408,7 @@ class View extends \yii\web\View
         $registryState = $this->registry()->clearBuffer('css');
         $this->_cssBufferDepth--;
 
-        return $registryState['css'];
+        return array_map(fn($v) => (string) $v, $registryState['css']);
     }
 
     /**
@@ -2742,7 +2742,7 @@ JS;
         $this->registerJs($js, self::POS_HEAD);
     }
 
-    private function _prepareElementIndexVariables(array &$context): null
+    public function prepareElementIndexVariables(array &$context): null
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $context['elementType'];
@@ -2776,7 +2776,7 @@ JS;
         return null;
     }
 
-    private function _prepareElementToolbarVariables(array &$context): null
+    public function prepareElementToolbarVariables(array &$context): null
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $context['elementType'];
@@ -2806,7 +2806,7 @@ JS;
         return null;
     }
 
-    private function _prepareElementSourcesVariables(array &$context): null
+    public function prepareElementSourcesVariables(array &$context): null
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $context['elementType'];
@@ -2837,7 +2837,7 @@ JS;
      * @param array $context
      * @return string|null
      */
-    private function _elementChipHtml(array $context): ?string
+    public function elementChipHtml(array $context): ?string
     {
         Deprecator::log('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
 
