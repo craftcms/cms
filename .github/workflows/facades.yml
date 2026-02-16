@@ -59,6 +59,7 @@ jobs:
             CraftCms\\Cms\\Support\\Facades\\Announcements \
             CraftCms\\Cms\\Support\\Facades\\AssetRegistry \
             CraftCms\\Cms\\Support\\Facades\\Conditions \
+            CraftCms\\Cms\\Support\\Facades\\DeltaRegistry \
             CraftCms\\Cms\\Support\\Facades\\Deprecator \
             CraftCms\\Cms\\Support\\Facades\\Entries \
             CraftCms\\Cms\\Support\\Facades\\EntryTypes \

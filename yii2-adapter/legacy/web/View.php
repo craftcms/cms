@@ -26,6 +26,7 @@ use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -197,31 +198,7 @@ class View extends \yii\web\View
      */
     private array $_objectTemplates = [];
 
-    /**
-     * @var bool Whether delta input name registration is open.
-     * @see getIsDeltaRegistrationActive()
-     * @see setIsDeltaRegistrationActive()
-     * @see registerDeltaName()
-     */
-    private bool $_registerDeltaNames = false;
 
-    /**
-     * @var string[] The registered delta input names.
-     * @see registerDeltaName()
-     */
-    private array $_deltaNames = [];
-
-    /**
-     * @var string[] The registered modified delta input names.
-     * @see registerDeltaName()
-     */
-    private array $_modifiedDeltaNames = [];
-
-    /**
-     * @var array The initial delta input values.
-     * @see setInitialDeltaValue()
-     */
-    private array $_initialDeltaValues = [];
 
     /**
      * @var int JS buffer depth counter — tracks nesting level for startJsBuffer/clearJsBuffer.
@@ -1975,107 +1952,59 @@ JS;
     }
 
     /**
-     * Registers a delta input name.
-     *
-     * This can be either the name of a single form input, or a prefix used by multiple input names.
-     *
-     * The input name will be namespaced with the currently active [[getNamespace()|namespace]], if any.
-     *
-     * When a form that supports delta updates is submitted, any delta inputs (or groups of inputs) that didn’t change
-     * over the lifespan of the page will be omitted from the POST request.
-     *
-     * Note that delta input names will only be registered if delta registration is active
-     * (see [[getIsDeltaRegistrationActive()]]).
-     *
-     * @param string $inputName
-     * @param bool $forceModified Whether the name should be considered modified regardless of the initial form value
-     * @since 3.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::registerName()} instead.
      */
     public function registerDeltaName(string $inputName, bool $forceModified = false): void
     {
-        if ($this->_registerDeltaNames) {
-            $inputName = InputNamespace::namespaceInputName($inputName);
-            $this->_deltaNames[] = $inputName;
-
-            if ($forceModified) {
-                $this->_modifiedDeltaNames[] = $inputName;
-            }
-        }
+        DeltaRegistry::registerName($inputName, $forceModified);
     }
 
     /**
-     * Returns the initial values of delta inputs.
-     *
-     * @return array
-     * @see setInitialDeltaValue()
-     * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::getInitialValues()} instead.
      */
     public function getInitialDeltaValues(): array
     {
-        return $this->_initialDeltaValues;
+        return DeltaRegistry::getInitialValues();
     }
 
     /**
-     * Sets the initial value of a delta input name.
-     *
-     * @param string $inputName
-     * @param mixed $value
-     * @see getInitialDeltaValues()
-     * @since 3.4.6
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::setInitialValue()} instead.
      */
     public function setInitialDeltaValue(string $inputName, mixed $value): void
     {
-        if ($this->_registerDeltaNames) {
-            $this->_initialDeltaValues[InputNamespace::namespaceInputName($inputName)] = $value;
-        }
+        DeltaRegistry::setInitialValue($inputName, $value);
     }
 
     /**
-     * Returns whether delta input name registration is currently active
-     *
-     * @return bool
-     * @see registerDeltaName()
-     * @since 3.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::isActive()} instead.
      */
     public function getIsDeltaRegistrationActive(): bool
     {
-        return $this->_registerDeltaNames;
+        return DeltaRegistry::isActive();
     }
 
     /**
-     * Sets whether delta input name registration is active.
-     *
-     * @param bool $active
-     * @see registerDeltaName()
-     * @since 3.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::setActive()} instead.
      */
     public function setIsDeltaRegistrationActive(bool $active): void
     {
-        $this->_registerDeltaNames = $active;
+        DeltaRegistry::setActive($active);
     }
 
     /**
-     * Returns all the registered delta input names.
-     *
-     * @return string[]
-     * @see registerDeltaName()
-     * @since 3.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::getNames()} instead.
      */
     public function getDeltaNames(): array
     {
-        return $this->_deltaNames;
+        return DeltaRegistry::getNames();
     }
 
     /**
-     * Returns all the registered delta input names that should be considered modified.
-     *
-     * @return string[]
-     * @see registerDeltaName()
-     * @since 5.2.1
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::getModifiedNames()} instead.
      */
     public function getModifiedDeltaNames(): array
     {
-        return $this->_modifiedDeltaNames;
+        return DeltaRegistry::getModifiedNames();
     }
 
     /**

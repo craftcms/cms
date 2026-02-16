@@ -10,6 +10,7 @@ use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -752,8 +753,8 @@ final class CpScreenResponse implements Responsable
             'errorSummary' => $errorSummary,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
-            'deltaNames' => $view->getDeltaNames(),
-            'initialDeltaValues' => $view->getInitialDeltaValues(),
+            'deltaNames' => DeltaRegistry::getNames(),
+            'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ]);
     }
 

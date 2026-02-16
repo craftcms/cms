@@ -8,6 +8,7 @@ use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 
 use function CraftCms\Cms\t;
 
@@ -45,7 +46,7 @@ final class RadioButtons extends BaseOptionsField implements SortableFieldInterf
     {
         /** @var SingleOptionFieldData $value */
         if (! $value->valid && ! $this->customOptions) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+            DeltaRegistry::setInitialValue($this->handle, null);
         }
 
         $options = $this->translatedOptions(true, $value, $element);
