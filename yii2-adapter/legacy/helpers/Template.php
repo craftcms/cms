@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
-use craft\web\View;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Entries;
