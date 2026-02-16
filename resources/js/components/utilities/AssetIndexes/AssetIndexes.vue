@@ -37,7 +37,7 @@
 <template>
   <div class="p-4" v-if="hasSessions">
     <Pane appearance="outline" :padding="0">
-      <IndexingSessions :existing-sessions="sessionsArray" />
+      <IndexingSessions />
     </Pane>
   </div>
 

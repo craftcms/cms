@@ -73,7 +73,7 @@ final class AssetIndexes extends Utility
         return Html::tag('AssetIndexes', options: [
             ':existingSessions' => $existingIndexingSessions,
             ':volumeOptions' => $volumeOptions,
-            ':dateFormat' => $dateFormat,
+            'dateFormat' => $dateFormat,
             ':isEphemeral' => App::isEphemeral(),
         ]);
     }

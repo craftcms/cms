@@ -2,7 +2,7 @@
   import ModalForm from '@/components/ModalForm.vue';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {useAssetIndexer} from '@/composables/useAssetIndexer';
-  import {computed, reactive, ref} from 'vue';
+  import {computed, reactive} from 'vue';
   import {escapeHtml} from '@craftcms/cp/src/utilities/escapeHtml.js';
   import CheckboxGroup from '@/components/form/CheckboxGroup.vue';
   import type {FinishIndexingParams} from '@craftcms/cp/src/services/AssetIndexer.js';
@@ -104,65 +104,63 @@
 </script>
 
 <template>
-  <template v-if="reviewSession">
-    <ModalForm
-      :is-active="true"
-      @close="closeReview"
-      @cancel="() => stopSession(reviewSession!.id)"
-      :reset-label="hasMissingItems ? t('Keep them') : undefined"
-      :submit-label="hasMissingItems ? t('Delete them') : t('OK')"
-      @submit="handleSubmit"
-    >
-      <div class="grid gap-3">
-        <template v-if="reviewSession.skippedEntries">
-          <div>
-            <h2 class="mb-2">{{ t('Skipped files') }}</h2>
-            <p>{{ t('The following items were not indexed.') }}</p>
-            <ul class="my-2">
-              <li v-for="entry in reviewSession.skippedEntries" :key="entry">
-                <code>{{ entry }}</code>
-              </li>
-            </ul>
-          </div>
-        </template>
+  <ModalForm
+    v-if="reviewSession"
+    :is-active="true"
+    @close="closeReview"
+    :reset-label="hasMissingItems ? t('Keep them') : undefined"
+    :submit-label="hasMissingItems ? t('Delete them') : t('OK')"
+    @submit="handleSubmit"
+  >
+    <div class="grid gap-3">
+      <template v-if="reviewSession.skippedEntries">
+        <div>
+          <h2 class="mb-2">{{ t('Skipped files') }}</h2>
+          <p>{{ t('The following items were not indexed.') }}</p>
+          <ul class="my-2">
+            <li v-for="entry in reviewSession.skippedEntries" :key="entry">
+              <code>{{ entry }}</code>
+            </li>
+          </ul>
+        </div>
+      </template>
 
-        <template v-if="hasMissingItems">
-          <div>
-            <template v-if="hasMissingFolders">
-              <h2>{{ missingItemsHeading('folders', {items: 'folders'}) }}</h2>
-              <p>{{ missingItemsCopy('folders', {items: 'folders'}) }}</p>
-              <CheckboxGroup
-                class="my-2"
-                :label="t('Delete folders')"
-                :model-value="formData.deleteFolder"
-                :options="deleteFolderOptions"
-                :allow-select-all="true"
-              >
-                <template #label="{option}">
-                  <code>{{ option.label }}</code>
-                </template>
-              </CheckboxGroup>
-            </template>
-            <template v-if="hasMissingFiles">
-              <h2>{{ missingItemsHeading('files', {items: 'files'}) }}</h2>
-              <p>{{ missingItemsCopy('files', {items: 'files'}) }}</p>
-              <CheckboxGroup
-                class="my-2"
-                :label="t('Delete assets')"
-                :model-value="formData.deleteAsset"
-                :options="deleteAssetOptions"
-                :allow-select-all="true"
-              >
-                <template #label="{option}">
-                  <code>{{ option.label }}</code>
-                </template>
-              </CheckboxGroup>
-            </template>
-          </div>
-        </template>
-      </div>
-    </ModalForm>
-  </template>
+      <template v-if="hasMissingItems">
+        <div>
+          <template v-if="hasMissingFolders">
+            <h2>{{ missingItemsHeading('folders', {items: 'folders'}) }}</h2>
+            <p>{{ missingItemsCopy('folders', {items: 'folders'}) }}</p>
+            <CheckboxGroup
+              class="my-2"
+              :label="t('Delete folders')"
+              :model-value="formData.deleteFolder"
+              :options="deleteFolderOptions"
+              :allow-select-all="true"
+            >
+              <template #label="{option}">
+                <code>{{ option.label }}</code>
+              </template>
+            </CheckboxGroup>
+          </template>
+          <template v-if="hasMissingFiles">
+            <h2>{{ missingItemsHeading('files', {items: 'files'}) }}</h2>
+            <p>{{ missingItemsCopy('files', {items: 'files'}) }}</p>
+            <CheckboxGroup
+              class="my-2"
+              :label="t('Delete assets')"
+              :model-value="formData.deleteAsset"
+              :options="deleteAssetOptions"
+              :allow-select-all="true"
+            >
+              <template #label="{option}">
+                <code>{{ option.label }}</code>
+              </template>
+            </CheckboxGroup>
+          </template>
+        </div>
+      </template>
+    </div>
+  </ModalForm>
 </template>
 
 <style scoped lang="scss"></style>
