@@ -9,6 +9,7 @@
 - Fixed a bug where global nav items weren’t showing an icon if the icon was set to `0`.
 - Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-4484-8v2f-5748, GHSA-qx2q-q59v-wf3j)
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-3x4w-mxpf-fhqq)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-472v-j2g4-g9h2)
 
 ## 5.9.10 - 2026-02-12
 
