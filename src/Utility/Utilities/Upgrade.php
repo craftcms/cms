@@ -8,6 +8,7 @@ use Craft;
 use craft\web\assets\upgrade\UpgradeAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Utility\Utility;
 
 use function CraftCms\Cms\t;
@@ -57,7 +58,7 @@ final class Upgrade extends Utility
         }
 
         $version = (int) Cms::VERSION + 1;
-        $view->registerJsWithVars(fn ($args) => <<<JS
+        AssetRegistry::jsWithVars(fn ($args) => <<<JS
 window.upgardeUtility = new Craft.UpgradeUtility(...$args)
 JS, [
             [$version, $allPlugins],

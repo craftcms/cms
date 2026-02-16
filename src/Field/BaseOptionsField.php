@@ -534,7 +534,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                 ]);
             } elseif (isset($value->color)) {
                 $parts[] = Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
-                    Html::tag('div', options: [
+                    Html::tag('div', attributes: [
                         'class' => 'color-preview',
                         'style' => [
                             'background-color' => $value->color,

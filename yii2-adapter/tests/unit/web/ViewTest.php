@@ -276,12 +276,8 @@ class ViewTest extends TestCase
      */
     public function testHookInvocation(): void
     {
-        $this->setInaccessibleProperty($this->view, '_hooks', [
-            'demoHook' => [
-                fn() => '22',
-                fn($val) => $val[0],
-            ],
-        ]);
+        $this->view->hook('demoHook', fn() => '22');
+        $this->view->hook('demoHook', fn($val) => $val[0]);
 
         $var = ['333'];
         self::assertSame('22333', $this->view->invokeHook('demoHook', $var));
@@ -650,6 +646,9 @@ TWIG;
     protected function _before(): void
     {
         parent::_before();
+
+        // Clear the asset registry to prevent state leaking between tests
+        app(\CraftCms\Cms\View\AssetRegistry::class)->clear();
 
         $this->view = Craft::createObject(View::class);
 

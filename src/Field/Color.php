@@ -400,7 +400,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         }
 
         $html = Html::beginTag('div', ['class' => ['color', 'noteditable']]).
-            Html::tag('div', options: [
+            Html::tag('div', attributes: [
                 'class' => 'color-preview',
                 'style' => ['background-color' => $value->getHex()],
             ]).
@@ -421,12 +421,12 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         /** @var ColorData|null $value */
         if (! $value) {
             return Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
-                Html::tag('div', options: ['class' => 'color-preview']).
+                Html::tag('div', attributes: ['class' => 'color-preview']).
                 Html::endTag('div');
         }
 
         $html = Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
-            Html::tag('div', options: [
+            Html::tag('div', attributes: [
                 'class' => 'color-preview',
                 'style' => [
                     'background-color' => $value->getHex(),

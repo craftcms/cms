@@ -7,9 +7,9 @@
 
 namespace craft\elements\actions;
 
-use Craft;
 use craft\base\ElementAction;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use yii\base\Exception;
 use function CraftCms\Cms\t;
 
@@ -38,7 +38,7 @@ class ShowInFolder extends ElementAction
             throw new Exception("Show in folder is only available for Assets.");
         }
 
-        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+        AssetRegistry::jsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,

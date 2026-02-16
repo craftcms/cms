@@ -7,8 +7,8 @@
 
 namespace craft\elements\actions;
 
-use Craft;
 use craft\base\ElementAction;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use function CraftCms\Cms\t;
 
 /**
@@ -56,7 +56,7 @@ class NewSiblingBefore extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        Craft::$app->getView()->registerJsWithVars(fn($type, $newSiblingUrl) => <<<JS
+        AssetRegistry::jsWithVars(fn($type, $newSiblingUrl) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,

@@ -11,6 +11,7 @@ use craft\helpers\ElementHelper;
 use CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -784,9 +785,7 @@ abstract class BaseField extends FieldLayoutElement
             'attribute' => $this->attribute(),
         ];
 
-        $view = Craft::$app->getView();
-
-        $view->registerJsWithVars(fn ($id, $promptLabel, $attribute) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id, $promptLabel, $attribute) => <<<JS
 (() => {
   $('#' + $id).on('activate', () => {
     Craft.ui.createCopyTextPrompt({

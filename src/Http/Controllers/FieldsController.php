@@ -29,6 +29,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
@@ -505,7 +506,7 @@ final class FieldsController
             ->prepareScreen(function () {
                 $view = Craft::$app->getView();
                 $view->registerAssetBundle(FieldSettingsAsset::class);
-                $view->registerJsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
+                AssetRegistry::jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
 new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
   wrapWithTypeClassDiv: true
 })

@@ -12,6 +12,7 @@ use craft\base\ElementAction;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\UserQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -39,7 +40,7 @@ class SuspendUsers extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        Craft::$app->getView()->registerJsWithVars(fn($type, $userId) => <<<JS
+        AssetRegistry::jsWithVars(fn($type, $userId) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,

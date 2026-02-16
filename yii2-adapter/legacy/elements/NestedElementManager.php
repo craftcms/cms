@@ -30,6 +30,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -547,19 +548,19 @@ class NestedElementManager extends Component
                 ];
 
                 if (!$config['static'] && $config['sortable']) {
-                    $view->startJsBuffer();
+                    AssetRegistry::startJsBuffer();
                     $actionConfig = ElementHelper::actionConfig(new ChangeSortOrder($owner, $attribute));
-                    $actionConfig['bodyHtml'] = $view->clearJsBuffer();
+                    $actionConfig['bodyHtml'] = AssetRegistry::clearJsBuffer();
                     $settings['indexSettings']['actions'][] = $actionConfig;
 
-                    $view->startJsBuffer();
+                    AssetRegistry::startJsBuffer();
                     $actionConfig = ElementHelper::actionConfig(new MoveUp($owner, $attribute));
-                    $actionConfig['bodyHtml'] = $view->clearJsBuffer();
+                    $actionConfig['bodyHtml'] = AssetRegistry::clearJsBuffer();
                     $settings['indexSettings']['actions'][] = $actionConfig;
 
-                    $view->startJsBuffer();
+                    AssetRegistry::startJsBuffer();
                     $actionConfig = ElementHelper::actionConfig(new MoveDown($owner, $attribute));
-                    $actionConfig['bodyHtml'] = $view->clearJsBuffer();
+                    $actionConfig['bodyHtml'] = AssetRegistry::clearJsBuffer();
                     $settings['indexSettings']['actions'][] = $actionConfig;
                 }
 
@@ -616,11 +617,9 @@ class NestedElementManager extends Component
         $attribute = $this->attribute ?? sprintf('field:%s', $this->field->handle);
         SessionAuth::authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
 
-        $view = Craft::$app->getView();
         return InputNamespace::namespaceInputs(function() use (
             $mode,
             $attribute,
-            $view,
             $owner,
             $config,
             $renderHtml,
@@ -668,7 +667,7 @@ class NestedElementManager extends Component
             // render the HTML, and give the render function a chance to modify the JS settings
             $html = $renderHtml($id, $config, $attribute, $settings);
 
-            $view->registerJsWithVars(fn($id, $elementType, $settings) => <<<JS
+            AssetRegistry::jsWithVars(fn($id, $elementType, $settings) => <<<JS
 (() => {
   new Craft.NestedElementManager('#' + $id, $elementType, $settings)
 })();

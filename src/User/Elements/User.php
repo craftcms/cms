@@ -18,7 +18,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\web\twig\AllowedInSandbox;
-use craft\web\View;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
@@ -42,6 +41,7 @@ use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -1459,7 +1459,7 @@ XML;
         }
 
         $currentUser = Auth::user();
-        $view = Craft::$app->getView();
+        Craft::$app->getView();
         Craft::$app->getUser();
 
         $canAdministrateUsers = $currentUser->can('administrateUsers');
@@ -1504,7 +1504,7 @@ XML;
                         if ($canAdministrateUsers) {
                             // Only need to show the "Copy activation URL" option if they don't have a password
                             if (! $this->password) {
-                                $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy activation URL…'), $view);
+                                $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy activation URL…'));
                             }
                             $statusItems[] = [
                                 'icon' => 'enabled',
@@ -1560,7 +1560,7 @@ XML;
                             ],
                         ];
                         if ($canAdministrateUsers) {
-                            $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy password reset URL…'), $view);
+                            $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy password reset URL…'));
                         }
                     }
                     break;
@@ -1614,7 +1614,7 @@ XML;
                         'label' => t('Copy impersonation URL…'),
                     ];
 
-                    $view->registerJsWithVars(fn ($id, $userId, $message) => <<<JS
+                    AssetRegistry::jsWithVars(fn ($id, $userId, $message) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.elevatedSessionManager.requireElevatedSession(() => {
       Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
@@ -1694,7 +1694,6 @@ JS, [
                 }
 
                 if ($isCurrentUser || $currentUser->can('deleteUsers')) {
-                    $view = Craft::$app->getView();
                     $deleteId = sprintf('action-delete-%s', mt_rand());
                     $items[] = [
                         'id' => $deleteId,
@@ -1704,7 +1703,7 @@ JS, [
                         ])),
                     ];
 
-                    $view->registerJsWithVars(fn ($id, $userId, $redirect) => <<<JS
+                    AssetRegistry::jsWithVars(fn ($id, $userId, $redirect) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.sendActionRequest('POST', 'users/user-content-summary', {
     data: {userId: $userId}
@@ -1729,11 +1728,11 @@ JS,
         return $items;
     }
 
-    private function _copyPasswordResetUrlActionItem(string $label, View $view): array
+    private function _copyPasswordResetUrlActionItem(string $label): array
     {
         $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
 
-        $view->registerJsWithVars(fn ($id, $userId, $message) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id, $userId, $message) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.elevatedSessionManager.requireElevatedSession(() => {
     Craft.sendActionRequest('POST', 'users/get-password-reset-url', {

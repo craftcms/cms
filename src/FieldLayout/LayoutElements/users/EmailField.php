@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextField;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
@@ -93,7 +93,7 @@ class EmailField extends TextField
                 return null;
             }
 
-            Craft::$app->getView()->registerJsWithVars(fn ($id) => <<<JS
+            AssetRegistry::jsWithVars(fn ($id) => <<<JS
 new Craft.ElevatedSessionForm($('#' + $id).closest('form'), ['#' + $id]);
 JS, [
                 InputNamespace::namespaceId($this->attribute),

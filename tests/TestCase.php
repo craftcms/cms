@@ -12,6 +12,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\View\TemplateMode;
 use Dotenv\Dotenv;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -46,7 +47,9 @@ class TestCase extends Orchestra
         Config::set('app.timezone', 'America/Los_Angeles');
         date_default_timezone_set('America/Los_Angeles');
 
+        // Tests run in Pro and Cp by default
         Edition::set(Edition::Pro);
+        TemplateMode::set(TemplateMode::Cp);
 
         File::cleanDirectory(config_path('craft/project'));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\web\assets\findreplace\FindReplaceAsset;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Utility\Utility;
 
 use function CraftCms\Cms\t;
@@ -39,7 +40,7 @@ final class FindAndReplace extends Utility
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(FindReplaceAsset::class);
-        $view->registerJs('new Craft.FindAndReplaceUtility(\'find-replace\');');
+        AssetRegistry::js('new Craft.FindAndReplaceUtility(\'find-replace\');');
 
         return $view->renderTemplate('_components/utilities/FindAndReplace.twig');
     }

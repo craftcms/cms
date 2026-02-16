@@ -25,6 +25,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -583,7 +584,6 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
             Craft::$app->getElements()->saveElement($value);
         }
 
-        $view = Craft::$app->getView();
         $id = $this->getInputId();
 
         $form = InputNamespace::with(
@@ -603,7 +603,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
             'visibleLayoutElements' => $form->getVisibleElements(),
         ];
 
-        $view->registerJsWithVars(fn ($id, $settings) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id, $settings) => <<<JS
 (() => {
   new Craft.ContentBlockEditor($('#' + $id), $settings)
 })();

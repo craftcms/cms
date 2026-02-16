@@ -22,6 +22,7 @@ use CraftCms\Cms\Element\Events\RegisterHtmlAttributes;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -160,7 +161,7 @@ trait HasControlPanelUI
     {
         $items = [];
         $elementsService = Craft::$app->getElements();
-        $view = Craft::$app->getView();
+        Craft::$app->getView();
 
         // Validate
         if (
@@ -178,7 +179,7 @@ trait HasControlPanelUI
                 ]),
             ];
 
-            $view->registerJsWithVars(fn ($id) => <<<JS
+            AssetRegistry::jsWithVars(fn ($id) => <<<JS
 (() => {
   const btn = $('#' + $id);
   btn.on('activate', () => {
@@ -231,7 +232,7 @@ JS, [
                 ])),
             ];
 
-            $view->registerJsWithVars(fn ($id, $elementType, $settings) => <<<JS
+            AssetRegistry::jsWithVars(fn ($id, $elementType, $settings) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.createElementEditor($elementType, $settings)
 });
@@ -259,7 +260,7 @@ JS, [
                     ])),
                 ];
 
-                $view->registerJsWithVars(fn ($id, $elementInfo) => <<<JS
+                AssetRegistry::jsWithVars(fn ($id, $elementInfo) => <<<JS
 (() => {
   $('#' + $id).on('activate', () => {
     Craft.cp.copyElements([$elementInfo])
