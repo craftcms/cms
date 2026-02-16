@@ -166,7 +166,7 @@ jobs:
         uses: ramsey/composer-install@v3
 
       - name: Execute CMS tests
-        run: ./vendor/bin/pest --ci --testsuite=Tests
+        run: ./vendor/bin/pest --ci --compact --testsuite=Tests
 
       - name: Execute Arch tests
         run: ./vendor/bin/pest --ci --testsuite=Arch
@@ -181,4 +181,4 @@ jobs:
           working-directory: yii2-adapter
 
       - name: Execute Yii2 Adapter tests
-        run: vendor/bin/pest --ci --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel
+        run: vendor/bin/pest --ci --compact --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel
