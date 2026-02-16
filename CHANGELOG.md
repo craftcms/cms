@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- The `no` locale is now treated as a fallback for `nb` on environments where `nb` isn’t supported. ([#18431](https://github.com/craftcms/cms/pull/18431))
+- The `nb` locale is now treated as a fallback for `no` on environments where `no` isn’t supported. ([#18431](https://github.com/craftcms/cms/pull/18431))
 - Element indexes now show “Paste” buttons alongside bulk element action buttons. ([#18427](https://github.com/craftcms/cms/issues/18427))
 - Impoved the performance of `craft\helpers\Typecast`. ([#18426](https://github.com/craftcms/cms/pull/18426))
 - Fixed a bug where some Matrix bulk action labels weren’t getting translated.
