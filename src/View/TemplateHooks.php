@@ -25,10 +25,6 @@ final class TemplateHooks
      */
     public function register(string $hook, callable|string $handler, bool $append = true): void
     {
-        if (is_string($handler)) {
-            $handler = app()->make($handler);
-        }
-
         if ($append || empty($this->hooks[$hook])) {
             $this->hooks[$hook][] = $handler;
         } else {
@@ -56,6 +52,10 @@ final class TemplateHooks
         $handled = false;
 
         foreach ($this->hooks[$hook] ?? [] as $handler) {
+            if (is_string($handler)) {
+                $handler = app()->make($handler);
+            }
+
             $return .= $handler($context, $handled);
 
             if ($handled) {

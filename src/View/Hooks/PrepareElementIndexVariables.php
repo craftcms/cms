@@ -44,6 +44,7 @@ final readonly class PrepareElementIndexVariables
             if (isset($context['sources'][0]['page'])) {
                 $context['title'] = t($context['sources'][0]['page'], category: 'site');
             }
+
             $context['selectedSubnavItem'] = $this->elementSources->pageNameId($context['page']);
         }
     }
