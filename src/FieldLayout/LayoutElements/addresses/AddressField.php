@@ -10,6 +10,7 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use InvalidArgumentException;
 use Override;
@@ -174,7 +175,7 @@ class AddressField extends BaseField
         initFields();
     })();
     JS, [
-                $view->getNamespace(),
+                InputNamespace::get(),
             ]);
         }
 

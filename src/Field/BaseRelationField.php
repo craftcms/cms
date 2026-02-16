@@ -37,6 +37,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
@@ -532,13 +533,13 @@ new Craft.ElementFieldSettings(...$args)
 JS, [
             [
                 $this->allowMultipleSources,
-                $view->namespaceInputId('maintain-hierarchy-field'),
-                $view->namespaceInputId($this->allowMultipleSources ? 'sources-field' : 'source-field'),
-                $view->namespaceInputId('branch-limit-field'),
-                $view->namespaceInputId('min-relations-field'),
-                $view->namespaceInputId('max-relations-field'),
-                $view->namespaceInputId('default-placement-field'),
-                $view->namespaceInputId('viewMode-field'),
+                InputNamespace::namespaceId('maintain-hierarchy-field'),
+                InputNamespace::namespaceId($this->allowMultipleSources ? 'sources-field' : 'source-field'),
+                InputNamespace::namespaceId('branch-limit-field'),
+                InputNamespace::namespaceId('min-relations-field'),
+                InputNamespace::namespaceId('max-relations-field'),
+                InputNamespace::namespaceId('default-placement-field'),
+                InputNamespace::namespaceId('viewMode-field'),
             ],
         ]);
 

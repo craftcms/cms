@@ -31,6 +31,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -532,7 +533,7 @@ class NestedElementManager extends Component
                 }
 
                 $settings['indexSettings'] = [
-                    'namespace' => $view->getNamespace(),
+                    'namespace' => InputNamespace::get(),
                     'allowedViewModes' => $config['allowedViewModes']
                         ? array_map(fn($mode) => Str::toString($mode), $config['allowedViewModes'])
                         : null,
@@ -616,7 +617,7 @@ class NestedElementManager extends Component
         SessionAuth::authorize(sprintf('manageNestedElements::%s::%s', $authorizedOwnerId, $attribute));
 
         $view = Craft::$app->getView();
-        return $view->namespaceInputs(function() use (
+        return InputNamespace::namespaceInputs(function() use (
             $mode,
             $attribute,
             $view,
@@ -641,7 +642,7 @@ class NestedElementManager extends Component
                 'ownerIdParam' => $this->ownerIdParam,
                 'fieldId' => $this->field?->id,
                 'fieldHandle' => $this->field?->handle,
-                'baseInputName' => $view->getNamespace(),
+                'baseInputName' => InputNamespace::get(),
                 'prevalidate' => $config['prevalidate'] ?? false,
             ];
 
@@ -672,7 +673,7 @@ class NestedElementManager extends Component
   new Craft.NestedElementManager('#' + $id, $elementType, $settings)
 })();
 JS, [
-                $view->namespaceInputId($id),
+                InputNamespace::namespaceId($id),
                 $this->elementType,
                 $settings,
             ]);

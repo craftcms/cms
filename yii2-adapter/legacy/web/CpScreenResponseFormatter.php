@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -68,19 +69,19 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             if (!$containerId) {
                 throw new BadRequestHttpException('Request missing the X-Craft-Container-Id header.');
             }
-            $view->setNamespace($namespace);
+            InputNamespace::set($namespace);
             call_user_func($behavior->prepareScreen, $response, $containerId);
-            $view->setNamespace(null);
+            InputNamespace::set(null);
         }
 
         $extraToolbarItems = is_callable($behavior->toolbarHtml) ? call_user_func($behavior->toolbarHtml) : $behavior->toolbarHtml;
-        $notice = $behavior->noticeHtml ? $view->namespaceInputs($behavior->noticeHtml, $namespace) : null;
+        $notice = $behavior->noticeHtml ? InputNamespace::namespaceInputs($behavior->noticeHtml, $namespace) : null;
 
-        $tabs = count($behavior->tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
+        $tabs = count($behavior->tabs) > 1 ? InputNamespace::namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
             'tabs' => $behavior->tabs,
         ], TemplateMode::Cp->value), $namespace) : null;
 
-        $content = $view->namespaceInputs(function() use ($behavior) {
+        $content = InputNamespace::namespaceInputs(function() use ($behavior) {
             $components = [];
             if ($behavior->contentHtml) {
                 $components[] = is_callable($behavior->contentHtml) ? call_user_func($behavior->contentHtml) : $behavior->contentHtml;
@@ -93,8 +94,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             return implode("\n", $components);
         }, $namespace);
 
-        $sidebar = $behavior->metaSidebarHtml ? $view->namespaceInputs($behavior->metaSidebarHtml, $namespace) : null;
-        $errorSummary = $behavior->errorSummary ? $view->namespaceInputs($behavior->errorSummary, $namespace) : null;
+        $sidebar = $behavior->metaSidebarHtml ? InputNamespace::namespaceInputs($behavior->metaSidebarHtml, $namespace) : null;
+        $errorSummary = $behavior->errorSummary ? InputNamespace::namespaceInputs($behavior->errorSummary, $namespace) : null;
 
         $response->data = [
             'editUrl' => $behavior->editUrl ? UrlHelper::cpUrl($behavior->editUrl) : null,
@@ -271,7 +272,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         };
 
         if ($namespace) {
-            return Craft::$app->getView()->namespaceInputs($render, $namespace);
+            return InputNamespace::namespaceInputs($render, $namespace);
         }
 
         return $render();

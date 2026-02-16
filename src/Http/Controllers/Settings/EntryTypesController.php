@@ -25,6 +25,7 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\View\View;
@@ -332,7 +333,7 @@ final class EntryTypesController
         $namespace = Str::random(10);
         $view = Craft::$app->getView();
 
-        $html = $view->namespaceInputs(
+        $html = InputNamespace::namespaceInputs(
             fn () => $view->renderTemplate('_includes/forms/entry-type-select/selection-settings.twig', [
                 'entryType' => $entryType,
             ]),

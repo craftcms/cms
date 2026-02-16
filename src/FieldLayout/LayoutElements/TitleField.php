@@ -8,6 +8,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Override;
@@ -84,8 +85,8 @@ class TitleField extends TextField
   }
 })();
 JS, [
-                $view->namespaceInputId($this->id()),
-                $view->namespaceInputId('slug'),
+                InputNamespace::namespaceId($this->id()),
+                InputNamespace::namespaceId('slug'),
                 $charMap,
             ]);
         }

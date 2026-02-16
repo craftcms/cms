@@ -41,6 +41,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -643,7 +644,7 @@ JS, [
         }
 
         $view = $this->getView();
-        $html = $view->namespaceInputs(fn() => $layoutElement->formHtml($element), $namespace);
+        $html = InputNamespace::namespaceInputs(fn() => $layoutElement->formHtml($element), $namespace);
 
         if ($html) {
             $html = Html::modifyTagAttributes($html, [
@@ -2444,7 +2445,7 @@ JS, [
         $tabs = $form->getTabMenu();
         if (count($tabs) > 1) {
             $selectedTab = isset($tabs[$this->_selectedTab]) ? $this->_selectedTab : null;
-            $tabHtml = $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
+            $tabHtml = InputNamespace::namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
                 'tabs' => $tabs,
                 'selectedTab' => $selectedTab,
             ], TemplateMode::Cp->value), $namespace);

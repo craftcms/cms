@@ -29,6 +29,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -195,11 +196,6 @@ class View extends \yii\web\View
      * @var TemplateWrapper[]
      */
     private array $_objectTemplates = [];
-
-    /**
-     * @var string|null
-     */
-    private ?string $_namespace = null;
 
     /**
      * @var bool Whether delta input name registration is open.
@@ -1701,10 +1697,11 @@ JS;
      * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
      *
      * @return string|null The namespace.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::get()} instead.
      */
     public function getNamespace(): ?string
     {
-        return $this->_namespace;
+        return InputNamespace::get();
     }
 
     /**
@@ -1714,10 +1711,12 @@ JS;
      * and [[namespaceInputId()]] are called, if their|null $namespace arguments are null.
      *
      * @param string|null $namespace The new namespace. Set to null to remove the namespace.
+     *
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::set()} instead.
      */
     public function setNamespace(?string $namespace): void
     {
-        $this->_namespace = $namespace;
+        InputNamespace::set($namespace);
     }
 
     /**
@@ -1740,7 +1739,7 @@ JS;
     public function registerDeltaName(string $inputName, bool $forceModified = false): void
     {
         if ($this->_registerDeltaNames) {
-            $inputName = $this->namespaceInputName($inputName);
+            $inputName = InputNamespace::namespaceInputName($inputName);
             $this->_deltaNames[] = $inputName;
 
             if ($forceModified) {
@@ -1772,7 +1771,7 @@ JS;
     public function setInitialDeltaValue(string $inputName, mixed $value): void
     {
         if ($this->_registerDeltaNames) {
-            $this->_initialDeltaValues[$this->namespaceInputName($inputName)] = $value;
+            $this->_initialDeltaValues[InputNamespace::namespaceInputName($inputName)] = $value;
         }
     }
 
@@ -1930,42 +1929,13 @@ JS;
      * @param bool $otherAttributes Whether `id`, `for`, and other attributes should be namespaced (in addition to `name`)
      * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and
      * class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
+     *
      * @return string The HTML with namespaced attributes
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::namespaceInputs()} instead.
      */
     public function namespaceInputs(callable|string $html, ?string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
     {
-        if (is_callable($html)) {
-            // If no namespace was passed in, just return the callable response directly.
-            // No need to namespace it via the currently-set namespace in this case; if there is one, it should get applied later on.
-            if ($namespace === null) {
-                return (string)$html();
-            }
-
-            $oldNamespace = $this->getNamespace();
-            $this->setNamespace($this->namespaceInputName($namespace));
-            try {
-                $response = $this->namespaceInputs((string)$html(), $namespace, $otherAttributes, $withClasses);
-            } finally {
-                $this->setNamespace($oldNamespace);
-            }
-            return $response;
-        }
-
-        if ($html === '') {
-            return $html;
-        }
-
-        if ($namespace === null) {
-            $namespace = $this->getNamespace();
-            // If there's no active namespace, we're done here
-            if ($namespace === null) {
-                return $html;
-            }
-        }
-
-        return $otherAttributes
-            ? Html::namespaceHtml($html, $namespace, $withClasses)
-            : Html::namespaceInputs($html, $namespace);
+        return InputNamespace::namespaceInputs($html, $namespace, $otherAttributes, $withClasses);
     }
 
     /**
@@ -1976,22 +1946,13 @@ JS;
      *
      * @param string $inputName The input name that should be namespaced.
      * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
+     *
      * @return string The namespaced input name.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::namespaceInputName()} instead.
      */
     public function namespaceInputName(string $inputName, ?string $namespace = null): string
     {
-        if ($inputName === '') {
-            return $inputName;
-        }
-
-        if ($namespace === null) {
-            $namespace = $this->getNamespace();
-            if ($namespace === null) {
-                return $inputName;
-            }
-        }
-
-        return Html::namespaceInputName($inputName, $namespace);
+        return InputNamespace::namespaceInputName($inputName, $namespace);
     }
 
     /**
@@ -2002,22 +1963,13 @@ JS;
      *
      * @param string $inputId The input ID that should be namespaced.
      * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
+     *
      * @return string The namespaced input ID.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::namespaceId()} instead.
      */
     public function namespaceInputId(string $inputId, ?string $namespace = null): string
     {
-        if ($inputId === '') {
-            return $inputId;
-        }
-
-        if ($namespace === null) {
-            $namespace = $this->getNamespace();
-            if ($namespace === null) {
-                return Html::id($inputId);
-            }
-        }
-
-        return Html::namespaceId($inputId, $namespace);
+        return InputNamespace::namespaceId($inputId, $namespace);
     }
 
     /**

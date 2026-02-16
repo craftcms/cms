@@ -9,6 +9,7 @@ use craft\base\ElementInterface;
 use craft\web\assets\userphoto\UserPhotoAsset;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -79,7 +80,7 @@ new Craft.UserPhotoInput($userId, '#' + $inputId, {
 })
 JS, [
             $element->id,
-            $view->namespaceInputId($inputId),
+            InputNamespace::namespaceId($inputId),
             $element->getIsCurrent(),
         ]);
 

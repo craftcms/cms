@@ -17,6 +17,7 @@ use CraftCms\Cms\Plugin\Concerns\Installable;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Yii2Adapter\Database\MigrationWrapper;
 use Illuminate\Database\Migrations\Migration;
@@ -192,8 +193,7 @@ class Plugin extends Module implements PluginInterface
 
     private function settingsResponse(bool $readOnly): Response
     {
-        $view = Craft::$app->getView();
-        $settingsHtml = $view->namespaceInputs(function() use ($readOnly) {
+        $settingsHtml = InputNamespace::namespaceInputs(function() use ($readOnly) {
             if ($readOnly) {
                 // Just return the settings HTML with disabled inputs by default
                 return (string)Html::disableInputs(fn() => $this->settingsHtml());

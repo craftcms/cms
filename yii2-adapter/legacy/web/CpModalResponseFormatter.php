@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\web\assets\htmx\HtmxAsset;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use yii\base\Component;
@@ -61,12 +62,12 @@ class CpModalResponseFormatter extends Component implements ResponseFormatterInt
             if (!$containerId) {
                 throw new BadRequestHttpException('Request missing the X-Craft-Container-Id header.');
             }
-            $view->setNamespace($namespace);
+            InputNamespace::set($namespace);
             call_user_func($behavior->prepareModal, $response, $containerId);
-            $view->setNamespace(null);
+            InputNamespace::set(null);
         }
 
-        $content = $view->namespaceInputs(function() use ($behavior) {
+        $content = InputNamespace::namespaceInputs(function() use ($behavior) {
             $components = [];
             if ($behavior->contentHtml) {
                 $components[] = is_callable($behavior->contentHtml) ? call_user_func($behavior->contentHtml) : $behavior->contentHtml;
@@ -79,7 +80,7 @@ class CpModalResponseFormatter extends Component implements ResponseFormatterInt
             return implode("\n", $components);
         }, $namespace);
 
-        $errorSummary = $behavior->errorSummary ? $view->namespaceInputs($behavior->errorSummary, $namespace) : null;
+        $errorSummary = $behavior->errorSummary ? InputNamespace::namespaceInputs($behavior->errorSummary, $namespace) : null;
 
         $response->data = [
             'namespace' => $namespace,

@@ -52,6 +52,7 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -405,7 +406,7 @@ class Cp
                 'id' => $component->getId(),
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
-                    'id' => Craft::$app->getView()->namespaceInputId($config['id']),
+                    'id' => InputNamespace::namespaceId($config['id']),
                     'hyperlink' => $config['hyperlink'],
                     'showLabel' => $config['showLabel'],
                     'showHandle' => $config['showHandle'],
@@ -699,7 +700,7 @@ $('#' + $id).on('activate', (ev) => {
   }
 });
 JS, [
-                $view->namespaceInputId($editId),
+                InputNamespace::namespaceId($editId),
                 $element::class,
                 [
                     'elementId' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
@@ -750,7 +751,7 @@ JS, [
                         'hyperlink' => $config['hyperlink'],
                         'selectable' => $config['selectable'],
                         'context' => $config['context'],
-                        'id' => Craft::$app->getView()->namespaceInputId($config['id']),
+                        'id' => InputNamespace::namespaceId($config['id']),
                         'ui' => 'card',
                     ] : false,
                 ]),
@@ -1203,7 +1204,7 @@ JS, [
 
     private static function componentActionMenu(Actionable $component, bool $withEdit = true): string
     {
-        return Craft::$app->getView()->namespaceInputs(
+        return InputNamespace::namespaceInputs(
             function() use ($component, $withEdit): string {
                 $actionMenuItems = array_filter(
                     $component->getActionMenuItems(),
@@ -1571,11 +1572,11 @@ JS, [
 Craft.createElementIndex($elementType, $('#' + $id), $settings)
 JS, [
                 $elementType,
-                $view->namespaceInputId($config['id']),
+                InputNamespace::namespaceId($config['id']),
                 array_merge(
                     [
                         'context' => $config['context'],
-                        'namespace' => $view->getNamespace(),
+                        'namespace' => InputNamespace::get(),
                         'prevalidate' => $config['prevalidate'] ?? false,
                     ],
                     $config['jsSettings']
@@ -3214,7 +3215,7 @@ JS, [
             'alwaysShowThumbAlignmentBtns' => $fieldLayout->type::hasThumbs(),
             'readOnly' => $config['disabled'],
         ]);
-        $namespacedId = $view->namespaceInputId($config['id']);
+        $namespacedId = InputNamespace::namespaceId($config['id']);
 
         $js = <<<JS
 new Craft.FieldLayoutDesigner("#$namespacedId", $jsSettings)
@@ -3548,8 +3549,8 @@ JS;
   new Craft.GeneratedFieldsTable($id, $name, $cols, $settings)
 })();
 JS, [
-            $view->namespaceInputId($config['id']),
-            $view->namespaceInputName($name),
+            InputNamespace::namespaceId($config['id']),
+            InputNamespace::namespaceInputName($name),
             $cols,
             $settings,
         ]);
@@ -3734,7 +3735,7 @@ JS, [
         if ($items instanceof Collection) {
             $items = $items->all();
         }
-        
+
         return array_map(function(array $item) {
             if (!isset($item['type'])) {
                 if (isset($item['url'])) {

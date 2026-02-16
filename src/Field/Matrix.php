@@ -47,6 +47,7 @@ use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -589,13 +590,14 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
         if (! $readOnly) {
             $view->startJsBuffer();
-            $namespace = $view->getNamespace();
-            $view->setNamespace(null);
-            $entryTypeSelectHtml = $view->namespaceInputs(fn () => Cp::entryTypeSelectHtml([
-                ...$entryTypeSelectConfig,
-                'id' => 'TEMP_ID',
-            ]), $namespace);
-            $view->setNamespace($namespace);
+            $namespace = InputNamespace::get();
+            $entryTypeSelectHtml = InputNamespace::with(
+                namespace: null,
+                callback: fn () => InputNamespace::namespaceInputs(fn () => Cp::entryTypeSelectHtml([
+                    ...$entryTypeSelectConfig,
+                    'id' => 'TEMP_ID',
+                ]), $namespace),
+            );
             $entryTypeSelectJs = $view->clearJsBuffer();
         }
 
@@ -841,9 +843,9 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
   }, 1);
 })();
 JS, [
-            $view->namespaceInputId($expandAllId),
-            $view->namespaceInputId($collapseAllId),
-            $view->namespaceInputId($this->getInputId()),
+            InputNamespace::namespaceId($expandAllId),
+            InputNamespace::namespaceId($collapseAllId),
+            InputNamespace::namespaceId($this->getInputId()),
         ]);
 
         // Copy, Duplicate, Delete
@@ -949,8 +951,8 @@ JS);
   }, 1);
 })();
 JS, [
-            $view->namespaceInputId($id),
-            $view->namespaceInputId($this->getInputId()),
+            InputNamespace::namespaceId($id),
+            InputNamespace::namespaceId($this->getInputId()),
             $entrySelector,
             $type,
         ]);
@@ -1027,8 +1029,8 @@ JS;
   }, 1);
 })();
 JS, [
-            $view->namespaceInputId($id),
-            $view->namespaceInputId($this->getInputId()),
+            InputNamespace::namespaceId($id),
+            InputNamespace::namespaceId($this->getInputId()),
             $entrySelector,
         ]);
 
@@ -1127,8 +1129,8 @@ JS, [
         $settings = [
             'fieldId' => $this->id,
             'maxEntries' => $this->maxEntries,
-            'namespace' => $view->getNamespace(),
-            'baseInputName' => $view->namespaceInputName($this->handle),
+            'namespace' => InputNamespace::get(),
+            'baseInputName' => InputNamespace::namespaceInputName($this->handle),
             'ownerElementType' => $element::class,
             'ownerId' => $element->id,
             'siteId' => $element->siteId,
@@ -1137,9 +1139,9 @@ JS, [
         ];
 
         $js = 'const input = new Craft.MatrixInput('.
-            '"'.$view->namespaceInputId($id).'", '.
+            '"'.InputNamespace::namespaceId($id).'", '.
             Json::encode($entryTypeInfo).', '.
-            '"'.$view->namespaceInputName($this->handle).'", '.
+            '"'.InputNamespace::namespaceInputName($this->handle).'", '.
             Json::encode($settings).
             ');';
 

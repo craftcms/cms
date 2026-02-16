@@ -13,6 +13,7 @@ use craft\web\assets\totp\TotpAsset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Models\Authenticator;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Session\SessionManager;
 use PragmaRX\Google2FA\Exceptions\Google2FAException;
@@ -78,7 +79,7 @@ Craft.createAuthFormHandler(Craft.TotpForm.METHOD, $('#' + $totpFormId), () => {
   Craft.authMethodSetup.refresh();
 });
 JS, [
-            $view->namespaceInputId($totpFormId),
+            InputNamespace::namespaceId($totpFormId),
             $containerId,
         ]);
 

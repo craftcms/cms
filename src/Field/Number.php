@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
@@ -265,7 +266,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         }
 
         $id = $this->getInputId();
-        $namespacedId = $view->namespaceInputId($id);
+        $namespacedId = InputNamespace::namespaceId($id);
 
         $js = <<<JS
 (function() {

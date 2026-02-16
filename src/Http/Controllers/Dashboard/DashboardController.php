@@ -8,6 +8,7 @@ use Craft;
 use craft\web\assets\dashboard\DashboardAsset;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 
@@ -33,7 +34,7 @@ final readonly class DashboardController
             ->mapWithKeys(function (string $widgetType) {
                 $this->view->startJsBuffer();
                 $widget = $this->dashboard->createWidget($widgetType);
-                $settingsHtml = $this->view->namespaceInputs(fn () => (string) $widget->getSettingsHtml(), '__NAMESPACE__');
+                $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), '__NAMESPACE__');
                 $settingsJs = (string) $this->view->clearJsBuffer(false);
 
                 return [$widget::class => [

@@ -9,6 +9,7 @@ use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
@@ -41,7 +42,7 @@ final readonly class AuthMethodController
             TemplateMode::Cp,
             fn () => Html::tag('h1', t('{name} Setup', [
                 'name' => $displayName,
-            ])).$view->namespaceInputs(
+            ])).InputNamespace::namespaceInputs(
                 fn () => $method->getSetupHtml($containerId),
                 $containerId,
             )

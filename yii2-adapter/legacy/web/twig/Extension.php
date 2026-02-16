@@ -69,6 +69,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -273,11 +274,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('merge', [$this, 'mergeFilter']),
             new TwigFilter('money', [$this, 'moneyFilter']),
             new TwigFilter('multisort', [$this, 'multisortFilter']),
-            new TwigFilter('namespace', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
+            new TwigFilter('namespace', [InputNamespace::class, 'namespaceInputs'], ['is_safe' => ['html']]),
             new TwigFilter('namespaceAttributes', [Html::class, 'namespaceAttributes'], ['is_safe' => ['html']]),
-            new TwigFilter('ns', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
-            new TwigFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
-            new TwigFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
+            new TwigFilter('ns', [InputNamespace::class, 'namespaceInputs'], ['is_safe' => ['html']]),
+            new TwigFilter('namespaceInputName', [InputNamespace::class, 'namespaceInputName']),
+            new TwigFilter('namespaceInputId', [InputNamespace::class, 'namespaceId']),
             new TwigFilter('number', [$this, 'numberFilter']),
             new TwigFilter('parseAttr', [$this, 'parseAttrFilter']),
             new TwigFilter('parseRefs', [$this, 'parseRefsFilter'], ['is_safe' => ['html']]),

@@ -70,6 +70,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -1388,7 +1389,7 @@ $('#' + $id).on('activate', () => {
   new Craft.PreviewFileModal($assetId, $settings)
 });
 JS, [
-                $view->namespaceInputId($previewId),
+                InputNamespace::namespaceId($previewId),
                 $this->id,
                 [
                     'startingWidth' => $this->width,
@@ -1417,7 +1418,7 @@ $('#' + $id).on('activate', () => {
   form.remove();
 });
 JS, [
-            $view->namespaceInputId($downloadId),
+            InputNamespace::namespaceId($downloadId),
             $this->id,
         ]);
 
@@ -1573,8 +1574,8 @@ $('#' + $id).on('activate', () => {
   fileInput.click();
 });
 JS, [
-                $view->namespaceInputId($replaceId),
-                $view->getNamespace(),
+                InputNamespace::namespaceId($replaceId),
+                InputNamespace::get(),
                 $this->id,
                 $this->fs::class,
                 t('Dimensions'),
@@ -1607,7 +1608,7 @@ $('#' + $id).on('activate', () => {
   })
 });
 JS, [
-                $view->namespaceInputId($editImageId),
+                InputNamespace::namespaceId($editImageId),
                 $this->id,
             ]);
         }
@@ -2613,7 +2614,7 @@ JS, [
                         'aria-label' => t('Preview'),
                     ]);
 
-                    $previewBtnId = $view->namespaceInputId('preview-btn');
+                    $previewBtnId = InputNamespace::namespaceId('preview-btn');
                     $settings = [];
                     $width = $this->getWidth();
                     $height = $this->getHeight();
@@ -2636,7 +2637,7 @@ JS;
                         'class' => ['btn', 'edit-btn'],
                     ]);
 
-                    $editBtnId = $view->namespaceInputId('edit-btn');
+                    $editBtnId = InputNamespace::namespaceId('edit-btn');
                     $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
                     $js = <<<JS
 $('#$editBtnId').on('activate', () => {
@@ -2680,7 +2681,7 @@ JS;
 
     private function _updatePreviewThumbJs(): string
     {
-        $thumbContainerId = Craft::$app->getView()->namespaceInputId('thumb-container');
+        $thumbContainerId = InputNamespace::namespaceId('thumb-container');
 
         return <<<JS
 $('#$thumbContainerId')

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout;
 
-use Craft;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 
 class FieldLayoutForm extends Component
@@ -51,7 +51,6 @@ class FieldLayoutForm extends Component
     {
         $html = [];
         $hasMultipleTabs = count($this->tabs) > 1;
-        $view = Craft::$app->getView();
 
         foreach ($this->tabs as $i => $tab) {
             $show = $showFirst && $i === 0;
@@ -68,7 +67,7 @@ class FieldLayoutForm extends Component
                 ],
                 'role' => $hasMultipleTabs ? 'tabpanel' : false,
                 'aria' => [
-                    'labelledBy' => $hasMultipleTabs ? $view->namespaceInputId($tab->getTabId()) : false,
+                    'labelledBy' => $hasMultipleTabs ? InputNamespace::namespaceId($tab->getTabId()) : false,
                 ],
             ]);
         }
