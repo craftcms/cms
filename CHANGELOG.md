@@ -7,6 +7,7 @@
 - Impoved the performance of `craft\helpers\Typecast`. ([#18426](https://github.com/craftcms/cms/pull/18426))
 - Fixed a bug where some Matrix bulk action labels weren’t getting translated.
 - Fixed a bug where global nav items weren’t showing an icon if the icon was set to `0`.
+- Fixed an RCE vulnerability.
 
 ## 5.9.10 - 2026-02-12
 
