@@ -247,7 +247,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         $view = Craft::$app->getView();
         $view->registerJsWithVars(fn ($id) => <<<JS
 Craft.initUiElements('#' + $id);
-JS, [InputNamespace::namespaceInputId($this->id)]);
+JS, [InputNamespace::namespaceId($this->id)]);
 
         return Html::tag($this->mainTag, $this->getBuilderInnerHtml(), [
             'id' => $this->id,
@@ -259,7 +259,7 @@ JS, [InputNamespace::namespaceInputId($this->id)]);
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(ConditionBuilderAsset::class);
-        $namespacedId = InputNamespace::namespaceInputId($this->id);
+        $namespacedId = InputNamespace::namespaceId($this->id);
 
         return InputNamespace::namespaceInputs(function () use ($view, $namespacedId, $autofocusAddButton) {
             $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
@@ -276,7 +276,7 @@ JS, [InputNamespace::namespaceInputId($this->id)]);
                     'ext' => 'craft-cp, craft-condition',
                     'target' => "#$namespacedId", // replace self
                     'include' => "#$namespacedId", // In case we are in a non form container
-                    'indicator' => sprintf('#%s', InputNamespace::namespaceInputId("$this->id-spinner")),
+                    'indicator' => sprintf('#%s', InputNamespace::namespaceId("$this->id-spinner")),
                 ],
                 'data' => [
                     'condition-config' => Json::encode(array_merge($this->getBuilderConfig(), [
@@ -551,8 +551,8 @@ Garnish.requestAnimationFrame(() => {
 });
 JS,
             [
-                InputNamespace::namespaceInputId($buttonId),
-                InputNamespace::namespaceInputId($inputId),
+                InputNamespace::namespaceId($buttonId),
+                InputNamespace::namespaceId($inputId),
             ]
         );
 

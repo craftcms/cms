@@ -87,7 +87,7 @@ class Tip extends BaseUiElement
         }
 
         $id = sprintf('tip%s', mt_rand());
-        $namespacedId = InputNamespace::namespaceInputId($id);
+        $namespacedId = InputNamespace::namespaceId($id);
 
         $classes = [
             'pane',

@@ -843,9 +843,9 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
   }, 1);
 })();
 JS, [
-            InputNamespace::namespaceInputId($expandAllId),
-            InputNamespace::namespaceInputId($collapseAllId),
-            InputNamespace::namespaceInputId($this->getInputId()),
+            InputNamespace::namespaceId($expandAllId),
+            InputNamespace::namespaceId($collapseAllId),
+            InputNamespace::namespaceId($this->getInputId()),
         ]);
 
         // Copy, Duplicate, Delete
@@ -951,8 +951,8 @@ JS);
   }, 1);
 })();
 JS, [
-            InputNamespace::namespaceInputId($id),
-            InputNamespace::namespaceInputId($this->getInputId()),
+            InputNamespace::namespaceId($id),
+            InputNamespace::namespaceId($this->getInputId()),
             $entrySelector,
             $type,
         ]);
@@ -1029,8 +1029,8 @@ JS;
   }, 1);
 })();
 JS, [
-            InputNamespace::namespaceInputId($id),
-            InputNamespace::namespaceInputId($this->getInputId()),
+            InputNamespace::namespaceId($id),
+            InputNamespace::namespaceId($this->getInputId()),
             $entrySelector,
         ]);
 
@@ -1139,7 +1139,7 @@ JS, [
         ];
 
         $js = 'const input = new Craft.MatrixInput('.
-            '"'.InputNamespace::namespaceInputId($id).'", '.
+            '"'.InputNamespace::namespaceId($id).'", '.
             Json::encode($entryTypeInfo).', '.
             '"'.InputNamespace::namespaceInputName($this->handle).'", '.
             Json::encode($settings).

@@ -266,7 +266,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         }
 
         $id = $this->getInputId();
-        $namespacedId = InputNamespace::namespaceInputId($id);
+        $namespacedId = InputNamespace::namespaceId($id);
 
         $js = <<<JS
 (function() {

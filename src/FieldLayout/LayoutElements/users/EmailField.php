@@ -96,7 +96,7 @@ class EmailField extends TextField
             Craft::$app->getView()->registerJsWithVars(fn ($id) => <<<JS
 new Craft.ElevatedSessionForm($('#' + $id).closest('form'), ['#' + $id]);
 JS, [
-                InputNamespace::namespaceInputId($this->attribute),
+                InputNamespace::namespaceId($this->attribute),
             ]);
         }
 

@@ -80,7 +80,7 @@ new Craft.UserPhotoInput($userId, '#' + $inputId, {
 })
 JS, [
             $element->id,
-            InputNamespace::namespaceInputId($inputId),
+            InputNamespace::namespaceId($inputId),
             $element->getIsCurrent(),
         ]);
 

@@ -67,7 +67,7 @@ class FieldLayoutForm extends Component
                 ],
                 'role' => $hasMultipleTabs ? 'tabpanel' : false,
                 'aria' => [
-                    'labelledBy' => $hasMultipleTabs ? InputNamespace::namespaceInputId($tab->getTabId()) : false,
+                    'labelledBy' => $hasMultipleTabs ? InputNamespace::namespaceId($tab->getTabId()) : false,
                 ],
             ]);
         }

@@ -199,7 +199,7 @@ trait HasControlPanelUI
   });
 })();
 JS, [
-                InputNamespace::namespaceInputId($validateId),
+                InputNamespace::namespaceId($validateId),
             ]);
         }
 
@@ -236,7 +236,7 @@ $('#' + $id).on('activate', () => {
   Craft.createElementEditor($elementType, $settings)
 });
 JS, [
-                InputNamespace::namespaceInputId($editId),
+                InputNamespace::namespaceId($editId),
                 static::class,
                 [
                     'elementId' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
@@ -266,7 +266,7 @@ JS, [
   });
 })();
 JS, [
-                    InputNamespace::namespaceInputId($copyId),
+                    InputNamespace::namespaceId($copyId),
                     [
                         'type' => static::class,
                         'id' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,

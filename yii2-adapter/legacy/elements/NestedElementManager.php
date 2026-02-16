@@ -673,7 +673,7 @@ class NestedElementManager extends Component
   new Craft.NestedElementManager('#' + $id, $elementType, $settings)
 })();
 JS, [
-                InputNamespace::namespaceInputId($id),
+                InputNamespace::namespaceId($id),
                 $this->elementType,
                 $settings,
             ]);

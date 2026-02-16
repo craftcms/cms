@@ -149,7 +149,7 @@ abstract class BaseElementLinkType extends BaseLinkType
   });
 })();
 JS, [
-            'id' => InputNamespace::namespaceInputId($id),
+            'id' => InputNamespace::namespaceId($id),
             'refHandle' => static::elementType()::refHandle(),
         ]);
 

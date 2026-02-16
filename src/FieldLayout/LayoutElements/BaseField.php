@@ -796,7 +796,7 @@ abstract class BaseField extends FieldLayoutElement
   });
 })();
 JS, [
-            InputNamespace::namespaceInputId($config['id']),
+            InputNamespace::namespaceId($config['id']),
             $config['promptLabel'],
             $config['attribute'],
         ]);

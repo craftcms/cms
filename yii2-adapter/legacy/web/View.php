@@ -1965,11 +1965,11 @@ JS;
      * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
      *
      * @return string The namespaced input ID.
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::namespaceInputId()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::namespaceId()} instead.
      */
     public function namespaceInputId(string $inputId, ?string $namespace = null): string
     {
-        return InputNamespace::namespaceInputId($inputId, $namespace);
+        return InputNamespace::namespaceId($inputId, $namespace);
     }
 
     /**

@@ -79,7 +79,7 @@ Craft.createAuthFormHandler(Craft.TotpForm.METHOD, $('#' + $totpFormId), () => {
   Craft.authMethodSetup.refresh();
 });
 JS, [
-            InputNamespace::namespaceInputId($totpFormId),
+            InputNamespace::namespaceId($totpFormId),
             $containerId,
         ]);
 

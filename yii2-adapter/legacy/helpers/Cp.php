@@ -406,7 +406,7 @@ class Cp
                 'id' => $component->getId(),
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
-                    'id' => InputNamespace::namespaceInputId($config['id']),
+                    'id' => InputNamespace::namespaceId($config['id']),
                     'hyperlink' => $config['hyperlink'],
                     'showLabel' => $config['showLabel'],
                     'showHandle' => $config['showHandle'],
@@ -700,7 +700,7 @@ $('#' + $id).on('activate', (ev) => {
   }
 });
 JS, [
-                InputNamespace::namespaceInputId($editId),
+                InputNamespace::namespaceId($editId),
                 $element::class,
                 [
                     'elementId' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
@@ -751,7 +751,7 @@ JS, [
                         'hyperlink' => $config['hyperlink'],
                         'selectable' => $config['selectable'],
                         'context' => $config['context'],
-                        'id' => InputNamespace::namespaceInputId($config['id']),
+                        'id' => InputNamespace::namespaceId($config['id']),
                         'ui' => 'card',
                     ] : false,
                 ]),
@@ -1572,7 +1572,7 @@ JS, [
 Craft.createElementIndex($elementType, $('#' + $id), $settings)
 JS, [
                 $elementType,
-                InputNamespace::namespaceInputId($config['id']),
+                InputNamespace::namespaceId($config['id']),
                 array_merge(
                     [
                         'context' => $config['context'],
@@ -3215,7 +3215,7 @@ JS, [
             'alwaysShowThumbAlignmentBtns' => $fieldLayout->type::hasThumbs(),
             'readOnly' => $config['disabled'],
         ]);
-        $namespacedId = InputNamespace::namespaceInputId($config['id']);
+        $namespacedId = InputNamespace::namespaceId($config['id']);
 
         $js = <<<JS
 new Craft.FieldLayoutDesigner("#$namespacedId", $jsSettings)
@@ -3549,7 +3549,7 @@ JS;
   new Craft.GeneratedFieldsTable($id, $name, $cols, $settings)
 })();
 JS, [
-            InputNamespace::namespaceInputId($config['id']),
+            InputNamespace::namespaceId($config['id']),
             InputNamespace::namespaceInputName($name),
             $cols,
             $settings,

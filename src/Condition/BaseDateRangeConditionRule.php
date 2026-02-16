@@ -164,8 +164,8 @@ Garnish.requestAnimationFrame(() => {
 });
 JS,
             [
-                InputNamespace::namespaceInputId($buttonId),
-                InputNamespace::namespaceInputId($inputId),
+                InputNamespace::namespaceId($buttonId),
+                InputNamespace::namespaceId($inputId),
             ]
         );
 

@@ -533,13 +533,13 @@ new Craft.ElementFieldSettings(...$args)
 JS, [
             [
                 $this->allowMultipleSources,
-                InputNamespace::namespaceInputId('maintain-hierarchy-field'),
-                InputNamespace::namespaceInputId($this->allowMultipleSources ? 'sources-field' : 'source-field'),
-                InputNamespace::namespaceInputId('branch-limit-field'),
-                InputNamespace::namespaceInputId('min-relations-field'),
-                InputNamespace::namespaceInputId('max-relations-field'),
-                InputNamespace::namespaceInputId('default-placement-field'),
-                InputNamespace::namespaceInputId('viewMode-field'),
+                InputNamespace::namespaceId('maintain-hierarchy-field'),
+                InputNamespace::namespaceId($this->allowMultipleSources ? 'sources-field' : 'source-field'),
+                InputNamespace::namespaceId('branch-limit-field'),
+                InputNamespace::namespaceId('min-relations-field'),
+                InputNamespace::namespaceId('max-relations-field'),
+                InputNamespace::namespaceId('default-placement-field'),
+                InputNamespace::namespaceId('viewMode-field'),
             ],
         ]);
 

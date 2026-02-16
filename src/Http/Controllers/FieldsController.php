@@ -510,8 +510,8 @@ new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
   wrapWithTypeClassDiv: true
 })
 JS, [
-                    InputNamespace::namespaceInputId('type'),
-                    InputNamespace::namespaceInputId('settings'),
+                    InputNamespace::namespaceId('type'),
+                    InputNamespace::namespaceId('settings'),
                     InputNamespace::namespaceInputName('types[__TYPE__]'),
                 ]);
             });

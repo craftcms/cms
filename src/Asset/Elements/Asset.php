@@ -1389,7 +1389,7 @@ $('#' + $id).on('activate', () => {
   new Craft.PreviewFileModal($assetId, $settings)
 });
 JS, [
-                InputNamespace::namespaceInputId($previewId),
+                InputNamespace::namespaceId($previewId),
                 $this->id,
                 [
                     'startingWidth' => $this->width,
@@ -1418,7 +1418,7 @@ $('#' + $id).on('activate', () => {
   form.remove();
 });
 JS, [
-            InputNamespace::namespaceInputId($downloadId),
+            InputNamespace::namespaceId($downloadId),
             $this->id,
         ]);
 
@@ -1574,7 +1574,7 @@ $('#' + $id).on('activate', () => {
   fileInput.click();
 });
 JS, [
-                InputNamespace::namespaceInputId($replaceId),
+                InputNamespace::namespaceId($replaceId),
                 InputNamespace::get(),
                 $this->id,
                 $this->fs::class,
@@ -1608,7 +1608,7 @@ $('#' + $id).on('activate', () => {
   })
 });
 JS, [
-                InputNamespace::namespaceInputId($editImageId),
+                InputNamespace::namespaceId($editImageId),
                 $this->id,
             ]);
         }
@@ -2614,7 +2614,7 @@ JS, [
                         'aria-label' => t('Preview'),
                     ]);
 
-                    $previewBtnId = InputNamespace::namespaceInputId('preview-btn');
+                    $previewBtnId = InputNamespace::namespaceId('preview-btn');
                     $settings = [];
                     $width = $this->getWidth();
                     $height = $this->getHeight();
@@ -2637,7 +2637,7 @@ JS;
                         'class' => ['btn', 'edit-btn'],
                     ]);
 
-                    $editBtnId = InputNamespace::namespaceInputId('edit-btn');
+                    $editBtnId = InputNamespace::namespaceId('edit-btn');
                     $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
                     $js = <<<JS
 $('#$editBtnId').on('activate', () => {
@@ -2681,7 +2681,7 @@ JS;
 
     private function _updatePreviewThumbJs(): string
     {
-        $thumbContainerId = InputNamespace::namespaceInputId('thumb-container');
+        $thumbContainerId = InputNamespace::namespaceId('thumb-container');
 
         return <<<JS
 $('#$thumbContainerId')

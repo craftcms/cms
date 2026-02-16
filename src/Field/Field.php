@@ -582,7 +582,7 @@ new Craft.CpScreenSlideout('fields/edit-field', {
 });
 })();
 JS, [
-                InputNamespace::namespaceInputId($editId),
+                InputNamespace::namespaceId($editId),
                 ['fieldId' => $this->id],
             ]);
         }

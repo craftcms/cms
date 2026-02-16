@@ -98,7 +98,7 @@ $('#' + $id).on('click', () => {
   })
 });
 JS, [
-                InputNamespace::namespaceInputId($editId),
+                InputNamespace::namespaceId($editId),
                 ['groupId' => $this->id],
             ]);
         }

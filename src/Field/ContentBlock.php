@@ -608,7 +608,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
   new Craft.ContentBlockEditor($('#' + $id), $settings)
 })();
 JS, [
-            InputNamespace::namespaceInputId($id),
+            InputNamespace::namespaceId($id),
             $settings,
         ]);
 

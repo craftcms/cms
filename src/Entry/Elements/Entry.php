@@ -1874,7 +1874,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
   });
 })();
 JS, [
-                InputNamespace::namespaceInputId($entryTypeEditId),
+                InputNamespace::namespaceId($entryTypeEditId),
                 ['entryTypeId' => $this->typeId],
                 isset($this->fieldId),
             ]);
@@ -1896,7 +1896,7 @@ JS, [
       });
     })();
     JS, [
-                    InputNamespace::namespaceInputId($sectionEditId),
+                    InputNamespace::namespaceId($sectionEditId),
                     ['sectionId' => $this->sectionId],
                 ]);
             }
@@ -1922,7 +1922,7 @@ JS, [
       });
     })();
     JS, [
-                    InputNamespace::namespaceInputId($fieldEditId),
+                    InputNamespace::namespaceId($fieldEditId),
                     ['fieldId' => $this->fieldId],
                 ]);
             }

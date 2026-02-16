@@ -85,8 +85,8 @@ class TitleField extends TextField
   }
 })();
 JS, [
-                InputNamespace::namespaceInputId($this->id()),
-                InputNamespace::namespaceInputId('slug'),
+                InputNamespace::namespaceId($this->id()),
+                InputNamespace::namespaceId('slug'),
                 $charMap,
             ]);
         }

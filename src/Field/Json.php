@@ -131,7 +131,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
   intersectionObserver.observe(textarea);
 })();
 JS, [
-            InputNamespace::namespaceInputId($id),
+            InputNamespace::namespaceId($id),
             $static,
         ]);
 

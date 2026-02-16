@@ -189,7 +189,7 @@ params: $params,
 })
 });
 JS, [
-            InputNamespace::namespaceInputId($editId),
+            InputNamespace::namespaceId($editId),
             ['entryTypeId' => $this->id],
         ]);
 

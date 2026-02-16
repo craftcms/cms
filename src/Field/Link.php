@@ -569,7 +569,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         $view->registerJsWithVars(fn ($id) => <<<JS
 new Craft.LinkField($('#' + $id));
 JS, [
-            InputNamespace::namespaceInputId($id),
+            InputNamespace::namespaceId($id),
         ]);
 
         $typeInputName = "$this->handle[type]";
@@ -577,7 +577,7 @@ JS, [
         if (count($linkTypes) === 1) {
             $innerHtml = Html::hiddenInput($typeInputName, $valueTypeId);
         } else {
-            $namespacedId = InputNamespace::namespaceInputId($id);
+            $namespacedId = InputNamespace::namespaceId($id);
             $js = <<<JS
 $('#$namespacedId-type').on('change', e => {
   const type = $('#$namespacedId-type').val();
@@ -609,7 +609,7 @@ JS;
 
         foreach ($linkTypes as $typeId => $linkType) {
             $containerId = "$id-$typeId";
-            $nsContainerId = InputNamespace::namespaceInputId($containerId);
+            $nsContainerId = InputNamespace::namespaceId($containerId);
             $selected = $typeId === $valueTypeId;
             $typeValue = $selected ? $value?->serialize()['value'] : null;
             $isTextLink = is_subclass_of($linkType, BaseTextLinkType::class);

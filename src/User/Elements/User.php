@@ -1628,7 +1628,7 @@ $('#' + $id).on('activate', () => {
   });
 });
 JS, [
-                        InputNamespace::namespaceInputId($copyImpersonationUrlId),
+                        InputNamespace::namespaceId($copyImpersonationUrlId),
                         $this->id,
                         t('Copy the impersonation URL, and open it in a new private window.'),
                     ]);
@@ -1717,7 +1717,7 @@ $('#' + $id).on('activate', () => {
 });
 JS,
                         [
-                            InputNamespace::namespaceInputId($deleteId),
+                            InputNamespace::namespaceId($deleteId),
                             $this->id,
                             /** @phpstan-ignore-next-line */
                             Crypt::encrypt(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
@@ -1749,7 +1749,7 @@ $('#' + $id).on('activate', () => {
   });
 });
 JS, [
-            InputNamespace::namespaceInputId($id),
+            InputNamespace::namespaceId($id),
             $this->id,
             t('Copy the activation URL'),
         ]);
