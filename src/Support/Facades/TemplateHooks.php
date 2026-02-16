@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Support\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static void register(string $hook, callable $handler, bool $append = true)
- * @method static string invoke(string $hook, array &$context)
+ * @method static void register(string $hook, callable|string $handler, bool $append = true)
+ * @method static string invoke(string $hook, array $context)
  *
  * @see \CraftCms\Cms\View\TemplateHooks
  */
