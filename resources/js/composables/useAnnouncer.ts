@@ -13,10 +13,6 @@ const announcerTimeout = ref(0);
  * The announcement state is shared globally, so only one announcement can be active at a time.
  * New announcements will replace any existing ones.
  *
- * @param options - Configuration options
- * @param options.timeout - Duration in ms before the announcement clears (default: 5000)
- * @returns {Object} - The announcement ref and announce function
- *
  * @example
  * // Basic usage - announce a success message
  * const {announce} = useAnnouncer();
