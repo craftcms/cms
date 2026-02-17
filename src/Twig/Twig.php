@@ -16,6 +16,7 @@ use CraftCms\Cms\Twig\Events\TwigCreated;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\HtmlString;
+use LogicException;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\ExtensionInterface;
 use Twig\Extension\SandboxExtension;
@@ -146,11 +147,18 @@ final class Twig
             TemplateMode::Site => $this->siteExtensions[$class] = $extension,
         };
 
-        // Invalidate cached environment — it will be rebuilt on next get()
-        match ($mode) {
-            TemplateMode::Cp => $this->cpTwig = null,
-            TemplateMode::Site => $this->siteTwig = null,
-        };
+        try {
+            match ($mode) {
+                TemplateMode::Cp => $this->cpTwig?->addExtension($extension),
+                TemplateMode::Site => $this->siteTwig?->addExtension($extension),
+            };
+        } catch (LogicException) {
+            // Invalidate cached environment — it will be rebuilt on next get()
+            match ($mode) {
+                TemplateMode::Cp => $this->cpTwig = null,
+                TemplateMode::Site => $this->siteTwig = null,
+            };
+        }
     }
 
     private function getOptions(): array
