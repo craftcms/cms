@@ -767,6 +767,16 @@ Moved the following controllers:
 - Deprecated `craft\services\Tokens`. `CraftCms\Cms\RouteToken\RouteTokens` should be used instead.
 - Deprecated `craft\records\Token`. `CraftCms\Cms\RouteToken\Models\RouteToken` should be used instead.
 
+## Twig
+
+- Added `CraftCms\Cms\Twig\TemplateResolver`.
+- Added `CraftCms\Cms\Twig\TemplateLoader`.
+- Added `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException`.
+- Deprecated `craft\web\View::doesTemplateExist()`. `CraftCms\Cms\Twig\TemplateResolver::doesTemplateExist()` should be used instead.
+- Deprecated `craft\web\View::resolveTemplate()`. `CraftCms\Cms\Twig\TemplateResolver::resolveTemplate()` should be used instead.
+- Deprecated `craft\web\twig\TemplateLoader`. `CraftCms\Cms\Twig\TemplateLoader` should be used instead.
+- Deprecated `craft\web\twig\TemplateLoaderException`. `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException` should be used instead.
+
 ## Translations
 
 - Deprecated `craft\i18n\FormatConverter`. `CraftCms\Cms\Translation\FormatConverter` should be used instead.
@@ -810,6 +820,7 @@ Moved the following controllers:
 
 ## View
 
+- Added `CraftCms\Cms\View\TwigEngine`.
 - Added `CraftCms\Cms\View\AssetRegistry`.
 - Added `CraftCms\Cms\Support\Facades\AssetRegistry`.
 - Added `CraftCms\Cms\View\Enums\Position` enum.
