@@ -226,7 +226,7 @@ describe('sortOptions', function () {
 
         expect($complexOptions)->not->toBeEmpty();
 
-        $firstComplex = array_values($complexOptions)[0];
+        $firstComplex = array_first($complexOptions);
         expect($firstComplex)->toHaveKey('label');
         expect($firstComplex)->toHaveKey('orderBy');
     });
@@ -254,7 +254,7 @@ describe('defineSortOptions', function () {
 
     test('section sort option has callable orderBy', function () {
         $options = TestEntryForDisplayedInIndex::exposeDefineSortOptions();
-        $sectionOption = array_values(array_filter($options, fn ($opt) => is_array($opt) && ($opt['attribute'] ?? null) === 'section'))[0] ?? null;
+        $sectionOption = array_first(array_filter($options, fn ($opt) => is_array($opt) && ($opt['attribute'] ?? null) === 'section')) ?? null;
 
         expect($sectionOption)->not->toBeNull();
         expect($sectionOption['orderBy'])->toBeCallable();
@@ -262,7 +262,7 @@ describe('defineSortOptions', function () {
 
     test('entry type sort option has callable orderBy with database connection parameter', function () {
         $options = TestEntryForDisplayedInIndex::exposeDefineSortOptions();
-        $typeOption = array_values(array_filter($options, fn ($opt) => is_array($opt) && ($opt['attribute'] ?? null) === 'type'))[0] ?? null;
+        $typeOption = array_first(array_filter($options, fn ($opt) => is_array($opt) && ($opt['attribute'] ?? null) === 'type')) ?? null;
 
         expect($typeOption)->not->toBeNull();
         expect($typeOption['orderBy'])->toBeCallable();

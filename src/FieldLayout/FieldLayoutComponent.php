@@ -182,6 +182,7 @@ abstract class FieldLayoutComponent extends Component
         return $condition;
     }
 
+    #[\Override]
     public function fields(): array
     {
         $fields = parent::fields();

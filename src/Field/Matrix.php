@@ -307,11 +307,13 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         }
     }
 
+    #[\Override]
     public function settingsAttributes(): array
     {
         return Arr::except(parent::settingsAttributes(), 'localizeEntries');
     }
 
+    #[\Override]
     public function getSettings(): array
     {
         $settings = parent::getSettings();
@@ -567,6 +569,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);

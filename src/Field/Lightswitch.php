@@ -110,6 +110,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);

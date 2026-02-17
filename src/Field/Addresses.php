@@ -307,6 +307,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);

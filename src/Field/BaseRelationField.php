@@ -485,6 +485,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
     }
 
+    #[\Override]
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
@@ -506,6 +507,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         return $attributes;
     }
 
+    #[\Override]
     public function getSettings(): array
     {
         $settings = parent::getSettings();
@@ -1716,7 +1718,6 @@ JS, [
      */
     private function _all(ElementQueryInterface $query, ?ElementInterface $element = null): ElementQueryInterface
     {
-        /** @var \CraftCms\Cms\Element\Queries\ElementQuery $query */
         $clone = (clone $query)
             ->drafts(null)
             ->status(null)

@@ -18,6 +18,7 @@ final class SectionSiteSettings extends BaseModel
 
     protected $table = Table::SECTIONS_SITES;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

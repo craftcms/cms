@@ -163,6 +163,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         parent::__construct($config);
     }
 
+    #[\Override]
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();

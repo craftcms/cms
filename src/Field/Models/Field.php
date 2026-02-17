@@ -20,6 +20,7 @@ final class Field extends BaseModel
 
     private ?string $oldHandle = null;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -113,6 +113,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);

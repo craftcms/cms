@@ -120,6 +120,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->_contentBlockManager;
     }
 
+    #[\Override]
     public function getSettings(): array
     {
         $fieldLayout = $this->getFieldLayout();
@@ -317,6 +318,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);

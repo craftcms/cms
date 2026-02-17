@@ -15,6 +15,7 @@ final class AssetIndexData extends BaseModel
 
     protected $table = Table::ASSETINDEXDATA;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

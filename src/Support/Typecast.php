@@ -175,7 +175,6 @@ final class Typecast
                     is_scalar($value) &&
                     is_subclass_of($typeName, BackedEnum::class)
                 ) {
-                    /** @var BackedEnum $typeName */
                     $value = $typeName::from($value);
                 }
         }

@@ -470,6 +470,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return t($this->name, category: 'site') ?: static::class;
     }
 
+    #[\Override]
     public function attributes(): array
     {
         return Collection::make($this->settingsAttributes())
@@ -481,6 +482,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             ->all();
     }
 
+    #[\Override]
     public function attributeLabels(): array
     {
         return [
@@ -489,6 +491,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         ];
     }
 
+    #[\Override]
     public function getRules(): array
     {
         return [

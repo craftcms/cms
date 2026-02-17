@@ -21,6 +21,7 @@ final class Element extends BaseModel
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -24,6 +24,7 @@ final class Entry extends BaseModel
 
     public $incrementing = false;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

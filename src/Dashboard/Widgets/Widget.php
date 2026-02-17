@@ -134,6 +134,7 @@ EOD;
         return $this->getSettings();
     }
 
+    #[\Override]
     public function attributes(): array
     {
         return array_keys($this->getSettings());

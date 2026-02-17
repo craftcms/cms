@@ -98,6 +98,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         }
     }
 
+    #[\Override]
     public function getSettings(): array
     {
         $settings = parent::getSettings();
@@ -123,6 +124,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);

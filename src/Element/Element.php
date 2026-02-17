@@ -494,6 +494,7 @@ abstract class Element extends Component implements ElementInterface
         return $fields;
     }
 
+    #[\Override]
     public function toArray(array $fields = [], array $expand = [], $recursive = true): array
     {
         if ($recursive) {

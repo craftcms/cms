@@ -19,6 +19,7 @@ final class Structure extends BaseModel
 
     protected $table = Table::STRUCTURES;
 
+    #[\Override]
     protected function casts(): array
     {
         return [
