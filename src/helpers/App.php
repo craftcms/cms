@@ -1258,7 +1258,7 @@ class App
             'parsers' => [
                 'application/json' => JsonParser::class,
             ],
-            'isCpRequest' => static::normalizeBooleanValue(static::env('CRAFT_CP')) ?? false,
+            'isCpRequest' => static::normalizeBooleanValue(static::env('CRAFT_CP')),
         ];
 
         if ($generalConfig->trustedHosts !== null) {
