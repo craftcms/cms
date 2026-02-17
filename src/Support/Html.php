@@ -561,6 +561,13 @@ final class Html
                 continue;
             }
 
+            // Vue prop bindings need booleans rendered as "true"/"false" strings
+            if (is_bool($value) && str_starts_with((string) $name, ':')) {
+                $normalized[$name] = $value ? 'true' : 'false';
+
+                continue;
+            }
+
             if ($value === false || $value === null) {
                 $normalized[$name] = false;
 
@@ -584,11 +591,6 @@ final class Html
                             }
                             break 2;
                         }
-                    }
-
-                    // Vue prop bindings need values JSON encoded so booleans render as "true"/"false"
-                    if (str_starts_with((string) $name, ':') && is_bool($value)) {
-                        $value = $value ? 'true' : 'false';
                     }
 
                     $normalized[$name] = $value;

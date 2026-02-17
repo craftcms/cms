@@ -90,7 +90,13 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
-            'craft' => [
+            'queue' => fn () => [
+                'enabled' => Craft::$app->get('queue') instanceof QueueInterface,
+                'displayedJob' => $progressService->getDisplayedJob(),
+                'hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
+                'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
+            ],
+            'craft' => fn () => [
                 'system' => [
                     'name' => Craft::$app->getSystemName(),
                     'icon' => $systemIcon,
@@ -109,12 +115,6 @@ class HandleInertiaRequests extends Middleware
                 'actionUrl' => UrlHelper::actionUrl(),
                 'baseApiUrl' => Api::craftApiEndpoint(),
                 'nav' => $nav->getItems(),
-                'queue' => [
-                    'enabled' => Craft::$app->get('queue') instanceof QueueInterface,
-                    'displayedJob' => $progressService->getDisplayedJob(),
-                    'hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
-                    'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
-                ],
             ],
         ];
     }

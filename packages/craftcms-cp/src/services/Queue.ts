@@ -8,6 +8,7 @@ import type {
 } from '@src/types';
 import {JobStatus} from '@src/types';
 import axios from 'axios';
+import {ConfigService} from '@src/services/Config';
 
 /**
  * Service for managing queue job tracking.
@@ -48,6 +49,9 @@ export class QueueService extends EventTarget {
   // Cross-tab broadcasting
   #broadcaster: BroadcastChannel | null = null;
 
+  // Configuration service instance
+  #config: ConfigService = ConfigService.getInstance();
+
   /** Get the singleton instance */
   static getInstance(): QueueService {
     if (!QueueService.#instance) {
@@ -84,7 +88,7 @@ export class QueueService extends EventTarget {
     }
 
     try {
-      const response = await axios.post('/admin/actions/queue/run');
+      const response = await axios.post(this.#config.getActionUrl('queue/run'));
     } catch (e: unknown) {
       // Ignore errors - queue might already be running
       console.error(e);
@@ -221,7 +225,7 @@ export class QueueService extends EventTarget {
 
     try {
       const response = await axios.get<QueueJobData>(
-        '/admin/actions/queue/get-job-info',
+        this.#config.getActionUrl('queue/get-job-info'),
         {
           params: {dontExtendSession: 1},
           signal: this.#abortController.signal,

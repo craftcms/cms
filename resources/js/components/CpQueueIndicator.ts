@@ -1,9 +1,11 @@
-import {css, html, LitElement, nothing} from 'lit';
+import {css, html, LitElement, nothing, type PropertyValues} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {JobStatus} from '@craftcms/cp/src/types/queue.js';
 import type {JobInfo, JobUpdateDetail} from '@craftcms/cp';
 
 import '@craftcms/cp/components/progress/progress.ts';
+import {QueueService} from '@craftcms/cp/src/services/Queue.js';
+import {ConfigService} from '@craftcms/cp/src/services/Config.js';
 
 @customElement('cp-queue-indicator')
 class CpQueueIndicator extends LitElement {
@@ -30,35 +32,62 @@ class CpQueueIndicator extends LitElement {
   @property({type: Boolean, attribute: 'has-waiting-jobs'})
   hasWaitingJobs: boolean = false;
 
+  #queue: QueueService = QueueService.getInstance();
+  #config: ConfigService = ConfigService.getInstance();
+
   override connectedCallback() {
     super.connectedCallback();
-    window.Cp?.$queue?.addEventListener(
+
+    // Use service's displayed job if we don't have one from props
+    if (!this.displayedJob) {
+      this.displayedJob = this.#queue.displayedJob;
+    }
+
+    this.#queue.addEventListener(
       'job-update',
       this.#handleJobUpdate as EventListener
     );
 
-    if (this.hasReservedJobs) {
-      window.Cp?.$queue.startTracking();
-    } else if (this.hasWaitingJobs) {
-      window.Cp?.$queue.runQueue();
-    }
-
     // Set initial visibility based on current state
     this.#updateVisibility();
+    // Either track or run the queue based on initial state
+    this.#updateQueue();
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    window.Cp?.$queue?.removeEventListener(
+    this.#queue.removeEventListener(
       'job-update',
       this.#handleJobUpdate as EventListener
     );
   }
 
+  protected override update(changedProperties: PropertyValues) {
+    super.update(changedProperties);
+
+    if (
+      changedProperties.has('hasReservedJobs') ||
+      changedProperties.has('hasWaitingJobs')
+    ) {
+      this.#updateQueue();
+    }
+
+    if (changedProperties.has('displayedJob')) {
+      this.#updateVisibility();
+    }
+  }
+
   #handleJobUpdate = (event: CustomEvent<JobUpdateDetail>) => {
     this.displayedJob = event.detail.displayedJob;
-    this.#updateVisibility();
   };
+
+  #updateQueue() {
+    if (this.hasReservedJobs) {
+      this.#queue.startTracking();
+    } else if (this.hasWaitingJobs) {
+      this.#queue.runQueue();
+    }
+  }
 
   #updateVisibility() {
     if (this.displayedJob) {
@@ -79,11 +108,11 @@ class CpQueueIndicator extends LitElement {
   }
 
   get #queueManagerUrl(): string | null {
-    if (!window.Cp?.$queue?.canAccessQueueManager) return null;
-    if (window.Cp?.getUrl) {
-      return window.Cp.getUrl('utilities/queue-manager');
+    if (this.#queue.canAccessQueueManager) {
+      return null;
     }
-    return '/admin/utilities/queue-manager';
+
+    return this.#config.getCpUrl('utilities/queue-manager');
   }
 
   protected override render() {

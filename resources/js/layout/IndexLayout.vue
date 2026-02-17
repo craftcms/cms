@@ -26,13 +26,17 @@
     navState.value = navState.value === 'expanded' ? 'collapsed' : 'expanded';
   }
 
-  watch(isLarge, (newValue) => {
-    /**
-     * When transitioning from small to large or large to small make sure
-     * we set the nav state accordingly
-     */
-    navState.value = newValue ? 'expanded' : 'collapsed';
-  }, {immediate: true});
+  watch(
+    isLarge,
+    (newValue) => {
+      /**
+       * When transitioning from small to large or large to small make sure
+       * we set the nav state accordingly
+       */
+      navState.value = newValue ? 'expanded' : 'collapsed';
+    },
+    {immediate: true}
+  );
 </script>
 
 <template>
