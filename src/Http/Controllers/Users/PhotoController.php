@@ -8,6 +8,7 @@ use Craft;
 use craft\helpers\Assets;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use CraftCms\Cms\View\TemplateMode;
@@ -109,7 +110,7 @@ final readonly class PhotoController
         $view = Craft::$app->getView();
 
         $templateMode = TemplateMode::get();
-        if (TemplateMode::is(TemplateMode::Site) && ! $view->doesTemplateExist('users/_photo.twig')) {
+        if (TemplateMode::is(TemplateMode::Site) && ! app(TemplateResolver::class)->exists('users/_photo.twig')) {
             $templateMode = TemplateMode::Cp;
         }
 

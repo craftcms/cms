@@ -27,6 +27,7 @@ use CraftCms\Cms\Structure\Data\Structure;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Database\Query\Builder;
@@ -591,7 +592,7 @@ class Categories extends Component
         }
 
         $template = (string)$categoryGroupSiteSettings[$siteId]->template;
-        return Craft::$app->getView()->doesTemplateExist($template, TemplateMode::Site->value);
+        return app(TemplateResolver::class)->exists($template, TemplateMode::Site);
     }
 
     /**
