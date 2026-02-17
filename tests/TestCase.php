@@ -6,12 +6,18 @@ namespace CraftCms\Cms\Tests;
 
 use Craft;
 use craft\test\TestSetup;
+use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\View\TemplateMode;
 use Dotenv\Dotenv;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -46,7 +52,9 @@ class TestCase extends Orchestra
         Config::set('app.timezone', 'America/Los_Angeles');
         date_default_timezone_set('America/Los_Angeles');
 
+        // Tests run in Pro and Cp by default
         Edition::set(Edition::Pro);
+        TemplateMode::set(TemplateMode::Cp);
 
         File::cleanDirectory(config_path('craft/project'));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
@@ -90,10 +98,56 @@ class TestCase extends Orchestra
             TestSetup::tearDownCraft();
         }
 
+        self::resetStaticCaches();
+
         unset($_SERVER['CRAFT_SITE']);
         unset($_SERVER['CRAFT_SITE_UPPER']);
 
         parent::tearDown();
+    }
+
+    /**
+     * Reset static caches that accumulate across tests, preventing memory leaks.
+     */
+    private static function resetStaticCaches(): void
+    {
+        // Flush Macroable macros from base classes
+        Element::flushMacros();
+        Field::flushMacros();
+        FieldLayoutComponent::flushMacros();
+        Widget::flushMacros();
+
+        // ElementQuery has its own $macros property (not via Macroable trait)
+        new \ReflectionProperty(ElementQuery::class, 'macros')->setValue(null, []);
+
+        // Reset static array caches that grow unboundedly across tests
+        $resets = [
+            [Element::class, 'sources', []],
+            [\CraftCms\Cms\Field\LinkTypes\BaseElementLinkType::class, 'fetchedElements', []],
+            [\CraftCms\Cms\Support\Typecast::class, 'types', []],
+            [\CraftCms\Cms\Support\PHP::class, 'basePaths', []],
+            [\CraftCms\Cms\FieldLayout\FieldLayoutComponent::class, 'defaultElementConditions', []],
+            [\CraftCms\Cms\FieldLayout\LayoutElements\CustomField::class, 'defaultElementEditConditions', []],
+        ];
+
+        // Reset ProjectConfig "processed" flags
+        $projectConfigFlags = [
+            '_processedFilesystems',
+            '_processedFields',
+            '_processedSites',
+            '_processedUserGroups',
+            '_processedEntryTypes',
+            '_processedSections',
+            '_processedGqlSchemas',
+        ];
+
+        foreach ($projectConfigFlags as $flag) {
+            $resets[] = [\CraftCms\Cms\ProjectConfig\ProjectConfigHelper::class, $flag, false];
+        }
+
+        foreach ($resets as [$class, $property, $default]) {
+            new \ReflectionProperty($class, $property)->setValue(null, $default);
+        }
     }
 
     protected function migrateDatabases(): void

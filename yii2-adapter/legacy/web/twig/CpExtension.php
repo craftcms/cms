@@ -7,12 +7,13 @@
 
 namespace craft\web\twig;
 
-use Craft;
 use craft\helpers\Cp;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use Illuminate\Foundation\ViteException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Vite;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -75,7 +76,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
                 ->toHtml();
         } catch (ViteException $e) {
             if (Cms::config()->devMode) {
-                Craft::$app->getView()->registerJsWithVars(fn($message) => "console.error($message)", [
+                AssetRegistry::jsWithVars(fn($message) => "console.error($message)", [
                     'message' => $e->getMessage(),
                 ]);
             }
@@ -93,8 +94,12 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
-    private function findCrumb(array $items): array
+    private function findCrumb(array|Collection $items): array
     {
+        if ($items instanceof Collection) {
+            $items = $items->all();
+        }
+
         foreach ($items as $item) {
             if (array_key_exists('selected', $item)) {
                 if ($item['selected']) {

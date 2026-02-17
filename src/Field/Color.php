@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Deprecated;
@@ -387,7 +387,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                 ]).
                 Html::endTag('div');
         } elseif ($value && ! $isInPalette) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, $value->getHex());
+            DeltaRegistry::setInitialValue($this->handle, $value->getHex());
         }
 
         return $html.Html::endTag('div');
@@ -402,7 +402,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         }
 
         $html = Html::beginTag('div', ['class' => ['color', 'noteditable']]).
-            Html::tag('div', options: [
+            Html::tag('div', attributes: [
                 'class' => 'color-preview',
                 'style' => ['background-color' => $value->getHex()],
             ]).
@@ -423,12 +423,12 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         /** @var ColorData|null $value */
         if (! $value) {
             return Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
-                Html::tag('div', options: ['class' => 'color-preview']).
+                Html::tag('div', attributes: ['class' => 'color-preview']).
                 Html::endTag('div');
         }
 
         $html = Html::beginTag('div', ['class' => ['color', 'small', 'static']]).
-            Html::tag('div', options: [
+            Html::tag('div', attributes: [
                 'class' => 'color-preview',
                 'style' => [
                     'background-color' => $value->getHex(),

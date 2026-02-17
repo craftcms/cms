@@ -28,7 +28,9 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template;
 use CraftCms\Cms\FieldLayout\LayoutElements\Tip;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Concerns\Validates;
@@ -1121,115 +1123,111 @@ class FieldLayout extends Component
      */
     public function createForm(?ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
     {
-        $view = Craft::$app->getView();
-
-        // Calling this with an existing namespace isn’t fully supported,
-        // since the tab anchors’ `href` attributes won’t end up getting set properly
+        // Calling this with an existing namespace isn't fully supported,
+        // since the tab anchors' `href` attributes won't end up getting set properly
         $namespace = Arr::pull($config, 'namespace');
 
         // Register delta names?
         $registerDeltas = Arr::pull($config, 'registerDeltas');
-        $changeDeltaRegistration = $registerDeltas !== null;
-        if ($changeDeltaRegistration) {
-            $view = Craft::$app->getView();
-            $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
-            $view->setIsDeltaRegistrationActive($registerDeltas);
-        }
 
-        // Any already-included layout elements?
-        $visibleElements = Arr::pull($config, 'visibleElements');
-        $staticElements = Arr::pull($config, 'staticElements');
+        $buildForm = function () use ($element, $static, $config, $namespace): FieldLayoutForm {
+            // Any already-included layout elements?
+            $visibleElements = Arr::pull($config, 'visibleElements');
+            $staticElements = Arr::pull($config, 'staticElements');
 
-        $form = new FieldLayoutForm($config);
-        $tabs = $this->getTabs();
+            $form = new FieldLayoutForm($config);
+            $tabs = $this->getTabs();
 
-        event($event = new CreateFieldLayoutForm(
-            fieldLayout: $this,
-            form: $form,
-            element: $element,
-            static: $static,
-            tabs: $tabs,
-        ));
+            event($event = new CreateFieldLayoutForm(
+                fieldLayout: $this,
+                form: $form,
+                element: $element,
+                static: $static,
+                tabs: $tabs,
+            ));
 
-        $static = $event->static;
+            $static = $event->static;
 
-        foreach ($event->tabs as $tab) {
-            $layoutElements = [];
-            $showTab = ! isset($tab->uid) || $tab->showInForm($element);
-            $hasVisibleFields = false;
+            foreach ($event->tabs as $tab) {
+                $layoutElements = [];
+                $showTab = ! isset($tab->uid) || $tab->showInForm($element);
+                $hasVisibleFields = false;
 
-            foreach ($tab->getElements() as $layoutElement) {
-                // Only tabs + elements that were saved with UUIDs can be conditional
-                $isConditional = isset($tab->uid, $layoutElement->uid);
+                foreach ($tab->getElements() as $layoutElement) {
+                    // Only tabs + elements that were saved with UUIDs can be conditional
+                    $isConditional = isset($tab->uid, $layoutElement->uid);
 
-                if ($showTab && (! $isConditional || $layoutElement->showInForm($element))) {
-                    if ($layoutElement instanceof CustomField) {
-                        $isStatic = $static || ! $layoutElement->editable($element);
-                    } else {
-                        $isStatic = $static;
-                    }
+                    if ($showTab && (! $isConditional || $layoutElement->showInForm($element))) {
+                        if ($layoutElement instanceof CustomField) {
+                            $isStatic = $static || ! $layoutElement->editable($element);
+                        } else {
+                            $isStatic = $static;
+                        }
 
-                    // If it was already included and we just need the missing elements, only keep track that it’s still included
-                    if (
-                        ! $layoutElement->alwaysRefresh() &&
-                        $visibleElements !== null &&
-                        (! $isConditional || (
-                            (isset($visibleElements[$tab->uid]) && in_array($layoutElement->uid, $visibleElements[$tab->uid])) &&
-                            ($staticElements === null || $isStatic === in_array($layoutElement->uid, $staticElements[$tab->uid] ?? []))
-                        ))
-                    ) {
-                        $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, true, $isStatic);
-                        $hasVisibleFields = true;
-                    } else {
-                        $html = $view->namespaceInputs(fn () => $layoutElement->formHtml($element, $isStatic) ?? '', $namespace);
-
-                        if ($html) {
-                            $errorKey = null;
-                            // if error key prefix was set on the FieldLayoutForm - use it
-                            if ($form->errorKeyPrefix) {
-                                $tagAttributes = Html::parseTagAttributes($html);
-                                // if we already have an error-key for this field, prefix it
-                                if (isset($tagAttributes['data']['error-key'])) {
-                                    $errorKey = $form->errorKeyPrefix.'.'.$tagAttributes['data']['error-key'];
-                                } elseif ($layoutElement instanceof BaseField) {
-                                    // otherwise let's construct it
-                                    $errorKey = $form->errorKeyPrefix.'.'.($layoutElement->name ?? $layoutElement->attribute());
-                                }
-                            }
-
-                            $html = Html::modifyTagAttributes($html, [
-                                'data' => [
-                                    'layout-element' => $isConditional ? $layoutElement->uid : true,
-                                    'error-key' => $errorKey,
-                                    'static' => $isStatic,
-                                ],
-                            ]);
-
-                            $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, $html, $isStatic);
+                        // If it was already included and we just need the missing elements, only keep track that it's still included
+                        if (
+                            ! $layoutElement->alwaysRefresh() &&
+                            $visibleElements !== null &&
+                            (! $isConditional || (
+                                (isset($visibleElements[$tab->uid]) && in_array($layoutElement->uid, $visibleElements[$tab->uid])) &&
+                                ($staticElements === null || $isStatic === in_array($layoutElement->uid, $staticElements[$tab->uid] ?? []))
+                            ))
+                        ) {
+                            $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, true, $isStatic);
                             $hasVisibleFields = true;
                         } else {
-                            $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, false, false);
+                            $html = InputNamespace::namespaceInputs(fn () => $layoutElement->formHtml($element, $isStatic) ?? '', $namespace);
+
+                            if ($html) {
+                                $errorKey = null;
+                                // if error key prefix was set on the FieldLayoutForm - use it
+                                if ($form->errorKeyPrefix) {
+                                    $tagAttributes = Html::parseTagAttributes($html);
+                                    // if we already have an error-key for this field, prefix it
+                                    if (isset($tagAttributes['data']['error-key'])) {
+                                        $errorKey = $form->errorKeyPrefix.'.'.$tagAttributes['data']['error-key'];
+                                    } elseif ($layoutElement instanceof BaseField) {
+                                        // otherwise let's construct it
+                                        $errorKey = $form->errorKeyPrefix.'.'.($layoutElement->name ?? $layoutElement->attribute());
+                                    }
+                                }
+
+                                $html = Html::modifyTagAttributes($html, [
+                                    'data' => [
+                                        'layout-element' => $isConditional ? $layoutElement->uid : true,
+                                        'error-key' => $errorKey,
+                                        'static' => $isStatic,
+                                    ],
+                                ]);
+
+                                $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, $html, $isStatic);
+                                $hasVisibleFields = true;
+                            } else {
+                                $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, false, false);
+                            }
                         }
+                    } else {
+                        $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, false, false);
                     }
-                } else {
-                    $layoutElements[] = new FieldLayoutFormElement($layoutElement, $isConditional, false, false);
+                }
+
+                if ($hasVisibleFields) {
+                    $form->tabs[] = new FieldLayoutFormTab([
+                        'layoutTab' => $tab,
+                        'hasErrors' => $element && $tab->elementHasErrors($element),
+                        'elements' => $layoutElements,
+                    ]);
                 }
             }
 
-            if ($hasVisibleFields) {
-                $form->tabs[] = new FieldLayoutFormTab([
-                    'layoutTab' => $tab,
-                    'hasErrors' => $element && $tab->elementHasErrors($element),
-                    'elements' => $layoutElements,
-                ]);
-            }
+            return $form;
+        };
+
+        if ($registerDeltas !== null) {
+            return DeltaRegistry::withActive($registerDeltas, $buildForm);
         }
 
-        if ($changeDeltaRegistration) {
-            $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
-        }
-
-        return $form;
+        return $buildForm();
     }
 
     private function _element(callable $filter, ?ElementInterface $element = null): ?FieldLayoutElement

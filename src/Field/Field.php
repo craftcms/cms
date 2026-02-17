@@ -37,8 +37,10 @@ use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\FieldElementEvent;
 use CraftCms\Cms\Field\Events\FieldEvent;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
@@ -565,8 +567,6 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return $items;
         }
 
-        $view = Craft::$app->getView();
-
         if (Cms::config()->allowAdminChanges) {
             // Edit field
             $editId = sprintf('action-edit-%s', mt_rand());
@@ -575,7 +575,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
                 'icon' => 'gear',
                 'label' => t('Field settings'),
             ];
-            $view->registerJsWithVars(fn ($id, $params) => <<<JS
+            AssetRegistry::jsWithVars(fn ($id, $params) => <<<JS
 (() => {
 $('#' + $id).on('activate', () => {
 new Craft.CpScreenSlideout('fields/edit-field', {
@@ -584,7 +584,7 @@ new Craft.CpScreenSlideout('fields/edit-field', {
 });
 })();
 JS, [
-                $view->namespaceInputId($editId),
+                InputNamespace::namespaceId($editId),
                 ['fieldId' => $this->id],
             ]);
         }
@@ -1010,7 +1010,7 @@ JS, [
                 $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
             } elseif ($castType === 'DECIMAL') {
                 [$precision, $scale] = DbHelper::parseColumnPrecisionAndScale($dbType) ?? [null, null];
-                if ($precision && $scale) {
+                if ($precision !== null && $scale !== null) {
                     $castType .= "($precision,$scale)";
                 }
             }

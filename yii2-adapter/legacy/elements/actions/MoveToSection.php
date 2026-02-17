@@ -7,9 +7,9 @@
 
 namespace craft\elements\actions;
 
-use Craft;
 use craft\base\ElementAction;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use yii\base\Exception;
 use function CraftCms\Cms\t;
 
@@ -38,7 +38,7 @@ class MoveToSection extends ElementAction
             throw new Exception("Move to section is only available for Entries.");
         }
 
-        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+        AssetRegistry::jsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,

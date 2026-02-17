@@ -425,7 +425,9 @@ class DbController extends Controller
      * @param string|null $charset The target character set, which honors `DbConfig::$charset`
      *                               or defaults to `utf8`.
      * @param string|null $collation The target collation, which honors `DbConfig::$collation`
-     *                               or defaults to `utf8_unicode_ci`.
+     *                               or defaults to `utf8mb4_0900_ai_ci` for MySQL 8.0+,
+     *                               otherwise, `utf8mb4_unicode_ci` for MariaDB and earlier
+     *                               MySQL versions.
      * @return int
      */
     public function actionConvertCharset(?string $charset = null, ?string $collation = null): int

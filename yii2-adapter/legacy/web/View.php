@@ -8,7 +8,7 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\ElementInterface;
+use craft\base\Event as YiiEvent;
 use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
@@ -25,14 +25,21 @@ use craft\web\twig\SecurityPolicy;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Collection;
+use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\Enums\Position;
+use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
+use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
+use CraftCms\Cms\View\TemplateHooks;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use LogicException;
 use Throwable;
@@ -81,11 +88,13 @@ class View extends \yii\web\View
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterCpTemplateRoots} instead.
      */
     public const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering site template roots
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterSiteTemplateRoots} instead.
      */
     public const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
 
@@ -117,11 +126,13 @@ class View extends \yii\web\View
 
     /**
      * @const TEMPLATE_MODE_CP
+     * @deprecated 6.0.0 use {@see TemplateMode::Cp} instead.
      */
     public const TEMPLATE_MODE_CP = 'cp';
 
     /**
      * @const TEMPLATE_MODE_SITE
+     * @deprecated 6.0.0 use {@see TemplateMode::Site} instead.
      */
     public const TEMPLATE_MODE_SITE = 'site';
 
@@ -187,116 +198,42 @@ class View extends \yii\web\View
      */
     private array $_objectTemplates = [];
 
-    /**
-     * @var string|null
-     */
-    private ?string $_templateMode = null;
+
 
     /**
-     * @var array|null
+     * @var int JS buffer depth counter — tracks nesting level for startJsBuffer/clearJsBuffer.
      */
-    private ?array $_templateRoots = null;
+    private int $_jsBufferDepth = 0;
 
     /**
-     * @var string|null The root path to look for templates in
+     * @var int Script buffer depth counter.
      */
-    private ?string $_templatesPath = null;
+    private int $_scriptBufferDepth = 0;
 
     /**
-     * @var string[]
+     * @var int CSS buffer depth counter.
      */
-    private array $_defaultTemplateExtensions;
+    private int $_cssBufferDepth = 0;
 
     /**
-     * @var string[]
+     * @var int CSS file buffer depth counter.
      */
-    private array $_indexTemplateFilenames;
+    private int $_cssFileBufferDepth = 0;
 
     /**
-     * @var string
+     * @var int JS file buffer depth counter.
      */
-    private string $_privateTemplateTrigger;
+    private int $_jsFileBufferDepth = 0;
 
     /**
-     * @var string|null
+     * @var int HTML buffer depth counter.
      */
-    private ?string $_namespace = null;
+    private int $_htmlBufferDepth = 0;
 
     /**
-     * @var bool Whether delta input name registration is open.
-     * @see getIsDeltaRegistrationActive()
-     * @see setIsDeltaRegistrationActive()
-     * @see registerDeltaName()
+     * @var int Meta tag buffer depth counter.
      */
-    private bool $_registerDeltaNames = false;
-
-    /**
-     * @var string[] The registered delta input names.
-     * @see registerDeltaName()
-     */
-    private array $_deltaNames = [];
-
-    /**
-     * @var string[] The registered modified delta input names.
-     * @see registerDeltaName()
-     */
-    private array $_modifiedDeltaNames = [];
-
-    /**
-     * @var array The initial delta input values.
-     * @see setInitialDeltaValue()
-     */
-    private array $_initialDeltaValues = [];
-
-    /**
-     * @var array
-     * @see startJsBuffer()
-     * @see clearJsBuffer()
-     */
-    private array $_jsBuffers = [];
-
-    /**
-     * @var array
-     * @see startScriptBuffer()
-     * @see clearScriptBuffer()
-     */
-    private array $_scriptBuffers = [];
-
-    /**
-     * @var array
-     * @see startCssBuffer()
-     * @see clearCssBuffer()
-     */
-    private array $_cssBuffers = [];
-
-    /**
-     * @var array
-     * @see startCssFileBuffer()
-     * @see clearCssFileBuffer()
-     */
-    private array $_cssFileBuffers = [];
-
-    /**
-     * @var array
-     * @see startJsFileBuffer()
-     * @see clearJsFileBuffer()
-     */
-    private array $_jsFileBuffers = [];
-
-    /**
-     * @var array
-     * @see startHtmlBuffer()
-     * @see clearHtmlBuffer()
-     */
-    private array $_htmlBuffers = [];
-
-    /**
-     * @var array
-     * @see startMetaTagBuffer()
-     * @see clearMetaTagBuffer()
-     * @since 4.5.8
-     */
-    private array $_metaTagBuffers = [];
+    private int $_metaTagBufferDepth = 0;
 
     /**
      * @var array
@@ -306,40 +243,81 @@ class View extends \yii\web\View
     private array $_assetBundleBuffers = [];
 
     /**
-     * @var array
-     * @see startJsImportBuffer()
-     * @see clearJsImportBuffer()
+     * @var int JS import buffer depth counter.
      */
-    private array $_jsImportBuffers = [];
+    private int $_jsImportBufferDepth = 0;
 
     /**
-     * @var array|null the registered generic `<script>` code blocks
-     * @see registerScript()
+     * @var array<string, string> JS registered at POS_READY, keyed by key.
+     * These are kept in the adapter (not the registry) because they require
+     * jQuery wrapping at render time.
      */
-    private ?array $_scripts = null;
+    private array $_readyJs = [];
 
     /**
-     * @var array the registered generic HTML code blocks
-     * @see registerHtml()
+     * @var array<string, string> JS registered at POS_LOAD, keyed by key.
+     * These are kept in the adapter (not the registry) because they require
+     * jQuery wrapping at render time.
      */
-    private array $_html = [];
+    private array $_loadJs = [];
 
     /**
-     * @var array the registered imports for JavaScript as modules
-     * @see registerJsImport()
+     * @var array<string, string> JS registered at POS_BEGIN, keyed by key.
+     * These are kept in the adapter (not the registry) because the registry
+     * only has Head and Body positions — POS_BEGIN content must render at
+     * the body-begin placeholder, separate from body-end content.
      */
-    private array $_jsImports = [];
+    private array $_beginJs = [];
 
     /**
-     * @var string[] The icons that should be registered to the page.
-     * @see registerIcons()
+     * @var array<string, string> HTML registered at POS_BEGIN, keyed by key.
+     * Kept in the adapter for the same reason as $_beginJs.
      */
-    private array $_icons = [];
+    private array $_beginHtml = [];
 
     /**
-     * @var callable[][]
+     * @var array<string, string> Script tags registered at POS_BEGIN, keyed by key.
+     * Kept in the adapter for the same reason as $_beginJs.
      */
-    private array $_hooks = [];
+    private array $_beginScripts = [];
+
+    /**
+     * @var array<string, string> JS file tags registered at POS_BEGIN, keyed by key.
+     * Kept in the adapter for the same reason as $_beginJs.
+     */
+    private array $_beginJsFiles = [];
+
+    /**
+     * @var list<array{ready: array<string, string>, load: array<string, string>, begin: array<string, string>}>
+     * Buffer stack for POS_READY/POS_LOAD/POS_BEGIN JS.
+     */
+    private array $_readyLoadBuffers = [];
+
+    /**
+     * @var list<array<string, string>> Buffer stack for $_beginScripts.
+     */
+    private array $_scriptBeginBuffers = [];
+
+    /**
+     * @var list<array<string, string>> Buffer stack for $_beginJsFiles.
+     */
+    private array $_jsFileBeginBuffers = [];
+
+    /**
+     * @var list<array<string, string>> Buffer stack for $_beginHtml.
+     */
+    private array $_htmlBeginBuffers = [];
+
+    /**
+     * @var array<string, int> Maps JS keys to their original Yii2 position (POS_HEAD or POS_BEGIN)
+     * when both map to Position::Head. Used by clearJsBuffer to reconstruct accurate position keys.
+     */
+    private array $_jsOriginalPositions = [];
+
+    /**
+     * @var list<array<string, int>> Buffer stack for $_jsOriginalPositions.
+     */
+    private array $_jsOriginalPositionBuffers = [];
 
     /**
      * @var string|null
@@ -365,6 +343,20 @@ class View extends \yii\web\View
      */
     private array $_registeredJsFiles = [];
 
+    private ?AssetRegistry $_registry = null;
+
+    private function registry(): AssetRegistry
+    {
+        return $this->_registry ??= app(AssetRegistry::class);
+    }
+
+    private ?TemplateHooks $_templateHooks = null;
+
+    private function templateHooks(): TemplateHooks
+    {
+        return $this->_templateHooks ??= app(TemplateHooks::class);
+    }
+
     /**
      * @inheritdoc
      */
@@ -372,19 +364,8 @@ class View extends \yii\web\View
     {
         parent::init();
 
-        // Set the initial template mode based on whether this is a control panel or site request
-        $request = Craft::$app->getRequest();
-        if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {
-            $this->setTemplateMode(self::TEMPLATE_MODE_CP);
-        } else {
-            $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
-        }
-
         // Register the control panel hooks
-        $this->hook('cp.layouts.elementindex', [$this, '_prepareElementIndexVariables']);
-        $this->hook('cp.elements.toolbar', [$this, '_prepareElementToolbarVariables']);
-        $this->hook('cp.elements.sources', [$this, '_prepareElementSourcesVariables']);
-        $this->hook('cp.elements.element', [$this, '_elementChipHtml']);
+        $this->hook('cp.elements.element', [$this, 'elementChipHtml']);
     }
 
     /**
@@ -395,7 +376,9 @@ class View extends \yii\web\View
      */
     public function getTwig(?string $templateMode = null): Environment
     {
-        return ($templateMode ?? $this->_templateMode) === self::TEMPLATE_MODE_CP
+        $mode = TemplateMode::tryFrom($templateMode) ?? TemplateMode::get();
+
+        return $mode === TemplateMode::Cp
             ? $this->_cpTwig ?? ($this->_cpTwig = $this->createTwig())
             : $this->_siteTwig ?? ($this->_siteTwig = $this->createTwig());
     }
@@ -408,7 +391,7 @@ class View extends \yii\web\View
      */
     public function setTwig(Environment $twig): void
     {
-        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
+        if (TemplateMode::is(TemplateMode::Cp)) {
             $this->_cpTwig = $twig;
         } else {
             $this->_siteTwig = $twig;
@@ -437,7 +420,7 @@ class View extends \yii\web\View
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));
 
-        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
+        if (TemplateMode::is(TemplateMode::Cp)) {
             $twig->addExtension(new CpExtension());
         } elseif (Cms::isInstalled()) {
             $twig->addExtension(new FeExtension());
@@ -448,7 +431,7 @@ class View extends \yii\web\View
         }
 
         // Add plugin-supplied extensions
-        $registeredExtensions = $this->_templateMode === self::TEMPLATE_MODE_CP
+        $registeredExtensions = TemplateMode::is(TemplateMode::Cp)
             ? $this->_cpTwigExtensions
             : $this->_siteTwigExtensions;
         foreach ($registeredExtensions as $extension) {
@@ -476,7 +459,7 @@ class View extends \yii\web\View
         // Fire an 'afterCreateTwig' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_TWIG)) {
             $this->trigger(self::EVENT_AFTER_CREATE_TWIG, new CreateTwigEvent([
-                'templateMode' => $this->_templateMode ?? self::TEMPLATE_MODE_SITE,
+                'templateMode' => TemplateMode::get()->value,
                 'twig' => $twig,
             ]));
         }
@@ -570,7 +553,7 @@ class View extends \yii\web\View
     public function renderTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
         if ($templateMode === null) {
-            $templateMode = $this->getTemplateMode();
+            $templateMode = TemplateMode::get()->value;
         }
 
         if (!$this->beforeRenderTemplate($template, $variables, $templateMode)) {
@@ -579,8 +562,8 @@ class View extends \yii\web\View
 
         Log::debug("Rendering template: $template", [__METHOD__]);
 
-        $oldTemplateMode = $this->getTemplateMode();
-        $this->setTemplateMode($templateMode);
+        $oldTemplateMode = TemplateMode::get();
+        TemplateMode::set(TemplateMode::from($templateMode));
 
         // Render and return
         $renderingTemplate = $this->_renderingTemplate;
@@ -590,7 +573,7 @@ class View extends \yii\web\View
             $output = $this->getTwig()->render($template, $variables);
         } finally {
             $this->_renderingTemplate = $renderingTemplate;
-            $this->setTemplateMode($oldTemplateMode);
+            TemplateMode::set($oldTemplateMode);
         }
 
         $this->afterRenderTemplate($template, $variables, $templateMode, $output);
@@ -641,7 +624,7 @@ class View extends \yii\web\View
     public function renderPageTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
         if ($templateMode === null) {
-            $templateMode = $this->getTemplateMode();
+            $templateMode = TemplateMode::get()->value;
         }
 
         if (!$this->beforeRenderPageTemplate($template, $variables, $templateMode)) {
@@ -651,8 +634,8 @@ class View extends \yii\web\View
         ob_start();
         ob_implicit_flush(false);
 
-        $oldTemplateMode = $this->getTemplateMode();
-        $this->setTemplateMode($templateMode);
+        $oldTemplateMode = TemplateMode::get();
+        TemplateMode::set(TemplateMode::from($templateMode));
 
         $isRenderingPageTemplate = $this->_isRenderingPageTemplate;
         $this->_isRenderingPageTemplate = true;
@@ -663,7 +646,7 @@ class View extends \yii\web\View
             $this->endPage();
         } finally {
             $this->_isRenderingPageTemplate = $isRenderingPageTemplate;
-            $this->setTemplateMode($oldTemplateMode);
+            TemplateMode::set($oldTemplateMode);
             $output = ob_get_clean();
         }
 
@@ -682,15 +665,15 @@ class View extends \yii\web\View
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
      */
-    public function renderString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE, bool $escapeHtml = false): string
+    public function renderString(string $template, array $variables = [], string $templateMode = TemplateMode::Site->value, bool $escapeHtml = false): string
     {
         // If there are no dynamic tags, just return the template
         if (!str_contains($template, '{')) {
             return $template;
         }
 
-        $oldTemplateMode = $this->templateMode;
-        $this->setTemplateMode($templateMode);
+        $oldTemplateMode = TemplateMode::get();
+        TemplateMode::set(TemplateMode::from($templateMode));
 
         $twig = $this->getTwig();
         if (!$escapeHtml) {
@@ -706,7 +689,7 @@ class View extends \yii\web\View
             if (!$escapeHtml) {
                 $twig->setDefaultEscaperStrategy();
             }
-            $this->setTemplateMode($oldTemplateMode);
+            TemplateMode::set($oldTemplateMode);
         }
     }
 
@@ -723,7 +706,7 @@ class View extends \yii\web\View
      * @see renderString()
      * @since 4.17.0
      */
-    public function renderSandboxedString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE, bool $escapeHtml = false): string
+    public function renderSandboxedString(string $template, array $variables = [], string $templateMode = TemplateMode::Site->value, bool $escapeHtml = false): string
     {
         return $this->sandbox(fn() => $this->renderString($template, $variables, $templateMode, $escapeHtml), $templateMode);
     }
@@ -747,15 +730,15 @@ class View extends \yii\web\View
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
      */
-    public function renderObjectTemplate(string $template, mixed $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
+    public function renderObjectTemplate(string $template, mixed $object, array $variables = [], string $templateMode = TemplateMode::Site->value): string
     {
         // If there are no dynamic tags, just return the template
         if (!str_contains($template, '{')) {
             return trim($template);
         }
 
-        $oldTemplateMode = $this->templateMode;
-        $this->setTemplateMode($templateMode);
+        $oldTemplateMode = TemplateMode::get();
+        TemplateMode::set(TemplateMode::from($templateMode));
         $twig = $this->getTwig();
 
         // Temporarily disable strict variables if it's enabled
@@ -816,7 +799,7 @@ class View extends \yii\web\View
         } finally {
             $this->_renderingTemplate = $lastRenderingTemplate;
             $twig->setDefaultEscaperStrategy();
-            $this->setTemplateMode($oldTemplateMode);
+            TemplateMode::set($oldTemplateMode);
 
             // Re-enable strict variables
             if ($strictVariables) {
@@ -858,7 +841,7 @@ class View extends \yii\web\View
         string $template,
         mixed $object,
         array $variables = [],
-        string $templateMode = self::TEMPLATE_MODE_SITE,
+        string $templateMode = TemplateMode::Site->value,
     ): string {
         return $this->sandbox(fn() => $this->renderObjectTemplate($template, $object, $variables, $templateMode), $templateMode);
     }
@@ -1028,15 +1011,15 @@ class View extends \yii\web\View
     public function resolveTemplate(string $name, ?string $templateMode = null, bool $publicOnly = false): string|false
     {
         if ($templateMode !== null) {
-            $oldTemplateMode = $this->getTemplateMode();
-            $this->setTemplateMode($templateMode);
+            $oldTemplateMode = TemplateMode::get();
+            TemplateMode::set(TemplateMode::from($templateMode));
         }
 
         try {
             return $this->_resolveTemplateInternal($name, $publicOnly);
         } finally {
             if (isset($oldTemplateMode)) {
-                $this->setTemplateMode($oldTemplateMode);
+                TemplateMode::set($oldTemplateMode);
             }
         }
     }
@@ -1054,7 +1037,7 @@ class View extends \yii\web\View
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', Str::convertToUtf8($name))), '/');
 
-        $key = $this->_templatesPath . ':' . $name;
+        $key = TemplateMode::get()->templatesPath() . ':' . $name;
 
         // Is this template path already cached?
         if (isset($this->_templatePaths[$key])) {
@@ -1068,15 +1051,15 @@ class View extends \yii\web\View
         $basePaths = [];
 
         // Should we be looking for a localized version of the template?
-        if ($this->_templateMode === self::TEMPLATE_MODE_SITE && Cms::isInstalled()) {
+        if (TemplateMode::is(TemplateMode::Site) && Cms::isInstalled()) {
             /** @noinspection PhpUnhandledExceptionInspection */
-            $sitePath = $this->_templatesPath . DIRECTORY_SEPARATOR . Sites::getCurrentSite()->handle;
+            $sitePath = TemplateMode::get()->templatesPath() . DIRECTORY_SEPARATOR . Sites::getCurrentSite()->handle;
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
             }
         }
 
-        $basePaths[] = $this->_templatesPath;
+        $basePaths[] = TemplateMode::get()->templatesPath();
 
         foreach ($basePaths as $basePath) {
             if (($path = $this->_resolveTemplate($basePath, $name, $publicOnly)) !== null) {
@@ -1087,11 +1070,7 @@ class View extends \yii\web\View
         unset($basePaths);
 
         // Check any registered template roots
-        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
-            $roots = $this->getCpTemplateRoots();
-        } else {
-            $roots = $this->getSiteTemplateRoots();
-        }
+        $roots = TemplateMode::get()->templateRoots();
 
         if (!empty($roots)) {
             foreach ($roots as $templateRoot => $basePaths) {
@@ -1115,31 +1094,52 @@ class View extends \yii\web\View
      * Returns any registered control panel template roots.
      *
      * @return array
+     * @deprecated 6.0.0 use {@see TemplateMode::templateRoots()} instead.
      */
     public function getCpTemplateRoots(): array
     {
-        return $this->_getTemplateRoots('cp');
+        return TemplateMode::Cp->templateRoots();
     }
 
     /**
      * Returns any registered site template roots.
      *
      * @return array
+     * @deprecated 6.0.0 use {@see TemplateMode::templateRoots()} instead.
      */
     public function getSiteTemplateRoots(): array
     {
-        return $this->_getTemplateRoots('site');
+        return TemplateMode::Site->templateRoots();
     }
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::js()} instead.
      */
     public function registerJs($js, $position = self::POS_READY, $key = null): void
     {
         // Trim any whitespace and ensure it ends with a semicolon.
         $js = Str::finish(trim($js, " \t\n\r\0\x0B"), ';');
+        $key = $key ?: md5($js);
 
-        parent::registerJs($js, $position, $key);
+        match ($position) {
+            self::POS_HEAD => (function() use ($js, $key, $position) {
+                $this->registry()->js($js, Position::Head, $key);
+                $this->_jsOriginalPositions[$key] = $position;
+            })(),
+            self::POS_BEGIN => (function() use ($js, $key, $position) {
+                $this->_beginJs[$key] = $js;
+                $this->_jsOriginalPositions[$key] = $position;
+            })(),
+            self::POS_END => (function() use ($js, $key, $position) {
+                $this->registry()->js($js, Position::Body, $key);
+                $this->_jsOriginalPositions[$key] = $position;
+            }
+            )(),
+            self::POS_READY => $this->_readyJs[$key] = $js,
+            self::POS_LOAD => $this->_loadJs[$key] = $js,
+            default => null,
+        };
     }
 
     /**
@@ -1162,6 +1162,7 @@ class View extends \yii\web\View
      * $js as the key. If two JS code blocks are registered with the same key, the latter
      * will overwrite the former.
      * @since 3.7.31
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::jsWithVars()} instead.
      */
     public function registerJsWithVars(callable $jsFn, array $vars, int $position = self::POS_READY, ?string $key = null): void
     {
@@ -1176,11 +1177,24 @@ class View extends \yii\web\View
      * The buffer’s contents can be cleared and returned later via [[clearJsBuffer()]].
      *
      * @see clearJsBuffer()
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startJsBuffer()} instead.
      */
     public function startJsBuffer(): void
     {
-        $this->_jsBuffers[] = $this->js;
-        $this->js = [];
+        $this->registry()->startJsBuffer();
+        $this->_jsBufferDepth++;
+
+        $this->_readyLoadBuffers[] = [
+            'ready' => $this->_readyJs,
+            'load' => $this->_loadJs,
+            'begin' => $this->_beginJs,
+        ];
+        $this->_readyJs = [];
+        $this->_loadJs = [];
+        $this->_beginJs = [];
+
+        $this->_jsOriginalPositionBuffers[] = $this->_jsOriginalPositions;
+        $this->_jsOriginalPositions = [];
     }
 
     /**
@@ -1189,19 +1203,68 @@ class View extends \yii\web\View
      *
      * @param bool $scriptTag Whether the returned JavaScript code should be wrapped in a `<script>` tag.
      * @param bool $combine Whether the JavaScript code should be returned in a combined blob. (Position and key info will be lost.)
-     * @return string|array|false The JavaScript code that was registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     *
+     * @return string|array|false The JavaScript code that was registered while the buffer was active, or `false` if there wasn't an active buffer.
      * @see startJsBuffer()
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearJsBuffer()} instead.
      */
     public function clearJsBuffer(bool $scriptTag = true, bool $combine = true): string|array|false
     {
-        if (empty($this->_jsBuffers)) {
+        if ($this->_jsBufferDepth === 0) {
             return false;
         }
 
-        $bufferedJs = $this->js;
+        // Capture what was registered during the buffer and restore pre-buffer state
+        $registryState = $this->registry()->clearJsBuffer(scriptTag: false, combine: false);
+        $this->_jsBufferDepth--;
 
-        // Set the active queue to the last one
-        $this->js = array_pop($this->_jsBuffers);
+        // Capture and restore the adapter's ready/load/begin JS
+        $bufferedReadyJs = $this->_readyJs;
+        $bufferedLoadJs = $this->_loadJs;
+        $bufferedBeginJs = $this->_beginJs;
+
+        if (!empty($this->_readyLoadBuffers)) {
+            $previousReadyLoad = array_pop($this->_readyLoadBuffers);
+            $this->_readyJs = $previousReadyLoad['ready'];
+            $this->_loadJs = $previousReadyLoad['load'];
+            $this->_beginJs = $previousReadyLoad['begin'];
+        } else {
+            $this->_readyJs = [];
+            $this->_loadJs = [];
+            $this->_beginJs = [];
+        }
+
+        // Capture and restore the original position map
+        $bufferedPositions = $this->_jsOriginalPositions;
+        $this->_jsOriginalPositions = array_pop($this->_jsOriginalPositionBuffers) ?? [];
+
+        // Build the buffered JS array in the Yii2 position format
+        $bufferedJs = [];
+
+        // Split Position::Head entries back to their original Yii2 position
+        if (!empty($registryState[Position::Head->value])) {
+            foreach ($registryState[Position::Head->value] as $key => $js) {
+                $originalPos = $bufferedPositions[$key] ?? self::POS_HEAD;
+                $bufferedJs[$originalPos][$key] = $js;
+            }
+        }
+        // Position::Body entries map back to POS_END
+        if (!empty($registryState[Position::Body->value])) {
+            foreach ($registryState[Position::Body->value] as $key => $js) {
+                $originalPos = $bufferedPositions[$key] ?? self::POS_END;
+                $bufferedJs[$originalPos][$key] = $js;
+            }
+        }
+        // POS_BEGIN entries come from the adapter-local _beginJs array
+        if (!empty($bufferedBeginJs)) {
+            $bufferedJs[self::POS_BEGIN] = $bufferedBeginJs;
+        }
+        if (!empty($bufferedReadyJs)) {
+            $bufferedJs[self::POS_READY] = $bufferedReadyJs;
+        }
+        if (!empty($bufferedLoadJs)) {
+            $bufferedJs[self::POS_LOAD] = $bufferedLoadJs;
+        }
 
         if ($combine) {
             $js = '';
@@ -1235,29 +1298,51 @@ class View extends \yii\web\View
      *
      * @see clearScriptBuffer()
      * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startScriptBuffer()} instead.
      */
     public function startScriptBuffer(): void
     {
-        $this->_scriptBuffers[] = $this->_scripts;
-        $this->_scripts = [];
+        $this->registry()->startScriptBuffer();
+        $this->_scriptBufferDepth++;
+
+        $this->_scriptBeginBuffers[] = $this->_beginScripts;
+        $this->_beginScripts = [];
     }
 
     /**
      * Clears and ends a buffer started via [[startScriptBuffer()]], returning any `<script>` tags that were registered
      * while the buffer was active.
      *
-     * @return array|false The `<script>` tags that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     * @return array|false The `<script>` tags that were registered while the buffer was active, or `false` if there wasn't an active buffer.
      * @see startScriptBuffer()
      * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearScriptBuffer()} instead.
      */
     public function clearScriptBuffer(): array|false
     {
-        if (empty($this->_scriptBuffers)) {
+        if ($this->_scriptBufferDepth === 0) {
             return false;
         }
 
-        $bufferedScripts = $this->_scripts;
-        $this->_scripts = array_pop($this->_scriptBuffers);
+        // Capture what was registered during the buffer and restore pre-buffer state
+        $registryState = $this->registry()->clearScriptBuffer();
+        $this->_scriptBufferDepth--;
+
+        $bufferedBeginScripts = $this->_beginScripts;
+        $this->_beginScripts = array_pop($this->_scriptBeginBuffers) ?? [];
+
+        // Map registry positions back to Yii2 positions
+        $bufferedScripts = [];
+        if (!empty($registryState[Position::Head->value])) {
+            $bufferedScripts[self::POS_HEAD] = array_map(fn($v) => (string) $v, $registryState[Position::Head->value]);
+        }
+        if (!empty($bufferedBeginScripts)) {
+            $bufferedScripts[self::POS_BEGIN] = array_map(fn($v) => (string) $v, $bufferedBeginScripts);
+        }
+        if (!empty($registryState[Position::Body->value])) {
+            $bufferedScripts[self::POS_END] = array_map(fn($v) => (string) $v, $registryState[Position::Body->value]);
+        }
+
         return $bufferedScripts;
     }
 
@@ -1268,30 +1353,33 @@ class View extends \yii\web\View
      *
      * @see clearCssBuffer()
      * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startCssBuffer()} instead.
      */
     public function startCssBuffer(): void
     {
-        $this->_cssBuffers[] = $this->css;
-        $this->css = [];
+        $this->registry()->startCssBuffer();
+        $this->_cssBufferDepth++;
     }
 
     /**
      * Clears and ends a buffer started via [[startCssBuffer()]], returning any `<style>` tags that were registered
      * while the buffer was active.
      *
-     * @return array|false The `<style>` tags that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     * @return array|false The `<style>` tags that were registered while the buffer was active, or `false` if there wasn't an active buffer.
      * @see startCssBuffer()
      * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearCssBuffer()} instead.
      */
     public function clearCssBuffer(): array|false
     {
-        if (empty($this->_cssBuffers)) {
+        if ($this->_cssBufferDepth === 0) {
             return false;
         }
 
-        $bufferedCss = $this->css;
-        $this->css = array_pop($this->_cssBuffers);
-        return $bufferedCss;
+        $registryState = $this->registry()->clearCssBuffer();
+        $this->_cssBufferDepth--;
+
+        return array_map(fn($v) => (string) $v, $registryState);
     }
 
     /**
@@ -1301,30 +1389,33 @@ class View extends \yii\web\View
      *
      * @see clearCssFileBuffer()
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startCssFileBuffer()} instead.
      */
     public function startCssFileBuffer(): void
     {
-        $this->_cssFileBuffers[] = $this->cssFiles;
-        $this->cssFiles = [];
+        $this->registry()->startCssFileBuffer();
+        $this->_cssFileBufferDepth++;
     }
 
     /**
      * Clears and ends a buffer started via [[startCssFileBuffer()]], returning any `<link rel="stylesheet">` tags that were registered
      * while the buffer was active.
      *
-     * @return array|false The `<link rel="stylesheet">` tags that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     * @return array|false The `<link rel="stylesheet">` tags that were registered while the buffer was active, or `false` if there wasn't an active buffer.
      * @see startCssFileBuffer()
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearCssFileBuffer()} instead.
      */
     public function clearCssFileBuffer(): array|false
     {
-        if (empty($this->_cssFileBuffers)) {
+        if ($this->_cssFileBufferDepth === 0) {
             return false;
         }
 
-        $bufferedCssFiles = $this->cssFiles;
-        $this->cssFiles = array_pop($this->_cssFileBuffers);
-        return $bufferedCssFiles;
+        $registryState = $this->registry()->clearCssFileBuffer();
+        $this->_cssFileBufferDepth--;
+
+        return $registryState;
     }
 
     /**
@@ -1334,29 +1425,49 @@ class View extends \yii\web\View
      *
      * @see clearJsFileBuffer()
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startJsFileBuffer()} instead.
      */
     public function startJsFileBuffer(): void
     {
-        $this->_jsFileBuffers[] = $this->jsFiles;
-        $this->jsFiles = [];
+        $this->registry()->startJsFileBuffer();
+        $this->_jsFileBufferDepth++;
+
+        $this->_jsFileBeginBuffers[] = $this->_beginJsFiles;
+        $this->_beginJsFiles = [];
     }
 
     /**
      * Clears and ends a buffer started via [[startJsFileBuffer()]], returning any `<script>` tags that were registered
      * while the buffer was active.
      *
-     * @return array|false The `<script>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     * @return array|false The `<script>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn't an active buffer.
      * @see startJsFileBuffer()
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearJsFileBuffer()} instead.
      */
     public function clearJsFileBuffer(): array|false
     {
-        if (empty($this->_jsFileBuffers)) {
+        if ($this->_jsFileBufferDepth === 0) {
             return false;
         }
 
-        $bufferedJsFiles = $this->jsFiles;
-        $this->jsFiles = array_pop($this->_jsFileBuffers);
+        $registryState = $this->registry()->clearJsFileBuffer();
+        $this->_jsFileBufferDepth--;
+
+        $bufferedBeginJsFiles = $this->_beginJsFiles;
+        $this->_beginJsFiles = array_pop($this->_jsFileBeginBuffers) ?? [];
+
+        // Map registry positions back to Yii2 positions
+        $bufferedJsFiles = [];
+        if (!empty($registryState[Position::Head->value])) {
+            $bufferedJsFiles[self::POS_HEAD] = $registryState[Position::Head->value];
+        }
+        if (!empty($bufferedBeginJsFiles)) {
+            $bufferedJsFiles[self::POS_BEGIN] = $bufferedBeginJsFiles;
+        }
+        if (!empty($registryState[Position::Body->value])) {
+            $bufferedJsFiles[self::POS_END] = $registryState[Position::Body->value];
+        }
 
         foreach ($bufferedJsFiles as $files) {
             foreach (array_keys($files) as $key) {
@@ -1372,11 +1483,15 @@ class View extends \yii\web\View
      * Starts a buffer for any html tags registered with [[registerHtml()]].
      *
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startHtmlBuffer()} instead.
      */
     public function startHtmlBuffer(): void
     {
-        $this->_htmlBuffers[] = $this->_html;
-        $this->_html = [];
+        $this->registry()->startHtmlBuffer();
+        $this->_htmlBufferDepth++;
+
+        $this->_htmlBeginBuffers[] = $this->_beginHtml;
+        $this->_beginHtml = [];
     }
 
     /**
@@ -1385,15 +1500,32 @@ class View extends \yii\web\View
      *
      * @return array|false The html that was registered while the buffer was active or `false` if there wasn't an active buffer.
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearHtmlBuffer()} instead.
      */
     public function clearHtmlBuffer(): array|false
     {
-        if (empty($this->_htmlBuffers)) {
+        if ($this->_htmlBufferDepth === 0) {
             return false;
         }
 
-        $bufferedHtml = $this->_html;
-        $this->_html = array_pop($this->_htmlBuffers);
+        $registryState = $this->registry()->clearHtmlBuffer();
+        $this->_htmlBufferDepth--;
+
+        $bufferedBeginHtml = $this->_beginHtml;
+        $this->_beginHtml = array_pop($this->_htmlBeginBuffers) ?? [];
+
+        // Map registry positions back to Yii2 positions
+        $bufferedHtml = [];
+        if (!empty($registryState[Position::Head->value])) {
+            $bufferedHtml[self::POS_HEAD] = $registryState[Position::Head->value];
+        }
+        if (!empty($bufferedBeginHtml)) {
+            $bufferedHtml[self::POS_BEGIN] = $bufferedBeginHtml;
+        }
+        if (!empty($registryState[Position::Body->value])) {
+            $bufferedHtml[self::POS_END] = $registryState[Position::Body->value];
+        }
+
         return $bufferedHtml;
     }
 
@@ -1404,30 +1536,33 @@ class View extends \yii\web\View
      *
      * @see clearMetaTagBuffer()
      * @since 4.5.8
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startMetaTagBuffer()} instead.
      */
     public function startMetaTagBuffer(): void
     {
-        $this->_metaTagBuffers[] = $this->metaTags;
-        $this->metaTags = [];
+        $this->registry()->startMetaTagBuffer();
+        $this->_metaTagBufferDepth++;
     }
 
     /**
      * Clears and ends a buffer started via [[startMetaTagBuffer()]], returning any `<meta>` tags that were registered
      * while the buffer was active.
      *
-     * @return array|false The `<meta>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     * @return array|false The `<meta>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn't an active buffer.
      * @see startMetaTagBuffer()
      * @since 4.5.8
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearMetaTagBuffer()} instead.
      */
     public function clearMetaTagBuffer(): array|false
     {
-        if (empty($this->_metaTagBuffers)) {
+        if ($this->_metaTagBufferDepth === 0) {
             return false;
         }
 
-        $bufferedMetaTags = $this->metaTags;
-        $this->metaTags = array_pop($this->_metaTagBuffers);
-        return $bufferedMetaTags;
+        $registryState = $this->registry()->clearMetaTagBuffer();
+        $this->_metaTagBufferDepth--;
+
+        return $registryState;
     }
 
     /**
@@ -1437,6 +1572,7 @@ class View extends \yii\web\View
      *
      * @see clearAssetBundleBuffer()
      * @since 5.3.0
+     * @deprecated 6.0.0. AssetBundle support is deprecated
      */
     public function startAssetBundleBuffer(): void
     {
@@ -1451,6 +1587,7 @@ class View extends \yii\web\View
      * @return array|false The asset bundles that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
      * @see startAssetBundleBuffer()
      * @since 5.3.0
+     * @deprecated 6.0.0. AssetBundle support is deprecated
      */
     public function clearAssetBundleBuffer(): array|false
     {
@@ -1470,34 +1607,33 @@ class View extends \yii\web\View
      *
      * @see clearJsImportBuffer()
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startJsImportBuffer()} instead.
      */
     public function startJsImportBuffer(): void
     {
-        $this->_jsImportBuffers[] = $this->_jsImports;
-        $this->_jsImports = [];
-    }
-
-    /**
-     * Clears and ends a buffer started via [[startJsImportBuffer()]], returning any JavaScript imports that were registered
-     * while the buffer was active.
-     *
-     * @return array|false The JavaScript imports that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
-     * @see startAssetBundleBuffer()
-     * @since 5.6.0
-     */
-    public function clearJsImportBuffer(): array|false
-    {
-        if (empty($this->_jsImportBuffers)) {
-            return false;
-        }
-
-        $bufferedJsImports = $this->_jsImports;
-        $this->_jsImports = array_pop($this->_jsImportBuffers);
-        return $bufferedJsImports;
+        $this->registry()->startJsImportBuffer();
+        $this->_jsImportBufferDepth++;
     }
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearJsImportBuffer()} instead.
+     */
+    public function clearJsImportBuffer(): array|false
+    {
+        if ($this->_jsImportBufferDepth === 0) {
+            return false;
+        }
+
+        $registryState = $this->registry()->clearJsImportBuffer();
+        $this->_jsImportBufferDepth--;
+
+        return $registryState;
+    }
+
+    /**
+     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::jsFile()} instead.
      */
     public function registerJsFile($url, $options = [], $key = null): void
     {
@@ -1510,7 +1646,60 @@ class View extends \yii\web\View
             $this->_registeredJsFiles[$hash] = true;
         }
 
-        parent::registerJsFile($url, $options, $key);
+        // Map Yii2 position to registry position
+        $position = (int) ($options['position'] ?? self::POS_END);
+        unset($options['position']);
+
+        $key ??= $url;
+
+        if ($position === self::POS_BEGIN) {
+            $this->_beginJsFiles[$key] = Html::javaScriptFile($url, $options)->render();
+            return;
+        }
+
+        $registryPosition = match ($position) {
+            self::POS_HEAD => Position::Head->value,
+            default => Position::Body->value,
+        };
+        $options['position'] = $registryPosition;
+
+        $this->registry()->jsFile($url, $options, $key);
+    }
+
+    /**
+     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::metaTag()} instead.
+     */
+    public function registerMetaTag($options, $key = null): void
+    {
+        $this->registry()->metaTag($options, $key);
+    }
+
+    /**
+     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::linkTag()} instead.
+     */
+    public function registerLinkTag($options, $key = null): void
+    {
+        $this->registry()->linkTag($options, $key);
+    }
+
+    /**
+     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::css()} instead.
+     */
+    public function registerCss($css, $options = [], $key = null): void
+    {
+        $this->registry()->css($css, $options, $key);
+    }
+
+    /**
+     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::cssFile()} instead.
+     */
+    public function registerCssFile($url, $options = [], $key = null): void
+    {
+        $this->registry()->cssFile($url, $options, $key);
     }
 
     /**
@@ -1526,11 +1715,23 @@ class View extends \yii\web\View
      * @param string|null $key the key that identifies the generic `<script>` code block. If null, it will use
      * $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
      * will overwrite the former.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::script()} instead.
      */
     public function registerScript(string $script, int $position = self::POS_END, array $options = [], ?string $key = null): void
     {
-        $key = $key ?: md5($script);
-        $this->_scripts[$position][$key] = Html::script($script, $options)->render();
+        $key ??= md5($script);
+
+        if ($position === self::POS_BEGIN) {
+            $this->_beginScripts[$key] = Html::script($script, $options)->render();
+            return;
+        }
+
+        $registryPosition = match ($position) {
+            self::POS_HEAD => Position::Head,
+            default => Position::Body,
+        };
+
+        $this->registry()->script($script, $registryPosition, $options, $key);
     }
 
     /**
@@ -1548,6 +1749,7 @@ class View extends \yii\web\View
      * $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
      * will overwrite the former.
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::scriptWithVars()} instead.
      */
     public function registerScriptWithVars(callable $scriptFn, array $vars, int $position = self::POS_END, array $options = [], ?string $key = null): void
     {
@@ -1568,13 +1770,23 @@ class View extends \yii\web\View
      * @param string|null $key the key that identifies the HTML code. If null, it will use a hash of the HTML as the key.
      * If two HTML code blocks are registered with the same position and key, the latter will overwrite the former.
      * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::html()} instead.
      */
     public function registerHtml(string $html, int $position = self::POS_END, ?string $key = null): void
     {
-        if ($key === null) {
-            $key = md5($html);
+        $key ??= md5($html);
+
+        if ($position === self::POS_BEGIN) {
+            $this->_beginHtml[$key] = $html;
+            return;
         }
-        $this->_html[$position][$key] = $html;
+
+        $registryPosition = match ($position) {
+            self::POS_HEAD => Position::Head,
+            default => Position::Body,
+        };
+
+        $this->registry()->html($html, $registryPosition, $key);
     }
 
     /**
@@ -1583,10 +1795,11 @@ class View extends \yii\web\View
      * @param string $key The module specifier.
      * @param string $value  The URL or path to the resource the key will resolve to.
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::jsImport()} instead.
     */
     public function registerJsImport(string $key, string $value): void
     {
-        $this->_jsImports[$key] = $value;
+        $this->registry()->jsImport($key, $value);
     }
 
     /**
@@ -1617,15 +1830,7 @@ class View extends \yii\web\View
         // Register any asset bundles
         $this->registerAllAssetFiles();
 
-        $html = $this->renderHeadHtml();
-
-        if ($clear === true) {
-            $this->metaTags = [];
-            $this->linkTags = [];
-            $this->css = [];
-            $this->cssFiles = [];
-            unset($this->jsFiles[self::POS_HEAD], $this->js[self::POS_HEAD]);
-        }
+        $html = $this->registry()->headHtml(clear: $clear);
 
         return $html;
     }
@@ -1645,20 +1850,21 @@ class View extends \yii\web\View
         // Register any asset bundles
         $this->registerAllAssetFiles();
 
-        // Get the rendered body begin+end HTML
-        $html = $this->renderBodyBeginHtml() .
-            $this->renderBodyEndHtml(true);
+        // Include both body-begin and body-end content
+        $html = $this->renderBodyBeginHtml() . $this->renderBodyEndHtml(true);
 
         // Clear out the queued up files
         if ($clear === true) {
-            unset(
-                $this->jsFiles[self::POS_BEGIN],
-                $this->jsFiles[self::POS_END],
-                $this->js[self::POS_BEGIN],
-                $this->js[self::POS_END],
-                $this->js[self::POS_READY],
-                $this->js[self::POS_LOAD]
-            );
+            // Clear registry body content (head was not touched)
+            $this->registry()->bodyHtml(clear: true);
+
+            // Clear adapter's internal begin/ready/load JS
+            $this->_beginJs = [];
+            $this->_beginHtml = [];
+            $this->_beginScripts = [];
+            $this->_beginJsFiles = [];
+            $this->_readyJs = [];
+            $this->_loadJs = [];
         }
 
         return $html;
@@ -1673,6 +1879,7 @@ class View extends \yii\web\View
      *
      * @param string $category The category the messages are in
      * @param string[] $messages The messages to be translated
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::translations()} instead.
      */
     public function registerTranslations(string $category, array $messages): void
     {
@@ -1681,6 +1888,7 @@ class View extends \yii\web\View
 
         foreach ($messages as $message) {
             $translation = t($message, category: $category);
+
             if ($translation !== $message) {
                 $jsMessage = Json::encode($message);
                 $jsTranslation = Json::encode($translation);
@@ -1707,13 +1915,11 @@ JS;
      *
      * @param string[] $icons The icons to be registered
      * @since 5.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::icons()} instead.
      */
     public function registerIcons(array $icons): void
     {
-        $this->_icons = [
-            ...$this->_icons,
-            ...array_flip($icons),
-        ];
+        $this->registry()->icons($icons);
     }
 
     /**
@@ -1723,10 +1929,11 @@ JS;
      * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
      *
      * @return string|null The namespace.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::get()} instead.
      */
     public function getNamespace(): ?string
     {
-        return $this->_namespace;
+        return InputNamespace::get();
     }
 
     /**
@@ -1736,124 +1943,79 @@ JS;
      * and [[namespaceInputId()]] are called, if their|null $namespace arguments are null.
      *
      * @param string|null $namespace The new namespace. Set to null to remove the namespace.
+     *
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::set()} instead.
      */
     public function setNamespace(?string $namespace): void
     {
-        $this->_namespace = $namespace;
+        InputNamespace::set($namespace);
     }
 
     /**
-     * Registers a delta input name.
-     *
-     * This can be either the name of a single form input, or a prefix used by multiple input names.
-     *
-     * The input name will be namespaced with the currently active [[getNamespace()|namespace]], if any.
-     *
-     * When a form that supports delta updates is submitted, any delta inputs (or groups of inputs) that didn’t change
-     * over the lifespan of the page will be omitted from the POST request.
-     *
-     * Note that delta input names will only be registered if delta registration is active
-     * (see [[getIsDeltaRegistrationActive()]]).
-     *
-     * @param string $inputName
-     * @param bool $forceModified Whether the name should be considered modified regardless of the initial form value
-     * @since 3.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::registerName()} instead.
      */
     public function registerDeltaName(string $inputName, bool $forceModified = false): void
     {
-        if ($this->_registerDeltaNames) {
-            $inputName = $this->namespaceInputName($inputName);
-            $this->_deltaNames[] = $inputName;
-
-            if ($forceModified) {
-                $this->_modifiedDeltaNames[] = $inputName;
-            }
-        }
+        DeltaRegistry::registerName($inputName, $forceModified);
     }
 
     /**
-     * Returns the initial values of delta inputs.
-     *
-     * @return array
-     * @see setInitialDeltaValue()
-     * @since 3.7.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::getInitialValues()} instead.
      */
     public function getInitialDeltaValues(): array
     {
-        return $this->_initialDeltaValues;
+        return DeltaRegistry::getInitialValues();
     }
 
     /**
-     * Sets the initial value of a delta input name.
-     *
-     * @param string $inputName
-     * @param mixed $value
-     * @see getInitialDeltaValues()
-     * @since 3.4.6
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::setInitialValue()} instead.
      */
     public function setInitialDeltaValue(string $inputName, mixed $value): void
     {
-        if ($this->_registerDeltaNames) {
-            $this->_initialDeltaValues[$this->namespaceInputName($inputName)] = $value;
-        }
+        DeltaRegistry::setInitialValue($inputName, $value);
     }
 
     /**
-     * Returns whether delta input name registration is currently active
-     *
-     * @return bool
-     * @see registerDeltaName()
-     * @since 3.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::isActive()} instead.
      */
     public function getIsDeltaRegistrationActive(): bool
     {
-        return $this->_registerDeltaNames;
+        return DeltaRegistry::isActive();
     }
 
     /**
-     * Sets whether delta input name registration is active.
-     *
-     * @param bool $active
-     * @see registerDeltaName()
-     * @since 3.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::setActive()} instead.
      */
     public function setIsDeltaRegistrationActive(bool $active): void
     {
-        $this->_registerDeltaNames = $active;
+        DeltaRegistry::setActive($active);
     }
 
     /**
-     * Returns all the registered delta input names.
-     *
-     * @return string[]
-     * @see registerDeltaName()
-     * @since 3.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::getNames()} instead.
      */
     public function getDeltaNames(): array
     {
-        return $this->_deltaNames;
+        return DeltaRegistry::getNames();
     }
 
     /**
-     * Returns all the registered delta input names that should be considered modified.
-     *
-     * @return string[]
-     * @see registerDeltaName()
-     * @since 5.2.1
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\DeltaRegistry::getModifiedNames()} instead.
      */
     public function getModifiedDeltaNames(): array
     {
-        return $this->_modifiedDeltaNames;
+        return DeltaRegistry::getModifiedNames();
     }
 
     /**
      * Returns the current template mode (either `site` or `cp`).
      *
      * @return string Either `site` or `cp`.
+     * @deprecated 6.0.0 use {@see TemplateMode::get()} instead.
      */
     public function getTemplateMode(): string
     {
-        return $this->_templateMode;
+        return TemplateMode::get()->value;
     }
 
     /**
@@ -1864,61 +2026,41 @@ JS;
      * - the default template file extensions that should be automatically added when looking for templates
      * - the "index" template filenames that should be checked when looking for templates
      *
-     * @param string $templateMode Either 'site' or 'cp'
+     * @param string|TemplateMode $templateMode Either 'site' or 'cp'
      * @throws Exception if $templateMode is invalid
+     * @deprecated 6.0.0 use {@see TemplateMode::set()} instead.
      */
-    public function setTemplateMode(string $templateMode): void
+    public function setTemplateMode(string|TemplateMode $templateMode): void
     {
-        // Ignore if it's already set to that
-        if ($templateMode === $this->_templateMode) {
-            return;
-        }
-
-        // Validate
-        if (!in_array($templateMode, [
-            self::TEMPLATE_MODE_CP,
-            self::TEMPLATE_MODE_SITE,
-        ], true)
-        ) {
-            throw new Exception('"' . $templateMode . '" is not a valid template mode');
-        }
+        $templateMode = is_string($templateMode)
+            ? TemplateMode::from($templateMode)
+            : $templateMode;
 
         // Set the new template mode
-        $this->_templateMode = $templateMode;
-
-        // Update everything
-        if ($templateMode == self::TEMPLATE_MODE_CP) {
-            $this->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
-            $this->_defaultTemplateExtensions = ['twig', 'html'];
-            $this->_indexTemplateFilenames = ['index'];
-            $this->_privateTemplateTrigger = '_';
-        } else {
-            $this->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
-            $generalConfig = Cms::config();
-            $this->_defaultTemplateExtensions = $generalConfig->defaultTemplateExtensions;
-            $this->_indexTemplateFilenames = $generalConfig->indexTemplateFilenames;
-            $this->_privateTemplateTrigger = $generalConfig->privateTemplateTrigger;
-        }
+        TemplateMode::set($templateMode);
     }
 
     /**
      * Returns the base path that templates should be found in.
      *
      * @return string
+     * @deprecated 6.0.0 use {@see TemplateMode::templatesPath()} instead.
      */
     public function getTemplatesPath(): string
     {
-        return $this->_templatesPath;
+        return TemplateMode::get()->templatesPath();
     }
 
     /**
      * Sets the base path that templates should be found in.
      *
      * @param string $templatesPath
+     *
+     * @deprecated 6.0.0 use {@see TemplateMode::templatesPath()} instead.
      */
     public function setTemplatesPath(string $templatesPath): void
     {
-        $this->_templatesPath = rtrim($templatesPath, '/\\');
+        // Noop
     }
 
     /**
@@ -1971,42 +2113,13 @@ JS;
      * @param bool $otherAttributes Whether `id`, `for`, and other attributes should be namespaced (in addition to `name`)
      * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and
      * class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
+     *
      * @return string The HTML with namespaced attributes
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::namespaceInputs()} instead.
      */
     public function namespaceInputs(callable|string $html, ?string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
     {
-        if (is_callable($html)) {
-            // If no namespace was passed in, just return the callable response directly.
-            // No need to namespace it via the currently-set namespace in this case; if there is one, it should get applied later on.
-            if ($namespace === null) {
-                return (string)$html();
-            }
-
-            $oldNamespace = $this->getNamespace();
-            $this->setNamespace($this->namespaceInputName($namespace));
-            try {
-                $response = $this->namespaceInputs((string)$html(), $namespace, $otherAttributes, $withClasses);
-            } finally {
-                $this->setNamespace($oldNamespace);
-            }
-            return $response;
-        }
-
-        if ($html === '') {
-            return $html;
-        }
-
-        if ($namespace === null) {
-            $namespace = $this->getNamespace();
-            // If there's no active namespace, we're done here
-            if ($namespace === null) {
-                return $html;
-            }
-        }
-
-        return $otherAttributes
-            ? Html::namespaceHtml($html, $namespace, $withClasses)
-            : Html::namespaceInputs($html, $namespace);
+        return InputNamespace::namespaceInputs($html, $namespace, $otherAttributes, $withClasses);
     }
 
     /**
@@ -2017,22 +2130,13 @@ JS;
      *
      * @param string $inputName The input name that should be namespaced.
      * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
+     *
      * @return string The namespaced input name.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::namespaceInputName()} instead.
      */
     public function namespaceInputName(string $inputName, ?string $namespace = null): string
     {
-        if ($inputName === '') {
-            return $inputName;
-        }
-
-        if ($namespace === null) {
-            $namespace = $this->getNamespace();
-            if ($namespace === null) {
-                return $inputName;
-            }
-        }
-
-        return Html::namespaceInputName($inputName, $namespace);
+        return InputNamespace::namespaceInputName($inputName, $namespace);
     }
 
     /**
@@ -2043,22 +2147,13 @@ JS;
      *
      * @param string $inputId The input ID that should be namespaced.
      * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
+     *
      * @return string The namespaced input ID.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::namespaceId()} instead.
      */
     public function namespaceInputId(string $inputId, ?string $namespace = null): string
     {
-        if ($inputId === '') {
-            return $inputId;
-        }
-
-        if ($namespace === null) {
-            $namespace = $this->getNamespace();
-            if ($namespace === null) {
-                return Html::id($inputId);
-            }
-        }
-
-        return Html::namespaceId($inputId, $namespace);
+        return InputNamespace::namespaceId($inputId, $namespace);
     }
 
     /**
@@ -2121,14 +2216,11 @@ JS;
      * @param callable $method The callback function.
      * @param bool $append whether to append the method handler to the end of the existing method list for the hook. If `false`, the method will be
      * inserted at the beginning of the existing method list.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\TemplateHooks::register()} instead.
      */
     public function hook(string $hook, callable $method, bool $append = true): void
     {
-        if ($append || empty($this->_hooks[$hook])) {
-            $this->_hooks[$hook][] = $method;
-        } else {
-            array_unshift($this->_hooks[$hook], $method);
-        }
+        $this->templateHooks()->register($hook, $method, $append);
     }
 
     /**
@@ -2139,31 +2231,20 @@ JS;
      * @param string $hook The hook name.
      * @param array $context The current template context.
      * @return string Whatever the hooks returned.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\TemplateHooks::invoke()} instead.
      */
     public function invokeHook(string $hook, array &$context): string
     {
-        $return = '';
-
-        if (isset($this->_hooks[$hook])) {
-            $handled = false;
-
-            /** @var callable(array $context, bool &$handled):string $method */
-            foreach ($this->_hooks[$hook] as $method) {
-                $return .= $method($context, $handled);
-                if ($handled) {
-                    break;
-                }
-            }
-        }
-
-        return $return;
+        return $this->templateHooks()->invoke($hook, $context);
     }
 
     /**
      * Sets the JS files that should be marked as already registered.
      *
      * @param string[] $keys
+     *
      * @since 3.0.10
+     * @deprecated 6.0.0
      */
     public function setRegisteredJsFiles(array $keys): void
     {
@@ -2175,6 +2256,7 @@ JS;
      *
      * @param string[] $names Asset bundle names
      * @since 3.0.10
+     * @deprecated 6.0.0
      */
     public function setRegisteredAssetBundles(array $names): void
     {
@@ -2186,7 +2268,7 @@ JS;
      */
     public function endPage($ajaxMode = false): void
     {
-        if (!$ajaxMode && $this->_templateMode === static::TEMPLATE_MODE_CP) {
+        if (!$ajaxMode && TemplateMode::is(TemplateMode::Cp)) {
             $this->_setJsProperty('registeredJsFiles', $this->_registeredJsFiles);
             $this->_setJsProperty('registeredAssetBundles', $this->_registeredAssetBundles);
         }
@@ -2335,24 +2417,7 @@ JS;
      */
     protected function renderHeadHtml(): string
     {
-        $lines = [];
-        if (!empty($this->title)) {
-            $lines[] = '<title>' . Html::encode($this->title) . '</title>';
-        }
-
-        if (!empty($this->_jsImports)) {
-            $lines[] = '<script type="importmap">{"imports": ' . Json::encode($this->_jsImports) . '}</script>';
-        }
-        if (!empty($this->_scripts[self::POS_HEAD])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
-        }
-        if (!empty($this->_html[self::POS_HEAD])) {
-            $lines[] = implode("\n", $this->_html[self::POS_HEAD]);
-        }
-
-        $html = parent::renderHeadHtml();
-
-        return empty($lines) ? $html : implode("\n", $lines) . $html;
+        return $this->registry()->headHtml(clear: false);
     }
 
     /**
@@ -2361,16 +2426,24 @@ JS;
     protected function renderBodyBeginHtml(): string
     {
         $lines = [];
-        if (!empty($this->_scripts[self::POS_BEGIN])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_BEGIN]);
-        }
-        if (!empty($this->_html[self::POS_BEGIN])) {
-            $lines[] = implode("\n", $this->_html[self::POS_BEGIN]);
+
+        if (!empty($this->_beginScripts)) {
+            $lines[] = implode("\n", $this->_beginScripts);
         }
 
-        $html = parent::renderBodyBeginHtml();
+        if (!empty($this->_beginHtml)) {
+            $lines[] = implode("\n", $this->_beginHtml);
+        }
 
-        return empty($lines) ? $html : implode("\n", $lines) . $html;
+        if (!empty($this->_beginJsFiles)) {
+            $lines[] = implode("\n", $this->_beginJsFiles);
+        }
+
+        if (!empty($this->_beginJs)) {
+            $lines[] = Html::script(implode("\n", $this->_beginJs))->render();
+        }
+
+        return empty($lines) ? '' : implode("\n", $lines);
     }
 
     /**
@@ -2378,29 +2451,32 @@ JS;
      */
     protected function renderBodyEndHtml($ajaxMode): string
     {
-        $lines = [];
-        if (!empty($this->_scripts[self::POS_END])) {
-            $lines[] = implode("\n", $this->_scripts[self::POS_END]);
-        }
-        if (!empty($this->_html[self::POS_END])) {
-            $lines[] = implode("\n", $this->_html[self::POS_END]);
-        }
+        $html = $this->registry()->bodyHtml(clear: false);
 
-        if (!empty($this->_icons)) {
-            $icons = [];
-            foreach (array_keys($this->_icons) as $icon) {
-                $icons[$icon] = Cp::iconSvg($icon);
+        // Append POS_READY/POS_LOAD JS (kept in adapter, not registry)
+        if ($ajaxMode) {
+            $scripts = [];
+            if (!empty($this->_readyJs)) {
+                $scripts[] = implode("\n", $this->_readyJs);
             }
-            $iconsJs = Json::encode($icons);
-            $this->js[self::POS_END][] = <<<JS
-Craft.icons = $iconsJs;
-JS;
-            $this->_icons = [];
+            if (!empty($this->_loadJs)) {
+                $scripts[] = implode("\n", $this->_loadJs);
+            }
+            if (!empty($scripts)) {
+                $html .= ($html !== '' ? "\n" : '') . Html::script(implode("\n", $scripts))->render();
+            }
+        } else {
+            if (!empty($this->_readyJs)) {
+                $js = "jQuery(function ($) {\n" . implode("\n", $this->_readyJs) . "\n});";
+                $html .= ($html !== '' ? "\n" : '') . Html::script($js)->render();
+            }
+            if (!empty($this->_loadJs)) {
+                $js = "jQuery(window).on('load', function () {\n" . implode("\n", $this->_loadJs) . "\n});";
+                $html .= ($html !== '' ? "\n" : '') . Html::script($js)->render();
+            }
         }
 
-        $html = parent::renderBodyEndHtml($ajaxMode);
-
-        return empty($lines) ? $html : implode("\n", $lines) . $html;
+        return $html;
     }
 
     /**
@@ -2511,7 +2587,7 @@ JS;
 
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name !== '') {
-            if ($publicOnly && preg_match(sprintf('/(^|\/)%s/', preg_quote($this->_privateTemplateTrigger, '/')), $name)) {
+            if ($publicOnly && preg_match(sprintf('/(^|\/)%s/', preg_quote(TemplateMode::get()->privateTemplateTrigger(), '/')), $name)) {
                 return null;
             }
 
@@ -2522,7 +2598,7 @@ JS;
                 return $testPath;
             }
 
-            foreach ($this->_defaultTemplateExtensions as $extension) {
+            foreach (TemplateMode::get()->defaultTemplateExtensions() as $extension) {
                 $testPath = $basePath . DIRECTORY_SEPARATOR . $name . '.' . $extension;
 
                 if (is_file($testPath)) {
@@ -2531,8 +2607,8 @@ JS;
             }
         }
 
-        foreach ($this->_indexTemplateFilenames as $filename) {
-            foreach ($this->_defaultTemplateExtensions as $extension) {
+        foreach (TemplateMode::get()->indexTemplateFilenames() as $filename) {
+            foreach (TemplateMode::get()->defaultTemplateExtensions() as $extension) {
                 $testPath = $basePath . ($name !== '' ? DIRECTORY_SEPARATOR . $name : '') . DIRECTORY_SEPARATOR . $filename . '.' . $extension;
 
                 if (is_file($testPath)) {
@@ -2576,45 +2652,6 @@ JS;
         return $this->_twigOptions;
     }
 
-    /**
-     * Returns any registered template roots.
-     *
-     * @param string $which 'cp' or 'site'
-     * @return array
-     */
-    private function _getTemplateRoots(string $which): array
-    {
-        if (isset($this->_templateRoots[$which])) {
-            return $this->_templateRoots[$which];
-        }
-
-        $this->_templateRoots[$which] = [];
-
-        if ($which === 'cp') {
-            $name = self::EVENT_REGISTER_CP_TEMPLATE_ROOTS;
-        } else {
-            $name = self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS;
-        }
-
-        if ($this->hasEventHandlers($name)) {
-            $event = new RegisterTemplateRootsEvent();
-            $this->trigger($name, $event);
-
-            foreach ($event->roots as $templatePath => $dir) {
-                $templatePath = strtolower(trim($templatePath, '/'));
-                if (!isset($this->_templateRoots[$which][$templatePath])) {
-                    $this->_templateRoots[$which][$templatePath] = [];
-                }
-                array_push($this->_templateRoots[$which][$templatePath], ...(array)$dir);
-            }
-
-            // Longest (most specific) first
-            krsort($this->_templateRoots[$which], SORT_STRING);
-        }
-
-        return $this->_templateRoots[$which];
-    }
-
     private function resourceHash(string $key): string
     {
         return sprintf('%x', crc32($key));
@@ -2643,102 +2680,13 @@ JS;
         $this->registerJs($js, self::POS_HEAD);
     }
 
-    private function _prepareElementIndexVariables(array &$context): null
-    {
-        /** @var class-string<ElementInterface> $elementType */
-        $elementType = $context['elementType'];
-
-        $context['title'] ??= $elementType::pluralDisplayName();
-        $context['context'] = 'index';
-
-        $elementSourcesService = app(ElementSources::class);
-        $context['sources'] = $elementSourcesService->getSources(
-            $elementType,
-            withDisabled: true,
-            page: $context['page'] ?? null,
-        )->all();
-
-        $context['showSiteMenu'] = Sites::isMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
-        if ($context['showSiteMenu'] === 'auto') {
-            $context['showSiteMenu'] = $elementType::isLocalized();
-        }
-
-        $context['elementDisplayName'] = $elementType::displayName();
-        $context['elementPluralDisplayName'] = $elementType::pluralDisplayName();
-        $context['canHaveDrafts'] ??= $elementType::hasDrafts();
-
-        if (isset($context['page'])) {
-            if (isset($context['sources'][0]['page'])) {
-                $context['title'] = Craft::t('site', $context['sources'][0]['page']);
-            }
-            $context['selectedSubnavItem'] = $elementSourcesService->pageNameId($context['page']);
-        }
-
-        return null;
-    }
-
-    private function _prepareElementToolbarVariables(array &$context): null
-    {
-        /** @var class-string<ElementInterface> $elementType */
-        $elementType = $context['elementType'];
-
-        $context['context'] ??= 'index';
-        $context['isAdministrative'] = match ($context['context']) {
-            'index', 'embedded-index' => true,
-            default => false,
-        };
-        $context['showStatusMenu'] ??= 'auto';
-        if ($context['showStatusMenu'] === 'auto') {
-            $context['showStatusMenu'] = $elementType::hasStatuses();
-        }
-        $context['showSiteMenu'] = Sites::isMultiSite() ? ($context['showSiteMenu'] ?? 'auto') : false;
-        if ($context['showSiteMenu'] === 'auto') {
-            $context['showSiteMenu'] = $elementType::isLocalized();
-        }
-        $context['idPrefix'] = sprintf('elementtoolbar%s-', mt_rand());
-
-        if ($context['showStatusMenu']) {
-            $context['elementStatuses'] ??= $elementType::statuses();
-            if (count($context['elementStatuses']) < 2) {
-                $context['showStatusMenu'] = false;
-            }
-        }
-
-        return null;
-    }
-
-    private function _prepareElementSourcesVariables(array &$context): null
-    {
-        /** @var class-string<ElementInterface> $elementType */
-        $elementType = $context['elementType'];
-
-        $context['keyPrefix'] ??= '';
-        $context['isTopLevel'] = $context['keyPrefix'] === '';
-
-        if ($context['isTopLevel']) {
-            $context['baseSortOptions'] ??= Collection::make($elementType::sortOptions())
-                ->map(fn($option, $key) => [
-                    'label' => $option['label'] ?? $option,
-                    'attr' => $option['attribute'] ?? $option['orderBy'] ?? $key,
-                    'defaultDir' => $option['defaultDir'] ?? 'asc',
-                ])
-                ->values()
-                ->all();
-            $context['tableColumns'] ??= app(ElementSources::class)->getAvailableTableAttributes($elementType)->all();
-        }
-
-        $context['viewModes'] ??= $elementType::indexViewModes();
-
-        return null;
-    }
-
     /**
      * Renders an element’s chip HTML.
      *
      * @param array $context
      * @return string|null
      */
-    private function _elementChipHtml(array $context): ?string
+    public function elementChipHtml(array $context): ?string
     {
         Deprecator::log('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
 
@@ -2760,5 +2708,28 @@ JS;
             single: $context['single'] ?? false,
             autoReload: $context['autoReload'] ?? true,
         );
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(RegisterCpTemplateRoots::class, function(RegisterCpTemplateRoots $event) {
+            if (!YiiEvent::hasHandlers(self::class, self::EVENT_REGISTER_CP_TEMPLATE_ROOTS)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterTemplateRootsEvent();
+            YiiEvent::trigger(self::class, self::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $yiiEvent);
+            $event->roots = $yiiEvent->roots;
+        });
+
+        Event::listen(RegisterSiteTemplateRoots::class, function(RegisterSiteTemplateRoots $event) {
+            if (!YiiEvent::hasHandlers(self::class, self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterTemplateRootsEvent();
+            YiiEvent::trigger(self::class, self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, $yiiEvent);
+            $event->roots = $yiiEvent->roots;
+        });
     }
 }

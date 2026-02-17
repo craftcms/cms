@@ -2,14 +2,50 @@
 
 ## Table of Contents
 
-1. CP URLs
-2. Elements
-3. Creating test elements
-4. Creating an entry with a custom field
-5. Testing element concerns (traits)
-6. Pest data providers
-7. Database best practices
-8. Testing Laravel events
+1. Test directory structure and base classes
+2. CP URLs
+3. Elements
+4. Creating test elements
+5. Creating an entry with a custom field
+6. Testing element concerns (traits)
+7. Pest data providers
+8. Database best practices
+9. Testing Laravel events
+
+## Test directory structure and base classes
+
+Tests are organized into two directories:
+
+- **`tests/Unit/`** — Uses `UnitTestCase`. Lightweight tests that only need the Laravel service container. No database, no Yii2 bootstrap, no migrations.
+- **`tests/Feature/`** — Uses `TestCase`. Full integration tests with database (`RefreshDatabase`), Yii2 bootstrapping, and migrations.
+
+This is wired up in `tests/Pest.php`:
+
+```php
+uses(TestCase::class)->in('Feature');
+uses(UnitTestCase::class)->in('Unit');
+```
+
+### UnitTestCase (`tests/Unit/`)
+
+`CraftCms\Cms\Tests\UnitTestCase` extends `Orchestra\Testbench\TestCase` and provides only the Laravel service container. It sets the edition to Pro, template mode to Cp, locale, and timezone — but does **not** touch the database.
+
+Use this for:
+- Testing pure logic, formatting, or config parsing
+- Testing validation rules, string helpers, or data transformations
+- Testing field construction or configuration (e.g., `new Money(...)`)
+- Anything that does not require database state
+
+### TestCase (`tests/Feature/`)
+
+`CraftCms\Cms\Tests\TestCase` extends `Orchestra\Testbench\TestCase` with `RefreshDatabase`. It runs the full `Install` migration, bootstraps Yii2, seeds an admin user, and provides the complete Craft environment.
+
+Use this for:
+- Tests that create elements via factories
+- Tests that query the database (element queries, Eloquent models)
+- Tests that save elements or interact with project config
+- Tests that require an authenticated user (`actingAs`)
+- HTTP/route tests
 
 ## CP URLs
 

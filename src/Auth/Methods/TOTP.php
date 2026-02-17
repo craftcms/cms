@@ -10,10 +10,12 @@ use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Craft;
 use craft\web\assets\totp\TotpAsset;
-use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Models\Authenticator;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Session\SessionManager;
 use PragmaRX\Google2FA\Exceptions\Google2FAException;
 use PragmaRX\Google2FA\Google2FA;
@@ -72,13 +74,13 @@ final class TOTP extends BaseAuthMethod
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(TotpAsset::class);
-        $view->registerJsWithVars(fn ($totpFormId, $containerId) => <<<JS
+        AssetRegistry::jsWithVars(fn ($totpFormId, $containerId) => <<<JS
 Craft.createAuthFormHandler(Craft.TotpForm.METHOD, $('#' + $totpFormId), () => {
   Craft.Slideout.instances[$containerId].showSuccess();
   Craft.authMethodSetup.refresh();
 });
 JS, [
-            $view->namespaceInputId($totpFormId),
+            InputNamespace::namespaceId($totpFormId),
             $containerId,
         ]);
 
@@ -87,7 +89,7 @@ JS, [
             'user' => $this->user,
             'qrCode' => $this->generateQrCode($secret),
             'totpFormId' => $totpFormId,
-        ], View::TEMPLATE_MODE_CP);
+        ], TemplateMode::Cp->value);
     }
 
     public function getAuthFormHtml(): string

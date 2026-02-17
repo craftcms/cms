@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\test\TestCase;
 use craft\web\View;
+use CraftCms\Cms\View\TemplateMode;
 
 /**
  * Unit tests for the Various functions in the Extension class.
@@ -46,7 +47,7 @@ class FieldTest extends TestCase
 {% endembed %}
 TWIG;
 
-        $html = $this->view->renderString($template, [], View::TEMPLATE_MODE_CP);
+        $html = $this->view->renderString($template, [], TemplateMode::Cp->value);
         self::assertStringContainsString('<div id="foo-field" class="field" data-attribute="foo" data-foo="test">', $html);
         self::assertStringContainsString('TEST HEADING', $html);
         self::assertStringContainsString('<label id="label" for="foo">TEST LABEL</label>', $html);

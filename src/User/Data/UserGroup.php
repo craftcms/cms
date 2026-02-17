@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Data;
 
-use Craft;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
@@ -14,6 +13,8 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -89,15 +90,14 @@ final class UserGroup extends Component implements Actionable, Chippable, CpEdit
                 'label' => t('User group settings'),
             ];
 
-            $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn ($id, $params) => <<<JS
+            AssetRegistry::jsWithVars(fn ($id, $params) => <<<JS
 $('#' + $id).on('click', () => {
   new Craft.CpScreenSlideout('user-settings/edit-group', {
     params: $params,
   })
 });
 JS, [
-                $view->namespaceInputId($editId),
+                InputNamespace::namespaceId($editId),
                 ['groupId' => $this->id],
             ]);
         }

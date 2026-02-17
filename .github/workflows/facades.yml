@@ -57,18 +57,22 @@ jobs:
           php -f vendor/bin/facade.php -- \
             CraftCms\\Cms\\Support\\Facades\\Addresses \
             CraftCms\\Cms\\Support\\Facades\\Announcements \
+            CraftCms\\Cms\\Support\\Facades\\AssetRegistry \
             CraftCms\\Cms\\Support\\Facades\\Conditions \
+            CraftCms\\Cms\\Support\\Facades\\DeltaRegistry \
             CraftCms\\Cms\\Support\\Facades\\Deprecator \
             CraftCms\\Cms\\Support\\Facades\\Entries \
             CraftCms\\Cms\\Support\\Facades\\EntryTypes \
             CraftCms\\Cms\\Support\\Facades\\Fields \
             CraftCms\\Cms\\Support\\Facades\\I18N \
+            CraftCms\\Cms\\Support\\Facades\\InputNamespace \
             CraftCms\\Cms\\Support\\Facades\\ProjectConfig \
             CraftCms\\Cms\\Support\\Facades\\Sections \
             CraftCms\\Cms\\Support\\Facades\\Security \
             CraftCms\\Cms\\Support\\Facades\\SiteGroups \
             CraftCms\\Cms\\Support\\Facades\\Sites \
             CraftCms\\Cms\\Support\\Facades\\Structures \
+            CraftCms\\Cms\\Support\\Facades\\TemplateHooks \
             CraftCms\\Cms\\Support\\Facades\\Updates \
             CraftCms\\Cms\\Support\\Facades\\UserGroups \
             CraftCms\\Cms\\Support\\Facades\\UserPermissions \

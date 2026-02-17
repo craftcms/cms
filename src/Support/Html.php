@@ -8,12 +8,13 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\image\SvgAllowedAttributes;
-use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Security;
+use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
 use Exception;
@@ -21,6 +22,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use Stringable;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -122,11 +124,11 @@ final class Html
     {
         if (is_callable($html)) {
             // Call it to get the HTML, but disregard the JS
-            Craft::$app->getView()->startJsBuffer();
+            AssetRegistry::startJsBuffer();
             try {
                 $html = $html();
             } finally {
-                Craft::$app->getView()->clearJsBuffer();
+                AssetRegistry::clearJsBuffer();
             }
         }
 
@@ -187,7 +189,7 @@ final class Html
                 [
                     'url' => UrlHelper::actionUrl('users/session-info'),
                 ],
-                View::TEMPLATE_MODE_CP,
+                TemplateMode::Cp->value,
             )
         );
 
@@ -274,7 +276,7 @@ final class Html
 
     public static function hiddenInput(
         ?string $name = null,
-        bool|float|int|string|\Stringable|null $value = null,
+        bool|float|int|string|Stringable|null $value = null,
         array $attributes = [],
     ): Input {
         $tag = Input::hidden($name, $value);
@@ -289,11 +291,11 @@ final class Html
         return $attributes === [] ? $tag : $tag->addAttributes(self::normalizeTagAttributes($attributes));
     }
 
-    public static function tag($name, $content = '', $options = []): string
+    public static function tag($name, $content = '', $attributes = []): string
     {
         return YiiHtml::tag($name)
             ->content(NoEncode::string((string) $content))
-            ->attributes(self::normalizeTagAttributes($options))
+            ->attributes(self::normalizeTagAttributes($attributes))
             ->render();
     }
 

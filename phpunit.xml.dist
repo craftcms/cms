@@ -10,6 +10,10 @@
     <testsuites>
         <testsuite name="Tests">
             <directory>./tests</directory>
+            <exclude>./tests/ArchTest.php</exclude>
+        </testsuite>
+        <testsuite name="Arch">
+            <file>./tests/ArchTest.php</file>
         </testsuite>
     </testsuites>
     <extensions>

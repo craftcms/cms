@@ -51,7 +51,9 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -60,6 +62,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utilities\Updates;
+use CraftCms\Cms\View\TemplateMode;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -142,7 +145,7 @@ class Cp
      */
     public static function renderTemplate(string $template, array $variables = []): string
     {
-        return Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP);
+        return Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value);
     }
 
     /**
@@ -404,7 +407,7 @@ class Cp
                 'id' => $component->getId(),
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
-                    'id' => Craft::$app->getView()->namespaceInputId($config['id']),
+                    'id' => InputNamespace::namespaceId($config['id']),
                     'hyperlink' => $config['hyperlink'],
                     'showLabel' => $config['showLabel'],
                     'showHandle' => $config['showHandle'],
@@ -679,8 +682,7 @@ class Cp
 
         if ($showEditButton) {
             $editId = sprintf('action-edit-%s', mt_rand());
-            $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn($id, $elementType, $settings, $cpEditUrl) => <<<JS
+            AssetRegistry::jsWithVars(fn($id, $elementType, $settings, $cpEditUrl) => <<<JS
 $('#' + $id).on('activate', (ev) => {
   if ($cpEditUrl && Garnish.isCtrlKeyPressed(ev.originalEvent)) {
     window.open($cpEditUrl)
@@ -698,7 +700,7 @@ $('#' + $id).on('activate', (ev) => {
   }
 });
 JS, [
-                $view->namespaceInputId($editId),
+                InputNamespace::namespaceId($editId),
                 $element::class,
                 [
                     'elementId' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
@@ -749,7 +751,7 @@ JS, [
                         'hyperlink' => $config['hyperlink'],
                         'selectable' => $config['selectable'],
                         'context' => $config['context'],
-                        'id' => Craft::$app->getView()->namespaceInputId($config['id']),
+                        'id' => InputNamespace::namespaceId($config['id']),
                         'ui' => 'card',
                     ] : false,
                 ]),
@@ -1137,7 +1139,7 @@ JS, [
 
     private static function componentCheckboxHtml(string $labelId): string
     {
-        return Html::tag('div', options: [
+        return Html::tag('div', attributes: [
             'class' => 'checkbox',
             'title' => t('Select'),
             'role' => 'checkbox',
@@ -1202,7 +1204,7 @@ JS, [
 
     private static function componentActionMenu(Actionable $component, bool $withEdit = true): string
     {
-        return Craft::$app->getView()->namespaceInputs(
+        return InputNamespace::namespaceInputs(
             function() use ($component, $withEdit): string {
                 $actionMenuItems = array_filter(
                     $component->getActionMenuItems(),
@@ -1566,15 +1568,15 @@ JS, [
         $view = Craft::$app->getView();
 
         if ($config['registerJs']) {
-            $view->registerJsWithVars(fn($elementType, $id, $settings) => <<<JS
+            AssetRegistry::jsWithVars(fn($elementType, $id, $settings) => <<<JS
 Craft.createElementIndex($elementType, $('#' + $id), $settings)
 JS, [
                 $elementType,
-                $view->namespaceInputId($config['id']),
+                InputNamespace::namespaceId($config['id']),
                 array_merge(
                     [
                         'context' => $config['context'],
-                        'namespace' => $view->getNamespace(),
+                        'namespace' => InputNamespace::get(),
                         'prevalidate' => $config['prevalidate'] ?? false,
                     ],
                     $config['jsSettings']
@@ -1603,7 +1605,7 @@ JS, [
                 $sortOptionsKey => $sortOptions,
                 'tableColumns' => $tableColumns,
                 'defaultTableColumns' => $config['defaultTableColumns'],
-            ], View::TEMPLATE_MODE_CP)) .
+            ], TemplateMode::Cp->value)) .
             Html::endTag('div') .
             Html::beginTag('div', ['class' => 'main']) .
             Html::beginTag('div', ['class' => ['toolbar', 'flex']]) .
@@ -1615,16 +1617,16 @@ JS, [
                 'showSiteMenu' => $config['showSiteMenu'],
                 'siteIds' => $siteIds,
                 'canHaveDrafts' => $elementType::hasDrafts(),
-            ], View::TEMPLATE_MODE_CP) .
+            ], TemplateMode::Cp->value) .
             Html::endTag('div') . // .toolbar
-            Html::tag('div', options: ['class' => 'elements']) .
+            Html::tag('div', attributes: ['class' => 'elements']) .
             Html::endTag('div'); // .main
 
         if (self::contextIsAdministrative($config['context'])) {
             $html .= Html::beginTag('div', [
                     'class' => ['footer', 'flex', 'flex-justify'],
                 ]) .
-                $view->renderTemplate('_elements/footer', templateMode: View::TEMPLATE_MODE_CP) .
+                $view->renderTemplate('_elements/footer', templateMode: TemplateMode::Cp->value) .
                 Html::endTag('div'); // .footer
         }
 
@@ -3091,7 +3093,7 @@ JS, [
             ]);
 
         $previewHtml .=
-            Html::tag('div', options: ['class' => 'card-titlebar']) .
+            Html::tag('div', attributes: ['class' => 'card-titlebar']) .
             Html::beginTag('div', ['class' => 'card-main']) .
             Html::beginTag('div', ['class' => 'card-content']) .
             Html::tag('div', $heading, ['class' => 'card-heading']) .
@@ -3213,12 +3215,12 @@ JS, [
             'alwaysShowThumbAlignmentBtns' => $fieldLayout->type::hasThumbs(),
             'readOnly' => $config['disabled'],
         ]);
-        $namespacedId = $view->namespaceInputId($config['id']);
+        $namespacedId = InputNamespace::namespaceId($config['id']);
 
         $js = <<<JS
 new Craft.FieldLayoutDesigner("#$namespacedId", $jsSettings)
 JS;
-        $view->registerJs($js);
+        AssetRegistry::js($js);
 
         $availableCustomFields = $fieldLayout->getAvailableCustomFields();
         $availableNativeFields = $fieldLayout->getAvailableNativeFields();
@@ -3541,14 +3543,13 @@ JS;
             'static' => $config['disabled'],
         ];
 
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(fn($id, $name, $cols, $settings) => <<<JS
+        AssetRegistry::jsWithVars(fn($id, $name, $cols, $settings) => <<<JS
 (() => {
   new Craft.GeneratedFieldsTable($id, $name, $cols, $settings)
 })();
 JS, [
-            $view->namespaceInputId($config['id']),
-            $view->namespaceInputName($name),
+            InputNamespace::namespaceId($config['id']),
+            InputNamespace::namespaceInputName($name),
             $cols,
             $settings,
         ]);
@@ -3677,7 +3678,7 @@ JS, [
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/disclosuremenu.twig', $config, View::TEMPLATE_MODE_CP);
+        return Craft::$app->getView()->renderTemplate('_includes/disclosuremenu.twig', $config, TemplateMode::Cp->value);
     }
 
     /**
@@ -3718,7 +3719,7 @@ JS, [
         return Craft::$app->getView()->renderTemplate('_includes/menuitem.twig', [
             'item' => $config,
             'menuId' => $menuId,
-        ], View::TEMPLATE_MODE_CP);
+        ], TemplateMode::Cp->value);
     }
 
     /**
@@ -3728,8 +3729,12 @@ JS, [
      * @return array
      * @since 5.0.0
      */
-    public static function normalizeMenuItems(array $items): array
+    public static function normalizeMenuItems(array|Collection $items): array
     {
+        if ($items instanceof Collection) {
+            $items = $items->all();
+        }
+
         return array_map(function(array $item) {
             if (!isset($item['type'])) {
                 if (isset($item['url'])) {
@@ -3961,7 +3966,7 @@ JS, [
             } else {
                 $svg = Html::svg($icon, true, throwException: true);
             }
-        } catch (InvalidArgumentException|\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException|InvalidArgumentException $e) {
             Log::warning("Could not load icon: {$e->getMessage()}", [__METHOD__]);
             if (!$fallbackLabel) {
                 return '';
@@ -3985,7 +3990,7 @@ JS, [
         // Add attributes for accessibility
         try {
             $svg = Html::modifyTagAttributes($svg, $attributes);
-        } catch (\InvalidArgumentException) {
+        } catch (InvalidArgumentException) {
         }
 
         return $svg;

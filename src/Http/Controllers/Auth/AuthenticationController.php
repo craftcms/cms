@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\AuthError;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\VerifyingEmail;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -72,7 +72,7 @@ abstract readonly class AuthenticationController
             return view(request()->path(), $data);
         }
 
-        Craft::$app->getView()->setTemplateMode(\craft\web\View::TEMPLATE_MODE_CP);
+        TemplateMode::set(TemplateMode::Cp);
 
         return view(Str::start($cpTemplate, 'craftcms::'), $data);
     }

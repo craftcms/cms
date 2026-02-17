@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
@@ -42,7 +42,7 @@ final class MultiSelect extends BaseOptionsField
     {
         /** @var MultiOptionsFieldData $value */
         if (Collection::make($value)->contains('valid', '===', false)) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+            DeltaRegistry::setInitialValue($this->handle, null);
         }
 
         return Cp::selectizeHtml([

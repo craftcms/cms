@@ -6,9 +6,11 @@ namespace CraftCms\Cms\Http\Responses;
 
 use Craft;
 use craft\web\assets\htmx\HtmxAsset;
-use craft\web\View;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Traits\Conditionable;
@@ -121,7 +123,7 @@ final class CpModalResponse implements Responsable
     public function contentTemplate(string $template, array $variables = []): self
     {
         return $this->contentHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
         );
     }
 
@@ -141,7 +143,7 @@ final class CpModalResponse implements Responsable
     public function errorSummaryTemplate(string $template, array $variables = []): self
     {
         return $this->errorSummary(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
         );
     }
 
@@ -157,12 +159,12 @@ final class CpModalResponse implements Responsable
 
             abort_unless((bool) $containerId, 400, 'Request missing the X-Craft-Container-Id header.');
 
-            $view->setNamespace($namespace);
+            InputNamespace::set($namespace);
             call_user_func($this->prepareModal, $this, $containerId);
-            $view->setNamespace(null);
+            InputNamespace::set(null);
         }
 
-        $content = $view->namespaceInputs(function () {
+        $content = InputNamespace::namespaceInputs(function () {
             $components = [];
             if ($this->contentHtml) {
                 $components[] = is_callable($this->contentHtml) ? call_user_func($this->contentHtml) : $this->contentHtml;
@@ -176,7 +178,7 @@ final class CpModalResponse implements Responsable
             return implode("\n", $components);
         }, $namespace);
 
-        $errorSummary = $this->errorSummary ? $view->namespaceInputs($this->errorSummary, $namespace) : null;
+        $errorSummary = $this->errorSummary ? InputNamespace::namespaceInputs($this->errorSummary, $namespace) : null;
 
         return new JsonResponse([
             'namespace' => $namespace,
@@ -187,8 +189,8 @@ final class CpModalResponse implements Responsable
             'errorSummary' => $errorSummary,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
-            'deltaNames' => $view->getDeltaNames(),
-            'initialDeltaValues' => $view->getInitialDeltaValues(),
+            'deltaNames' => DeltaRegistry::getNames(),
+            'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ]);
     }
 }

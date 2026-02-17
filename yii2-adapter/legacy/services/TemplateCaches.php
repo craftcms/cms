@@ -11,9 +11,11 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\Enums\Position;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateTime;
@@ -318,51 +320,52 @@ class TemplateCaches extends Component
         array $bufferedAssetBundles,
         array $bufferedJsImports,
     ): void {
-        $view = Craft::$app->getView();
-
         foreach ($bufferedJs as $pos => $scripts) {
+            $pos = Position::tryFrom($pos) ?? Position::Body;
             foreach ($scripts as $key => $js) {
-                $view->registerJs($js, $pos, $key);
+                AssetRegistry::js($js, $pos, $key);
             }
         }
 
         foreach ($bufferedScripts as $pos => $tags) {
+            $pos = Position::tryFrom($pos) ?? Position::Body;
             foreach ($tags as $key => [$script, $options]) {
-                $view->registerScript($script, $pos, $options, $key);
+                AssetRegistry::script($script, $pos, $options, $key);
             }
         }
 
         foreach ($bufferedCss as $key => [$css, $options]) {
-            $view->registerCss($css, $options, $key);
+            AssetRegistry::css($css, $options, $key);
         }
 
         foreach ($bufferedJsFiles as $pos => $tags) {
             foreach ($tags as $key => [$url, $options]) {
                 $options['position'] = $pos;
-                $view->registerJsFile($url, $options, $key);
+                AssetRegistry::jsFile($url, $options, $key);
             }
         }
 
         foreach ($bufferedCssFiles as $key => [$url, $options]) {
-            $view->registerCssFile($url, $options, $key);
+            AssetRegistry::cssFile($url, $options, $key);
         }
 
         foreach ($bufferedHtml as $pos => $tags) {
+            $pos = Position::tryFrom($pos) ?? Position::Body;
             foreach ($tags as $key => $html) {
-                $view->registerHtml($html, $pos, $key);
+                AssetRegistry::html($html, $pos, $key);
             }
         }
 
         foreach ($bufferedMetaTags as $key => $options) {
-            $view->registerMetaTag($options, $key);
+            AssetRegistry::metaTag($options, $key);
         }
 
         foreach ($bufferedAssetBundles as [$name, $position]) {
-            $view->registerAssetBundle($name, $position);
+            Craft::$app->getView()->registerAssetBundle($name, $position);
         }
 
         foreach ($bufferedJsImports as $key => $value) {
-            $view->registerJsImport($key, $value);
+            AssetRegistry::jsImport($key, $value);
         }
     }
 
