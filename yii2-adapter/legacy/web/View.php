@@ -925,7 +925,7 @@ class View extends \yii\web\View
      */
     public function doesTemplateExist(string $name, ?string $templateMode = null, bool $publicOnly = false): bool
     {
-        return app(TemplateResolver::class)->exists($name, TemplateMode::from($templateMode), $publicOnly);
+        return app(TemplateResolver::class)->exists($name, $templateMode ? TemplateMode::from($templateMode) : null, $publicOnly);
     }
 
     /**
@@ -1004,7 +1004,7 @@ class View extends \yii\web\View
      */
     public function resolveTemplate(string $name, ?string $templateMode = null, bool $publicOnly = false): string|false
     {
-        return app(TemplateResolver::class)->resolve($name, TemplateMode::from($templateMode), $publicOnly);
+        return app(TemplateResolver::class)->resolve($name, $templateMode ? TemplateMode::from($templateMode) : null, $publicOnly);
     }
 
     /**
