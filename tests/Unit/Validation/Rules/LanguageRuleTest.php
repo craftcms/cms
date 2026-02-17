@@ -5,14 +5,16 @@ declare(strict_types=1);
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Validation\Rules\LanguageRule;
 
-it('validates', function (?string $errorMessage, string $value, bool $onlySiteLangs = true) {
+beforeEach(function () {
     I18N::shouldReceive('getSiteLocaleIds')
         ->andReturn(collect(['nl', 'en-US']))
         ->shouldReceive('translate')
         ->andReturnUsing(fn ($message) => $message)
         ->shouldReceive('getAllLocaleIds')
         ->andReturn(collect(['nl', 'en-US', 'de']));
+});
 
+it('validates', function (?string $errorMessage, string $value, bool $onlySiteLangs = true) {
     $rule = new LanguageRule($onlySiteLangs);
 
     $error = null;
@@ -42,7 +44,7 @@ it('can allow parsing environment variables', function (?string $errorMessage, s
 
     expect($error)->toBe($errorMessage);
 })->with([
-    ['nolang is not a valid site language.', 'nolang'],
+    ['{value} is not a valid site language.', 'nolang'],
     [null, 'en-US'],
 ]);
 
