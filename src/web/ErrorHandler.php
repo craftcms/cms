@@ -177,7 +177,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         if (
             $exception instanceof NotFoundHttpException &&
             $request &&
-            $request->getAcceptsImage() &&
+            $request->getWantsImage() &&
             Craft::$app->getConfig()->getGeneral()->brokenImagePath
         ) {
             $this->errorAction = 'app/broken-image';
