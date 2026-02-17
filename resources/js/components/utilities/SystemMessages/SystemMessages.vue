@@ -11,8 +11,8 @@
   }
 
   interface LocaleOption {
-    id: string;
-    displayName: string;
+    value: string;
+    label: string;
   }
 
   const props = defineProps<{
@@ -21,8 +21,6 @@
     isMultiSite: boolean;
     primaryLanguage: string;
   }>();
-
-  console.log(props);
 
   const localMessages = ref<Array<SystemMessageData>>([...props.messages]);
   const isModalOpen = ref(false);
@@ -38,17 +36,16 @@
     editingMessage.value = null;
   }
 
-  function handleSave(data: {subject: string; body: string}) {
-    if (editingMessage.value) {
+  function handleSave(data: {subject: string; body: string; language: string}) {
+    // Only update the list if saving in the primary language
+    if (editingMessage.value && data.language === props.primaryLanguage) {
       const index = localMessages.value.findIndex(
         (m) => m.key === editingMessage.value?.key
       );
-      if (index !== -1) {
-        localMessages.value[index] = {
-          ...localMessages.value[index],
-          subject: data.subject,
-          body: data.body,
-        };
+      const message = localMessages.value[index];
+      if (message) {
+        message.subject = data.subject;
+        message.body = data.body;
       }
     }
     closeModal();
