@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.17.5 - 2026-02-17
 
 - Added `craft\web\Request::getWantsImage()`.
 - Added `craft\web\Request::getWantsJson()`.
