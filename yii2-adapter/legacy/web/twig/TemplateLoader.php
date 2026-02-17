@@ -16,4 +16,4 @@ if (false) {
     }
 }
 
-class_alias(\CraftCms\Cms\Twig\Exceptions\TemplateLoaderException::class, TemplateLoader::class);
+class_alias(\CraftCms\Cms\Twig\TemplateLoader::class, TemplateLoader::class);
