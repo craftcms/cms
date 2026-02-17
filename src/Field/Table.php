@@ -18,6 +18,7 @@ use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -339,7 +340,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 
         $view->registerAssetBundle(TimepickerAsset::class);
         $view->registerAssetBundle(TableSettingsAsset::class);
-        $view->registerJs('new Craft.TableFieldSettings('.
+        AssetRegistry::js('new Craft.TableFieldSettings('.
             Json::encode(InputNamespace::namespaceInputName('columns')).', '.
             Json::encode(InputNamespace::namespaceInputName('defaults')).', '.
             Json::encode($columns).', '.

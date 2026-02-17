@@ -40,6 +40,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -48,6 +49,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -417,8 +419,8 @@ class ElementsController extends Controller
                 // if we're in a slideout, we don't want to add the .flex-grow to the header toolbar
                 // as it'll mess with the width available for the tabs
                 // see https://github.com/craftcms/cms/issues/17260
-                ($this->_isSlideout() ? '' : Html::tag('div', options: ['class' => 'flex-grow'])) .
-                Html::tag('div', options: ['class' => 'activity-container']),
+                ($this->_isSlideout() ? '' : Html::tag('div', attributes: ['class' => 'flex-grow'])) .
+                Html::tag('div', attributes: ['class' => 'activity-container']),
             )
             ->additionalButtonsHtml(fn() => $this->_additionalButtons(
                 $element,
@@ -550,7 +552,7 @@ class ElementsController extends Controller
         // Screen prep
         $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? ElementHelper::postEditUrl($element);
 
-        $this->getView()->registerJsWithVars(fn(
+        AssetRegistry::jsWithVars(fn(
             $elementType,
             $elementId,
             $draftId,
@@ -577,7 +579,7 @@ JS, [
             $element->revisionId,
             $element->siteId,
             $redirectUrl,
-        ], View::POS_END);
+        ], Position::Body);
 
         [$docTitle, $title] = $this->_editElementTitles($element);
 
@@ -1144,13 +1146,13 @@ JS, [
         $settings = $jsSettingsFn($form);
 
         if ($this->_isSlideout()) {
-            $this->view->registerJsWithVars(fn($settings) => <<<JS
+            AssetRegistry::jsWithVars(fn($settings) => <<<JS
 $('#$containerId').data('elementEditorSettings', $settings)
 JS, [
                 $settings,
             ]);
         } else {
-            $this->view->registerJsWithVars(fn($settings) => <<<JS
+            AssetRegistry::jsWithVars(fn($settings) => <<<JS
 new Craft.ElementEditor($('#$containerId'), $settings)
 JS, [
                 $settings,

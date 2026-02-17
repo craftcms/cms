@@ -7,11 +7,11 @@
 
 namespace craft\web\twig;
 
-use Craft;
 use craft\helpers\Cp;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use Illuminate\Foundation\ViteException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Vite;
@@ -76,7 +76,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
                 ->toHtml();
         } catch (ViteException $e) {
             if (Cms::config()->devMode) {
-                Craft::$app->getView()->registerJsWithVars(fn($message) => "console.error($message)", [
+                AssetRegistry::jsWithVars(fn($message) => "console.error($message)", [
                     'message' => $e->getMessage(),
                 ]);
             }

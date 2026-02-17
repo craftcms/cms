@@ -13,6 +13,7 @@ use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Condition\Events\RegisterConditionRules;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
@@ -244,10 +245,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
     public function getBuilderHtml(): string
     {
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(fn ($id) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id) => <<<JS
 Craft.initUiElements('#' + $id);
-JS, [InputNamespace::namespaceInputId($this->id)]);
+JS, [InputNamespace::namespaceId($this->id)]);
 
         return Html::tag($this->mainTag, $this->getBuilderInnerHtml(), [
             'id' => $this->id,
@@ -259,7 +259,7 @@ JS, [InputNamespace::namespaceInputId($this->id)]);
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(ConditionBuilderAsset::class);
-        $namespacedId = InputNamespace::namespaceInputId($this->id);
+        $namespacedId = InputNamespace::namespaceId($this->id);
 
         return InputNamespace::namespaceInputs(function () use ($view, $namespacedId, $autofocusAddButton) {
             $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
@@ -268,7 +268,7 @@ JS, [InputNamespace::namespaceInputId($this->id)]);
             $ruleNum = 1;
 
             // Start rule js buffer
-            $view->startJsBuffer();
+            AssetRegistry::startJsBuffer();
 
             $html = Html::beginTag('div', [
                 'class' => ['condition-main'],
@@ -276,7 +276,7 @@ JS, [InputNamespace::namespaceInputId($this->id)]);
                     'ext' => 'craft-cp, craft-condition',
                     'target' => "#$namespacedId", // replace self
                     'include' => "#$namespacedId", // In case we are in a non form container
-                    'indicator' => sprintf('#%s', InputNamespace::namespaceInputId("$this->id-spinner")),
+                    'indicator' => sprintf('#%s', InputNamespace::namespaceId("$this->id-spinner")),
                 ],
                 'data' => [
                     'condition-config' => Json::encode(array_merge($this->getBuilderConfig(), [
@@ -365,7 +365,7 @@ JS, [InputNamespace::namespaceInputId($this->id)]);
                 $ruleNum++;
             }
 
-            $rulesJs = $view->clearJsBuffer(false);
+            $rulesJs = AssetRegistry::clearJsBuffer(false);
 
             // Sortable rules div
             $html .= Html::tag('div', $allRulesHtml, [
@@ -405,7 +405,7 @@ JS, [InputNamespace::namespaceInputId($this->id)]);
                 if ($isHtmxRequest) {
                     $html .= html::tag('script', $rulesJs, ['type' => 'text/javascript']);
                 } else {
-                    $view->registerJs($rulesJs);
+                    AssetRegistry::js($rulesJs);
                 }
             }
 
@@ -423,7 +423,7 @@ JS, [InputNamespace::namespaceInputId($this->id)]);
                     ]);
                 }
             } else {
-                $view->registerJsWithVars(
+                AssetRegistry::jsWithVars(
                     fn ($containerSelector) => <<<JS
 htmx.process(htmx.find($containerSelector))
 htmx.trigger(htmx.find($containerSelector), 'htmx:load')
@@ -500,7 +500,7 @@ JS,
 
         foreach ($groupedRuleTypeOptions as $groupLabel => $groupRuleTypeOptions) {
             if ($groupLabel !== '__UNGROUPED__') {
-                $optionsHtml .= Html::tag('hr', options: ['class' => 'padded']).
+                $optionsHtml .= Html::tag('hr', attributes: ['class' => 'padded']).
                     Html::tag('h6', Html::encode($groupLabel), ['class' => 'padded']);
             }
             $groupRuleTypeOptions = Collection::make($groupRuleTypeOptions)
@@ -536,8 +536,7 @@ JS,
         $menuId = "$this->id-type-menu";
         $inputId = "$this->id-type-input";
 
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(
+        AssetRegistry::jsWithVars(
             fn ($buttonId, $inputId) => <<<JS
 Garnish.requestAnimationFrame(() => {
   const \$button = $('#' + $buttonId);
@@ -551,8 +550,8 @@ Garnish.requestAnimationFrame(() => {
 });
 JS,
             [
-                InputNamespace::namespaceInputId($buttonId),
-                InputNamespace::namespaceInputId($inputId),
+                InputNamespace::namespaceId($buttonId),
+                InputNamespace::namespaceId($inputId),
             ]
         );
 

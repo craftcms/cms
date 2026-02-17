@@ -20,10 +20,10 @@ final class TemplateHooks
      * current Twig context by reference and may return HTML to output.
      *
      * @param  string  $hook  The hook name.
-     * @param  callable  $handler  Callback: fn(array &$context, bool &$handled): ?string
+     * @param  callable|class-string<object&callable>  $handler  Callback: fn(array &$context, bool &$handled): ?string
      * @param  bool  $append  Whether to append (true) or prepend (false) the handler.
      */
-    public function register(string $hook, callable $handler, bool $append = true): void
+    public function register(string $hook, callable|string $handler, bool $append = true): void
     {
         if ($append || empty($this->hooks[$hook])) {
             $this->hooks[$hook][] = $handler;
@@ -52,6 +52,10 @@ final class TemplateHooks
         $handled = false;
 
         foreach ($this->hooks[$hook] ?? [] as $handler) {
+            if (is_string($handler)) {
+                $handler = app()->make($handler);
+            }
+
             $return .= $handler($context, $handled);
 
             if ($handled) {

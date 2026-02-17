@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Field;
 use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Data\OptionData;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
@@ -46,7 +47,7 @@ final class Checkboxes extends BaseOptionsField
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if (! $this->customOptions && Collection::make($value)->contains(fn (OptionData $option) => ! $option->valid)) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+            DeltaRegistry::setInitialValue($this->handle, null);
         }
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxGroup.twig', [

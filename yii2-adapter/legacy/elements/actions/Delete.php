@@ -14,6 +14,7 @@ use craft\base\NestedElementInterface;
 use craft\services\Elements;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -75,7 +76,7 @@ class Delete extends ElementAction implements DeleteActionInterface
     public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per canDelete()
-        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+        AssetRegistry::jsWithVars(fn($type) => <<<JS
 (() => {
   new Craft.ElementActionTrigger({
     type: $type,

@@ -10,6 +10,7 @@ use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
@@ -36,7 +37,7 @@ final readonly class PasskeysController
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(PasskeySetupAsset::class);
-        $view->registerJs(<<<'JS'
+        AssetRegistry::js(<<<'JS'
 new Craft.PasskeySetup();
 JS);
 

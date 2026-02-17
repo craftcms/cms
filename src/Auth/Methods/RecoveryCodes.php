@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Auth\Methods;
 use Craft;
 use craft\web\assets\recoverycodes\RecoveryCodesAsset;
 use CraftCms\Cms\Auth\Models\RecoveryCodes as RecoveryCodesModel;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use InvalidArgumentException;
 use PragmaRX\Recovery\Recovery;
 
@@ -33,7 +34,7 @@ final class RecoveryCodes extends BaseAuthMethod
     {
         $view = Craft::$app->getView();
 
-        $view->registerJsWithVars(fn ($containerId) => <<<JS
+        AssetRegistry::jsWithVars(fn ($containerId) => <<<JS
 new Craft.RecoveryCodesSetup($containerId)
 JS, [$containerId]);
 

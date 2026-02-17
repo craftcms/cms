@@ -454,7 +454,7 @@ describe('per-key buffer: startBuffer and clearBuffer', function () {
         $this->registry->js('var during = 1');
         $captured = $this->registry->clearBuffer('js');
 
-        expect($captured['js'])->toHaveKey(Position::Body->value)
+        expect($captured)->toHaveKey(Position::Body->value)
             ->and($this->registry->bodyHtml())->toContain('var before = 1;')
             ->and($this->registry->bodyHtml())->not->toContain('var during = 1;');
     });
@@ -466,7 +466,7 @@ describe('per-key buffer: startBuffer and clearBuffer', function () {
         $this->registry->css('.during { color: blue }');
         $captured = $this->registry->clearBuffer('css');
 
-        expect($captured['css'])->not->toBeEmpty()
+        expect($captured)->not->toBeEmpty()
             ->and($this->registry->headHtml())->toContain('.before')
             ->and($this->registry->headHtml())->not->toContain('.during');
     });
@@ -498,12 +498,12 @@ describe('per-key buffer: startBuffer and clearBuffer', function () {
         $middleCaptured = $this->registry->clearBuffer('js');
 
         // Inner buffer captured only inner content
-        $innerValues = implode('', array_map(fn ($entries) => implode('', $entries), $innerCaptured['js']));
+        $innerValues = implode('', array_map(fn ($entries) => implode('', $entries), $innerCaptured));
         expect($innerValues)->toContain('var inner = 1;')
             ->and($innerValues)->not->toContain('var middle = 1;');
 
         // Middle buffer captured only middle content
-        $middleValues = implode('', array_map(fn ($entries) => implode('', $entries), $middleCaptured['js']));
+        $middleValues = implode('', array_map(fn ($entries) => implode('', $entries), $middleCaptured));
         expect($middleValues)->toContain('var middle = 1;')
             ->and($middleValues)->not->toContain('var outer = 1;');
 
@@ -545,8 +545,38 @@ describe('per-key buffer: startBuffer and clearBuffer', function () {
         $captured = $this->registry->clearBuffer('js');
 
         // Captures current state and resets to empty
-        expect($captured['js'])->not->toBeEmpty()
+        expect($captured)->not->toBeEmpty()
             ->and($this->registry->bodyHtml())->toBe('');
+    });
+
+    it('returns the captured state directly when called with a single key', function () {
+        $this->registry->startBuffer('js');
+        $this->registry->js('var x = 1');
+        $captured = $this->registry->clearBuffer('js');
+
+        // Single key: returns the value directly (position-keyed array), not wrapped in ['js' => ...]
+        expect($captured)->toBeArray()
+            ->and($captured)->toHaveKey(Position::Body->value)
+            ->and($captured)->not->toHaveKey('js');
+    });
+
+    it('returns a keyed array when called with multiple keys', function () {
+        $this->registry->startBuffer(['js', 'css']);
+        $this->registry->js('var x = 1');
+        $this->registry->css('.foo {}');
+        $captured = $this->registry->clearBuffer(['js', 'css']);
+
+        // Multiple keys: returns ['js' => ..., 'css' => ...]
+        expect($captured)->toBeArray()
+            ->and($captured)->toHaveKeys(['js', 'css'])
+            ->and($captured['js'])->toHaveKey(Position::Body->value);
+    });
+
+    it('returns an empty array when nothing was registered during a single-key buffer', function () {
+        $this->registry->startBuffer('js');
+        $captured = $this->registry->clearBuffer('js');
+
+        expect($captured)->toBe([]);
     });
 });
 
@@ -556,7 +586,7 @@ describe('applyBuffer', function () {
         $this->registry->js('var buffered = 1');
         $captured = $this->registry->clearBuffer('js');
 
-        $this->registry->applyBuffer($captured);
+        $this->registry->applyBuffer(['js' => $captured]);
 
         expect($this->registry->bodyHtml())->toContain('var buffered = 1;');
     });
@@ -568,7 +598,7 @@ describe('applyBuffer', function () {
         $this->registry->js('var buffered = 1');
         $captured = $this->registry->clearBuffer('js');
 
-        $this->registry->applyBuffer($captured);
+        $this->registry->applyBuffer(['js' => $captured]);
 
         $body = $this->registry->bodyHtml();
 
@@ -584,7 +614,7 @@ describe('applyBuffer', function () {
         $this->registry->css('.buffered {}');
         $captured = $this->registry->clearBuffer('css');
 
-        $this->registry->applyBuffer($captured);
+        $this->registry->applyBuffer(['css' => $captured]);
 
         $head = $this->registry->headHtml();
 
@@ -616,7 +646,7 @@ describe('applyBuffer', function () {
         $this->registry->jsImport('buffered', '/buffered.js');
         $captured = $this->registry->clearBuffer('jsImports');
 
-        $this->registry->applyBuffer($captured);
+        $this->registry->applyBuffer(['jsImports' => $captured]);
 
         $head = $this->registry->headHtml();
 
@@ -632,7 +662,7 @@ describe('applyBuffer', function () {
         $this->registry->metaTag(['name' => 'buffered', 'content' => 'yes'], 'buffered');
         $captured = $this->registry->clearBuffer('metaTags');
 
-        $this->registry->applyBuffer($captured);
+        $this->registry->applyBuffer(['metaTags' => $captured]);
 
         $head = $this->registry->headHtml();
 
@@ -645,7 +675,7 @@ describe('applyBuffer', function () {
 describe('translations', function () {
     it('does not register JS when no messages have translations', function () {
         // When the message equals its translation, nothing should be registered
-        $this->registry->translations('app', ['untranslated-key-that-will-not-exist']);
+        $this->registry->translations(['untranslated-key-that-will-not-exist'], 'app');
 
         expect($this->registry->headHtml())->toBe('')
             ->and($this->registry->bodyHtml())->toBe('');
@@ -654,7 +684,7 @@ describe('translations', function () {
     it('registers translation JS at body position', function () {
         // Since translations use t() which may return the same string in test env,
         // we verify the position is Body by checking the method doesn't pollute Head
-        $this->registry->translations('app', ['some-message']);
+        $this->registry->translations(['some-message'], 'app');
 
         // Whether or not translations were found, head should not have translation JS
         expect($this->registry->headHtml())->not->toContain('Craft.translations');
@@ -675,8 +705,8 @@ describe('icons', function () {
         $this->registry->icons(['heart', 'moon']);
         $captured = $this->registry->clearBuffer('icons');
 
-        expect($captured['icons'])->toEqualCanonicalizing(['heart', 'star', 'moon'])
-            ->and($captured['icons'])->toHaveCount(3);
+        expect($captured)->toEqualCanonicalizing(['heart', 'star', 'moon'])
+            ->and($captured)->toHaveCount(3);
     });
 });
 
@@ -691,8 +721,8 @@ describe('buffer with head and body position separation', function () {
         $captured = $this->registry->clearBuffer('js');
 
         // Both head and body positions captured
-        expect($captured['js'])->toHaveKey(Position::Head->value)
-            ->and($captured['js'])->toHaveKey(Position::Body->value);
+        expect($captured)->toHaveKey(Position::Head->value)
+            ->and($captured)->toHaveKey(Position::Body->value);
 
         // Pre-buffer state restored
         expect($this->registry->headHtml())->toContain('headBefore')
@@ -705,8 +735,8 @@ describe('buffer with head and body position separation', function () {
         $this->registry->script('bodyScript()', Position::Body);
         $captured = $this->registry->clearBuffer('scripts');
 
-        expect($captured['scripts'])->toHaveKey(Position::Head->value)
-            ->and($captured['scripts'])->toHaveKey(Position::Body->value);
+        expect($captured)->toHaveKey(Position::Head->value)
+            ->and($captured)->toHaveKey(Position::Body->value);
     });
 
     it('buffers jsFiles at both positions', function () {
@@ -715,8 +745,8 @@ describe('buffer with head and body position separation', function () {
         $this->registry->jsFile('/body.js');
         $captured = $this->registry->clearBuffer('jsFiles');
 
-        expect($captured['jsFiles'])->toHaveKey(Position::Head->value)
-            ->and($captured['jsFiles'])->toHaveKey(Position::Body->value);
+        expect($captured)->toHaveKey(Position::Head->value)
+            ->and($captured)->toHaveKey(Position::Body->value);
     });
 
     it('buffers html at both positions', function () {
@@ -725,8 +755,8 @@ describe('buffer with head and body position separation', function () {
         $this->registry->html('<div>body</div>', Position::Body);
         $captured = $this->registry->clearBuffer('html');
 
-        expect($captured['html'])->toHaveKey(Position::Head->value)
-            ->and($captured['html'])->toHaveKey(Position::Body->value);
+        expect($captured)->toHaveKey(Position::Head->value)
+            ->and($captured)->toHaveKey(Position::Body->value);
     });
 });
 
@@ -797,9 +827,9 @@ describe('deeply nested buffers', function () {
         $level1 = $this->registry->clearBuffer('js');
 
         // Each level captured only its own content
-        $l3Values = implode('', array_map(fn ($e) => implode('', $e), $level3['js']));
-        $l2Values = implode('', array_map(fn ($e) => implode('', $e), $level2['js']));
-        $l1Values = implode('', array_map(fn ($e) => implode('', $e), $level1['js']));
+        $l3Values = implode('', array_map(fn ($e) => implode('', $e), $level3));
+        $l2Values = implode('', array_map(fn ($e) => implode('', $e), $level2));
+        $l1Values = implode('', array_map(fn ($e) => implode('', $e), $level1));
 
         expect($l3Values)->toContain('level3')
             ->and($l3Values)->not->toContain('level2')
@@ -834,15 +864,216 @@ describe('mixed buffer types at different nesting depths', function () {
         $jsCaptured = $this->registry->clearBuffer('js');
 
         // CSS captured only cssInner
-        expect(implode('', $cssCaptured['css']))->toContain('.cssInner');
+        expect(implode('', $cssCaptured))->toContain('.cssInner');
 
         // JS captured both jsInner and jsAlsoInner (both registered during JS buffer)
-        $jsValues = implode('', array_map(fn ($e) => implode('', $e), $jsCaptured['js']));
+        $jsValues = implode('', array_map(fn ($e) => implode('', $e), $jsCaptured));
         expect($jsValues)->toContain('jsInner')
             ->and($jsValues)->toContain('jsAlsoInner');
 
         // Originals restored
         expect($this->registry->bodyHtml())->toContain('var jsOuter = 1;')
             ->and($this->registry->headHtml())->toContain('.cssOuter');
+    });
+});
+
+describe('startCssBuffer / clearCssBuffer', function () {
+    it('captures and restores inline CSS', function () {
+        $this->registry->css('.before {}');
+
+        $this->registry->startCssBuffer();
+        $this->registry->css('.during {}');
+        $captured = $this->registry->clearCssBuffer();
+
+        expect($captured)->not->toBeEmpty()
+            ->and($this->registry->headHtml())->toContain('.before')
+            ->and($this->registry->headHtml())->not->toContain('.during');
+    });
+});
+
+describe('startCssFileBuffer / clearCssFileBuffer', function () {
+    it('captures and restores CSS file registrations', function () {
+        $this->registry->cssFile('/before.css');
+
+        $this->registry->startCssFileBuffer();
+        $this->registry->cssFile('/during.css');
+        $captured = $this->registry->clearCssFileBuffer();
+
+        expect($captured)->not->toBeEmpty()
+            ->and($this->registry->headHtml())->toContain('/before.css')
+            ->and($this->registry->headHtml())->not->toContain('/during.css');
+    });
+});
+
+describe('startHtmlBuffer / clearHtmlBuffer', function () {
+    it('captures and restores HTML registrations', function () {
+        $this->registry->html('<div>before</div>');
+
+        $this->registry->startHtmlBuffer();
+        $this->registry->html('<div>during</div>');
+        $captured = $this->registry->clearHtmlBuffer();
+
+        expect($captured)->not->toBeEmpty()
+            ->and($this->registry->bodyHtml())->toContain('<div>before</div>')
+            ->and($this->registry->bodyHtml())->not->toContain('<div>during</div>');
+    });
+});
+
+describe('startJsBuffer / clearJsBuffer', function () {
+    it('captures and restores inline JS', function () {
+        $this->registry->js('var before = 1');
+
+        $this->registry->startJsBuffer();
+        $this->registry->js('var during = 1');
+        $result = $this->registry->clearJsBuffer(scriptTag: false);
+
+        expect($result)->toContain('var during = 1;')
+            ->and($this->registry->bodyHtml())->toContain('var before = 1;')
+            ->and($this->registry->bodyHtml())->not->toContain('var during = 1;');
+    });
+});
+
+describe('startJsFileBuffer / clearJsFileBuffer', function () {
+    it('captures and restores JS file registrations', function () {
+        $this->registry->jsFile('/before.js');
+
+        $this->registry->startJsFileBuffer();
+        $this->registry->jsFile('/during.js');
+        $captured = $this->registry->clearJsFileBuffer();
+
+        expect($captured)->not->toBeEmpty()
+            ->and($this->registry->bodyHtml())->toContain('/before.js')
+            ->and($this->registry->bodyHtml())->not->toContain('/during.js');
+    });
+});
+
+describe('startJsImportBuffer / clearJsImportBuffer', function () {
+    it('captures and restores JS import registrations', function () {
+        $this->registry->jsImport('before', '/before.js');
+
+        $this->registry->startJsImportBuffer();
+        $this->registry->jsImport('during', '/during.js');
+        $captured = $this->registry->clearJsImportBuffer();
+
+        expect($captured)->toHaveKey('during')
+            ->and($this->registry->headHtml())->toContain('"before"')
+            ->and($this->registry->headHtml())->not->toContain('"during"');
+    });
+});
+
+describe('startMetaTagBuffer / clearMetaTagBuffer', function () {
+    it('captures and restores meta tag registrations', function () {
+        $this->registry->metaTag(['name' => 'before', 'content' => 'yes'], 'before');
+
+        $this->registry->startMetaTagBuffer();
+        $this->registry->metaTag(['name' => 'during', 'content' => 'yes'], 'during');
+        $captured = $this->registry->clearMetaTagBuffer();
+
+        expect($captured)->toHaveKey('during')
+            ->and($this->registry->headHtml())->toContain('name="before"')
+            ->and($this->registry->headHtml())->not->toContain('name="during"');
+    });
+});
+
+describe('startScriptBuffer / clearScriptBuffer', function () {
+    it('captures and restores script registrations', function () {
+        $this->registry->script('before()');
+
+        $this->registry->startScriptBuffer();
+        $this->registry->script('during()');
+        $captured = $this->registry->clearScriptBuffer();
+
+        expect($captured)->not->toBeEmpty()
+            ->and($this->registry->bodyHtml())->toContain('before()')
+            ->and($this->registry->bodyHtml())->not->toContain('during()');
+    });
+});
+
+describe('clearJsBuffer', function () {
+    it('returns combined JS wrapped in a script tag by default', function () {
+        $this->registry->startBuffer('js');
+        $this->registry->js('var x = 1');
+        $this->registry->js('var y = 2');
+
+        $result = $this->registry->clearJsBuffer();
+
+        expect($result)->toBeString()
+            ->and($result)->toContain('<script type="text/javascript">')
+            ->and($result)->toContain('var x = 1;')
+            ->and($result)->toContain('var y = 2;');
+    });
+
+    it('returns combined JS without script tag when scriptTag is false', function () {
+        $this->registry->startBuffer('js');
+        $this->registry->js('var x = 1');
+        $this->registry->js('var y = 2');
+
+        $result = $this->registry->clearJsBuffer(scriptTag: false);
+
+        expect($result)->toBeString()
+            ->and($result)->not->toContain('<script')
+            ->and($result)->toContain('var x = 1;')
+            ->and($result)->toContain('var y = 2;');
+    });
+
+    it('combines JS from both head and body positions', function () {
+        $this->registry->startBuffer('js');
+        $this->registry->js('var headJs = 1', Position::Head);
+        $this->registry->js('var bodyJs = 2', Position::Body);
+
+        $result = $this->registry->clearJsBuffer(scriptTag: false);
+
+        expect($result)->toBeString()
+            ->and($result)->toContain('var headJs = 1;')
+            ->and($result)->toContain('var bodyJs = 2;');
+    });
+
+    it('returns position-keyed array when combine is false', function () {
+        $this->registry->startBuffer('js');
+        $this->registry->js('var headJs = 1', Position::Head);
+        $this->registry->js('var bodyJs = 2', Position::Body);
+
+        $result = $this->registry->clearJsBuffer(scriptTag: false, combine: false);
+
+        expect($result)->toBeArray()
+            ->and($result)->toHaveKey(Position::Head->value)
+            ->and($result)->toHaveKey(Position::Body->value)
+            ->and($result[Position::Head->value])->toContain('var headJs = 1;')
+            ->and($result[Position::Body->value])->toContain('var bodyJs = 2;');
+    });
+
+    it('wraps each position in script tags when combine is false and scriptTag is true', function () {
+        $this->registry->startBuffer('js');
+        $this->registry->js('var headJs = 1', Position::Head);
+        $this->registry->js('var bodyJs = 2', Position::Body);
+
+        $result = $this->registry->clearJsBuffer(scriptTag: true, combine: false);
+
+        expect($result)->toBeArray()
+            ->and($result[Position::Head->value])->toContain('<script type="text/javascript">')
+            ->and($result[Position::Head->value])->toContain('var headJs = 1;')
+            ->and($result[Position::Body->value])->toContain('<script type="text/javascript">')
+            ->and($result[Position::Body->value])->toContain('var bodyJs = 2;');
+    });
+
+    it('returns an empty string when buffer has no JS', function () {
+        $this->registry->startBuffer('js');
+
+        $result = $this->registry->clearJsBuffer();
+
+        expect($result)->toBe('');
+    });
+
+    it('restores previous JS state after clearing the buffer', function () {
+        $this->registry->js('var outer = 1');
+
+        $this->registry->startBuffer('js');
+        $this->registry->js('var inner = 2');
+        $this->registry->clearJsBuffer();
+
+        $body = $this->registry->bodyHtml();
+
+        expect($body)->toContain('var outer = 1;')
+            ->and($body)->not->toContain('var inner = 2;');
     });
 });

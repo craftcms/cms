@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests;
 
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Config;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -23,6 +25,9 @@ class UnitTestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
+
+        Edition::set(Edition::Pro);
+        TemplateMode::set(TemplateMode::Cp);
 
         app()->setLocale('en-US');
 

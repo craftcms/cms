@@ -16,7 +16,7 @@ final class InputNamespace
      * Returns the active namespace.
      *
      * This is the default namespace that will be used when {@see namespaceInputs()}, {@see namespaceInputName()},
-     * and {@see namespaceInputId()} are called, if their $namespace arguments are null.
+     * and {@see namespaceId()} are called, if their $namespace arguments are null.
      */
     public function get(): ?string
     {
@@ -27,7 +27,7 @@ final class InputNamespace
      * Sets the active namespace.
      *
      * This is the default namespace that will be used when {@see namespaceInputs()}, {@see namespaceInputName()},
-     * and {@see namespaceInputId()} are called, if their `$namespace` arguments are null.
+     * and {@see namespaceId()} are called, if their `$namespace` arguments are null.
      *
      * @param  string|null  $namespace  The new namespace. Set to null to remove the namespace.
      */
@@ -184,7 +184,7 @@ final class InputNamespace
      * @param  string|null  $namespace  The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @return string The namespaced input ID.
      */
-    public function namespaceInputId(string $inputId, ?string $namespace = null): string
+    public function namespaceId(string $inputId, ?string $namespace = null): string
     {
         if ($inputId === '') {
             return $inputId;

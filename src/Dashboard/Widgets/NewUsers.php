@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use Craft;
 use craft\web\assets\newusers\NewUsersAsset;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Json;
@@ -78,7 +79,7 @@ final class NewUsers extends Widget
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(NewUsersAsset::class);
-        $view->registerJs('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
+        AssetRegistry::js('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
 
         return '';
     }

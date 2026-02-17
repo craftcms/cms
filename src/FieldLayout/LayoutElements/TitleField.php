@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -68,14 +68,12 @@ class TitleField extends TextField
             ! $static &&
             (! isset($element->slug) || ElementHelper::isTempSlug($element->slug))
         ) {
-            $view = Craft::$app->getView();
-
             $language = $element->getSite()->getLanguage();
             $charMap = $language !== app()->getLocale()
                 ? Str::asciiCharMap(true, $language)
                 : null;
 
-            $view->registerJsWithVars(fn ($titleId, $slugId, $charMap) => <<<JS
+            AssetRegistry::jsWithVars(fn ($titleId, $slugId, $charMap) => <<<JS
 (() => {
   const slugInput = $('#' + $slugId);
   if (slugInput.length && !slugInput.val().length) {
@@ -85,8 +83,8 @@ class TitleField extends TextField
   }
 })();
 JS, [
-                InputNamespace::namespaceInputId($this->id()),
-                InputNamespace::namespaceInputId('slug'),
+                InputNamespace::namespaceId($this->id()),
+                InputNamespace::namespaceId('slug'),
                 $charMap,
             ]);
         }

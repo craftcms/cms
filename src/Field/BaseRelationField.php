@@ -36,7 +36,9 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -528,18 +530,18 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         $variables = $this->settingsTemplateVariables();
         $view = Craft::$app->getView();
 
-        $view->registerJsWithVars(fn ($args) => <<<JS
+        AssetRegistry::jsWithVars(fn ($args) => <<<JS
 new Craft.ElementFieldSettings(...$args)
 JS, [
             [
                 $this->allowMultipleSources,
-                InputNamespace::namespaceInputId('maintain-hierarchy-field'),
-                InputNamespace::namespaceInputId($this->allowMultipleSources ? 'sources-field' : 'source-field'),
-                InputNamespace::namespaceInputId('branch-limit-field'),
-                InputNamespace::namespaceInputId('min-relations-field'),
-                InputNamespace::namespaceInputId('max-relations-field'),
-                InputNamespace::namespaceInputId('default-placement-field'),
-                InputNamespace::namespaceInputId('viewMode-field'),
+                InputNamespace::namespaceId('maintain-hierarchy-field'),
+                InputNamespace::namespaceId($this->allowMultipleSources ? 'sources-field' : 'source-field'),
+                InputNamespace::namespaceId('branch-limit-field'),
+                InputNamespace::namespaceId('min-relations-field'),
+                InputNamespace::namespaceId('max-relations-field'),
+                InputNamespace::namespaceId('default-placement-field'),
+                InputNamespace::namespaceId('viewMode-field'),
             ],
         ]);
 
@@ -917,7 +919,7 @@ JS, [
 
             if ($initialValue !== null) {
                 // make sure the field gets updated on save, even if it hasn't changed
-                Craft::$app->getView()->setInitialDeltaValue($this->handle, $initialValue);
+                DeltaRegistry::setInitialValue($this->handle, $initialValue);
             }
         }
 

@@ -106,14 +106,12 @@ it('determines if the edition can be upgraded', function () {
     // Not logged in
     expect(Edition::canUpgrade())->toBefalse();
 
-    \CraftCms\Cms\User\Models\User::first()->update(['admin' => false]);
-    actingAs(User::find()->one());
+    actingAs(new User(['admin' => false]));
 
     // Not an admin
     expect(Edition::canUpgrade())->toBefalse();
 
-    \CraftCms\Cms\User\Models\User::first()->update(['admin' => true]);
-    actingAs(User::find()->one());
+    actingAs(new User(['admin' => true]));
 
     expect(Edition::canUpgrade())->toBeTrue();
 

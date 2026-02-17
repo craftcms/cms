@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Responses;
 
 use Craft;
 use craft\web\assets\htmx\HtmxAsset;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -188,8 +189,8 @@ final class CpModalResponse implements Responsable
             'errorSummary' => $errorSummary,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
-            'deltaNames' => $view->getDeltaNames(),
-            'initialDeltaValues' => $view->getInitialDeltaValues(),
+            'deltaNames' => DeltaRegistry::getNames(),
+            'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ]);
     }
 }

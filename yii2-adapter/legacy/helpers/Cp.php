@@ -51,6 +51,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
@@ -406,7 +407,7 @@ class Cp
                 'id' => $component->getId(),
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
-                    'id' => InputNamespace::namespaceInputId($config['id']),
+                    'id' => InputNamespace::namespaceId($config['id']),
                     'hyperlink' => $config['hyperlink'],
                     'showLabel' => $config['showLabel'],
                     'showHandle' => $config['showHandle'],
@@ -681,8 +682,7 @@ class Cp
 
         if ($showEditButton) {
             $editId = sprintf('action-edit-%s', mt_rand());
-            $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn($id, $elementType, $settings, $cpEditUrl) => <<<JS
+            AssetRegistry::jsWithVars(fn($id, $elementType, $settings, $cpEditUrl) => <<<JS
 $('#' + $id).on('activate', (ev) => {
   if ($cpEditUrl && Garnish.isCtrlKeyPressed(ev.originalEvent)) {
     window.open($cpEditUrl)
@@ -700,7 +700,7 @@ $('#' + $id).on('activate', (ev) => {
   }
 });
 JS, [
-                InputNamespace::namespaceInputId($editId),
+                InputNamespace::namespaceId($editId),
                 $element::class,
                 [
                     'elementId' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
@@ -751,7 +751,7 @@ JS, [
                         'hyperlink' => $config['hyperlink'],
                         'selectable' => $config['selectable'],
                         'context' => $config['context'],
-                        'id' => InputNamespace::namespaceInputId($config['id']),
+                        'id' => InputNamespace::namespaceId($config['id']),
                         'ui' => 'card',
                     ] : false,
                 ]),
@@ -1139,7 +1139,7 @@ JS, [
 
     private static function componentCheckboxHtml(string $labelId): string
     {
-        return Html::tag('div', options: [
+        return Html::tag('div', attributes: [
             'class' => 'checkbox',
             'title' => t('Select'),
             'role' => 'checkbox',
@@ -1568,11 +1568,11 @@ JS, [
         $view = Craft::$app->getView();
 
         if ($config['registerJs']) {
-            $view->registerJsWithVars(fn($elementType, $id, $settings) => <<<JS
+            AssetRegistry::jsWithVars(fn($elementType, $id, $settings) => <<<JS
 Craft.createElementIndex($elementType, $('#' + $id), $settings)
 JS, [
                 $elementType,
-                InputNamespace::namespaceInputId($config['id']),
+                InputNamespace::namespaceId($config['id']),
                 array_merge(
                     [
                         'context' => $config['context'],
@@ -1619,7 +1619,7 @@ JS, [
                 'canHaveDrafts' => $elementType::hasDrafts(),
             ], TemplateMode::Cp->value) .
             Html::endTag('div') . // .toolbar
-            Html::tag('div', options: ['class' => 'elements']) .
+            Html::tag('div', attributes: ['class' => 'elements']) .
             Html::endTag('div'); // .main
 
         if (self::contextIsAdministrative($config['context'])) {
@@ -3093,7 +3093,7 @@ JS, [
             ]);
 
         $previewHtml .=
-            Html::tag('div', options: ['class' => 'card-titlebar']) .
+            Html::tag('div', attributes: ['class' => 'card-titlebar']) .
             Html::beginTag('div', ['class' => 'card-main']) .
             Html::beginTag('div', ['class' => 'card-content']) .
             Html::tag('div', $heading, ['class' => 'card-heading']) .
@@ -3215,12 +3215,12 @@ JS, [
             'alwaysShowThumbAlignmentBtns' => $fieldLayout->type::hasThumbs(),
             'readOnly' => $config['disabled'],
         ]);
-        $namespacedId = InputNamespace::namespaceInputId($config['id']);
+        $namespacedId = InputNamespace::namespaceId($config['id']);
 
         $js = <<<JS
 new Craft.FieldLayoutDesigner("#$namespacedId", $jsSettings)
 JS;
-        $view->registerJs($js);
+        AssetRegistry::js($js);
 
         $availableCustomFields = $fieldLayout->getAvailableCustomFields();
         $availableNativeFields = $fieldLayout->getAvailableNativeFields();
@@ -3543,13 +3543,12 @@ JS;
             'static' => $config['disabled'],
         ];
 
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(fn($id, $name, $cols, $settings) => <<<JS
+        AssetRegistry::jsWithVars(fn($id, $name, $cols, $settings) => <<<JS
 (() => {
   new Craft.GeneratedFieldsTable($id, $name, $cols, $settings)
 })();
 JS, [
-            InputNamespace::namespaceInputId($config['id']),
+            InputNamespace::namespaceId($config['id']),
             InputNamespace::namespaceInputName($name),
             $cols,
             $settings,
@@ -3967,7 +3966,7 @@ JS, [
             } else {
                 $svg = Html::svg($icon, true, throwException: true);
             }
-        } catch (InvalidArgumentException|\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException|InvalidArgumentException $e) {
             Log::warning("Could not load icon: {$e->getMessage()}", [__METHOD__]);
             if (!$fallbackLabel) {
                 return '';
@@ -3991,7 +3990,7 @@ JS, [
         // Add attributes for accessibility
         try {
             $svg = Html::modifyTagAttributes($svg, $attributes);
-        } catch (\InvalidArgumentException) {
+        } catch (InvalidArgumentException) {
         }
 
         return $svg;

@@ -114,29 +114,29 @@ describe('namespaceInputName', function () {
 
 describe('namespaceInputId', function () {
     it('normalizes the id when no namespace is set or given', function () {
-        expect($this->inputNamespace->namespaceInputId('my-field'))->toBe('my-field');
+        expect($this->inputNamespace->namespaceId('my-field'))->toBe('my-field');
     });
 
     it('returns empty string unchanged', function () {
         $this->inputNamespace->set('foo');
 
-        expect($this->inputNamespace->namespaceInputId(''))->toBe('');
+        expect($this->inputNamespace->namespaceId(''))->toBe('');
     });
 
     it('uses the explicit namespace over the active one', function () {
         $this->inputNamespace->set('active');
 
-        expect($this->inputNamespace->namespaceInputId('title', 'explicit'))->toBe('explicit-title');
+        expect($this->inputNamespace->namespaceId('title', 'explicit'))->toBe('explicit-title');
     });
 
     it('falls back to the active namespace', function () {
         $this->inputNamespace->set('foo');
 
-        expect($this->inputNamespace->namespaceInputId('title'))->toBe('foo-title');
+        expect($this->inputNamespace->namespaceId('title'))->toBe('foo-title');
     });
 
     it('normalizes special characters in the id', function () {
-        expect($this->inputNamespace->namespaceInputId('foo[bar]', 'ns'))->toBe('ns-foo-bar');
+        expect($this->inputNamespace->namespaceId('foo[bar]', 'ns'))->toBe('ns-foo-bar');
     });
 });
 
