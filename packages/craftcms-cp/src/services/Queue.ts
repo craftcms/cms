@@ -79,7 +79,9 @@ export class QueueService extends EventTarget {
    * Sends a request to execute waiting jobs.
    */
   async runQueue(): Promise<void> {
-    if (!this.enabled) return;
+    if (!this.enabled) {
+      return;
+    }
 
     try {
       const response = await axios.post('/admin/actions/queue/run');

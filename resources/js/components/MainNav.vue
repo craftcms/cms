@@ -37,10 +37,10 @@
       </template>
     </craft-nav-item>
     <cp-queue-indicator
-      .enabled="queue.enabled"
+      :enabled="queue.enabled"
       .displayedJob="queue.displayedJob"
-      .hasReservedJobs="queue.hasReservedJobs"
-      .hasWaitingJobs="queue.hasWaitingJobs"
+      :has-reserved-jobs="queue.hasReservedJobs"
+      :has-waiting-jobs="queue.hasWaitingJobs"
     ></cp-queue-indicator>
   </craft-nav-list>
 </template>

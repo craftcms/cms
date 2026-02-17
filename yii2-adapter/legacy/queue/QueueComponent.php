@@ -20,6 +20,8 @@ use Illuminate\Queue\Failed\FailedJobProviderInterface;
 use Illuminate\Support\Facades\Artisan;
 use yii\base\Component;
 
+use function CraftCms\Cms\t;
+
 /**
  * Provides the Craft::$app->getQueue() API using Laravel's queue system.
  *
@@ -165,7 +167,7 @@ class QueueComponent extends Component implements QueueInterface
             'progress' => $job->progress,
             'progressLabel' => $job->label,
             'label' => $job->label,
-            'description' => $job->description,
+            'description' => t($job->description),
             'error' => $job->error,
         ])->values()->toArray();
     }
