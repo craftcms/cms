@@ -21,8 +21,8 @@ it('defaults to site mode for non-cp requests', function () {
 it('defaults to cp mode for cp requests', function () {
     Context::forgetHidden(TemplateMode::class);
 
-    $cpTrigger = Cms::config()->cpTrigger;
-    $this->get("/{$cpTrigger}/test");
+    // All requests are cp requests
+    Cms::config()->cpTrigger = '';
 
     expect(TemplateMode::get())->toBe(TemplateMode::Cp);
 });

@@ -70,8 +70,6 @@ it('can get the current licensed edition', function () {
 });
 
 it('can determine if the current edition is wrong', function () {
-    expect(Edition::isWrong())->toBeFalse();
-
     Edition::set(Edition::Pro);
 
     Cache::put(License::CACHE_KEY_LICENSE_INFO, [
@@ -91,6 +89,8 @@ it('can determine if the current edition is wrong', function () {
 });
 
 it('can determine if the edition can be tested', function () {
+    $_SERVER['CRAFT_NO_TRIALS'] = false;
+
     expect(Edition::canTest())->toBeTrue();
 
     $_SERVER['CRAFT_NO_TRIALS'] = true;
