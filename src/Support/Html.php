@@ -586,6 +586,11 @@ final class Html
                         }
                     }
 
+                    // Vue prop bindings need values JSON encoded so booleans render as "true"/"false"
+                    if (str_starts_with((string) $name, ':') && is_bool($value)) {
+                        $value = $value ? 'true' : 'false';
+                    }
+
                     $normalized[$name] = $value;
             }
         }
