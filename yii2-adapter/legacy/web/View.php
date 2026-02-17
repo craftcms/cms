@@ -407,7 +407,7 @@ class View extends \yii\web\View
             Log::warning('Twig instantiated before Craft is fully initialized.', [__METHOD__]);
         }
 
-        $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
+        $twig = new Environment(new TemplateLoader(app(TemplateResolver::class)), $this->_getTwigOptions());
 
         // Mark SafeHtml as a safe interface
         $safeClass = SafeHtml::class;
