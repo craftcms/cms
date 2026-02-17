@@ -26,7 +26,7 @@
   }
 
   const showHeader = computed(() => {
-    return (
+    return Boolean(
       slots.header || props.title || slots.title || slots['header-actions']
     );
   });
@@ -76,7 +76,9 @@
             {{ title }}
           </h1>
         </slot>
-        <slot name="header-actions"></slot>
+        <div class="pane__actions">
+          <slot name="header-actions"></slot>
+        </div>
       </div>
     </slot>
 
@@ -123,6 +125,9 @@
   }
 
   .pane__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding-inline: var(--_pane-spacing);
     padding-block: var(--_pane-spacing) 0;
   }

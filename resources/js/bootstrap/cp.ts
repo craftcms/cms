@@ -15,6 +15,7 @@ import Migrations from '@/components/utilities/Migrations.vue';
 import Updates from '@/components/utilities/Updates/Updates.vue';
 import ProjectConfig from '@/components/utilities/ProjectConfig/ProjectConfig.vue';
 import AssetIndexes from '@/components/utilities/AssetIndexes/AssetIndexes.vue';
+import SystemMessages from '@/components/utilities/SystemMessages/SystemMessages.vue';
 
 let bootedCallbacks: Array<(instance: any) => void> = [];
 let bootingCallbacks: Array<(instance: any) => void> = [];
@@ -98,6 +99,7 @@ const Cp = {
         app.component('Updates', Updates);
         app.component('ProjectConfig', ProjectConfig);
         app.component('AssetIndexes', AssetIndexes);
+        app.component('SystemMessages', SystemMessages);
 
         app.mount(el);
       },

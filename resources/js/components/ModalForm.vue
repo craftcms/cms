@@ -30,9 +30,19 @@
 </script>
 
 <template>
-  <Modal :isActive="isActive" :overlay="overlay" @close="emit('close')">
+  <Modal
+    :isActive="isActive"
+    :overlay="overlay"
+    @close="emit('close')"
+    v-bind="$props"
+  >
     <form @submit.prevent="submitHandler">
       <Pane :title="title">
+        <!-- Forward all slots from parent to Pane -->
+        <template v-for="(_, slotName) in $slots" :key="slotName" #[slotName]>
+          <slot :name="slotName"></slot>
+        </template>
+
         <slot></slot>
         <template #secondary-action>
           <craft-button type="reset" @click="emit('close')" appearance="plain">
