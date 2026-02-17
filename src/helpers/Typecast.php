@@ -74,7 +74,7 @@ final class Typecast
 
         switch ($typeName) {
             case self::TYPE_BOOL:
-                if (is_scalar($value)) {
+                if ($value === null || is_scalar($value)) {
                     $value = App::normalizeBooleanValue($value);
                     if ($value === null && !$allowsNull) {
                         $value = false;
