@@ -890,7 +890,7 @@ class App
      */
     public static function isEphemeral(): bool
     {
-        return self::parseBooleanEnv('$CRAFT_EPHEMERAL') === true;
+        return static::normalizeBooleanValue(static::env('CRAFT_EPHEMERAL')) ?? false;
     }
 
     /**
@@ -911,7 +911,7 @@ class App
      */
     public static function isStreamLog(): bool
     {
-        return self::parseBooleanEnv('$CRAFT_STREAM_LOG') === true;
+        return static::normalizeBooleanValue(static::env('CRAFT_STREAM_LOG')) ?? false;
     }
 
     /**
@@ -1258,7 +1258,7 @@ class App
             'parsers' => [
                 'application/json' => JsonParser::class,
             ],
-            'isCpRequest' => static::parseBooleanEnv('$CRAFT_CP'),
+            'isCpRequest' => static::normalizeBooleanValue(static::env('CRAFT_CP')) ?? false,
         ];
 
         if ($generalConfig->trustedHosts !== null) {
