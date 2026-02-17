@@ -388,7 +388,7 @@ class AssetsController extends Controller
         $targetFilename = $this->request->getBodyParam('targetFilename');
 
         if (
-            $$targetFilename &&
+            $targetFilename &&
             (str_contains($targetFilename, '/') || str_contains($targetFilename, '\\'))
         ) {
             throw new BadRequestHttpException('Invalid filename: $targetFilename');
