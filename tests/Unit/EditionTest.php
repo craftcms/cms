@@ -78,6 +78,8 @@ it('can determine if the current edition is wrong', function () {
         ],
     ]);
 
+    $_SERVER['CRAFT_NO_TRIALS'] = false;
+
     expect(Edition::isWrong())->toBeFalse();
 
     $_SERVER['CRAFT_NO_TRIALS'] = true;
