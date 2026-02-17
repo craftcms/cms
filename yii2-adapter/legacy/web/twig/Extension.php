@@ -278,6 +278,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('namespaceAttributes', [Html::class, 'namespaceAttributes'], ['is_safe' => ['html']]),
             new TwigFilter('ns', [InputNamespace::class, 'namespaceInputs'], ['is_safe' => ['html']]),
             new TwigFilter('namespaceInputName', [InputNamespace::class, 'namespaceInputName']),
+            new TwigFilter('namespaceId', [InputNamespace::class, 'namespaceId']),
             new TwigFilter('namespaceInputId', [InputNamespace::class, 'namespaceId']),
             new TwigFilter('number', [$this, 'numberFilter']),
             new TwigFilter('parseAttr', [$this, 'parseAttrFilter']),
