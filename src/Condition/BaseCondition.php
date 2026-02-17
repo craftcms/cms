@@ -357,7 +357,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                             'class' => ['condition-rule', 'flex', 'flex-start', 'draggable'],
                         ]);
                     }, 'conditionRules['.$ruleNum.']');
-                } catch (InvalidConfigException) {
+                } catch (Throwable) {
                     // The rule is misconfigured
                     continue;
                 }
