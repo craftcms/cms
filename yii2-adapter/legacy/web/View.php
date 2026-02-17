@@ -14,22 +14,16 @@ use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\Cp;
-use craft\web\twig\CpExtension;
-use craft\web\twig\Environment;
-use craft\web\twig\Extension;
-use craft\web\twig\FeExtension;
-use craft\web\twig\SafeHtml;
-use craft\web\twig\SecurityPolicy;
-use craft\web\twig\SinglePreloaderExtension;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Twig\TemplateLoader;
+use CraftCms\Cms\Twig\Environment;
+use CraftCms\Cms\Twig\Events\TwigCreated;
 use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\AssetRegistry;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
@@ -38,16 +32,12 @@ use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
-use LogicException;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
-use Twig\Extension\CoreExtension;
 use Twig\Extension\ExtensionInterface;
 use Twig\Extension\SandboxExtension;
-use Twig\Extension\StringLoaderExtension;
-use Twig\Runtime\EscaperRuntime;
 use Twig\Template as TwigTemplate;
 use Twig\TemplateWrapper;
 use yii\base\Arrayable;
@@ -80,6 +70,7 @@ class View extends \yii\web\View
      * @event CreateTwigEvent The event that is triggered when a Twig environment is created.
      * @see createTwig()
      * @since 4.3.0
+     * @deprecated 6.0.0 use {@see TwigCreated} instead.
      */
     public const EVENT_AFTER_CREATE_TWIG = 'afterCreateTwig';
 
@@ -159,43 +150,9 @@ class View extends \yii\web\View
     public bool $allowEval = false;
 
     /**
-     * @var Environment|null The Twig environment instance used for control panel templates
-     */
-    private ?Environment $_cpTwig = null;
-
-    /**
-     * @var Environment|null The Twig environment instance used for site templates
-     */
-    private ?Environment $_siteTwig = null;
-
-    /**
-     * @var array
-     */
-    private array $_twigOptions;
-
-    /**
-     * @var array<class-string<ExtensionInterface>,ExtensionInterface>
-     * @see registerCpTwigExtension()
-     */
-    private array $_cpTwigExtensions = [];
-
-    /**
-     * @var array<class-string<ExtensionInterface>,ExtensionInterface>
-     * @see registerSiteTwigExtension()
-     */
-    private array $_siteTwigExtensions = [];
-
-    /**
-     * @var string[]
-     */
-    private array $_templatePaths = [];
-
-    /**
      * @var TemplateWrapper[]
      */
     private array $_objectTemplates = [];
-
-
 
     /**
      * @var int JS buffer depth counter — tracks nesting level for startJsBuffer/clearJsBuffer.
@@ -370,159 +327,75 @@ class View extends \yii\web\View
      *
      * @param string|null $templateMode
      * @return Environment
+     * @deprecated 6.0.0 use {@see Twig::get()} instead.
      */
     public function getTwig(?string $templateMode = null): Environment
     {
         $mode = TemplateMode::tryFrom($templateMode) ?? TemplateMode::get();
 
-        return $mode === TemplateMode::Cp
-            ? $this->_cpTwig ?? ($this->_cpTwig = $this->createTwig())
-            : $this->_siteTwig ?? ($this->_siteTwig = $this->createTwig());
+        return app(Twig::class)->get($mode);
     }
 
     /**
      * Sets the Twig environment for the current template mode.
      *
      * @param Environment $twig
+     *
      * @since 5.6.0
+     * @deprecated 6.0.0 use {@see Twig::set()} instead.
      */
     public function setTwig(Environment $twig): void
     {
-        if (TemplateMode::is(TemplateMode::Cp)) {
-            $this->_cpTwig = $twig;
-        } else {
-            $this->_siteTwig = $twig;
-        }
+        app(Twig::class)->set($twig);
     }
 
     /**
      * Creates a new Twig environment.
      *
      * @return Environment
+     * @deprecated 6.0.0 use {@see Twig::create()} instead.
      */
     public function createTwig(): Environment
     {
-        // Log a warning if the app isn't fully initialized yet
-        if (!Craft::$app->getIsInitialized()) {
-            Log::warning('Twig instantiated before Craft is fully initialized.', [__METHOD__]);
-        }
-
-        $twig = new Environment(new TemplateLoader(app(TemplateResolver::class)), $this->_getTwigOptions());
-
-        // Mark SafeHtml as a safe interface
-        $safeClass = SafeHtml::class;
-        /** @phpstan-ignore argument.type */
-        $twig->getRuntime(EscaperRuntime::class)->addSafeClass($safeClass, ['html']);
-
-        $twig->addExtension(new StringLoaderExtension());
-        $twig->addExtension(new Extension($this, $twig));
-
-        if (TemplateMode::is(TemplateMode::Cp)) {
-            $twig->addExtension(new CpExtension());
-        } elseif (Cms::isInstalled()) {
-            $twig->addExtension(new FeExtension());
-
-            if (Cms::config()->preloadSingles) {
-                $twig->addExtension(new SinglePreloaderExtension());
-            }
-        }
-
-        // Add plugin-supplied extensions
-        $registeredExtensions = TemplateMode::is(TemplateMode::Cp)
-            ? $this->_cpTwigExtensions
-            : $this->_siteTwigExtensions;
-        foreach ($registeredExtensions as $extension) {
-            $twig->addExtension($extension);
-        }
-
-        // Only register the SandboxExtension if something else hasn't already
-        if (!$twig->hasExtension(SandboxExtension::class)) {
-            $sandboxConfig = config('craft.twig-sandbox', []);
-            $twig->addExtension(new SandboxExtension(new SecurityPolicy(
-                $sandboxConfig['allowedTags'],
-                $sandboxConfig['allowedFilters'],
-                $sandboxConfig['allowedFunctions'],
-                $sandboxConfig['allowedMethods'],
-                $sandboxConfig['allowedProperties'],
-                $sandboxConfig['allowedClasses'],
-            )));
-        }
-
-        // Set our timezone
-        /** @var CoreExtension $core */
-        $core = $twig->getExtension(CoreExtension::class);
-        $core->setTimezone(app()->getTimezone());
-
-        // Fire an 'afterCreateTwig' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_TWIG)) {
-            $this->trigger(self::EVENT_AFTER_CREATE_TWIG, new CreateTwigEvent([
-                'templateMode' => TemplateMode::get()->value,
-                'twig' => $twig,
-            ]));
-        }
-
-        return $twig;
+        return app(Twig::class)->create();
     }
 
     /**
      * Registers a new Twig extension both CP and site templates.
      *
      * @param ExtensionInterface $extension
+     *
+     * @deprecated 6.0.0 use {@see Twig::registerExtension()} instead.
      */
     public function registerTwigExtension(ExtensionInterface $extension): void
     {
-        $this->registerCpTwigExtension($extension);
-        $this->registerSiteTwigExtension($extension);
+        app(Twig::class)->registerExtension($extension);
     }
 
     /**
      * Registers a new Twig extension for CP templates.
      *
      * @param ExtensionInterface $extension
+     *
      * @since 5.5.0
+     * @deprecated 6.0.0 use {@see Twig::registerExtension($extension, TemplateMode::Cp)} instead.
      */
     public function registerCpTwigExtension(ExtensionInterface $extension): void
     {
-        // Make sure this extension isn't already registered
-        $class = get_class($extension);
-        if (isset($this->_cpTwigExtensions[$class])) {
-            return;
-        }
-
-        $this->_cpTwigExtensions[$class] = $extension;
-
-        if (isset($this->_cpTwig)) {
-            try {
-                $this->_cpTwig->addExtension($extension);
-            } catch (LogicException) {
-                $this->_cpTwig = null;
-            }
-        }
+        app(Twig::class)->registerExtension($extension, TemplateMode::Cp);
     }
 
     /**
      * Registers a new Twig extension for site templates.
      *
      * @param ExtensionInterface $extension
+     *
      * @since 5.5.0
+     * @deprecated 6.0.0 use {@see Twig::registerExtension($extension, TemplateMode::Site)} instead.
      */
     public function registerSiteTwigExtension(ExtensionInterface $extension): void
     {
-        // Make sure this extension isn't already registered
-        $class = get_class($extension);
-        if (isset($this->_siteTwigExtensions[$class])) {
-            return;
-        }
-
-        $this->_siteTwigExtensions[$class] = $extension;
-
-        if (isset($this->_siteTwig)) {
-            try {
-                $this->_siteTwig->addExtension($extension);
-            } catch (LogicException) {
-                $this->_siteTwig = null;
-            }
-        }
+        app(Twig::class)->registerExtension($extension, TemplateMode::Site);
     }
 
     /**
@@ -2469,38 +2342,6 @@ JS;
         return $bundle;
     }
 
-    /**
-     * Returns the Twig environment options
-     *
-     * @return array
-     */
-    private function _getTwigOptions(): array
-    {
-        if (isset($this->_twigOptions)) {
-            return $this->_twigOptions;
-        }
-
-        $this->_twigOptions = [
-            // See: https://github.com/twigphp/Twig/issues/1951
-            'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
-            'auto_reload' => true,
-            'charset' => Craft::$app->charset,
-        ];
-
-        $generalConfig = Cms::config();
-
-        if ($generalConfig->headlessMode && Craft::$app->getRequest()->getIsSiteRequest()) {
-            $this->_twigOptions['autoescape'] = 'js';
-        }
-
-        if (app()->hasDebugModeEnabled()) {
-            $this->_twigOptions['debug'] = true;
-            $this->_twigOptions['strict_variables'] = true;
-        }
-
-        return $this->_twigOptions;
-    }
-
     private function resourceHash(string $key): string
     {
         return sprintf('%x', crc32($key));
@@ -2579,6 +2420,17 @@ JS;
             $yiiEvent = new RegisterTemplateRootsEvent();
             YiiEvent::trigger(self::class, self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, $yiiEvent);
             $event->roots = $yiiEvent->roots;
+        });
+
+        Event::listen(function(TwigCreated $event) {
+            if (!YiiEvent::hasHandlers(self::class, self::EVENT_AFTER_CREATE_TWIG)) {
+                return;
+            }
+
+            YiiEvent::trigger(self::class, self::EVENT_AFTER_CREATE_TWIG, new CreateTwigEvent([
+                'templateMode' => $event->templateMode->value,
+                'twig' => $event->twig,
+            ]));
         });
     }
 }
