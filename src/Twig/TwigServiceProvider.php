@@ -18,7 +18,7 @@ final class TwigServiceProvider extends ServiceProvider
         $handler = $this->app->make(ExceptionHandler::class);
 
         if ($handler instanceof Handler) {
-            $handler->map(Exception::class, fn (Exception $e) => $this->app->make(TwigMapper::class)->map($e));
+            $handler->map(Exception::class, fn (Exception $e) => $this->app->make(TwigExceptionMapper::class)->map($e));
         }
     }
 }
