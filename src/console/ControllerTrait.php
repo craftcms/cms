@@ -184,7 +184,7 @@ MD
      */
     protected function checkRootUser(): bool
     {
-        if (App::isWindows() || !function_exists('exec') || App::env('CRAFT_ALLOW_SUPERUSER')) {
+        if (App::isWindows() || !function_exists('exec') || App::normalizeBooleanValue(App::env('CRAFT_ALLOW_SUPERUSER'))) {
             return true;
         }
 
