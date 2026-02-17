@@ -5,6 +5,8 @@
 - The `nb` locale is now treated as a fallback for `no` on environments where `no` isn’t supported. ([#18431](https://github.com/craftcms/cms/pull/18431))
 - Element indexes now show “Paste” buttons alongside bulk element action buttons. ([#18427](https://github.com/craftcms/cms/issues/18427))
 - Impoved the performance of `craft\helpers\Typecast`. ([#18426](https://github.com/craftcms/cms/pull/18426))
+- Added `craft\events\ExecuteGqlQueryEvent::$cacheDuration`. ([#18442](https://github.com/craftcms/cms/discussions/18442))
+- Added `craft\events\ExecuteGqlQueryEvent::$cacheTags`. ([#18442](https://github.com/craftcms/cms/discussions/18442))
 - Added `craft\web\Request::getWantsImage()`.
 - Added `craft\web\Request::getWantsJson()`.
 - Added `craft\web\Request::wants()`.
