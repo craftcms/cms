@@ -143,6 +143,16 @@ class AppHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider normalizeBooleanValueDataProvider
+     * @param bool|null $expected
+     * @param mixed $value
+     */
+    public function testNormalizeBooleanEnv(?bool $expected, mixed $value): void
+    {
+        self::assertSame($expected, App::normalizeBooleanValue($value));
+    }
+
+    /**
      *
      */
     public function testCliOption(): void
@@ -460,12 +470,17 @@ class AppHelperTest extends TestCase
             [true, true],
             [false, false],
             [true, 'yes'],
+            [true, 'YES'],
             [false, 'no'],
+            [true, 'ON'],
             [true, 'on'],
+            [false, 'OFF'],
             [false, 'off'],
+            [true, 'TRUE'],
             [true, '1'],
             [false, '0'],
             [true, 'true'],
+            [false, 'FALSE'],
             [false, 'false'],
             [null, ''],
             [null, 'whatever'],
@@ -479,10 +494,51 @@ class AppHelperTest extends TestCase
                 ['TEST_FALSE' => 'false'],
             ],
             [
+                false,
+                '$TEST_FALSE',
+                ['TEST_FALSE' => 'FALSE'],
+            ],
+            [
                 true,
                 '$TEST_TRUE',
                 ['TEST_TRUE' => 'true'],
             ],
+            [
+                true,
+                '$TEST_TRUE',
+                ['TEST_TRUE' => 'TRUE'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function normalizeBooleanValueDataProvider(): array
+    {
+        return [
+            [true, true],
+            [false, false],
+            [true, 'yes'],
+            [true, 'YES'],
+            [false, 'no'],
+            [false, 'no'],
+            [true, 'ON'],
+            [true, 'on'],
+            [false, 'off'],
+            [false, 'OFF'],
+            [true, '1'],
+            [false, '0'],
+            [true, 'true'],
+            [true, 'TRUE'],
+            [false, 'false'],
+            [false, 'FALSE'],
+            [null, ''],
+            [null, 'whatever'],
+            [true, 1],
+            [false, 0],
+            [null, 2],
+            [null, null],
         ];
     }
 

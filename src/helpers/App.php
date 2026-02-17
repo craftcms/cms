@@ -272,23 +272,11 @@ class App
      */
     public static function parseBooleanEnv(mixed $value): ?bool
     {
-        if (is_bool($value)) {
-            return $value;
+        if (is_string($value)) {
+            $value = static::parseEnv($value);
         }
 
-        if ($value === 0 || $value === 1) {
-            return (bool)$value;
-        }
-
-        if (!is_string($value) || $value === '') {
-            return null;
-        }
-
-        $value = static::parseEnv($value);
-        if ($value === null) {
-            return null;
-        }
-        return filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        return static::normalizeBooleanValue($value);
     }
 
     /**
@@ -492,6 +480,32 @@ class App
         }
 
         return $value;
+    }
+
+    /**
+     * Normalizes a boolean environment variable/constant name/CLI command option.
+     *
+     * Truthy/falsy values include `on`/`off`, `yes`/`no`, `1`/`0`, and `true`/`false` (case-insensitive).
+     *
+     * @param mixed $value
+     * @return bool|null
+     * @since 5.9.11
+     */
+    public static function normalizeBooleanValue(mixed $value): ?bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if ($value === 0 || $value === 1) {
+            return (bool)$value;
+        }
+
+        if (!is_string($value) || $value === '') {
+            return null;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
     }
 
     /**
