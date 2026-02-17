@@ -38,6 +38,11 @@ function cp_redirect(string $url, int $status = 302, array $headers = [], ?bool 
     );
 }
 
+function debugbar()
+{
+    return app()->bound('debugbar') ? app('debugbar') : optional();
+}
+
 /**
  * Normalizes an environment variable/constant name/CLI command option.
  *
