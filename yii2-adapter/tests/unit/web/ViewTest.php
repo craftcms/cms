@@ -18,6 +18,8 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\View\AssetRegistry;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use CraftCms\Cms\View\TemplateMode;
 use crafttests\fixtures\SitesFixture;
@@ -648,7 +650,7 @@ TWIG;
         parent::_before();
 
         // Clear the asset registry to prevent state leaking between tests
-        app(\CraftCms\Cms\View\AssetRegistry::class)->clear();
+        app(AssetRegistry::class)->clear();
 
         $this->view = Craft::createObject(View::class);
 
@@ -712,7 +714,7 @@ TWIG;
      */
     private function _resolveTemplate(string $basePath, string $name, bool $publicOnly = false): ?string
     {
-        $path = $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name, $publicOnly]);
+        $path = $this->invokeMethod(new TemplateResolver(), 'resolveFromPath', [$basePath, $name, $publicOnly]);
         if ($path !== null) {
             $path = CraftTest::normalizePathSeparators($path);
         }
