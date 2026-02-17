@@ -14,8 +14,6 @@ use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\Cp;
-use craft\helpers\FileHelper;
-use craft\helpers\Path;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
@@ -23,16 +21,15 @@ use craft\web\twig\FeExtension;
 use craft\web\twig\SafeHtml;
 use craft\web\twig\SecurityPolicy;
 use craft\web\twig\SinglePreloaderExtension;
-use craft\web\twig\TemplateLoader;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\TemplateLoader;
+use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\AssetRegistry;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
@@ -410,7 +407,7 @@ class View extends \yii\web\View
             Log::warning('Twig instantiated before Craft is fully initialized.', [__METHOD__]);
         }
 
-        $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
+        $twig = new Environment(new TemplateLoader(app(TemplateResolver::class)), $this->_getTwigOptions());
 
         // Mark SafeHtml as a safe interface
         $safeClass = SafeHtml::class;
@@ -924,15 +921,11 @@ class View extends \yii\web\View
      * @param string|null $templateMode The template mode to use.
      * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return bool Whether the template exists.
+     * @deprecated 6.0.0 use {@see TemplateResolver::exists()} instead.
      */
     public function doesTemplateExist(string $name, ?string $templateMode = null, bool $publicOnly = false): bool
     {
-        try {
-            return ($this->resolveTemplate($name, $templateMode, $publicOnly) !== false);
-        } catch (TwigLoaderError) {
-            // _validateTemplateName() had an issue with it
-            return false;
-        }
+        return app(TemplateResolver::class)->exists($name, $templateMode ? TemplateMode::from($templateMode) : null, $publicOnly);
     }
 
     /**
@@ -1007,87 +1000,11 @@ class View extends \yii\web\View
      * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|false The path to the template if it exists, or `false`.
      * @throws TwigLoaderError
+     * @deprecated 6.0.0 use {@see TemplateResolver::resolve()} instead.
      */
     public function resolveTemplate(string $name, ?string $templateMode = null, bool $publicOnly = false): string|false
     {
-        if ($templateMode !== null) {
-            $oldTemplateMode = TemplateMode::get();
-            TemplateMode::set(TemplateMode::from($templateMode));
-        }
-
-        try {
-            return $this->_resolveTemplateInternal($name, $publicOnly);
-        } finally {
-            if (isset($oldTemplateMode)) {
-                TemplateMode::set($oldTemplateMode);
-            }
-        }
-    }
-
-    /**
-     * Finds a template on the file system and returns its path.
-     *
-     * @param string $name The name of the template.
-     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
-     * @return string|false The path to the template if it exists, or `false`.
-     * @throws TwigLoaderError
-     */
-    private function _resolveTemplateInternal(string $name, bool $publicOnly): string|false
-    {
-        // Normalize the template name
-        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', Str::convertToUtf8($name))), '/');
-
-        $key = TemplateMode::get()->templatesPath() . ':' . $name;
-
-        // Is this template path already cached?
-        if (isset($this->_templatePaths[$key])) {
-            return $this->_templatePaths[$key];
-        }
-
-        // Validate the template name
-        $this->_validateTemplateName($name);
-
-        // Look for the template in the main templates folder
-        $basePaths = [];
-
-        // Should we be looking for a localized version of the template?
-        if (TemplateMode::is(TemplateMode::Site) && Cms::isInstalled()) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $sitePath = TemplateMode::get()->templatesPath() . DIRECTORY_SEPARATOR . Sites::getCurrentSite()->handle;
-            if (is_dir($sitePath)) {
-                $basePaths[] = $sitePath;
-            }
-        }
-
-        $basePaths[] = TemplateMode::get()->templatesPath();
-
-        foreach ($basePaths as $basePath) {
-            if (($path = $this->_resolveTemplate($basePath, $name, $publicOnly)) !== null) {
-                return $this->_templatePaths[$key] = $path;
-            }
-        }
-
-        unset($basePaths);
-
-        // Check any registered template roots
-        $roots = TemplateMode::get()->templateRoots();
-
-        if (!empty($roots)) {
-            foreach ($roots as $templateRoot => $basePaths) {
-                /** @var string[] $basePaths */
-                $templateRootLen = strlen($templateRoot);
-                if ($templateRoot === '' || strncasecmp($templateRoot . '/', $name . '/', $templateRootLen + 1) === 0) {
-                    $subName = $templateRoot === '' ? $name : (strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1));
-                    foreach ($basePaths as $basePath) {
-                        if (($path = $this->_resolveTemplate($basePath, $subName, $publicOnly)) !== null) {
-                            return $this->_templatePaths[$key] = $path;
-                        }
-                    }
-                }
-            }
-        }
-
-        return false;
+        return app(TemplateResolver::class)->resolve($name, $templateMode ? TemplateMode::from($templateMode) : null, $publicOnly);
     }
 
     /**
@@ -2550,74 +2467,6 @@ JS;
         }
 
         return $bundle;
-    }
-
-    /**
-     * Ensures that a template name isn't null, and that it doesn't lead outside the template folder. Borrowed from
-     * [[\Twig\Loader\FilesystemLoader]].
-     *
-     * @param string $name
-     * @throws TwigLoaderError
-     */
-    private function _validateTemplateName(string $name): void
-    {
-        if (str_contains($name, "\0")) {
-            throw new TwigLoaderError(t('A template name cannot contain NUL bytes.'));
-        }
-
-        if (Path::ensurePathIsContained($name) === false) {
-            Log::info('Someone tried to load a template outside the templates folder: ' . $name);
-            throw new TwigLoaderError(t('Looks like you are trying to load a template outside the template folder.'));
-        }
-    }
-
-    /**
-     * Searches for a template files, and returns the first match if there is one.
-     *
-     * @param string $basePath The base path to be looking in.
-     * @param string $name The name of the template to be looking for.
-     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
-     * @return string|null The matching file path, or `null`.
-     */
-    private function _resolveTemplate(string $basePath, string $name, bool $publicOnly): ?string
-    {
-        // Normalize the path and name
-        $basePath = FileHelper::normalizePath($basePath);
-        $name = trim(FileHelper::normalizePath($name), '/');
-
-        // $name could be an empty string (e.g. to load the homepage template)
-        if ($name !== '') {
-            if ($publicOnly && preg_match(sprintf('/(^|\/)%s/', preg_quote(TemplateMode::get()->privateTemplateTrigger(), '/')), $name)) {
-                return null;
-            }
-
-            // Maybe $name is already the full file path
-            $testPath = $basePath . DIRECTORY_SEPARATOR . $name;
-
-            if (is_file($testPath)) {
-                return $testPath;
-            }
-
-            foreach (TemplateMode::get()->defaultTemplateExtensions() as $extension) {
-                $testPath = $basePath . DIRECTORY_SEPARATOR . $name . '.' . $extension;
-
-                if (is_file($testPath)) {
-                    return $testPath;
-                }
-            }
-        }
-
-        foreach (TemplateMode::get()->indexTemplateFilenames() as $filename) {
-            foreach (TemplateMode::get()->defaultTemplateExtensions() as $extension) {
-                $testPath = $basePath . ($name !== '' ? DIRECTORY_SEPARATOR . $name : '') . DIRECTORY_SEPARATOR . $filename . '.' . $extension;
-
-                if (is_file($testPath)) {
-                    return $testPath;
-                }
-            }
-        }
-
-        return null;
     }
 
     /**

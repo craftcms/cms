@@ -13,6 +13,7 @@ use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\TemplateResolver;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -204,7 +205,7 @@ final class Deprecator
 
             if ($template instanceof TwigTemplate) {
                 $templateName = $template->getTemplateName();
-                $file = Craft::$app->getView()->resolveTemplate($templateName) ?: $templateName;
+                $file = app(TemplateResolver::class)->resolve($templateName) ?: $templateName;
                 $line = $this->findTemplateLine($template, $templateCodeLine);
 
                 return [$file, $line];

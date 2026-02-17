@@ -9,11 +9,9 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\events\FormActionsEvent;
-use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\UrlHelper;
-use craft\web\twig\TemplateLoaderException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
@@ -747,8 +745,9 @@ class Cp extends Component
      *
      * @param string $input The input HTML or template path. If passing a template path, it must begin with `template:`.
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 3.7.24
      */

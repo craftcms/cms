@@ -15,8 +15,6 @@ use craft\base\NestedElementInterface;
 use craft\events\DefineElementHtmlEvent;
 use craft\events\DefineElementInnerHtmlEvent;
 use craft\events\RegisterCpAlertsEvent;
-use craft\web\twig\TemplateLoaderException;
-use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
@@ -59,6 +57,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utilities\Updates;
@@ -140,8 +139,9 @@ class Cp
      *
      * @param string $template
      * @param array $variables
+     *
      * @return string
-     * @throws TemplateLoaderException if `$template` is an invalid template path
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException if `$template` is an invalid template path
      */
     public static function renderTemplate(string $template, array $variables = []): string
     {
@@ -1644,8 +1644,9 @@ JS, [
      *
      * @param string|callable $input The input HTML or template path. If passing a template path, it must begin with `template:`.
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 3.5.8
      */
@@ -2004,8 +2005,9 @@ JS, [
      * Renders a color input’s HTML.
      *
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      * @since 5.6.0
      */
     public static function colorHtml(array $config): string
@@ -2097,8 +2099,9 @@ JS, [
      * Renders a lightswitch input’s HTML.
      *
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      * @since 4.0.0
      */
     public static function lightswitchHtml(array $config): string
@@ -2172,8 +2175,9 @@ JS, [
      * Renders a money field’s HTML.
      *
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      * @since 5.0.0
      */
     public static function moneyFieldHtml(array $config): string
@@ -2316,8 +2320,9 @@ JS, [
      * Renders a textarea input’s HTML.
      *
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      * @since 4.0.0
      */
     public static function textareaHtml(array $config): string
@@ -2343,8 +2348,9 @@ JS, [
      * Returns a date input’s HTML.
      *
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      * @since 4.0.0
      */
     public static function dateHtml(array $config): string
@@ -2414,8 +2420,9 @@ JS, [
      * Renders an element select input’s HTML
      *
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      * @since 4.0.0
      */
     public static function elementSelectHtml(array $config): string
@@ -2976,7 +2983,7 @@ JS, [
      * @param array $config
      *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      */
     private static function _thumbManagementHtml(FieldLayout $fieldLayout, array $config): string
     {

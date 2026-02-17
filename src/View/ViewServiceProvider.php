@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
-use CraftCms\Cms\Twig\Engine;
 use CraftCms\Cms\View\Hooks\PrepareElementIndexVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementSourcesVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementToolbarVariables;
@@ -26,7 +25,7 @@ class ViewServiceProvider extends ServiceProvider
         $this->app->make(ViewFactory::class)->addExtension(
             'twig',
             'twig',
-            fn () => $this->app->make(Engine::class)
+            fn () => $this->app->make(TwigEngine::class)
         );
 
         Vite::useHotFile("{$this->root}/resources/hot");

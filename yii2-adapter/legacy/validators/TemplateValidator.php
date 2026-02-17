@@ -7,8 +7,8 @@
 
 namespace craft\validators;
 
-use Craft;
 use craft\web\View;
+use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\TemplateMode;
 use yii\validators\Validator;
 use function CraftCms\Cms\t;
@@ -44,7 +44,7 @@ class TemplateValidator extends Validator
      */
     public function validateValue($value): ?array
     {
-        if (Craft::$app->getView()->resolveTemplate($value, $this->templateMode) === false) {
+        if (app(TemplateResolver::class)->resolve($value, TemplateMode::from($this->templateMode)) === false) {
             return [$this->message, []];
         }
 

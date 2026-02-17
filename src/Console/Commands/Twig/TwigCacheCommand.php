@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Console\Commands\Twig;
 
 use Craft;
-use craft\web\twig\TemplateLoaderException;
-use craft\web\View;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;

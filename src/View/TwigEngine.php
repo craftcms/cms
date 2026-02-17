@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Twig;
+namespace CraftCms\Cms\View;
 
 use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\View\Engine;
 
-class Engine implements \Illuminate\Contracts\View\Engine
+class TwigEngine implements Engine
 {
     public function get($path, array $data = []): string
     {

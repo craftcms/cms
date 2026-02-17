@@ -14,7 +14,7 @@ use craft\web\twig\variables\Paginate;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Entries;
-use CraftCms\Cms\Twig\TwigMapper;
+use CraftCms\Cms\Twig\TwigExceptionMapper;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Support\Facades\Auth;
 use Stringable;
@@ -359,14 +359,15 @@ class Template
      *
      * @param string $path The compiled template path
      * @param int|null $line The line number from the compiled template
+     *
      * @return array|false The resolved template path and line number, or `false` if the path couldn’t be determined.
      * If a template path could be determined but not the template line number, the line number will be null.
      * @since 4.1.5
-     * @deprecated 6.0.0 use {@see TwigMapper::resolveTemplatePathAndLine()} instead.
+     * @deprecated 6.0.0 use {@see TwigExceptionMapper::resolveTemplatePathAndLine()} instead.
      */
     public static function resolveTemplatePathAndLine(string $path, ?int $line)
     {
-        return app(TwigMapper::class)->resolveTemplatePathAndLine($path, $line);
+        return app(TwigExceptionMapper::class)->resolveTemplatePathAndLine($path, $line);
     }
 
     /**
