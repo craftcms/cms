@@ -70,10 +70,9 @@ final class Twig
      */
     public function create(): Environment
     {
-        $twig = new Environment(
-            new TemplateLoader(new TemplateResolver),
-            $this->getOptions(),
-        );
+        $twig = app(Environment::class, [
+            'options' => $this->getOptions(),
+        ]);
 
         foreach ([
             SafeHtml::class,

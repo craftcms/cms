@@ -313,46 +313,39 @@ describe('registerExtension', function () {
         expect($siteEnv->hasExtension(StubTwigExtension::class))->toBeTrue();
     });
 
-    it('invalidates the cached Cp environment when registering for Cp', function () {
+    it('adds the extension directly to the cached environment without invalidating it', function () {
         $originalCp = $this->twig->get(TemplateMode::Cp);
 
         $this->twig->registerExtension(new StubTwigExtension, TemplateMode::Cp);
 
-        $newCp = $this->twig->get(TemplateMode::Cp);
-
-        expect($newCp)->not->toBe($originalCp);
+        expect($this->twig->get(TemplateMode::Cp))->toBe($originalCp)
+            ->and($originalCp->hasExtension(StubTwigExtension::class))->toBeTrue();
     });
 
-    it('invalidates the cached Site environment when registering for Site', function () {
-        $originalSite = $this->twig->get(TemplateMode::Site);
-
-        $this->twig->registerExtension(new StubTwigExtension, TemplateMode::Site);
-
-        $newSite = $this->twig->get(TemplateMode::Site);
-
-        expect($newSite)->not->toBe($originalSite);
-    });
-
-    it('invalidates both cached environments when mode is null', function () {
+    it('adds the extension directly to both cached environments when mode is null', function () {
         $originalCp = $this->twig->get(TemplateMode::Cp);
         $originalSite = $this->twig->get(TemplateMode::Site);
 
         $this->twig->registerExtension(new StubTwigExtension);
 
-        expect($this->twig->get(TemplateMode::Cp))->not->toBe($originalCp);
-        expect($this->twig->get(TemplateMode::Site))->not->toBe($originalSite);
+        expect($this->twig->get(TemplateMode::Cp))->toBe($originalCp)
+            ->and($originalCp->hasExtension(StubTwigExtension::class))->toBeTrue();
+        expect($this->twig->get(TemplateMode::Site))->toBe($originalSite)
+            ->and($originalSite->hasExtension(StubTwigExtension::class))->toBeTrue();
     });
 
-    it('does not invalidate the other mode when registering for one mode', function () {
+    it('does not affect the other mode when registering for one mode', function () {
         $cpEnv = $this->twig->get(TemplateMode::Cp);
         $siteEnv = $this->twig->get(TemplateMode::Site);
 
         $this->twig->registerExtension(new StubTwigExtension, TemplateMode::Cp);
 
-        // Site should remain cached
+        // Both should remain the same cached instance
         expect($this->twig->get(TemplateMode::Site))->toBe($siteEnv);
-        // CP should be invalidated
-        expect($this->twig->get(TemplateMode::Cp))->not->toBe($cpEnv);
+        expect($this->twig->get(TemplateMode::Cp))->toBe($cpEnv);
+        // Only CP should have the extension
+        expect($cpEnv->hasExtension(StubTwigExtension::class))->toBeTrue();
+        expect($siteEnv->hasExtension(StubTwigExtension::class))->toBeFalse();
     });
 
     it('registered extensions are present in newly created environments', function () {
@@ -382,25 +375,28 @@ describe('registerExtension', function () {
         expect($cpEnv->hasExtension(StubTwigExtension::class))->toBeFalse();
     });
 
-    it('replaces a previously registered extension of the same class', function () {
-        $first = new StubTwigExtension;
-        $second = new StubTwigExtension;
+    it('invalidates the cached environment when registering a duplicate extension class', function () {
+        $this->twig->registerExtension(new StubTwigExtension, TemplateMode::Cp);
+        $originalCp = $this->twig->get(TemplateMode::Cp);
 
-        $this->twig->registerExtension($first, TemplateMode::Cp);
-        $this->twig->registerExtension($second, TemplateMode::Cp);
+        // Registering the same class again triggers a LogicException from Twig,
+        // which causes the cached environment to be invalidated
+        $this->twig->registerExtension(new StubTwigExtension, TemplateMode::Cp);
 
-        $cpEnv = $this->twig->get(TemplateMode::Cp);
+        $newCp = $this->twig->get(TemplateMode::Cp);
 
-        // Should still have the extension (the second one replaced the first)
-        expect($cpEnv->hasExtension(StubTwigExtension::class))->toBeTrue();
+        expect($newCp)->not->toBe($originalCp)
+            ->and($newCp->hasExtension(StubTwigExtension::class))->toBeTrue();
     });
 
-    it('can register multiple different extensions for the same mode', function () {
+    it('can register multiple different extensions on the same cached environment', function () {
+        $cpEnv = $this->twig->get(TemplateMode::Cp);
+
         $this->twig->registerExtension(new StubTwigExtension, TemplateMode::Cp);
         $this->twig->registerExtension(new AnotherStubTwigExtension, TemplateMode::Cp);
 
-        $cpEnv = $this->twig->get(TemplateMode::Cp);
-
+        // Same instance, both extensions added in-place
+        expect($this->twig->get(TemplateMode::Cp))->toBe($cpEnv);
         expect($cpEnv->hasExtension(StubTwigExtension::class))->toBeTrue();
         expect($cpEnv->hasExtension(AnotherStubTwigExtension::class))->toBeTrue();
     });
