@@ -7,10 +7,9 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\Cp;
 use craft\test\TestCase;
-use craft\web\twig\TemplateLoaderException;
+use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\User\Elements\User;
 use crafttests\fixtures\SitesFixture;
 use InvalidArgumentException;
