@@ -1383,8 +1383,31 @@ class Request extends \yii\web\Request
      */
     public function accepts(string $contentType): bool
     {
+        return $this->acceptsInternal($contentType, $this->getAcceptableContentTypes());
+    }
+
+    /**
+     * Returns whether the request primarily wants a given content type.
+     *
+     * @since 5.9.11
+     */
+    public function wants(string $contentType): bool
+    {
         $acceptableContentTypes = $this->getAcceptableContentTypes();
 
+        if (empty($acceptableContentTypes)) {
+            return false;
+        }
+
+        $firstType = array_key_first($acceptableContentTypes);
+
+        return $this->acceptsInternal($contentType, [
+            $firstType => $acceptableContentTypes[$firstType],
+        ]);
+    }
+
+    private function acceptsInternal(string $contentType, array $acceptableContentTypes): bool
+    {
         if (array_key_exists($contentType, $acceptableContentTypes)) {
             return true;
         }
@@ -1421,6 +1444,17 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns whether the request primarily wants a JSON response.
+     *
+     * @return bool
+     * @since 5.9.11
+     */
+    public function getWantsJson(): bool
+    {
+        return $this->wants('application/json') || $this->wants('application/*+json');
+    }
+
+    /**
      * Returns whether the request will accept an image response.
      *
      * @return bool
@@ -1429,6 +1463,17 @@ class Request extends \yii\web\Request
     public function getAcceptsImage(): bool
     {
         return $this->accepts('image/*');
+    }
+
+    /**
+     * Returns whether the request primarily wants an image response.
+     *
+     * @return bool
+     * @since 5.9.11
+     */
+    public function getWantsImage(): bool
+    {
+        return $this->wants('image/*');
     }
 
     /**

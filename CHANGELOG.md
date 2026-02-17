@@ -5,6 +5,10 @@
 - The `nb` locale is now treated as a fallback for `no` on environments where `no` isn’t supported. ([#18431](https://github.com/craftcms/cms/pull/18431))
 - Element indexes now show “Paste” buttons alongside bulk element action buttons. ([#18427](https://github.com/craftcms/cms/issues/18427))
 - Impoved the performance of `craft\helpers\Typecast`. ([#18426](https://github.com/craftcms/cms/pull/18426))
+- Added `craft\web\Request::getWantsImage()`.
+- Added `craft\web\Request::getWantsJson()`.
+- Added `craft\web\Request::wants()`.
+- Fixed a bug where 404 responses could be set to an image based on the `brokenImagePath` config setting for Chrome. ([#18438](https://github.com/craftcms/cms/issues/18438))
 - Fixed a bug where some Matrix bulk action labels weren’t getting translated.
 - Fixed a bug where global nav items weren’t showing an icon if the icon was set to `0`.
 - Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-4484-8v2f-5748, GHSA-qx2q-q59v-wf3j)
