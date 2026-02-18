@@ -61,7 +61,7 @@ final readonly class AuthMethodController
     public function listingHtml(): JsonResponse
     {
         $view = Craft::$app->getView();
-        $html = template('users/_auth-methods', data: TemplateMode::Cp, templateMode: TemplateMode::Cp);
+        $html = template('users/_auth-methods', templateMode: TemplateMode::Cp);
 
         return new JsonResponse([
             'html' => $html,

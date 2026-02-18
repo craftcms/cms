@@ -14,6 +14,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
@@ -108,7 +109,6 @@ class Mailer extends \yii\symfonymailer\Mailer
         ]));
 
         $generalConfig = Cms::config();
-        $view = Craft::$app->getView();
         $currentSite = $messageSite = $twig = null;
         $language = app()->getLocale();
         $generateTransformsBeforePageLoad = $generalConfig->generateTransformsBeforePageLoad;
@@ -125,8 +125,8 @@ class Mailer extends \yii\symfonymailer\Mailer
                     if ($messageSite) {
                         Sites::setCurrentSite($messageSite);
                         // reset Twig so any global sets and singles get reloaded for the new site
-                        $twig = $view->getTwig();
-                        $view->setTwig($view->createTwig());
+                        $twig = Twig::get();
+                        Twig::set(Twig::create());
                     }
                 }
             }
@@ -242,7 +242,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             TemplateMode::set($originalTemplateMode);
 
             if ($twig) {
-                $view->setTwig($twig);
+                Twig::set($twig);
             }
 
             Craft::configure($this, $originalSettings);

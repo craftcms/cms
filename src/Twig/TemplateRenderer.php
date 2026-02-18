@@ -17,13 +17,19 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Traits\ForwardsCalls;
 use Twig\Extension\SandboxExtension;
 use Twig\TemplateWrapper;
 use Yiisoft\Arrays\ArrayableInterface;
 
+/**
+ * @mixin \CraftCms\Cms\Twig\Twig
+ */
 #[Scoped]
 final class TemplateRenderer
 {
+    use ForwardsCalls;
+
     public const string HEAD_PLACEHOLDER = '<![CDATA[CRAFT-BLOCK-HEAD]]>';
 
     public const string BODY_BEGIN_PLACEHOLDER = '<![CDATA[CRAFT-BLOCK-BODY-BEGIN]]>';
@@ -447,5 +453,13 @@ final class TemplateRenderer
         }
 
         return $filtered;
+    }
+
+    /**
+     * Dynamically pass missing methods to the Twig instance.
+     */
+    public function __call(string $method, array $parameters): mixed
+    {
+        return $this->forwardCallTo($this->twig, $method, $parameters);
     }
 }
