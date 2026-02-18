@@ -31,16 +31,16 @@ use Override;
  * @method static \CraftCms\Cms\ProjectConfig\ProjectConfig onAdd(string $path, callable $handler, mixed $data = null)
  * @method static \CraftCms\Cms\ProjectConfig\ProjectConfig onUpdate(string $path, callable $handler, mixed $data = null)
  * @method static \CraftCms\Cms\ProjectConfig\ProjectConfig onRemove(string $path, callable $handler, mixed $data = null)
- * @method static void defer(ConfigEvent $event, callable $handler)
+ * @method static void defer(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event, callable $handler)
  * @method static void registerChangeEventHandler(string $event, string $path, callable $handler, mixed $data = null)
- * @method static void handleChangeEvent(ConfigEvent $event)
+ * @method static void handleChangeEvent(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
  * @method static void rebuild()
  * @method static void writeYamlFiles(bool $force = false)
  * @method static void setNameMapping(string $uid, string $name)
  * @method static void removeNameMapping(string $uid)
  * @method static bool getHadFileWriteIssues()
  * @method static void rememberAppliedChanges(string $path, mixed $oldValue, mixed $newValue, string|null $message = null)
- * @method static CallbackDependency getCacheDependency()
+ * @method static \CraftCms\DependencyAwareCache\Dependency\CallbackDependency getCacheDependency()
  *
  * @see \CraftCms\Cms\ProjectConfig\ProjectConfig
  */

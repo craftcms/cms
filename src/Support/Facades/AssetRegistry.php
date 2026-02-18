@@ -8,14 +8,14 @@ use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static void js(string $js, Position $position = 2, string|null $key = null)
- * @method static void jsWithVars(callable $fn, array $vars, Position $position = 2, string|null $key = null)
+ * @method static void js(string $js, \CraftCms\Cms\View\Enums\Position $position = 3, string|null $key = null)
+ * @method static void jsWithVars(callable $fn, array $vars, \CraftCms\Cms\View\Enums\Position $position = 3, string|null $key = null)
  * @method static void jsFile(string $url, array $options = [], string|null $key = null)
  * @method static void cssFile(string $url, array $options = [], string|null $key = null)
  * @method static void css(string $css, array $options = [], string|null $key = null)
- * @method static void script(string $script, Position $position = 2, array $options = [], string|null $key = null)
- * @method static void scriptWithVars(callable $fn, array $vars, Position $position = 2, array $options = [], string|null $key = null)
- * @method static void html(string $html, Position $position = 2, string|null $key = null)
+ * @method static void script(string $script, \CraftCms\Cms\View\Enums\Position $position = 3, array $options = [], string|null $key = null)
+ * @method static void scriptWithVars(callable $fn, array $vars, \CraftCms\Cms\View\Enums\Position $position = 3, array $options = [], string|null $key = null)
+ * @method static void html(string $html, \CraftCms\Cms\View\Enums\Position $position = 3, string|null $key = null)
  * @method static void jsImport(string $key, string $value)
  * @method static void translations(array $messages, string $category = 'app')
  * @method static void icons(array $icons)
@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static void linkTag(array $attributes, string|null $key = null)
  * @method static string headHtml(bool $clear = true)
  * @method static string bodyHtml(bool $clear = true)
+ * @method static string bodyBeginHtml(bool $clear = true)
+ * @method static string bodyEndHtml(bool $clear = true)
  * @method static void startBuffer(array|string $keys)
  * @method static mixed clearBuffer(array|string $keys)
  * @method static void startCssBuffer()

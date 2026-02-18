@@ -11,10 +11,10 @@ use Override;
 use Twig\Extension\ExtensionInterface;
 
 /**
- * @method static Environment get(TemplateMode|null $mode = null)
- * @method static void set(Environment $twig, TemplateMode|null $mode = null)
- * @method static Environment create()
- * @method static void registerExtension(ExtensionInterface $extension, TemplateMode|null $mode = null)
+ * @method static \CraftCms\Cms\Twig\Environment get(\CraftCms\Cms\View\TemplateMode|null $mode = null)
+ * @method static void set(\CraftCms\Cms\Twig\Environment $twig, \CraftCms\Cms\View\TemplateMode|null $mode = null)
+ * @method static \CraftCms\Cms\Twig\Environment create()
+ * @method static void registerExtension(\Twig\Extension\ExtensionInterface $extension, \CraftCms\Cms\View\TemplateMode|null $mode = null)
  *
  * @see \CraftCms\Cms\Twig\Twig
  */
