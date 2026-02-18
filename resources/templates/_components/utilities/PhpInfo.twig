@@ -6,8 +6,8 @@
         <tbody>
           {% for key, value in values %}
             <tr>
-              <th class="light">{{ key|raw }}</th>
-              <td>
+              <th class="cell">{{ key|raw }}</th>
+              <td class="cell cell--wrap">
                 {%- if value is iterable %}
                   {{- value|join(', ') }}
                 {%- else %}
