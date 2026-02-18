@@ -9,7 +9,7 @@ export default css`
   .nav-item {
     display: grid;
     gap: var(--c-spacing-md);
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
     text-decoration: none;
     color: inherit;
@@ -19,7 +19,7 @@ export default css`
     position: relative;
   }
   
-  craft-badge-indicator::part(badge) {
+  craft-badge-indicator {
       position: absolute;
       inset-inline-end: 0;
       inset-block-end: 0;
