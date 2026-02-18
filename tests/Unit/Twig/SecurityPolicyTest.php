@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use craft\web\twig\SecurityPolicy;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use CraftCms\Cms\Twig\SecurityPolicy;
 use Twig\Sandbox\SecurityNotAllowedMethodError;
 use Twig\Sandbox\SecurityNotAllowedPropertyError;
 
