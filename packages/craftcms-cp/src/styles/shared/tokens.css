@@ -3,6 +3,7 @@
   --c-text-lg: calc(16rem / 16);
   --c-text-base: calc(14rem / 16);
   --c-text-sm: calc(11rem / 16);
+  --c-text-xs: calc(9rem / 16);
 
   --c-leading-normal: 1.42;
 

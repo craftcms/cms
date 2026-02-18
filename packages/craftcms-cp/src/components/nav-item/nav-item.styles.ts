@@ -13,6 +13,13 @@ export default css`
     border-radius: var(--c-radius-md);
     position: relative;
   }
+  
+  craft-badge-indicator::part(badge) {
+      position: absolute;
+      inset-inline-end: 0;
+      inset-block-end: 0;
+    }
+  }
 
   .nav-item--prefixed {
     padding-inline: var(--c-spacing-sm);
@@ -56,19 +63,6 @@ export default css`
     :host([active]) & {
       width: calc(6rem / 16);
     }
-  }
-
-  .indicator {
-    display: inline-block;
-    aspect-ratio: 1;
-    width: calc(6rem / 16);
-    border-radius: var(--c-radius-full);
-    background-color: var(--c-color-accent-bg-emphasis);
-    border: 1px solid var(--c-color-accent-border-emphasis);
-    outline: 2px solid Canvas;
-    position: absolute;
-    inset-inline-end: 0;
-    inset-block-end: 0;
   }
 
   .subnav {
