@@ -58,7 +58,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
 
         // Render and return the template
         try {
-            $response->content = pageTemplate($behavior->template, $behavior->variables, TemplateMode::from($behavior->templateMode));
+            $response->content = pageTemplate($behavior->template, $behavior->variables, $behavior->templateMode ? TemplateMode::from($behavior->templateMode) : null);
         } catch (Throwable $e) {
             $previous = $e->getPrevious();
             if ($previous instanceof YiiExitException) {
