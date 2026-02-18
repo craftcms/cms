@@ -9,7 +9,6 @@ use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Queue\ClearableQueue;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
@@ -70,7 +69,10 @@ final readonly class JobProgress
             ->get();
     }
 
-    public function jobsQuery(): Builder
+    /**
+     * @return \Illuminate\Database\Eloquent\Builder<JobProgressModel>
+     */
+    public function jobsQuery(): \Illuminate\Database\Eloquent\Builder
     {
         $delay = match (DB::connection()->getDriverName()) {
             'mysql' => 'GREATEST(?, UNIX_TIMESTAMP(dateCreated) + delay)',
@@ -88,9 +90,7 @@ final readonly class JobProgress
             // Then by now or dateCreated + delay
             ->orderByRaw($delay, [now()->getTimestamp()])
             // Lastly by dateCreated
-            ->orderBy('dateCreated')
-            ->limit($limit)
-            ->get();
+            ->orderBy('dateCreated');
     }
 
     /**

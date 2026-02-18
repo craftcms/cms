@@ -53,7 +53,7 @@ final class DeprecationErrors extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        return Html::tag('DeprecationErrors', options: [
+        return Html::tag('DeprecationErrors', attributes: [
             ':logs' => Deprecator::getLogs(),
         ]);
     }

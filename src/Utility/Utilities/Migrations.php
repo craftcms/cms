@@ -53,7 +53,7 @@ final class Migrations extends Utility
             $migrator->getPendingMigrations(),
         );
 
-        return Html::tag('Migrations', options: [
+        return Html::tag('Migrations', attributes: [
             ':migrationHistory' => $migrationHistory,
             ':newMigrations' => $newMigrations,
         ]);

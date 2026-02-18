@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use CraftCms\Cms\Queue\Data\ProgressData;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Support\Html;
@@ -42,7 +41,7 @@ final class QueueManager extends Utility
     {
         $progressService = app(JobProgress::class);
 
-        return Html::tag('QueueManagerToolbar', options: [
+        return Html::tag('QueueManagerToolbar', attributes: [
             ':activeJob' => self::getActiveJob($progressService),
             ':jobs' => $progressService->getJobInfo(),
         ]);
@@ -60,7 +59,7 @@ final class QueueManager extends Utility
         $progressService = app(JobProgress::class);
         $jobsData = app(JobProgress::class)->getJobInfo();
 
-        return Html::tag('QueueManager', options: [
+        return Html::tag('QueueManager', attributes: [
             ':initialData' => $jobsData,
             ':activeJob' => self::getActiveJob($progressService),
             ':hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
@@ -69,18 +68,14 @@ final class QueueManager extends Utility
         ]);
     }
 
-    private static function getActiveJob(JobProgress $progressService): ?ProgressData
+    private static function getActiveJob(JobProgress $progressService)
     {
         $jobId = request()->route('extra');
 
         if ($jobId) {
-            $activeJob = $progressService->jobsQuery()
+            return $progressService->jobsQuery()
                 ->where('uid', $jobId)
                 ->first();
-
-            if ($activeJob) {
-                return ProgressData::from($activeJob);
-            }
         }
 
         return null;

@@ -49,7 +49,7 @@ final class SystemMessages extends Utility
             'label' => $locale->getDisplayName(app()->getLocale()),
         ])->values()->all();
 
-        return Html::tag('SystemMessages', options: [
+        return Html::tag('SystemMessages', attributes: [
             ':messages' => $messages->map(fn ($m) => [
                 'key' => $m->key,
                 'heading' => $m->heading,

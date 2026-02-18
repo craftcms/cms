@@ -70,7 +70,7 @@ final class AssetIndexes extends Utility
         $dateFormat = I18N::getLocale()->getDateTimeFormat('short', Locale::FORMAT_PHP);
         $existingIndexingSessions = $assetIndexer->getExistingIndexingSessions();
 
-        return Html::tag('AssetIndexes', options: [
+        return Html::tag('AssetIndexes', attributes: [
             ':existingSessions' => $existingIndexingSessions,
             ':volumeOptions' => $volumeOptions,
             'dateFormat' => $dateFormat,

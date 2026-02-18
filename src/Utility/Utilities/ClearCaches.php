@@ -70,7 +70,7 @@ final class ClearCaches extends Utility
 
         $cacheOptions = Arr::sort($cacheOptions, 'label');
 
-        return Html::tag('ClearCaches', options: [
+        return Html::tag('ClearCaches', attributes: [
             ':cacheOptions' => $cacheOptions,
             ':tagOptions' => $tagOptions,
         ]);

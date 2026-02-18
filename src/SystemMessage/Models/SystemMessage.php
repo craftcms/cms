@@ -8,6 +8,9 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 
+/**
+ * @property string $heading
+ */
 final class SystemMessage extends BaseModel
 {
     use HasUid;

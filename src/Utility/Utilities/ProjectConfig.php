@@ -50,7 +50,7 @@ final class ProjectConfig extends Utility
             $invert = false;
         }
 
-        return Html::tag('ProjectConfig', options: [
+        return Html::tag('ProjectConfig', attributes: [
             ':read-only' => $projectConfig->readOnly,
             ':invert' => $invert,
             ':yaml-exists' => ($projectConfig->writeYamlAutomatically || $projectConfig->getDoesExternalConfigExist()) ? 'true' : 'false',
