@@ -681,9 +681,15 @@ class UrlHelper
                 $params[$generalConfig->siteToken] = $siteToken;
             }
             if ($request->getIsSiteRequest()) {
-                if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+                if (
+                    $addToken &&
+                    !isset($params[$generalConfig->tokenParam]) &&
+                    ($token = $request->getToken()) !== null &&
+                    Craft::$app->getTokens()->getRemainingTokenUsages($token) !== 0
+                ) {
                     $params[$generalConfig->tokenParam] = $token;
                 }
+
                 if (
                     !isset($params['x-craft-preview']) &&
                     !isset($params['x-craft-live-preview']) &&

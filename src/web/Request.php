@@ -207,6 +207,12 @@ class Request extends \yii\web\Request
     public ?string $_token = null;
 
     /**
+     * @var array|null
+     * @see getTokenRoute()
+     */
+    public ?array $_tokenRoute = null;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -523,6 +529,20 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns the route the request’s token resolves to.
+     *
+     * @return array|null The route, or `null` if there isn’t one.
+     * @see getToken())
+     * @see Tokens::createToken()
+     * @since 5.9.12
+     */
+    public function getTokenRoute(): ?array
+    {
+        $this->_findToken();
+        return $this->_tokenRoute;
+    }
+
+    /**
      * Sets the token value.
      *
      * @param string|null $token
@@ -557,13 +577,29 @@ class Request extends \yii\web\Request
             return;
         }
 
-        $token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
-        $this->_hasInvalidToken = $token && !preg_match('/^[A-Za-z0-9_-]+$/', $token);
+        $this->_hadToken = false;
+        $this->_hasInvalidToken = false;
 
-        if (!$this->_hasInvalidToken) {
-            $this->_token = $token;
-            $this->_hadToken = $token !== null;
+        $token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
+
+        if (!$token) {
+            return;
         }
+
+        if (!preg_match('/^[A-Za-z0-9_-]+$/', $token)) {
+            $this->_hasInvalidToken = true;
+            return;
+        }
+
+        $this->_tokenRoute = Craft::$app->getTokens()->getTokenRoute($token) ?: null;
+
+        if (!$this->_tokenRoute) {
+            $this->_hasInvalidToken = true;
+            return;
+        }
+
+        $this->_token = $token;
+        $this->_hadToken = true;
     }
 
     /**

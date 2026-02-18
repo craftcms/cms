@@ -2,7 +2,10 @@
 
 ## Unreleased
 
+- Added `craft\services\Tokens::getRemainingTokenUsages()`.
+- Added `craft\web\Request::getTokenRoute()`.
 - Fixed a JavaScript error that could occur when opening or submitting a slideout.
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-cc7p-2j3x-x7xf)
 
 ## 5.9.11 - 2026-02-17
 

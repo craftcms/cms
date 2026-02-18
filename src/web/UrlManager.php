@@ -554,6 +554,7 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         $token = $request->getToken();
+        $route = $request->getTokenRoute();
 
         if (App::devMode()) {
             Craft::debug([
@@ -563,10 +564,6 @@ class UrlManager extends \yii\web\UrlManager
             ], __METHOD__);
         }
 
-        if ($token === null) {
-            return false;
-        }
-
-        return Craft::$app->getTokens()->getTokenRoute($token);
+        return $route ?? false;
     }
 }
