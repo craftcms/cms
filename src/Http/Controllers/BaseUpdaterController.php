@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -76,7 +77,7 @@ abstract class BaseUpdaterController
         }
     }
 
-    public function index(#[Give('Craft')] Application $craft): Response
+    public function index(#[Give('Craft')] Application $craft): View
     {
         // Load the updater JS
         $view = $craft->getView();
@@ -91,9 +92,9 @@ abstract class BaseUpdaterController
         $stateJs = Json::encode($state);
         AssetRegistry::js("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
 
-        return response($view->renderPageTemplate('_special/updater.twig', [
+        return view('_special/updater', [
             'title' => $this->pageTitle(),
-        ]));
+        ]);
     }
 
     public function precheck(): Response

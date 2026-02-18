@@ -63,6 +63,7 @@ use Tpetry\QueryExpressions\Function\String\Lower;
 use yii\base\Exception;
 use yii\base\UserException;
 
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 #[Singleton]
@@ -427,7 +428,7 @@ final class Users
 
         if ($subpath !== '') {
             try {
-                $subpath = Craft::$app->getView()->renderObjectTemplate($subpath, $user);
+                $subpath = renderObjectTemplate($subpath, $user);
             } catch (Throwable) {
                 throw new InvalidSubpathException($subpath);
             }

@@ -22,6 +22,7 @@ use PragmaRX\Google2FA\Google2FA;
 use Throwable;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /*
  * Time-based one-time password authentication method.
@@ -84,12 +85,12 @@ JS, [
             $containerId,
         ]);
 
-        return $view->renderTemplate('_components/auth/methods/TOTP/setup.twig', [
+        return template('_components/auth/methods/TOTP/setup', [
             'secret' => rtrim(chunk_split($secret, 4, ' ')),
             'user' => $this->user,
             'qrCode' => $this->generateQrCode($secret),
             'totpFormId' => $totpFormId,
-        ], TemplateMode::Cp->value);
+        ], templateMode: TemplateMode::Cp);
     }
 
     public function getAuthFormHtml(): string
@@ -97,7 +98,7 @@ JS, [
         $view = Craft::$app->getView();
         $view->registerAssetBundle(TotpAsset::class);
 
-        return $view->renderTemplate('_components/auth/methods/TOTP/form.twig');
+        return template('_components/auth/methods/TOTP/form');
     }
 
     public function verify(mixed ...$args): bool

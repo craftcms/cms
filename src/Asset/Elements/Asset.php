@@ -1370,7 +1370,6 @@ class Asset extends Element
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
         $user = Auth::user();
-        Craft::$app->getView();
         $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
 
         $viewItems = [];

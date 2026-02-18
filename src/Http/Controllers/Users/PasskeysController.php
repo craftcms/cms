@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final readonly class PasskeysController
 {
@@ -96,8 +97,8 @@ JS);
 
     private function passkeyTableHtml(User $user): string
     {
-        return Craft::$app->getView()->renderTemplate('users/_passkeys-table.twig', [
+        return template('users/_passkeys-table', [
             'passkeys' => $this->passkeys->getPasskeys($user)->all(),
-        ], TemplateMode::Cp->value);
+        ], templateMode: TemplateMode::Cp);
     }
 }

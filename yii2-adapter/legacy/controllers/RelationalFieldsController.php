@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Facades\Structures;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\template;
 
 /**
  * Relational fields controller.
@@ -60,7 +61,7 @@ class RelationalFieldsController extends Controller
 
         ElementHelper::loadProvisionalChanges($elements);
 
-        $html = $this->getView()->renderTemplate('_includes/forms/elementSelect.twig', [
+        $html = template('_includes/forms/elementSelect', [
             'elements' => $elements,
             'id' => $this->request->getParam('containerId'),
             'name' => $this->request->getParam('name'),

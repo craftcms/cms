@@ -73,6 +73,7 @@ use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\validators\RequiredValidator;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Class Cp
@@ -145,7 +146,7 @@ class Cp
      */
     public static function renderTemplate(string $template, array $variables = []): string
     {
-        return Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value);
+        return template('' . $template, $variables, templateMode: TemplateMode::Cp);
     }
 
     /**
@@ -318,7 +319,7 @@ class Cp
 
         $childTagHtml = array_map(fn(array $childTagInfo): string => self::alertTagHtml($childTagInfo), $tagInfo['children'] ?? []);
 
-        return trim(static::renderTemplate('_layouts/components/tag.twig', [
+        return trim(static::renderTemplate('_layouts/components/tag', [
             'type' => $tagInfo['type'],
             'attributes' => $tagInfo['attributes'] ?? [],
             'style' => $style,
@@ -1599,17 +1600,17 @@ JS, [
                     (!$showSidebar ? 'hidden' : null),
                 ]),
             ]) .
-            Html::tag('nav', $view->renderTemplate('_elements/sources', [
+            Html::tag('nav', template('_elements/sources', [
                 'elementType' => $elementType,
                 'sources' => $sources,
                 $sortOptionsKey => $sortOptions,
                 'tableColumns' => $tableColumns,
                 'defaultTableColumns' => $config['defaultTableColumns'],
-            ], TemplateMode::Cp->value)) .
+            ], templateMode: TemplateMode::Cp)) .
             Html::endTag('div') .
             Html::beginTag('div', ['class' => 'main']) .
             Html::beginTag('div', ['class' => ['toolbar', 'flex']]) .
-            $view->renderTemplate('_elements/toolbar', [
+            template('_elements/toolbar', [
                 'elementType' => $elementType,
                 'context' => $config['context'],
                 'showStatusMenu' => $config['showStatusMenu'],
@@ -1617,7 +1618,7 @@ JS, [
                 'showSiteMenu' => $config['showSiteMenu'],
                 'siteIds' => $siteIds,
                 'canHaveDrafts' => $elementType::hasDrafts(),
-            ], TemplateMode::Cp->value) .
+            ], templateMode: TemplateMode::Cp) .
             Html::endTag('div') . // .toolbar
             Html::tag('div', attributes: ['class' => 'elements']) .
             Html::endTag('div'); // .main
@@ -1626,7 +1627,7 @@ JS, [
             $html .= Html::beginTag('div', [
                     'class' => ['footer', 'flex', 'flex-justify'],
                 ]) .
-                $view->renderTemplate('_elements/footer', templateMode: TemplateMode::Cp->value) .
+                template('_elements/footer', templateMode: TemplateMode::Cp) .
                 Html::endTag('div'); // .footer
         }
 
@@ -1828,7 +1829,7 @@ JS, [
                                 'class' => ['action-btn', 'small', 'prevent-autofocus'],
                             ],
                         ]) : '') .
-                        ($showAttribute ? static::renderTemplate('_includes/forms/copytextbtn.twig', [
+                        ($showAttribute ? static::renderTemplate('_includes/forms/copytextbtn', [
                             'id' => "$id-attribute",
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
@@ -1855,7 +1856,7 @@ JS, [
             self::_noticeHtml($tipId, 'notice', t('Tip:'), $tip) .
             self::_noticeHtml($warningId, 'warning', t('Warning:'), $warning) .
             ($errors
-                ? static::renderTemplate('_includes/forms/errorList.twig', [
+                ? static::renderTemplate('_includes/forms/errorList', [
                     'id' => $errorsId,
                     'errors' => $errors,
                 ])
@@ -1906,7 +1907,7 @@ JS, [
      */
     public static function buttonHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/button.twig', $config);
+        return static::renderTemplate('_includes/forms/button', $config);
     }
 
     /**
@@ -1918,7 +1919,7 @@ JS, [
      */
     public static function buttonGroupHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/buttonGroup.twig', $config);
+        return static::renderTemplate('_includes/forms/buttonGroup', $config);
     }
 
     /**
@@ -1933,7 +1934,7 @@ JS, [
     {
         $config['id'] ??= 'buttongroup' . mt_rand();
         $config['fieldset'] = true;
-        return static::fieldHtml('template:_includes/forms/buttonGroup.twig', $config);
+        return static::fieldHtml('template:_includes/forms/buttonGroup', $config);
     }
 
     /**
@@ -1958,7 +1959,7 @@ JS, [
         // Don't pass along `label` since it's ambiguous
         unset($config['label']);
 
-        return static::fieldHtml('template:_includes/forms/checkbox.twig', $config);
+        return static::fieldHtml('template:_includes/forms/checkbox', $config);
     }
 
     /**
@@ -1973,7 +1974,7 @@ JS, [
     {
         $config['id'] ??= 'checkboxselect' . mt_rand();
         $config['fieldset'] = true;
-        return static::fieldHtml('template:_includes/forms/checkboxSelect.twig', $config);
+        return static::fieldHtml('template:_includes/forms/checkboxSelect', $config);
     }
 
     /**
@@ -1985,7 +1986,7 @@ JS, [
      */
     public static function checkboxGroupHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/checkboxGroup.twig', $config);
+        return static::renderTemplate('_includes/forms/checkboxGroup', $config);
     }
 
     /**
@@ -1998,7 +1999,7 @@ JS, [
     public static function checkboxGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxgroup' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/checkboxGroup.twig', $config);
+        return static::fieldHtml('template:_includes/forms/checkboxGroup', $config);
     }
 
     /**
@@ -2012,7 +2013,7 @@ JS, [
      */
     public static function colorHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/color.twig', $config);
+        return static::renderTemplate('_includes/forms/color', $config);
     }
 
     /**
@@ -2027,7 +2028,7 @@ JS, [
     {
         $config['id'] ??= 'color' . mt_rand();
         $config['fieldset'] = true;
-        return static::fieldHtml('template:_includes/forms/color.twig', $config);
+        return static::fieldHtml('template:_includes/forms/color', $config);
     }
 
     /**
@@ -2040,7 +2041,7 @@ JS, [
     public static function colorSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'colorselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/colorSelect.twig', $config);
+        return static::fieldHtml('template:_includes/forms/colorSelect', $config);
     }
 
     /**
@@ -2052,7 +2053,7 @@ JS, [
      */
     public static function iconPickerHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/iconPicker.twig', $config);
+        return static::renderTemplate('_includes/forms/iconPicker', $config);
     }
 
     /**
@@ -2065,7 +2066,7 @@ JS, [
     public static function iconPickerFieldHtml(array $config): string
     {
         $config['id'] ??= 'iconpicker' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/iconPicker.twig', $config);
+        return static::fieldHtml('template:_includes/forms/iconPicker', $config);
     }
 
     /**
@@ -2078,7 +2079,7 @@ JS, [
      */
     public static function editableTableHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/editableTable.twig', $config);
+        return static::renderTemplate('_includes/forms/editableTable', $config);
     }
 
     /**
@@ -2092,7 +2093,7 @@ JS, [
     public static function editableTableFieldHtml(array $config): string
     {
         $config['id'] ??= 'editabletable' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/editableTable.twig', $config);
+        return static::fieldHtml('template:_includes/forms/editableTable', $config);
     }
 
     /**
@@ -2106,7 +2107,7 @@ JS, [
      */
     public static function lightswitchHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/lightswitch.twig', $config);
+        return static::renderTemplate('_includes/forms/lightswitch', $config);
     }
 
     /**
@@ -2128,7 +2129,7 @@ JS, [
         $config['fieldLabel'] ??= $config['label'] ?? null;
         unset($config['label']);
 
-        return static::fieldHtml('template:_includes/forms/lightswitch.twig', $config);
+        return static::fieldHtml('template:_includes/forms/lightswitch', $config);
     }
 
     /**
@@ -2141,7 +2142,7 @@ JS, [
      */
     public static function rangeHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/range.twig', $config);
+        return static::renderTemplate('_includes/forms/range', $config);
     }
 
     /**
@@ -2155,7 +2156,7 @@ JS, [
     public static function rangeFieldHtml(array $config): string
     {
         $config['id'] ??= 'range' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/range.twig', $config);
+        return static::fieldHtml('template:_includes/forms/range', $config);
     }
 
     /**
@@ -2168,7 +2169,7 @@ JS, [
      */
     public static function moneyInputHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/money.twig', $config);
+        return static::renderTemplate('_includes/forms/money', $config);
     }
 
     /**
@@ -2183,7 +2184,7 @@ JS, [
     public static function moneyFieldHtml(array $config): string
     {
         $config['id'] ??= 'money' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/money.twig', $config);
+        return static::fieldHtml('template:_includes/forms/money', $config);
     }
 
     /**
@@ -2195,7 +2196,7 @@ JS, [
      */
     public static function selectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/select.twig', $config);
+        return static::renderTemplate('_includes/forms/select', $config);
     }
 
     /**
@@ -2209,7 +2210,7 @@ JS, [
     public static function selectFieldHtml(array $config): string
     {
         $config['id'] ??= 'select' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/select.twig', $config);
+        return static::fieldHtml('template:_includes/forms/select', $config);
     }
 
     /**
@@ -2221,7 +2222,7 @@ JS, [
      */
     public static function customSelectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/customSelect.twig', $config);
+        return static::renderTemplate('_includes/forms/customSelect', $config);
     }
 
     /**
@@ -2234,7 +2235,7 @@ JS, [
     public static function customSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'customselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/customSelect.twig', $config);
+        return static::fieldHtml('template:_includes/forms/customSelect', $config);
     }
 
     /**
@@ -2246,7 +2247,7 @@ JS, [
      */
     public static function selectizeHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/selectize.twig', $config);
+        return static::renderTemplate('_includes/forms/selectize', $config);
     }
 
     /**
@@ -2260,7 +2261,7 @@ JS, [
     public static function selectizeFieldHtml(array $config): string
     {
         $config['id'] ??= 'selectize' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/selectize.twig', $config);
+        return static::fieldHtml('template:_includes/forms/selectize', $config);
     }
 
     /**
@@ -2272,7 +2273,7 @@ JS, [
      */
     public static function multiSelectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/multiselect.twig', $config);
+        return static::renderTemplate('_includes/forms/multiselect', $config);
     }
 
     /**
@@ -2286,7 +2287,7 @@ JS, [
     public static function multiSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'multiselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/multiselect.twig', $config);
+        return static::fieldHtml('template:_includes/forms/multiselect', $config);
     }
 
     /**
@@ -2299,7 +2300,7 @@ JS, [
      */
     public static function textHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/text.twig', $config);
+        return static::renderTemplate('_includes/forms/text', $config);
     }
 
     /**
@@ -2313,7 +2314,7 @@ JS, [
     public static function textFieldHtml(array $config): string
     {
         $config['id'] ??= 'text' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/text.twig', $config);
+        return static::fieldHtml('template:_includes/forms/text', $config);
     }
 
     /**
@@ -2327,7 +2328,7 @@ JS, [
      */
     public static function textareaHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/textarea.twig', $config);
+        return static::renderTemplate('_includes/forms/textarea', $config);
     }
 
     /**
@@ -2341,7 +2342,7 @@ JS, [
     public static function textareaFieldHtml(array $config): string
     {
         $config['id'] ??= 'textarea' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/textarea.twig', $config);
+        return static::fieldHtml('template:_includes/forms/textarea', $config);
     }
 
     /**
@@ -2355,7 +2356,7 @@ JS, [
      */
     public static function dateHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/date.twig', $config);
+        return static::renderTemplate('_includes/forms/date', $config);
     }
 
     /**
@@ -2369,7 +2370,7 @@ JS, [
     public static function dateFieldHtml(array $config): string
     {
         $config['id'] ??= 'date' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/date.twig', $config);
+        return static::fieldHtml('template:_includes/forms/date', $config);
     }
 
     /**
@@ -2382,7 +2383,7 @@ JS, [
      */
     public static function timeHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/time.twig', $config);
+        return static::renderTemplate('_includes/forms/time', $config);
     }
 
     /**
@@ -2396,7 +2397,7 @@ JS, [
     public static function timeFieldHtml(array $config): string
     {
         $config['id'] ??= 'time' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/time.twig', $config);
+        return static::fieldHtml('template:_includes/forms/time', $config);
     }
 
     /**
@@ -2413,7 +2414,7 @@ JS, [
             'id' => 'datetime' . mt_rand(),
             'fieldset' => true,
         ];
-        return static::fieldHtml('template:_includes/forms/datetime.twig', $config);
+        return static::fieldHtml('template:_includes/forms/datetime', $config);
     }
 
     /**
@@ -2427,7 +2428,7 @@ JS, [
      */
     public static function elementSelectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/elementSelect.twig', $config);
+        return static::renderTemplate('_includes/forms/elementSelect', $config);
     }
 
     /**
@@ -2441,7 +2442,7 @@ JS, [
     public static function elementSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'elementselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/elementSelect.twig', $config);
+        return static::fieldHtml('template:_includes/forms/elementSelect', $config);
     }
 
     /**
@@ -2453,7 +2454,7 @@ JS, [
      */
     public static function entryTypeSelectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/entryTypeSelect.twig', $config);
+        return static::renderTemplate('_includes/forms/entryTypeSelect', $config);
     }
 
     /**
@@ -2466,7 +2467,7 @@ JS, [
     public static function entryTypeSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'entrytypeselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/entryTypeSelect.twig', $config);
+        return static::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
     }
 
     /**
@@ -2502,7 +2503,7 @@ JS, [
             }
         }
 
-        return static::fieldHtml('template:_includes/forms/autosuggest.twig', $config);
+        return static::fieldHtml('template:_includes/forms/autosuggest', $config);
     }
 
     /**
@@ -3685,7 +3686,7 @@ JS, [
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/disclosuremenu.twig', $config, TemplateMode::Cp->value);
+        return template('_includes/disclosuremenu', $config, templateMode: TemplateMode::Cp);
     }
 
     /**
@@ -3723,10 +3724,10 @@ JS, [
      */
     public static function menuItem(array $config, string $menuId): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/menuitem.twig', [
+        return template('_includes/menuitem', [
             'item' => $config,
             'menuId' => $menuId,
-        ], TemplateMode::Cp->value);
+        ], templateMode: TemplateMode::Cp);
     }
 
     /**
@@ -4012,7 +4013,7 @@ JS, [
      */
     public static function fallbackIconSvg(string $label): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/fallback-icon.svg.twig', [
+        return template('_includes/fallback-icon-svg', [
             'label' => $label,
         ]);
     }

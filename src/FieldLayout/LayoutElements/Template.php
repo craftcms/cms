@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use craft\web\twig\CpExtension;
+use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Environment;
 use CraftCms\Cms\View\TemplateMode;
@@ -15,6 +15,7 @@ use Override;
 use Throwable;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 class Template extends BaseUiElement
 {
@@ -27,7 +28,7 @@ class Template extends BaseUiElement
         }
 
         TemplateMode::with(TemplateMode::Site, function () {
-            self::$twig = Craft::$app->getView()->createTwig();
+            self::$twig = Twig::create();
             self::$twig->addExtension(new CpExtension);
         });
 
@@ -97,21 +98,20 @@ class Template extends BaseUiElement
             return $this->_error(t('No template path has been chosen yet.'), 'warning');
         }
 
-        $view = Craft::$app->getView();
         $templateMode = TemplateMode::get();
         TemplateMode::set(TemplateMode::Site);
-        $twig = $view->getTwig();
-        $view->setTwig(self::twig());
+        $twig = Twig::get();
+        Twig::set(self::twig());
 
         try {
-            $content = trim((string) $view->renderTemplate($this->template, [
+            $content = trim(template($this->template, [
                 'element' => $element,
                 'static' => $static,
-            ], $this->templateMode));
+            ], templateMode: TemplateMode::from($this->templateMode)));
         } catch (Throwable $e) {
             return $this->_error($e->getMessage(), 'error');
         } finally {
-            $view->setTwig($twig);
+            Twig::set($twig);
             TemplateMode::set($templateMode);
         }
 

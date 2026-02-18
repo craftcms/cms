@@ -42,7 +42,7 @@ final readonly class UsersController
 
         Edition::require(Edition::Team);
 
-        return view('craftcms::users._index', [
+        return view('users._index', [
             'title' => t('Users'),
             'buttonLabel' => mb_ucfirst(t('New {type}', [
                 'type' => User::lowerDisplayName(),

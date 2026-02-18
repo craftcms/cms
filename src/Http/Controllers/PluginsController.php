@@ -11,6 +11,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Container\Attributes\Give;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -26,7 +27,7 @@ final readonly class PluginsController
         #[Give('Craft')] private Application $craft,
     ) {}
 
-    public function index(): string
+    public function index(): View
     {
         $view = $this->craft->getView();
         $view->registerAssetBundle(PluginsAsset::class);
@@ -39,7 +40,7 @@ final readonly class PluginsController
                 ['name', 'asc'],
             ]);
 
-        return $view->renderPageTemplate('settings/plugins/_index.twig', [
+        return view('settings/plugins/_index', [
             'info' => $info,
             'disabledPlugins' => $this->generalConfig->disabledPlugins,
             'readOnly' => ! $this->generalConfig->allowAdminChanges,

@@ -29,6 +29,7 @@ use ZipArchive;
 
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final readonly class CraftSupportController
 {
@@ -40,7 +41,7 @@ final readonly class CraftSupportController
 
     public function __invoke(Request $request, #[Give('Craft')] Application $craft): string
     {
-        $view = $craft->getView();
+        $craft->getView();
 
         $request->validate([
             'widgetId' => ['required', 'integer'],
@@ -63,7 +64,7 @@ final readonly class CraftSupportController
         ]);
 
         if ($validator->fails()) {
-            return $view->renderTemplate('_components/widgets/CraftSupport/response.twig', [
+            return template('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => $validator->errors()->toArray(),
@@ -123,7 +124,7 @@ final readonly class CraftSupportController
                 RequestOptions::MULTIPART => $parts,
             ]);
 
-            return $view->renderTemplate('_components/widgets/CraftSupport/response.twig', [
+            return template('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
                 'success' => true,
                 'errors' => [],
@@ -132,7 +133,7 @@ final readonly class CraftSupportController
             Log::error("Unable to send support request: {$requestException->getMessage()}", [__METHOD__]);
             report($requestException);
 
-            return $view->renderTemplate('_components/widgets/CraftSupport/response.twig', [
+            return template('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => [

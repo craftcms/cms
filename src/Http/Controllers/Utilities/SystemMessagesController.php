@@ -4,25 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use craft\web\Application;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Validation\Rules\LanguageRule;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+
+use function CraftCms\Cms\template;
 
 final readonly class SystemMessagesController
 {
     use RespondsWithFlash;
 
     public function __construct(
-        #[Give('Craft')]
-        private Application $craft,
         private SystemMessages $systemMessages,
         Utilities $utilities,
     ) {
@@ -43,7 +41,7 @@ final readonly class SystemMessagesController
         $message = $this->systemMessages->getMessage($data['key'], $data['language'] ?? null);
 
         return new JsonResponse([
-            'body' => $this->craft->getView()->renderTemplate('_components/utilities/SystemMessages/message-modal.twig', [
+            'body' => template('_components/utilities/SystemMessages/message-modal', [
                 'message' => $message,
                 'language' => $message?->language,
             ]),

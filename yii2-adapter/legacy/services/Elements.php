@@ -92,6 +92,7 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\web\ForbiddenHttpException;
 use function CraftCms\Cms\normalizeValue;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -4247,7 +4248,7 @@ class Elements extends Component
                             $updated = false;
 
                             foreach ($generatedFields as $field) {
-                                $value = $view->renderObjectTemplate($field['template'] ?? '', $siteElement);
+                                $value = renderObjectTemplate($field['template'] ?? '', $siteElement);
 
                                 // handle 'true'/'false'/'null'/int/float values
                                 $value = normalizeValue($value) ?? '';

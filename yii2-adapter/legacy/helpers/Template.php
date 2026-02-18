@@ -14,6 +14,7 @@ use craft\web\twig\variables\Paginate;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Entries;
+use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Twig\TwigExceptionMapper;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Support\Facades\Auth;
@@ -349,7 +350,7 @@ class Template
         if (preg_match('/^[^\r\n]+\.js(\.gz)?$/i', $js) || UrlHelper::isAbsoluteUrl($js)) {
             AssetRegistry::jsFile($js, $options, $key);
         } else {
-            $position = Position::tryFrom($options['position']) ?? Position::Body;
+            $position = Position::tryFrom($options['position']) ?? Position::BodyEnd;
             AssetRegistry::js($js, $position, $key);
         }
     }
@@ -394,7 +395,7 @@ class Template
     public static function preloadSingles(array $handles): void
     {
         // Ignore handles that are defined Twig globals
-        $globals = Craft::$app->view->getTwig()->getGlobals();
+        $globals = Twig::get()->getGlobals();
         $handles = array_diff($handles, array_keys($globals));
 
         if (!empty($handles)) {

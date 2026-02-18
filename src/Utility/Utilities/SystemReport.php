@@ -21,6 +21,7 @@ use yii\base\Module;
 
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * SystemReport represents a SystemReport dashboard widget.
@@ -86,7 +87,7 @@ final class SystemReport extends Utility
         }
         ksort($aliases);
 
-        return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport.twig', [
+        return template('_components/utilities/SystemReport', [
             'appInfo' => self::appInfo(),
             'plugins' => app(Plugins::class)->getAllPlugins(),
             'modules' => $modules,

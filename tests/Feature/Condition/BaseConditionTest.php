@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\DateCreatedConditionRule;
 use CraftCms\Cms\Element\Conditions\DateUpdatedConditionRule;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
@@ -9,6 +10,10 @@ use CraftCms\Cms\Element\Conditions\IdConditionRule;
 use CraftCms\Cms\Element\Conditions\SlugConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
+use CraftCms\Cms\Entry\Conditions\ExpiryDateConditionRule;
+use CraftCms\Cms\Entry\Conditions\PostDateConditionRule;
+use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
+use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 
 describe('setConditionRules() from config arrays', function () {
@@ -132,7 +137,7 @@ describe('addConditionRule()', function () {
 
         // PostDateConditionRule is only selectable on EntryCondition, not ElementCondition
         $entryCondition = new EntryCondition(Entry::class);
-        $rule = $entryCondition->createConditionRule(\CraftCms\Cms\Entry\Conditions\PostDateConditionRule::class);
+        $rule = $entryCondition->createConditionRule(PostDateConditionRule::class);
 
         $condition->addConditionRule($rule);
     })->throws(InvalidArgumentException::class);
@@ -203,10 +208,10 @@ describe('getSelectableConditionRules()', function () {
         expect($ruleClasses)->toContain(SlugConditionRule::class);
 
         // Plus entry-specific rules
-        expect($ruleClasses)->toContain(\CraftCms\Cms\Entry\Conditions\PostDateConditionRule::class);
-        expect($ruleClasses)->toContain(\CraftCms\Cms\Entry\Conditions\ExpiryDateConditionRule::class);
-        expect($ruleClasses)->toContain(\CraftCms\Cms\Entry\Conditions\SectionConditionRule::class);
-        expect($ruleClasses)->toContain(\CraftCms\Cms\Entry\Conditions\TypeConditionRule::class);
+        expect($ruleClasses)->toContain(PostDateConditionRule::class);
+        expect($ruleClasses)->toContain(ExpiryDateConditionRule::class);
+        expect($ruleClasses)->toContain(SectionConditionRule::class);
+        expect($ruleClasses)->toContain(TypeConditionRule::class);
     });
 
     it('returns instances of ConditionRuleInterface', function () {
@@ -214,7 +219,7 @@ describe('getSelectableConditionRules()', function () {
         $selectableRules = $condition->getSelectableConditionRules();
 
         foreach ($selectableRules as $rule) {
-            expect($rule)->toBeInstanceOf(\CraftCms\Cms\Condition\Contracts\ConditionRuleInterface::class);
+            expect($rule)->toBeInstanceOf(ConditionRuleInterface::class);
         }
     });
 });

@@ -24,6 +24,7 @@ use yii\web\Request;
 use yii\web\Response as YiiResponse;
 use yii\web\ResponseFormatterInterface;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Control panel screen response formatter.
@@ -77,9 +78,9 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $extraToolbarItems = is_callable($behavior->toolbarHtml) ? call_user_func($behavior->toolbarHtml) : $behavior->toolbarHtml;
         $notice = $behavior->noticeHtml ? InputNamespace::namespaceInputs($behavior->noticeHtml, $namespace) : null;
 
-        $tabs = count($behavior->tabs) > 1 ? InputNamespace::namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
+        $tabs = count($behavior->tabs) > 1 ? InputNamespace::namespaceInputs(fn() => template('_includes/tabs', [
             'tabs' => $behavior->tabs,
-        ], TemplateMode::Cp->value), $namespace) : null;
+        ], templateMode: TemplateMode::Cp), $namespace) : null;
 
         $content = InputNamespace::namespaceInputs(function() use ($behavior) {
             $components = [];

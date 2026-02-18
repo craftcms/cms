@@ -16,6 +16,7 @@ use CraftCms\Cms\Utility\Utility;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
@@ -67,7 +68,7 @@ final class AssetIndexes extends Utility
         }
 
         $view = Craft::$app->getView();
-        $checkboxSelectHtml = $view->renderTemplate('_includes/forms/checkboxSelect.twig', [
+        $checkboxSelectHtml = template('_includes/forms/checkboxSelect', [
             'class' => 'first',
             'name' => 'volumes',
             'options' => $volumeOptions,
@@ -80,7 +81,7 @@ final class AssetIndexes extends Utility
 
         $existingIndexingSessions = Craft::$app->getAssetIndexer()->getExistingIndexingSessions();
 
-        return $view->renderTemplate('_components/utilities/AssetIndexes.twig', [
+        return template('_components/utilities/AssetIndexes', [
             'existingSessions' => $existingIndexingSessions,
             'checkboxSelectHtml' => $checkboxSelectHtml,
             'dateFormat' => $dateFormat,

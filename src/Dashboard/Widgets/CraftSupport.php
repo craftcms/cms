@@ -17,6 +17,7 @@ use Override;
 
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class CraftSupport extends Widget
 {
@@ -132,7 +133,7 @@ JS, [
         // Only show the DB backup option if DB backups haven't been disabled
         $showBackupOption = $this->generalConfig->backupCommand !== false;
 
-        return $view->renderTemplate('_components/widgets/CraftSupport/body.twig', [
+        return template('_components/widgets/CraftSupport/body', [
             'widget' => $this,
             'showBackupOption' => $showBackupOption,
             'bundleUrl' => $assetBundle->baseUrl,

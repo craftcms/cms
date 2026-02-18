@@ -12,6 +12,7 @@ use CraftCms\Cms\View\TemplateMode;
 use yii\base\Exception;
 use yii\web\Request;
 use yii\web\Response;
+use function CraftCms\Cms\pageTemplate;
 
 /**
  * This provider is a wrapper for The PHP League's OAuth2 client providers.
@@ -35,13 +36,13 @@ class CraftProvider extends BaseProvider
      */
     public function getSiteLoginHtml(): string
     {
-        return Craft::$app->getView()->renderPageTemplate(
+        return pageTemplate(
             "_login/form",
             [
                 'provider' => $this,
                 'actionPath' => 'auth/request',
             ],
-            TemplateMode::Cp->value
+            TemplateMode::Cp,
         );
     }
 

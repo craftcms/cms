@@ -43,6 +43,7 @@ use ReflectionProperty;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class FieldsController
 {
@@ -59,7 +60,7 @@ final class FieldsController
 
     public function index(): View
     {
-        return view('craftcms::settings/fields/index', [
+        return view('settings/fields/index', [
             'readOnly' => $this->readOnly,
         ]);
     }
@@ -125,7 +126,7 @@ final class FieldsController
         }
 
         $view = Craft::$app->getView();
-        $html = $view->renderTemplate('settings/fields/_type-settings.twig', [
+        $html = template('settings/fields/_type-settings', [
             'field' => $field,
             'namespace' => $request->input('namespace'),
         ]);

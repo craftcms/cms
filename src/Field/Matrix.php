@@ -69,6 +69,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Matrix field type
@@ -307,13 +308,13 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         }
     }
 
-    #[\Override]
+    #[Override]
     public function settingsAttributes(): array
     {
         return Arr::except(parent::settingsAttributes(), 'localizeEntries');
     }
 
-    #[\Override]
+    #[Override]
     public function getSettings(): array
     {
         $settings = parent::getSettings();
@@ -569,7 +570,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -577,8 +578,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
     private function settingsHtml(bool $readOnly): string
     {
-        $view = Craft::$app->getView();
-
         $entryTypes = Collection::make($this->_entryTypes);
         $entryTypeSelectConfig = [
             'name' => 'entryTypes[]',
@@ -608,7 +607,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
         $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
 
-        return $view->renderTemplate('_components/fieldtypes/Matrix/settings.twig', [
+        return template('_components/fieldtypes/Matrix/settings', [
             'field' => $this,
             'entryTypes' => $entryTypes,
             'entryTypeSelectConfig' => $entryTypeSelectConfig,
@@ -785,7 +784,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     private function blockViewActionMenuItems(): array
     {
         $items = [];
-        Craft::$app->getView();
 
         // Expand/Collapse all
         $expandAllId = sprintf('expand-all-%s', mt_rand());
@@ -1183,7 +1181,7 @@ JS;
 
         AssetRegistry::js("(() => {\n$js\n})();");
 
-        return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
+        return template('_components/fieldtypes/Matrix/input', [
             'id' => $id,
             'field' => $this,
             'name' => $this->handle,

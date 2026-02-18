@@ -13,9 +13,14 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use Dotenv\Dotenv;
@@ -33,6 +38,7 @@ use Illuminate\Support\Facades\Http;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
+use ReflectionProperty;
 
 class TestCase extends Orchestra
 {
@@ -118,16 +124,16 @@ class TestCase extends Orchestra
         Widget::flushMacros();
 
         // ElementQuery has its own $macros property (not via Macroable trait)
-        new \ReflectionProperty(ElementQuery::class, 'macros')->setValue(null, []);
+        new ReflectionProperty(ElementQuery::class, 'macros')->setValue(null, []);
 
         // Reset static array caches that grow unboundedly across tests
         $resets = [
             [Element::class, 'sources', []],
-            [\CraftCms\Cms\Field\LinkTypes\BaseElementLinkType::class, 'fetchedElements', []],
-            [\CraftCms\Cms\Support\Typecast::class, 'types', []],
-            [\CraftCms\Cms\Support\PHP::class, 'basePaths', []],
-            [\CraftCms\Cms\FieldLayout\FieldLayoutComponent::class, 'defaultElementConditions', []],
-            [\CraftCms\Cms\FieldLayout\LayoutElements\CustomField::class, 'defaultElementEditConditions', []],
+            [BaseElementLinkType::class, 'fetchedElements', []],
+            [Typecast::class, 'types', []],
+            [PHP::class, 'basePaths', []],
+            [FieldLayoutComponent::class, 'defaultElementConditions', []],
+            [CustomField::class, 'defaultElementEditConditions', []],
         ];
 
         // Reset ProjectConfig "processed" flags
@@ -142,11 +148,11 @@ class TestCase extends Orchestra
         ];
 
         foreach ($projectConfigFlags as $flag) {
-            $resets[] = [\CraftCms\Cms\ProjectConfig\ProjectConfigHelper::class, $flag, false];
+            $resets[] = [ProjectConfigHelper::class, $flag, false];
         }
 
         foreach ($resets as [$class, $property, $default]) {
-            new \ReflectionProperty($class, $property)->setValue(null, $default);
+            new ReflectionProperty($class, $property)->setValue(null, $default);
         }
     }
 

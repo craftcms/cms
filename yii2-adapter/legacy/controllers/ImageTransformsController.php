@@ -68,7 +68,7 @@ class ImageTransformsController extends Controller
         $variables['modes'] = ImageTransform::modes();
         $variables['readOnly'] = $this->readOnly;
 
-        return $this->renderTemplate('settings/assets/transforms/_index.twig', $variables);
+        return $this->rendertemplate('settings/assets/transforms/_index', $variables);
     }
 
     /**
@@ -128,7 +128,7 @@ class ImageTransformsController extends Controller
             $qualityPickerValue = 0;
         }
 
-        return $this->renderTemplate('settings/assets/transforms/_settings.twig', [
+        return $this->rendertemplate('settings/assets/transforms/_settings', [
             'handle' => $transformHandle,
             'transform' => $transform,
             'title' => $title,

@@ -24,7 +24,7 @@ final readonly class UserSettingsController
 
     public function index(): View
     {
-        return view('craftcms::settings/users/_settings', [
+        return view('settings/users/_settings', [
             'readOnly' => ! $this->generalConfig->allowAdminChanges,
             'settings' => $this->projectConfig->get('users') ?? [],
         ]);

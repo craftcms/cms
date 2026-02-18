@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use CraftCms\Cms\RouteToken\RouteTokens;
 use DateTime;
 use yii\base\Component;
 
@@ -52,7 +53,7 @@ class Tokens extends Component
      */
     public function createToken(array|string $route, ?int $usageLimit = null, ?DateTime $expiryDate = null, ?string $token = null): string|false
     {
-        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->createToken($route, $usageLimit, $expiryDate, $token);
+        return app(RouteTokens::class)->createToken($route, $usageLimit, $expiryDate, $token);
     }
 
     /**
@@ -67,7 +68,7 @@ class Tokens extends Component
      */
     public function createPreviewToken(mixed $route, ?int $usageLimit = null, ?string $token = null): string|false
     {
-        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->createPreviewToken($route, $usageLimit, $token);
+        return app(RouteTokens::class)->createPreviewToken($route, $usageLimit, $token);
     }
 
     /**
@@ -78,7 +79,7 @@ class Tokens extends Component
      */
     public function getTokenRoute(string $token): array|false
     {
-        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->getTokenRoute($token);
+        return app(RouteTokens::class)->getTokenRoute($token);
     }
 
     /**
@@ -89,7 +90,7 @@ class Tokens extends Component
      */
     public function incrementTokenUsageCountById(int $tokenId): bool
     {
-        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->incrementTokenUsageCountById($tokenId);
+        return app(RouteTokens::class)->incrementTokenUsageCountById($tokenId);
     }
 
     /**
@@ -100,7 +101,7 @@ class Tokens extends Component
      */
     public function deleteTokenById(int $tokenId): bool
     {
-        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->deleteTokenById($tokenId);
+        return app(RouteTokens::class)->deleteTokenById($tokenId);
     }
 
     /**
@@ -110,6 +111,6 @@ class Tokens extends Component
      */
     public function deleteExpiredTokens(): bool
     {
-        return app(\CraftCms\Cms\RouteToken\RouteTokens::class)->deleteExpiredTokens();
+        return app(RouteTokens::class)->deleteExpiredTokens();
     }
 }

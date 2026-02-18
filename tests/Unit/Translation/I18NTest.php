@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\I18N as I18NService;
 use CraftCms\Cms\Translation\Locale;
+use Illuminate\Support\Collection;
 
 test('normalize language', function (string $expected, string $language) {
     expect(I18N::normalizeLanguage($language))->toBe($expected);
@@ -39,7 +40,7 @@ test('normalize number', function (mixed $expected, mixed $number, ?string $loca
 test('getAllLocaleIds returns all ICU locales with hyphens', function () {
     $localeIds = I18N::getAllLocaleIds();
 
-    expect($localeIds)->toBeInstanceOf(\Illuminate\Support\Collection::class)
+    expect($localeIds)->toBeInstanceOf(Collection::class)
         ->and($localeIds)->toContain('en-US')
         ->and($localeIds)->toContain('nl')
         ->and($localeIds->filter(fn (string $id) => str_contains($id, '_')))->toBeEmpty();

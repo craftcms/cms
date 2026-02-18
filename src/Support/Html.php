@@ -31,6 +31,8 @@ use Yiisoft\Html\NoEncode;
 use Yiisoft\Html\Tag\Button;
 use Yiisoft\Html\Tag\Input;
 
+use function CraftCms\Cms\template;
+
 /**
  * @mixin YiiHtml
  */
@@ -184,12 +186,11 @@ final class Html
         }
 
         Craft::$app->getView()->registerHtml(
-            Craft::$app->getView()->renderTemplate(
+            template(
                 '_special/async-csrf-input',
                 [
                     'url' => UrlHelper::actionUrl('users/session-info'),
-                ],
-                TemplateMode::Cp->value,
+                ], templateMode: TemplateMode::Cp,
             )
         );
 

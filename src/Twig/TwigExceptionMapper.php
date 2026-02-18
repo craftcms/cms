@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig;
 
-use Craft;
+use CraftCms\Cms\Support\Facades\Twig;
 use Exception;
 use Illuminate\Support\Collection;
 use ReflectionProperty;
@@ -80,7 +80,7 @@ final readonly class TwigExceptionMapper
             return false;
         }
 
-        $template = new $class(Craft::$app->getView()->getTwig());
+        $template = new $class(Twig::get());
         $src = $template->getSourceContext();
         $templatePath = $src->getPath() ?: null;
         $templateLine = null;

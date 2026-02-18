@@ -63,6 +63,7 @@ use yii\web\ServerErrorHttpException;
 use ZipArchive;
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -130,7 +131,7 @@ class AssetsController extends Controller
             }
         }
 
-        return $this->renderTemplate('assets/_index', $variables);
+        return $this->rendertemplate('assets/_index', $variables);
     }
 
     /**
@@ -857,7 +858,7 @@ class AssetsController extends Controller
 
         $focal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
 
-        $html = $this->getView()->renderTemplate('_special/image_editor.twig');
+        $html = template('_special/image_editor');
 
         return $this->asJson(['html' => $html, 'focalPoint' => $focal]);
     }

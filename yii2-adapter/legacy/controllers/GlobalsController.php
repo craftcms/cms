@@ -181,7 +181,7 @@ class GlobalsController extends Controller
         ]);
 
         // Render the template!
-        return $this->renderTemplate('yii2-adapter/globals/_edit.twig', [
+        return $this->rendertemplate('yii2-adapter/globals/_edit', [
             'bodyClass' => 'edit-global-set',
             'editableGlobalSets' => $editableGlobalSets,
             'globalSet' => $globalSet,

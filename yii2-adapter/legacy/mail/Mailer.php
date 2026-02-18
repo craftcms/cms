@@ -14,6 +14,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
@@ -22,6 +23,7 @@ use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\mail\MailEvent;
+use function CraftCms\Cms\renderSandboxedString;
 
 /**
  * The Mailer component provides APIs for sending email in Craft.
@@ -107,7 +109,6 @@ class Mailer extends \yii\symfonymailer\Mailer
         ]));
 
         $generalConfig = Cms::config();
-        $view = Craft::$app->getView();
         $currentSite = $messageSite = $twig = null;
         $language = app()->getLocale();
         $generateTransformsBeforePageLoad = $generalConfig->generateTransformsBeforePageLoad;
@@ -124,8 +125,8 @@ class Mailer extends \yii\symfonymailer\Mailer
                     if ($messageSite) {
                         Sites::setCurrentSite($messageSite);
                         // reset Twig so any global sets and singles get reloaded for the new site
-                        $twig = $view->getTwig();
-                        $view->setTwig($view->createTwig());
+                        $twig = Twig::get();
+                        Twig::set(Twig::create());
                     }
                 }
             }
@@ -180,9 +181,9 @@ class Mailer extends \yii\symfonymailer\Mailer
                     ];
 
                 // Render the subject and body text
-                $subject = $view->renderSandboxedString($systemMessage->subject, $variables);
-                $textBody = $view->renderSandboxedString($systemMessage->body, $variables);
-                $htmlBody = $view->renderSandboxedString($systemMessage->body, $variables, escapeHtml: true);
+                $subject = renderSandboxedString($systemMessage->subject, $variables);
+                $textBody = renderSandboxedString($systemMessage->body, $variables);
+                $htmlBody = renderSandboxedString($systemMessage->body, $variables, escapeHtml: true);
 
                 // Remove </> from around URLs, so they’re not interpreted as HTML tags
                 $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $textBody);
@@ -193,17 +194,17 @@ class Mailer extends \yii\symfonymailer\Mailer
                 // Is there a custom HTML template set?
                 if (Edition::get()->value >= Edition::Pro->value && $this->template) {
                     $template = $this->template;
-                    $templateMode = TemplateMode::Site->value;
+                    $templateMode = TemplateMode::Site;
                 } else {
                     // Default to the _special/email.html template
                     $template = '_special/email.twig';
-                    $templateMode = TemplateMode::Cp->value;
+                    $templateMode = TemplateMode::Cp;
                 }
 
                 try {
-                    $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
+                    $message->setHtmlBody(\CraftCms\Cms\template($template, array_merge($variables, [
                         'body' => Template::raw(Markdown::process($htmlBody, 'gfm')),
-                    ]), $templateMode));
+                    ]), templateMode: $templateMode));
                 } catch (Throwable $e) {
                     // Just log it and don't worry about the HTML body
                     Log::warning('Error rendering email template: ' . $e->getMessage(), [__METHOD__]);
@@ -241,7 +242,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             TemplateMode::set($originalTemplateMode);
 
             if ($twig) {
-                $view->setTwig($twig);
+                Twig::set($twig);
             }
 
             Craft::configure($this, $originalSettings);

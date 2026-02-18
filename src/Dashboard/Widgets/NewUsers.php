@@ -15,6 +15,7 @@ use CraftCms\Cms\User\Elements\User;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class NewUsers extends Widget
 {
@@ -87,7 +88,7 @@ final class NewUsers extends Widget
     #[Override]
     public function getSettingsHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/NewUsers/settings.twig',
+        return template('_components/widgets/NewUsers/settings',
             [
                 'widget' => $this,
             ]);

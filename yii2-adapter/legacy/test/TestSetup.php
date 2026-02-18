@@ -11,6 +11,7 @@ namespace craft\test;
 
 use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Craft;
+use craft\behaviors\CustomFieldBehavior;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\helpers\Db;
@@ -63,6 +64,7 @@ use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Yii2Adapter\Container;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config as ConfigFacade;
@@ -70,10 +72,12 @@ use Illuminate\Support\Facades\Event as LaravelEvent;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
+use Yii;
 use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
+use yii\BaseYii;
 use yii\db\Exception;
 use yii\mutex\Mutex;
 
@@ -144,22 +148,22 @@ class TestSetup
         Craft::$app = null;
 
         // Reset Yii2 container to prevent singleton accumulation
-        \Yii::$container = new \CraftCms\Yii2Adapter\Container();
+        Yii::$container = new Container();
 
         // Reset BaseYii statics that accumulate across tests
-        \yii\BaseYii::$classMap = [];
-        \yii\BaseYii::$aliases = ['@yii' => dirname((new \ReflectionClass(\yii\BaseYii::class))->getFileName())];
+        BaseYii::$classMap = [];
+        BaseYii::$aliases = ['@yii' => dirname((new ReflectionClass(BaseYii::class))->getFileName())];
 
         // Reset Yii alias paths cache (private static)
-        $ref = new \ReflectionClass(\Yii::class);
+        $ref = new ReflectionClass(Yii::class);
         $aliasPaths = $ref->getProperty('_aliasPaths');
         $aliasPaths->setValue(null, []);
         $aliasesChanged = $ref->getProperty('_aliasesChanged');
         $aliasesChanged->setValue(null, false);
 
         // Reset CustomFieldBehavior static handles
-        \craft\behaviors\CustomFieldBehavior::$fieldHandles = [];
-        \craft\behaviors\CustomFieldBehavior::$generatedFieldHandles = [];
+        CustomFieldBehavior::$fieldHandles = [];
+        CustomFieldBehavior::$generatedFieldHandles = [];
     }
 
     /**

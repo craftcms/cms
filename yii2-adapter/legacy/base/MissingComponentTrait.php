@@ -7,7 +7,6 @@
 
 namespace craft\base;
 
-use Craft;
 use craft\helpers\Component as ComponentHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Support\Facades\Auth;
 use yii\base\Arrayable;
+use function CraftCms\Cms\template;
 
 /**
  * MissingComponentTrait implements the common methods and properties for classes implementing [[MissingComponentInterface]].
@@ -131,7 +131,7 @@ trait MissingComponentTrait
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_special/missing-component.twig', compact(
+        return template('_special/missing-component', compact(
             'error',
             'showPlugin',
             'isComposerInstalled',

@@ -8,7 +8,6 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\Event as YiiEvent;
 use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
@@ -21,7 +20,15 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Environment;
+use CraftCms\Cms\Twig\Events\BeginPage;
+use CraftCms\Cms\Twig\Events\EndPage;
+use CraftCms\Cms\Twig\Events\PageTemplateRendered;
+use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
+use CraftCms\Cms\Twig\Events\RenderingTemplate;
+use CraftCms\Cms\Twig\Events\TemplateRendered;
 use CraftCms\Cms\Twig\Events\TwigCreated;
+use CraftCms\Cms\Twig\PageLifecycle;
+use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\AssetRegistry;
@@ -31,21 +38,16 @@ use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\ExtensionInterface;
-use Twig\Extension\SandboxExtension;
-use Twig\Template as TwigTemplate;
-use Twig\TemplateWrapper;
-use yii\base\Arrayable;
 use yii\base\Exception;
-use yii\base\Model;
 use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * @inheritdoc
@@ -88,11 +90,13 @@ class View extends \yii\web\View
 
     /**
      * @event TemplateEvent The event that is triggered before a template gets rendered
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Events\RenderingTemplate} instead.
      */
     public const EVENT_BEFORE_RENDER_TEMPLATE = 'beforeRenderTemplate';
 
     /**
      * @event TemplateEvent The event that is triggered after a template gets rendered
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Events\TemplateRendered} instead.
      */
     public const EVENT_AFTER_RENDER_TEMPLATE = 'afterRenderTemplate';
 
@@ -148,11 +152,6 @@ class View extends \yii\web\View
      * @since 3.5.0
      */
     public bool $allowEval = false;
-
-    /**
-     * @var TemplateWrapper[]
-     */
-    private array $_objectTemplates = [];
 
     /**
      * @var int JS buffer depth counter — tracks nesting level for startJsBuffer/clearJsBuffer.
@@ -216,51 +215,10 @@ class View extends \yii\web\View
     private array $_loadJs = [];
 
     /**
-     * @var array<string, string> JS registered at POS_BEGIN, keyed by key.
-     * These are kept in the adapter (not the registry) because the registry
-     * only has Head and Body positions — POS_BEGIN content must render at
-     * the body-begin placeholder, separate from body-end content.
-     */
-    private array $_beginJs = [];
-
-    /**
-     * @var array<string, string> HTML registered at POS_BEGIN, keyed by key.
-     * Kept in the adapter for the same reason as $_beginJs.
-     */
-    private array $_beginHtml = [];
-
-    /**
-     * @var array<string, string> Script tags registered at POS_BEGIN, keyed by key.
-     * Kept in the adapter for the same reason as $_beginJs.
-     */
-    private array $_beginScripts = [];
-
-    /**
-     * @var array<string, string> JS file tags registered at POS_BEGIN, keyed by key.
-     * Kept in the adapter for the same reason as $_beginJs.
-     */
-    private array $_beginJsFiles = [];
-
-    /**
      * @var list<array{ready: array<string, string>, load: array<string, string>, begin: array<string, string>}>
      * Buffer stack for POS_READY/POS_LOAD/POS_BEGIN JS.
      */
     private array $_readyLoadBuffers = [];
-
-    /**
-     * @var list<array<string, string>> Buffer stack for $_beginScripts.
-     */
-    private array $_scriptBeginBuffers = [];
-
-    /**
-     * @var list<array<string, string>> Buffer stack for $_beginJsFiles.
-     */
-    private array $_jsFileBeginBuffers = [];
-
-    /**
-     * @var list<array<string, string>> Buffer stack for $_beginHtml.
-     */
-    private array $_htmlBeginBuffers = [];
 
     /**
      * @var array<string, int> Maps JS keys to their original Yii2 position (POS_HEAD or POS_BEGIN)
@@ -272,16 +230,6 @@ class View extends \yii\web\View
      * @var list<array<string, int>> Buffer stack for $_jsOriginalPositions.
      */
     private array $_jsOriginalPositionBuffers = [];
-
-    /**
-     * @var string|null
-     */
-    private ?string $_renderingTemplate = null;
-
-    /**
-     * @var bool
-     */
-    private bool $_isRenderingPageTemplate = false;
 
     /**
      * @var string[]
@@ -331,6 +279,8 @@ class View extends \yii\web\View
      */
     public function getTwig(?string $templateMode = null): Environment
     {
+        Deprecator::log(__METHOD__, '`craft\web\View::getTwig()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::get()` instead.');
+
         $mode = TemplateMode::tryFrom($templateMode) ?? TemplateMode::get();
 
         return app(Twig::class)->get($mode);
@@ -346,6 +296,8 @@ class View extends \yii\web\View
      */
     public function setTwig(Environment $twig): void
     {
+        Deprecator::log(__METHOD__, '`craft\web\View::setTwig()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::set()` instead.');
+
         app(Twig::class)->set($twig);
     }
 
@@ -357,6 +309,8 @@ class View extends \yii\web\View
      */
     public function createTwig(): Environment
     {
+        Deprecator::log(__METHOD__, '`craft\web\View::createTwig()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::create()` instead.');
+
         return app(Twig::class)->create();
     }
 
@@ -369,6 +323,8 @@ class View extends \yii\web\View
      */
     public function registerTwigExtension(ExtensionInterface $extension): void
     {
+        Deprecator::log(__METHOD__, '`craft\web\View::registerTwigExtension()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::registerExtension()` instead.');
+
         app(Twig::class)->registerExtension($extension);
     }
 
@@ -382,6 +338,8 @@ class View extends \yii\web\View
      */
     public function registerCpTwigExtension(ExtensionInterface $extension): void
     {
+        Deprecator::log(__METHOD__, '`craft\web\View::registerCpTwigExtension()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::registerExtension($extension, TemplateMode::Cp)` instead.');
+
         app(Twig::class)->registerExtension($extension, TemplateMode::Cp);
     }
 
@@ -395,6 +353,8 @@ class View extends \yii\web\View
      */
     public function registerSiteTwigExtension(ExtensionInterface $extension): void
     {
+        Deprecator::log(__METHOD__, '`craft\web\View::registerSiteTwigExtension()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::registerExtension($extension, TemplateMode::Site)` instead.');
+
         app(Twig::class)->registerExtension($extension, TemplateMode::Site);
     }
 
@@ -402,10 +362,13 @@ class View extends \yii\web\View
      * Returns whether a template is currently being rendered.
      *
      * @return bool Whether a template is currently being rendered.
+     * @deprecated 6.0.0 use {@see TemplateRenderer::isRenderingTemplate()} instead.
      */
     public function getIsRenderingTemplate(): bool
     {
-        return isset($this->_renderingTemplate);
+        Deprecator::log(__METHOD__, '`craft\web\View::getIsRenderingTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::isRenderingTemplate` instead.');
+
+        return app(TemplateRenderer::class)->isRenderingTemplate();
     }
 
     /**
@@ -419,35 +382,17 @@ class View extends \yii\web\View
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
      * @throws Exception if $templateMode is invalid
+     * @deprecated 6.0.0 use {@see TemplateRenderer::renderTemplate()} instead.
      */
     public function renderTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
-        if ($templateMode === null) {
-            $templateMode = TemplateMode::get()->value;
-        }
+        Deprecator::log(__METHOD__, '`craft\web\View::renderTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderTemplate()` or the `template()` helper instead.');
 
-        if (!$this->beforeRenderTemplate($template, $variables, $templateMode)) {
-            return '';
-        }
+        $templateMode = $templateMode
+            ? TemplateMode::from($templateMode)
+            : TemplateMode::get();
 
-        Log::debug("Rendering template: $template", [__METHOD__]);
-
-        $oldTemplateMode = TemplateMode::get();
-        TemplateMode::set(TemplateMode::from($templateMode));
-
-        // Render and return
-        $renderingTemplate = $this->_renderingTemplate;
-        $this->_renderingTemplate = $template;
-
-        try {
-            $output = $this->getTwig()->render($template, $variables);
-        } finally {
-            $this->_renderingTemplate = $renderingTemplate;
-            TemplateMode::set($oldTemplateMode);
-        }
-
-        $this->afterRenderTemplate($template, $variables, $templateMode, $output);
-        return $output;
+        return app(TemplateRenderer::class)->renderTemplate($template, $variables, $templateMode);
     }
 
     /**
@@ -463,20 +408,26 @@ class View extends \yii\web\View
      * @throws Exception if $templateMode is invalid
      * @see renderTemplate()
      * @since 4.17.0
+     * @deprecated 6.0.0 use {@see TemplateRenderer::renderSandboxedTemplate()} instead.
      */
     public function renderSandboxedTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
-        return $this->sandbox(fn() => $this->renderTemplate($template, $variables, $templateMode), $templateMode);
+        Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderSandboxedTemplate()` or the `sandboxedTemplate()` helper instead.');
+
+        return app(TemplateRenderer::class)->renderSandboxedTemplate($template, $variables, $templateMode ? TemplateMode::from($templateMode) : null);
     }
 
     /**
      * Returns whether a page template is currently being rendered.
      *
      * @return bool Whether a page template is currently being rendered.
+     * @deprecated 6.0.0 use {@see TemplateRenderer::isRenderingPageTemplate()} instead.
      */
     public function getIsRenderingPageTemplate(): bool
     {
-        return $this->_isRenderingPageTemplate;
+        Deprecator::log(__METHOD__, '`craft\web\View::getIsRenderingPageTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::isRenderingPageTemplate` instead.');
+
+        return app(TemplateRenderer::class)->isRenderingPageTemplate();
     }
 
     /**
@@ -490,38 +441,13 @@ class View extends \yii\web\View
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
      * @throws Exception if $templateMode is invalid
+     * @deprecated 6.0.0 use {@see TemplateRenderer::renderPageTemplate()} instead.
      */
     public function renderPageTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
-        if ($templateMode === null) {
-            $templateMode = TemplateMode::get()->value;
-        }
+        Deprecator::log(__METHOD__, '`craft\web\View::renderPageTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderPageTemplate()` or the `pageTemplate()` helper instead.');
 
-        if (!$this->beforeRenderPageTemplate($template, $variables, $templateMode)) {
-            return '';
-        }
-
-        ob_start();
-        ob_implicit_flush(false);
-
-        $oldTemplateMode = TemplateMode::get();
-        TemplateMode::set(TemplateMode::from($templateMode));
-
-        $isRenderingPageTemplate = $this->_isRenderingPageTemplate;
-        $this->_isRenderingPageTemplate = true;
-
-        try {
-            $this->beginPage();
-            echo $this->renderTemplate($template, $variables);
-            $this->endPage();
-        } finally {
-            $this->_isRenderingPageTemplate = $isRenderingPageTemplate;
-            TemplateMode::set($oldTemplateMode);
-            $output = ob_get_clean();
-        }
-
-        $this->afterRenderPageTemplate($template, $variables, $templateMode, $output);
-        return $output;
+        return app(TemplateRenderer::class)->renderPageTemplate($template, $variables, $templateMode ? TemplateMode::from($templateMode) : null);
     }
 
     /**
@@ -534,33 +460,13 @@ class View extends \yii\web\View
      * @return string The rendered template.
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
+     * @deprecated 6.0.0 use {@see TemplateRenderer::renderString()} instead.
      */
     public function renderString(string $template, array $variables = [], string $templateMode = TemplateMode::Site->value, bool $escapeHtml = false): string
     {
-        // If there are no dynamic tags, just return the template
-        if (!str_contains($template, '{')) {
-            return $template;
-        }
+        Deprecator::log(__METHOD__, '`craft\web\View::renderString()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderString()` or the `renderString()` helper instead.');
 
-        $oldTemplateMode = TemplateMode::get();
-        TemplateMode::set(TemplateMode::from($templateMode));
-
-        $twig = $this->getTwig();
-        if (!$escapeHtml) {
-            $twig->setDefaultEscaperStrategy(false);
-        }
-        $lastRenderingTemplate = $this->_renderingTemplate;
-        $this->_renderingTemplate = 'string:' . $template;
-
-        try {
-            return $twig->createTemplate($template)->render($variables);
-        } finally {
-            $this->_renderingTemplate = $lastRenderingTemplate;
-            if (!$escapeHtml) {
-                $twig->setDefaultEscaperStrategy();
-            }
-            TemplateMode::set($oldTemplateMode);
-        }
+        return app(TemplateRenderer::class)->renderString($template, $variables, TemplateMode::from($templateMode), $escapeHtml);
     }
 
     /**
@@ -575,10 +481,13 @@ class View extends \yii\web\View
      * @throws TwigSyntaxError
      * @see renderString()
      * @since 4.17.0
+     * @deprecated 6.0.0 use {@see TemplateRenderer::renderSandboxedString()} instead.
      */
     public function renderSandboxedString(string $template, array $variables = [], string $templateMode = TemplateMode::Site->value, bool $escapeHtml = false): string
     {
-        return $this->sandbox(fn() => $this->renderString($template, $variables, $templateMode, $escapeHtml), $templateMode);
+        Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedString()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderSandboxedString()` or the `renderSandboxedString()` helper instead.');
+
+        return app(TemplateRenderer::class)->renderSandboxedString($template, $variables, TemplateMode::from($templateMode), $escapeHtml);
     }
 
     /**
@@ -599,99 +508,13 @@ class View extends \yii\web\View
      * @return string The rendered template.
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
+     * @deprecated 6.0.0 use {@see TemplateRenderer::renderObjectTemplate()} instead.
      */
     public function renderObjectTemplate(string $template, mixed $object, array $variables = [], string $templateMode = TemplateMode::Site->value): string
     {
-        // If there are no dynamic tags, just return the template
-        if (!str_contains($template, '{')) {
-            return trim($template);
-        }
+        Deprecator::log(__METHOD__, '`craft\web\View::renderObjectTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderObjectTemplate()` or the `renderObjectTemplate()` helper instead.');
 
-        $oldTemplateMode = TemplateMode::get();
-        TemplateMode::set(TemplateMode::from($templateMode));
-        $twig = $this->getTwig();
-
-        // Temporarily disable strict variables if it's enabled
-        $strictVariables = $twig->isStrictVariables();
-
-        if ($strictVariables) {
-            $twig->disableStrictVariables();
-        }
-
-        $twig->setDefaultEscaperStrategy(false);
-        $lastRenderingTemplate = $this->_renderingTemplate;
-        $this->_renderingTemplate = 'string:' . $template;
-
-        try {
-            // Is this the first time we've parsed this template?
-            $cacheKey = md5($template);
-            if (!isset($this->_objectTemplates[$cacheKey])) {
-                // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
-                $template = $this->normalizeObjectTemplate($template);
-                $this->_objectTemplates[$cacheKey] = $twig->createTemplate($template);
-            }
-
-            // Get the variables to pass to the template
-            if ($object instanceof Arrayable) {
-                if (preg_match('/\binclude\b/', $template)) {
-                    // Export all normal fields, since we don’t know what the included template is going to need
-                    // (https://github.com/craftcms/cms/issues/18165)
-                    $fields = [];
-                } else {
-                    $fields = $this->filterFieldsByTemplate($object->fields(), $template) ?: ['!'];
-                }
-
-                $variables += $object->toArray(
-                    $fields,
-                    $this->filterFieldsByTemplate($object->extraFields(), $template),
-                    false,
-                );
-            }
-
-            if ($object instanceof Model) {
-                foreach ($object->attributes() as $name) {
-                    if (
-                        !isset($variables[$name]) &&
-                        preg_match(sprintf('/\b%s\b/', preg_quote($name, '/')), $template)
-                    ) {
-                        $variables[$name] = $object->$name;
-                    }
-                }
-            }
-
-            $variables['object'] = $object;
-            $variables['_variables'] = $variables;
-
-            // Render it!
-            /** @var TwigTemplate $templateObj */
-            $templateObj = $this->_objectTemplates[$cacheKey];
-            return trim($templateObj->render($variables));
-        } finally {
-            $this->_renderingTemplate = $lastRenderingTemplate;
-            $twig->setDefaultEscaperStrategy();
-            TemplateMode::set($oldTemplateMode);
-
-            // Re-enable strict variables
-            if ($strictVariables) {
-                $twig->enableStrictVariables();
-            }
-        }
-    }
-
-    private function filterFieldsByTemplate(array $fields, string $template): array
-    {
-        $filtered = [];
-
-        foreach ($fields as $field => $definition) {
-            if (is_int($field)) {
-                $field = $definition;
-            }
-            if (preg_match(sprintf('/\b%s\b/', preg_quote($field, '/')), $template)) {
-                $filtered[] = $field;
-            }
-        }
-
-        return $filtered;
+        return app(TemplateRenderer::class)->renderObjectTemplate($template, $object, $variables, TemplateMode::from($templateMode));
     }
 
     /**
@@ -706,6 +529,7 @@ class View extends \yii\web\View
      * @throws Throwable in case of failure
      * @see renderObjectTemplate()
      * @since 4.17.0
+     * @deprecated 6.0.0 use {@see TemplateRenderer::renderSandboxedObjectTemplate()} instead.
      */
     public function renderSandboxedObjectTemplate(
         string $template,
@@ -713,7 +537,9 @@ class View extends \yii\web\View
         array $variables = [],
         string $templateMode = TemplateMode::Site->value,
     ): string {
-        return $this->sandbox(fn() => $this->renderObjectTemplate($template, $object, $variables, $templateMode), $templateMode);
+        Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedObjectTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::renderSandboxedObjectTemplate()` or the `renderSandboxedObjectTemplate()` helper instead.');
+
+        return app(TemplateRenderer::class)->renderSandboxedObjectTemplate($template, $object, $variables, TemplateMode::from($templateMode));
     }
 
     /**
@@ -721,67 +547,13 @@ class View extends \yii\web\View
      *
      * @param string $template
      * @return string
+     * @deprecated 6.0.0 use {@see TemplateRenderer::normalizeObjectTemplate()} instead.
      */
     public function normalizeObjectTemplate(string $template): string
     {
-        $tokens = [];
+        Deprecator::log(__METHOD__, '`craft\web\View::normalizeObjectTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::normalizeObjectTemplate()` instead.');
 
-        // Tokenize {% verbatim %} ... {% endverbatim %} tags in their entirety
-        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s',
-            function(array $matches) use (&$tokens) {
-                $token = 'tok_' . Str::random(10);
-                $tokens[$token] = $matches[0];
-                return $token;
-            },
-            $template
-        );
-
-        // Tokenize any remaining Twig tags (including print tags)
-        $template = preg_replace_callback('/\{%-?\s*\w+.*?%\}|(?<!\{)\{\{(?!\{).+?(?<!\})\}\}(?!\})/s',
-            function(array $matches) use (&$tokens) {
-                $token = 'tok_' . Str::random(10);
-                $tokens[$token] = $matches[0];
-                return $token;
-            },
-            $template
-        );
-
-        // Tokenize inline code and code blocks
-        $template = preg_replace_callback('/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s', function(array $matches) use (&$tokens) {
-            $token = 'tok_' . Str::random(10);
-            $tokens[$token] = '{% verbatim %}' . $matches[0] . '{% endverbatim %}';
-            return $token;
-        }, $template);
-
-        // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
-        while (true) {
-            $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function(array $matches) use (&$tokens) {
-                $token = 'tok_' . Str::random(10);
-                $tokens[$token] = $matches[0];
-                return $token;
-            }, $template, -1, $count);
-            if ($count === 0) {
-                break;
-            }
-        }
-
-        // Swap out the remaining {xyz} tags with {{object.xyz}}
-        $template = preg_replace_callback('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', function(array $match) {
-            // Is this a function call like `clone()`?
-            if (!empty($match[2]) && $match[2][0] === '(') {
-                $replace = $match[1] . $match[2];
-            } else {
-                $replace = "(_variables.$match[1] ?? object.$match[1])$match[2]";
-            }
-            return "{{ $replace|raw }}";
-        }, $template);
-
-        // Bring the objects back
-        foreach (array_reverse($tokens) as $token => $value) {
-            $template = str_replace($token, $value, $template);
-        }
-
-        return $template;
+        return app(TemplateRenderer::class)->normalizeObjectTemplate($template);
     }
 
     /**
@@ -918,11 +690,11 @@ class View extends \yii\web\View
                 $this->_jsOriginalPositions[$key] = $position;
             })(),
             self::POS_BEGIN => (function() use ($js, $key, $position) {
-                $this->_beginJs[$key] = $js;
+                $this->registry()->js($js, Position::BodyBegin, $key);
                 $this->_jsOriginalPositions[$key] = $position;
             })(),
             self::POS_END => (function() use ($js, $key, $position) {
-                $this->registry()->js($js, Position::Body, $key);
+                $this->registry()->js($js, Position::BodyEnd, $key);
                 $this->_jsOriginalPositions[$key] = $position;
             }
             )(),
@@ -977,11 +749,9 @@ class View extends \yii\web\View
         $this->_readyLoadBuffers[] = [
             'ready' => $this->_readyJs,
             'load' => $this->_loadJs,
-            'begin' => $this->_beginJs,
         ];
         $this->_readyJs = [];
         $this->_loadJs = [];
-        $this->_beginJs = [];
 
         $this->_jsOriginalPositionBuffers[] = $this->_jsOriginalPositions;
         $this->_jsOriginalPositions = [];
@@ -1011,17 +781,14 @@ class View extends \yii\web\View
         // Capture and restore the adapter's ready/load/begin JS
         $bufferedReadyJs = $this->_readyJs;
         $bufferedLoadJs = $this->_loadJs;
-        $bufferedBeginJs = $this->_beginJs;
 
         if (!empty($this->_readyLoadBuffers)) {
             $previousReadyLoad = array_pop($this->_readyLoadBuffers);
             $this->_readyJs = $previousReadyLoad['ready'];
             $this->_loadJs = $previousReadyLoad['load'];
-            $this->_beginJs = $previousReadyLoad['begin'];
         } else {
             $this->_readyJs = [];
             $this->_loadJs = [];
-            $this->_beginJs = [];
         }
 
         // Capture and restore the original position map
@@ -1038,16 +805,19 @@ class View extends \yii\web\View
                 $bufferedJs[$originalPos][$key] = $js;
             }
         }
-        // Position::Body entries map back to POS_END
-        if (!empty($registryState[Position::Body->value])) {
-            foreach ($registryState[Position::Body->value] as $key => $js) {
-                $originalPos = $bufferedPositions[$key] ?? self::POS_END;
+        // Position::BodyBegin entries map back to POS_BEGIN
+        if (!empty($registryState[Position::BodyBegin->value])) {
+            foreach ($registryState[Position::BodyBegin->value] as $key => $js) {
+                $originalPos = $bufferedPositions[$key] ?? self::POS_BEGIN;
                 $bufferedJs[$originalPos][$key] = $js;
             }
         }
-        // POS_BEGIN entries come from the adapter-local _beginJs array
-        if (!empty($bufferedBeginJs)) {
-            $bufferedJs[self::POS_BEGIN] = $bufferedBeginJs;
+        // Position::BodyEnd entries map back to POS_END
+        if (!empty($registryState[Position::BodyEnd->value])) {
+            foreach ($registryState[Position::BodyEnd->value] as $key => $js) {
+                $originalPos = $bufferedPositions[$key] ?? self::POS_END;
+                $bufferedJs[$originalPos][$key] = $js;
+            }
         }
         if (!empty($bufferedReadyJs)) {
             $bufferedJs[self::POS_READY] = $bufferedReadyJs;
@@ -1094,9 +864,6 @@ class View extends \yii\web\View
     {
         $this->registry()->startScriptBuffer();
         $this->_scriptBufferDepth++;
-
-        $this->_scriptBeginBuffers[] = $this->_beginScripts;
-        $this->_beginScripts = [];
     }
 
     /**
@@ -1118,19 +885,16 @@ class View extends \yii\web\View
         $registryState = $this->registry()->clearScriptBuffer();
         $this->_scriptBufferDepth--;
 
-        $bufferedBeginScripts = $this->_beginScripts;
-        $this->_beginScripts = array_pop($this->_scriptBeginBuffers) ?? [];
-
         // Map registry positions back to Yii2 positions
         $bufferedScripts = [];
         if (!empty($registryState[Position::Head->value])) {
             $bufferedScripts[self::POS_HEAD] = array_map(fn($v) => (string) $v, $registryState[Position::Head->value]);
         }
-        if (!empty($bufferedBeginScripts)) {
-            $bufferedScripts[self::POS_BEGIN] = array_map(fn($v) => (string) $v, $bufferedBeginScripts);
+        if (!empty($registryState[Position::BodyBegin->value])) {
+            $bufferedScripts[self::POS_BEGIN] = array_map(fn($v) => (string) $v, $registryState[Position::BodyBegin->value]);
         }
-        if (!empty($registryState[Position::Body->value])) {
-            $bufferedScripts[self::POS_END] = array_map(fn($v) => (string) $v, $registryState[Position::Body->value]);
+        if (!empty($registryState[Position::BodyEnd->value])) {
+            $bufferedScripts[self::POS_END] = array_map(fn($v) => (string) $v, $registryState[Position::BodyEnd->value]);
         }
 
         return $bufferedScripts;
@@ -1221,9 +985,6 @@ class View extends \yii\web\View
     {
         $this->registry()->startJsFileBuffer();
         $this->_jsFileBufferDepth++;
-
-        $this->_jsFileBeginBuffers[] = $this->_beginJsFiles;
-        $this->_beginJsFiles = [];
     }
 
     /**
@@ -1244,19 +1005,16 @@ class View extends \yii\web\View
         $registryState = $this->registry()->clearJsFileBuffer();
         $this->_jsFileBufferDepth--;
 
-        $bufferedBeginJsFiles = $this->_beginJsFiles;
-        $this->_beginJsFiles = array_pop($this->_jsFileBeginBuffers) ?? [];
-
         // Map registry positions back to Yii2 positions
         $bufferedJsFiles = [];
         if (!empty($registryState[Position::Head->value])) {
             $bufferedJsFiles[self::POS_HEAD] = $registryState[Position::Head->value];
         }
-        if (!empty($bufferedBeginJsFiles)) {
-            $bufferedJsFiles[self::POS_BEGIN] = $bufferedBeginJsFiles;
+        if (!empty($registryState[Position::BodyBegin->value])) {
+            $bufferedJsFiles[self::POS_BEGIN] = $registryState[Position::BodyBegin->value];
         }
-        if (!empty($registryState[Position::Body->value])) {
-            $bufferedJsFiles[self::POS_END] = $registryState[Position::Body->value];
+        if (!empty($registryState[Position::BodyEnd->value])) {
+            $bufferedJsFiles[self::POS_END] = $registryState[Position::BodyEnd->value];
         }
 
         foreach ($bufferedJsFiles as $files) {
@@ -1279,9 +1037,6 @@ class View extends \yii\web\View
     {
         $this->registry()->startHtmlBuffer();
         $this->_htmlBufferDepth++;
-
-        $this->_htmlBeginBuffers[] = $this->_beginHtml;
-        $this->_beginHtml = [];
     }
 
     /**
@@ -1301,19 +1056,16 @@ class View extends \yii\web\View
         $registryState = $this->registry()->clearHtmlBuffer();
         $this->_htmlBufferDepth--;
 
-        $bufferedBeginHtml = $this->_beginHtml;
-        $this->_beginHtml = array_pop($this->_htmlBeginBuffers) ?? [];
-
         // Map registry positions back to Yii2 positions
         $bufferedHtml = [];
         if (!empty($registryState[Position::Head->value])) {
             $bufferedHtml[self::POS_HEAD] = $registryState[Position::Head->value];
         }
-        if (!empty($bufferedBeginHtml)) {
-            $bufferedHtml[self::POS_BEGIN] = $bufferedBeginHtml;
+        if (!empty($registryState[Position::BodyBegin->value])) {
+            $bufferedHtml[self::POS_BEGIN] = $registryState[Position::BodyBegin->value];
         }
-        if (!empty($registryState[Position::Body->value])) {
-            $bufferedHtml[self::POS_END] = $registryState[Position::Body->value];
+        if (!empty($registryState[Position::BodyEnd->value])) {
+            $bufferedHtml[self::POS_END] = $registryState[Position::BodyEnd->value];
         }
 
         return $bufferedHtml;
@@ -1442,14 +1194,10 @@ class View extends \yii\web\View
 
         $key ??= $url;
 
-        if ($position === self::POS_BEGIN) {
-            $this->_beginJsFiles[$key] = Html::javaScriptFile($url, $options)->render();
-            return;
-        }
-
         $registryPosition = match ($position) {
             self::POS_HEAD => Position::Head->value,
-            default => Position::Body->value,
+            self::POS_BEGIN => Position::BodyBegin->value,
+            default => Position::BodyEnd->value,
         };
         $options['position'] = $registryPosition;
 
@@ -1511,14 +1259,10 @@ class View extends \yii\web\View
     {
         $key ??= md5($script);
 
-        if ($position === self::POS_BEGIN) {
-            $this->_beginScripts[$key] = Html::script($script, $options)->render();
-            return;
-        }
-
         $registryPosition = match ($position) {
             self::POS_HEAD => Position::Head,
-            default => Position::Body,
+            self::POS_BEGIN => Position::BodyBegin,
+            default => Position::BodyEnd,
         };
 
         $this->registry()->script($script, $registryPosition, $options, $key);
@@ -1566,14 +1310,10 @@ class View extends \yii\web\View
     {
         $key ??= md5($html);
 
-        if ($position === self::POS_BEGIN) {
-            $this->_beginHtml[$key] = $html;
-            return;
-        }
-
         $registryPosition = match ($position) {
             self::POS_HEAD => Position::Head,
-            default => Position::Body,
+            self::POS_BEGIN => Position::BodyBegin,
+            default => Position::BodyEnd,
         };
 
         $this->registry()->html($html, $registryPosition, $key);
@@ -1592,13 +1332,22 @@ class View extends \yii\web\View
         $this->registry()->jsImport($key, $value);
     }
 
+    public function head()
+    {
+        app(PageLifecycle::class)->head();
+    }
+
+    public function beginBody()
+    {
+        app(PageLifecycle::class)->beginBody();
+    }
+
     /**
      * @inheritdoc
      */
     public function endBody(): void
     {
-        $this->registerAssetFlashes();
-        parent::endBody();
+        app(PageLifecycle::class)->endBody();
     }
 
     /**
@@ -1620,9 +1369,7 @@ class View extends \yii\web\View
         // Register any asset bundles
         $this->registerAllAssetFiles();
 
-        $html = $this->registry()->headHtml(clear: $clear);
-
-        return $html;
+        return $this->registry()->headHtml(clear: $clear);
     }
 
     /**
@@ -1646,13 +1393,10 @@ class View extends \yii\web\View
         // Clear out the queued up files
         if ($clear === true) {
             // Clear registry body content (head was not touched)
-            $this->registry()->bodyHtml(clear: true);
+            $this->registry()->bodyBeginHtml(clear: true);
+            $this->registry()->bodyEndHtml(clear: true);
 
             // Clear adapter's internal begin/ready/load JS
-            $this->_beginJs = [];
-            $this->_beginHtml = [];
-            $this->_beginScripts = [];
-            $this->_beginJsFiles = [];
             $this->_readyJs = [];
             $this->_loadJs = [];
         }
@@ -2067,6 +1811,60 @@ JS;
     }
 
     /**
+     * Returns HTML that should replace page placeholders after page template rendering.
+     *
+     * This method renders all registered assets (head, body-begin, body-end) into
+     * HTML strings and returns them as an array. It is called by the `EndPage` event
+     * listener in {@see self::registerEvents()} to populate the event properties
+     * that `TemplateRenderer::renderPageTemplate()` uses for placeholder replacement.
+     *
+     * **Asset clearing behavior:** When `$clear` is `true` (the default), this method
+     * calls `AssetRegistry::headHtml(clear: true)`, `bodyBeginHtml(clear: true)`, and
+     * `bodyEndHtml(clear: true)` after rendering, which empties the registry's asset
+     * collections for those positions. This prevents assets from being rendered twice
+     * (once here and once via the `AssetRegistry` fallback in `TemplateRenderer`).
+     * Legacy `_readyJs` and `_loadJs` arrays are also cleared.
+     *
+     * @param  bool  $ajaxMode  Whether to render in AJAX mode (omits certain assets).
+     * @param  bool  $clear  Whether to clear rendered assets from the registry after output.
+     *                       When `true`, the `AssetRegistry` fallback in `TemplateRenderer`
+     *                       will produce empty strings since the assets have already been consumed.
+     * @return array{headHtml: string, bodyBeginHtml: string, bodyEndHtml: string}
+     */
+    public function placeholderHtml(bool $ajaxMode = false, bool $clear = true): array
+    {
+        if (!$ajaxMode && TemplateMode::is(TemplateMode::Cp)) {
+            $this->_setJsProperty('registeredJsFiles', $this->_registeredJsFiles);
+            $this->_setJsProperty('registeredAssetBundles', $this->_registeredAssetBundles);
+        }
+
+        // Ensure all queued bundle resources are registered before rendering.
+        $this->registerAllAssetFiles();
+
+        $headHtml = $this->renderHeadHtml();
+        $bodyBeginHtml = $this->renderBodyBeginHtml();
+        $bodyEndHtml = $this->renderBodyEndHtml($ajaxMode);
+
+        if ($clear) {
+            // Clear the AssetRegistry so that TemplateRenderer's ?? fallback to
+            // AssetRegistry::headHtml() / bodyBeginHtml() / bodyEndHtml() returns
+            // empty strings — the assets have already been consumed above.
+            $this->registry()->headHtml(clear: true);
+            $this->registry()->bodyBeginHtml(clear: true);
+            $this->registry()->bodyEndHtml(clear: true);
+
+            $this->_readyJs = [];
+            $this->_loadJs = [];
+        }
+
+        return [
+            'headHtml' => $headHtml,
+            'bodyBeginHtml' => $bodyBeginHtml,
+            'bodyEndHtml' => $bodyEndHtml,
+        ];
+    }
+
+    /**
      * @inheritdoc
      * @throws NotSupportedException unless [[allowEval]] has been set to `true`.
      */
@@ -2083,62 +1881,14 @@ JS;
     // -------------------------------------------------------------------------
 
     /**
-     * Performs actions before a template is rendered.
-     *
-     * @param string $template The name of the template to render
-     * @param array $variables The variables that should be available to the template
-     * @param string $templateMode The template mode to use when rendering the template
-     * @return bool Whether the template should be rendered
-     */
-    public function beforeRenderTemplate(string &$template, array &$variables, string &$templateMode): bool
-    {
-        // Fire a 'beforeRenderTemplate' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_RENDER_TEMPLATE)) {
-            $event = new TemplateEvent([
-                'template' => $template,
-                'variables' => $variables,
-                'templateMode' => $templateMode,
-            ]);
-            $this->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $event);
-            $template = $event->template;
-            $variables = $event->variables;
-            $templateMode = $event->templateMode;
-            return $event->isValid;
-        }
-
-        return true;
-    }
-
-    /**
-     * Performs actions after a template is rendered.
-     *
-     * @param string $template The name of the template that was rendered
-     * @param array $variables The variables that were available to the template
-     * @param string $templateMode The template mode that was used when rendering the template
-     * @param string $output The template’s rendering result
-     */
-    public function afterRenderTemplate(string $template, array $variables, string $templateMode, string &$output): void
-    {
-        // Fire an 'afterRenderTemplate' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_RENDER_TEMPLATE)) {
-            $event = new TemplateEvent([
-                'template' => $template,
-                'variables' => $variables,
-                'templateMode' => $templateMode,
-                'output' => $output,
-            ]);
-            $this->trigger(self::EVENT_AFTER_RENDER_TEMPLATE, $event);
-            $output = $event->output;
-        }
-    }
-
-    /**
      * Performs actions before a page template is rendered.
      *
      * @param string $template The name of the template to render
      * @param array $variables The variables that should be available to the template
      * @param string $templateMode The template mode to use when rendering the template
+     *
      * @return bool Whether the template should be rendered
+     * @deprecated 6.0.0
      */
     public function beforeRenderPageTemplate(string &$template, array &$variables, string &$templateMode): bool
     {
@@ -2166,6 +1916,7 @@ JS;
      * @param array $variables The variables that were available to the template
      * @param string $templateMode The template mode that was used when rendering the template
      * @param string $output The template’s rendering result
+     * @deprecated 6.0.0
      */
     public function afterRenderPageTemplate(string $template, array $variables, string $templateMode, string &$output): void
     {
@@ -2182,26 +1933,6 @@ JS;
         }
     }
 
-    private function sandbox(callable $callback, ?string $templateMode): string
-    {
-        if (!Craft::$app->getConfig()->getGeneral()->enableTwigSandbox) {
-            return $callback();
-        }
-
-        $extension = $this->getTwig($templateMode)->getExtension(SandboxExtension::class);
-
-        if ($extension->isSandboxed()) {
-            return $callback();
-        }
-
-        $extension->enableSandbox();
-        try {
-            return $callback();
-        } finally {
-            $extension->disableSandbox();
-        }
-    }
-
     /**
      * @inheritdoc
      */
@@ -2215,25 +1946,7 @@ JS;
      */
     protected function renderBodyBeginHtml(): string
     {
-        $lines = [];
-
-        if (!empty($this->_beginScripts)) {
-            $lines[] = implode("\n", $this->_beginScripts);
-        }
-
-        if (!empty($this->_beginHtml)) {
-            $lines[] = implode("\n", $this->_beginHtml);
-        }
-
-        if (!empty($this->_beginJsFiles)) {
-            $lines[] = implode("\n", $this->_beginJsFiles);
-        }
-
-        if (!empty($this->_beginJs)) {
-            $lines[] = Html::script(implode("\n", $this->_beginJs))->render();
-        }
-
-        return empty($lines) ? '' : implode("\n", $lines);
+        return $this->registry()->bodyBeginHtml(clear: false);
     }
 
     /**
@@ -2241,7 +1954,7 @@ JS;
      */
     protected function renderBodyEndHtml($ajaxMode): string
     {
-        $html = $this->registry()->bodyHtml(clear: false);
+        $html = $this->registry()->bodyEndHtml(clear: false);
 
         // Append POS_READY/POS_LOAD JS (kept in adapter, not registry)
         if ($ajaxMode) {
@@ -2403,34 +2116,119 @@ JS;
     public static function registerEvents(): void
     {
         Event::listen(RegisterCpTemplateRoots::class, function(RegisterCpTemplateRoots $event) {
-            if (!YiiEvent::hasHandlers(self::class, self::EVENT_REGISTER_CP_TEMPLATE_ROOTS)) {
+            if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_REGISTER_CP_TEMPLATE_ROOTS)) {
                 return;
             }
 
             $yiiEvent = new RegisterTemplateRootsEvent();
-            YiiEvent::trigger(self::class, self::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $yiiEvent);
+            Craft::$app->getView()->trigger(self::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $yiiEvent);
             $event->roots = $yiiEvent->roots;
         });
 
         Event::listen(RegisterSiteTemplateRoots::class, function(RegisterSiteTemplateRoots $event) {
-            if (!YiiEvent::hasHandlers(self::class, self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS)) {
+            if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS)) {
                 return;
             }
 
             $yiiEvent = new RegisterTemplateRootsEvent();
-            YiiEvent::trigger(self::class, self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, $yiiEvent);
+            Craft::$app->getView()->trigger(self::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, $yiiEvent);
             $event->roots = $yiiEvent->roots;
         });
 
         Event::listen(function(TwigCreated $event) {
-            if (!YiiEvent::hasHandlers(self::class, self::EVENT_AFTER_CREATE_TWIG)) {
+            if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_AFTER_CREATE_TWIG)) {
                 return;
             }
 
-            YiiEvent::trigger(self::class, self::EVENT_AFTER_CREATE_TWIG, new CreateTwigEvent([
+            Craft::$app->getView()->trigger(self::EVENT_AFTER_CREATE_TWIG, new CreateTwigEvent([
                 'templateMode' => $event->templateMode->value,
                 'twig' => $event->twig,
             ]));
+        });
+
+        Event::listen(function(RenderingTemplate $event) {
+            if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_BEFORE_RENDER_TEMPLATE)) {
+                return;
+            }
+
+            $yiiEvent = new TemplateEvent([
+                'template' => $event->template,
+                'variables' => $event->variables,
+                'templateMode' => $event->templateMode->value,
+            ]);
+
+            Craft::$app->getView()->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $yiiEvent);
+
+            $event->isValid = $yiiEvent->isValid;
+            $event->template = $yiiEvent->template;
+            $event->variables = $yiiEvent->variables;
+            $event->templateMode = TemplateMode::from($yiiEvent->templateMode);
+        });
+
+        Event::listen(function(RenderingPageTemplate $event) {
+            if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE)) {
+                return;
+            }
+
+            $yiiEvent = new TemplateEvent([
+                'template' => $event->template,
+                'variables' => $event->variables,
+                'templateMode' => $event->templateMode->value,
+            ]);
+
+            Craft::$app->getView()->trigger(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $yiiEvent);
+
+            $event->isValid = $yiiEvent->isValid;
+            $event->template = $yiiEvent->template;
+            $event->variables = $yiiEvent->variables;
+            $event->templateMode = TemplateMode::from($yiiEvent->templateMode);
+        });
+
+        Event::listen(function(TemplateRendered $event) {
+            if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_AFTER_RENDER_TEMPLATE)) {
+                return;
+            }
+
+            $yiiEvent = new TemplateEvent([
+                'template' => $event->template,
+                'variables' => $event->variables,
+                'templateMode' => $event->templateMode->value,
+                'output' => $event->output,
+            ]);
+
+            Craft::$app->getView()->trigger(self::EVENT_AFTER_RENDER_TEMPLATE, $yiiEvent);
+
+            $event->output = $yiiEvent->output;
+        });
+
+        Event::listen(function(PageTemplateRendered $event) {
+            if (!Craft::$app->getView()->hasEventHandlers(self::EVENT_AFTER_RENDER_PAGE_TEMPLATE)) {
+                return;
+            }
+
+            $yiiEvent = new TemplateEvent([
+                'template' => $event->template,
+                'variables' => $event->variables,
+                'templateMode' => $event->templateMode->value,
+                'output' => $event->output,
+            ]);
+
+            Craft::$app->getView()->trigger(self::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $yiiEvent);
+
+            $event->output = $yiiEvent->output;
+        });
+
+        Event::listen(function(BeginPage $event) {
+            Craft::$app->getView()->trigger(self::EVENT_BEGIN_PAGE);
+        });
+
+        Event::listen(function(EndPage $event) {
+            Craft::$app->getView()->trigger(self::EVENT_END_PAGE);
+
+            $html = Craft::$app->getView()->placeholderHtml();
+            $event->headHtml = $html['headHtml'];
+            $event->bodyBeginHtml = $html['bodyBeginHtml'];
+            $event->bodyEndHtml = $html['bodyEndHtml'];
         });
     }
 }

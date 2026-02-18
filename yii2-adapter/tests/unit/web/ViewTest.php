@@ -28,7 +28,6 @@ use Illuminate\Support\Once;
 use ReflectionException;
 use Throwable;
 use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use UnitTester;
 use ValueError;
@@ -152,31 +151,6 @@ class ViewTest extends TestCase
             Cms::config()->defaultTemplateExtensions = $originalExtensions;
             Cms::config()->indexTemplateFilenames = $originalFilenames;
         }
-    }
-
-    /**
-     * Test that Craft::$app->getView()->renderTemplates(); Seems to work correctly with twig. Doesnt impact global props
-     * and respects passed in variables.
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     * @throws ReflectionException
-     */
-    public function testRenderTemplate(): void
-    {
-        // Assert that the _renderingTemplate prop goes in and comes out as null.
-        self::assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
-
-        $result = $this->view->renderTemplate('withvar.twig', ['name' => 'Giel Tettelaar']);
-
-        self::assertSame($result, 'Hello iam Giel Tettelaar');
-        self::assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
-
-        // Test that templates can work without variables.
-        $result = $this->view->renderTemplate('novar.twig');
-
-        self::assertSame($result, 'I have no vars');
     }
 
     /**
@@ -387,19 +361,19 @@ class ViewTest extends TestCase
         $view->registerJs('var foo = true;', View::POS_END);
         $view->registerJs('var bar = true', View::POS_BEGIN);
         self::assertSame([
-            View::POS_END => "<script type=\"text/javascript\">var foo = true;</script>",
             View::POS_BEGIN => "<script type=\"text/javascript\">var bar = true;</script>",
+            View::POS_END => "<script type=\"text/javascript\">var foo = true;</script>",
         ], $view->clearJsBuffer(true, false));
 
         $view->startJsBuffer();
         $view->registerJs('var foo = true;', View::POS_END, 'foo');
         $view->registerJs('var bar = true', View::POS_BEGIN, 'bar');
         self::assertSame([
-            View::POS_END => [
-                'foo' => 'var foo = true;',
-            ],
             View::POS_BEGIN => [
                 'bar' => 'var bar = true;',
+            ],
+            View::POS_END => [
+                'foo' => 'var foo = true;',
             ],
         ], $view->clearJsBuffer(false, false));
     }
@@ -461,6 +435,55 @@ TWIG;
         Craft::$app->set('view', $this->view);
         self::assertSame($expected, $this->view->renderPageTemplate('event-tags'));
         Craft::$app->set('view', $view);
+    }
+
+    public function testRenderPageTemplateTriggersBeginAndEndPageEvents(): void
+    {
+        $beginTriggered = false;
+        $endTriggered = false;
+
+        $beginHandler = function() use (&$beginTriggered) {
+            $beginTriggered = true;
+        };
+        $endHandler = function() use (&$endTriggered) {
+            $endTriggered = true;
+        };
+
+        Event::on(View::class, View::EVENT_BEGIN_PAGE, $beginHandler);
+        Event::on(View::class, View::EVENT_END_PAGE, $endHandler);
+
+        try {
+            $this->view->renderPageTemplate('novar.twig');
+        } finally {
+            Event::off(View::class, View::EVENT_BEGIN_PAGE, $beginHandler);
+            Event::off(View::class, View::EVENT_END_PAGE, $endHandler);
+        }
+
+        self::assertTrue($beginTriggered);
+        self::assertTrue($endTriggered);
+    }
+
+    public function testRenderPageTemplateBeforeAndAfterEvents(): void
+    {
+        $beforeHandler = function($event) {
+            $event->template = 'withvar.twig';
+            $event->variables = ['name' => 'Template Event'];
+        };
+        $afterHandler = function($event) {
+            $event->output .= ' [after]';
+        };
+
+        Event::on(View::class, View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $beforeHandler);
+        Event::on(View::class, View::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $afterHandler);
+
+        try {
+            $output = $this->view->renderPageTemplate('novar.twig');
+        } finally {
+            Event::off(View::class, View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $beforeHandler);
+            Event::off(View::class, View::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $afterHandler);
+        }
+
+        self::assertSame('Hello iam Template Event [after]', $output);
     }
 
     /**

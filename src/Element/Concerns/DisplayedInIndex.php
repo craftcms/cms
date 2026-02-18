@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\db\ExcludeDescendantIdsExpression;
@@ -35,6 +34,7 @@ use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use yii\db\Expression;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * DisplayedInIndex provides element index display functionality.
@@ -248,7 +248,7 @@ trait DisplayedInIndex
         $variables['elements'] = $elements;
         $template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
 
-        return Craft::$app->getView()->renderTemplate($template, $variables);
+        return template($template, $variables);
     }
 
     /**

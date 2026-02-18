@@ -44,6 +44,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Addresses field type.
@@ -307,7 +308,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -317,7 +318,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     {
         $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Addresses/settings.twig', [
+        return template('_components/fieldtypes/Addresses/settings', [
             'field' => $this,
             'readOnly' => $readOnly,
             'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",

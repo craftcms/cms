@@ -4,37 +4,38 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Migrations represents a Migrations utility.
  */
 final class Migrations extends Utility
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Migrations');
     }
 
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'migrations';
     }
 
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'up';
     }
 
-    #[\Override]
+    #[Override]
     public static function badgeCount(): int
     {
         return count(app(Migrator::class)
@@ -42,7 +43,7 @@ final class Migrations extends Utility
             ->getPendingMigrations());
     }
 
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $migrator = app(Migrator::class)->track('content');
@@ -53,7 +54,7 @@ final class Migrations extends Utility
             $migrator->getPendingMigrations(),
         );
 
-        return Craft::$app->getView()->renderTemplate('_components/utilities/Migrations.twig', [
+        return template('_components/utilities/Migrations', [
             'migrationHistory' => $migrationHistory,
             'newMigrations' => $newMigrations,
         ]);

@@ -2,13 +2,17 @@
 
 declare(strict_types=1);
 
+use craft\base\ElementInterface;
 use craft\helpers\DateRange;
+use CraftCms\Cms\Condition\BaseSelectConditionRule;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\DateCreatedConditionRule;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Conditions\HasUrlConditionRule;
 use CraftCms\Cms\Element\Conditions\IdConditionRule;
 use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 
 function createHtmlRule(string $ruleClass): mixed
@@ -348,7 +352,7 @@ describe('BaseSelectConditionRule::getHtml()', function () {
     it('renders a select input with no operator dropdown', function () {
         $condition = new ElementCondition(Entry::class);
 
-        $testRule = new class extends \CraftCms\Cms\Condition\BaseSelectConditionRule implements \CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface
+        $testRule = new class extends BaseSelectConditionRule implements ElementConditionRuleInterface
         {
             public function getLabel(): string
             {
@@ -369,9 +373,9 @@ describe('BaseSelectConditionRule::getHtml()', function () {
                 return [];
             }
 
-            public function modifyQuery(\CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $query): void {}
+            public function modifyQuery(ElementQueryInterface $query): void {}
 
-            public function matchElement(\craft\base\ElementInterface $element): bool
+            public function matchElement(ElementInterface $element): bool
             {
                 return true;
             }

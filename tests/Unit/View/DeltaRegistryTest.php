@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\View\DeltaRegistry;
+use CraftCms\Cms\View\InputNamespace;
 
 beforeEach(function () {
     $this->registry = app(DeltaRegistry::class);
@@ -121,7 +122,7 @@ describe('registerName', function () {
     });
 
     it('namespaces the input name with the active input namespace', function () {
-        app(\CraftCms\Cms\View\InputNamespace::class)->set('fields');
+        app(InputNamespace::class)->set('fields');
         $this->registry->setActive(true);
         $this->registry->registerName('title');
 
@@ -195,7 +196,7 @@ describe('setInitialValue', function () {
     });
 
     it('namespaces the input name with the active input namespace', function () {
-        app(\CraftCms\Cms\View\InputNamespace::class)->set('fields');
+        app(InputNamespace::class)->set('fields');
         $this->registry->setActive(true);
         $this->registry->setInitialValue('title', 'Hello');
 

@@ -91,6 +91,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -147,7 +148,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return 'entry';
     }
 
-    #[\Override]
+    #[Override]
     public static function hasDrafts(): bool
     {
         return true;
@@ -1289,7 +1290,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     protected function uiLabel(): ?string
     {
         if ($this->getType()->uiLabelFormat !== '{title}') {
-            $uiLabel = Craft::$app->getView()->renderObjectTemplate($this->getType()->uiLabelFormat, $this);
+            $uiLabel = renderObjectTemplate($this->getType()->uiLabelFormat, $this);
             if ($uiLabel !== '') {
                 return $uiLabel;
             }
@@ -1800,7 +1801,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $entry;
     }
 
-    #[\Override]
+    #[Override]
     public function hasRevisions(): bool
     {
         $section = $this->getSection();
@@ -2405,7 +2406,7 @@ JS;
         app()->setLocale($site->getLanguage());
         Craft::$app->set('locale', $tempLocale);
         Craft::$app->set('formattingLocale', $tempLocale);
-        $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
+        $title = renderObjectTemplate($entryType->titleFormat, $this);
         if ($title !== '') {
             $this->title = $title;
         }

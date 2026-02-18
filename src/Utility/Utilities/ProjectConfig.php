@@ -8,34 +8,36 @@ use Craft;
 use craft\web\assets\prismjs\PrismJsAsset;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 use Symfony\Component\Yaml\Yaml;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * ProjectConfig represents a ProjectConfig utility.
  */
 final class ProjectConfig extends Utility
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Project Config');
     }
 
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'project-config';
     }
 
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'gear';
     }
 
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $projectConfig = app(ProjectConfigService::class);
@@ -56,7 +58,7 @@ final class ProjectConfig extends Utility
             $invert = false;
         }
 
-        return $view->renderTemplate('_components/utilities/ProjectConfig.twig', [
+        return template('_components/utilities/ProjectConfig', [
             'readOnly' => $projectConfig->readOnly,
             'invert' => $invert,
             'yamlExists' => $projectConfig->writeYamlAutomatically || $projectConfig->getDoesExternalConfigExist(),

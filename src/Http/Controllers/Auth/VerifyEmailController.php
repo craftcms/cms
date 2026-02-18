@@ -62,7 +62,7 @@ final readonly class VerifyEmailController extends AuthenticationController
             try {
                 $users->verifyEmailForUser($user);
             } catch (InvalidElementException) {
-                return view('craftcms::_special/emailtaken', [
+                return view('_special/emailtaken', [
                     'email' => $user->unverifiedEmail,
                 ]);
             }

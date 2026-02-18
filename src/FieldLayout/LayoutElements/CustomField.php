@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\helpers\Cp;
@@ -31,6 +30,7 @@ use Throwable;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * CustomField represents a custom field that can be included in field layouts.
@@ -502,7 +502,7 @@ class CustomField extends BaseField
     #[Override]
     protected function settingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/custom-field-settings.twig', [
+        return template('_includes/forms/fld/custom-field-settings', [
             'field' => $this,
             'defaultLabel' => $this->defaultLabel(),
             'defaultHandle' => $this->_originalHandle,

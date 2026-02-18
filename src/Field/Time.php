@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
@@ -23,6 +22,7 @@ use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Date represents a Time field.
@@ -107,7 +107,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -118,7 +118,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
         $incrementOptions = [5, 10, 15, 30, 60];
         $incrementOptions = array_combine($incrementOptions, $incrementOptions);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Time/settings.twig', [
+        return template('_components/fieldtypes/Time/settings', [
             'incrementOptions' => $incrementOptions,
             'field' => $this,
             'min' => $this->min ? DateTimeHelper::toDateTime(['time' => $this->min], true) : null,
@@ -136,7 +136,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/time.twig', [
+        return template('_includes/forms/time', [
             'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-time"
             'describedBy' => $this->describedBy,
             'name' => $this->handle,

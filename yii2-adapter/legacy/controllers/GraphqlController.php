@@ -147,7 +147,7 @@ class GraphqlController extends Controller
             // Must be valid JSON
             try {
                 $variables = Json::decode($qVariables);
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 throw new BadRequestHttpException('The variables param must be valid JSON', 0, $e);
             }
         }
@@ -414,7 +414,7 @@ class GraphqlController extends Controller
             ];
         }
 
-        return $this->renderTemplate('graphql/graphiql.twig', [
+        return $this->rendertemplate('graphql/graphiql', [
             'url' => UrlHelper::actionUrl('graphql/api'),
             'schemas' => $schemas,
             'selectedSchema' => $selectedSchema,
@@ -457,7 +457,7 @@ class GraphqlController extends Controller
         // Ensure the public schema is created.
         Craft::$app->getGql()->getPublicSchema();
 
-        return $this->renderTemplate('graphql/schemas/_index.twig');
+        return $this->rendertemplate('graphql/schemas/_index');
     }
 
     /**
@@ -514,7 +514,7 @@ class GraphqlController extends Controller
             ]);
         }
 
-        return $this->renderTemplate('graphql/tokens/_edit.twig', compact(
+        return $this->rendertemplate('graphql/tokens/_edit', compact(
             'token',
             'title',
             'accessToken',
@@ -598,7 +598,7 @@ class GraphqlController extends Controller
     public function actionViewTokens(): YiiResponse
     {
         $this->requireAdmin(false);
-        return $this->renderTemplate('graphql/tokens/_index.twig');
+        return $this->rendertemplate('graphql/tokens/_index');
     }
 
     /**
@@ -630,7 +630,7 @@ class GraphqlController extends Controller
             $title = trim($schema->name) ?: t('Create a new GraphQL Schema');
         }
 
-        return $this->renderTemplate('graphql/schemas/_edit.twig', compact(
+        return $this->rendertemplate('graphql/schemas/_edit', compact(
             'schema',
             'title'
         ));
@@ -656,7 +656,7 @@ class GraphqlController extends Controller
         $token = $gqlService->getPublicToken();
         $title = t('Edit the public GraphQL schema');
 
-        return $this->renderTemplate('graphql/schemas/_edit.twig', compact(
+        return $this->rendertemplate('graphql/schemas/_edit', compact(
             'schema',
             'token',
             'title'

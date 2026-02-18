@@ -11,6 +11,7 @@ use Craft;
 use craft\base\AssetPreviewHandler;
 use craft\helpers\UrlHelper;
 use yii\base\NotSupportedException;
+use function CraftCms\Cms\template;
 
 /**
  * Provides functionality to preview images.
@@ -34,7 +35,7 @@ class Image extends AssetPreviewHandler
             ]);
         }
 
-        return Craft::$app->getView()->renderTemplate('assets/_previews/image.twig',
+        return template('assets/_previews/image',
             array_merge([
                 'asset' => $this->asset,
                 'url' => $url,

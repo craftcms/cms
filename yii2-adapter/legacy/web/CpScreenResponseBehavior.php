@@ -7,12 +7,12 @@
 
 namespace craft\web;
 
-use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\View\TemplateMode;
 use yii\base\Behavior;
+use function CraftCms\Cms\template;
 
 /**
  * Control panel screen response behavior.
@@ -571,7 +571,7 @@ class CpScreenResponseBehavior extends Behavior
     public function toolbarTemplate(string $template, array $variables = []): Response
     {
         return $this->toolbarHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -629,7 +629,7 @@ class CpScreenResponseBehavior extends Behavior
     public function additionalButtonsTemplate(string $template, array $variables = []): Response
     {
         return $this->additionalButtonsHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -656,7 +656,7 @@ class CpScreenResponseBehavior extends Behavior
     public function contentTemplate(string $template, array $variables = []): Response
     {
         return $this->contentHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -683,7 +683,7 @@ class CpScreenResponseBehavior extends Behavior
     public function metaSidebarTemplate(string $template, array $variables = []): Response
     {
         return $this->metaSidebarHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -711,7 +711,7 @@ class CpScreenResponseBehavior extends Behavior
     public function pageSidebarTemplate(string $template, array $variables = []): Response
     {
         return $this->pageSidebarHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -738,7 +738,7 @@ class CpScreenResponseBehavior extends Behavior
     public function noticeTemplate(string $template, array $variables = []): Response
     {
         return $this->noticeHtml(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -766,7 +766,7 @@ class CpScreenResponseBehavior extends Behavior
     public function errorSummaryTemplate(string $template, array $variables = []): Response
     {
         return $this->errorSummary(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
+            fn() => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 }

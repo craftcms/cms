@@ -9,6 +9,8 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Twig\TemplateRenderer;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Stringable;
@@ -146,6 +148,41 @@ function silence(Closure|string $callable, ?int $mask = null): mixed
     } finally {
         error_reporting($old);
     }
+}
+
+function template(string $template, array $variables = [], ?TemplateMode $templateMode = null): string
+{
+    return app(TemplateRenderer::class)->renderTemplate($template, $variables, $templateMode);
+}
+
+function sandboxedTemplate(string $template, array $variables = [], ?TemplateMode $templateMode = null): string
+{
+    return app(TemplateRenderer::class)->renderSandboxedTemplate($template, $variables, $templateMode);
+}
+
+function pageTemplate(string $template, array $variables = [], ?TemplateMode $templateMode = null): string
+{
+    return app(TemplateRenderer::class)->renderPageTemplate($template, $variables, $templateMode);
+}
+
+function renderString(string $template, array $variables = [], TemplateMode $templateMode = TemplateMode::Site, bool $escapeHtml = false): string
+{
+    return app(TemplateRenderer::class)->renderString($template, $variables, $templateMode, $escapeHtml);
+}
+
+function renderSandboxedString(string $template, array $variables = [], TemplateMode $templateMode = TemplateMode::Site, bool $escapeHtml = false): string
+{
+    return app(TemplateRenderer::class)->renderSandboxedString($template, $variables, $templateMode, $escapeHtml);
+}
+
+function renderObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site): string
+{
+    return app(TemplateRenderer::class)->renderObjectTemplate($template, $object, $variables, $templateMode);
+}
+
+function renderSandboxedObjectTemplate(string $template, mixed $object, array $variables = [], TemplateMode $templateMode = TemplateMode::Site): string
+{
+    return app(TemplateRenderer::class)->renderSandboxedObjectTemplate($template, $object, $variables, $templateMode);
 }
 
 /**

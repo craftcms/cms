@@ -10,15 +10,17 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Upgrade utility
  */
 final class Upgrade extends Utility
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Craft {version} Upgrade', [
@@ -26,19 +28,19 @@ final class Upgrade extends Utility
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'upgrade';
     }
 
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'square-arrow-up';
     }
 
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();
@@ -64,6 +66,6 @@ JS, [
             [$version, $allPlugins],
         ]);
 
-        return $view->renderTemplate('_components/utilities/Upgrade.twig');
+        return template('_components/utilities/Upgrade');
     }
 }

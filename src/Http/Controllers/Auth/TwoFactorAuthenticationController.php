@@ -23,6 +23,7 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final readonly class TwoFactorAuthenticationController
 {
@@ -103,7 +104,7 @@ final readonly class TwoFactorAuthenticationController
             ]);
         }
 
-        return $view->renderTemplate('login.twig', compact('authFormData'), TemplateMode::Cp->value);
+        return template('login', compact('authFormData'), templateMode: TemplateMode::Cp);
     }
 
     public function verify(Request $request, Auth $auth): Response

@@ -18,6 +18,7 @@ use InvalidArgumentException;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 class PhotoField extends BaseNativeField
 {
@@ -85,7 +86,7 @@ JS, [
             $element->getIsCurrent(),
         ]);
 
-        return $view->renderTemplate('users/_photo.twig', [
+        return template('users/_photo', [
             'id' => $inputId,
             'user' => $element,
         ]);

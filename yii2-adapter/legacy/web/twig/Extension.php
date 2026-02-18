@@ -77,6 +77,7 @@ use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Sequence;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\User\Elements\User;
 use DateInterval;
@@ -112,6 +113,7 @@ use yii\db\Exception;
 use yii\db\Expression;
 use yii\db\QueryInterface;
 use yii\helpers\Markdown;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -140,26 +142,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return CoreExtension::arrayEvery($env, $array, $arrow);
     }
 
-    /**
-     * @var View|null
-     */
-    protected ?View $view = null;
-
-    /**
-     * @var TwigEnvironment|null
-     */
-    protected ?TwigEnvironment $environment = null;
-
-    /**
-     * Constructor
-     *
-     * @param View $view
-     * @param TwigEnvironment $environment
-     */
-    public function __construct(View $view, TwigEnvironment $environment)
-    {
-        $this->view = $view;
-        $this->environment = $environment;
+    public function __construct(
+        protected PageLifecycle $pageLifecycle,
+        protected ?TwigEnvironment $environment = null,
+    ) {
     }
 
     /**
@@ -171,7 +157,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new Profiler(),
             new GetAttrAdjuster(),
             new EventTagFinder(),
-            new EventTagAdder($this->view),
+            new EventTagAdder($this->pageLifecycle),
         ];
     }
 
@@ -782,7 +768,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::parseTagAttributes($tag, 0, $start, $end, true);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
             return [];
         }
@@ -815,7 +801,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::prependToTag($tag, $html, $ifExists);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
@@ -903,7 +889,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $newTag = Html::modifyTagAttributes($newTag, ['class' => $newClasses]);
             }
             return $newTag;
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
@@ -1021,7 +1007,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::appendToTag($tag, $html, $ifExists);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
@@ -1052,7 +1038,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::modifyTagAttributes($tag, $attributes);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
@@ -1189,9 +1175,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         if (is_string($arrow)) {
             $template = '{' . $arrow . '}';
-            $view = Craft::$app->getView();
             foreach ($arr as $item) {
-                $groupKey = $view->renderObjectTemplate($template, $item);
+                $groupKey = renderObjectTemplate($template, $item);
                 $groups[$groupKey][] = $item;
             }
         } else {
@@ -1457,9 +1442,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('ul', [Html::class, 'ul'], ['is_safe' => ['html']]),
 
             // DOM event functions
-            new TwigFunction('head', [$this->view, 'head']),
-            new TwigFunction('beginBody', [$this->view, 'beginBody']),
-            new TwigFunction('endBody', [$this->view, 'endBody']),
+            new TwigFunction('head', [$this->pageLifecycle, 'head']),
+            new TwigFunction('beginBody', [$this->pageLifecycle, 'beginBody']),
+            new TwigFunction('endBody', [$this->pageLifecycle, 'endBody']),
         ];
     }
 
@@ -1547,7 +1532,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
 
             return Html::dataUrl(Aliases::get($file), $mimeType);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
             return '';
         }
@@ -1713,7 +1698,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function renderObjectTemplate(string $template, mixed $object): string
     {
-        return Craft::$app->getView()->renderObjectTemplate($template, $object);
+        return renderObjectTemplate($template, $object);
     }
 
     /**
@@ -1774,7 +1759,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $svg = Html::modifyTagAttributes($svg, [
                     'class' => $class,
                 ]);
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 Log::warning('Unable to add a class to the SVG: ' . $e->getMessage(), [__METHOD__]);
             }
         }
@@ -1840,7 +1825,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,
-            'view' => $this->view,
+            'view' => Craft::$app->getView(),
 
             'devMode' => app()->hasDebugModeEnabled(),
             'SORT_ASC' => SORT_ASC,

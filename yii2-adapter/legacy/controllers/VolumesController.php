@@ -72,7 +72,7 @@ class VolumesController extends Controller
         $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
         $variables['readOnly'] = $this->readOnly;
 
-        return $this->renderTemplate('settings/assets/volumes/_index.twig', $variables);
+        return $this->rendertemplate('settings/assets/volumes/_index', $variables);
     }
 
     /**

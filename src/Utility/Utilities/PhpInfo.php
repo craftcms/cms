@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Utility\Utility;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * PhpInfo represents a PhpInfo dashboard widget.
@@ -43,7 +43,7 @@ final class PhpInfo extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/utilities/PhpInfo.twig', [
+        return template('_components/utilities/PhpInfo', [
             'phpInfo' => self::phpInfo(),
         ]);
     }

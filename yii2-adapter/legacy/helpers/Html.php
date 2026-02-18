@@ -272,7 +272,7 @@ class Html extends \yii\helpers\Html
     {
         try {
             return \CraftCms\Cms\Support\Html::parseTagAttribute($html, $offset, $start, $end);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
     }
@@ -483,7 +483,7 @@ class Html extends \yii\helpers\Html
     {
         try {
             return \CraftCms\Cms\Support\Html::dataUrl($file, $mimeType);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
     }
@@ -501,7 +501,7 @@ class Html extends \yii\helpers\Html
     {
         try {
             return \CraftCms\Cms\Support\Html::dataUrlFromString($contents, $mimeType);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
     }
