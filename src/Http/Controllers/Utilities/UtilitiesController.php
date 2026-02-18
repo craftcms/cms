@@ -59,20 +59,11 @@ final readonly class UtilitiesController
             abort(403, sprintf('User not permitted to access the “%s” utility.', $class::displayName()));
         }
 
-        // if (request()->has('legacy')) {
-        //     $this->craft->getView()->registerAssetBundle(UtilitiesAsset::class);
-        //
-        //     return $this->craft->getView()->renderPageTemplate('utilities/_index.twig', [
-        //         'id' => $id,
-        //         'displayName' => $class::displayName(),
-        //         'contentHtml' => $class::contentHtml(),
-        //         'toolbarHtml' => $class::toolbarHtml(),
-        //         'footerHtml' => $class::footerHtml(),
-        //         'utilities' => $this->utilityInfo(),
-        //     ]);
-        // }
-
         return Inertia::render('UtilitiesShowPage', [
+            'crumbs' => [
+                ['label' => 'Utilities', 'url' => UrlHelper::cpUrl('utilities')],
+                ['label' => $class::displayName(), 'url' => null],
+            ],
             'id' => $id,
             'title' => $class::displayName(),
             'contentHtml' => $class::contentHtml(),
