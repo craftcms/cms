@@ -362,8 +362,12 @@ final class TemplateRenderer
             return "{{ $replace|raw }}";
         }, (string) $template);
 
-        // Restore tokenized content
-        return strtr($template, array_reverse($tokens));
+        // Restore tokenized content (sequential to handle nested tokens)
+        foreach (array_reverse($tokens) as $token => $value) {
+            $template = str_replace($token, $value, $template);
+        }
+
+        return $template;
     }
 
     /**
