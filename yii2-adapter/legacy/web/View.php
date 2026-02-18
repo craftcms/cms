@@ -2031,6 +2031,7 @@ JS;
      */
     public function flushPendingAssets(): void
     {
+        $this->registerAssetFlashes();
         $this->registerAllAssetFiles();
 
         if (!$this->_skipReadyLoadFlush) {
