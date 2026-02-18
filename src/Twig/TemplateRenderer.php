@@ -14,7 +14,6 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Traits\ForwardsCalls;
 use Twig\Extension\SandboxExtension;
 use Twig\TemplateWrapper;
 use Yiisoft\Arrays\ArrayableInterface;
@@ -25,8 +24,6 @@ use Yiisoft\Arrays\ArrayableInterface;
 #[Scoped]
 final class TemplateRenderer
 {
-    use ForwardsCalls;
-
     /** @var TemplateWrapper[] Object template cache */
     private array $objectTemplates = [];
 
@@ -411,13 +408,5 @@ final class TemplateRenderer
         }
 
         return $filtered;
-    }
-
-    /**
-     * Dynamically pass missing methods to the Twig instance.
-     */
-    public function __call(string $method, array $parameters): mixed
-    {
-        return $this->forwardCallTo($this->twig, $method, $parameters);
     }
 }

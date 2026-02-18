@@ -124,7 +124,7 @@ describe('renderTemplate', function () {
 
         $this->renderer->renderTemplate('test-template.twig', ['name' => 'world']);
 
-        Event::assertDispatched(fn (\CraftCms\Cms\Twig\Events\RenderingTemplate $event) => $event->template === 'test-template.twig'
+        Event::assertDispatched(fn (RenderingTemplate $event) => $event->template === 'test-template.twig'
             && $event->variables === ['name' => 'world']);
     });
 
@@ -133,7 +133,7 @@ describe('renderTemplate', function () {
 
         $this->renderer->renderTemplate('test-template.twig');
 
-        Event::assertDispatched(fn (\CraftCms\Cms\Twig\Events\TemplateRendered $event) => $event->template === 'test-template.twig');
+        Event::assertDispatched(fn (TemplateRendered $event) => $event->template === 'test-template.twig');
     });
 
     it('returns empty string when RenderingTemplate event is cancelled', function () {
@@ -165,7 +165,7 @@ describe('renderTemplate', function () {
 
         $this->renderer->renderTemplate('test-template.twig');
 
-        Event::assertDispatched(fn (\CraftCms\Cms\Twig\Events\TemplateRendered $event) => $event->template === 'other-template.twig');
+        Event::assertDispatched(fn (TemplateRendered $event) => $event->template === 'other-template.twig');
     });
 
     it('restores the template mode after rendering', function () {
@@ -434,13 +434,5 @@ describe('sandboxed rendering', function () {
         $result = $this->renderer->renderSandboxedObjectTemplate('hello world', new stdClass);
 
         expect($result)->toBe('hello world');
-    });
-});
-
-describe('__call', function () {
-    it('forwards unknown method calls to the Twig instance', function () {
-        $env = $this->renderer->get();
-
-        expect($env)->toBeInstanceOf(CraftCms\Cms\Twig\Environment::class);
     });
 });
