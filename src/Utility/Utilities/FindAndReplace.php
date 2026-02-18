@@ -39,9 +39,8 @@ final class FindAndReplace extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
+        Craft::$app->getView()->registerAssetBundle(FindReplaceAsset::class);
 
-        $view->registerAssetBundle(FindReplaceAsset::class);
         AssetRegistry::js('new Craft.FindAndReplaceUtility(\'find-replace\');');
 
         return template('_components/utilities/FindAndReplace');

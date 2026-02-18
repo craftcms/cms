@@ -58,7 +58,6 @@ class ElementIndexSettingsController extends BaseElementsController
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $this->elementType();
-        $view = Craft::$app->getView();
 
         // Global sort options
         $baseSortOptions = Collection::make($elementType::sortOptions())
@@ -243,8 +242,8 @@ class ElementIndexSettingsController extends BaseElementsController
             'conditionBuilderHtml' => $conditionBuilderHtml,
             'conditionBuilderJs' => $conditionBuilderJs,
             'userGroups' => $userGroups,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => AssetRegistry::headHtml(),
+            'bodyHtml' => AssetRegistry::bodyHtml(),
         ]);
     }
 

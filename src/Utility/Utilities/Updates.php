@@ -46,8 +46,8 @@ final class Updates extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(UpdatesAsset::class);
+        Craft::$app->getView()->registerAssetBundle(UpdatesAsset::class);
+
         AssetRegistry::js('new Craft.UpdatesUtility();');
 
         return template('_components/utilities/Updates');

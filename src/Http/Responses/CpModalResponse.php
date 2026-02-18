@@ -152,8 +152,7 @@ final class CpModalResponse implements Responsable
 
     public function toResponse($request): JsonResponse
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(HtmxAsset::class);
+        Craft::$app->getView()->registerAssetBundle(HtmxAsset::class);
 
         $namespace = Str::random(10);
 

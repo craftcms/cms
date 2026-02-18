@@ -1566,8 +1566,6 @@ JS, [
             $siteIds = array_filter($siteIds, fn(int $siteId) => isset($representedSiteIds[$siteId]));
         }
 
-        $view = Craft::$app->getView();
-
         if ($config['registerJs']) {
             AssetRegistry::jsWithVars(fn($elementType, $id, $settings) => <<<JS
 Craft.createElementIndex($elementType, $('#' + $id), $settings)
@@ -3214,7 +3212,6 @@ JS, [
             $tab->setElements($layoutElements);
         }
 
-        $view = Craft::$app->getView();
         $jsSettings = JsonHelper::encode([
             'elementType' => $fieldLayout->type,
             'customizableTabs' => $config['customizableTabs'],

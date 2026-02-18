@@ -42,8 +42,7 @@ final class SystemMessages extends Utility
     {
         Edition::require(Edition::Pro);
 
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(SystemMessagesAsset::class);
+        Craft::$app->getView()->registerAssetBundle(SystemMessagesAsset::class);
 
         return template('_components/utilities/SystemMessages/index', [
             'messages' => app(SystemMessagesService::class)->getAllMessages(),

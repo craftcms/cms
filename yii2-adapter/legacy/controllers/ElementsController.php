@@ -41,6 +41,7 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -2043,8 +2044,8 @@ JS, [
                 'title' => $title,
                 'previewTargets' => $previewTargets,
                 'previewParamValue' => $previewTargets ? Crypt::encrypt(Str::random(10)) : null,
-                'deltaNames' => Craft::$app->getView()->getDeltaNames(),
-                'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
+                'deltaNames' => DeltaRegistry::getNames(),
+                'initialDeltaValues' => DeltaRegistry::getInitialValues(),
                 'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
                 'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
             ];
@@ -2402,7 +2403,7 @@ JS, [
         $data = $this->_fieldLayoutData($this->element);
 
         $data += [
-            'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
+            'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ];
 
         return $this->_asSuccess('Field layout updated.', $element, $data, true);
@@ -2410,7 +2411,6 @@ JS, [
 
     private function _fieldLayoutData(ElementInterface $element, array $formConfig = []): array
     {
-        $view = Craft::$app->getView();
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
         $fieldLayout = $element->getFieldLayout();
         $form = $fieldLayout->createForm($element, false, $formConfig + [
@@ -2458,8 +2458,8 @@ JS, [
         return [
             'tabs' => $tabHtml,
             'missingElements' => $missingElements,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => AssetRegistry::headHtml(),
+            'bodyHtml' => AssetRegistry::bodyHtml(),
         ];
     }
 

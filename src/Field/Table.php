@@ -338,10 +338,8 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             return $column;
         }, $this->columns);
 
-        $view = Craft::$app->getView();
-
-        $view->registerAssetBundle(TimepickerAsset::class);
-        $view->registerAssetBundle(TableSettingsAsset::class);
+        Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
+        Craft::$app->getView()->registerAssetBundle(TableSettingsAsset::class);
         AssetRegistry::js('new Craft.TableFieldSettings('.
             Json::encode(InputNamespace::namespaceInputName('columns')).', '.
             Json::encode(InputNamespace::namespaceInputName('defaults')).', '.

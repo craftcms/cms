@@ -1100,7 +1100,6 @@ JS, [
             return '<p class="light">'.t('No entries.').'</p>';
         }
 
-        $view = Craft::$app->getView();
         $id = $this->getInputId();
         /** @var Entry[] $value */
         $entryTypes = $this->getEntryTypesForField($value, $element);
@@ -1125,7 +1124,7 @@ JS, [
             )
         );
 
-        $view->registerAssetBundle(MatrixAsset::class);
+        Craft::$app->getView()->registerAssetBundle(MatrixAsset::class);
 
         $settings = [
             'fieldId' => $this->id,

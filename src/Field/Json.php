@@ -99,8 +99,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
     {
         $id = $this->getInputId();
 
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(CodeMirrorAsset::class);
+        Craft::$app->getView()->registerAssetBundle(CodeMirrorAsset::class);
         AssetRegistry::jsWithVars(fn ($id, $static) => <<<JS
 (() => {
   const textarea = document.getElementById($id)
@@ -143,7 +142,7 @@ JS, [
             Html::endTag('div');
     }
 
-    #[\Override]
+    #[Override]
     public function getElementRules(ElementInterface $element): array
     {
         return [

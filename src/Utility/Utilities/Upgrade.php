@@ -43,8 +43,7 @@ final class Upgrade extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(UpgradeAsset::class);
+        Craft::$app->getView()->registerAssetBundle(UpgradeAsset::class);
 
         $pluginsService = app(Plugins::class);
         $allPlugins = [];

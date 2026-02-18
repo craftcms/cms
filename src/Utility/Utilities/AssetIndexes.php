@@ -67,7 +67,6 @@ final class AssetIndexes extends Utility
             ];
         }
 
-        $view = Craft::$app->getView();
         $checkboxSelectHtml = template('_includes/forms/checkboxSelect', [
             'class' => 'first',
             'name' => 'volumes',
@@ -76,7 +75,7 @@ final class AssetIndexes extends Utility
             'values' => '*',
         ]);
 
-        $view->registerAssetBundle(AssetIndexesAsset::class);
+        Craft::$app->getView()->registerAssetBundle(AssetIndexesAsset::class);
         $dateFormat = I18N::getLocale()->getDateTimeFormat('short', Locale::FORMAT_PHP);
 
         $existingIndexingSessions = Craft::$app->getAssetIndexer()->getExistingIndexingSessions();

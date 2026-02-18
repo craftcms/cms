@@ -805,14 +805,12 @@ final class CpScreenResponse implements Responsable
             }
         }
 
-        $view = Craft::$app->getView();
-
         // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
         if (
             $request->input('x-craft-live-preview') !== null &&
             Cms::config()->useIframeResizer
         ) {
-            $view->registerAssetBundle(ContentWindowAsset::class);
+            Craft::$app->getView()->registerAssetBundle(ContentWindowAsset::class);
         }
 
         // Render and return the template

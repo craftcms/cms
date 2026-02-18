@@ -8,9 +8,9 @@ use Craft;
 use craft\web\assets\dashboard\DashboardAsset;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\View\AssetRegistry;
 use Illuminate\Support\Collection;
 
 final readonly class DashboardController
@@ -18,6 +18,7 @@ final readonly class DashboardController
     use InteractsWithWidgets;
 
     public function __construct(
+        private AssetRegistry $assetRegistry,
         private Dashboard $dashboard,
     ) {}
 
@@ -31,10 +32,10 @@ final readonly class DashboardController
             ->filter(fn (string $widgetType) => $widgetType::isSelectable())
             /** @phpstan-ignore argument.unresolvableType */
             ->mapWithKeys(function (string $widgetType) {
-                AssetRegistry::startJsBuffer();
+                $this->assetRegistry->startJsBuffer();
                 $widget = $this->dashboard->createWidget($widgetType);
                 $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), '__NAMESPACE__');
-                $settingsJs = (string) AssetRegistry::clearJsBuffer(false);
+                $settingsJs = (string) $this->assetRegistry->clearJsBuffer(false);
 
                 return [$widget::class => [
                     'iconSvg' => $this->getWidgetIconSvg($widget),
@@ -55,9 +56,9 @@ final readonly class DashboardController
 
         $this->dashboard->getAllWidgets()
             ->each(function (WidgetInterface $widget) use ($widgetTypeInfo, &$variables, &$allWidgetJs) {
-                AssetRegistry::startJsBuffer();
+                $this->assetRegistry->startJsBuffer();
                 $info = $this->getWidgetInfo($widget);
-                $widgetJs = AssetRegistry::clearJsBuffer(false);
+                $widgetJs = $this->assetRegistry->clearJsBuffer(false);
 
                 if ($info === false) {
                     return;
@@ -85,11 +86,11 @@ final readonly class DashboardController
 
         // Include all the JS and CSS stuff
         Craft::$app->getView()->registerAssetBundle(DashboardAsset::class);
-        AssetRegistry::jsWithVars(
+        $this->assetRegistry->jsWithVars(
             fn ($widgetTypeInfo) => "window.dashboard = new Craft.Dashboard($widgetTypeInfo)",
             [$widgetTypeInfo]
         );
-        AssetRegistry::js($allWidgetJs);
+        $this->assetRegistry->js($allWidgetJs);
 
         $variables['widgetTypes'] = $widgetTypeInfo;
 

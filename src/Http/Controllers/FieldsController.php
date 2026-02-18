@@ -504,8 +504,7 @@ final class FieldsController
 
         $response
             ->prepareScreen(function () {
-                $view = Craft::$app->getView();
-                $view->registerAssetBundle(FieldSettingsAsset::class);
+                Craft::$app->getView()->registerAssetBundle(FieldSettingsAsset::class);
                 $this->assetRegistry->jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
 new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
   wrapWithTypeClassDiv: true

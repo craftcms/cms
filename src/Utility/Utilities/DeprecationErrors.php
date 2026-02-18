@@ -45,9 +45,7 @@ final class DeprecationErrors extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-
-        $view->registerAssetBundle(DeprecationErrorsAsset::class);
+        Craft::$app->getView()->registerAssetBundle(DeprecationErrorsAsset::class);
 
         return template('_components/utilities/DeprecationErrors/index', [
             'logs' => Deprecator::getLogs(),

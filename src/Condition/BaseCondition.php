@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use Override;
 use Throwable;
 use yii\base\InvalidConfigException;
 
@@ -257,8 +258,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
 
     public function getBuilderInnerHtml(bool $autofocusAddButton = false): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(ConditionBuilderAsset::class);
+        Craft::$app->getView()->registerAssetBundle(ConditionBuilderAsset::class);
         $namespacedId = InputNamespace::namespaceId($this->id);
 
         return InputNamespace::namespaceInputs(function () use ($namespacedId, $autofocusAddButton) {
@@ -573,7 +573,7 @@ JS,
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return [

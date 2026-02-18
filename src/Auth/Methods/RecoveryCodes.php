@@ -43,8 +43,7 @@ JS, [$containerId]);
 
     public function getAuthFormHtml(): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(RecoveryCodesAsset::class);
+        Craft::$app->getView()->registerAssetBundle(RecoveryCodesAsset::class);
 
         return template('_components/auth/methods/RecoveryCodes/form');
     }

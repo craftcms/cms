@@ -72,8 +72,7 @@ class PhotoField extends BaseNativeField
             return null;
         }
 
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(UserPhotoAsset::class);
+        Craft::$app->getView()->registerAssetBundle(UserPhotoAsset::class);
         $inputId = sprintf('user-photo-%s', mt_rand());
 
         AssetRegistry::jsWithVars(fn ($userId, $inputId, $isCurrentUser) => <<<JS

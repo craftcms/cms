@@ -72,9 +72,8 @@ final class TOTP extends BaseAuthMethod
     {
         $secret = $this->secret();
         $totpFormId = sprintf('totp-form-%s', mt_rand());
-        $view = Craft::$app->getView();
 
-        $view->registerAssetBundle(TotpAsset::class);
+        Craft::$app->getView()->registerAssetBundle(TotpAsset::class);
         AssetRegistry::jsWithVars(fn ($totpFormId, $containerId) => <<<JS
 Craft.createAuthFormHandler(Craft.TotpForm.METHOD, $('#' + $totpFormId), () => {
   Craft.Slideout.instances[$containerId].showSuccess();
@@ -95,8 +94,7 @@ JS, [
 
     public function getAuthFormHtml(): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(TotpAsset::class);
+        Craft::$app->getView()->registerAssetBundle(TotpAsset::class);
 
         return template('_components/auth/methods/TOTP/form');
     }

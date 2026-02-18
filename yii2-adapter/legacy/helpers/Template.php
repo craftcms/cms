@@ -327,9 +327,9 @@ class Template
     {
         // Is this a CSS file?
         if (preg_match('/^[^\r\n]+\.css(\.gz)?$/i', $css) || UrlHelper::isAbsoluteUrl($css)) {
-            Craft::$app->getView()->registerCssFile($css, $options, $key);
+            AssetRegistry::cssFile($css, $options, $key);
         } else {
-            Craft::$app->getView()->registerCss($css, $options, $key);
+            AssetRegistry::css($css, $options, $key);
         }
     }
 

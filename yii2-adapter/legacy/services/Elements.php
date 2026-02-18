@@ -4243,7 +4243,6 @@ class Elements extends Component
                             if (is_string($content)) {
                                 $content = $content !== '' ? Json::decode($content) : [];
                             }
-                            $view = Craft::$app->getView();
                             $generatedFieldValues = [];
                             $updated = false;
 

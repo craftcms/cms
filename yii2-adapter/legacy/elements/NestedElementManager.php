@@ -335,7 +335,6 @@ class NestedElementManager extends Component
         );
         $siteIds = [];
 
-        $view = Craft::$app->getView();
         $elementsService = Craft::$app->getElements();
 
         if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
@@ -522,8 +521,6 @@ class NestedElementManager extends Component
             $config,
             self::VIEW_MODE_INDEX,
             function(string $id, array $config, string $attribute, array &$settings) use ($owner): string {
-                $view = Craft::$app->getView();
-
                 $criteria = [
                     $this->ownerIdParam => $owner->id,
                 ];

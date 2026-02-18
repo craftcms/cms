@@ -78,8 +78,7 @@ final class NewUsers extends Widget
         $options = $this->getSettings();
         $options['orientation'] = I18N::getLocale()->getOrientation();
 
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(NewUsersAsset::class);
+        Craft::$app->getView()->registerAssetBundle(NewUsersAsset::class);
         AssetRegistry::js('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
 
         return '';

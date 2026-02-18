@@ -182,17 +182,12 @@ final class Html
         if (! $async) {
             Craft::$app->getResponse()->setNoCacheHeaders();
 
-            return self::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options)->render();
+            return self::hiddenInput($request->csrfParam, csrf_token(), $options)->render();
         }
 
-        Craft::$app->getView()->registerHtml(
-            template(
-                '_special/async-csrf-input',
-                [
-                    'url' => UrlHelper::actionUrl('users/session-info'),
-                ], templateMode: TemplateMode::Cp,
-            )
-        );
+        AssetRegistry::html(template('_special/async-csrf-input', [
+            'url' => UrlHelper::actionUrl('users/session-info'),
+        ], templateMode: TemplateMode::Cp));
 
         return self::tag('craft-csrf-input');
     }

@@ -52,8 +52,7 @@ final class QueueManager extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(QueueManagerAsset::class);
+        Craft::$app->getView()->registerAssetBundle(QueueManagerAsset::class);
 
         return template('_components/utilities/QueueManager/content');
     }

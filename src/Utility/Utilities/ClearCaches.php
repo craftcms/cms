@@ -70,9 +70,8 @@ final class ClearCaches extends Utility
         }
 
         $cacheOptions = Arr::sort($cacheOptions, 'label');
-        $view = Craft::$app->getView();
 
-        $view->registerAssetBundle(ClearCachesAsset::class);
+        Craft::$app->getView()->registerAssetBundle(ClearCachesAsset::class);
         AssetRegistry::js('new Craft.ClearCachesUtility(\'clear-caches\');');
 
         return template('_components/utilities/ClearCaches', [

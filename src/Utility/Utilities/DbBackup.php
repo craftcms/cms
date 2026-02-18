@@ -39,9 +39,8 @@ final class DbBackup extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
+        Craft::$app->getView()->registerAssetBundle(DbBackupAsset::class);
 
-        $view->registerAssetBundle(DbBackupAsset::class);
         AssetRegistry::js('new Craft.DbBackupUtility(\'db-backup\');');
 
         return template('_components/utilities/DbBackup');

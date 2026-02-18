@@ -79,8 +79,7 @@ final class Feed extends Widget
             $data['items'][] = [];
         }
 
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(FeedAsset::class);
+        Craft::$app->getView()->registerAssetBundle(FeedAsset::class);
         AssetRegistry::js(
             "new Craft.FeedWidget($this->id, ".
             Json::encode($this->url).', '.

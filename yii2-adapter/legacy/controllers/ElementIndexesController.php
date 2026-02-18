@@ -29,6 +29,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
@@ -513,12 +514,10 @@ class ElementIndexesController extends BaseElementsController
 
         $html = $condition->getBuilderHtml();
 
-        $view = Craft::$app->getView();
-
         return $this->asJson([
             'hudHtml' => $html,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => AssetRegistry::headHtml(),
+            'bodyHtml' => AssetRegistry::bodyHtml(),
         ]);
     }
 

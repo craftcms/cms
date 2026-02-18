@@ -112,18 +112,15 @@ final class RecentEntries extends Widget
             $params['sectionId'] = (int) $this->section;
         }
 
-        $view = Craft::$app->getView();
-
-        $view->registerAssetBundle(RecentEntriesAsset::class);
+        Craft::$app->getView()->registerAssetBundle(RecentEntriesAsset::class);
         $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
         AssetRegistry::js($js);
 
         $entries = $this->getEntries();
 
-        return template('_components/widgets/RecentEntries/body',
-            [
-                'entries' => $entries->all(),
-            ]);
+        return template('_components/widgets/RecentEntries/body', [
+            'entries' => $entries->all(),
+        ]);
     }
 
     /**

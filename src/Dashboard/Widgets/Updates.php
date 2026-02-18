@@ -56,19 +56,17 @@ final class Updates extends Widget
             return null;
         }
 
-        $view = Craft::$app->getView();
         $cached = $this->updates->isUpdateInfoCached();
 
         if (! $cached || ! $this->updates->totalAvailableUpdates()) {
-            $view->registerAssetBundle(UpdatesWidgetAsset::class);
+            Craft::$app->getView()->registerAssetBundle(UpdatesWidgetAsset::class);
             AssetRegistry::js('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
         }
 
         if ($cached) {
-            return template('_components/widgets/Updates/body',
-                [
-                    'total' => $this->updates->totalAvailableUpdates(),
-                ]);
+            return template('_components/widgets/Updates/body', [
+                'total' => $this->updates->totalAvailableUpdates(),
+            ]);
         }
 
         return '<p class="centeralign">'.t('Checking for updates…').'</p>';
