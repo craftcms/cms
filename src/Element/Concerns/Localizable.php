@@ -7,13 +7,13 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\helpers\ElementHelper;
-use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use yii\base\InvalidConfigException;
 
 /**

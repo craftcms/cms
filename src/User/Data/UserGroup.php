@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Data;
 
-use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Actionable;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;

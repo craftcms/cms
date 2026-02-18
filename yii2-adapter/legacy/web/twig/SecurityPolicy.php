@@ -7,6 +7,7 @@
 
 namespace craft\web\twig;
 
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use ReflectionClass;
 use ReflectionException;
 use Twig\Markup;
