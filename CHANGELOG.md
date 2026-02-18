@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.12 - 2026-02-18
 
 - Added `craft\services\Tokens::getRemainingTokenUsages()`.
 - Added `craft\web\Request::getTokenRoute()`.
