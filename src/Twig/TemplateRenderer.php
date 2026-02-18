@@ -244,7 +244,7 @@ final class TemplateRenderer
 
         try {
             // Is this the first time we've parsed this template?
-            $cacheKey = md5($template);
+            $cacheKey = md5($templateMode->value.':'.$template);
 
             if (! isset($this->objectTemplates[$cacheKey])) {
                 // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
