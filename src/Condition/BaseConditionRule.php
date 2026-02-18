@@ -216,6 +216,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
             Html::endTag('div');
     }
 
+    #[\Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [

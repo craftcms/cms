@@ -13,6 +13,8 @@ use craft\web\assets\totp\TotpAsset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Models\Authenticator;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Session\SessionManager;
 use PragmaRX\Google2FA\Exceptions\Google2FAException;
@@ -72,13 +74,13 @@ final class TOTP extends BaseAuthMethod
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(TotpAsset::class);
-        $view->registerJsWithVars(fn ($totpFormId, $containerId) => <<<JS
+        AssetRegistry::jsWithVars(fn ($totpFormId, $containerId) => <<<JS
 Craft.createAuthFormHandler(Craft.TotpForm.METHOD, $('#' + $totpFormId), () => {
   Craft.Slideout.instances[$containerId].showSuccess();
   Craft.authMethodSetup.refresh();
 });
 JS, [
-            $view->namespaceInputId($totpFormId),
+            InputNamespace::namespaceId($totpFormId),
             $containerId,
         ]);
 

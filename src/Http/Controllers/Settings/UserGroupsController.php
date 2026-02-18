@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use Craft;
 use craft\helpers\Cp;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
@@ -12,6 +11,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use CraftCms\Cms\User\UserGroups;
@@ -105,7 +105,7 @@ final readonly class UserGroupsController
                 'readOnly' => $this->readOnly,
             ])
             ->prepareScreen(function (CpScreenResponse $response, string $containerId) {
-                Craft::$app->getView()->registerJsWithVars(
+                AssetRegistry::jsWithVars(
                     fn ($containerId) => <<<JS
                         new Craft.ElevatedSessionForm('#' + $containerId, [
                             '.user-permissions input[type="checkbox"]:not(:checked)'

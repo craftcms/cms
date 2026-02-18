@@ -142,6 +142,24 @@ class TestSetup
         Craft::setLogger(null);
 
         Craft::$app = null;
+
+        // Reset Yii2 container to prevent singleton accumulation
+        \Yii::$container = new \CraftCms\Yii2Adapter\Container();
+
+        // Reset BaseYii statics that accumulate across tests
+        \yii\BaseYii::$classMap = [];
+        \yii\BaseYii::$aliases = ['@yii' => dirname((new \ReflectionClass(\yii\BaseYii::class))->getFileName())];
+
+        // Reset Yii alias paths cache (private static)
+        $ref = new \ReflectionClass(\Yii::class);
+        $aliasPaths = $ref->getProperty('_aliasPaths');
+        $aliasPaths->setValue(null, []);
+        $aliasesChanged = $ref->getProperty('_aliasesChanged');
+        $aliasesChanged->setValue(null, false);
+
+        // Reset CustomFieldBehavior static handles
+        \craft\behaviors\CustomFieldBehavior::$fieldHandles = [];
+        \craft\behaviors\CustomFieldBehavior::$generatedFieldHandles = [];
     }
 
     /**

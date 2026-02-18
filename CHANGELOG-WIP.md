@@ -767,6 +767,27 @@ Moved the following controllers:
 - Deprecated `craft\services\Tokens`. `CraftCms\Cms\RouteToken\RouteTokens` should be used instead.
 - Deprecated `craft\records\Token`. `CraftCms\Cms\RouteToken\Models\RouteToken` should be used instead.
 
+## Twig
+
+- Added `CraftCms\Cms\Twig\Twig` service for managing Twig environments, replacing the Twig management logic previously in `craft\web\View`.
+- Added `CraftCms\Cms\Twig\Environment`, moved from `craft\web\twig\Environment`.
+- Added `CraftCms\Cms\Twig\Events\TwigCreated` event, dispatched when a Twig environment is created.
+- Added `CraftCms\Cms\Twig\TemplateResolver`.
+- Added `CraftCms\Cms\Twig\TemplateLoader`.
+- Added `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException`.
+- Deprecated `craft\web\View::getTwig()`. `CraftCms\Cms\Twig\Twig::get()` should be used instead.
+- Deprecated `craft\web\View::setTwig()`. `CraftCms\Cms\Twig\Twig::set()` should be used instead.
+- Deprecated `craft\web\View::createTwig()`. `CraftCms\Cms\Twig\Twig::create()` should be used instead.
+- Deprecated `craft\web\View::registerCpTwigExtension()`. `CraftCms\Cms\Twig\Twig::registerExtension()` should be used instead.
+- Deprecated `craft\web\View::registerSiteTwigExtension()`. `CraftCms\Cms\Twig\Twig::registerExtension()` should be used instead.
+- Deprecated `craft\web\View::registerTwigExtension()`. `CraftCms\Cms\Twig\Twig::registerExtension()` should be used instead.
+- Deprecated `craft\web\twig\Environment`. `CraftCms\Cms\Twig\Environment` should be used instead.
+- Deprecated `craft\web\View::EVENT_AFTER_CREATE_TWIG`. `CraftCms\Cms\Twig\Events\TwigCreated` should be used instead.
+- Deprecated `craft\web\View::doesTemplateExist()`. `CraftCms\Cms\Twig\TemplateResolver::doesTemplateExist()` should be used instead.
+- Deprecated `craft\web\View::resolveTemplate()`. `CraftCms\Cms\Twig\TemplateResolver::resolveTemplate()` should be used instead.
+- Deprecated `craft\web\twig\TemplateLoader`. `CraftCms\Cms\Twig\TemplateLoader` should be used instead.
+- Deprecated `craft\web\twig\TemplateLoaderException`. `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException` should be used instead.
+
 ## Translations
 
 - Deprecated `craft\i18n\FormatConverter`. `CraftCms\Cms\Translation\FormatConverter` should be used instead.
@@ -810,9 +831,53 @@ Moved the following controllers:
 
 ## View
 
+- Added `CraftCms\Cms\View\TwigEngine`.
+- Added `CraftCms\Cms\View\AssetRegistry`.
+- Added `CraftCms\Cms\Support\Facades\AssetRegistry`.
+- Added `CraftCms\Cms\View\Enums\Position` enum.
+- Added `CraftCms\Cms\View\InputNamespace`.
+- Added `CraftCms\Cms\Support\Facades\InputNamespace`.
+- Added `CraftCms\Cms\View\TemplateHooks`.
+- Added `CraftCms\Cms\Support\Facades\TemplateHooks`.
+- Added `CraftCms\Cms\View\DeltaRegistry`.
+- Added `CraftCms\Cms\Support\Facades\DeltaRegistry`.
 - Added `CraftCms\Cms\View\TemplateMode` enum.
 - Added `CraftCms\Cms\View\Events\RegisterCpTemplateRoots`.
 - Added `CraftCms\Cms\View\Events\RegisterSiteTemplateRoots`.
+- Deprecated `craft\web\View::registerJs()`. `CraftCms\Cms\View\AssetRegistry::js()` should be used instead.
+- Deprecated `craft\web\View::registerJsWithVars()`. `CraftCms\Cms\View\AssetRegistry::jsWithVars()` should be used instead.
+- Deprecated `craft\web\View::registerJsFile()`. `CraftCms\Cms\View\AssetRegistry::jsFile()` should be used instead.
+- Deprecated `craft\web\View::registerCss()`. `CraftCms\Cms\View\AssetRegistry::css()` should be used instead.
+- Deprecated `craft\web\View::registerCssFile()`. `CraftCms\Cms\View\AssetRegistry::cssFile()` should be used instead.
+- Deprecated `craft\web\View::registerScript()`. `CraftCms\Cms\View\AssetRegistry::script()` should be used instead.
+- Deprecated `craft\web\View::registerScriptWithVars()`. `CraftCms\Cms\View\AssetRegistry::scriptWithVars()` should be used instead.
+- Deprecated `craft\web\View::registerHtml()`. `CraftCms\Cms\View\AssetRegistry::html()` should be used instead.
+- Deprecated `craft\web\View::registerMetaTag()`. `CraftCms\Cms\View\AssetRegistry::metaTag()` should be used instead.
+- Deprecated `craft\web\View::registerLinkTag()`. `CraftCms\Cms\View\AssetRegistry::linkTag()` should be used instead.
+- Deprecated `craft\web\View::registerTranslations()`. `CraftCms\Cms\View\AssetRegistry::translations()` should be used instead.
+- Deprecated `craft\web\View::registerJsImport()`. `CraftCms\Cms\View\AssetRegistry::jsImport()` should be used instead.
+- Deprecated `craft\web\View::registerIcons()`. `CraftCms\Cms\View\AssetRegistry::icons()` should be used instead.
+- Deprecated `craft\web\View::startJsBuffer()`. `CraftCms\Cms\View\AssetRegistry::startJsBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearJsBuffer()`. `CraftCms\Cms\View\AssetRegistry::clearJsBuffer()` should be used instead.
+- Deprecated `craft\web\View::startScriptBuffer()`. `CraftCms\Cms\View\AssetRegistry::startScriptBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearScriptBuffer()`. `CraftCms\Cms\View\AssetRegistry::clearScriptBuffer()` should be used instead.
+- Deprecated `craft\web\View::startCssBuffer()`. `CraftCms\Cms\View\AssetRegistry::startCssBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearCssBuffer()`. `CraftCms\Cms\View\AssetRegistry::clearCssBuffer()` should be used instead.
+- Deprecated `craft\web\View::startCssFileBuffer()`. `CraftCms\Cms\View\AssetRegistry::startCssFileBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearCssFileBuffer()`. `CraftCms\Cms\View\AssetRegistry::clearCssFileBuffer()` should be used instead.
+- Deprecated `craft\web\View::startJsFileBuffer()`. `CraftCms\Cms\View\AssetRegistry::startJsFileBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearJsFileBuffer()`. `CraftCms\Cms\View\AssetRegistry::clearJsFileBuffer()` should be used instead.
+- Deprecated `craft\web\View::startHtmlBuffer()`. `CraftCms\Cms\View\AssetRegistry::startHtmlBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearHtmlBuffer()`. `CraftCms\Cms\View\AssetRegistry::clearHtmlBuffer()` should be used instead.
+- Deprecated `craft\web\View::startMetaTagBuffer()`. `CraftCms\Cms\View\AssetRegistry::startMetaTagBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearMetaTagBuffer()`. `CraftCms\Cms\View\AssetRegistry::clearMetaTagBuffer()` should be used instead.
+- Deprecated `craft\web\View::startJsImportBuffer()`. `CraftCms\Cms\View\AssetRegistry::startJsImportBuffer()` should be used instead.
+- Deprecated `craft\web\View::clearJsImportBuffer()`. `CraftCms\Cms\View\AssetRegistry::clearJsImportBuffer()` should be used instead.
+- Deprecated `craft\web\View::getNamespace()`. `CraftCms\Cms\View\InputNamespace::get()` should be used instead.
+- Deprecated `craft\web\View::setNamespace()`. `CraftCms\Cms\View\InputNamespace::set()` should be used instead.
+- Deprecated `craft\web\View::namespaceInputs()`. `CraftCms\Cms\View\InputNamespace::namespaceInputs()` should be used instead.
+- Deprecated `craft\web\View::namespaceInputName()`. `CraftCms\Cms\View\InputNamespace::namespaceInputName()` should be used instead.
+- Deprecated `craft\web\View::namespaceInputId()`. `CraftCms\Cms\View\InputNamespace::namespaceInputId()` should be used instead.
 - Deprecated `craft\web\View::TEMPLATE_MODE_CP`. `CraftCms\Cms\View\TemplateMode::Cp` should be used instead.
 - Deprecated `craft\web\View::TEMPLATE_MODE_SITE`. `CraftCms\Cms\View\TemplateMode::Site` should be used instead.
 - Deprecated `craft\web\View::getTemplateMode()`. `CraftCms\Cms\View\TemplateMode::get()` should be used instead.
@@ -822,3 +887,12 @@ Moved the following controllers:
 - Deprecated `craft\web\View::getSiteTemplateRoots()`. `CraftCms\Cms\View\TemplateMode::templateRoots()` should be used instead.
 - Deprecated `craft\web\View::EVENT_REGISTER_CP_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\RegisterCpTemplateRoots` should be used instead.
 - Deprecated `craft\web\View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS`. `CraftCms\Cms\View\Events\RegisterSiteTemplateRoots` should be used instead.
+- Deprecated `craft\web\View::registerDeltaName()`. `CraftCms\Cms\View\DeltaRegistry::registerName()` should be used instead.
+- Deprecated `craft\web\View::getDeltaNames()`. `CraftCms\Cms\View\DeltaRegistry::getNames()` should be used instead.
+- Deprecated `craft\web\View::getModifiedDeltaNames()`. `CraftCms\Cms\View\DeltaRegistry::getModifiedNames()` should be used instead.
+- Deprecated `craft\web\View::setInitialDeltaValue()`. `CraftCms\Cms\View\DeltaRegistry::setInitialValue()` should be used instead.
+- Deprecated `craft\web\View::getInitialDeltaValues()`. `CraftCms\Cms\View\DeltaRegistry::getInitialValues()` should be used instead.
+- Deprecated `craft\web\View::getIsDeltaRegistrationActive()`. `CraftCms\Cms\View\DeltaRegistry::isActive()` should be used instead.
+- Deprecated `craft\web\View::setIsDeltaRegistrationActive()`. `CraftCms\Cms\View\DeltaRegistry::setActive()` should be used instead.
+- Deprecated `craft\web\View::hook()`. `CraftCms\Cms\View\TemplateHooks::register()` should be used instead.
+- Deprecated `craft\web\View::invokeHook()`. `CraftCms\Cms\View\TemplateHooks::invoke()` should be used instead.

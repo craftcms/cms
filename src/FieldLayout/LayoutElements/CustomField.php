@@ -18,8 +18,10 @@ use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -719,17 +721,14 @@ class CustomField extends BaseField
     #[Override]
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $view = Craft::$app->getView();
-        $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
-        $view->setIsDeltaRegistrationActive(
-            $isDeltaRegistrationActive &&
+        $active = DeltaRegistry::isActive() &&
             ($element->id ?? false) &&
-            ! $static
-        );
-        $html = $view->namespaceInputs(fn () => (string) parent::formHtml($element, $static), 'fields');
-        $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
+            ! $static;
 
-        return $html;
+        return DeltaRegistry::withActive($active, fn () => InputNamespace::namespaceInputs(
+            fn () => (string) parent::formHtml($element, $static),
+            'fields',
+        ));
     }
 
     #[Override]
@@ -783,9 +782,8 @@ class CustomField extends BaseField
             return $field->getStaticHtml($value, $element);
         }
 
-        $view = Craft::$app->getView();
         $isDirty = $element?->isFieldDirty($field->handle);
-        $view->registerDeltaName($field->handle, $isDirty);
+        DeltaRegistry::registerName($field->handle, $isDirty);
 
         $describedBy = $field->describedBy;
         $field->describedBy = $this->describedBy($element, $static);

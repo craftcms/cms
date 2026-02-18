@@ -15,6 +15,7 @@ final class Structure extends Component
 
     public ?string $uid = null;
 
+    #[\Override]
     public function getRules(): array
     {
         return [

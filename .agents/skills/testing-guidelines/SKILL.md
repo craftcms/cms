@@ -9,12 +9,30 @@ description: Guidance for writing and updating Craft CMS 6 tests (Pest/Laravel) 
 
 Apply Craft CMS 6 testing patterns consistently and avoid common pitfalls around elements, CP URLs, and event assertions. Use the quick rules below, then load the reference file for full examples and code snippets.
 
+## Test Directory Structure
+
+Tests are split into two directories based on whether they require a database:
+
+- **`tests/Unit/`** — Unit tests that do NOT require a database. These use `UnitTestCase` (a lightweight `Orchestra\Testbench\TestCase` with no database, no Yii2 bootstrap, no migrations). Only the Laravel service container is available.
+- **`tests/Feature/`** — Feature/integration tests that DO require a database. These use `TestCase` (which includes `RefreshDatabase`, full migrations via the `Install` migration, and Yii2 bootstrapping).
+
+This is configured in `tests/Pest.php`:
+```php
+uses(TestCase::class)->in('Feature');
+uses(UnitTestCase::class)->in('Unit');
+```
+
+**Deciding where to put a test:**
+- If the test needs database records (factories, element queries, saving elements, etc.) → `tests/Feature/`
+- If the test only needs the service container (testing pure logic, config, formatting, validation rules, etc.) → `tests/Unit/`
+
 ## Workflow
 
-1. Identify the test scope (CP URL, element behavior, trait, event, custom field).
-2. Follow the matching rule set below.
-3. Pull detailed examples from `references/testing-guidelines.md` when needed.
-4. Implement tests using Pest and repo conventions.
+1. Decide whether the test needs a database (Feature) or not (Unit).
+2. Identify the test scope (CP URL, element behavior, trait, event, custom field).
+3. Follow the matching rule set below.
+4. Pull detailed examples from `references/testing-guidelines.md` when needed.
+5. Implement tests using Pest and repo conventions.
 
 ## Core Rules
 

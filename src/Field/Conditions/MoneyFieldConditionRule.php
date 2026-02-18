@@ -21,6 +21,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
 {
     use FieldConditionRuleTrait;
 
+    #[\Override]
     public function setAttributes($values, $safeOnly = true): void
     {
         // Hold setting of the value attribute until we have all the info we need

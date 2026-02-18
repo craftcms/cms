@@ -26,6 +26,7 @@ final class SiteGroup extends Component
         }
     }
 
+    #[\Override]
     public function getRules(): array
     {
         return [
@@ -68,6 +69,7 @@ final class SiteGroup extends Component
         ];
     }
 
+    #[\Override]
     public function toArray(array $fields = [], array $expand = [], bool $recursive = true): array
     {
         return array_merge(parent::toArray($fields, $expand, $recursive), [

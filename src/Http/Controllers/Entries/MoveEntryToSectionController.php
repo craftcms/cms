@@ -91,7 +91,7 @@ final readonly class MoveEntryToSectionController
             $listHtml = Html::tag(
                 name: 'p',
                 content: t('Couldn’t find any sections that all selected elements could be moved to.'),
-                options: ['class' => 'zilch']
+                attributes: ['class' => 'zilch']
             );
         } else {
             $listHtml = '';

@@ -82,7 +82,7 @@ final class JsonData extends Component implements ArrayAccess, IteratorAggregate
         }
 
         if (is_array($this->value)) {
-            return array_key_exists($offset, $this->value);
+            return array_key_exists((string) $offset, $this->value);
         }
 
         if ($this->value instanceof ArrayAccess) {

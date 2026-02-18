@@ -155,8 +155,6 @@ class Craft extends Yii2
 
         Config::set('app.timezone', 'America/Los_Angeles');
 
-        Config::set('data', require CRAFT_VENDOR_PATH . '/spatie/laravel-data/config/data.php');
-
         date_default_timezone_set('America/Los_Angeles');
 
         File::cleanDirectory(config_path('project'));

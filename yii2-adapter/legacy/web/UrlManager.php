@@ -19,6 +19,7 @@ use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Twig\TemplateResolver;
 use Illuminate\Support\Facades\Log;
 use yii\web\UrlRule as YiiUrlRule;
 use function CraftCms\Cms\backTraceAsString;
@@ -466,7 +467,7 @@ class UrlManager extends \yii\web\UrlManager
             return false;
         }
 
-        return Craft::$app->getView()->doesTemplateExist($request->getPathInfo(), publicOnly: true);
+        return app(TemplateResolver::class)->exists($request->getPathInfo(), publicOnly: true);
     }
 
     /**

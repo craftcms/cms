@@ -70,6 +70,7 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         ]);
     }
 
+    #[\Override]
     public function modifyQuery(Builder $query): void
     {
         if ($this->operator !== self::OPERATOR_TYPE) {

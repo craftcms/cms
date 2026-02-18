@@ -10,6 +10,8 @@ use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -701,19 +703,19 @@ final class CpScreenResponse implements Responsable
 
             abort_unless((bool) $containerId, 400, 'Request missing the X-Craft-Container-Id header.');
 
-            $view->setNamespace($namespace);
+            InputNamespace::set($namespace);
             call_user_func($this->prepareScreen, $this, $containerId);
-            $view->setNamespace(null);
+            InputNamespace::set(null);
         }
 
         $extraToolbarItems = is_callable($this->toolbarHtml) ? call_user_func($this->toolbarHtml) : $this->toolbarHtml;
-        $notice = $this->noticeHtml ? $view->namespaceInputs($this->noticeHtml, $namespace) : null;
+        $notice = $this->noticeHtml ? InputNamespace::namespaceInputs($this->noticeHtml, $namespace) : null;
 
-        $tabs = count($this->tabs) > 1 ? $view->namespaceInputs(fn () => $view->renderTemplate('_includes/tabs.twig', [
+        $tabs = count($this->tabs) > 1 ? InputNamespace::namespaceInputs(fn () => $view->renderTemplate('_includes/tabs.twig', [
             'tabs' => $this->tabs,
         ], TemplateMode::Cp->value), $namespace) : null;
 
-        $content = $view->namespaceInputs(function () {
+        $content = InputNamespace::namespaceInputs(function () {
             $components = [];
 
             if ($this->contentHtml) {
@@ -729,8 +731,8 @@ final class CpScreenResponse implements Responsable
             return implode("\n", $components);
         }, $namespace);
 
-        $sidebar = $this->metaSidebarHtml ? $view->namespaceInputs($this->metaSidebarHtml, $namespace) : null;
-        $errorSummary = $this->errorSummary ? $view->namespaceInputs($this->errorSummary, $namespace) : null;
+        $sidebar = $this->metaSidebarHtml ? InputNamespace::namespaceInputs($this->metaSidebarHtml, $namespace) : null;
+        $errorSummary = $this->errorSummary ? InputNamespace::namespaceInputs($this->errorSummary, $namespace) : null;
 
         return new JsonResponse([
             'editUrl' => $this->editUrl ? UrlHelper::cpUrl($this->editUrl) : null,
@@ -751,8 +753,8 @@ final class CpScreenResponse implements Responsable
             'errorSummary' => $errorSummary,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
-            'deltaNames' => $view->getDeltaNames(),
-            'initialDeltaValues' => $view->getInitialDeltaValues(),
+            'deltaNames' => DeltaRegistry::getNames(),
+            'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ]);
     }
 
@@ -906,7 +908,7 @@ final class CpScreenResponse implements Responsable
         };
 
         if ($namespace) {
-            return Craft::$app->getView()->namespaceInputs($render, $namespace);
+            return InputNamespace::namespaceInputs($render, $namespace);
         }
 
         return $render();

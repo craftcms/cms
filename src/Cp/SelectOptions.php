@@ -72,20 +72,7 @@ class SelectOptions
                 if (str_starts_with($alias, '@web/')) {
                     continue;
                 }
-                if (is_array($path)) {
-                    if (
-                        isset($path[$alias]) &&
-                        (! $filter || $filter($path[$alias]))
-                    ) {
-                        $aliasSuggestions[] = [
-                            'label' => $alias,
-                            'value' => $alias,
-                            'data' => [
-                                'hint' => $path[$alias],
-                            ],
-                        ];
-                    }
-                } elseif (! $filter || $filter($path)) {
+                if (! $filter || $filter($path)) {
                     $aliasSuggestions[] = [
                         'label' => $alias,
                         'value' => $alias,

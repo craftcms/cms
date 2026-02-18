@@ -16,6 +16,7 @@ use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -153,9 +154,9 @@ class ElementIndexSettingsController extends BaseElementsController
                     $condition->queryParams = ['site', 'status'];
                     $condition->addRuleLabel = t('Add a filter');
 
-                    $view->startJsBuffer();
+                    AssetRegistry::startJsBuffer();
                     $conditionBuilderHtml = $condition->getBuilderHtml();
-                    $conditionBuilderJs = $view->clearJsBuffer();
+                    $conditionBuilderJs = AssetRegistry::clearJsBuffer();
                     $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
                 }
 
@@ -216,9 +217,9 @@ class ElementIndexSettingsController extends BaseElementsController
         $condition->queryParams = ['site', 'status'];
         $condition->addRuleLabel = t('Add a filter');
 
-        $view->startJsBuffer();
+        AssetRegistry::startJsBuffer();
         $conditionBuilderHtml = $condition->getBuilderHtml();
-        $conditionBuilderJs = $view->clearJsBuffer();
+        $conditionBuilderJs = AssetRegistry::clearJsBuffer();
 
         $userGroups = UserGroups::getAllGroups()
             ->map(fn(UserGroup $group) => [

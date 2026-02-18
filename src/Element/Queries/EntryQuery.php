@@ -103,6 +103,7 @@ final class EntryQuery extends ElementQuery
         });
     }
 
+    #[\Override]
     protected function statusCondition(string $status): Closure
     {
         if (
@@ -201,6 +202,7 @@ final class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      */
+    #[\Override]
     public function status(array|string|null $value): static
     {
         /** @var static */
@@ -290,6 +292,7 @@ final class EntryQuery extends ElementQuery
         }, boolean: $value ? 'and' : 'and not');
     }
 
+    #[\Override]
     protected function cacheTags(): array
     {
         $tags = [];
@@ -310,6 +313,7 @@ final class EntryQuery extends ElementQuery
         return $tags;
     }
 
+    #[\Override]
     protected function fieldLayouts(): Collection
     {
         $this->normalizeTypeId($this);

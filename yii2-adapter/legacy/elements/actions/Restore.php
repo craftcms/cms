@@ -10,6 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use function CraftCms\Cms\t;
 
 /**
@@ -81,7 +82,7 @@ class Restore extends ElementAction
     public function getTriggerHtml(): ?string
     {
         // Only enable for restorable/savable elements
-        Craft::$app->getView()->registerJsWithVars(fn($type, $attribute) => <<<JS
+        AssetRegistry::jsWithVars(fn($type, $attribute) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,

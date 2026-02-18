@@ -64,9 +64,12 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -144,6 +147,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return 'entry';
     }
 
+    #[\Override]
     public static function hasDrafts(): bool
     {
         return true;
@@ -1796,6 +1800,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         return $entry;
     }
 
+    #[\Override]
     public function hasRevisions(): bool
     {
         $section = $this->getSection();
@@ -1858,8 +1863,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 'label' => t('Entry type settings'),
             ];
 
-            $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn ($id, $params, $isNestedEntry) => <<<JS
+            AssetRegistry::jsWithVars(fn ($id, $params, $isNestedEntry) => <<<JS
 (() => {
   $('#' + $id).on('activate', function() {
     const params = $params;
@@ -1873,7 +1877,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
   });
 })();
 JS, [
-                $view->namespaceInputId($entryTypeEditId),
+                InputNamespace::namespaceId($entryTypeEditId),
                 ['entryTypeId' => $this->typeId],
                 isset($this->fieldId),
             ]);
@@ -1887,15 +1891,14 @@ JS, [
                     'label' => t('Section settings'),
                 ];
 
-                $view = Craft::$app->getView();
-                $view->registerJsWithVars(fn ($id, $params) => <<<JS
+                AssetRegistry::jsWithVars(fn ($id, $params) => <<<JS
     (() => {
       $('#' + $id).on('activate', function() {
         new Craft.CpScreenSlideout('sections/edit-section', {params: $params})
       });
     })();
     JS, [
-                    $view->namespaceInputId($sectionEditId),
+                    InputNamespace::namespaceId($sectionEditId),
                     ['sectionId' => $this->sectionId],
                 ]);
             }
@@ -1913,15 +1916,14 @@ JS, [
                     'label' => Craft::t('app', 'Field settings'),
                 ];
 
-                $view = Craft::$app->getView();
-                $view->registerJsWithVars(fn ($id, $params) => <<<JS
+                AssetRegistry::jsWithVars(fn ($id, $params) => <<<JS
     (() => {
       $('#' + $id).on('activate', function() {
         new Craft.CpScreenSlideout('fields/edit-field', {params: $params})
       });
     })();
     JS, [
-                    $view->namespaceInputId($fieldEditId),
+                    InputNamespace::namespaceId($fieldEditId),
                     ['fieldId' => $this->fieldId],
                 ]);
             }
@@ -2117,7 +2119,6 @@ JS, [
     public function metaFieldsHtml(bool $static): string
     {
         $fields = [];
-        $view = Craft::$app->getView();
         $section = $this->getSection();
         $user = Auth::user();
 
@@ -2225,11 +2226,10 @@ JS, [
                 })();
             }
 
-            $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
-            $view->setIsDeltaRegistrationActive(true);
-            $view->registerDeltaName('postDate');
-            $view->registerDeltaName('expiryDate');
-            $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
+            DeltaRegistry::withActive(true, function () {
+                DeltaRegistry::registerName('postDate');
+                DeltaRegistry::registerName('expiryDate');
+            });
 
             // Post Date
             $fields['postDate'] = Cp::dateTimeFieldHtml([
@@ -2292,7 +2292,7 @@ if (revertRevisionBtn.length > 0) {
   revertRevisionBtn.replaceWith(tooltipBtn);
 }
 JS;
-            Craft::$app->getView()->registerJs($js);
+            AssetRegistry::js($js);
         }
     }
 

@@ -11,8 +11,10 @@ use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin;
+use CraftCms\Cms\Tests\UnitTestCase;
 
-uses(TestCase::class)->in(__DIR__);
+uses(TestCase::class)->in('Feature');
+uses(UnitTestCase::class)->in('Unit');
 
 beforeEach(function () {
     app()->forgetInstance(GeneralConfig::class);

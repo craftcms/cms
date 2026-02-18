@@ -30,7 +30,7 @@ use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Updates\Updates;
 use Exception;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -43,7 +43,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\maxPowerCaptain;
 
-#[Singleton]
+#[Scoped]
 final class Sites
 {
     /**

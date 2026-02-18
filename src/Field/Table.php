@@ -18,6 +18,8 @@ use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -259,6 +261,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -338,9 +341,9 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 
         $view->registerAssetBundle(TimepickerAsset::class);
         $view->registerAssetBundle(TableSettingsAsset::class);
-        $view->registerJs('new Craft.TableFieldSettings('.
-            Json::encode($view->namespaceInputName('columns')).', '.
-            Json::encode($view->namespaceInputName('defaults')).', '.
+        AssetRegistry::js('new Craft.TableFieldSettings('.
+            Json::encode(InputNamespace::namespaceInputName('columns')).', '.
+            Json::encode(InputNamespace::namespaceInputName('defaults')).', '.
             Json::encode($columns).', '.
             Json::encode($this->defaults ?? []).', '.
             Json::encode($columnSettings).', '.
@@ -565,7 +568,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                     $cellValue = $defaults[$rowIndex][$colId] ?? '';
                 } elseif (array_key_exists($colId, $row)) {
                     $cellValue = $row[$colId];
-                } elseif ($col['handle'] && array_key_exists($col['handle'], $row)) {
+                } elseif ($col['handle'] && array_key_exists((string) $col['handle'], $row)) {
                     $cellValue = $row[$col['handle']];
                 } else {
                     $cellValue = null;

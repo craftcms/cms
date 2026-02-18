@@ -46,7 +46,10 @@ use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -304,11 +307,13 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         }
     }
 
+    #[\Override]
     public function settingsAttributes(): array
     {
         return Arr::except(parent::settingsAttributes(), 'localizeEntries');
     }
 
+    #[\Override]
     public function getSettings(): array
     {
         $settings = parent::getSettings();
@@ -564,6 +569,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -588,15 +594,16 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         ];
 
         if (! $readOnly) {
-            $view->startJsBuffer();
-            $namespace = $view->getNamespace();
-            $view->setNamespace(null);
-            $entryTypeSelectHtml = $view->namespaceInputs(fn () => Cp::entryTypeSelectHtml([
-                ...$entryTypeSelectConfig,
-                'id' => 'TEMP_ID',
-            ]), $namespace);
-            $view->setNamespace($namespace);
-            $entryTypeSelectJs = $view->clearJsBuffer();
+            AssetRegistry::startJsBuffer();
+            $namespace = InputNamespace::get();
+            $entryTypeSelectHtml = InputNamespace::with(
+                namespace: null,
+                callback: fn () => InputNamespace::namespaceInputs(fn () => Cp::entryTypeSelectHtml([
+                    ...$entryTypeSelectConfig,
+                    'id' => 'TEMP_ID',
+                ]), $namespace),
+            );
+            $entryTypeSelectJs = AssetRegistry::clearJsBuffer();
         }
 
         $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
@@ -778,7 +785,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     private function blockViewActionMenuItems(): array
     {
         $items = [];
-        $view = Craft::$app->getView();
+        Craft::$app->getView();
 
         // Expand/Collapse all
         $expandAllId = sprintf('expand-all-%s', mt_rand());
@@ -797,7 +804,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                 'type' => Entry::pluralLowerDisplayName(),
             ])),
         ];
-        $view->registerJsWithVars(fn ($expandAllId, $collapseAllId, $fieldId) => <<<JS
+        AssetRegistry::jsWithVars(fn ($expandAllId, $collapseAllId, $fieldId) => <<<JS
 (() => {
   const field = $('#' + $fieldId);
   const expandBtn = $('#' + $expandAllId);
@@ -841,9 +848,9 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
   }, 1);
 })();
 JS, [
-            $view->namespaceInputId($expandAllId),
-            $view->namespaceInputId($collapseAllId),
-            $view->namespaceInputId($this->getInputId()),
+            InputNamespace::namespaceId($expandAllId),
+            InputNamespace::namespaceId($collapseAllId),
+            InputNamespace::namespaceId($this->getInputId()),
         ]);
 
         // Copy, Duplicate, Delete
@@ -888,7 +895,6 @@ JS);
 
     private function copyAction(string $type, string $entrySelector): array
     {
-        $view = Craft::$app->getView();
         $id = sprintf('action-copy-%s', mt_rand());
 
         $baseInfo = Json::encode([
@@ -896,7 +902,7 @@ JS);
             'fieldId' => $this->id,
         ]);
 
-        $view->registerJsWithVars(fn ($id, $fieldId, $entrySelector, $type) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id, $fieldId, $entrySelector, $type) => <<<JS
 (() => {
   const btn = $('#' + $id);
   const field = $('#' + $fieldId);
@@ -949,8 +955,8 @@ JS);
   }, 1);
 })();
 JS, [
-            $view->namespaceInputId($id),
-            $view->namespaceInputId($this->getInputId()),
+            InputNamespace::namespaceId($id),
+            InputNamespace::namespaceId($this->getInputId()),
             $entrySelector,
             $type,
         ]);
@@ -997,10 +1003,9 @@ JS;
 
     private function bulkAction(string $entrySelector, string $activateJs, array $item): array
     {
-        $view = Craft::$app->getView();
         $id = sprintf('action-%s', mt_rand());
 
-        $view->registerJsWithVars(fn ($id, $fieldId, $entrySelector) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id, $fieldId, $entrySelector) => <<<JS
 (() => {
   const btn = $('#' + $id);
   const field = $('#' + $fieldId);
@@ -1027,8 +1032,8 @@ JS;
   }, 1);
 })();
 JS, [
-            $view->namespaceInputId($id),
-            $view->namespaceInputId($this->getInputId()),
+            InputNamespace::namespaceId($id),
+            InputNamespace::namespaceId($this->getInputId()),
             $entrySelector,
         ]);
 
@@ -1127,8 +1132,8 @@ JS, [
         $settings = [
             'fieldId' => $this->id,
             'maxEntries' => $this->maxEntries,
-            'namespace' => $view->getNamespace(),
-            'baseInputName' => $view->namespaceInputName($this->handle),
+            'namespace' => InputNamespace::get(),
+            'baseInputName' => InputNamespace::namespaceInputName($this->handle),
             'ownerElementType' => $element::class,
             'ownerId' => $element->id,
             'siteId' => $element->siteId,
@@ -1137,9 +1142,9 @@ JS, [
         ];
 
         $js = 'const input = new Craft.MatrixInput('.
-            '"'.$view->namespaceInputId($id).'", '.
+            '"'.InputNamespace::namespaceId($id).'", '.
             Json::encode($entryTypeInfo).', '.
-            '"'.$view->namespaceInputName($this->handle).'", '.
+            '"'.InputNamespace::namespaceInputName($this->handle).'", '.
             Json::encode($settings).
             ');';
 
@@ -1150,7 +1155,7 @@ JS, [
             // so when we get our initialSerializedValue() for the ElementEditor,
             // the entry is already there which means the field is reported as not changed since the init
             // and so not passed to PHP for save
-            $view->setInitialDeltaValue($this->handle, null);
+            DeltaRegistry::setInitialValue($this->handle, null);
 
             $js .= "\n".<<<'JS'
 input.on('afterInit', async () => {
@@ -1176,7 +1181,7 @@ JS."\n";
 JS;
         }
 
-        $view->registerJs("(() => {\n$js\n})();");
+        AssetRegistry::js("(() => {\n$js\n})();");
 
         return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
             'id' => $id,

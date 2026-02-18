@@ -29,6 +29,8 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -222,7 +224,7 @@ final class FieldsController
         $element = $this->fieldLayoutComponent($request);
         $namespace = Str::random(10);
         $view = Craft::$app->getView();
-        $html = $view->namespaceInputs(fn () => $element->getSettingsHtml(), $namespace);
+        $html = InputNamespace::namespaceInputs(fn () => $element->getSettingsHtml(), $namespace);
 
         return new JsonResponse([
             'settingsHtml' => $html,
@@ -504,14 +506,14 @@ final class FieldsController
             ->prepareScreen(function () {
                 $view = Craft::$app->getView();
                 $view->registerAssetBundle(FieldSettingsAsset::class);
-                $view->registerJsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
+                AssetRegistry::jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
 new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
   wrapWithTypeClassDiv: true
 })
 JS, [
-                    $view->namespaceInputId('type'),
-                    $view->namespaceInputId('settings'),
-                    $view->namespaceInputName('types[__TYPE__]'),
+                    InputNamespace::namespaceId('type'),
+                    InputNamespace::namespaceId('settings'),
+                    InputNamespace::namespaceInputName('types[__TYPE__]'),
                 ]);
             });
 

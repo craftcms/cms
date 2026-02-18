@@ -67,6 +67,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);

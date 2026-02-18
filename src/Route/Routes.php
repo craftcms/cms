@@ -14,10 +14,10 @@ use CraftCms\Cms\Route\Events\SavingRoute;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 
-#[Singleton]
+#[Scoped]
 final class Routes
 {
     public array $tokens {

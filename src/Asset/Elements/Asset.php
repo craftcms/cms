@@ -69,7 +69,9 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -1368,7 +1370,7 @@ class Asset extends Element
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
         $user = Auth::user();
-        $view = Craft::$app->getView();
+        Craft::$app->getView();
         $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
 
         $viewItems = [];
@@ -1383,12 +1385,12 @@ class Asset extends Element
                 'label' => t('Preview file'),
             ];
 
-            $view->registerJsWithVars(fn ($id, $assetId, $settings) => <<<JS
+            AssetRegistry::jsWithVars(fn ($id, $assetId, $settings) => <<<JS
 $('#' + $id).on('activate', () => {
   new Craft.PreviewFileModal($assetId, $settings)
 });
 JS, [
-                $view->namespaceInputId($previewId),
+                InputNamespace::namespaceId($previewId),
                 $this->id,
                 [
                     'startingWidth' => $this->width,
@@ -1406,7 +1408,7 @@ JS, [
             'label' => t('Download'),
         ];
 
-        $view->registerJsWithVars(fn ($id, $assetId) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id, $assetId) => <<<JS
 $('#' + $id).on('activate', () => {
   const form = Craft.createForm().appendTo(Garnish.\$bod);
   form.append(Craft.getCsrfInput());
@@ -1417,7 +1419,7 @@ $('#' + $id).on('activate', () => {
   form.remove();
 });
 JS, [
-            $view->namespaceInputId($downloadId),
+            InputNamespace::namespaceId($downloadId),
             $this->id,
         ]);
 
@@ -1452,7 +1454,7 @@ JS, [
                 'showInChips' => false,
             ];
 
-            $view->registerJsWithVars(fn ($id, $namespace, $assetId, $fsType, $dimensionsLabel) => <<<JS
+            AssetRegistry::jsWithVars(fn ($id, $namespace, $assetId, $fsType, $dimensionsLabel) => <<<JS
 $('#' + $id).on('activate', () => {
   const fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
   const uploader = Craft.createUploader($fsType, fileInput, {
@@ -1573,8 +1575,8 @@ $('#' + $id).on('activate', () => {
   fileInput.click();
 });
 JS, [
-                $view->namespaceInputId($replaceId),
-                $view->getNamespace(),
+                InputNamespace::namespaceId($replaceId),
+                InputNamespace::get(),
                 $this->id,
                 $this->fs::class,
                 t('Dimensions'),
@@ -1595,7 +1597,7 @@ JS, [
                 'label' => t('Open in Image Editor'),
             ];
 
-            $view->registerJsWithVars(fn ($id, $assetId) => <<<JS
+            AssetRegistry::jsWithVars(fn ($id, $assetId) => <<<JS
 $('#' + $id).on('activate', () => {
   new Craft.AssetImageEditor($assetId, {
     allowDegreeFractions: Craft.isImagick,
@@ -1607,7 +1609,7 @@ $('#' + $id).on('activate', () => {
   })
 });
 JS, [
-                $view->namespaceInputId($editImageId),
+                InputNamespace::namespaceId($editImageId),
                 $this->id,
             ]);
         }
@@ -2604,7 +2606,6 @@ JS, [
                         ($isMobile ? 'is-mobile' : null),
                     ]),
                 ]);
-                $view = Craft::$app->getView();
 
                 if ($previewable) {
                     $imageButtonHtml .= Html::button(t('Preview'), [
@@ -2613,7 +2614,7 @@ JS, [
                         'aria-label' => t('Preview'),
                     ]);
 
-                    $previewBtnId = $view->namespaceInputId('preview-btn');
+                    $previewBtnId = InputNamespace::namespaceId('preview-btn');
                     $settings = [];
                     $width = $this->getWidth();
                     $height = $this->getHeight();
@@ -2627,7 +2628,7 @@ $('#$previewBtnId').on('activate', () => {
     new Craft.PreviewFileModal($this->id, null, $jsSettings)
 });
 JS;
-                    $view->registerJs($js);
+                    AssetRegistry::js($js);
                 }
 
                 if ($editable) {
@@ -2636,7 +2637,7 @@ JS;
                         'class' => ['btn', 'edit-btn'],
                     ]);
 
-                    $editBtnId = $view->namespaceInputId('edit-btn');
+                    $editBtnId = InputNamespace::namespaceId('edit-btn');
                     $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
                     $js = <<<JS
 $('#$editBtnId').on('activate', () => {
@@ -2658,7 +2659,7 @@ $('#$editBtnId').on('activate', () => {
     })
 });
 JS;
-                    $view->registerJs($js);
+                    AssetRegistry::js($js);
                 }
 
                 $imageButtonHtml .= Html::endTag('div'); // .image-actions
@@ -2680,7 +2681,7 @@ JS;
 
     private function _updatePreviewThumbJs(): string
     {
-        $thumbContainerId = Craft::$app->getView()->namespaceInputId('thumb-container');
+        $thumbContainerId = InputNamespace::namespaceId('thumb-container');
 
         return <<<JS
 $('#$thumbContainerId')

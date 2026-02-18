@@ -10,6 +10,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -157,7 +158,7 @@ final class QuickPost extends Widget
         $buttonId = sprintf('quickpost%s', mt_rand());
 
         $view = Craft::$app->getView();
-        $view->registerJsWithVars(fn ($buttonId, $params, $elementType) => <<<JS
+        AssetRegistry::jsWithVars(fn ($buttonId, $params, $elementType) => <<<JS
 (() => {
   const button = $('#' + $buttonId);
   button.on('activate', async () => {

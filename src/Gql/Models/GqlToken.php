@@ -15,6 +15,7 @@ final class GqlToken extends BaseModel
 
     protected $table = Table::GQLTOKENS;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -7,8 +7,8 @@
 
 namespace craft\elements\actions;
 
-use Craft;
 use craft\base\ElementAction;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use yii\base\Exception;
 use function CraftCms\Cms\t;
 
@@ -38,7 +38,7 @@ class CopyReferenceTag extends ElementAction
             throw new Exception("Element type \"$this->elementType\" doesn't have a reference handle.");
         }
 
-        Craft::$app->getView()->registerJsWithVars(fn($type, $refHandle) => <<<JS
+        AssetRegistry::jsWithVars(fn($type, $refHandle) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,

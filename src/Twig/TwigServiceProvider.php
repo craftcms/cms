@@ -9,16 +9,19 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Support\ServiceProvider;
 use Override;
+use Twig\Loader\LoaderInterface;
 
 final class TwigServiceProvider extends ServiceProvider
 {
     #[Override]
     public function register(): void
     {
+        $this->app->bind(LoaderInterface::class, TemplateLoader::class);
+
         $handler = $this->app->make(ExceptionHandler::class);
 
         if ($handler instanceof Handler) {
-            $handler->map(Exception::class, fn (Exception $e) => $this->app->make(TwigMapper::class)->map($e));
+            $handler->map(Exception::class, fn (Exception $e) => $this->app->make(TwigExceptionMapper::class)->map($e));
         }
     }
 }

@@ -25,7 +25,9 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
@@ -118,6 +120,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->_contentBlockManager;
     }
 
+    #[\Override]
     public function getSettings(): array
     {
         $fieldLayout = $this->getFieldLayout();
@@ -315,6 +318,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -582,16 +586,14 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
             Craft::$app->getElements()->saveElement($value);
         }
 
-        $view = Craft::$app->getView();
         $id = $this->getInputId();
 
-        $originalNamespace = $view->getNamespace();
-        $namespace = $view->namespaceInputName($this->handle);
-        $view->setNamespace($namespace);
-        $form = $this->getFieldLayout()->createForm($value, $static);
-        $view->setNamespace($originalNamespace);
+        $form = InputNamespace::with(
+            namespace: $namespace = InputNamespace::namespaceInputName($this->handle),
+            callback: fn () => $this->getFieldLayout()->createForm($value, $static),
+        );
 
-        $formHtml = $view->namespaceInputs(fn () => $form->render(), $this->handle);
+        $formHtml = InputNamespace::namespaceInputs(fn () => $form->render(), $this->handle);
 
         $settings = [
             'baseInputName' => $namespace,
@@ -603,12 +605,12 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
             'visibleLayoutElements' => $form->getVisibleElements(),
         ];
 
-        $view->registerJsWithVars(fn ($id, $settings) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id, $settings) => <<<JS
 (() => {
   new Craft.ContentBlockEditor($('#' + $id), $settings)
 })();
 JS, [
-            $view->namespaceInputId($id),
+            InputNamespace::namespaceId($id),
             $settings,
         ]);
 

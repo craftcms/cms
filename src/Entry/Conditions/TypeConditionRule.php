@@ -34,6 +34,7 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
         return ['type', 'typeId'];
     }
 
+    #[\Override]
     public function setAttributes($values, $safeOnly = true): void
     {
         if (array_key_exists('entryTypeUid', $values)) {

@@ -17,6 +17,7 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
@@ -168,6 +169,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $this->settingsHtml(false);
     }
 
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -238,7 +240,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 $initialValue['time'] = '';
             }
             $initialValue['timezone'] = $timezone;
-            $view->setInitialDeltaValue($this->handle, $initialValue);
+            DeltaRegistry::setInitialValue($this->handle, $initialValue);
         }
 
         $components = [];
