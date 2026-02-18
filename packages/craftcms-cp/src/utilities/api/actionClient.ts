@@ -13,9 +13,9 @@ export function getActionUrl(action: string = '') {
  */
 export function actionHeaders(): RawAxiosRequestHeaders {
   let headers: Record<string, string> = {
-    'X-Registered-Asset-Bundles': [
-      ...new Set(Cp.registeredAssetBundles),
-    ].join(','),
+    'X-Registered-Asset-Bundles': [...new Set(Cp.registeredAssetBundles)].join(
+      ','
+    ),
     'X-Registered-Js-Files': [...new Set(Cp.registeredJsFiles)].join(','),
   };
 

@@ -24,12 +24,12 @@ export default css`
     --badge-color: var(--c-color-neutral-bg-normal);
     --text-color: var(--c-fg-text);
   }
-  
+
   .badge-indicator--with-number {
     --badge-size: var(--c-size-icon-md);
     padding: calc(2rem / 16);
   }
-  
+
   .number {
     display: inline-flex;
     font-size: var(--c-text-xs);
