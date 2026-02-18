@@ -64,7 +64,6 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
                 'endBody', 'POS_END' => View::POS_END,
                 'ready', 'POS_READY' => View::POS_READY,
                 'load', 'POS_LOAD' => View::POS_LOAD,
-                'booted', 'POS_BOOTED' => View::POS_BOOTED,
                 default => throw new NotSupportedException($position . ' is not a valid position'),
             };
         }

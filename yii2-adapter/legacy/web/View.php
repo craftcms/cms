@@ -137,14 +137,6 @@ class View extends \yii\web\View
     public const TEMPLATE_MODE_SITE = 'site';
 
     /**
-     * The location of JS code block to be registered: enclosed within `Craft.booted()`.
-     *
-     * This ensures the code runs after the Craft JS object is initialized and
-     * Inertia/Vue has mounted the page.
-     */
-    public const POS_BOOTED = 6;
-
-    /**
      * @var bool Whether to minify CSS registered with [[registerCss()]]
      *
      * @since 3.4.0
@@ -1086,7 +1078,7 @@ class View extends \yii\web\View
         if ($combine) {
             $js = '';
 
-            foreach ([self::POS_HEAD, self::POS_BEGIN, self::POS_END, self::POS_LOAD, self::POS_READY, self::POS_BOOTED] as $pos) {
+            foreach ([self::POS_HEAD, self::POS_BEGIN, self::POS_END, self::POS_LOAD, self::POS_READY] as $pos) {
                 if (!empty($bufferedJs[$pos])) {
                     $js .= implode("\n", $bufferedJs[$pos]) . "\n";
                 }
@@ -1677,7 +1669,7 @@ class View extends \yii\web\View
      * Returns the content to be inserted at the end of the body section.
      *
      * This includes:
-     * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], [[POS_LOAD]], or [[POS_BOOTED]]
+     * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
      * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]] or [[POS_END]]
      *
      * @param  bool  $clear  Whether the content should be cleared from the queue (default is true)

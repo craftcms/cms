@@ -118,10 +118,8 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             $nameToken = $stream->expect(Token::NAME_TYPE, [
                 'ready',
                 'load',
-                'booted',
                 'POS_READY',
                 'POS_LOAD',
-                'POS_BOOTED',
             ]);
             $position = $nameToken->getValue();
         } else {
