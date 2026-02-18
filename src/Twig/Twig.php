@@ -74,8 +74,6 @@ final class Twig
             'options' => $this->getOptions(),
         ]);
 
-        $renderer = app(TemplateRenderer::class);
-
         foreach ([
             SafeHtml::class,
             HtmlString::class,
@@ -84,7 +82,7 @@ final class Twig
         }
 
         $twig->addExtension(new StringLoaderExtension);
-        $twig->addExtension(new Extension($renderer, app(PageLifecycle::class), Craft::$app->getView(), $twig));
+        $twig->addExtension(app()->make(Extension::class, ['environment' => $twig]));
 
         if (TemplateMode::is(TemplateMode::Cp)) {
             $twig->addExtension(new CpExtension);
@@ -172,7 +170,7 @@ final class Twig
             // See: https://github.com/twigphp/Twig/issues/1951
             'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
             'auto_reload' => true,
-            'charset' => Craft::$app->charset,
+            'charset' => 'UTF-8',
         ];
 
         $generalConfig = Cms::config();

@@ -78,7 +78,6 @@ use CraftCms\Cms\Support\Sequence;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Twig\PageLifecycle;
-use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\User\Elements\User;
 use DateInterval;
@@ -143,30 +142,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return CoreExtension::arrayEvery($env, $array, $arrow);
     }
 
-    /**
-     * @var View|null
-     */
-    protected ?View $view = null;
-
-    /**
-     * @var TwigEnvironment|null
-     */
-    protected ?TwigEnvironment $environment = null;
-
-    /**
-     * Constructor
-     *
-     * @param View $view
-     * @param TwigEnvironment $environment
-     */
     public function __construct(
-        private TemplateRenderer $renderer,
-        private PageLifecycle $pageLifecycle,
-        View $view,
-        TwigEnvironment $environment,
+        protected PageLifecycle $pageLifecycle,
+        protected ?TwigEnvironment $environment = null,
     ) {
-        $this->view = $view;
-        $this->environment = $environment;
     }
 
     /**
@@ -178,7 +157,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new Profiler(),
             new GetAttrAdjuster(),
             new EventTagFinder(),
-            new EventTagAdder($this->view),
+            new EventTagAdder($this->pageLifecycle),
         ];
     }
 
@@ -1846,7 +1825,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,
-            'view' => $this->view,
+            'view' => Craft::$app->getView(),
 
             'devMode' => app()->hasDebugModeEnabled(),
             'SORT_ASC' => SORT_ASC,
