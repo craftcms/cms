@@ -277,7 +277,6 @@ final class TemplateRenderer
             $variables['object'] = $object;
             $variables['_variables'] = $variables;
 
-            // Render it!
             /** @var \Twig\Template $templateObj */
             $templateObj = $this->objectTemplates[$cacheKey];
 
@@ -314,7 +313,7 @@ final class TemplateRenderer
     public function normalizeObjectTemplate(string $template): string
     {
         $tokens = [];
-        $createToken = function (string $value) use (&$tokens): string {
+        $tokenize = function (string $value) use (&$tokens): string {
             $token = 'tok_'.Str::random(10);
             $tokens[$token] = $value;
 
@@ -323,36 +322,33 @@ final class TemplateRenderer
 
         // Tokenize {% verbatim %} ... {% endverbatim %} tags in their entirety
         $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s',
-            fn (array $matches): string => $createToken($matches[0]),
+            fn (array $matches): string => $tokenize($matches[0]),
             $template
         );
 
         // Tokenize any remaining Twig tags (including print tags)
         $template = preg_replace_callback('/\{%-?\s*\w+.*?%\}|(?<!\{)\{\{(?!\{).+?(?<!\})\}\}(?!\})/s',
-            fn (array $matches): string => $createToken($matches[0]),
+            fn (array $matches): string => $tokenize($matches[0]),
             (string) $template
         );
 
         // Tokenize inline code and code blocks
         $template = preg_replace_callback(
             '/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s',
-            fn (array $matches): string => $createToken('{% verbatim %}'.$matches[0].'{% endverbatim %}'),
+            fn (array $matches): string => $tokenize('{% verbatim %}'.$matches[0].'{% endverbatim %}'),
             (string) $template
         );
 
-        // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
-        while (true) {
+        // Tokenize objects (multiple passes for nested objects)
+        do {
             $template = preg_replace_callback(
                 '/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/',
-                fn (array $matches): string => $createToken($matches[0]),
+                fn (array $matches): string => $tokenize($matches[0]),
                 (string) $template,
                 -1,
                 $count
             );
-            if ($count === 0) {
-                break;
-            }
-        }
+        } while ($count > 0);
 
         // Swap out the remaining {xyz} tags with {{object.xyz}}
         $template = preg_replace_callback('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', function (array $match) {
@@ -366,12 +362,8 @@ final class TemplateRenderer
             return "{{ $replace|raw }}";
         }, (string) $template);
 
-        // Bring the objects back
-        foreach (array_reverse($tokens) as $token => $value) {
-            $template = str_replace($token, $value, $template);
-        }
-
-        return $template;
+        // Restore tokenized content
+        return strtr($template, array_reverse($tokens));
     }
 
     /**
