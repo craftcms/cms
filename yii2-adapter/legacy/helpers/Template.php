@@ -349,7 +349,7 @@ class Template
         if (preg_match('/^[^\r\n]+\.js(\.gz)?$/i', $js) || UrlHelper::isAbsoluteUrl($js)) {
             AssetRegistry::jsFile($js, $options, $key);
         } else {
-            $position = Position::tryFrom($options['position']) ?? Position::Body;
+            $position = Position::tryFrom($options['position']) ?? Position::BodyEnd;
             AssetRegistry::js($js, $position, $key);
         }
     }

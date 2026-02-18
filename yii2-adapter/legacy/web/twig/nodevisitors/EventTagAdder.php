@@ -11,6 +11,7 @@ use Craft;
 use craft\web\twig\nodes\BaseNode;
 use craft\web\View;
 use CraftCms\Cms\Support\Html;
+use InvalidArgumentException;
 use Twig\Environment;
 use Twig\Node\DoNode;
 use Twig\Node\Expression\FunctionExpression;
@@ -107,7 +108,7 @@ class EventTagAdder extends BaseEventTagVisitor
         if (static::$foundEndBody === false && ($endBodyPos = stripos($data, '</body>')) !== false) {
             static::$foundEndBody = true;
 
-            return $this->_insertEventNode($node, $endBodyPos, 'endBody');
+            return $this->_insertEventNode($node, $endBodyPos, 'body');
         }
 
         return $node;
@@ -141,7 +142,7 @@ class EventTagAdder extends BaseEventTagVisitor
         do {
             try {
                 $attribute = Html::parseTagAttribute($this->_bodyTag, $this->_bodyAttrOffset, $start, $end);
-            } catch (\InvalidArgumentException) {
+            } catch (InvalidArgumentException) {
                 // The tag is probably split between a couple text nodes. Keep trying on the next text node
                 break;
             }

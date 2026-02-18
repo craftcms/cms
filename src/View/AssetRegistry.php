@@ -77,7 +77,7 @@ final class AssetRegistry
      * @param  Position  $position  Where on the page the code should appear.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$js`.
      */
-    public function js(string $js, Position $position = Position::Body, ?string $key = null): void
+    public function js(string $js, Position $position = Position::BodyEnd, ?string $key = null): void
     {
         $js = Str::finish(trim($js), ';');
 
@@ -95,7 +95,7 @@ final class AssetRegistry
      * @param  Position  $position  Where on the page the code should appear.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the resulting JS.
      */
-    public function jsWithVars(callable $fn, array $vars, Position $position = Position::Body, ?string $key = null): void
+    public function jsWithVars(callable $fn, array $vars, Position $position = Position::BodyEnd, ?string $key = null): void
     {
         $encodedVars = array_map(fn (mixed $var): string => Json::encode($var), $vars);
         $js = $fn(...array_values($encodedVars));
@@ -116,7 +116,7 @@ final class AssetRegistry
      */
     public function jsFile(string $url, array $options = [], ?string $key = null): void
     {
-        $position = Position::tryFrom((int) Arr::pull($options, 'position', Position::Body->value)) ?? Position::Body;
+        $position = Position::tryFrom((int) Arr::pull($options, 'position', Position::BodyEnd->value)) ?? Position::BodyEnd;
 
         $this->jsFiles[$position->value][$key ?? $url] = Html::javaScriptFile($url, $options);
     }
@@ -160,7 +160,7 @@ final class AssetRegistry
      * @param  array  $options  HTML attributes to add to the `<script>` tag (e.g. `['type' => 'application/ld+json']`).
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$script`.
      */
-    public function script(string $script, Position $position = Position::Body, array $options = [], ?string $key = null): void
+    public function script(string $script, Position $position = Position::BodyEnd, array $options = [], ?string $key = null): void
     {
         $this->scripts[$position->value][$key ?? md5($script)] = Html::script($script, $options);
     }
@@ -177,7 +177,7 @@ final class AssetRegistry
      * @param  array  $options  HTML attributes to add to the `<script>` tag.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of the resulting script.
      */
-    public function scriptWithVars(callable $fn, array $vars, Position $position = Position::Body, array $options = [], ?string $key = null): void
+    public function scriptWithVars(callable $fn, array $vars, Position $position = Position::BodyEnd, array $options = [], ?string $key = null): void
     {
         $encodedVars = array_map(fn (mixed $var): string => Json::encode($var), $vars);
         $script = $fn(...array_values($encodedVars));
@@ -192,7 +192,7 @@ final class AssetRegistry
      * @param  Position  $position  Where on the page the HTML should appear.
      * @param  string|null  $key  A unique key for deduplication. Defaults to a hash of `$html`.
      */
-    public function html(string $html, Position $position = Position::Body, ?string $key = null): void
+    public function html(string $html, Position $position = Position::BodyEnd, ?string $key = null): void
     {
         $this->html[$position->value][$key ?? md5($html)] = $html;
     }
@@ -250,7 +250,7 @@ final class AssetRegistry
             Craft.translations[$jsCategory] = {};
         }
         $assignments
-        JS);
+        JS, Position::BodyBegin);
     }
 
     /**
@@ -341,6 +341,34 @@ final class AssetRegistry
         return $parts->implode(PHP_EOL);
     }
 
+    public function bodyHtml(bool $clear = true): string
+    {
+        return $this->bodyBeginHtml($clear) . $this->bodyEndHtml($clear);
+    }
+
+    /**
+     * Renders all assets registered for the start of the `<body>` section of the page.
+     *
+     * Output order: scripts, HTML, JS files, and inline JS.
+     *
+     * By default, rendered assets are cleared from the registry after output.
+     *
+     * @param  bool  $clear  Whether to clear the rendered body assets from the registry.
+     * @return string The rendered HTML for the begin of the `<body>`.
+     */
+    public function bodyBeginHtml(bool $clear = true): string
+    {
+        $body = Position::BodyBegin->value;
+
+        $parts = $this->getAssetsForPosition(Position::BodyBegin);
+
+        if ($clear) {
+            unset($this->scripts[$body], $this->html[$body], $this->jsFiles[$body], $this->js[$body]);
+        }
+
+        return $parts->implode(PHP_EOL);
+    }
+
     /**
      * Renders all assets registered for the end of the `<body>` section of the page.
      *
@@ -352,9 +380,9 @@ final class AssetRegistry
      * @param  bool  $clear  Whether to clear the rendered body assets from the registry.
      * @return string The rendered HTML for the end of the `<body>`.
      */
-    public function bodyHtml(bool $clear = true): string
+    public function bodyEndHtml(bool $clear = true): string
     {
-        $body = Position::Body->value;
+        $body = Position::BodyEnd->value;
 
         if (! empty($this->icons)) {
             $icons = collect($this->icons)
@@ -365,17 +393,7 @@ final class AssetRegistry
             $this->js("Craft.icons = $iconsJs;");
         }
 
-        $parts = collect()
-            ->concat($this->scripts[$body] ?? [])
-            ->concat($this->html[$body] ?? [])
-            ->concat($this->jsFiles[$body] ?? [])
-            ->unless(
-                empty($this->js[$body]),
-                fn (Collection $c) => $c->concat([
-                    Html::script(implode(PHP_EOL, $this->js[$body])),
-                ]),
-            )
-            ->map(fn (string|Stringable $part) => (string) $part);
+        $parts = $this->getAssetsForPosition(Position::BodyEnd);
 
         if ($clear) {
             $this->icons = [];
@@ -713,5 +731,20 @@ final class AssetRegistry
         $this->linkTags = [];
         $this->metaTags = [];
         $this->scripts = [];
+    }
+
+    private function getAssetsForPosition(Position $position): Collection
+    {
+        return collect()
+            ->concat($this->scripts[$position->value] ?? [])
+            ->concat($this->html[$position->value] ?? [])
+            ->concat($this->jsFiles[$position->value] ?? [])
+            ->unless(
+                empty($this->js[$position->value]),
+                fn(Collection $c) => $c->concat([
+                    Html::script(implode(PHP_EOL, $this->js[$position->value])),
+                ]),
+            )
+            ->map(fn(string|Stringable $part) => (string) $part);
     }
 }

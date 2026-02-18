@@ -463,6 +463,55 @@ TWIG;
         Craft::$app->set('view', $view);
     }
 
+    public function testRenderPageTemplateTriggersBeginAndEndPageEvents(): void
+    {
+        $beginTriggered = false;
+        $endTriggered = false;
+
+        $beginHandler = function() use (&$beginTriggered) {
+            $beginTriggered = true;
+        };
+        $endHandler = function() use (&$endTriggered) {
+            $endTriggered = true;
+        };
+
+        Event::on(View::class, View::EVENT_BEGIN_PAGE, $beginHandler);
+        Event::on(View::class, View::EVENT_END_PAGE, $endHandler);
+
+        try {
+            $this->view->renderPageTemplate('novar.twig');
+        } finally {
+            Event::off(View::class, View::EVENT_BEGIN_PAGE, $beginHandler);
+            Event::off(View::class, View::EVENT_END_PAGE, $endHandler);
+        }
+
+        self::assertTrue($beginTriggered);
+        self::assertTrue($endTriggered);
+    }
+
+    public function testRenderPageTemplateBeforeAndAfterEvents(): void
+    {
+        $beforeHandler = function($event) {
+            $event->template = 'withvar.twig';
+            $event->variables = ['name' => 'Template Event'];
+        };
+        $afterHandler = function($event) {
+            $event->output .= ' [after]';
+        };
+
+        Event::on(View::class, View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $beforeHandler);
+        Event::on(View::class, View::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $afterHandler);
+
+        try {
+            $output = $this->view->renderPageTemplate('novar.twig');
+        } finally {
+            Event::off(View::class, View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $beforeHandler);
+            Event::off(View::class, View::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $afterHandler);
+        }
+
+        self::assertSame('Hello iam Template Event [after]', $output);
+    }
+
     /**
      * @return array
      */

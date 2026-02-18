@@ -77,6 +77,7 @@ use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Sequence;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\User\Elements\User;
 use DateInterval;
@@ -156,8 +157,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param View $view
      * @param TwigEnvironment $environment
      */
-    public function __construct(View $view, TwigEnvironment $environment)
-    {
+    public function __construct(
+        private TemplateRenderer $renderer,
+        View $view,
+        TwigEnvironment $environment,
+    ) {
         $this->view = $view;
         $this->environment = $environment;
     }
@@ -782,7 +786,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::parseTagAttributes($tag, 0, $start, $end, true);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
             return [];
         }
@@ -815,7 +819,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::prependToTag($tag, $html, $ifExists);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
@@ -903,7 +907,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $newTag = Html::modifyTagAttributes($newTag, ['class' => $newClasses]);
             }
             return $newTag;
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
@@ -1021,7 +1025,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::appendToTag($tag, $html, $ifExists);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
@@ -1052,7 +1056,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::modifyTagAttributes($tag, $attributes);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
@@ -1457,9 +1461,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('ul', [Html::class, 'ul'], ['is_safe' => ['html']]),
 
             // DOM event functions
-            new TwigFunction('head', [$this->view, 'head']),
-            new TwigFunction('beginBody', [$this->view, 'beginBody']),
-            new TwigFunction('endBody', [$this->view, 'endBody']),
+            new TwigFunction('head', [$this->renderer, 'head']),
+            new TwigFunction('beginBody', [$this->renderer, 'beginBody']),
+            new TwigFunction('endBody', [$this->renderer, 'endBody']),
         ];
     }
 
@@ -1547,7 +1551,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
 
             return Html::dataUrl(Aliases::get($file), $mimeType);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
             return '';
         }
@@ -1774,7 +1778,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $svg = Html::modifyTagAttributes($svg, [
                     'class' => $class,
                 ]);
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 Log::warning('Unable to add a class to the SVG: ' . $e->getMessage(), [__METHOD__]);
             }
         }

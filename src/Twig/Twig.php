@@ -74,6 +74,8 @@ final class Twig
             'options' => $this->getOptions(),
         ]);
 
+        $renderer = app(TemplateRenderer::class);
+
         foreach ([
             SafeHtml::class,
             HtmlString::class,
@@ -82,7 +84,7 @@ final class Twig
         }
 
         $twig->addExtension(new StringLoaderExtension);
-        $twig->addExtension(new Extension(Craft::$app->getView(), $twig));
+        $twig->addExtension(new Extension($renderer, Craft::$app->getView(), $twig));
 
         if (TemplateMode::is(TemplateMode::Cp)) {
             $twig->addExtension(new CpExtension);

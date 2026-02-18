@@ -579,7 +579,7 @@ JS, [
             $element->revisionId,
             $element->siteId,
             $redirectUrl,
-        ], Position::Body);
+        ], Position::BodyEnd);
 
         [$docTitle, $title] = $this->_editElementTitles($element);
 
