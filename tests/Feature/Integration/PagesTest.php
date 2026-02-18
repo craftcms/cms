@@ -113,18 +113,6 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
             ['rendered' => 'New image transform'],
         ],
     ],
-
-    // Utilities
-    [
-        'url' => '/utilities/system-messages',
-        'title' => 'System Messages',
-        'extraContent' => [
-            ['rendered' => 'When someone creates an account:'],
-            ['rendered' => 'When someone changes their email address:'],
-            ['rendered' => 'When someone forgets their password:'],
-            ['rendered' => 'When you are testing your email settings:'],
-        ],
-    ],
 ]);
 
 it('renders utility pages', function (string $url, string $title, array $extraContent = []) {
@@ -202,6 +190,13 @@ it('renders utility pages', function (string $url, string $title, array $extraCo
         'title' => 'Database Backup',
         'extraContent' => [
             ['rendered' => '<DatabaseBackup'],
+        ],
+    ],
+    [
+        'url' => '/utilities/system-messages',
+        'title' => 'System Messages',
+        'extraContent' => [
+            ['rendered' => '<SystemMessages'],
         ],
     ],
 ]);

@@ -64,7 +64,7 @@ final readonly class JobProgress
      */
     public function getJobInfo(?int $limit = null): Collection
     {
-        return JobProgressModel::query()
+        return self::jobsQuery()
             ->limit($limit)
             ->get();
     }
