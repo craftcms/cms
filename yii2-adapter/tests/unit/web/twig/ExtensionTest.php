@@ -115,7 +115,7 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             implode(',', [Edition::Solo->value, Edition::Team->value, Edition::Pro->value]),
             '{{ [CraftSolo, CraftTeam, CraftPro]|join(",") }}',
-            templateMode: TemplateMode::Cp->value,
+            templateMode: TemplateMode::Cp,
         );
     }
 
@@ -1157,7 +1157,7 @@ EOL;
         string $expectedString,
         string $renderString,
         array $variables = [],
-        string $templateMode = TemplateMode::Site->value,
+        TemplateMode $templateMode = TemplateMode::Site,
     ) {
         $result = renderString($renderString, $variables, $templateMode);
         self::assertSame(
