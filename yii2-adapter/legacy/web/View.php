@@ -772,7 +772,7 @@ class View extends \yii\web\View
                 $bufferedJs[$originalPos][$key] = $js;
             }
         }
-        // Position::BodyBegin entries map back to POS_END
+        // Position::BodyBegin entries map back to POS_BEGIN
         if (!empty($registryState[Position::BodyBegin->value])) {
             foreach ($registryState[Position::BodyBegin->value] as $key => $js) {
                 $originalPos = $bufferedPositions[$key] ?? self::POS_BEGIN;

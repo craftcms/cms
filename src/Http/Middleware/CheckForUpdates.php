@@ -60,7 +60,7 @@ final readonly class CheckForUpdates
 
             File::cleanDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
 
-            return response()->view('craftcms::_special/dbupdate');
+            return response()->view('_special/dbupdate');
         }
 
         if ($request->isActionRequest()) {

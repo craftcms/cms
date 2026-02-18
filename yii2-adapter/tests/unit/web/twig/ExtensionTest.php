@@ -47,6 +47,7 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\renderString;
 use function CraftCms\Cms\t;
 
 /**
@@ -244,7 +245,7 @@ class ExtensionTest extends TestCase
 
         $this->expectException(InvalidConfigException::class);
         t('Source message', category: 'invalidCategory');
-        $this->view->renderString('{{ "Source message"|t("invalidCategory") }}');
+        renderString('{{ "Source message"|t("invalidCategory") }}');
     }
 
     public function test_truncate_filter(): void
@@ -622,7 +623,7 @@ class ExtensionTest extends TestCase
 
     public function test_encenc_filter(): void
     {
-        $enc = $this->view->renderString('{{ "foo"|encenc }}');
+        $enc = renderString('{{ "foo"|encenc }}');
         self::assertStringStartsWith('base64:', $enc);
     }
 
@@ -653,7 +654,7 @@ class ExtensionTest extends TestCase
 
         // invalid value
         self::expectException(RuntimeError::class);
-        $this->view->renderString('{% do "foo"|group("bar") %}');
+        renderString('{% do "foo"|group("bar") %}');
     }
 
     /**
@@ -661,7 +662,7 @@ class ExtensionTest extends TestCase
      */
     public function testHashFilter(): void
     {
-        $result = $this->view->renderString('{{ "test"|hash }}');
+        $result = renderString('{{ "test"|hash }}');
 
         self::assertEquals(Crypt::decrypt($result), 'test');
 
@@ -974,20 +975,20 @@ class ExtensionTest extends TestCase
         $path = dirname(__DIR__, 3) . '/_data/assets/files/craft-logo.svg';
         $contents = file_get_contents($path);
 
-        $svg = $this->view->renderString('{{ svg(path) }}', compact('path'));
+        $svg = renderString('{{ svg(path) }}', compact('path'));
         self::assertStringStartsWith('<svg', $svg);
         self::assertStringContainsString('id="Symbols"', $svg);
 
-        $svg = $this->view->renderString('{{ svg(contents) }}', compact('contents'));
+        $svg = renderString('{{ svg(contents) }}', compact('contents'));
         self::assertStringStartsWith('<svg', $svg);
         self::assertRegExp('/id="\w+\-Symbols"/', $svg);
 
-        $svg = $this->view->renderString('{{ svg(contents, namespace=false) }}', compact('contents'));
+        $svg = renderString('{{ svg(contents, namespace=false) }}', compact('contents'));
         self::assertStringStartsWith('<svg', $svg);
         self::assertStringContainsString('id="Symbols"', $svg);
 
         // deprecated
-        $svg = $this->view->renderString('{{ svg(contents, class="foobar") }}', compact('contents'));
+        $svg = renderString('{{ svg(contents, class="foobar") }}', compact('contents'));
         self::assertStringContainsString('class="foobar"', $svg);
     }
 
@@ -1158,7 +1159,7 @@ EOL;
         array $variables = [],
         string $templateMode = TemplateMode::Site->value,
     ) {
-        $result = $this->view->renderString($renderString, $variables, $templateMode);
+        $result = renderString($renderString, $variables, $templateMode);
         self::assertSame(
             $expectedString,
             $result

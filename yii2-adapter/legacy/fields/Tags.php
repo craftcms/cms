@@ -140,8 +140,9 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
                     'tagGroupId' => $tagGroup->id,
                     'targetSiteId' => $this->targetSiteId($element),
                     'sourceElementId' => $element?->id,
-                    'selectionLabel' => $this->selectionLabel ? t($this->selectionLabel, category: 'site') : self::defaultSelectionLabel(),
-                    'allowSelfRelations' => (bool) $this->allowSelfRelations,
+                    'selectionLabel' => $this->selectionLabel ? t($this->selectionLabel,
+                        category: 'site') : self::defaultSelectionLabel(),
+                    'allowSelfRelations' => (bool)$this->allowSelfRelations,
                     'defaultPlacement' => $this->defaultPlacement,
                 ]);
         }

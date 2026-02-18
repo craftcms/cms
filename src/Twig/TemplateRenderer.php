@@ -298,7 +298,7 @@ final class TemplateRenderer
                     expand: $this->filterFieldsByTemplate($object->extraFields(), $template),
                     recursive: false,
                 );
-            } elseif ($object instanceof Arrayable || method_exists($object, 'toArray')) {
+            } elseif (is_object($object) && ($object instanceof Arrayable || method_exists($object, 'toArray'))) {
                 $variables += $object->toArray();
             }
 
@@ -344,54 +344,66 @@ final class TemplateRenderer
         $tokens = [];
 
         // Tokenize {% verbatim %} ... {% endverbatim %} tags in their entirety
-        $template = preg_replace_callback(
-            '/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s',
-            fn (array $matches) => $this->tokenize($tokens, $matches[0]),
-            $template,
+        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s',
+            function (array $matches) use (&$tokens) {
+                $token = 'tok_'.Str::random(10);
+                $tokens[$token] = $matches[0];
+
+                return $token;
+            },
+            $template
         );
 
         // Tokenize any remaining Twig tags (including print tags)
-        $template = preg_replace_callback(
-            '/\{%-?\s*\w+.*?%\}|(?<!\{)\{\{(?!\{).+?(?<!\})\}\}(?!\})/s',
-            fn (array $matches) => $this->tokenize($tokens, $matches[0]),
-            (string) $template,
+        $template = preg_replace_callback('/\{%-?\s*\w+.*?%\}|(?<!\{)\{\{(?!\{).+?(?<!\})\}\}(?!\})/s',
+            function (array $matches) use (&$tokens) {
+                $token = 'tok_'.Str::random(10);
+                $tokens[$token] = $matches[0];
+
+                return $token;
+            },
+            (string) $template
         );
 
         // Tokenize inline code and code blocks
-        $template = preg_replace_callback(
-            '/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s',
-            fn (array $matches) => $this->tokenize($tokens, "{% verbatim %}{$matches[0]}{% endverbatim %}"),
-            (string) $template,
-        );
+        $template = preg_replace_callback('/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s', function (array $matches) use (&$tokens) {
+            $token = 'tok_'.Str::random(10);
+            $tokens[$token] = '{% verbatim %}'.$matches[0].'{% endverbatim %}';
 
-        // Tokenize objects (multiple passes for nested objects)
-        do {
-            $template = preg_replace_callback(
-                '/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/',
-                fn (array $matches) => $this->tokenize($tokens, $matches[0]),
-                (string) $template, -1, $count,
-            );
-        } while ($count > 0);
+            return $token;
+        }, (string) $template);
+
+        // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
+        while (true) {
+            $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function (array $matches) use (&$tokens) {
+                $token = 'tok_'.Str::random(10);
+                $tokens[$token] = $matches[0];
+
+                return $token;
+            }, (string) $template, -1, $count);
+            if ($count === 0) {
+                break;
+            }
+        }
 
         // Swap out the remaining {xyz} tags with {{object.xyz}}
         $template = preg_replace_callback('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', function (array $match) {
-            $replace = ! empty($match[2]) && str_starts_with($match[2], '(')
-                ? "{$match[1]}{$match[2]}"
-                : "(_variables.{$match[1]} ?? object.{$match[1]}){$match[2]}";
+            // Is this a function call like `clone()`?
+            if (! empty($match[2]) && $match[2][0] === '(') {
+                $replace = $match[1].$match[2];
+            } else {
+                $replace = "(_variables.$match[1] ?? object.$match[1])$match[2]";
+            }
 
-            return "{{ {$replace}|raw }}";
+            return "{{ $replace|raw }}";
         }, (string) $template);
 
-        // Restore tokenized content
-        return strtr($template, array_reverse($tokens));
-    }
+        // Bring the objects back
+        foreach (array_reverse($tokens) as $token => $value) {
+            $template = str_replace($token, $value, $template);
+        }
 
-    private function tokenize(array &$tokens, string $value): string
-    {
-        $token = 'tok_'.Str::random(10);
-        $tokens[$token] = $value;
-
-        return $token;
+        return $template;
     }
 
     /**

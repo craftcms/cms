@@ -1627,7 +1627,7 @@ JS, [
             $html .= Html::beginTag('div', [
                     'class' => ['footer', 'flex', 'flex-justify'],
                 ]) .
-                template('_elements/footer', templateMode: TemplateMode::Cp) .
+                template('_elements/footer', data: TemplateMode::Cp, templateMode: TemplateMode::Cp) .
                 Html::endTag('div'); // .footer
         }
 

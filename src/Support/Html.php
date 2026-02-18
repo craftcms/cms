@@ -190,8 +190,7 @@ final class Html
                 '_special/async-csrf-input',
                 [
                     'url' => UrlHelper::actionUrl('users/session-info'),
-                ],
-                templateMode: TemplateMode::Cp,
+                ], templateMode: TemplateMode::Cp,
             )
         );
 

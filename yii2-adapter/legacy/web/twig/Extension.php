@@ -113,6 +113,7 @@ use yii\db\Exception;
 use yii\db\Expression;
 use yii\db\QueryInterface;
 use yii\helpers\Markdown;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -1193,9 +1194,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         if (is_string($arrow)) {
             $template = '{' . $arrow . '}';
-            $view = Craft::$app->getView();
             foreach ($arr as $item) {
-                $groupKey = $view->renderObjectTemplate($template, $item);
+                $groupKey = renderObjectTemplate($template, $item);
                 $groups[$groupKey][] = $item;
             }
         } else {
@@ -1717,7 +1717,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function renderObjectTemplate(string $template, mixed $object): string
     {
-        return Craft::$app->getView()->renderObjectTemplate($template, $object);
+        return renderObjectTemplate($template, $object);
     }
 
     /**

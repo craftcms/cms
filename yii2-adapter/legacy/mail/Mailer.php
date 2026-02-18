@@ -22,6 +22,7 @@ use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\mail\MailEvent;
+use function CraftCms\Cms\renderSandboxedString;
 
 /**
  * The Mailer component provides APIs for sending email in Craft.
@@ -180,9 +181,9 @@ class Mailer extends \yii\symfonymailer\Mailer
                     ];
 
                 // Render the subject and body text
-                $subject = $view->renderSandboxedString($systemMessage->subject, $variables);
-                $textBody = $view->renderSandboxedString($systemMessage->body, $variables);
-                $htmlBody = $view->renderSandboxedString($systemMessage->body, $variables, escapeHtml: true);
+                $subject = renderSandboxedString($systemMessage->subject, $variables);
+                $textBody = renderSandboxedString($systemMessage->body, $variables);
+                $htmlBody = renderSandboxedString($systemMessage->body, $variables, escapeHtml: true);
 
                 // Remove </> from around URLs, so they’re not interpreted as HTML tags
                 $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $textBody);

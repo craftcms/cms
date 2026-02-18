@@ -26,7 +26,7 @@ final readonly class RoutesController
     {
         Craft::$app->getView()->registerAssetBundle(RoutesAsset::class);
 
-        return view('craftcms::settings.routes', [
+        return view('settings.routes', [
             'tokens' => $this->routes->tokens,
             'routes' => $this->routes->getProjectConfigRoutes(),
             'readOnly' => ! Cms::config()->allowAdminChanges,

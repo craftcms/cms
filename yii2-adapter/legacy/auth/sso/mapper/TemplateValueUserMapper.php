@@ -7,9 +7,9 @@
 
 namespace craft\auth\sso\mapper;
 
-use Craft;
 use craft\base\Component;
 use CraftCms\Cms\User\Elements\User;
+use function CraftCms\Cms\renderObjectTemplate;
 
 /**
  * Set a value from a parsed view template as a User's attribute
@@ -32,7 +32,7 @@ class TemplateValueUserMapper extends Component implements UserMapInterface
      */
     public function __invoke(User $user, mixed $data): User
     {
-        $value = Craft::$app->view->renderObjectTemplate(
+        $value = renderObjectTemplate(
             $this->template,
             [
                 'property' => $this->craftProperty,

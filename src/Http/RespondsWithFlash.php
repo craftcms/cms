@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http;
 
-use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Support\Arr;
@@ -15,6 +14,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Crypt;
 use Symfony\Component\HttpFoundation\Response;
+
+use function CraftCms\Cms\renderObjectTemplate;
 
 trait RespondsWithFlash
 {
@@ -122,7 +123,7 @@ trait RespondsWithFlash
         }
 
         if ($object) {
-            $url = Craft::$app->getView()->renderObjectTemplate($url, $object);
+            $url = renderObjectTemplate($url, $object);
         }
 
         if (request()->isCpRequest()) {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Support\Env;
 use Override;
 use stdClass;
 
+use function CraftCms\Cms\renderSandboxedObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -118,7 +118,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
                 $referenceElement = new stdClass;
             }
 
-            $elementIds = Craft::$app->getView()->renderSandboxedObjectTemplate($elementIds, $referenceElement);
+            $elementIds = renderSandboxedObjectTemplate($elementIds, $referenceElement);
 
             return array_values(array_filter(array_map(
                 fn (string $elementId) => (int) trim($elementId),
@@ -220,7 +220,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             ->all();
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [

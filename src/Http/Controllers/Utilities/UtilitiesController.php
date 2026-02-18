@@ -62,7 +62,7 @@ final readonly class UtilitiesController
 
         $this->craft->getView()->registerAssetBundle(UtilitiesAsset::class);
 
-        return $this->craft->getView()->renderPageTemplate('utilities/_index.twig', [
+        return view('utilities/_index', [
             'id' => $id,
             'displayName' => $class::displayName(),
             'contentHtml' => $class::contentHtml(),
@@ -119,7 +119,7 @@ final readonly class UtilitiesController
      */
     private function defaultUtilityIconSvg(string $class): string
     {
-        return template('_includes/fallback-icon.svg', [
+        return template('_includes/fallback-icon-svg', [
             'label' => $class::displayName(),
         ]);
     }

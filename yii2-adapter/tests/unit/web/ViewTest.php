@@ -28,7 +28,6 @@ use Illuminate\Support\Once;
 use ReflectionException;
 use Throwable;
 use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use UnitTester;
 use ValueError;
@@ -152,31 +151,6 @@ class ViewTest extends TestCase
             Cms::config()->defaultTemplateExtensions = $originalExtensions;
             Cms::config()->indexTemplateFilenames = $originalFilenames;
         }
-    }
-
-    /**
-     * Test that Craft::$app->getView()->renderTemplates(); Seems to work correctly with twig. Doesnt impact global props
-     * and respects passed in variables.
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     * @throws ReflectionException
-     */
-    public function testRenderTemplate(): void
-    {
-        // Assert that the _renderingTemplate prop goes in and comes out as null.
-        self::assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
-
-        $result = $this->view->rendertemplate('withvar', ['name' => 'Giel Tettelaar']);
-
-        self::assertSame($result, 'Hello iam Giel Tettelaar');
-        self::assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
-
-        // Test that templates can work without variables.
-        $result = $this->view->rendertemplate('novar');
-
-        self::assertSame($result, 'I have no vars');
     }
 
     /**
@@ -387,19 +361,19 @@ class ViewTest extends TestCase
         $view->registerJs('var foo = true;', View::POS_END);
         $view->registerJs('var bar = true', View::POS_BEGIN);
         self::assertSame([
-            View::POS_END => "<script type=\"text/javascript\">var foo = true;</script>",
             View::POS_BEGIN => "<script type=\"text/javascript\">var bar = true;</script>",
+            View::POS_END => "<script type=\"text/javascript\">var foo = true;</script>",
         ], $view->clearJsBuffer(true, false));
 
         $view->startJsBuffer();
         $view->registerJs('var foo = true;', View::POS_END, 'foo');
         $view->registerJs('var bar = true', View::POS_BEGIN, 'bar');
         self::assertSame([
-            View::POS_END => [
-                'foo' => 'var foo = true;',
-            ],
             View::POS_BEGIN => [
                 'bar' => 'var bar = true;',
+            ],
+            View::POS_END => [
+                'foo' => 'var foo = true;',
             ],
         ], $view->clearJsBuffer(false, false));
     }

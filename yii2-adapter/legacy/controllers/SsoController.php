@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\URL;
 use Throwable;
 use yii\web\HttpException;
 use yii\web\Response;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -137,12 +138,9 @@ class SsoController extends Controller
         }
 
         return $this->redirect(
-            $returnUrl ?
-                Craft::$app->getView()->renderObjectTemplate(
-                    $returnUrl,
-                    Auth::user(),
-                ) :
-                $this->request->getPathInfo()
+            $returnUrl
+                ? renderObjectTemplate($returnUrl, Auth::user())
+                : $this->request->getPathInfo()
         );
     }
 

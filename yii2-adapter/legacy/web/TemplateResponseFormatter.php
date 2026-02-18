@@ -19,6 +19,7 @@ use yii\base\Component;
 use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidConfigException;
 use yii\web\ResponseFormatterInterface;
+use function CraftCms\Cms\pageTemplate;
 
 /**
  * Template response formatter.
@@ -56,7 +57,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
 
         // Render and return the template
         try {
-            $response->content = $view->renderPageTemplate($behavior->template, $behavior->variables, $behavior->templateMode);
+            $response->content = pageTemplate($behavior->template, $behavior->variables, $behavior->templateMode);
         } catch (Throwable $e) {
             $previous = $e->getPrevious();
             if ($previous instanceof YiiExitException) {

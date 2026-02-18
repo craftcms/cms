@@ -7,10 +7,10 @@
 
 namespace craft\web\twig\nodevisitors;
 
-use Craft;
 use craft\web\twig\nodes\BaseNode;
 use craft\web\View;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Twig\TemplateRenderer;
 use InvalidArgumentException;
 use Twig\Environment;
 use Twig\Node\DoNode;
@@ -50,7 +50,7 @@ class EventTagAdder extends BaseEventTagVisitor
     public function enterNode(Node $node, Environment $env): Node
     {
         // Ignore if we're not rendering a page template
-        if (!Craft::$app->getView()->getIsRenderingPageTemplate()) {
+        if (!app(TemplateRenderer::class)->isRenderingPageTemplate()) {
             return $node;
         }
 

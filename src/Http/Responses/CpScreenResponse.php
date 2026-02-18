@@ -24,6 +24,7 @@ use Illuminate\Support\Traits\Conditionable;
 use Stringable;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\pageTemplate;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -815,7 +816,7 @@ final class CpScreenResponse implements Responsable
         }
 
         // Render and return the template
-        return response($view->renderPageTemplate(
+        return response(pageTemplate(
             '_layouts/cp',
             [
                 'docTitle' => $docTitle,
@@ -858,7 +859,7 @@ final class CpScreenResponse implements Responsable
                 'sidebar' => $pageSidebar,
                 'errorSummary' => $errorSummary,
             ],
-            TemplateMode::Cp->value
+            TemplateMode::Cp
         ));
     }
 

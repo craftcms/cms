@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Collection;
 
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -42,7 +42,7 @@ trait HasPreviewTargets
         return new Collection($event->previewTargets)
             ->map(function (array $previewTarget) {
                 if (isset($previewTarget['urlFormat'])) {
-                    $url = trim(Craft::$app->getView()->renderObjectTemplate(Env::parse($previewTarget['urlFormat']), $this));
+                    $url = trim(renderObjectTemplate(Env::parse($previewTarget['urlFormat']), $this));
 
                     if ($url !== '') {
                         $previewTarget['url'] = $url;

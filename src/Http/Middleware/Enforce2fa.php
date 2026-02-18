@@ -35,7 +35,7 @@ final readonly class Enforce2fa
             TemplateMode::set(TemplateMode::Cp);
 
             return response()
-                ->view('craftcms::_special/setup-2fa')
+                ->view('_special/setup-2fa')
                 ->setNoCacheHeaders();
         }
 

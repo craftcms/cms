@@ -60,7 +60,7 @@ final class FieldsController
 
     public function index(): View
     {
-        return view('craftcms::settings/fields/index', [
+        return view('settings/fields/index', [
             'readOnly' => $this->readOnly,
         ]);
     }

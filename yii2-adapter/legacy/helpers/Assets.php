@@ -36,6 +36,7 @@ use Twig\Error\RuntimeError;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -1019,7 +1020,7 @@ class Assets
                 if ($element?->duplicateOf) {
                     $element = $element->duplicateOf->getCanonical();
                 }
-                $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
+                $renderedSubpath = renderObjectTemplate($subpath, $element);
             } catch (InvalidConfigException|RuntimeError $e) {
                 throw new InvalidSubpathException($subpath, null, 0, $e);
             }

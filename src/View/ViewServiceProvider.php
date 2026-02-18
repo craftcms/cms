@@ -51,13 +51,24 @@ class ViewServiceProvider extends ServiceProvider
     private function registerTemplateRoots(): void
     {
         $this->app->booted(function () {
-            $factory = View::getFacadeRoot();
+            /** @var \Illuminate\View\Factory $factory */
+            $factory = $this->app->make(\Illuminate\Contracts\View\Factory::class);
+
+            /**
+             * Prepend the Craft CMS Control panel views when
+             * we're in CP Template mode. This makes view()
+             * work without a 'craftcms::' prefix.
+             */
+            if (TemplateMode::is(TemplateMode::Cp)) {
+                $factory->prependLocation("{$this->root}/resources/templates");
+                $factory->prependLocation("{$this->root}/resources/views");
+            }
 
             foreach (TemplateMode::get()->templateRoots() as $namespace => $roots) {
                 $factory->addNamespace($namespace, $roots);
 
                 foreach ($roots as $root) {
-                    $factory->addLocation($root);
+                    $factory->prependLocation($root);
                 }
             }
         });

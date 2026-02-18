@@ -74,7 +74,7 @@ abstract readonly class AuthenticationController
 
         TemplateMode::set(TemplateMode::Cp);
 
-        return view(Str::start($cpTemplate, 'craftcms::'), $data);
+        return view(Str::start($cpTemplate, ''), $data);
     }
 
     protected function processTokenRequest(Request $request): Response|array

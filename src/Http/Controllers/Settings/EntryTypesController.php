@@ -68,7 +68,7 @@ final class EntryTypesController
 
     public function index(): View
     {
-        return view('craftcms::settings.entry-types.index');
+        return view('settings.entry-types.index');
     }
 
     public function create(): CpScreenResponse
