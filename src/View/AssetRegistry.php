@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\Enums\Position;
+use CraftCms\Cms\View\Events\RenderingAssets;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Stringable;
@@ -304,6 +305,8 @@ final class AssetRegistry
      */
     public function headHtml(bool $clear = true): string
     {
+        event(new RenderingAssets);
+
         $head = Position::Head->value;
 
         $parts = collect()
@@ -358,6 +361,8 @@ final class AssetRegistry
      */
     public function bodyBeginHtml(bool $clear = true): string
     {
+        event(new RenderingAssets);
+
         $body = Position::BodyBegin->value;
 
         $parts = $this->getAssetsForPosition(Position::BodyBegin);
@@ -382,6 +387,8 @@ final class AssetRegistry
      */
     public function bodyEndHtml(bool $clear = true): string
     {
+        event(new RenderingAssets);
+
         $body = Position::BodyEnd->value;
 
         if (! empty($this->icons)) {

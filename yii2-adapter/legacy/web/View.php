@@ -35,6 +35,7 @@ use CraftCms\Cms\View\AssetRegistry;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
+use CraftCms\Cms\View\Events\RenderingAssets;
 use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
@@ -219,6 +220,12 @@ class View extends \yii\web\View
      * Buffer stack for POS_READY/POS_LOAD/POS_BEGIN JS.
      */
     private array $_readyLoadBuffers = [];
+
+    /**
+     * When true, the RenderingAssets listener skips flushing _readyJs/_loadJs
+     * so that placeholderHtml() can handle jQuery wrapping itself.
+     */
+    private bool $_skipReadyLoadFlush = false;
 
     /**
      * @var array<string, int> Maps JS keys to their original Yii2 position (POS_HEAD or POS_BEGIN)
@@ -1363,11 +1370,11 @@ class View extends \yii\web\View
      *
      * @param bool $clear Whether the content should be cleared from the queue (default is true)
      * @return string the rendered content
+     * @deprecated 6.0.0 use {@see AssetRegistry::headHtml()} instead.
      */
     public function getHeadHtml(bool $clear = true): string
     {
-        // Register any asset bundles
-        $this->registerAllAssetFiles();
+        Deprecator::log(__METHOD__, '`craft\web\View::getHeadHtml()` has been deprecated. Use `CraftCms\Cms\View\AssetRegistry::headHtml()` instead.');
 
         return $this->registry()->headHtml(clear: $clear);
     }
@@ -1381,27 +1388,13 @@ class View extends \yii\web\View
      *
      * @param bool $clear Whether the content should be cleared from the queue (default is true)
      * @return string the rendered content
+     * @deprecated 6.0.0 use {@see AssetRegistry::bodyHtml()} instead.
      */
     public function getBodyHtml(bool $clear = true): string
     {
-        // Register any asset bundles
-        $this->registerAllAssetFiles();
+        Deprecator::log(__METHOD__, '`craft\web\View::getBodyHtml()` has been deprecated. Use `CraftCms\Cms\View\AssetRegistry::bodyHtml()` instead.');
 
-        // Include both body-begin and body-end content
-        $html = $this->renderBodyBeginHtml() . $this->renderBodyEndHtml(true);
-
-        // Clear out the queued up files
-        if ($clear === true) {
-            // Clear registry body content (head was not touched)
-            $this->registry()->bodyBeginHtml(clear: true);
-            $this->registry()->bodyEndHtml(clear: true);
-
-            // Clear adapter's internal begin/ready/load JS
-            $this->_readyJs = [];
-            $this->_loadJs = [];
-        }
-
-        return $html;
+        return $this->registry()->bodyHtml(clear: $clear);
     }
 
     /**
@@ -1838,12 +1831,18 @@ JS;
             $this->_setJsProperty('registeredAssetBundles', $this->_registeredAssetBundles);
         }
 
+        // Prevent the RenderingAssets listener from flushing _readyJs/_loadJs,
+        // since renderBodyEndHtml() handles jQuery wrapping for page renders.
+        $this->_skipReadyLoadFlush = true;
+
         // Ensure all queued bundle resources are registered before rendering.
         $this->registerAllAssetFiles();
 
         $headHtml = $this->renderHeadHtml();
         $bodyBeginHtml = $this->renderBodyBeginHtml();
         $bodyEndHtml = $this->renderBodyEndHtml($ajaxMode);
+
+        $this->_skipReadyLoadFlush = false;
 
         if ($clear) {
             // Clear the AssetRegistry so that TemplateRenderer's ?? fallback to
@@ -2020,6 +2019,42 @@ JS;
     {
         foreach ($this->assetBundles as $bundleName => $bundle) {
             $this->registerAssetFiles($bundleName);
+        }
+    }
+
+    /**
+     * Flushes all pending asset registrations into the AssetRegistry.
+     *
+     * Called by the {@see \CraftCms\Cms\View\Events\RenderingAssets} listener to ensure
+     * Yii2 asset bundles and POS_READY/POS_LOAD JS are pushed into the registry
+     * before it renders.
+     */
+    public function flushPendingAssets(): void
+    {
+        $this->registerAllAssetFiles();
+
+        if (!$this->_skipReadyLoadFlush) {
+            $this->flushReadyLoadJs();
+        }
+    }
+
+    /**
+     * Pushes any queued POS_READY/POS_LOAD JS into the AssetRegistry as BodyEnd JS,
+     * then clears the queues.
+     */
+    private function flushReadyLoadJs(): void
+    {
+        if (!empty($this->_readyJs)) {
+            foreach ($this->_readyJs as $key => $js) {
+                $this->registry()->js($js, Position::BodyEnd, is_string($key) ? $key : null);
+            }
+            $this->_readyJs = [];
+        }
+        if (!empty($this->_loadJs)) {
+            foreach ($this->_loadJs as $key => $js) {
+                $this->registry()->js($js, Position::BodyEnd, is_string($key) ? $key : null);
+            }
+            $this->_loadJs = [];
         }
     }
 
@@ -2229,6 +2264,10 @@ JS;
             $event->headHtml = $html['headHtml'];
             $event->bodyBeginHtml = $html['bodyBeginHtml'];
             $event->bodyEndHtml = $html['bodyEndHtml'];
+        });
+
+        Event::listen(function(RenderingAssets $event) {
+            Craft::$app->getView()->flushPendingAssets();
         });
     }
 }

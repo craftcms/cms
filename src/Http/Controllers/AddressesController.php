@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use craft\helpers\Cp;
-use craft\web\Application;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Facades\InputNamespace;
-use Illuminate\Container\Attributes\Give;
+use CraftCms\Cms\View\AssetRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,12 +22,10 @@ final readonly class AddressesController
     use RespondsWithFlash;
 
     public function __construct(
-        #[Give('Craft')]
-        private Application $craft,
         private Fields $fields,
     ) {}
 
-    public function fields(Request $request): Response
+    public function fields(Request $request, AssetRegistry $assetRegistry): Response
     {
         $request->validate([
             'namespace' => ['required', 'string'],
@@ -49,8 +46,8 @@ final readonly class AddressesController
 
         return new JsonResponse([
             'fieldsHtml' => $html,
-            'headHtml' => $this->craft->getView()->getHeadHtml(),
-            'bodyHtml' => $this->craft->getView()->getBodyHtml(),
+            'headHtml' => $assetRegistry->headHtml(),
+            'bodyHtml' => $assetRegistry->bodyHtml(),
         ]);
     }
 

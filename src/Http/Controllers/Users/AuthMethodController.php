@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use Craft;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\View\AssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,7 +28,7 @@ final readonly class AuthMethodController
         private Auth $auth,
     ) {}
 
-    public function setupHtml(Request $request): JsonResponse
+    public function setupHtml(Request $request, AssetRegistry $assetRegistry): JsonResponse
     {
         $class = $request->validate([
             'method' => ['required', 'string'],
@@ -38,7 +38,6 @@ final readonly class AuthMethodController
         $containerId = sprintf('auth-method-setup-%s', mt_rand());
         $displayName = $method::displayName();
 
-        $view = Craft::$app->getView();
         $html = TemplateMode::with(
             TemplateMode::Cp,
             fn () => Html::tag('h1', t('{name} Setup', [
@@ -52,21 +51,20 @@ final readonly class AuthMethodController
         return new JsonResponse([
             'containerId' => $containerId,
             'html' => $html,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => $assetRegistry->headHtml(),
+            'bodyHtml' => $assetRegistry->bodyHtml(),
             'methodName' => $displayName,
         ]);
     }
 
-    public function listingHtml(): JsonResponse
+    public function listingHtml(AssetRegistry $assetRegistry): JsonResponse
     {
-        $view = Craft::$app->getView();
         $html = template('users/_auth-methods', templateMode: TemplateMode::Cp);
 
         return new JsonResponse([
             'html' => $html,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => $assetRegistry->headHtml(),
+            'bodyHtml' => $assetRegistry->bodyHtml(),
         ]);
     }
 

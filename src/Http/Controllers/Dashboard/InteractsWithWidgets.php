@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
 use craft\helpers\Cp;
-use craft\web\View;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 
 trait InteractsWithWidgets
 {
-    protected readonly View $view;
-
     protected function getWidgetIconSvg(WidgetInterface $widget): ?string
     {
         $icon = $widget::icon();

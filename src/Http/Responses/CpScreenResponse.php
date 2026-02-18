@@ -10,6 +10,7 @@ use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -698,7 +699,6 @@ final class CpScreenResponse implements Responsable
     private function jsonResponse(Request $request): JsonResponse
     {
         $namespace = Str::random(10);
-        $view = Craft::$app->getView();
 
         if ($this->prepareScreen) {
             $containerId = $request->header('X-Craft-Container-Id');
@@ -753,8 +753,8 @@ final class CpScreenResponse implements Responsable
             'content' => $content,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => AssetRegistry::headHtml(),
+            'bodyHtml' => AssetRegistry::bodyHtml(),
             'deltaNames' => DeltaRegistry::getNames(),
             'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ]);

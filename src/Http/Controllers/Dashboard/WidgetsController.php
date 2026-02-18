@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
-use craft\web\Application;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Support\Json;
-use Illuminate\Container\Attributes\Give;
+use CraftCms\Cms\View\AssetRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -20,11 +19,9 @@ final readonly class WidgetsController
     use InteractsWithWidgets;
 
     public function __construct(
-        #[Give('Craft')] private Application $craft,
-        private Dashboard $dashboard
-    ) {
-        $this->view = $craft->getView();
-    }
+        private AssetRegistry $assetRegistry,
+        private Dashboard $dashboard,
+    ) {}
 
     public function store(Request $request): JsonResponse
     {
@@ -137,12 +134,11 @@ final readonly class WidgetsController
         $this->dashboard->saveWidget($widget);
 
         $info = $this->getWidgetInfo($widget);
-        $view = $this->craft->getView();
 
         return new JsonResponse([
             'info' => $info,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => $this->assetRegistry->headHtml(),
+            'bodyHtml' => $this->assetRegistry->bodyHtml(),
         ]);
     }
 }

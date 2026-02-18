@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -28,6 +27,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\AssetRegistry;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -324,7 +324,7 @@ final class EntryTypesController
         ]));
     }
 
-    public function renderOverrideSettings(Request $request): JsonResponse
+    public function renderOverrideSettings(Request $request, AssetRegistry $assetRegistry): JsonResponse
     {
         $entryType = $this->entryTypeForSelectInput($request);
         $entryType->name = $request->input('name', $entryType->name);
@@ -332,7 +332,6 @@ final class EntryTypesController
         $entryType->description = $request->input('description', $entryType->description);
 
         $namespace = Str::random(10);
-        $view = Craft::$app->getView();
 
         $html = InputNamespace::namespaceInputs(
             fn () => template('_includes/forms/entry-type-select/selection-settings', [
@@ -344,8 +343,8 @@ final class EntryTypesController
         return new JsonResponse([
             'settingsHtml' => $html,
             'namespace' => $namespace,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => $assetRegistry->headHtml(),
+            'bodyHtml' => $assetRegistry->bodyHtml(),
         ]);
     }
 

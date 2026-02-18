@@ -19,9 +19,7 @@ final readonly class DashboardController
 
     public function __construct(
         private Dashboard $dashboard,
-    ) {
-        $this->view = Craft::$app->getView();
-    }
+    ) {}
 
     public function __invoke()
     {
@@ -86,7 +84,7 @@ final readonly class DashboardController
             });
 
         // Include all the JS and CSS stuff
-        $this->view->registerAssetBundle(DashboardAsset::class);
+        Craft::$app->getView()->registerAssetBundle(DashboardAsset::class);
         AssetRegistry::jsWithVars(
             fn ($widgetTypeInfo) => "window.dashboard = new Craft.Dashboard($widgetTypeInfo)",
             [$widgetTypeInfo]

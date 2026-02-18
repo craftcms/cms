@@ -29,12 +29,12 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\View\AssetRegistry;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -53,6 +53,7 @@ final class FieldsController
 
     public function __construct(
         GeneralConfig $generalConfig,
+        private AssetRegistry $assetRegistry,
         private Fields $fieldsService,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
@@ -125,7 +126,6 @@ final class FieldsController
             Craft::configure($field, $settings);
         }
 
-        $view = Craft::$app->getView();
         $html = template('settings/fields/_type-settings', [
             'field' => $field,
             'namespace' => $request->input('namespace'),
@@ -133,8 +133,8 @@ final class FieldsController
 
         return new JsonResponse([
             'settingsHtml' => $html,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => $this->assetRegistry->headHtml(),
+            'bodyHtml' => $this->assetRegistry->bodyHtml(),
         ]);
     }
 
@@ -224,14 +224,13 @@ final class FieldsController
     {
         $element = $this->fieldLayoutComponent($request);
         $namespace = Str::random(10);
-        $view = Craft::$app->getView();
         $html = InputNamespace::namespaceInputs(fn () => $element->getSettingsHtml(), $namespace);
 
         return new JsonResponse([
             'settingsHtml' => $html,
             'namespace' => $namespace,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => $this->assetRegistry->headHtml(),
+            'bodyHtml' => $this->assetRegistry->bodyHtml(),
         ]);
     }
 
@@ -507,7 +506,7 @@ final class FieldsController
             ->prepareScreen(function () {
                 $view = Craft::$app->getView();
                 $view->registerAssetBundle(FieldSettingsAsset::class);
-                AssetRegistry::jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
+                $this->assetRegistry->jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
 new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
   wrapWithTypeClassDiv: true
 })

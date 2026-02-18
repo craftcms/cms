@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static void linkTag(array $attributes, string|null $key = null)
  * @method static string headHtml(bool $clear = true)
  * @method static string bodyHtml(bool $clear = true)
+ * @method static string bodyBeginHtml(bool $clear = true)
+ * @method static string bodyEndHtml(bool $clear = true)
  * @method static void startBuffer(array|string $keys)
  * @method static mixed clearBuffer(array|string $keys)
  * @method static void startCssBuffer()

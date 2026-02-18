@@ -261,7 +261,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
         $view->registerAssetBundle(ConditionBuilderAsset::class);
         $namespacedId = InputNamespace::namespaceId($this->id);
 
-        return InputNamespace::namespaceInputs(function () use ($view, $namespacedId, $autofocusAddButton) {
+        return InputNamespace::namespaceInputs(function () use ($namespacedId, $autofocusAddButton) {
             $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
             $selectableRules = $this->getSelectableConditionRules();
             $allRulesHtml = '';
@@ -412,12 +412,12 @@ JS, [InputNamespace::namespaceId($this->id)]);
             // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
             // If this is not an htmx request, don't add scripts, since they will be in the page anyway.
             if ($isHtmxRequest) {
-                if ($bodyHtml = $view->getBodyHtml()) {
+                if ($bodyHtml = AssetRegistry::bodyHtml()) {
                     $html .= html::tag('template', $bodyHtml, [
                         'class' => ['hx-body-html'],
                     ]);
                 }
-                if ($headHtml = $view->getHeadHtml()) {
+                if ($headHtml = AssetRegistry::headHtml()) {
                     $html .= html::tag('template', $headHtml, [
                         'class' => ['hx-head-html'],
                     ]);

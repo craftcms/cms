@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\AssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,7 +33,7 @@ final readonly class TwoFactorAuthenticationController
         private GeneralConfig $generalConfig,
     ) {}
 
-    public function showForm(Request $request, Auth $auth, Impersonation $impersonation): Response|string
+    public function showForm(Request $request, Auth $auth, Impersonation $impersonation, AssetRegistry $assetRegistry): Response|string
     {
         $user = $impersonation->getImpersonator()
             ?? User::find()->id($request->session()->get('user.id'))->first();
@@ -68,7 +68,6 @@ final readonly class TwoFactorAuthenticationController
             $method = $activeMethods->first();
         }
 
-        $view = Craft::$app->getView();
         $html = TemplateMode::with(
             TemplateMode::Cp,
             fn () => $method->getAuthFormHtml(),
@@ -99,8 +98,8 @@ final readonly class TwoFactorAuthenticationController
         if ($request->wantsJson()) {
             return new JsonResponse([
                 ...$authFormData,
-                'headHtml' => $view->getHeadHtml(),
-                'bodyHtml' => $view->getBodyHtml(),
+                'headHtml' => $assetRegistry->headHtml(),
+                'bodyHtml' => $assetRegistry->bodyHtml(),
             ]);
         }
 
