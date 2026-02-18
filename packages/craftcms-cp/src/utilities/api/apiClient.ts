@@ -111,7 +111,7 @@ apiClient.interceptors.request.use(async (config) => {
   const finalConfig = {
     ...config,
     params: {
-      ...(Craft.apiParams || {}),
+      ...(Cp.apiParams || {}),
       ...config.params,
       v: new Date().getTime(),
     },
@@ -121,8 +121,8 @@ apiClient.interceptors.request.use(async (config) => {
     finalConfig.params.processCraftHeaders = 1;
   }
 
-  if (Craft.httpProxy) {
-    finalConfig.proxy = Craft.httpProxy as AxiosProxyConfig;
+  if (Cp.httpProxy) {
+    finalConfig.proxy = Cp.httpProxy as AxiosProxyConfig;
   }
 
   return finalConfig;

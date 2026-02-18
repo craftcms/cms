@@ -14,14 +14,14 @@ export function getActionUrl(action: string = '') {
 export function actionHeaders(): RawAxiosRequestHeaders {
   let headers: Record<string, string> = {
     'X-Registered-Asset-Bundles': [
-      ...new Set(Craft.registeredAssetBundles),
+      ...new Set(Cp.registeredAssetBundles),
     ].join(','),
-    'X-Registered-Js-Files': [...new Set(Craft.registeredJsFiles)].join(','),
+    'X-Registered-Js-Files': [...new Set(Cp.registeredJsFiles)].join(','),
   };
 
   // @TODO Make sure we really don't need this anymore
-  // if (Craft.csrfTokenValue) {
-  //   headers['X-CSRF-Token'] = Craft.csrfTokenValue;
+  // if (Cp.csrfTokenValue) {
+  //   headers['X-CSRF-Token'] = Cp.csrfTokenValue;
   // }
 
   return headers;
