@@ -133,7 +133,6 @@ Modify with `cp-table--auto` to apply table-layout: auto
  */
 .cp-table {
   text-align: left;
-  table-layout: auto;
   width: 100%;
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
@@ -160,6 +159,10 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
 .cp-table--auto {
   table-layout: auto;
+}
+
+.cp-table--fixed {
+  table-layout: fixed;
 }
 
 .cp-table--borderless {

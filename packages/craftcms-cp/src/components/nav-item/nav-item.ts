@@ -3,7 +3,7 @@ import {styleMap} from 'lit/directives/style-map.js';
 import {property, state} from 'lit/decorators.js';
 import '../badge-indicator/badge-indicator';
 import styles from './nav-item.styles';
-import {t} from '@craftcms/cp';
+import {t} from '../../utilities/translate.js';
 import {classMap} from 'lit/directives/class-map.js';
 
 /**
