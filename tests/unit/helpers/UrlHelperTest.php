@@ -251,6 +251,9 @@ class UrlHelperTest extends TestCase
         $this->tester->mockCraftMethods('request', [
             'getToken' => 't0k3n',
         ]);
+        $this->tester->mockCraftMethods('tokens', [
+            'getRemainingTokenUsages' => 1,
+        ]);
 
         $expected = TestSetup::SITE_URL . 'endpoint?token=t0k3n';
         self::assertSame($expected, UrlHelper::url('endpoint'));
