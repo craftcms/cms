@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.17.6 - 2026-02-18
 
 - Added `craft\services\Tokens::getRemainingTokenUsages()`.
 - Added `craft\web\Request::getTokenRoute()`.
