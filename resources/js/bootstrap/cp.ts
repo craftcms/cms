@@ -103,11 +103,6 @@ const Cp = {
 
         app.mount(el);
       },
-      defaults: {
-        future: {
-          useScriptElementForInitialPage: true,
-        },
-      },
     });
 
     console.log('Calling booted callbacks', bootedCallbacks);
