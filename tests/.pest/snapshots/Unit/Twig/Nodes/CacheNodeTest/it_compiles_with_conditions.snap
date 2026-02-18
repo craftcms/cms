@@ -1,0 +1,22 @@
+// line 1
+$cacheService = Craft::$app->getTemplateCaches();
+$request = Craft::$app->getRequest();
+$ignoreCache6 = ($request->getIsLivePreview() || $request->getToken() || !(($context["shouldCache"] ?? null)));
+if (!$ignoreCache6) {
+    $cacheKey6 = "RANDOM_STRING";
+    $cacheBody6 = $cacheService->getTemplateCache($cacheKey6, false, true);
+} else {
+    $cacheBody6 = null;
+}
+if ($cacheBody6 === null) {
+    if (!$ignoreCache6) {
+        $cacheService->startTemplateCache(true, false);
+    }
+    ob_start();
+    yield "cached content";
+    $cacheBody6 = ob_get_clean();
+    if (!$ignoreCache6) {
+        $cacheService->endTemplateCache($cacheKey6, false, null, null, $cacheBody6, true);
+    }
+}
+echo $cacheBody6;

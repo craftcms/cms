@@ -1,0 +1,5 @@
+// line 1
+if (\CraftCms\Cms\Edition::get() < "pro")
+{
+    throw new yii\web\NotFoundHttpException;
+}

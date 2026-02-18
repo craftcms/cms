@@ -1,0 +1,2 @@
+// line 1
+throw new craft\web\ServiceUnavailableHttpException();

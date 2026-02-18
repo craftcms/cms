@@ -1,0 +1,4 @@
+// line 1
+\Craft::$app->getSession()->setNotice("Redirected successfully");
+\Craft::$app->getResponse()->redirect(craft\helpers\UrlHelper::url("/home"), 301);
+\Craft::$app->end();

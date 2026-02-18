@@ -1,0 +1,2 @@
+// line 1
+[$context["pageInfo"], $context["pageEntries"]] = \craft\helpers\Template::paginateQuery(($context["entries"] ?? null));

@@ -1,0 +1,2 @@
+// line 1
+(isset($context["entry"]) || array_key_exists("entry", $context) ? $context["entry"] : (craft\helpers\Template::fallbackExists("entry") ? craft\helpers\Template::fallback("entry") : null))

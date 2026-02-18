@@ -1,0 +1,2 @@
+CraftCms\Cms\Twig\Extensions\CoreTwigExtension::arraySome($this->env, // line 1
+($context["items"] ?? null), ($context["callback"] ?? null))

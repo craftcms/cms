@@ -1,0 +1,1 @@
+craft\helpers\Template::beginProfileProfile("template", "index.twig");

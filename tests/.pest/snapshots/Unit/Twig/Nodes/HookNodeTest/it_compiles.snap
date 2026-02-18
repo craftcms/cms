@@ -1,0 +1,2 @@
+// line 1
+echo app(\CraftCms\Cms\View\TemplateHooks::class)->invoke("myHook", $context);

@@ -1,0 +1,22 @@
+// line 1
+$cacheService = Craft::$app->getTemplateCaches();
+$request = Craft::$app->getRequest();
+$ignoreCache4 = ($request->getIsLivePreview() || $request->getToken());
+if (!$ignoreCache4) {
+    $cacheKey4 = "RANDOM_STRING";
+    $cacheBody4 = $cacheService->getTemplateCache($cacheKey4, false, true);
+} else {
+    $cacheBody4 = null;
+}
+if ($cacheBody4 === null) {
+    if (!$ignoreCache4) {
+        $cacheService->startTemplateCache(true, false);
+    }
+    ob_start();
+    yield "cached content";
+    $cacheBody4 = ob_get_clean();
+    if (!$ignoreCache4) {
+        $cacheService->endTemplateCache($cacheKey4, false, craft\helpers\DateTimeHelper::relativeTimeStatement(1, 'hours'), null, $cacheBody4, true);
+    }
+}
+echo $cacheBody4;
