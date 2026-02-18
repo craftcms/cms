@@ -6,13 +6,17 @@ namespace CraftCms\Cms\Twig;
 
 use Craft;
 use craft\web\twig\CpExtension;
-use craft\web\twig\Extension;
 use craft\web\twig\FeExtension;
 use craft\web\twig\SafeHtml;
 use craft\web\twig\SecurityPolicy;
 use craft\web\twig\SinglePreloaderExtension;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Twig\Events\TwigCreated;
+use CraftCms\Cms\Twig\Extensions\ArrayTwigExtension;
+use CraftCms\Cms\Twig\Extensions\CoreTwigExtension;
+use CraftCms\Cms\Twig\Extensions\DateTwigExtension;
+use CraftCms\Cms\Twig\Extensions\HtmlTwigExtension;
+use CraftCms\Cms\Twig\Extensions\TextTwigExtension;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\HtmlString;
@@ -81,8 +85,18 @@ final class Twig
             $twig->getRuntime(EscaperRuntime::class)->addSafeClass($class, ['html']);
         }
 
-        $twig->addExtension(new StringLoaderExtension);
-        $twig->addExtension(app()->make(Extension::class, ['environment' => $twig]));
+        foreach ([
+            StringLoaderExtension::class,
+
+            // Craft Twig Extensions
+            CoreTwigExtension::class,
+            DateTwigExtension::class,
+            ArrayTwigExtension::class,
+            TextTwigExtension::class,
+            HtmlTwigExtension::class,
+        ] as $extensionClass) {
+            $twig->addExtension(app()->make($extensionClass, ['environment' => $twig]));
+        }
 
         if (TemplateMode::is(TemplateMode::Cp)) {
             $twig->addExtension(new CpExtension);

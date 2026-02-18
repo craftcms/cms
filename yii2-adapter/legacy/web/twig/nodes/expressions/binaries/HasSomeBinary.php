@@ -7,7 +7,7 @@
 
 namespace craft\web\twig\nodes\expressions\binaries;
 
-use craft\web\twig\Extension;
+use CraftCms\Cms\Twig\Extensions\CoreTwigExtension;
 use Twig\Compiler;
 use Twig\Node\Expression\Binary\AbstractBinary;
 
@@ -22,7 +22,7 @@ class HasSomeBinary extends AbstractBinary
     public function compile(Compiler $compiler): void
     {
         $compiler
-            ->raw(sprintf('%s::arraySome($this->env, ', Extension::class))
+            ->raw(sprintf('%s::arraySome($this->env, ', CoreTwigExtension::class))
             ->subcompile($this->getNode('left'))
             ->raw(', ')
             ->subcompile($this->getNode('right'))

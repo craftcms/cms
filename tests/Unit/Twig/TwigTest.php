@@ -3,12 +3,16 @@
 declare(strict_types=1);
 
 use craft\web\twig\CpExtension;
-use craft\web\twig\Extension;
 use craft\web\twig\FeExtension;
 use craft\web\twig\SinglePreloaderExtension;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Twig\Environment;
 use CraftCms\Cms\Twig\Events\TwigCreated;
+use CraftCms\Cms\Twig\Extensions\ArrayTwigExtension;
+use CraftCms\Cms\Twig\Extensions\CoreTwigExtension;
+use CraftCms\Cms\Twig\Extensions\DateTwigExtension;
+use CraftCms\Cms\Twig\Extensions\HtmlTwigExtension;
+use CraftCms\Cms\Twig\Extensions\TextTwigExtension;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
@@ -151,10 +155,14 @@ describe('create', function () {
         expect($env->hasExtension(StringLoaderExtension::class))->toBeTrue();
     });
 
-    it('includes the base Extension', function () {
+    it('includes the core split extensions', function () {
         $env = $this->twig->create();
 
-        expect($env->hasExtension(Extension::class))->toBeTrue();
+        expect($env->hasExtension(CoreTwigExtension::class))->toBeTrue();
+        expect($env->hasExtension(DateTwigExtension::class))->toBeTrue();
+        expect($env->hasExtension(ArrayTwigExtension::class))->toBeTrue();
+        expect($env->hasExtension(TextTwigExtension::class))->toBeTrue();
+        expect($env->hasExtension(HtmlTwigExtension::class))->toBeTrue();
     });
 
     it('includes the CpExtension in Cp mode', function () {
