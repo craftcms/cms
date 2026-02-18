@@ -17,6 +17,7 @@ use craft\enums\AttributeStatus;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\web\twig\AllowedInSandbox;
 use GraphQL\Type\Definition\Type;
 use Twig\Markup;
 use yii\base\InvalidConfigException;
@@ -36,6 +37,7 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[AllowedInSandbox]
 interface ElementInterface extends
     ComponentInterface,
     Chippable,
@@ -262,11 +264,20 @@ interface ElementInterface extends
     public static function createCondition(): ElementConditionInterface;
 
     /**
+     * Returns whether the element type’s sources can be split into multiple pages.
+     *
+     * @return bool
+     * @since 5.9.0
+     */
+    public static function multiPageSources(): bool;
+
+    /**
      * Returns the source definitions that elements of this type may belong to.
      *
      * This defines what will show up in the source list on element indexes and element selector modals.
      *
      * Each item in the array should be set to an array that has the following keys:
+     * - **`page`** – The source’s page label. (Optional)
      * - **`key`** – The source’s key. This is the string that will be passed into the $source argument of [[actions()]],
      *   [[indexHtml()]], and [[defaultTableAttributes()]].
      * - **`label`** – The human-facing label of the source.
@@ -547,10 +558,13 @@ interface ElementInterface extends
      * This method should return an array whose keys represent element attribute names, and whose values make
      * up the table’s column headers.
      *
+     * @param FieldLayout|null $fieldLayout
+     * @since 5.9.0
      * @return array The card attributes.
+     *
      * @since 5.5.0
      */
-    public static function cardAttributes(): array;
+    public static function cardAttributes(?FieldLayout $fieldLayout = null): array;
 
     /**
      * Returns the list of card attribute keys that should be shown by default, if the field layout hasn't been customised.
@@ -1296,6 +1310,7 @@ interface ElementInterface extends
      * Sets the element’s attributes from an element editor submission.
      *
      * @param array $values The attribute values
+     * @since 5.0.0
      */
     public function setAttributesFromRequest(array $values): void;
 
@@ -1900,9 +1915,6 @@ interface ElementInterface extends
      *
      * @param int $structureId The structure ID
      * @return bool Whether the element should be moved within the structure
-     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT]] or
-     * [[\craft\services\Structures::EVENT_BEFORE_MOVE_ELEMENT|EVENT_BEFORE_MOVE_ELEMENT]]
-     * should be used instead.
      */
     public function beforeMoveInStructure(int $structureId): bool;
 
@@ -1910,9 +1922,6 @@ interface ElementInterface extends
      * Performs actions after an element is moved within a structure.
      *
      * @param int $structureId The structure ID
-     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_AFTER_INSERT_ELEMENT]] or
-     * [[\craft\services\Structures::EVENT_AFTER_MOVE_ELEMENT|EVENT_AFTER_MOVE_ELEMENT]]
-     * should be used instead.
      */
     public function afterMoveInStructure(int $structureId): void;
 

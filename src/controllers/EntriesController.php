@@ -44,6 +44,16 @@ use yii\web\ServerErrorHttpException;
 class EntriesController extends BaseEntriesController
 {
     /**
+     * @since 5.9.0
+     */
+    public function actionIndex(): Response
+    {
+        $firstPage = Craft::$app->getElementSources()->getFirstPage(Entry::class);
+        $slug = $firstPage ? StringHelper::toKebabCase($firstPage) : 'entries';
+        return $this->redirect("content/$slug");
+    }
+
+    /**
      * Creates a new unpublished draft and redirects to its edit page.
      *
      * @param string|null $section The section’s handle
@@ -87,7 +97,7 @@ class EntriesController extends BaseEntriesController
             if (count($editableSiteIds) > 1 && $section->propagationMethod !== PropagationMethod::All) {
                 return $this->renderTemplate('_special/sitepicker.twig', [
                     'siteIds' => $editableSiteIds,
-                    'baseUrl' => "entries/$section->handle/new",
+                    'baseUrl' => sprintf('%s/new', $section->getCpIndexUri()),
                 ]);
             }
 
@@ -559,14 +569,14 @@ class EntriesController extends BaseEntriesController
     private function _populateEntryModel(Entry $entry): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->typeId = $this->request->getBodyParam('typeId', $entry->typeId);
-        $entry->slug = $this->request->getBodyParam('slug', $entry->slug);
-        if (($postDate = $this->request->getBodyParam('postDate')) !== null) {
-            $entry->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
-        }
-        if (($expiryDate = $this->request->getBodyParam('expiryDate')) !== null) {
-            $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
-        }
+        $entry->setAttributesFromRequest(array_filter([
+            'authorIds' => $this->request->getBodyParam('authors') ?? $this->request->getBodyParam('author') ?? $entry->getAuthorId() ?? static::currentUser()->id,
+            'expiryDate' => $this->request->getBodyParam('expiryDate'),
+            'postDate' => $this->request->getBodyParam('postDate'),
+            'slug' => $this->request->getBodyParam('slug'),
+            'title' => $this->request->getBodyParam('title'),
+            'typeId' => $this->request->getBodyParam('typeId'),
+        ], fn($value) => $value !== null));
 
         $enabledForSite = $this->enabledForSiteValue();
         if (is_array($enabledForSite)) {
@@ -576,24 +586,14 @@ class EntriesController extends BaseEntriesController
             $entry->enabled = (bool)$this->request->getBodyParam('enabled', $entry->enabled);
         }
         $entry->setEnabledForSite($enabledForSite ?? $entry->getEnabledForSite());
-        $entry->title = $this->request->getBodyParam('title', $entry->title);
 
         if (!$entry->typeId) {
             // Default to the section's first entry type
             $entry->typeId = $entry->getAvailableEntryTypes()[0]->id;
         }
 
-        // Prevent the last entry type's field layout from being used
-        $entry->fieldLayoutId = null;
-
-        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
-        $entry->setFieldValuesFromRequest($fieldsLocation);
-
         // Authors
-        $authorIds = $this->request->getBodyParam('authors') ?? $this->request->getBodyParam('author');
-        if ($authorIds !== null) {
-            $entry->setAuthorIds($authorIds);
-        } elseif (!$entry->id) {
+        if (empty($entry->getAuthorIds()) && !$entry->id) {
             $entry->setAuthor(static::currentUser());
         }
 
@@ -601,6 +601,13 @@ class EntriesController extends BaseEntriesController
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
             $entry->setParentId($parentId);
         }
+
+        // Prevent the last entry type's field layout from being used
+        $entry->fieldLayoutId = null;
+
+        // Set the custom field values now that everything that could affect field conditions has been set
+        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
+        $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Is fresh?
         if ($this->request->getBodyParam('isFresh')) {

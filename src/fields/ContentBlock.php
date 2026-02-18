@@ -16,7 +16,6 @@ use craft\base\FieldLayoutProviderInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\Query;
-use craft\db\Table as DbTable;
 use craft\elements\ContentBlock as ContentBlockElement;
 use craft\elements\db\ContentBlockQuery;
 use craft\elements\db\EagerLoadPlan;
@@ -35,6 +34,7 @@ use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json as JsonHelper;
 use craft\models\FieldLayout;
+use craft\web\assets\cp\CpAsset;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -260,7 +260,7 @@ class ContentBlock extends Field implements
     public function setFieldLayouts(array $layouts): void
     {
         $config = reset($layouts);
-        $layout = Craft::$app->getFields()->createLayout($config);
+        $layout = Craft::$app->getFields()->createLayout($config ?: []);
         $layout->uid = array_key_first($layouts);
         $layout->type = ContentBlockElement::class;
 
@@ -344,7 +344,26 @@ class ContentBlock extends Field implements
     public function canSaveElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
-        return $owner && Craft::$app->getElements()->canSave($owner, $user);
+
+        if (!$owner) {
+            return false;
+        }
+
+        if (Craft::$app->getElements()->canSave($owner, $user)) {
+            return true;
+        }
+
+        // Check all the owners. Maybe the user can save one of the other ones?
+        /** @phpstan-ignore-next-line  */
+        if (!Craft::$app->getElements()->canSave($owner, $user) && !$owner->getIsRevision()) {
+            foreach ($element->getOwners(['revisions' => false]) as $o) {
+                if ($o->id !== $owner->id && Craft::$app->getElements()->canSave($o, $user)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -389,9 +408,12 @@ class ContentBlock extends Field implements
 
     private function settingsHtml(bool $readOnly): string
     {
+        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/ContentBlock/settings.twig', [
             'field' => $this,
             'readOnly' => $readOnly,
+            'baseIconsUrl' => "$bundle->baseUrl/images/content-block",
         ]);
     }
 
@@ -417,7 +439,14 @@ class ContentBlock extends Field implements
         bool $fromRequest,
     ): ContentBlockElement {
         if ($value instanceof ElementQueryInterface) {
-            return $value->one() ?? $this->createContentBlockElement($element);
+            $contentBlock = $value->one();
+
+            if ($contentBlock) {
+                $this->setOwnerOnContentBlockElement($element, $contentBlock);
+                return $contentBlock;
+            }
+
+            return $this->createContentBlockElement($element);
         }
 
         if ($value === '') {
@@ -427,11 +456,18 @@ class ContentBlock extends Field implements
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading a revision.
         if ($value === '*') {
-            return $this->createContentBlockQuery($element)
+            $contentBlock = $this->createContentBlockQuery($element)
                 ->drafts(null)
                 ->savedDraftsOnly()
                 ->status(null)
-                ->one() ?? $this->createContentBlockElement($element);
+                ->one();
+
+            if ($contentBlock) {
+                $this->setOwnerOnContentBlockElement($element, $contentBlock);
+                return $contentBlock;
+            }
+
+            return $this->createContentBlockElement($element);
         }
 
         if ($element && is_array($value)) {
@@ -439,9 +475,16 @@ class ContentBlock extends Field implements
         }
 
         if (Craft::$app->getRequest()->getIsPreview()) {
-            return $this->createContentBlockQuery($element)
+            $contentBlock = $this->createContentBlockQuery($element)
                 ->withProvisionalDrafts()
-                ->one() ?? $this->createContentBlockElement($element);
+                ->one();
+
+            if ($contentBlock) {
+                $this->setOwnerOnContentBlockElement($element, $contentBlock);
+                return $contentBlock;
+            }
+
+            return $this->createContentBlockElement($element);
         }
 
         $handle = sprintf('content-block:%s', $this->layoutElement?->getOriginalHandle() ?? $this->handle);
@@ -458,12 +501,20 @@ class ContentBlock extends Field implements
 
             if (count($sameSiteElements) > 1) {
                 $contentBlocks = ContentBlockElement::find()
+                    ->fieldId($this->id)
                     ->ownerId(array_map(fn(ElementInterface $e) => $e->id, $sameSiteElements))
+                    ->siteId($element->siteId)
+                    // explicitly fetch revisions if the owner element is a revision
+                    // (see https://github.com/craftcms/cms/pull/18161)
+                    ->revisions($element->getIsRevision())
                     ->indexBy('ownerId')
                     ->collect();
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
+                    if ($contentBlock) {
+                        $this->setOwnerOnContentBlockElement($e, $contentBlock);
+                    }
                     $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan([
                         'handle' => $handle,
                     ]));
@@ -474,7 +525,14 @@ class ContentBlock extends Field implements
             }
         }
 
-        return $this->createContentBlockQuery($element)->one() ?? $this->createContentBlockElement($element);
+        $contentBlock = $this->createContentBlockQuery($element)->one();
+
+        if ($contentBlock) {
+            $this->setOwnerOnContentBlockElement($element, $contentBlock);
+            return $contentBlock;
+        }
+
+        return $this->createContentBlockElement($element);
     }
 
     private function createContentBlockElement(?ElementInterface $owner): ContentBlockElement
@@ -498,7 +556,7 @@ class ContentBlock extends Field implements
                     CancelableEvent $event,
                     ContentBlockQuery $query,
                 ) use ($owner) {
-                    $query->ownerId = $owner->id;
+                    $query->owner($owner);
 
                     // Clear out id=false if this query was populated previously
                     if ($query->id === false) {
@@ -525,6 +583,14 @@ class ContentBlock extends Field implements
             ->siteId($owner->siteId ?? null);
 
         return $query;
+    }
+
+    private function setOwnerOnContentBlockElement(ElementInterface $owner, ContentBlockElement $contentBlock): void
+    {
+        $contentBlock->setOwner($owner);
+        if ($owner->id === $contentBlock->getPrimaryOwnerId()) {
+            $contentBlock->setPrimaryOwner($owner);
+        }
     }
 
     /**
@@ -714,41 +780,6 @@ JS, [
     /**
      * @inheritdoc
      */
-//    public function getEagerLoadingMap(array $sourceElements): array|null|false
-//    {
-//        // Get the source element IDs
-//        $sourceElementIds = array_map(fn(elementInterface $element) => $element->id, $sourceElements);
-//
-//        // Return any relation data on these elements, defined with this field
-//        $map = (new Query())
-//            ->select([
-//                'source' => 'elements_owners.ownerId',
-//                'target' => 'contentblocks.id',
-//            ])
-//            ->from(['contentblocks' => DbTable::CONTENTBLOCKS])
-//            ->innerJoin(['elements_owners' => DbTable::ELEMENTS_OWNERS], [
-//                'and',
-//                '[[elements_owners.elementId]] = [[contentblocks.id]]',
-//                ['elements_owners.ownerId' => $sourceElementIds],
-//            ])
-//            ->where(['contentblocks.fieldId' => $this->id])
-//            ->orderBy(['elements_owners.sortOrder' => SORT_ASC])
-//            ->all();
-//
-//        return [
-//            'elementType' => ContentBlockElement::class,
-//            'map' => $map,
-//            'criteria' => [
-//                'fieldId' => $this->id,
-//                'allowOwnerDrafts' => true,
-//                'allowOwnerRevisions' => true,
-//            ],
-//        ];
-//    }
-
-    /**
-     * @inheritdoc
-     */
     public function getContentGqlType(): Type|array
     {
         return [
@@ -775,7 +806,7 @@ JS, [
      */
     public function afterSave(bool $isNew): void
     {
-        Craft::$app->getFields()->saveLayout($this->getFieldLayout());
+        Craft::$app->getFields()->saveLayout($this->getFieldLayout(), false);
         parent::afterSave($isNew);
     }
 
@@ -812,9 +843,8 @@ JS, [
 
         /** @var ContentBlockElement[] $contentBlocks */
         $contentBlocks = ContentBlockElement::find()
-            ->primaryOwnerId($element->id)
+            ->primaryOwner($element)
             ->status(null)
-            ->siteId($element->siteId)
             ->all();
 
         foreach ($contentBlocks as $contentBlock) {
@@ -891,6 +921,11 @@ JS, [
         // Set the content post location on the content block if we can
         if ($baseFieldNamespace) {
             $contentBlock->setFieldParamNamespace("$baseFieldNamespace.fields");
+        }
+
+        // if the owner is fresh, ensure the content block's content gets propagated to all sites
+        if ($element->getIsFresh()) {
+            $contentBlock->propagateAll = true;
         }
 
         if (isset($value['fields'])) {

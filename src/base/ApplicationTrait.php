@@ -743,7 +743,7 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
-        if (App::env('CRAFT_NO_TRIALS')) {
+        if (App::normalizeBooleanValue(App::env('CRAFT_NO_TRIALS'))) {
             return false;
         }
 
@@ -1578,8 +1578,7 @@ trait ApplicationTrait
         });
 
         // Set the Craft edition
-        $edition = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
-        $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
+        $this->_setCraftEdition();
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
@@ -1829,5 +1828,31 @@ trait ApplicationTrait
         return function() use ($id, $method) {
             return $this->get($id)->$method(...func_get_args());
         };
+    }
+
+    /**
+     * Set Craft's edition
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function _setCraftEdition(): void
+    {
+        $edition = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
+        $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
+    }
+
+    /**
+     * Ensure that edition is set.
+     *
+     * @return void
+     * @throws Exception
+     * @since 5.8.18
+     */
+    public function ensureEdition(): void
+    {
+        if (!isset($this->edition)) {
+            $this->_setCraftEdition();
+        }
     }
 }

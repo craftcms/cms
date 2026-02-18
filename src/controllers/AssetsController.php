@@ -15,6 +15,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
+use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
 use craft\errors\DeprecationException;
 use craft\errors\ElementNotFoundException;
@@ -347,6 +348,14 @@ class AssetsController extends Controller
             }
         }
 
+        // try to get uploaded asset's URL
+        $url = null;
+        try {
+            $url = $asset->getUrl();
+        } catch (Throwable) {
+            // do nothing
+        }
+
         if ($asset->conflictingFilename !== null) {
             $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $asset->conflictingFilename]);
 
@@ -357,12 +366,14 @@ class AssetsController extends Controller
                 'conflictingAssetId' => $conflictingAsset->id ?? null,
                 'suggestedFilename' => $asset->suggestedFilename,
                 'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->getFs()->hasUrls) ? $conflictingAsset->getUrl() : null,
+                'url' => $url,
             ]);
         }
 
         return $this->asSuccess(data: [
             'filename' => $asset->getFilename(),
             'assetId' => $asset->id,
+            'url' => $url,
         ]);
     }
 
@@ -383,6 +394,14 @@ class AssetsController extends Controller
 
         $sourceAssetId = $this->request->getBodyParam('sourceAssetId');
         $targetFilename = $this->request->getBodyParam('targetFilename');
+
+        if (
+            $targetFilename &&
+            (str_contains($targetFilename, '/') || str_contains($targetFilename, '\\'))
+        ) {
+            throw new BadRequestHttpException('Invalid filename: $targetFilename');
+        }
+
         $uploadedFile = UploadedFile::getInstanceByName('replaceFile');
 
         $assets = Craft::$app->getAssets();
@@ -1283,6 +1302,16 @@ class AssetsController extends Controller
     {
         if ($uploadedFile->getHasError()) {
             throw new UploadFailedException($uploadedFile->error);
+        }
+
+        // Make sure the file extension is allowed
+        $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
+        $extension = strtolower(pathinfo($uploadedFile->name, PATHINFO_EXTENSION));
+
+        if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
+            throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
+                'extension' => $extension,
+            ]));
         }
 
         // Move the uploaded file to the temp folder

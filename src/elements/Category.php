@@ -501,7 +501,10 @@ class Category extends Element
         foreach ($ancestors->all() as $ancestor) {
             if ($elementsService->canView($ancestor, $user)) {
                 $crumbs[] = [
-                    'html' => Cp::elementChipHtml($ancestor, ['class' => 'chromeless']),
+                    'html' => Cp::elementChipHtml($ancestor, [
+                        'class' => 'chromeless',
+                        'hyperlink' => true,
+                    ]),
                 ];
             }
         }
@@ -868,7 +871,7 @@ class Category extends Element
             $record->groupId = (int)$this->groupId;
             $record->save(false);
 
-            if (!$this->duplicateOf) {
+            if (!$this->duplicateOf || $this->updatingFromDerivative) {
                 // Has the parent changed?
                 if ($this->hasNewParent()) {
                     $this->_placeInStructure($isNew, $group);

@@ -51,19 +51,18 @@ use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
+use craft\web\twig\AllowedInSandbox;
 use craft\web\View;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Throwable;
 use Webauthn\PublicKeyCredentialRequestOptions;
-use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
-use yii\validators\RequiredValidator;
 use yii\validators\Validator;
 use yii\web\BadRequestHttpException;
 use yii\web\IdentityInterface;
@@ -657,42 +656,50 @@ class User extends Element implements IdentityInterface
     /**
      * @var int|null Photo asset ID
      */
+    #[AllowedInSandbox]
     public ?int $photoId = null;
 
     /**
      * @var bool Active
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public bool $active = false;
 
     /**
      * @var bool Pending
      */
+    #[AllowedInSandbox]
     public bool $pending = false;
 
     /**
      * @var bool Locked
      */
+    #[AllowedInSandbox]
     public bool $locked = false;
 
     /**
      * @var bool Suspended
      */
+    #[AllowedInSandbox]
     public bool $suspended = false;
 
     /**
      * @var bool Admin
      */
+    #[AllowedInSandbox]
     public bool $admin = false;
 
     /**
      * @var string|null Username
      */
+    #[AllowedInSandbox]
     public ?string $username = null;
 
     /**
      * @var string|null Email
      */
+    #[AllowedInSandbox]
     public ?string $email = null;
 
     /**
@@ -704,11 +711,13 @@ class User extends Element implements IdentityInterface
      * @var int|null Affiliated site ID
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public ?int $affiliatedSiteId = null;
 
     /**
      * @var DateTime|null Last login date
      */
+    #[AllowedInSandbox]
     public ?DateTime $lastLoginDate = null;
 
     /**
@@ -818,6 +827,12 @@ class User extends Element implements IdentityInterface
     private ?array $_groups = null;
 
     /**
+     * @see setAttributesFromRequest()
+     * @see afterSave()
+     */
+    private bool $sendVerificationEmailAfterRequest = false;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -859,12 +874,9 @@ class User extends Element implements IdentityInterface
      */
     public function __toString(): string
     {
-        try {
-            if (($name = $this->getName()) !== '') {
-                return $name;
-            }
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
+        $name = $this->getName();
+        if ($name !== '') {
+            return $name;
         }
 
         return parent::__toString();
@@ -960,27 +972,6 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function afterValidate(): void
-    {
-        $scenario = $this->getScenario();
-
-        if ($scenario === self::SCENARIO_LIVE) {
-            $fullNameElement = $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this);
-            if ($fullNameElement && $fullNameElement->required) {
-                if (Craft::$app->getConfig()->getGeneral()->showFirstAndLastNameFields) {
-                    (new RequiredValidator(['attributes' => ['firstName', 'lastName']]))->validateAttributes($this, ['firstName', 'lastName']);
-                } else {
-                    (new RequiredValidator())->validateAttribute($this, 'fullName');
-                }
-            }
-        }
-
-        parent::afterValidate();
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -993,16 +984,25 @@ class User extends Element implements IdentityInterface
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId', 'affiliatedSiteId'], 'number', 'integerOnly' => true];
         $rules[] = [['username', 'email', 'unverifiedEmail', 'fullName', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
-        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false];
+        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => App::supportsIdn()];
         $rules[] = [['email', 'username', 'fullName', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['verificationCode'], 'string', 'max' => 100];
         $rules[] = [['email'], 'required', 'when' => fn() => !$this->getIsDraft()];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
 
-        if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if (!$generalConfig->useEmailAsUsername) {
             $rules[] = [['username'], 'required', 'when' => $treatAsActive];
             $rules[] = [['username'], UsernameValidator::class];
         }
+
+        $rules[] = [
+            $generalConfig->showFirstAndLastNameFields ? ['firstName', 'lastName'] : ['fullName'],
+            'required',
+            'on' => [self::SCENARIO_LIVE],
+            'when' => fn() => $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this)->required ?? false,
+        ];
 
         if (Craft::$app->getIsInstalled()) {
             $rules[] = [
@@ -1014,7 +1014,7 @@ class User extends Element implements IdentityInterface
                 'when' => $treatAsActive,
             ];
 
-            if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+            if (!$generalConfig->useEmailAsUsername) {
                 $rules[] = [
                     ['username'],
                     UniqueValidator::class,
@@ -1060,6 +1060,15 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+
+    public function safeAttributes(): array
+    {
+        return ArrayHelper::withoutValue(parent::safeAttributes(), 'photoId');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setAttributesFromRequest($values): void
     {
         unset($values['unverifiedEmail']);
@@ -1075,7 +1084,7 @@ class User extends Element implements IdentityInterface
             // make sure they have an elevated session
             $userSession = Craft::$app->getUser();
             if (!$userSession->getHasElevatedSession()) {
-                throw new BadRequestHttpException('An elevated session is required to change a user’s email.');
+                throw new BadRequestHttpException(Craft::t('app', 'An elevated session is required to change a user’s email.'));
             }
 
             if ($this->email !== null) {
@@ -1088,6 +1097,7 @@ class User extends Element implements IdentityInterface
                     ) {
                         // set it as the unverified email instead, and
                         $values['unverifiedEmail'] = ArrayHelper::remove($values, 'email');
+                        $this->sendVerificationEmailAfterRequest = true;
                     }
                 } else {
                     unset($values['email']);
@@ -1131,6 +1141,7 @@ class User extends Element implements IdentityInterface
      * @return bool
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public function getHasPassword(): bool
     {
         if (isset($this->password)) {
@@ -1150,6 +1161,7 @@ class User extends Element implements IdentityInterface
      * @return bool
      * @since 5.7.8
      */
+    #[AllowedInSandbox]
     public function getHasSsoIdentity(): bool
     {
         if (Craft::$app->edition->value < CmsEdition::Enterprise->value) {
@@ -1220,6 +1232,7 @@ class User extends Element implements IdentityInterface
      * @return ElementCollection<Address>
      * @since 4.0.0
      */
+    #[AllowedInSandbox]
     public function getAddresses(): ElementCollection
     {
         if (!isset($this->_addresses)) {
@@ -1454,6 +1467,7 @@ class User extends Element implements IdentityInterface
      *
      * @return UserGroup[]
      */
+    #[AllowedInSandbox]
     public function getGroups(): array
     {
         if (isset($this->_groups)) {
@@ -1485,6 +1499,7 @@ class User extends Element implements IdentityInterface
      * @param int|string|UserGroup $group The user group model, its handle, or ID.
      * @return bool
      */
+    #[AllowedInSandbox]
     public function isInGroup(UserGroup|int|string $group): bool
     {
         if (Craft::$app->edition < CmsEdition::Pro) {
@@ -1503,11 +1518,43 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+     * Returns whether the user is in any/all the given user groups.
+     *
+     * By default, `true` will be returned if the user is in *any* of the groups. To change that so `true` is only
+     * returned if the user is in *all* of the groups, pass `true` to the second argument.
+     *
+     * @param array<int|string|UserGroup> $groups The user groups, handles, or IDs
+     * @param bool $all Whether to only return `true` if the user is in *all* of the provided groups
+     * @return bool
+     * @since 5.9.0
+     */
+    #[AllowedInSandbox]
+    public function isInGroups(array $groups, bool $all = false): bool
+    {
+        if (!$all) {
+            foreach ($groups as $group) {
+                if ($this->isInGroup($group)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        foreach ($groups as $group) {
+            if (!$this->isInGroup($group)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns the user’s full name.
      *
      * @return string|null
      * @deprecated in 4.0.0. [[fullName]] should be used instead.
      */
+    #[AllowedInSandbox]
     public function getFullName(): ?string
     {
         return $this->fullName;
@@ -1518,6 +1565,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string
      */
+    #[AllowedInSandbox]
     public function getName(): string
     {
         if (!isset($this->_name)) {
@@ -1560,6 +1608,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getFriendlyName(): ?string
     {
         if (!isset($this->_friendlyName)) {
@@ -1603,6 +1652,7 @@ class User extends Element implements IdentityInterface
      * @return Site|null
      * @since 5.6.0
      */
+    #[AllowedInSandbox]
     public function getAffiliatedSite(): ?Site
     {
         if ($this->affiliatedSiteId === null || !Craft::$app->getIsMultiSite()) {
@@ -1771,7 +1821,8 @@ XML;
 
         return (
             $user->id !== $this->id &&
-            $user->can('deleteUsers')
+            $user->can('deleteUsers') &&
+            (!$this->admin || $user->admin)
         );
     }
 
@@ -1834,11 +1885,17 @@ XML;
      */
     public function canAssignUserGroups(): bool
     {
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
-            foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
-                if ($this->can("assignUserGroup:$group->uid")) {
-                    return true;
-                }
+        if (Craft::$app->edition->value < CmsEdition::Pro->value) {
+            return false;
+        }
+
+        if ($this->admin) {
+            return true;
+        }
+
+        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+            if ($this->can("assignUserGroup:$group->uid")) {
+                return true;
             }
         }
 
@@ -2240,6 +2297,11 @@ JS, [
      */
     public function getPreferences(): array
     {
+        // only CP users can save preferences
+        if (!$this->can('accessCp')) {
+            return [];
+        }
+
         return $this->id ? Craft::$app->getUsers()->getUserPreferences($this->id) : [];
     }
 
@@ -2300,12 +2362,12 @@ JS, [
      */
     private function _validateLocale(?string $locale, bool $checkAllLocales): ?string
     {
-        $locales = $checkAllLocales ? Craft::$app->getI18n()->getAllLocaleIds() : Craft::$app->getI18n()->getAppLocaleIds();
-        if ($locale && in_array($locale, $locales, true)) {
-            return $locale;
+        if (!$locale) {
+            return null;
         }
 
-        return null;
+        $locales = $checkAllLocales ? Craft::$app->getI18n()->getAllLocaleIds() : Craft::$app->getI18n()->getAppLocaleIds();
+        return in_array($locale, $locales, true) ? $locale : null;
     }
 
     /**
@@ -2327,6 +2389,7 @@ JS, [
      *
      * @return Asset|null
      */
+    #[AllowedInSandbox]
     public function getPhoto(): ?Asset
     {
         if (!isset($this->_photo)) {
@@ -2496,7 +2559,10 @@ JS, [
      */
     final public function beforeSave(bool $isNew): bool
     {
-        if ($isNew && !Craft::$app->getUsers()->canCreateUsers()) {
+        if (
+            ($isNew || $this->applyingDraft) &&
+            !Craft::$app->getUsers()->canCreateUsers()
+        ) {
             return false;
         }
 
@@ -2616,6 +2682,25 @@ JS, [
                 $condition = ['and', $condition, ['not', ['token' => $token]]];
             }
             Db::delete(Table::SESSIONS, $condition);
+        }
+
+        if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {
+            // Temporarily set the unverified email on the User so the verification email goes to the right place
+            $originalEmail = $this->email;
+            $this->email = $this->unverifiedEmail;
+
+            try {
+                if ($isNew) {
+                    // Send the activation email
+                    Craft::$app->getUsers()->sendActivationEmail($this);
+                } else {
+                    // Send the standard verification email
+                    Craft::$app->getUsers()->sendNewEmailVerifyEmail($this);
+                }
+            } finally {
+                // Put the original email back into place
+                $this->email = $originalEmail;
+            }
         }
     }
 

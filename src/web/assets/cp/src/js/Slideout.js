@@ -97,16 +97,21 @@ import $ from 'jquery';
         this.$outerContainer.appendTo(Garnish.$bod).removeClass('hidden');
 
         if (activePreview) {
-          // keep the width equal to the editp ane width
+          // keep the width equal to the edit pane width
           this.updateWidthsForPreviewPane(activePreview);
-          const dragHandler = () => {
-            if (this.isOpen) {
+          let containerWidth = activePreview.$editorContainer.width();
+          const resizeObserver = new ResizeObserver((entries) => {
+            if (
+              this.isOpen &&
+              containerWidth !==
+                (containerWidth = activePreview.$editorContainer.width())
+            ) {
               this.updateWidthsForPreviewPane(activePreview);
             }
-          };
-          activePreview.on('drag', dragHandler);
+          });
+          resizeObserver.observe(activePreview.$editorContainer[0]);
           activePreview.on('beforeClose', () => {
-            activePreview.off('drag', dragHandler);
+            resizeObserver.disconnect();
           });
         }
 
@@ -211,7 +216,9 @@ import $ from 'jquery';
           }
 
           if (focusTarget) {
-            focusTarget.focus();
+            setTimeout(() => {
+              focusTarget.focus();
+            }, 150);
           }
         }
       },

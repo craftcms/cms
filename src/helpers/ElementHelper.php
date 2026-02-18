@@ -16,6 +16,7 @@ use craft\base\NestedElementInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User as UserElement;
+use craft\errors\FieldNotFoundException;
 use craft\errors\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
 use craft\i18n\Locale;
@@ -668,12 +669,19 @@ class ElementHelper
      * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The source key/path
      * @param string $context The context
+     * @param bool $withDisabled Whether disabled sources should be included
+     * @param string|null $page The page to fetch sources for
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource(string $elementType, string $sourceKey, string $context = ElementSources::CONTEXT_INDEX): ?array
-    {
+    public static function findSource(
+        string $elementType,
+        string $sourceKey,
+        string $context = ElementSources::CONTEXT_INDEX,
+        bool $withDisabled = false,
+        ?string $page = null,
+    ): ?array {
         $path = explode('/', $sourceKey);
-        $sources = Craft::$app->getElementSources()->getSources($elementType, $context);
+        $sources = Craft::$app->getElementSources()->getSources($elementType, $context, $withDisabled, $page);
         $rootSource = null;
 
         while ($path) {
@@ -784,7 +792,12 @@ class ElementHelper
             foreach ($fieldLayout->getTabs() as $tab) {
                 foreach ($tab->getElements() as $layoutElement) {
                     if ($layoutElement instanceof CustomField && $layoutElement->attribute() === $attribute) {
-                        return $layoutElement->getField()->isValueEmpty($element->getFieldValue($attribute), $element);
+                        try {
+                            $field = $layoutElement->getField();
+                        } catch (FieldNotFoundException) {
+                            continue;
+                        }
+                        return $field->isValueEmpty($element->getFieldValue($attribute), $element);
                     }
                 }
             }
@@ -964,6 +977,24 @@ class ElementHelper
     }
 
     /**
+     * Returns a generic URL for viewing an element’s revisions.
+     *
+     * @param ElementInterface $element
+     * @return string
+     * @since 5.9.7
+     */
+    public static function elementRevisionsUrl(ElementInterface $element): string
+    {
+        $url = sprintf('revisions/%s', $element->getCanonicalId());
+
+        if ($element->slug && !static::isTempSlug($element->slug)) {
+            $url .= "-$element->slug";
+        }
+
+        return UrlHelper::cpUrl($url);
+    }
+
+    /**
      * Returns an element action’s JavaScript configuration.
      *
      * @param ElementActionInterface $action
@@ -1010,40 +1041,15 @@ class ElementHelper
      */
     public static function swapInProvisionalDrafts(array &$elements): void
     {
-        $user = self::$provisionalDraftUser ?? Craft::$app->getUser()->getIdentity();
-        if (!$user) {
-            return;
-        }
-
-        // filter out drafts and revisions
-        // (don't just exclude derivative elements though! see https://github.com/craftcms/cms/issues/16626)
-        $canonicalElements = array_filter(
-            $elements,
-            fn(ElementInterface $element) => !$element->getIsDraft() && !$element->getIsRevision(),
-        );
-
-        if (empty($canonicalElements)) {
-            return;
-        }
-
-        $first = reset($canonicalElements);
-
         /** @var T[] $drafts */
-        $drafts = $first::find()
-            ->draftOf($canonicalElements)
-            ->draftCreator($user)
-            ->provisionalDrafts()
-            ->siteId($first->siteId)
-            ->status(null)
-            ->indexBy('canonicalId')
-            ->all();
+        $drafts = self::provisionalDrafts($elements);
 
         if (empty($drafts)) {
             return;
         }
 
         // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
-        foreach ($canonicalElements as $i => $element) {
+        foreach ($elements as $i => $element) {
             if (isset($drafts[$element->id])) {
                 $draft = $drafts[$element->id];
                 $draft->setCanonical($element);
@@ -1065,6 +1071,74 @@ class ElementHelper
                 $elements[$i] = $draft;
             }
         }
+    }
+
+    /**
+     * Swaps out any canonical elements with provisional drafts, when they exist.
+     *
+     * @template T of ElementInterface
+     * @param T[] $elements
+     * @since 5.9.0
+     */
+    public static function loadProvisionalChanges(array $elements): void
+    {
+        $drafts = self::provisionalDrafts($elements);
+
+        if (empty($drafts)) {
+            return;
+        }
+
+        // array_filter() preserves keys, so it's safe to loop through it rather than $elements here
+        foreach ($elements as $element) {
+            if (isset($drafts[$element->id])) {
+                $draft = $drafts[$element->id];
+                $element->hasProvisionalChanges = true;
+
+                foreach ($draft->getModifiedAttributes() as $name) {
+                    if ($element->canSetProperty($name)) {
+                        $element->$name = $draft->$name;
+                    }
+                }
+
+                foreach ($draft->getModifiedFields() as $handle) {
+                    $element->setFieldValue($handle, $draft->getFieldValue($handle));
+                }
+            }
+        }
+    }
+
+    /**
+     * @param ElementInterface[] $elements
+     * @return ElementInterface[]
+     */
+    private static function provisionalDrafts(array $elements): array
+    {
+        $user = self::$provisionalDraftUser ?? Craft::$app->getUser()->getIdentity();
+        if (!$user) {
+            return [];
+        }
+
+        // filter out drafts and revisions
+        // (don't just exclude derivative elements though! see https://github.com/craftcms/cms/issues/16626)
+        $canonicalElements = array_filter(
+            $elements,
+            fn(ElementInterface $element) => !$element->getIsDraft() && !$element->getIsRevision(),
+        );
+
+        if (empty($canonicalElements)) {
+            return [];
+        }
+
+        $first = reset($canonicalElements);
+
+        return $first::find()
+            ->draftOf($canonicalElements)
+            ->draftCreator($user)
+            ->provisionalDrafts()
+            ->siteId($first->siteId)
+            ->status(null)
+            ->indexBy('canonicalId')
+            ->all();
     }
 
     /**
@@ -1096,5 +1170,31 @@ class ElementHelper
     public static function setProvisionalDraftUser(?UserElement $user): void
     {
         self::$provisionalDraftUser = $user;
+    }
+
+    /**
+     * Removes values from a posted element query criteria, which would typically not be user-editable.
+     *
+     * @param array $criteria
+     * @return array
+     * @since 5.9.9
+     */
+    public static function cleanseQueryCriteria(array $criteria): array
+    {
+        unset(
+            $criteria['where'],
+            $criteria['orderBy'],
+            $criteria['indexBy'],
+            $criteria['select'],
+            $criteria['selectOption'],
+            $criteria['from'],
+            $criteria['groupBy'],
+            $criteria['join'],
+            $criteria['having'],
+            $criteria['union'],
+            $criteria['withQueries'],
+            $criteria['params'],
+        );
+        return $criteria;
     }
 }

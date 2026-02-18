@@ -14,8 +14,8 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\InvalidTypeException;
 use craft\helpers\Component;
 use craft\helpers\Cp;
+use craft\helpers\ElementHelper;
 use craft\helpers\Search;
-use craft\helpers\StringHelper;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -55,11 +55,14 @@ class ElementSearchController extends Controller
 
         $query = $elementType::find()
             ->siteId($siteId)
-            ->search(sprintf('title:"%s"', str_replace('"', '', $search)))
-            ->orderBy(['LENGTH([[title]])' => SORT_ASC])
+            ->search($search)
+            ->orderBy(['score' => SORT_DESC])
             ->limit(5);
 
         if ($criteria) {
+            // Remove unsupported criteria attributes
+            $criteria = ElementHelper::cleanseQueryCriteria($criteria);
+
             Craft::configure($query, Component::cleanseConfig($criteria));
         }
 
@@ -91,38 +94,42 @@ class ElementSearchController extends Controller
         $return = [];
         $exactMatches = [];
         $excludes = [];
-        $titleLengths = [];
         $exactMatch = false;
 
-        $search = Search::normalizeKeywords($search);
+        if (!empty($elements)) {
+            $search = Search::normalizeKeywords($search);
 
-        foreach ($elements as $element) {
-            $exclude = in_array($element->id, $excludeIds, false);
+            foreach ($elements as $element) {
+                $exclude = in_array($element->id, $excludeIds, false);
 
-            $return[] = [
-                'id' => $element->id,
-                'title' => $element->title,
-                'html' => Cp::chipHtml($element, [
-                    'hyperlink' => false,
-                    'class' => 'chromeless',
-                ]),
-                'exclude' => $exclude,
-            ];
+                $return[] = [
+                    'id' => $element->id,
+                    'title' => $element->title,
+                    'html' => Cp::chipHtml($element, [
+                        'hyperlink' => false,
+                        'class' => 'chromeless',
+                    ]),
+                    'exclude' => $exclude,
+                ];
 
-            $titleLengths[] = StringHelper::length($element->title);
-            $title = Search::normalizeKeywords($element->title);
+                $title = $element->title ?? (string)$element;
+                $title = Search::normalizeKeywords($title);
 
-            if ($title == $search) {
-                $exactMatches[] = 1;
-                $exactMatch = true;
-            } else {
-                $exactMatches[] = 0;
+                if ($title == $search) {
+                    $exactMatches[] = 1;
+                    $exactMatch = true;
+                } else {
+                    $exactMatches[] = 0;
+                }
+
+                $excludes[] = $exclude ? 1 : 0;
             }
 
-            $excludes[] = $exclude ? 1 : 0;
-        }
+            // prevent the default sort order from changing beyond $excludes + $exactMatches
+            $range = range(1, count($return));
 
-        array_multisort($excludes, SORT_ASC, $exactMatches, SORT_DESC, $titleLengths, $return);
+            array_multisort($excludes, SORT_ASC, $exactMatches, SORT_DESC, $range, $return);
+        }
 
         return $this->asJson([
             'elements' => $return,

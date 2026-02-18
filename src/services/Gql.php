@@ -15,6 +15,7 @@ use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
+use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\errors\GqlException;
 use craft\events\ConfigEvent;
@@ -83,8 +84,10 @@ use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\Directive as GqlDirective;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
+use GraphQL\Utils\TypeInfo;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\DisableIntrospection;
 use GraphQL\Validator\Rules\FieldsOnCorrectType;
@@ -384,13 +387,25 @@ class Gql extends Component
                 'typeLoader' => TypeLoader::class . '::loadType',
                 'query' => TypeLoader::loadType('Query'),
                 'mutation' => TypeLoader::loadType('Mutation'),
-                'directives' => $this->_loadGqlDirectives(),
+                'directives' => $this->_loadGqlDirectives($schema),
             ];
 
             // If we're not required to pre-build the schema the relevant GraphQL types will be added to the Schema
             // as the query is being resolved thanks to the magic of lazy-loading, so we needn't worry.
             if (!$prebuildSchema) {
                 $this->_schemaDef = new Schema($schemaConfig);
+
+                // but we always have to add the InputObjectType mutation args
+                foreach ($schemaConfig['mutation']->config['fields'] as $item) {
+                    if (isset($item['args'])) {
+                        foreach ($item['args'] as $arg) {
+                            if ($arg instanceof InputObjectType) {
+                                TypeInfo::extractTypes($arg);
+                            }
+                        }
+                    }
+                }
+
                 return $this->_schemaDef;
             }
 
@@ -562,6 +577,8 @@ class Gql extends Component
                 'context' => $context,
                 'rootValue' => $rootValue,
                 'result' => $result,
+                'cacheTags' => $dep->tags ?? null,
+                'cacheDuration' => $duration ?? null,
             ]);
             $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
             $result = $event->result;
@@ -1526,9 +1543,10 @@ class Gql extends Component
     /**
      * Get GraphQL query definitions
      *
+     * @param GqlSchema|null $schema
      * @return GqlDirective[]
      */
-    private function _loadGqlDirectives(): array
+    private function _loadGqlDirectives(?GqlSchema $schema): array
     {
         /** @var class-string<Directive>[] $directiveClasses */
         $directiveClasses = [
@@ -1536,13 +1554,21 @@ class Gql extends Component
             FormatDateTime::class,
             Markdown::class,
             Money::class,
-            ParseRefs::class,
             StripTags::class,
             Trim::class,
         ];
 
-        if (!Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective) {
-            $directiveClasses[] = Transform::class;
+        if ($schema !== null) {
+            if (in_array('directive:parseRefs', $schema->scope)) {
+                $directiveClasses[] = ParseRefs::class;
+            }
+
+            if (
+                !Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective &&
+                in_array('directive:transform', $schema->scope)
+            ) {
+                $directiveClasses[] = Transform::class;
+            }
         }
 
         // Fire a 'registerGqlDirectives' event
@@ -1784,23 +1810,26 @@ class Gql extends Component
      */
     private function userSchemaComponents(): array
     {
-        if (Craft::$app->edition === CmsEdition::Solo) {
-            return [[], []];
-        }
-
         $queryComponents = [];
-        $userGroups = Craft::$app->getUserGroups()->getAllGroups();
 
-        $queryComponents['usergroups.everyone:read'] = [
-            'label' => Craft::t('app', 'Query for users'),
-        ];
-
-        foreach ($userGroups as $userGroup) {
-            $name = Craft::t('site', $userGroup->name);
-            $prefix = "usergroups.$userGroup->uid";
-            $queryComponents["$prefix:read"] = [
-                'label' => Craft::t('app', 'Query for users in the “{name}” user group', ['name' => $name]),
+        if (Craft::$app->edition === CmsEdition::Solo) {
+            $queryComponents['usergroups.solo:read'] = [
+                'label' => Craft::t('app', 'View {type}', ['type' => User::lowerDisplayName()]),
             ];
+        } else {
+            $userGroups = Craft::$app->getUserGroups()->getAllGroups();
+
+            $queryComponents['usergroups.everyone:read'] = [
+                'label' => Craft::t('app', 'Query for users'),
+            ];
+
+            foreach ($userGroups as $userGroup) {
+                $name = Craft::t('site', $userGroup->name);
+                $prefix = "usergroups.$userGroup->uid";
+                $queryComponents["$prefix:read"] = [
+                    'label' => Craft::t('app', 'Query for users in the “{name}” user group', ['name' => $name]),
+                ];
+            }
         }
 
         return [$queryComponents, []];

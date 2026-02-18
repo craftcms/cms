@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\EagerLoadPlan;
 use craft\helpers\Db;
+use craft\web\twig\AllowedInSandbox;
 use yii\base\InvalidConfigException;
 
 /**
@@ -77,6 +78,7 @@ trait NestedElementTrait
     /**
      * @var int|null Field ID
      */
+    #[AllowedInSandbox]
     public ?int $fieldId = null;
 
     /**
@@ -113,6 +115,12 @@ trait NestedElementTrait
      */
     private ElementInterface|false|null $_owner = null;
 
+    /**
+     * @var ElementInterface[]
+     * @see getOwners()
+     */
+    private array $_owners;
+
     public function __clone(): void
     {
         parent::__clone();
@@ -120,6 +128,15 @@ trait NestedElementTrait
         $this->_primaryOwner = null;
         $this->_owner = null;
         $this->ownerType = null;
+    }
+
+    public function __get($name)
+    {
+        return match ($name) {
+            'ownerId' => $this->getOwnerId(),
+            'primaryOwnerId' => $this->getPrimaryOwnerId(),
+            default => parent::__get($name),
+        };
     }
 
     /**
@@ -292,6 +309,32 @@ trait NestedElementTrait
         return $this->_owner ?: null;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getOwners(array $criteria = []): array
+    {
+        if (!isset($this->_owners)) {
+            $this->_owners = [];
+            $ownerType = $this->ownerType();
+            if ($ownerType) {
+                $ownerIds = (new Query())
+                    ->select('ownerId')
+                    ->from(Table::ELEMENTS_OWNERS)
+                    ->where(['elementId' => $this->id])
+                    ->column();
+                if (!empty($ownerIds)) {
+                    $query = $ownerType::find()
+                        ->id($ownerIds);
+                    Craft::configure($query, $criteria + $this->ownerCriteria());
+                    $this->_owners = $query->all();
+                }
+            }
+        }
+
+        return $this->_owners;
+    }
+
     private function ownerCriteria(): array
     {
         return [
@@ -327,8 +370,8 @@ trait NestedElementTrait
         $field = null;
 
         try {
-            $field = $this->getOwner()?->getFieldLayout()->getFieldById($this->fieldId);
-        } catch (InvalidConfigException $e) {
+            $field = $this->getOwner()?->getFieldLayout()?->getFieldById($this->fieldId);
+        } catch (InvalidConfigException) {
             // carry on as we might still be able to get the field by ID
         }
 
@@ -423,7 +466,7 @@ trait NestedElementTrait
      */
     private function saveOwnership(bool $isNew, string $elementTable, string $fieldIdColumn = 'fieldId'): void
     {
-        if (!$this->saveOwnership || !isset($this->fieldId)) {
+        if (!$this->saveOwnership || !isset($this->fieldId) || $this->resaving) {
             return;
         }
         

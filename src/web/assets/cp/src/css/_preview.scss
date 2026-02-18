@@ -126,16 +126,6 @@
     }
   }
 
-  .lp-draghandle {
-    position: absolute;
-    z-index: 101;
-    inset-block-start: 0;
-    inset-inline-end: -2px;
-    width: 4px;
-    height: 100%;
-    cursor: col-resize;
-  }
-
   & > footer {
     padding-block: 5px;
     padding-inline: var(--pane-padding, var(--xl));
@@ -144,6 +134,15 @@
     justify-content: end;
     height: 44px;
   }
+}
+
+.lp-draghandle {
+  inset-block-start: 0;
+  position: fixed;
+  z-index: 101;
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
 }
 
 .lp-preview-container {

@@ -125,7 +125,9 @@ class Entries extends BaseRelationField
             $sources = $this->getInputSources($element);
             if (preg_match('/^section:(.+)$/', reset($sources), $matches)) {
                 $section = Craft::$app->getEntries()->getSectionByUid($matches[1]);
-                $variables['jsSettings']['sectionId'] = $section->id;
+                if ($section) {
+                    $variables['jsSettings']['sectionId'] = $section->id;
+                }
             }
         }
 

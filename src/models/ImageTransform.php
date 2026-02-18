@@ -175,6 +175,7 @@ class ImageTransform extends Model
         $rules = parent::defineRules();
         $rules[] = [['id', 'width', 'height', 'quality'], 'number', 'integerOnly' => true];
         $rules[] = [['parameterChangeTime'], DateTimeValidator::class];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['handle'], 'string', 'max' => 255];
         $rules[] = [['name', 'handle', 'mode', 'position'], 'required'];
         $rules[] = [['handle'], 'string', 'max' => 255];

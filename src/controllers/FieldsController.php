@@ -152,7 +152,7 @@ class FieldsController extends Controller
                 $compatible = $isCurrent || in_array($class, $compatibleFieldTypes, true);
                 $name = $class::displayName();
                 $option = [
-                    'icon' => $class::icon(),
+                    'icon' => $isCurrent && $field instanceof Iconic ? $field->getIcon() : $class::icon(),
                     'value' => $class,
                 ];
                 if ($compatible) {
@@ -205,7 +205,7 @@ class FieldsController extends Controller
         if (!$this->readOnly) {
             $response
                 ->action('fields/save-field')
-                ->redirectUrl('settings/fields')
+                ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/fields')
                 ->addAltAction(Craft::t('app', 'Save and continue editing'), [
                     'redirect' => 'settings/fields/edit/{id}',
                     'shortcut' => true,
@@ -377,6 +377,7 @@ JS, [
                 }
             }, ARRAY_FILTER_USE_KEY);
 
+            $settings = Component::cleanseConfig($settings);
             Typecast::properties($type, $settings);
             Craft::configure($field, $settings);
         }
@@ -409,10 +410,11 @@ JS, [
         $fieldId = $this->request->getBodyParam('fieldId') ?: null;
 
         if ($fieldId) {
-            $oldField = clone Craft::$app->getFields()->getFieldById($fieldId);
+            $oldField = Craft::$app->getFields()->getFieldById($fieldId);
             if (!$oldField) {
                 throw new BadRequestHttpException("Invalid field ID: $fieldId");
             }
+            $oldField = clone $oldField;
             $fieldUid = $oldField->uid;
         } else {
             $fieldUid = null;
@@ -609,32 +611,10 @@ JS, [
         $this->requireAcceptsJson();
 
         $fieldLayoutConfig = $this->request->getRequiredBodyParam('fieldLayoutConfig');
-        $cardElements = $this->request->getRequiredBodyParam('cardElements');
-        $showThumb = $this->request->getBodyParam('showThumb', false);
-        $thumbAlignment = $this->request->getBodyParam('thumbAlignment', false);
-
-        if (!isset($fieldLayoutConfig['id'])) {
-            $fieldLayout = Craft::createObject([
-                'class' => FieldLayout::class,
-                ...$fieldLayoutConfig,
-            ]);
-            $fieldLayout->type = $fieldLayoutConfig['type'];
-        } else {
-            $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutConfig['id']);
-        }
-
-        if (!$fieldLayout) {
-            throw new BadRequestHttpException('Invalid field layout');
-        }
-
-        $fieldLayout->setCardView(
-            array_column($cardElements, 'value')
-        ); // this fully takes care of attributes, but not fields
-
-        $fieldLayout->setCardThumbAlignment($thumbAlignment);
+        $fieldLayout = Craft::$app->getFields()->createLayout($fieldLayoutConfig);
 
         return $this->asJson([
-            'previewHtml' => Cp::cardPreviewHtml($fieldLayout, $cardElements, $showThumb),
+            'previewHtml' => Cp::cardPreviewHtml($fieldLayout),
         ]);
     }
 
@@ -648,7 +628,7 @@ JS, [
     {
         $uid = $this->request->getRequiredBodyParam('uid');
         $elementType = $this->request->getRequiredBodyParam('elementType');
-        $layoutConfig = $this->request->getRequiredBodyParam('layoutConfig');
+        $layoutConfig = Component::cleanseConfig($this->request->getRequiredBodyParam('layoutConfig'));
 
         if (!isset($layoutConfig['tabs'])) {
             throw new BadRequestHttpException('Layout config doesn’t have any tabs.');
@@ -666,6 +646,8 @@ JS, [
             $settings = ArrayHelper::getValue($postedSettings, $settingsNamespace, []);
             $componentConfig = array_merge($componentConfig, $settings);
         }
+
+        $componentConfig = Component::cleanseConfig($componentConfig);
 
         $isTab = false;
 

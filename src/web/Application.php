@@ -16,6 +16,7 @@ use craft\debug\DumpPanel;
 use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
+use craft\enums\LicenseKeyStatus;
 use craft\errors\ExitException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -106,6 +107,15 @@ class Application extends \yii\web\Application
         }
 
         $this->_postInit();
+
+        // If there's an invalid token on the request, throw an exception now
+        if ($this->getRequest()->getHasInvalidToken()) {
+            throw new BadRequestHttpException('Invalid token');
+        }
+
+        // Process resource requests before we do anything to establish the user session
+        $this->_processResourceRequest();
+
         $this->authenticate();
         $this->debugBootstrap();
     }
@@ -157,9 +167,6 @@ class Application extends \yii\web\Application
     public function handleRequest($request, bool $skipSpecialHandling = false): BaseResponse
     {
         if (!$skipSpecialHandling) {
-            // Process resource requests before anything else
-            $this->_processResourceRequest($request);
-
             // Disable read/write splitting for most POST requests
             if (
                 $request->getIsPost() &&
@@ -302,7 +309,11 @@ class Application extends \yii\web\Application
 
                     if ($isCpRequest && !$this->getCanTestEditions()) {
                         // Are there are any licensing issues cached?
-                        $licenseIssues = App::licensingIssues(false);
+                        $licenseIssues = App::licensingIssues([
+                            LicenseKeyStatus::Trial->value,
+                            LicenseKeyStatus::Astray->value,
+                            'wrong_edition',
+                        ]);
                         if (!empty($licenseIssues)) {
                             $hash = App::licensingIssuesHash($licenseIssues);
                             if ($this->_showLicensingIssuesScreen($hash)) {
@@ -396,10 +407,6 @@ class Application extends \yii\web\Application
         $generalConfig = $this->getConfig()->getGeneral();
 
         $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
-
-        if ($resourceBasePath === false) {
-            return;
-        }
 
         if (!@FileHelper::createDirectory($resourceBasePath)) {
             throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
@@ -516,13 +523,13 @@ class Application extends \yii\web\Application
     /**
      * Processes resource requests.
      *
-     * @param Request $request
      * @throws BadRequestHttpException
      * @throws NotFoundHttpException
      */
-    private function _processResourceRequest(Request $request): void
+    private function _processResourceRequest(): void
     {
         $generalConfig = $this->getConfig()->getGeneral();
+        $request = $this->getRequest();
 
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($generalConfig->resourceBaseUrl), PHP_URL_PATH);

@@ -10,7 +10,9 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
+use craft\elements\Entry;
 use craft\enums\CmsEdition;
+use craft\enums\LicenseKeyStatus;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
@@ -183,7 +185,7 @@ class Cp extends Component
      * - `label` – The human-facing nav item label
      * - `url` – The URL the nav item should link to
      * - `id` – The HTML `id` attribute the nav item should have (optional)
-     * - `icon` – The path to an SVG file that should be used as the nav item icon (optional)
+     * - `icon` – The icon name or a path to an SVG file that should be used as the nav item icon (optional)
      * - `fontIcon` – A character/ligature from Craft’s font icon set (optional)
      * - `badgeCount` – A number that should be displayed beside the nav item when unselected
      * - `subnav` – A sub-array of subnav items
@@ -192,6 +194,8 @@ class Cp extends Component
      *
      * - `label` – The human-facing subnav item label
      * - `url` – The URL the subnav item should link to
+     * - `icon` – The icon name or a path to an SVG file that should be used as the nav item icon (optional)
+     * - `fontIcon` – A character/ligature from Craft’s font icon set (optional)
      *
      * For example:
      *
@@ -229,11 +233,25 @@ class Cp extends Component
         ];
 
         if (Craft::$app->getEntries()->getTotalEditableSections()) {
-            $navItems[] = [
-                'label' => Craft::t('app', 'Entries'),
-                'url' => 'entries',
-                'icon' => 'newspaper',
-            ];
+            $elementSourcesService = Craft::$app->getElementSources();
+            $entryPages = $elementSourcesService->getPages(Entry::class);
+
+            if (!empty($entryPages)) {
+                $entryPageSettings = $elementSourcesService->getPageSettings(Entry::class);
+                foreach ($entryPages as $page) {
+                    $navItems[] = [
+                        'label' => $page !== 'Entries' ? Craft::t('site', $page) : Craft::t('app', 'Entries'),
+                        'url' => sprintf('content/%s', StringHelper::toKebabCase($page)),
+                        'icon' => $entryPageSettings[$page]['icon'] ?? 'newspaper',
+                    ];
+                }
+            } else {
+                $navItems[] = [
+                    'label' => Craft::t('app', 'Entries'),
+                    'url' => 'content/entries',
+                    'icon' => 'newspaper',
+                ];
+            }
         }
 
         if (!empty(Craft::$app->getGlobals()->getEditableSets())) {
@@ -366,22 +384,20 @@ class Cp extends Component
         foreach ($navItems as &$item) {
             if (!$foundSelectedItem && ($item['url'] == $path || str_starts_with($path, $item['url'] . '/'))) {
                 $item['sel'] = true;
-                if (!isset($item['subnav'])) {
-                    $item['subnav'] = false;
-                }
                 $foundSelectedItem = true;
 
                 // Modify aria-current value for exact page vs. subpages
                 $item['linkAttributes']['aria']['current'] = $item['url'] === $path ? 'page' : 'true';
             } else {
                 $item['sel'] = false;
-                if (!isset($item['subnav'])) {
-                    $item['subnav'] = false;
-                }
+            }
+
+            if (!isset($item['subnav'])) {
+                $item['subnav'] = false;
             }
 
             if (!isset($item['id'])) {
-                $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', $item['url']);
+                $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', StringHelper::toAscii(str_replace('/', '-', $item['url'])));
             }
 
             $item['url'] = UrlHelper::url($item['url']);
@@ -537,7 +553,11 @@ class Cp extends Component
      */
     public function trialInfo(): ?array
     {
-        $issues = Collection::make(App::licensingIssues(false));
+        $issues = Collection::make(App::licensingIssues([
+            LicenseKeyStatus::Trial->value,
+            LicenseKeyStatus::Astray->value,
+            'wrong_edition',
+        ]));
 
         if ($issues->isEmpty()) {
             return null;
@@ -919,11 +939,11 @@ class Cp extends Component
     {
         return Collection::make(Craft::$app->getFs()->getAllFilesystems())
             ->filter(fn(FsInterface $fs) => !Assets::isTempUploadFs($fs))
-            ->sortBy(fn(FsInterface $fs) => $fs->name)
             ->map(fn(FsInterface $fs) => [
-                'label' => $fs->name,
+                'label' => Craft::t('site', $fs->name),
                 'value' => $fs->handle,
             ])
+            ->sortBy(fn(array $option) => $option['label'])
             ->all();
     }
 

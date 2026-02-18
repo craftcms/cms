@@ -309,7 +309,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         this.$content.html(data.content);
 
         if (data.submitButtonLabel) {
-          this.$saveBtn.text(data.submitButtonLabel);
+          this.$saveBtn.find('.label').text(data.submitButtonLabel);
         }
 
         this.updateTabs(data.tabs);
@@ -411,7 +411,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
           resolve();
           this.trigger('load');
-          this.settings.onLoad();
+          if (this.settings.onLoad) {
+            this.settings.onLoad();
+          }
         });
       });
     },
@@ -569,7 +571,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       ev.preventDefault();
       // give other submit handlers a chance to modify things
       setTimeout(() => {
-        this.submit();
+        if (!ev.cancel) {
+          this.submit();
+        }
       }, 1);
     },
 
@@ -615,7 +619,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         data: (data.modelName && data[data.modelName]) || {},
       };
       this.trigger('submit', ev);
-      this.settings.onSubmit(ev);
+      if (this.settings.onSubmit) {
+        this.settings.onSubmit(ev);
+      }
       if (this.settings.closeOnSubmit) {
         this.close();
       }

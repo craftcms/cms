@@ -491,4 +491,36 @@ SQL;
 
         return $this->tempMyCnfPath;
     }
+
+    /**
+     * Returns the row format for the given table, if known.
+     *
+     * @param string $table
+     * @return string|null
+     * @throws Exception
+     * @since 5.9.6
+     */
+    public function getRowFormat(string $table): ?string
+    {
+        $sql = sprintf('SHOW CREATE TABLE %s', $this->quoteTableName($table));
+        $result = $this->db->createCommand($sql)->queryOne();
+        if (!preg_match('/\bROW_FORMAT=(\w+)\b/i', $result['Create Table'], $match)) {
+            return null;
+        }
+        return strtoupper($match[1]);
+    }
+
+    /**
+     * Sets the row format for the given table.
+     *
+     * @param string $table
+     * @param string $rowFormat
+     * @throws Exception
+     * @since 5.9.6
+     */
+    public function setRowFormat(string $table, string $rowFormat): void
+    {
+        $sql = sprintf('ALTER TABLE %s ROW_FORMAT = %s', $this->quoteTableName($table), $rowFormat);
+        $this->db->createCommand($sql)->execute();
+    }
 }

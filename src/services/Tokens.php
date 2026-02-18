@@ -35,6 +35,12 @@ class Tokens extends Component
     private bool $_deletedExpiredTokens = false;
 
     /**
+     * @var array<string,int|null>
+     * @see getRemainingTokenUsages()
+     */
+    private array $_remainingTokenUsages = [];
+
+    /**
      * Creates a new token and returns it.
      * ---
      * ```php
@@ -122,35 +128,76 @@ class Tokens extends Component
     {
         // Take the opportunity to delete any expired tokens
         $this->deleteExpiredTokens();
-        $result = (new Query())
-            ->select(['id', 'route', 'usageLimit', 'usageCount'])
-            ->from([Table::TOKENS])
-            ->where(['token' => $token])
-            ->one();
 
-        if (!$result) {
-            // Remove it from the request  so it doesn’t get added to generated URLs
-            Craft::$app->getRequest()->setToken(null);
-
+        $mutex = Craft::$app->getMutex();
+        $lockKey = "token:$token";
+        if (!$mutex->acquire($lockKey, 5)) {
             return false;
         }
 
-        // Usage limit enforcement (for future requests)
-        if ($result['usageLimit']) {
-            // Does it have any more life after this?
-            if ($result['usageCount'] < $result['usageLimit'] - 1) {
-                // Increment its count
-                $this->incrementTokenUsageCountById($result['id']);
-            } else {
-                // Just delete it
-                $this->deleteTokenById($result['id']);
+        try {
+            $result = (new Query())
+                ->select(['id', 'route', 'usageLimit', 'usageCount'])
+                ->from([Table::TOKENS])
+                ->where(['token' => $token])
+                ->one();
 
-                // Remove it from the request as well so it doesn’t get added to generated URLs
-                Craft::$app->getRequest()->setToken(null);
+            if (!$result) {
+                $this->_remainingTokenUsages[$token] = 0;
+                return false;
+            }
+
+            // Usage limit enforcement (for future requests)
+            if ($result['usageLimit']) {
+                // Does it have any more life after this?
+                $newUsageCount = $result['usageCount'] + 1;
+                if ($newUsageCount < $result['usageLimit']) {
+                    // Increment its count
+                    $this->incrementTokenUsageCountById($result['id']);
+                    $this->_remainingTokenUsages[$token] = $result['usageLimit'] - $newUsageCount;
+                } else {
+                    // Just delete it
+                    $this->deleteTokenById($result['id']);
+                    $this->_remainingTokenUsages[$token] = 0;
+                }
+            } else {
+                $this->_remainingTokenUsages[$token] = null;
+            }
+
+            return (array)Json::decodeIfJson($result['route']);
+        } finally {
+            $mutex->release($lockKey);
+        }
+    }
+
+    /**
+     * Returns the remaining usage count for a given token, if it has a limit.
+     *
+     * @param string $token
+     * @return int|null
+     * @since 5.9.12
+     */
+    public function getRemainingTokenUsages(string $token): ?int
+    {
+        if (!array_key_exists($token, $this->_remainingTokenUsages)) {
+            $result = (new Query())
+                ->select(['usageLimit', 'usageCount'])
+                ->from([Table::TOKENS])
+                ->where(['token' => $token])
+                ->one();
+
+            if ($result) {
+                if ($result['usageLimit']) {
+                    $this->_remainingTokenUsages[$token] = $result['usageLimit'] - $result['usageCount'];
+                } else {
+                    $this->_remainingTokenUsages[$token] = null;
+                }
+            } else {
+                $this->_remainingTokenUsages[$token] = 0;
             }
         }
 
-        return (array)Json::decodeIfJson($result['route']);
+        return $this->_remainingTokenUsages[$token];
     }
 
     /**

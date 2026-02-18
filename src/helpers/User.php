@@ -104,20 +104,31 @@ class User
     /**
      * @param string|null $authError
      * @param UserElement|null $user
-     * @return string
+     * @return array{0:string,1:string}
+     * @since 5.8.10
      */
-    public static function getLoginFailureMessage(?string $authError, ?UserElement $user): string
+    public static function getLoginFailureInfo(?string $authError, ?UserElement $user): array
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
         // if preventUserEnumeration is true and the account is locked
         // set the $authError to a value that will trigger the generic, default message
         if (
-            $generalConfig->preventUserEnumeration &&
+            Craft::$app->getConfig()->getGeneral()->preventUserEnumeration &&
             in_array($authError, [UserElement::AUTH_ACCOUNT_LOCKED, UserElement::AUTH_ACCOUNT_COOLDOWN])
         ) {
-            $authError = 'default';
+            $authError = UserElement::AUTH_INVALID_CREDENTIALS;
         }
 
+        return [$authError, static::getLoginFailureMessage($authError, $user)];
+    }
+
+    /**
+     * @param string|null $authError
+     * @param UserElement|null $user
+     * @return string
+     * @deprecated in 5.8.10
+     */
+    public static function getLoginFailureMessage(?string $authError, ?UserElement $user): string
+    {
         switch ($authError) {
             case UserElement::AUTH_PENDING_VERIFICATION:
                 $message = Craft::t('app', 'Account has not been activated.');
@@ -154,7 +165,7 @@ class User
                 $message = Craft::t('app', 'You cannot access the site while the system is offline with that account.');
                 break;
             default:
-                if ($generalConfig->useEmailAsUsername) {
+                if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
                     $message = Craft::t('app', 'Invalid email or password.');
                 } else {
                     $message = Craft::t('app', 'Invalid username or password.');

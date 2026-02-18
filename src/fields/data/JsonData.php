@@ -11,6 +11,7 @@ use ArrayAccess;
 use ArrayIterator;
 use craft\base\Serializable;
 use craft\helpers\Json;
+use craft\web\twig\AllowedInSandbox;
 use IteratorAggregate;
 use Traversable;
 use yii\base\BaseObject;
@@ -22,6 +23,7 @@ use yii\base\InvalidCallException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.7.0
  */
+#[AllowedInSandbox]
 class JsonData extends BaseObject implements ArrayAccess, IteratorAggregate, Serializable
 {
     public function __construct(

@@ -9,17 +9,22 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\BaseFsInterface;
+use craft\base\ElementInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use craft\elements\Asset;
 use craft\enums\TimePeriod;
 use craft\errors\FsException;
+use craft\errors\InvalidSubpathException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
+use craft\models\Volume;
 use craft\models\VolumeFolder;
 use DateTime;
+use Illuminate\Support\Collection;
+use Twig\Error\RuntimeError;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -972,5 +977,67 @@ class Assets
 
         $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
         return $fs->handle === $handle;
+    }
+
+    /**
+     * Resolves a possibly dynamic subpath for a given element, and returns the rendered subpath and
+     * matching volume folder (if one exists).
+     *
+     * @param Volume $volume
+     * @param string|null $subpath
+     * @param ElementInterface|null $element
+     * @return array{0:string,1:VolumeFolder|null}
+     * @throws Exception
+     * @throws InvalidSubpathException
+     * @since 5.9.0
+     */
+    public static function resolveSubpath(Volume $volume, ?string $subpath, ?ElementInterface $element = null): array
+    {
+        $assetsService = Craft::$app->getAssets();
+        $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
+
+        // Are we looking for the root folder?
+        $subpath = trim($subpath ?? '', '/');
+        if ($subpath === '') {
+            return [$subpath, $rootFolder];
+        }
+
+        if (str_contains($subpath, '{')) {
+            // Prepare the path by parsing tokens and normalizing slashes.
+            try {
+                if ($element?->duplicateOf) {
+                    $element = $element->duplicateOf->getCanonical();
+                }
+                $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
+            } catch (InvalidConfigException|RuntimeError $e) {
+                throw new InvalidSubpathException($subpath, null, 0, $e);
+            }
+
+            // Did any of the tokens return null?
+            if (
+                $renderedSubpath === '' ||
+                trim($renderedSubpath, '/') != $renderedSubpath ||
+                str_contains($renderedSubpath, '//') ||
+                Collection::make(explode('/', $renderedSubpath))
+                    ->contains(fn(string $segment) => ElementHelper::isTempSlug($segment))
+            ) {
+                throw new InvalidSubpathException($subpath);
+            }
+
+            // Sanitize the subpath
+            $segments = array_filter(explode('/', $renderedSubpath), fn(string $segment): bool => $segment !== ':ignore:');
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $segments = array_map(fn(string $segment): string => FileHelper::sanitizeFilename($segment, [
+                'asciiOnly' => $generalConfig->convertFilenamesToAscii,
+            ]), $segments);
+            $subpath = implode('/', $segments);
+        }
+
+        $folder = $assetsService->findFolder([
+            'volumeId' => $volume->id,
+            'path' => $subpath . '/',
+        ]);
+
+        return [$subpath, $folder];
     }
 }

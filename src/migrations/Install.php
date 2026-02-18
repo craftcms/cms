@@ -447,10 +447,12 @@ class Install extends Migration
             'description' => $this->text(),
             'icon' => $this->string(),
             'color' => $this->string(),
+            'uiLabelFormat' => $this->string()->defaultValue('{title}')->notNull(),
             'hasTitleField' => $this->boolean()->defaultValue(true)->notNull(),
             'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->text(),
             'titleFormat' => $this->string(),
+            'allowLineBreaksInTitles' => $this->boolean()->notNull()->defaultValue(false),
             'showSlugField' => $this->boolean()->defaultValue(true),
             'slugTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'slugTranslationKeyFormat' => $this->text(),
@@ -856,7 +858,6 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned(),
             'colspan' => $this->tinyInteger(),
             'settings' => $this->json(),
-            'enabled' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -901,6 +902,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled'], false);
         $this->createIndex(null, Table::ELEMENTS_BULKOPS, ['timestamp'], false);
+        $this->createIndex(null, Table::ELEMENTS_OWNERS, ['sortOrder'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['elementId', 'siteId'], true);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['siteId'], false);
         $this->createIndex(null, Table::ELEMENTS_SITES, ['title', 'siteId'], false);
@@ -1107,7 +1109,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::RELATIONS, ['sourceSiteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::REVISIONS, ['creatorId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::REVISIONS, ['canonicalId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::SEARCHINDEXQUEUE, 'elementId', Table::ELEMENTS, 'id', 'CASCADE', null);
         $this->addForeignKey(null, Table::SEARCHINDEXQUEUE_FIELDS, 'jobId', Table::SEARCHINDEXQUEUE, 'id', 'CASCADE', null);
         $this->addForeignKey(null, Table::SECTIONS, ['structureId'], Table::STRUCTURES, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::SECTIONS_ENTRYTYPES, ['sectionId'], Table::SECTIONS, ['id'], 'CASCADE', null);

@@ -100,7 +100,7 @@ Craft.LinkInput = Garnish.Base.extend(
 <div class="chip chromeless">
   <div class="chip-content">
     <a href="${Craft.escapeHtml(
-      value
+      value.replace(/ /g, '+')
     )}" rel="noopener" target="_blank" class="truncate">
       ${Craft.escapeHtml(label)}
     </a>
@@ -208,7 +208,7 @@ Craft.LinkInput = Garnish.Base.extend(
       this.addListener(viewFullUrl, 'activate', () => {
         Craft.ui.createCopyTextPrompt({
           label: 'Full URL',
-          value: this.$hiddenInput.val(),
+          value: this.$hiddenInput.val().replace(/ /g, '+'),
         });
       });
 

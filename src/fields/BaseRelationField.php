@@ -34,6 +34,7 @@ use craft\elements\ElementCollection;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
+use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\ArrayHelper;
@@ -46,6 +47,7 @@ use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
 use craft\services\ElementSources;
+use craft\web\assets\cp\CpAsset;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -74,6 +76,17 @@ abstract class BaseRelationField extends Field implements
      * @since 3.4.16
      */
     public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
+
+    /** @since 5.9.0 */
+    public const VIEW_MODE_LIST = 'list';
+    /** @since 5.9.0 */
+    public const VIEW_MODE_LIST_INLINE = 'list-inline';
+    /** @since 5.9.0 */
+    public const VIEW_MODE_THUMBS = 'thumbs';
+    /** @since 5.9.0 */
+    public const VIEW_MODE_CARDS = 'cards';
+    /** @since 5.9.0 */
+    public const VIEW_MODE_CARDS_GRID = 'cards-grid';
 
     /** @since 5.7.0 */
     public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
@@ -140,8 +153,34 @@ abstract class BaseRelationField extends Field implements
         $conditions = [];
 
         if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
-            $emptyCondition = array_shift($value);
-            if (in_array($emptyCondition, [':notempty:', 'not :empty:'])) {
+            $emptyParam = array_shift($value);
+
+            if (self::isQueryConditionFieldMultiInstance($instances)) {
+                // look at the JSON values rather than the `relations` table data
+                // (see https://github.com/craftcms/cms/issues/17290 + https://github.com/craftcms/cms/pull/18092)
+                if (in_array($emptyParam, [':notempty:', 'not :empty:'])) {
+                    $emptyCondition = ['or'];
+                    foreach ($instances as $instance) {
+                        $valueSql = $instance->getValueSql();
+                        $emptyCondition[] = [
+                            'and',
+                            ['not', [$valueSql => null]],
+                            ['not', [$valueSql => '[]']],
+                        ];
+                    }
+                } else {
+                    $emptyCondition = ['and'];
+                    foreach ($instances as $instance) {
+                        $valueSql = $instance->getValueSql();
+                        $emptyCondition[] = [
+                            'or',
+                            [$valueSql => null],
+                            [$valueSql => '[]'],
+                        ];
+                    }
+                }
+                $conditions[] = $emptyCondition;
+            } elseif (in_array($emptyParam, [':notempty:', 'not :empty:'])) {
                 $conditions[] = static::existsQueryCondition($field);
             } else {
                 $conditions[] = ['not', static::existsQueryCondition($field)];
@@ -169,6 +208,27 @@ abstract class BaseRelationField extends Field implements
 
         array_unshift($conditions, 'or');
         return $conditions;
+    }
+
+    /**
+     * @param self[] $instances
+     * @return bool
+     */
+    private static function isQueryConditionFieldMultiInstance(array $instances): bool
+    {
+        foreach ($instances as $instance) {
+            // See if this instance is used multiple times within its field layout
+            $allInstances = $instance->layoutElement?->getLayout()->getFields(fn(BaseField $field) => (
+                $field instanceof CustomField &&
+                $field->getFieldUid() === $instance->uid
+            ));
+
+            if ($allInstances && count($allInstances) > 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -268,6 +328,7 @@ abstract class BaseRelationField extends Field implements
     /**
      * @var bool Whether cards should be shown in a multi-column grid
      * @since 5.0.0
+     * @deprecated in 5.9.0.
      */
     public bool $showCardsInGrid = false;
 
@@ -409,6 +470,17 @@ abstract class BaseRelationField extends Field implements
             $config['localizeRelations'] = ($config['translationMethod'] ?? self::TRANSLATION_METHOD_NONE) !== self::TRANSLATION_METHOD_NONE;
         }
 
+        $config['viewMode'] ??= self::VIEW_MODE_LIST;
+
+        if (!empty($config['showCardsInGrid']) && $config['viewMode'] === self::VIEW_MODE_CARDS) {
+            $config['viewMode'] = self::VIEW_MODE_CARDS_GRID;
+        }
+        $config['showCardsInGrid'] = $config['viewMode'] === self::VIEW_MODE_CARDS_GRID;
+
+        if ($config['viewMode'] === 'large') {
+            $config['viewMode'] = self::VIEW_MODE_THUMBS;
+        }
+
         parent::__construct($config);
     }
 
@@ -473,6 +545,9 @@ abstract class BaseRelationField extends Field implements
     {
         $attributes = parent::settingsAttributes();
         $attributes[] = 'allowSelfRelations';
+        $attributes[] = 'branchLimit';
+        $attributes[] = 'defaultPlacement';
+        $attributes[] = 'maintainHierarchy';
         $attributes[] = 'maxRelations';
         $attributes[] = 'minRelations';
         $attributes[] = 'selectionLabel';
@@ -482,12 +557,7 @@ abstract class BaseRelationField extends Field implements
         $attributes[] = 'sources';
         $attributes[] = 'targetSiteId';
         $attributes[] = 'validateRelatedElements';
-        $attributes[] = 'defaultPlacement';
         $attributes[] = 'viewMode';
-        $attributes[] = 'showCardsInGrid';
-        $attributes[] = 'allowSelfRelations';
-        $attributes[] = 'maintainHierarchy';
-        $attributes[] = 'branchLimit';
 
         return $attributes;
     }
@@ -776,8 +846,10 @@ JS, [
             $query->id(false);
         }
 
-        // Prepare the query for lazy eager loading
-        $query->prepForEagerLoading($this->handle, $element);
+        // Prepare the query for lazy eager loading, but only when element exists
+        if ($element !== null) {
+            $query->prepForEagerLoading($this->handle, $element);
+        }
 
         if ($this->allowLimit && $this->maxRelations) {
             $query->limit($this->maxRelations);
@@ -900,10 +972,9 @@ JS, [
 
         /** @var ElementInterface[] $value */
         $variables = $this->inputTemplateVariables($value, $element);
-        $variables['inline'] = $inline || $variables['viewMode'] === 'large';
 
-        if ($inline) {
-            $variables['viewMode'] = 'list';
+        if ($inline && !in_array($variables['viewMode'], [self::VIEW_MODE_LIST_INLINE, self::VIEW_MODE_THUMBS])) {
+            $variables['viewMode'] = self::VIEW_MODE_LIST_INLINE;
         }
 
         if ($static) {
@@ -1372,21 +1443,52 @@ JS, [
             return null;
         }
 
-        $viewModeOptions = [];
+        if (empty(array_diff(array_keys($supportedViewModes), [
+            self::VIEW_MODE_LIST,
+            self::VIEW_MODE_LIST_INLINE,
+            self::VIEW_MODE_THUMBS,
+            self::VIEW_MODE_CARDS,
+            self::VIEW_MODE_CARDS_GRID,
+        ]))) {
+            $html = Html::beginTag('div', ['class' => ['flex', 'items-start', 'gap-l']]);
+            $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+            $baseIconsUrl = "$bundle->baseUrl/images/view-modes";
 
-        foreach ($supportedViewModes as $key => $label) {
-            $viewModeOptions[] = ['label' => $label, 'value' => $key];
+            foreach ($supportedViewModes as $key => $label) {
+                $html .= Html::beginTag('label', ['class' => 'nowrap']) .
+                    Html::img("$baseIconsUrl/$key.svg", [
+                        'class' => 'mb-xs',
+                        'width' => $key === self::VIEW_MODE_LIST ? 48 : 80,
+                        'height' => 60,
+                        'alt' => '',
+                    ]) .
+                    Html::radio('viewMode', $key === $this->viewMode, [
+                        'value' => $key,
+                    ]) .
+                    ' ' . $label .
+                    Html::endTag('label');
+            }
+
+            $html .= Html::endTag('div');
+        } else {
+            $viewModeOptions = [];
+
+            foreach ($supportedViewModes as $key => $label) {
+                $viewModeOptions[] = ['label' => $label, 'value' => $key];
+            }
+
+            $html = Cp::selectHtml([
+                'id' => 'viewMode',
+                'name' => 'viewMode',
+                'options' => $viewModeOptions,
+                'value' => $this->viewMode,
+            ]);
         }
 
-        return Cp::selectFieldHtml([
+        return Cp::fieldHtml($html, [
             'label' => Craft::t('app', 'View Mode'),
             'instructions' => Craft::t('app', 'Choose how the field should look for authors.'),
             'id' => 'viewMode',
-            'name' => 'viewMode',
-            'options' => $viewModeOptions,
-            'value' => $this->viewMode,
-            'toggle' => true,
-            'targetPrefix' => 'view-mode--',
         ]);
     }
 
@@ -1415,7 +1517,6 @@ JS, [
             $selectionCondition->name = 'selectionCondition';
             $selectionCondition->forProjectConfig = true;
             $selectionCondition->queryParams[] = 'site';
-            $selectionCondition->queryParams[] = 'status';
 
             $selectionConditionHtml = Cp::fieldHtml($selectionCondition->getBuilderHtml(), [
                 'label' => Craft::t('app', 'Selectable {type} Condition', [
@@ -1451,7 +1552,7 @@ JS, [
             $value = [];
         }
 
-        ElementHelper::swapInProvisionalDrafts($value);
+        ElementHelper::loadProvisionalChanges($value);
 
         if ($this->validateRelatedElements && $element !== null) {
             // Pre-validate related elements
@@ -1516,15 +1617,14 @@ JS, [
             'referenceElement' => $element,
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu || !static::canShowSiteMenu()) ? false : 'auto',
-            'allowSelfRelations' => (bool)$this->allowSelfRelations,
-            'maintainHierarchy' => (bool)$this->maintainHierarchy,
+            'allowSelfRelations' => $this->allowSelfRelations,
+            'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,
             'limit' => $this->allowLimit ? $this->maxRelations : null,
             'defaultPlacement' => $this->defaultPlacement,
             'viewMode' => $this->viewMode(),
-            'showCardsInGrid' => $this->showCardsInGrid,
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
             'sortable' => $this->sortable && !$this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
@@ -1544,6 +1644,14 @@ JS, [
     protected function showSearchInput(?ElementInterface $element): bool
     {
         if (!$this->showSearchInput) {
+            return false;
+        }
+
+        if (!$this->allowMultipleSources) {
+            return true;
+        }
+
+        if ($this->sources === '*') {
             return false;
         }
 
@@ -1688,14 +1796,16 @@ JS, [
     protected function supportedViewModes(): array
     {
         $viewModes = [
-            'list' => Craft::t('app', 'List'),
+            self::VIEW_MODE_LIST => Craft::t('app', 'List'),
+            self::VIEW_MODE_LIST_INLINE => Craft::t('app', 'Inline list'),
         ];
 
         if ($this->allowLargeThumbsView) {
-            $viewModes['large'] = Craft::t('app', 'Large Thumbnails');
+            $viewModes[self::VIEW_MODE_THUMBS] = Craft::t('app', 'Thumbs');
         }
 
-        $viewModes['cards'] = Craft::t('app', 'Cards');
+        $viewModes[self::VIEW_MODE_CARDS] = Craft::t('app', 'Cards');
+        $viewModes[self::VIEW_MODE_CARDS_GRID] = Craft::t('app', 'Card grid');
 
         return $viewModes;
     }
@@ -1714,7 +1824,7 @@ JS, [
             return $viewMode;
         }
 
-        return 'list';
+        return self::VIEW_MODE_LIST;
     }
 
     /**

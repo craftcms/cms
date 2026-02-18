@@ -951,7 +951,18 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->folderPath) {
-            $this->subQuery->andWhere(Db::parseParam('volumeFolders.path', $this->folderPath));
+            $folderPath = (array)$this->folderPath;
+            foreach ($folderPath as &$path) {
+                if (
+                    is_strinG($path) &&
+                    !str_ends_with($path, '/') &&
+                    Db::escapeParam($path) === $path
+                ) {
+                    $path .= '/';
+                }
+            }
+
+            $this->subQuery->andWhere(Db::parseParam('volumeFolders.path', $folderPath));
         }
 
         if ($this->uploaderId) {

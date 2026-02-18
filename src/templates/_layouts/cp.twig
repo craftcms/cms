@@ -56,7 +56,7 @@
 {% endif %}
 {% endjs %}
 
-{% set sidebarState = craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~ ':sidebar') ?? 'expanded' %}
+{% set sidebarState = craft.app.request.rawCookies.value("Craft-#{craft.app.systemUid}_sidebar") ?? 'expanded' %}
 {% set bodyAttributes = {
     data: {
         sidebar: sidebarState,
@@ -101,6 +101,7 @@
 {% set mainAttributes = {
     id: 'main',
     role: 'main',
+    tabindex: '-1',
 }|merge(mainAttributes ?? []) %}
 
 {% set formActions = craft.cp.prepFormActions(formActions ?? null) %}
@@ -216,7 +217,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                         <div id="page-title" class="{% if toolbar %} has-toolbar{% endif %}">
                                             {% block pageTitle %}
                                                 {% if title is defined and title|length %}
-                                                    <h1 class="screen-title" title="{{ title }}">{{ title }}</h1>
+                                                    <h1 id="page-heading" class="screen-title" title="{{ title }}">{{ title }}</h1>
                                                 {% endif %}
                                                 <div id="revision-indicators"></div>
                                             {% endblock %}
@@ -260,7 +261,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                             {% endif %}
 
                             {# content-container #}
-                            <div id="content-container">
+                            <div id="content-container" tabindex="-1">
                                 <div class="content-grid">
 
                                     {% block main %}
@@ -301,7 +302,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                         </div>
 
                                         {% if details is not empty %}
-                                            <div class="content-grid__toggle">
+                                            <div id="details-toggle-wrapper" class="content-grid__toggle" tabindex="-1">
                                                 {% embed '_includes/disclosure-toggle' with {
                                                     id: 'details-toggle',
                                                     controls: 'details-container',
@@ -326,7 +327,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                             </div><!-- #content-container -->
 
                             {% if details is not empty %}
-                                <div id="details-container" data-state="{{  craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~  ':sidebar-details')}}">
+                                <div id="details-container" tabindex="-1" data-state="{{ craft.app.request.rawCookies.value("Craft-#{craft.app.systemUid}_sidebar-details")}}">
                                     <div id="details">
                                         <div class="details">
                                             {{ details|raw }}

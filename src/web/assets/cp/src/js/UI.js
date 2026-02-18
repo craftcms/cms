@@ -15,6 +15,9 @@ Craft.ui = {
     if (config.ariaLabel) {
       $btn.attr('aria-label', config.ariaLabel);
     }
+    if (config.ariaDescribedBy) {
+      $btn.attr('aria-describedby', config.ariaDescribedBy);
+    }
     if (config.role) {
       $btn.attr('role', config.role);
     }
@@ -199,11 +202,15 @@ Craft.ui = {
       class: 'copytext',
     });
 
-    let $input = this.createTextInput(
-      $.extend({}, config, {
-        readonly: true,
-      })
-    ).appendTo($container);
+    const inputConfig = $.extend({}, config, {
+      readonly: true,
+    });
+    if (config.textarea) {
+    }
+    const $input = config.textarea
+      ? this.createTextarea(inputConfig)
+      : this.createTextInput(inputConfig);
+    $input.appendTo($container);
 
     let $btn = $('<button/>', {
       type: 'button',
@@ -383,13 +390,18 @@ Craft.ui = {
           label: option.optgroup,
         }).appendTo($select);
       } else {
-        $('<option/>', {
+        const $option = $('<option/>', {
           value: option.value,
           selected: option.value == config.value,
           disabled:
             typeof option.disabled !== 'undefined' ? option.disabled : false,
-          html: option.label,
         }).appendTo($optgroup || $select);
+
+        if (option.labelHtml) {
+          $option.html(option.labelHtml);
+        } else if (option.label) {
+          $option.text(option.label);
+        }
       }
     }
 
@@ -447,8 +459,13 @@ Craft.ui = {
 
     var $label = $('<label/>', {
       for: id,
-      html: config.label,
     });
+
+    if (config.labelHtml) {
+      $label.html(config.labelHtml);
+    } else if (config.label) {
+      $label.text(config.label);
+    }
 
     // Should we include a hidden input first?
     if (
@@ -525,7 +542,8 @@ Craft.ui = {
           this.createCheckbox({
             id: config.id,
             class: 'all',
-            label: '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
+            labelHtml:
+              '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
             name: config.name,
             value: allValue,
             checked: allChecked,
@@ -568,7 +586,7 @@ Craft.ui = {
       }).appendTo($container);
 
       if (config.sortable) {
-        $('<div/>', {class: 'icon move'}).appendTo($option);
+        $('<div/>', {class: 'icon move draggable-handle'}).appendTo($option);
       }
 
       this.createCheckbox({
@@ -580,14 +598,22 @@ Craft.ui = {
       }).appendTo($option);
     }
 
-    new Garnish.CheckboxSelect($container);
+    // todo: just check config.sortable when BC isn't a concern
+    if (config.includeSortActions) {
+      new Craft.SortableCheckboxSelect($container);
+    } else {
+      new Garnish.CheckboxSelect($container);
 
-    if (config.sortable) {
-      const dragSort = new Garnish.DragSort($container.children(':not(.all)'), {
-        handle: '.move',
-        axis: 'y',
-      });
-      $container.data('dragSort', dragSort);
+      if (config.sortable) {
+        const dragSort = new Garnish.DragSort(
+          $container.children(':not(.all)'),
+          {
+            handle: '.move',
+            axis: 'y',
+          }
+        );
+        $container.data('dragSort', dragSort);
+      }
     }
 
     return $container;
@@ -599,6 +625,22 @@ Craft.ui = {
       config.id = 'checkboxselect' + Math.floor(Math.random() * 1000000000);
     }
     return this.createField(this.createCheckboxSelect(config), config);
+  },
+
+  createSortableCheckboxSelect: function (config) {
+    return this.createCheckboxSelect({
+      ...config,
+      sortable: true,
+      includeSortActions: true,
+    });
+  },
+
+  createSortableCheckboxSelectField: function (config) {
+    return this.createCheckboxSelectField({
+      ...config,
+      sortable: true,
+      includeSortActions: true,
+    });
   },
 
   createLightswitch: function (config) {
@@ -719,9 +761,13 @@ Craft.ui = {
       }
     }
 
-    new Craft.IconPicker($container, {
+    const iconPicker = new Craft.IconPicker($container, {
       freeOnly: config.freeOnly,
     });
+
+    if (config.value) {
+      iconPicker.selectIcon(config.value);
+    }
 
     return $container;
   },
@@ -1364,16 +1410,26 @@ Craft.ui = {
     if (label) {
       const $heading = $('<div class="heading"/>').appendTo($field);
 
-      $(config.fieldset ? '<legend/>' : '<label/>', {
+      const $label = $(config.fieldset ? '<legend/>' : '<label/>', {
         id:
           config.labelId ||
           (config.id
             ? `${config.id}-${config.fieldset ? 'legend' : 'label'}`
             : null),
-        class: config.required ? 'required' : null,
         for: (!config.fieldset && config.id) || null,
         text: label,
       }).appendTo($heading);
+
+      if (config.required) {
+        $('<span/>', {
+          class: 'visually-hidden',
+          text: Craft.t('app', 'Required'),
+        }).appendTo($label);
+        $('<span/>', {
+          class: 'required',
+          'aria-hidden': 'true',
+        }).appendTo($label);
+      }
     }
 
     if (config.instructions) {

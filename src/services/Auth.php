@@ -29,6 +29,7 @@ use craft\web\View;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
 use ParagonIE\ConstantTime\Base64UrlSafe;
+use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
@@ -250,7 +251,8 @@ class Auth extends Component
             return Craft::t('app', 'Invalid verification code.');
         }
 
-        return UserHelper::getLoginFailureMessage($authError, $user);
+        [, $message] = UserHelper::getLoginFailureInfo($authError, $user);
+        return $message;
     }
 
     /**
@@ -571,7 +573,7 @@ class Auth extends Component
             return false;
         }
 
-        $serverRequest = ServerRequest::fromGlobals();
+        $serverRequest = $this->buildServerRequest(ServerRequest::fromGlobals());
         try {
             $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $publicKeyCredential->rawId,
@@ -641,5 +643,34 @@ class Auth extends Component
             'name' => Craft::$app->getSystemName(),
             'id' => Craft::$app->getRequest()->getHostName(),
         ]);
+    }
+
+    /**
+     * Builds server request using the Craft-provided data, e.g. host name.
+     *
+     *
+     * @param ServerRequestInterface $defaultServerRequest
+     * @return ServerRequestInterface
+     */
+    private function buildServerRequest(ServerRequestInterface $defaultServerRequest): ServerRequestInterface
+    {
+        $uri = $defaultServerRequest->getUri();
+        $uri = $uri->withHost(Craft::$app->getRequest()->getHostName());
+
+        $serverRequest = new ServerRequest(
+            $defaultServerRequest->getMethod(),
+            $uri,
+            $defaultServerRequest->getHeaders(),
+            $defaultServerRequest->getBody(),
+            $defaultServerRequest->getProtocolVersion(),
+            $_SERVER
+        );
+
+
+        return $serverRequest
+            ->withCookieParams($_COOKIE)
+            ->withQueryParams($_GET)
+            ->withParsedBody($_POST)
+            ->withUploadedFiles(ServerRequest::normalizeFiles($_FILES));
     }
 }

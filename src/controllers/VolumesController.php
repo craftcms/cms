@@ -116,12 +116,12 @@ class VolumesController extends Controller
             ->filter(fn(Volume $volume) => !$volume->getSubpath())
             ->map(fn(Volume $volume) => $volume->getFsHandle());
         $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
-            ->sortBy(fn(FsInterface $fs) => $fs->name)
             ->map(fn(FsInterface $fs) => [
-                'label' => $fs->name,
+                'label' => Craft::t('site', $fs->name),
                 'value' => $fs->handle,
                 'disabled' => Assets::isTempUploadFs($fs) || ($takenFsHandles->contains($fs->handle) && $fs->handle !== $fsHandle),
             ])
+            ->sortBy(fn(array $option) => $option['label'])
             ->all();
         array_unshift($fsOptions, ['label' => Craft::t('app', 'Select a filesystem'), 'value' => '']);
 

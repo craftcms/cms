@@ -182,7 +182,15 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     initElementSort: function () {
-      if (this.settings.sortable) {
+      // hide the diamond icon (for drag sorting) if the device doesn't have mouse events
+      if (!Craft.hasMousePointerEvents()) {
+        $(
+          '.element > .chip-content > .chip-actions > .move-btn, .element > .card-titlebar > .card-actions-container > .card-actions > .move-btn'
+        ).hide();
+      }
+
+      // init drag-sorting if device has mouse events
+      if (this.settings.sortable && Craft.hasMousePointerEvents()) {
         this.elementSort = new Garnish.DragSort({
           container: this.$elementsContainer,
           filter: this.settings.selectable
@@ -203,6 +211,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           handle: (() => {
             switch (this.settings.viewMode) {
               case 'list':
+              case 'list-inline':
+              case 'thumbs':
               case 'large':
                 return '> .element > .chip-content > .chip-actions > .move-btn';
               case 'cards':
@@ -241,7 +251,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     getElementSortAxis: function () {
       if (
-        ['list'].includes(this.settings.viewMode) &&
+        this.settings.viewMode === 'list' &&
         !this.getElementsContainer().hasClass('inline-chips')
       ) {
         return 'y';
@@ -310,23 +320,38 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
     },
 
+    getNextLogicalFocusElement: function () {
+      let $focusTarget;
+      if (!this.canAddMoreElements()) {
+        return this.getLastActionBtn();
+      }
+
+      // If can add more elements, focus on search input or add button
+      if (
+        this.$searchContainer.length &&
+        !this.$searchContainer.hasClass('hidden')
+      ) {
+        return this.$searchInput;
+      }
+
+      if (
+        this.$addElementBtn.length &&
+        !this.$addElementBtn.hasClass('hidden')
+      ) {
+        return this.$addElementBtn;
+      }
+
+      // Focus on the container if neither of those are available
+      return this.$container.attr('tabindex', '-1');
+    },
+
     focusNextLogicalElement: function () {
-      if (this.canAddMoreElements()) {
-        // If can add more elements, focus on search input or add button
-        if (
-          this.$searchContainer.length &&
-          !this.$searchContainer.hasClass('hidden')
-        ) {
-          this.$searchInput.focus();
-        } else if (
-          this.$addElementBtn.length &&
-          !this.$addElementBtn.hasClass('hidden')
-        ) {
-          this.$addElementBtn.focus();
-        }
+      const $focusTarget = this.getNextLogicalFocusElement();
+
+      if ($focusTarget?.length) {
+        $focusTarget.focus();
       } else {
-        // If can't add more elements, focus on the final remove
-        this.focusLastRemoveBtn();
+        console.warn('No logical element to focus on.');
       }
     },
 
@@ -335,8 +360,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.focusLastActionBtn();
     },
 
+    getLastActionBtn: function () {
+      return this.$container.find('.action-btn').last();
+    },
+
     focusLastActionBtn: function () {
-      this.$container.find('.action-btn').last().focus();
+      this.getLastActionBtn().focus();
     },
 
     resetElements: function () {
@@ -384,7 +413,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           });
         }
 
-        if (this.settings.sortable) {
+        // only add the diamond icon (for drag-sorting) if device has mouse events
+        if (this.settings.sortable && Craft.hasMousePointerEvents()) {
           Craft.ui
             .createButton({
               class: 'chromeless small move-btn',
@@ -410,7 +440,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
 
       if (this.settings.sortable) {
-        this.elementSort.addItems($elements.parent('li'));
+        this.elementSort?.addItems($elements.parent('li'));
       }
 
       if (this.settings.editable) {
@@ -568,11 +598,14 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                 instances: [
                   {
                     context: 'field',
-                    ui: ['list', 'large'].includes(this.settings.viewMode)
+                    ui: ['list', 'list-inline', 'thumbs', 'large'].includes(
+                      this.settings.viewMode
+                    )
                       ? 'chip'
                       : 'card',
-                    size:
-                      this.settings.viewMode === 'large' ? 'large' : 'small',
+                    size: ['thumbs', 'large'].includes(this.settings.viewMode)
+                      ? 'large'
+                      : 'small',
                     showActionMenu: this.settings.showActionMenu,
                   },
                 ],
@@ -651,13 +684,23 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       $elements.children('input').prop('disabled', true);
 
       // Move the focus to the next element in the list, if there is one
-      let $nextElement;
+      let $nextElement, $prevElement;
       if (this.settings.selectable) {
         const lastElementIndex = this.$elements.index($elements.last());
         $nextElement = this.$elements.eq(lastElementIndex + 1);
+        $prevElement =
+          lastElementIndex - 1 >= 0
+            ? this.$elements.eq(lastElementIndex - 1)
+            : null;
       }
-      if ($nextElement?.length) {
-        $nextElement.focus();
+      if ($nextElement?.length || $prevElement?.length) {
+        let $target;
+        if ($nextElement?.length) {
+          $target = this.getElementFocusTarget($nextElement);
+        } else {
+          $target = this.getElementFocusTarget($prevElement);
+        }
+        $target?.focus();
       } else {
         setTimeout(() => {
           this.focusNextLogicalElement();
@@ -668,6 +711,20 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.updateAddElementsBtn();
       this.onSortChange();
       this.onRemoveElements();
+    },
+
+    /**
+     * Determine which part of an element should receive focus
+     * @param $element
+     */
+    getElementFocusTarget: function ($element) {
+      if ($element.is(':focusable')) {
+        return $element;
+      } else if (Garnish.firstFocusableElement($element).length) {
+        return Garnish.firstFocusableElement($element);
+      } else {
+        return null;
+      }
     },
 
     /**
@@ -775,7 +832,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           disabledElementIds: this.getDisabledElementIds(),
           onSelect: this.onModalSelect.bind(this),
           onHide: this.onModalHide.bind(this),
-          triggerElement: this.$addElementBtn,
+          triggerElement: () => this.getNextLogicalFocusElement(),
           modalTitle: Craft.t('app', 'Choose'),
         },
         this.settings.modalSettings
@@ -821,6 +878,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.modal?.disableSelectBtn();
       this.modal?.showFooterSpinner();
 
+      // Pause the element editor so we aren’t causing multiple draft saves
+      this.elementEditor?.pause();
+
       if (this._$replaceElement) {
         this.removeElement(this._$replaceElement);
         this._$replaceElement = null;
@@ -829,9 +889,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       // re-render the elements even if the view modes match, to be sure we have all the correct settings
       const [inputUiType, inputUiSize] = (() => {
         switch (this.settings.viewMode) {
+          case 'thumbs':
           case 'large':
             return ['chip', 'large'];
           case 'cards':
+          case 'cards-grid':
             return ['card', null];
           default:
             return ['chip', 'small'];
@@ -893,6 +955,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
+
+      this.elementEditor?.resume();
     },
 
     onModalHide: function () {
@@ -908,13 +972,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
 
       this._$replaceElement = null;
-
-      // If we can't add any more elements, don't focus on the “Add” button
-      if (!this.canAddMoreElements()) {
-        setTimeout(() => {
-          this.focusNextLogicalElement();
-        }, 200);
-      }
     },
 
     selectElements: async function (elements) {
@@ -1005,7 +1062,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       // Make a couple tweaks
       Craft.setElementSize(
         $element,
-        this.settings.viewMode === 'large' ? 'large' : 'small'
+        ['thumbs', 'large'].includes(this.settings.viewMode) ? 'large' : 'small'
       );
       $element.addClass('removable').append(
         $('<input/>', {

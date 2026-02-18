@@ -43,7 +43,7 @@
                     {% if hasIcon %}
                         <div class="cp-icon">{{ iconSvg(icon) }}</div>
                     {% elseif iconHtml %}
-                        {{ iconHtml }}
+                        {{ iconHtml|raw }}
                     {% endif %}
                 {% endif %}
                 {% if hasLabel or hasLabelHtml %}

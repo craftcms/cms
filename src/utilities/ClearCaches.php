@@ -46,7 +46,7 @@ class ClearCaches extends Utility
      *
      * Each option added to [[RegisterCacheOptionsEvent::$options]] should be an array that has the following keys:
      *
-     * - `tag` – The cache tag name that sholud be cleared.
+     * - `tag` – The cache tag name that should be cleared.
      * - `label` – A human-facing label for the cache tag option.
      *
      * @see tagOptions()
@@ -126,7 +126,9 @@ class ClearCaches extends Utility
             [
                 'key' => 'data',
                 'label' => Craft::t('app', 'Data caches'),
-                'info' => Craft::t('app', 'Anything cached with `Craft::$app->cache->set()`'),
+                'info' => Craft::t('app', 'Anything cached with {method}', [
+                    'method' => '`Craft::$app->getCache()->set()`',
+                ]),
                 'action' => [Craft::$app->getCache(), 'flush'],
             ],
             [
@@ -152,7 +154,7 @@ class ClearCaches extends Utility
                 'key' => 'compiled-templates',
                 'label' => Craft::t('app', 'Compiled templates'),
                 'info' => Craft::t('app', 'Contents of {path}', [
-                    'path' => '`storage/runtime/compiled_templates/`',
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getCompiledTemplatesPath(false), Craft::getAlias('@root'))),
                 ]),
                 'action' => $pathService->getCompiledTemplatesPath(false),
             ],
@@ -160,7 +162,7 @@ class ClearCaches extends Utility
                 'key' => 'compiled-classes',
                 'label' => Craft::t('app', 'Compiled classes'),
                 'info' => Craft::t('app', 'Contents of {path}', [
-                    'path' => '`storage/runtime/compiled_classes/`',
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getCompiledClassesPath(false), Craft::getAlias('@root'))),
                 ]),
                 'action' => $pathService->getCompiledClassesPath(false),
             ],
@@ -168,7 +170,7 @@ class ClearCaches extends Utility
                 'key' => 'cp-resources',
                 'label' => Craft::t('app', 'Control panel resources'),
                 'info' => Craft::t('app', 'Contents of {path}', [
-                    'path' => '`web/cpresources/`',
+                    'path' => sprintf('`%s/`', Craft::$app->getConfig()->getGeneral()->resourceBasePath),
                 ]),
                 'action' => function() {
                     $basePath = Craft::$app->getConfig()->getGeneral()->resourceBasePath;
@@ -198,7 +200,7 @@ class ClearCaches extends Utility
                 'key' => 'temp-files',
                 'label' => Craft::t('app', 'Temp files'),
                 'info' => Craft::t('app', 'Contents of {path}', [
-                    'path' => '`storage/runtime/temp/`',
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getTempPath(), Craft::getAlias('@root'))),
                 ]),
                 'action' => $pathService->getTempPath(),
             ],

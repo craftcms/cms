@@ -740,7 +740,9 @@ class Plugins extends Component
 
         // Update the plugin’s settings in the project config
         $pluginSettings = $plugin->getSettings();
-        $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArrays($pluginSettings->toArray()) : [];
+        $pluginSettings = $pluginSettings
+            ? ProjectConfigHelper::packAssociativeArrays($pluginSettings->toArray(array_keys($settings)))
+            : [];
         Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS . '.' . $plugin->handle . '.settings', $pluginSettings, "Change settings for plugin “{$plugin->handle}”");
 
         $plugin->afterSaveSettings();
@@ -1159,8 +1161,15 @@ class Plugins extends Component
      */
     public function getPluginLicenseKey(string $handle): ?string
     {
-        $licenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
-        return $this->normalizePluginLicenseKey(App::parseEnv($licenseKey));
+        $licenseKey = App::parseEnv($this->getStoredPluginInfo($handle)['licenseKey'] ?? null);
+
+        // also check if pc has the license key
+        if ($licenseKey === null) {
+            $pcPlugins = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_PLUGINS);
+            $licenseKey = App::parseEnv($pcPlugins[$handle]['licenseKey'] ?? null);
+        }
+
+        return $this->normalizePluginLicenseKey($licenseKey);
     }
 
     /**
@@ -1184,7 +1193,7 @@ class Plugins extends Component
         // https://github.com/craftcms/cms/issues/12687 - check if the .env file exists first
         if (
             preg_match('/^\$(\w+)$/', $oldLicenseKey, $matches) &&
-            App::env($matches[1]) === '' &&
+            in_array(App::env($matches[1]), ['', null], true) &&
             file_exists(Craft::$app->getConfig()->getDotEnvPath())
         ) {
             Craft::$app->getConfig()->setDotEnvVar($matches[1], $normalizedLicenseKey);

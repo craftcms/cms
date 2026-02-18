@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
+use craft\base\Iconic;
 use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
 use craft\db\FixedOrderExpression;
@@ -1128,8 +1129,7 @@ class Fields extends Component
         $request = Craft::$app->getRequest();
         $config = JsonHelper::decode($request->getBodyParam("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = $request->getBodyParam("{$paramPrefix}generatedFields") ?: null;
-        $config['cardView'] = $request->getBodyParam("{$paramPrefix}cardView") ?: null;
-        $config['cardThumbAlignment'] = Craft::$app->getRequest()->getBodyParam($paramPrefix . 'thumbAlignment');
+        $config = ComponentHelper::cleanseConfig($config);
         $layout = $this->createLayout($config);
 
         // Make sure all the elements have a dateAdded value set
@@ -1536,7 +1536,7 @@ class Fields extends Component
                 'type' => [
                     'isMissing' => $field instanceof MissingField,
                     'label' => $field instanceof MissingField ? $field->expectedType : $field->displayName(),
-                    'icon' => Cp::iconSvg($field::icon()),
+                    'icon' => Cp::iconSvg($field instanceof Iconic ? $field->getIcon() : $field::icon()),
                 ],
                 'usages' => isset($usages[$field->id])
                     ? Craft::t('app', '{count, number} {count, plural, =1{layout} other{layouts}}', [

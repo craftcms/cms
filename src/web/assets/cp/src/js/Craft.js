@@ -1758,6 +1758,17 @@ $.extend(Craft, {
   },
 
   /**
+   * Reduces an array to only unique items.
+   *
+   * @param {Array} arr
+   * @returns {Array}
+   */
+  uniqueArray: function (arr) {
+    // h/t https://stackoverflow.com/a/33121880/1688568
+    return [...new Set(arr)];
+  },
+
+  /**
    * Makes the first character of a string uppercase.
    *
    * @param {string} str
@@ -2112,6 +2123,7 @@ $.extend(Craft, {
     // menus last, since they can mess with the DOM
     $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
     $('[data-disclosure-trigger]', $container).disclosureMenu();
+    $('.expandable-button--collapsed', $container).expandableButton();
 
     /**
      * Swap any instruction text with info icons but avoid those with the class
@@ -2376,7 +2388,7 @@ $.extend(Craft, {
     // Adapted from https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
     return document.cookie.replace(
       new RegExp(
-        `(?:(?:^|.*;\\s*)Craft-${Craft.systemUid}:${name}\\s*\\=\\s*([^;]*).*$)|^.*$`
+        `(?:(?:^|.*;\\s*)Craft-${Craft.systemUid}_${name}\\s*\\=\\s*([^;]*).*$)|^.*$`
       ),
       '$1'
     );
@@ -2398,7 +2410,7 @@ $.extend(Craft, {
    */
   setCookie: function (name, value, options) {
     options = $.extend({}, this.defaultCookieOptions, options);
-    let cookie = `Craft-${Craft.systemUid}:${name}=${encodeURIComponent(
+    let cookie = `Craft-${Craft.systemUid}_${name}=${encodeURIComponent(
       value
     )}`;
     if (options.path) {
@@ -2487,6 +2499,14 @@ $.extend(Craft, {
     }
   },
 
+  /**
+   * Refreshes all DOM instances of an element with the given ID by re-rendering them via an AJAX request.
+   *
+   * Finds all `.element` divs with the specified `elementId` and updates their HTML using the server-rendered markup.
+   * Useful for keeping element displays in sync after edits or changes.
+   *
+   * @param {number|string} elementId The ID of the element to refresh.
+   */
   refreshElementInstances(elementId) {
     const $elements = $(`div.element[data-id="${elementId}"][data-settings]`);
     if (!$elements.length) {
@@ -2597,10 +2617,14 @@ $.extend(Craft, {
             }
           }
           const $actions = $chip.find('.chip-actions').detach();
+          const $indicators = $chip.find('.chip-label .indicators').detach();
           const $inputs = $chip.find('input,button').detach();
           $chip.html($replacement.html());
           if ($actions.length) {
             $chip.find('.chip-actions').replaceWith($actions);
+          }
+          if ($indicators.length) {
+            $chip.find('.chip-label').append($indicators);
           }
           if ($inputs.length) {
             $inputs.appendTo($chip);
@@ -2878,47 +2902,59 @@ $.extend(Craft, {
     await this.animateAll([[element, css]]);
   },
 
+  transitionQueue: null,
+
   animateAll: function (animations) {
-    return new Promise((resolve, reject) => {
-      for (let i = 0; i < animations.length; i++) {
-        if ((!animations[i][0]) instanceof jQuery) {
-          animations[i][0] = $(animations[i][0]);
-        }
-      }
+    if (!Craft.transitionQueue) {
+      Craft.transitionQueue = new Craft.Queue();
+    }
 
-      if (!document.startViewTransition) {
-        // fallback to Velocity
+    return Craft.transitionQueue.push(() => {
+      return new Promise((resolve, reject) => {
         for (let i = 0; i < animations.length; i++) {
-          const [$element, css] = animations[i];
-          $element.velocity(
-            css,
-            Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
-            i === animations.length - 1 ? resolve : null
-          );
+          if ((!animations[i][0]) instanceof jQuery) {
+            animations[i][0] = $(animations[i][0]);
+          }
         }
-        return;
-      }
 
-      for (const [$element] of animations) {
-        if ($element.css('view-transition-name') === 'none') {
-          $element.css(
-            'view-transition-name',
-            `vt-${Math.floor(Math.random() * 100000)}`
-          );
+        if (!document.startViewTransition) {
+          // fallback to Velocity
+          for (let i = 0; i < animations.length; i++) {
+            const [$element, css] = animations[i];
+            $element.velocity(
+              css,
+              Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
+              i === animations.length - 1 ? resolve : null
+            );
+          }
+          return;
         }
-      }
 
-      const transition = document.startViewTransition(() => {
-        for (const [$element, css] of animations) {
-          $element.css(css);
+        for (const [$element] of animations) {
+          if ($element.css('view-transition-name') === 'none') {
+            $element.css(
+              'view-transition-name',
+              `vt-${Math.floor(Math.random() * 100000)}`
+            );
+          }
         }
-      });
 
-      transition.finished.then(resolve).catch((e) => {
-        console.warn(e);
-        resolve();
+        const transition = document.startViewTransition(() => {
+          for (const [$element, css] of animations) {
+            $element.css(css);
+          }
+        });
+
+        transition.finished.then(resolve).catch((e) => {
+          console.warn(e);
+          resolve();
+        });
       });
     });
+  },
+
+  hasMousePointerEvents: function () {
+    return matchMedia('(pointer:fine)').matches;
   },
 });
 
@@ -3061,7 +3097,9 @@ $.extend($.fn, {
   checkboxselect: function () {
     return this.each(function () {
       if (!$.data(this, 'checkboxSelect')) {
-        new Garnish.CheckboxSelect(this);
+        new Garnish.CheckboxSelect(this, {
+          storageKey: this.getAttribute('data-storage-key'),
+        });
       }
     });
   },
@@ -3213,6 +3251,67 @@ $.extend($.fn, {
       if (!$trigger.data('trigger') && $trigger.attr('aria-controls')) {
         new Garnish.DisclosureMenu($trigger, settings);
       }
+    });
+  },
+
+  expandableButton: function () {
+    return this.each(function () {
+      const $collapsed = $(this);
+      let $expanded = $collapsed.next('.expandable-button--expanded');
+      if (!$expanded.length) {
+        $expanded = $collapsed.prev('.expandable-button--collapsed');
+      }
+      const $container = $collapsed.parent();
+      let containerWidth;
+      let isVisible = false;
+      let isExpanded = false;
+
+      const adjust = () => {
+        if (!containerWidth) {
+          return;
+        }
+
+        if (!isExpanded) {
+          $collapsed.addClass('hidden');
+          $expanded.removeClass('hidden');
+        }
+
+        isExpanded = $container[0].scrollWidth <= containerWidth;
+
+        if (!isExpanded) {
+          $collapsed.removeClass('hidden');
+          $expanded.addClass('hidden');
+        }
+      };
+
+      const intersectionObserver = new IntersectionObserver((entries) => {
+        // was the container just made visible?
+        if (
+          isVisible !== (isVisible = entries[0].intersectionRatio !== 0) &&
+          isVisible
+        ) {
+          adjust();
+        }
+      });
+      intersectionObserver.observe($container[0]);
+
+      const checkContainerWidth = () => {
+        if (
+          containerWidth !==
+            (containerWidth = $container[0].getBoundingClientRect().width) &&
+          containerWidth
+        ) {
+          adjust();
+        }
+      };
+      checkContainerWidth();
+
+      const resizeObserver = new ResizeObserver(() => {
+        Garnish.requestAnimationFrame(() => {
+          checkContainerWidth();
+        });
+      });
+      resizeObserver.observe($container[0]);
     });
   },
 

@@ -37,10 +37,14 @@ class Sms extends BaseTextLinkType
         preg_match('/^([^?&]*)(?:[?&]+(.*))?$/', $value, $matches);
         $root = $matches[1];
         $qs = $matches[2] ?? null;
-        $root = str_replace(' ', '-', $root);
         $qs = str_replace(' ', '%20', $qs);
         $value = sprintf('%s%s', $root, $qs ? "&$qs" : '');
         return parent::normalizeValue($value);
+    }
+
+    public function renderValue(string $value): string
+    {
+        return str_replace(' ', '-', $value);
     }
 
     protected function inputAttributes(): array
@@ -53,6 +57,6 @@ class Sms extends BaseTextLinkType
 
     protected function pattern(): string
     {
-        return "^sms:[\d\+\(\)\-,;]+([\?&].*)?$";
+        return "^sms:[\d\+\(\)\-,; ]+([\?&].*)?$";
     }
 }

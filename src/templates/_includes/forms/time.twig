@@ -72,7 +72,7 @@
         $timePicker.timepicker($.extend({{ options|json_encode(jsonOptions)|raw }}, Craft.timepickerOptions));
         Craft.ui.remediateTimepickerA11y($timePicker);
 
-        {%- if value and value.format is defined -%}
+        {%- if value and value is instance of('DateTimeInterface') -%}
             $timePicker.timepicker('setTime', {{ value.format('G') }}*3600 + {{ value.format('i') }}*60 + {{ value.format('s') }});
         {%- endif -%}
     {%- endjs -%}

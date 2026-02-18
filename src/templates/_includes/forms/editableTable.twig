@@ -6,6 +6,7 @@
 {%- set minRows = minRows ?? null %}
 {%- set maxRows = maxRows ?? null %}
 {%- set describedBy = describedBy ?? null %}
+{%- set includeRowId = includeRowId ?? false %}
 
 {%- set totalRows = rows|length %}
 {%- set staticRows = static or (staticRows ?? false) or (minRows == 1 and maxRows == 1 and totalRows == 1) %}
@@ -88,6 +89,9 @@
         {% if allowDelete %}<col>{% endif %}
         {% if allowReorder %}<col>{% endif %}
     {% endif %}
+    {% if includeRowId %}
+        <col> {# for hidden row ID #}
+    {% endif %}
     {% if cols|filter(c => (c.headingHtml ?? c.heading ?? c.info ?? '') is not same as(''))|length %}
         <thead>
             <tr>
@@ -108,6 +112,9 @@
                 {% endfor %}
                 {% if (allowDelete or allowReorder) %}
                     <th colspan="{{ not allowDelete or not allowReorder ? 1 : 2 }}" scope="colgroup"><span class="visually-hidden">{{ 'Row actions'|t('app') }}</span></th>
+                {% endif %}
+                {% if includeRowId %}
+                    <th class="hidden">Row ID</th>
                 {% endif %}
             </tr>
         </thead>
@@ -285,6 +292,9 @@
                 {% for inputName, value in row.hiddenInputs ?? [] %}
                     {{ hiddenInput("#{name}[#{rowId}][#{inputName}]", value) }}
                 {% endfor %}
+                {% if includeRowId and (row.rowId ?? false) %}
+                    {{ hiddenInput("#{name}[#{rowId}][rowId]", row.rowId) }}
+                {% endif %}
             </tr>
         {% endfor %}
     </tbody>

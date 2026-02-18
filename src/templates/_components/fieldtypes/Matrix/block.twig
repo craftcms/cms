@@ -1,7 +1,7 @@
 {% from '_includes/forms.twig' import button %}
 
 {% set entryType = entry.getType() %}
-{% set singleType = singleType ?? entryTypes|length == 1 %}
+{% set singleType = singleType ?? (entryTypes|length == 1) %}
 {% set entryTypeName = entryType.name|t('site') %}
 {% set baseInputName = "#{name}[entries][uid:#{entry.uid}]" %}
 {% set static = static ?? false %}
@@ -28,49 +28,54 @@
       class: ['hidden'],
     },
   },
-  {
-    icon: 'circle-dashed',
-    label: 'Disable'|t('app'),
-    attributes: {
-      data: {action: 'disable'},
-    },
-    liAttributes: {
-      class: {
-        hidden: not entry.enabled,
-      }|filter|keys,
-    },
-  },
-  {
-    icon: 'circle',
-    label: 'Enable'|t('app'),
-    attributes: {
-      data: {action: 'enable'},
-    },
-    liAttributes: {
-      class: {
-        hidden: entry.enabled,
-      }|filter|keys,
-    },
-  },
-  {
-    icon: 'arrow-up',
-    label: 'Move up'|t('app'),
-    attributes: {
-      data: {action: 'moveUp'},
-    },
-  },
-  {
-    label: 'Move down'|t('app'),
-    attributes: {
-      data: {icon: 'arrow-down', action: 'moveDown'},
-    },
-  },
 ] %}
+
+{% if not static %}
+  {% set actionMenuItems = actionMenuItems|merge([
+    {
+      icon: 'circle-dashed',
+      label: 'Disable'|t('app'),
+      attributes: {
+        data: {action: 'disable'},
+      },
+      liAttributes: {
+        class: {
+          hidden: not entry.enabled,
+        }|filter|keys,
+      },
+    },
+    {
+      icon: 'circle',
+      label: 'Enable'|t('app'),
+      attributes: {
+        data: {action: 'enable'},
+      },
+      liAttributes: {
+        class: {
+          hidden: entry.enabled,
+        }|filter|keys,
+      },
+    },
+    {
+      icon: 'arrow-up',
+      label: 'Move up'|t('app'),
+      attributes: {
+        data: {action: 'moveUp'},
+      },
+    },
+    {
+      label: 'Move down'|t('app'),
+      attributes: {
+        data: {icon: 'arrow-down', action: 'moveDown'},
+      },
+    },
+  ]) %}
+{% endif %}
 
 {% if entry.id or (currentUser.admin and craft.app.config.general.allowAdminChanges) %}
   {% set actionMenuItems = actionMenuItems|push({hr: true}) %}
 
-  {% if entry.id %}
+  {% if entry.id and not static %}
     {% set actionMenuItems = actionMenuItems|push({
       icon: 'external',
       label: 'Open in a new tab'|t('app'),
@@ -90,9 +95,12 @@
   {% endif %}
 {% endif %}
 
+{% set actionMenuItems = actionMenuItems|merge([
+  {hr: true},
+]) %}
+
 {% if not staticEntries %}
   {% set actionMenuItems = actionMenuItems|merge([
-    {hr: true},
     {
       icon: 'trash',
       label: 'Delete'|t('app'),
@@ -109,17 +117,22 @@
         data: {action: 'duplicate'},
       },
     },
-    {
-      icon: 'clone-dashed',
-      color: 'fuchsia',
-      label: 'Copy'|t('app'),
-      attributes: {
-        data: {action: 'copy'},
-      },
-    },
-    {hr: true},
   ]) %}
+{% endif %}
 
+{% set actionMenuItems = actionMenuItems|merge([
+  {
+    icon: 'clone-dashed',
+    color: 'fuchsia',
+    label: 'Copy'|t('app'),
+    attributes: {
+      data: {action: 'copy'},
+    },
+  },
+  {hr: true},
+]) %}
+
+{% if not staticEntries %}
   {% for entryType in entryTypes %}
     {% set actionMenuItems = actionMenuItems|push({
       icon: entryType.icon ?? 'plus',
@@ -165,6 +178,7 @@
     'type-id': entry.typeId,
     'field-layout-id': entry.getFieldLayout().id,
     'visible-layout-elements': form.getVisibleElements(),
+    'static-layout-elements': form.getStaticElements(),
     'base-input-name': baseInputName|namespaceInputName,
   },
   role: 'listitem',
@@ -226,7 +240,7 @@
       }) }}
     </div>
 
-    {% if not static %}
+    {% if actionMenuItems is not empty %}
       <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}" tabindex="0" role="checkbox" aria-checked="false"></div>
       {{ disclosureMenu(actionMenuItems, {
         hiddenLabel: 'Actions'|t('app'),
@@ -238,6 +252,8 @@
           },
         },
       }) }}
+    {% endif %}
+    {% if not static %}
       {{ button({
         class: ['chromeless', 'small', 'move-btn'],
         icon: 'move',

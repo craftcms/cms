@@ -14,6 +14,7 @@ use craft\fields\linktypes\BaseElementLinkType;
 use craft\fields\linktypes\BaseLinkType;
 use craft\helpers\Html;
 use craft\helpers\Template;
+use craft\web\twig\AllowedInSandbox;
 use Twig\Markup;
 use yii\base\BaseObject;
 
@@ -22,7 +23,8 @@ use yii\base\BaseObject;
  *
  * @property-read ElementInterface|null $element The element linked by the field, if there is one
  * @property-read ElementQueryInterface|null $elementQuery An element query that will fetch the element linked by the field, if there is one
- * @property-read Markup|null $link An anchor tag for this link
+ * @property-read Markup $link An anchor tag for this link
+ * @property-read array|null $attributes The attributes that should be added to `<a>` tags for this link
  * @property-read string $label The link label
  * @property-read string $type The link type ID
  * @property-read string $url The full link URL, including the suffix
@@ -31,6 +33,7 @@ use yii\base\BaseObject;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
+#[AllowedInSandbox]
 class LinkData extends BaseObject implements Serializable
 {
     /**
@@ -185,25 +188,47 @@ class LinkData extends BaseObject implements Serializable
      */
     public function getLink(): Markup
     {
-        $url = $this->getUrl();
-        if ($url === '') {
+        $attributes = $this->getAttributes();
+
+        if ($attributes === null) {
             $html = '';
         } else {
             $label = $this->getLabel();
-            $html = Html::a(Html::encode($label !== '' ? $label : $url), $url, [
-                'target' => $this->target,
-                'title' => $this->title,
-                'class' => $this->class,
-                'id' => $this->id,
-                'rel' => $this->rel,
-                'aria' => [
-                    'label' => $this->ariaLabel,
-                ],
-                'download' => $this->download ? ($this->filename ?? true) : false,
-            ]);
+            if ($label === '') {
+                $label = $this->getUrl();
+            }
+            $html = Html::a(Html::encode($label), options: $attributes);
         }
 
         return Template::raw($html);
+    }
+
+    /**
+     * Returns the attributes that should be added to `<a>` tags for this link.
+     *
+     * @return array|null
+     * @since 5.9.0
+     */
+    public function getAttributes(): ?array
+    {
+        $url = $this->getUrl();
+
+        if ($url === '') {
+            return null;
+        }
+
+        return [
+            'href' => $url,
+            'target' => $this->target,
+            'title' => $this->title,
+            'class' => $this->class,
+            'id' => $this->id,
+            'rel' => $this->rel,
+            'aria' => [
+                'label' => $this->ariaLabel,
+            ],
+            'download' => $this->download ? ($this->filename ?? true) : false,
+        ];
     }
 
     /**

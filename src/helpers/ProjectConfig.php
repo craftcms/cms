@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\behaviors\CustomFieldBehavior;
 use craft\services\ProjectConfig as ProjectConfigService;
 use StdClass;
 use yii\base\InvalidArgumentException;
@@ -114,6 +115,18 @@ class ProjectConfig
         foreach ($allFields as $fieldUid => $fieldData) {
             // Ensure field is processed
             $projectConfig->processConfigChanges(ProjectConfigService::PATH_FIELDS . '.' . $fieldUid);
+        }
+
+        // Now that all fields are processed, make sure that CustomFieldBehavior::$fieldHandles
+        // is up-to-date with any overridden field handles in field layouts.
+        // (This could not be the case if any Content Block fields define a field layout that reference
+        // fields which weren’t processed yet at the time their layout was saved, for example.)
+        foreach (Craft::$app->getFields()->getAllLayouts() as $layout) {
+            foreach ($layout->getCustomFieldElements() as $layoutElement) {
+                if (isset($layoutElement->handle)) {
+                    CustomFieldBehavior::$fieldHandles[$layoutElement->handle] = true;
+                }
+            }
         }
     }
 
@@ -519,32 +532,35 @@ class ProjectConfig
 
         $nextSegment = array_shift($path);
 
-        // Last piece?
+        // Last segment?
         if (count($path) === 0) {
+            // Delete
             if ($delete) {
                 unset($data[$nextSegment]);
-            } elseif ($value === null) {
+                return null;
+            }
+
+            // Get
+            if ($value === null) {
                 return $data[$nextSegment] ?? null;
-            } else {
-                $data[$nextSegment] = $value;
-            }
-        } else {
-            if (!isset($data[$nextSegment])) {
-                // If the path doesn't exist, it's fine if we wanted to delete or read
-                if ($delete || $value === null) {
-                    return null;
-                }
-
-                $data[$nextSegment] = [];
-            } elseif (!is_array($data[$nextSegment])) {
-                // If the next part is not an array, but we have to travel further, make it an array.
-                $data[$nextSegment] = [];
             }
 
-            return self::traverseDataArray($data[$nextSegment], $path, $value, $delete);
+            // Set
+            $data[$nextSegment] = $value;
+            return null;
         }
 
-        return null;
+        // Make sure the next segment exists and is an array
+        if (!isset($data[$nextSegment]) || !is_array($data[$nextSegment])) {
+            // If we're just here to delete/get a value, return null
+            if ($delete || $value === null) {
+                return null;
+            }
+
+            $data[$nextSegment] = [];
+        }
+
+        return self::traverseDataArray($data[$nextSegment], $path, $value, $delete);
     }
 
     /**

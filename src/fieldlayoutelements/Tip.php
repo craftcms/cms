@@ -110,7 +110,12 @@ class Tip extends BaseUiElement
         $id = sprintf('tip%s', mt_rand());
         $namespacedId = Craft::$app->getView()->namespaceInputId($id);
 
-        $classes = [$this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING];
+        $classes = [
+            'pane',
+            'mb-0',
+            $this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING,
+        ];
+
         if ($this->dismissible) {
             $classes[] = 'dismissible';
         }
@@ -144,18 +149,18 @@ JAVASCRIPT;
             $js = null;
         }
 
-        $html = "<div id=\"$id\" class=\"readable\">" .
-            "<blockquote class=\"note " . implode(' ', $classes) . "\">" .
-                $closeBtn .
-                $tip .
-            "</blockquote>" .
-            '</div>';
+        $html = Html::tag('div', $closeBtn . $tip, [
+            'class' => $classes,
+        ]);
 
         if ($js) {
             $html .= "<script>$js</script>";
         }
 
-        return $html;
+        return Html::tag('div', $html, [
+            ...$this->containerAttributes($element, $static),
+            'id' => $id,
+        ]);
     }
 
     /**

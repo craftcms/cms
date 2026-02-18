@@ -18,7 +18,7 @@ use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
@@ -146,6 +146,11 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     private ?array $_entryTypes = null;
 
     /**
+     * @see page()
+     */
+    private string|false $page;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -202,6 +207,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'structureId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [
             ['maxLevels', 'maxAuthors'],
             'number',
@@ -411,6 +417,39 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     }
 
     /**
+     * Returns the section’s control panel index page URI.
+     *
+     * @return string
+     * @since 5.9.0
+     */
+    public function getCpIndexUri(): string
+    {
+        $page = $this->getPage();
+        return sprintf(
+            'content/%s/%s',
+            $page ? StringHelper::toKebabCase($page) : 'entries',
+            $this->type === self::TYPE_SINGLE ? 'singles' : $this->handle,
+        );
+    }
+
+    /**
+     * Returns the page name this section belongs to.
+     *
+     * @return string|null
+     * @since 5.9.0
+     */
+    public function getPage(): ?string
+    {
+        if (!isset($this->page)) {
+            $sourceKey = $this->type === Section::TYPE_SINGLE ? 'singles' : "section:$this->uid";
+            $source = ElementHelper::findSource(Entry::class, $sourceKey, withDisabled: true);
+            $this->page = $source['page'] ?? false;
+        }
+
+        return $this->page ?: null;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getIcon(): ?string
@@ -439,7 +478,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
         ];
 
         if (!empty($this->previewTargets)) {
-            $config['previewTargets'] = ProjectConfigHelper::packAssociativeArray(array_values($this->previewTargets));
+            $config['previewTargets'] = array_values($this->previewTargets);
         }
 
         if ($this->type === self::TYPE_STRUCTURE) {

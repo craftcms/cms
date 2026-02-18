@@ -369,8 +369,13 @@ class FileHelper extends \yii\helpers\FileHelper
             $mimeType = null;
         }
 
-        // Be forgiving of SVG files, etc., that don't have an XML declaration
-        if ($checkExtension && ($mimeType === null || !static::canTrustMimeType($mimeType))) {
+        if (
+            // Be forgiving of SVG files, etc., that don't have an XML declaration
+            // also, if we're not supposed to check the extension, but the extension is mp3 and the reported mime type is application/octet-stream,
+            // check by extension anyway
+            ($checkExtension || (strtolower(pathinfo($file, PATHINFO_EXTENSION)) === 'mp3')) &&
+            ($mimeType === null || !static::canTrustMimeType($mimeType))
+        ) {
             return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
         }
 
@@ -462,6 +467,28 @@ class FileHelper extends \yii\helpers\FileHelper
                 static::createDirectory($dir);
             } else {
                 throw new InvalidArgumentException("Cannot write to \"$file\" because the parent directory doesn't exist.");
+            }
+        }
+
+        if (!static::isWritable($file)) {
+            throw new ErrorException("The file path \"$file\" is not writable.");
+        }
+
+        if (function_exists('disk_free_space')) {
+            $freeBytes = disk_free_space($dir);
+
+            if ($freeBytes === false) {
+                Craft::warning("Could not determine the free disk space for \"$dir\".");
+            } else {
+                $bytes = StringHelper::byteLength($contents);
+                if ($bytes > $freeBytes) {
+                    throw new ErrorException(sprintf(
+                        "Insufficient disk space to write \"%s\". %s bytes free, %s bytes required.",
+                        $file,
+                        $freeBytes,
+                        $bytes,
+                    ));
+                }
             }
         }
 

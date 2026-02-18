@@ -380,14 +380,14 @@ class GeneralConfig extends BaseConfig
     public bool $allowUppercaseInSlug = false;
 
     /**
-     * @var bool Whether users should automatically be logged in after activating their account or resetting their password.
+     * @var bool Whether users should automatically be logged in after activating their account.
      *
      * ::: code
      * ```php Static Config
      * ->autoLoginAfterAccountActivation(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_ALLOW_AUTO_LOGIN_AFTER_ACCOUNT_ACTIVATION=true
+     * CRAFT_AUTO_LOGIN_AFTER_ACCOUNT_ACTIVATION=true
      * ```
      * :::
      *
@@ -401,6 +401,9 @@ class GeneralConfig extends BaseConfig
      * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
      *
      * ::: code
+     *  ```php Static Config
+     *  ->autosaveDrafts(false)
+     *  ```
      * ```shell Environment Override
      * CRAFT_AUTOSAVE_DRAFTS=false
      * ```
@@ -1047,7 +1050,7 @@ class GeneralConfig extends BaseConfig
     public bool $disallowRobots = false;
 
     /**
-     * @var bool Whether the `transform` directive should be disabled for the GraphQL API.
+     * @var bool Whether the `@transform` directive should be disabled for the GraphQL API.
      *
      * ::: code
      * ```php Static Config
@@ -1058,8 +1061,14 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
+     * ::: tip
+     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
+     * unless this setting is set to `true`.
+     * :::
+     *
      * @group GraphQL
      * @since 3.6.0
+     * @deprecated in 5.9.0
      */
     public bool $disableGraphqlTransformDirective = false;
 
@@ -1249,6 +1258,24 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $enableTemplateCaching = true;
+
+    /**
+     * @var bool Whether user-defined Twig templates should be sandboxed.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->enableTwigSandbox()
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ENABLE_TWIG_SANDBOX=true
+     * ```
+     * :::
+     *
+     * @see enableTwigSandbox()
+     * @group Security
+     * @since 5.9.0
+     */
+    public bool $enableTwigSandbox = false;
 
     /**
      * @var string The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
@@ -1753,7 +1780,7 @@ class GeneralConfig extends BaseConfig
     public mixed $logoutPath = 'logout';
 
     /**
-     * @var int The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them.
+     * @var int The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them. Defaults to `0` as of 5.9.0. Earlier versions default to `2000`.
      *
      * ::: code
      * ```php Static Config
@@ -1766,7 +1793,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Image Handling
      */
-    public int $maxCachedCloudImageSize = 2000;
+    public int $maxCachedCloudImageSize = 0;
 
     /**
      * @var int The maximum allowed GraphQL queries that can be executed in a single batched request. Set to `0` to allow any number of queries.
@@ -1979,16 +2006,16 @@ class GeneralConfig extends BaseConfig
      * @var string The string preceding a number which Craft will look for when determining if the current request is for a particular page in
      * a paginated list of pages.
      *
-     * Example Value | Example URI
-     * ------------- | -----------
-     * `p` | `/news/p5`
-     * `page` | `/news/page5`
-     * `page/` | `/news/page/5`
-     * `?page` | `/news?page=5`
+     * | Example Value | Example URI |
+     * | --- | --- |
+     * | `p` | `/news/p5` |
+     * | `page` | `/news/page5` |
+     * | `page/` | `/news/page/5` |
+     * | `?page` | `/news?page=5` |
      *
-     * ::: tip
-     * If you want to set this to `?p` (e.g. `/news?p=5`), you’ll also need to change your <config5:pathParam> setting which defaults to `p`.
-     * If your server is running Apache, you’ll need to update the redirect code in your `.htaccess` file to match your new `pathParam` value.
+     * ::: warning
+     * Craft may override this setting if it conflicts with <config5:pathParam>. If you want to set this to `?p` (e.g. `/news?p=5`), you’ll also need to change your <config5:pathParam> setting (which defaults to `p`).
+     * Then, if your server is running Apache, you’ll need to update the redirect code in your `.htaccess` file to match your new `pathParam` value.
      * :::
      *
      * ::: code
@@ -3126,8 +3153,9 @@ class GeneralConfig extends BaseConfig
      * The symbols are as follows:
      *
      * | Symbol | Example | Category |
-     * | `$` | `$Date Field$` | Site |
-     * | `@` | `@Entry Type@` | Application |
+     * | --- | --- | --- |
+     * | `$` | `$Date Field$` | Site (front-end, `site.php`) |
+     * | `@` | `@Entry Type@` | Application (Craft, `app.php`) |
      * | `%` | `%Object Template% | Other (plugin or custom source) |
      *
      * Translations _may_ be nested or surrounded by multiple symbols.
@@ -3210,6 +3238,33 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $useEmailAsUsername = false;
+
+    /**
+     * @var bool Whether the [`IDNA_NONTRANSITIONAL_TO_UNICODE`](https://www.php.net/manual/en/intl.constants.php#constant.idna-nontransitional-to-unicode)
+     * flag should be passed to [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php) when converting
+     * email addresses from IDNA ASCII to Unicode.
+     *
+     * `INTL_IDNA_VARIANT_UTS46` by default, which uses the UTS 46 algorithm, consistent with the requirements of the
+     * IDNA2008 protocol and mostly compatible with IDNA2003 (deprecated in PHP 7.2).
+     *
+     * There are a handful of characters which result in different resolution of IDNs between IDNA2008 and IDNA2003,
+     * including ß, ς, and joiner characters (ZWJ and ZWNJ). ([More info](https://unicode.org/reports/tr46/#Deviations))
+     *
+     * For example, `ß` will be converted to `ss` by default. Enabling this setting will ensure it gets preserved as `ß`.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->useIdnaNontransitionalToUnicode(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_USE_IDNA_NONTRANSITIONAL_TO_UNICODE=true
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 5.9.0
+     */
+    public bool $useIdnaNontransitionalToUnicode = false;
 
     /**
      * @var bool Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
@@ -3446,6 +3501,7 @@ class GeneralConfig extends BaseConfig
             ->softDeleteDuration($this->softDeleteDuration)
             ->userSessionDuration($this->userSessionDuration)
             ->verificationCodeDuration($this->verificationCodeDuration)
+            ->purgeStaleUserSessionDuration($this->purgeStaleUserSessionDuration)
             // locales
             ->defaultCpLanguage($this->defaultCpLanguage)
             ->extraAppLocales($this->extraAppLocales)
@@ -3728,7 +3784,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether users should automatically be logged in after activating their account or resetting their password.
+     * Whether users should automatically be logged in after activating their account.
      *
      * ```php
      * ->autoLoginAfterAccountActivation(true)
@@ -4494,11 +4550,16 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether the `transform` directive should be disabled for the GraphQL API.
+     * Whether the `@transform` directive should be disabled for the GraphQL API.
      *
      * ```php
      * ->disableGraphqlTransformDirective(true)
      * ```
+     *
+     * ::: tip
+     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
+     * unless this setting is set to `true`.
+     * :::
      *
      * @group GraphQL
      * @param bool $value
@@ -4714,6 +4775,25 @@ class GeneralConfig extends BaseConfig
     public function enableTemplateCaching(bool $value = true): self
     {
         $this->enableTemplateCaching = $value;
+        return $this;
+    }
+
+    /**
+     * Whether user-defined Twig templates should be sandboxed.
+     *
+     * ```php
+     * ->enableTwigSandbox()
+     * ```
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $enableTwigSandbox
+     * @since 5.9.0
+     */
+    public function enableTwigSandbox(bool $value = true): self
+    {
+        $this->enableTwigSandbox = $value;
         return $this;
     }
 
@@ -5191,7 +5271,7 @@ class GeneralConfig extends BaseConfig
      * @see $lazyGqlTypes
      * @since 5.3.0
      */
-    public function lazyGqlTypes(bool $value): self
+    public function lazyGqlTypes(bool $value = true): self
     {
         $this->lazyGqlTypes = $value;
         return $this;
@@ -5536,16 +5616,16 @@ class GeneralConfig extends BaseConfig
      * The string preceding a number which Craft will look for when determining if the current request is for a particular page in
      * a paginated list of pages.
      *
-     * Example Value | Example URI
-     * ------------- | -----------
-     * `p` | `/news/p5`
-     * `page` | `/news/page5`
-     * `page/` | `/news/page/5`
-     * `?page` | `/news?page=5`
+     * | Example Value | Example URI |
+     * | --- | --- |
+     * | `p` | `/news/p5` |
+     * | `page` | `/news/page5` |
+     * | `page/` | `/news/page/5` |
+     * | `?page` | `/news?page=5` |
      *
-     * ::: tip
-     * If you want to set this to `?p` (e.g. `/news?p=5`), you’ll also need to change your <config5:pathParam> setting which defaults to `p`.
-     * If your server is running Apache, you’ll need to update the redirect code in your `.htaccess` file to match your new `pathParam` value.
+     * ::: warning
+     * Craft may override this setting if it conflicts with <config5:pathParam>. If you want to set this to `?p` (e.g. `/news?p=5`), you’ll also need to change your <config5:pathParam> setting (which defaults to `p`).
+     * Then, if your server is running Apache, you’ll need to update the redirect code in your `.htaccess` file to match your new `pathParam` value.
      * :::
      *
      * ```php
@@ -6017,7 +6097,7 @@ class GeneralConfig extends BaseConfig
      */
     public function purgeStaleUserSessionDuration(mixed $value): self
     {
-        $this->purgeStaleUserSessionDuration = $value;
+        $this->purgeStaleUserSessionDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -6856,8 +6936,9 @@ class GeneralConfig extends BaseConfig
      * The symbols are as follows:
      *
      * | Symbol | Example | Category |
-     * | `$` | `$Date Field$` | Site |
-     * | `@` | `@Entry Type@` | Application |
+     * | --- | --- | --- |
+     * | `$` | `$Date Field$` | Site (front-end, `site.php`) |
+     * | `@` | `@Entry Type@` | Application (Craft, `app.php`) |
      * | `%` | `%Object Template% | Other (plugin or custom source) |
      *
      * Translations _may_ be nested or surrounded by multiple symbols.
@@ -6957,6 +7038,35 @@ class GeneralConfig extends BaseConfig
     public function useEmailAsUsername(bool $value = true): self
     {
         $this->useEmailAsUsername = $value;
+        return $this;
+    }
+
+    /**
+     * Whether the [`IDNA_NONTRANSITIONAL_TO_UNICODE`](https://www.php.net/manual/en/intl.constants.php#constant.idna-nontransitional-to-unicode)
+     * flag should be passed to [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php) when converting
+     * email addresses from IDNA ASCII to Unicode.
+     *
+     * `INTL_IDNA_VARIANT_UTS46` by default, which uses the UTS 46 algorithm, consistent with the requirements of the
+     * IDNA2008 protocol and mostly compatible with IDNA2003 (deprecated in PHP 7.2).
+     *
+     * There are a handful of characters which result in different resolution of IDNs between IDNA2008 and IDNA2003,
+     * including ß, ς, and joiner characters (ZWJ and ZWNJ). ([More info](https://unicode.org/reports/tr46/#Deviations))
+     *
+     * For example, `ß` will be converted to `ss` by default. Enabling this setting will ensure it gets preserved as `ß`.
+     *
+     * ```php
+     * ->useIdnaNontransitionalToUnicode(true)
+     * ```
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $useIdnaNontransitionalToUnicode
+     * @since 5.9.0
+     */
+    public function useIdnaNontransitionalToUnicode(bool $value = false): self
+    {
+        $this->useIdnaNontransitionalToUnicode = $value;
         return $this;
     }
 

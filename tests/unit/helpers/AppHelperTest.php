@@ -37,24 +37,28 @@ class AppHelperTest extends TestCase
         self::assertSame('server', App::env('TEST_SERVER_ENV'));
         unset($_SERVER['TEST_SERVER_ENV']);
 
-        putenv('TEST_GETENV_ENV=getenv');
-        self::assertSame('getenv', App::env('TEST_GETENV_ENV'));
-        putenv('TEST_GETENV_ENV');
+        $variables = [
+            'TEST_1' => 'testing1',
+            'TEST_2' => 'foo-${TEST_1}-bar',
+            'TEST_3' => 'true',
+            'TEST_4' => 'false',
+        ];
 
-        putenv('TEST_GETENV_TRUE_ENV=true');
-        self::assertTrue(App::env('TEST_GETENV_TRUE_ENV'));
-        putenv('TEST_GETENV_TRUE_ENV');
+        foreach ($variables as $name => $value) {
+            putenv("$name=$value");
+        }
 
-        putenv('TEST_GETENV_FALSE_ENV=false');
-        self::assertFalse(App::env('TEST_GETENV_FALSE_ENV'));
-        putenv('TEST_GETENV_FALSE_ENV');
+        self::assertSame('testing1', App::env('TEST_1'));
+        self::assertSame('foo-testing1-bar', App::env('TEST_2'));
+        self::assertTrue(App::env('TEST_3'));
+        self::assertFalse(App::env('TEST_4'));
+
+        foreach (array_keys($variables) as $name) {
+            putenv($name);
+        }
 
         self::assertSame(CRAFT_TESTS_PATH, App::env('CRAFT_TESTS_PATH'));
         self::assertNull(App::env('TEST_NONEXISTENT_ENV'));
-
-        putenv('SHH=foo');
-        self::assertSame('foo', App::env('SHH'));
-        putenv('SHH');
     }
 
     /**
@@ -92,12 +96,36 @@ class AppHelperTest extends TestCase
      */
     public function testParseEnv(): void
     {
-        self::assertNull(App::parseEnv(null));
+        $variables = [
+            'TEST_1' => 'testing1',
+            'TEST_2' => 'foo${TEST_1}bar',
+            'TEST_DEFAULT_SITE_API_KEY' => 'abcdef',
+        ];
+
+        foreach ($variables as $name => $value) {
+            putenv("$name=$value");
+        }
+
+        self::assertSame('testing1', App::parseEnv('$TEST_1'));
+        self::assertSame('testing1', App::parseEnv('${TEST_1}'));
+        self::assertSame('testing1/foo/bar', App::parseEnv('$TEST_1/foo/bar'));
+        self::assertSame('foo/testing1/bar', App::parseEnv('foo/$TEST_1/bar'));
+        self::assertSame('footesting1bar', App::parseEnv('$TEST_2'));
+        self::assertSame('footesting1bar', App::parseEnv('${TEST_2}'));
+        self::assertSame('foo/footesting1bar/bar', App::parseEnv('foo/$TEST_2/bar'));
+        self::assertSame('defaultSite', App::parseEnv('$CRAFT_SITE'));
+        self::assertSame('DEFAULT_SITE', App::parseEnv('$CRAFT_SITE_UPPER'));
+        self::assertSame('abcdef', App::parseEnv('$TEST_${CRAFT_SITE_UPPER}_API_KEY'));
         self::assertSame(CRAFT_TESTS_PATH, App::parseEnv('$CRAFT_TESTS_PATH'));
         self::assertSame(CRAFT_TESTS_PATH . '/foo/bar', App::parseEnv('$CRAFT_TESTS_PATH/foo/bar'));
         self::assertSame('CRAFT_TESTS_PATH', App::parseEnv('CRAFT_TESTS_PATH'));
-        self::assertSame(null, App::parseEnv('$TEST_MISSING'));
         self::assertSame(Craft::getAlias('@vendor/foo/bar'), App::parseEnv('@vendor/foo/bar'));
+        self::assertNull(App::parseEnv('$TEST_MISSING'));
+        self::assertNull(App::parseEnv(null));
+
+        foreach (array_keys($variables) as $name) {
+            putenv($name);
+        }
     }
 
     /**
@@ -105,9 +133,23 @@ class AppHelperTest extends TestCase
      * @param bool|null $expected
      * @param mixed $value
      */
-    public function testParseBooleanEnv(?bool $expected, mixed $value): void
+    public function testParseBooleanEnv(?bool $expected, mixed $value, array $values = []): void
     {
+        foreach ($values as $name => $v) {
+            putenv("$name=$v");
+        }
+
         self::assertSame($expected, App::parseBooleanEnv($value));
+    }
+
+    /**
+     * @dataProvider normalizeBooleanValueDataProvider
+     * @param bool|null $expected
+     * @param mixed $value
+     */
+    public function testNormalizeBooleanEnv(?bool $expected, mixed $value): void
+    {
+        self::assertSame($expected, App::normalizeBooleanValue($value));
     }
 
     /**
@@ -428,19 +470,75 @@ class AppHelperTest extends TestCase
             [true, true],
             [false, false],
             [true, 'yes'],
+            [true, 'YES'],
             [false, 'no'],
+            [true, 'ON'],
             [true, 'on'],
+            [false, 'OFF'],
             [false, 'off'],
+            [true, 'TRUE'],
             [true, '1'],
             [false, '0'],
             [true, 'true'],
+            [false, 'FALSE'],
             [false, 'false'],
-            [false, ''],
+            [null, ''],
             [null, 'whatever'],
             [true, 1],
             [false, 0],
             [null, 2],
             [null, '$TEST_MISSING'],
+            [
+                false,
+                '$TEST_FALSE',
+                ['TEST_FALSE' => 'false'],
+            ],
+            [
+                false,
+                '$TEST_FALSE',
+                ['TEST_FALSE' => 'FALSE'],
+            ],
+            [
+                true,
+                '$TEST_TRUE',
+                ['TEST_TRUE' => 'true'],
+            ],
+            [
+                true,
+                '$TEST_TRUE',
+                ['TEST_TRUE' => 'TRUE'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function normalizeBooleanValueDataProvider(): array
+    {
+        return [
+            [true, true],
+            [false, false],
+            [true, 'yes'],
+            [true, 'YES'],
+            [false, 'no'],
+            [false, 'no'],
+            [true, 'ON'],
+            [true, 'on'],
+            [false, 'off'],
+            [false, 'OFF'],
+            [true, '1'],
+            [false, '0'],
+            [true, 'true'],
+            [true, 'TRUE'],
+            [false, 'false'],
+            [false, 'FALSE'],
+            [null, ''],
+            [null, 'whatever'],
+            [true, 1],
+            [false, 0],
+            [null, 2],
+            [null, null],
         ];
     }
 

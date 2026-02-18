@@ -1632,10 +1632,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Prepare a new column mapping
         // (for use in SELECT and ORDER BY clauses)
         $this->_columnMap = [
-            'id' => 'elements.id',
-            'enabled' => 'elements.enabled',
             'dateCreated' => 'elements.dateCreated',
             'dateUpdated' => 'elements.dateUpdated',
+            'enabled' => 'elements.enabled',
+            'id' => 'elements.id',
+            'slug' => 'elements_sites.slug',
             'uid' => 'elements.uid',
         ];
 
@@ -2734,14 +2735,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $alias = $field->handle . ($key !== '*' ? ".$key" : '');
                     $resolver = fn() => $field->getValueSql($key !== '*' ? $key : null);
 
-                    if (isset($this->_columnMap[$alias])) {
-                        if (!is_array($this->_columnMap[$alias])) {
-                            $this->_columnMap[$alias] = [$this->_columnMap[$alias]];
-                        }
-                        $this->_columnMap[$alias][] = $resolver;
-                    } else {
-                        $this->_columnMap[$alias] = $resolver;
-                    }
+                    $this->_addToColumnMap($alias, $resolver);
 
                     // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
                     // see https://github.com/craftcms/cms/issues/15609
@@ -2756,9 +2750,21 @@ class ElementQuery extends Query implements ElementQueryInterface
             $qb = $db->getQueryBuilder();
             foreach ($this->generatedFields as $field) {
                 if (($field['handle'] ?? '') !== '') {
-                    $this->_columnMap[$field['handle']] = $qb->jsonExtract('elements_sites.content', [$field['uid']]);
+                    $this->_addToColumnMap($field['handle'], $qb->jsonExtract('elements_sites.content', [$field['uid']]));
                 }
             }
+        }
+    }
+
+    private function _addToColumnMap(string $alias, string|callable $column): void
+    {
+        if (isset($this->_columnMap[$alias])) {
+            if (!is_array($this->_columnMap[$alias])) {
+                $this->_columnMap[$alias] = [$this->_columnMap[$alias]];
+            }
+            $this->_columnMap[$alias][] = $column;
+        } else {
+            $this->_columnMap[$alias] = $column;
         }
     }
 
@@ -2773,6 +2779,17 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
+        $generatedFieldsByHandle = [];
+        if (!empty($this->generatedFields)) {
+            // Group the generated fields by handle and field UUID
+            foreach ($this->generatedFields as $field) {
+                if (!empty($field['handle'])) {
+                    $generatedFieldsByHandle[$field['handle']][$field['uid']] = $field;
+                }
+            }
+        }
+
+        /** @var CustomFieldBehavior $fieldAttributes */
         $fieldAttributes = $this->getBehavior('customFields');
         /** @var FieldInterface[][][] $fieldsByHandle */
         $fieldsByHandle = [];
@@ -2789,8 +2806,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                     continue;
                 }
 
-                // Make sure the custom field exists in one of the field layouts
-                if (!isset($fieldsByHandle[$handle])) {
+                // Make sure the custom field exists in one of the field layouts or there's a generated field with that handle
+                if (!isset($fieldsByHandle[$handle]) && !isset($generatedFieldsByHandle[$handle])) {
                     // If it looks like null/:empty: is a valid option, let it slide
                     $value = is_array($fieldAttributes->$handle) && isset($fieldAttributes->$handle['value'])
                         ? $fieldAttributes->$handle['value']
@@ -2803,46 +2820,98 @@ class ElementQuery extends Query implements ElementQueryInterface
                         }
                     }
 
-                    throw new QueryAbortedException("No custom field with the handle \"$handle\" exists in the field layouts involved with this element query.");
+                    throw new QueryAbortedException("No custom or generated field with the handle \"$handle\" exists in the field layouts involved with this element query.");
                 }
 
                 $conditions = [];
                 $params = [];
 
-                foreach ($fieldsByHandle[$handle] as $instances) {
-                    $firstInstance = $instances[0];
-                    $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
+                if (isset($fieldsByHandle[$handle])) {
+                    foreach ($fieldsByHandle[$handle] as $instances) {
+                        $firstInstance = $instances[0];
+                        $condition = $firstInstance::queryCondition($instances, $fieldAttributes->$handle, $params);
 
-                    // aborting?
-                    if ($condition === false) {
-                        throw new QueryAbortedException();
+                        // aborting?
+                        if ($condition === false) {
+                            throw new QueryAbortedException();
+                        }
+
+                        if ($condition !== null) {
+                            $conditions[] = $condition;
+
+                            // if we have a generated field with the same handle, we need to add it into the condition
+                            if (isset($generatedFieldsByHandle[$handle])) {
+                                $generatedFieldsConditions = $this->_conditionsForGeneratedFields(
+                                    $generatedFieldsByHandle,
+                                    $fieldAttributes,
+                                    $fieldsByHandle,
+                                    false
+                                );
+                                $conditions = array_merge($conditions, $generatedFieldsConditions);
+                            }
+                        }
                     }
 
-                    if ($condition !== null) {
-                        $conditions[] = $condition;
-                    }
-                }
-
-                if (!empty($conditions)) {
-                    if (count($conditions) === 1) {
-                        $this->subQuery->andWhere(reset($conditions), $params);
-                    } else {
-                        $this->subQuery->andWhere(['or', ...$conditions], $params);
+                    if (!empty($conditions)) {
+                        if (count($conditions) === 1) {
+                            $this->subQuery->andWhere(reset($conditions), $params);
+                        } else {
+                            // if we're querying for empty, we need to glue the conditions with 'and'
+                            $glue = $fieldAttributes->$handle === ':empty:' ? QueryParam::AND : QueryParam::OR;
+                            $this->subQuery->andWhere([$glue, ...$conditions], $params);
+                        }
                     }
                 }
             }
         }
 
         if (!empty($this->generatedFields)) {
-            $qb = Craft::$app->getDb()->getQueryBuilder();
-            foreach ($this->generatedFields as $field) {
-                $handle = $field['handle'] ?? '';
-                if ($handle !== '' && isset($fieldAttributes->$handle) && !isset($fieldsByHandle[$handle])) {
-                    $column = $qb->jsonExtract('elements_sites.content', [$field['uid']]);
-                    $this->subQuery->andWhere(Db::parseParam($column, $fieldAttributes->$handle));
+            $conditions = $this->_conditionsForGeneratedFields($generatedFieldsByHandle, $fieldAttributes, $fieldsByHandle);
+            if (!empty($conditions)) {
+                if (count($conditions) === 1) {
+                    $this->subQuery->andWhere(reset($conditions));
+                } else {
+                    $this->subQuery->andWhere(['and', ...$conditions]);
                 }
             }
         }
+    }
+
+    /**
+     * Get query conditions for generated fields
+     *
+     * @param array $generatedFieldsByHandle
+     * @param CustomFieldBehavior $fieldAttributes
+     * @param array $fieldsByHandle
+     * @param bool $checkCustomField whether to check if the custom field with that handle exists
+     * @return array
+     */
+    private function _conditionsForGeneratedFields(
+        array $generatedFieldsByHandle,
+        CustomFieldBehavior $fieldAttributes,
+        array $fieldsByHandle,
+        bool $checkCustomField = true,
+    ): array {
+        $qb = Craft::$app->getDb()->getQueryBuilder();
+        $conditions = [];
+        $generatedFieldColumns = [];
+
+        foreach ($generatedFieldsByHandle as $handle => $fields) {
+            if (isset($fieldAttributes->$handle) && (!$checkCustomField || !isset($fieldsByHandle[$handle]))) {
+                foreach ($fields as $field) {
+                    $generatedFieldColumns[$handle][] = $qb->jsonExtract('elements_sites.content', [$field['uid']]);
+                }
+            }
+        }
+
+        foreach ($generatedFieldColumns as $handle => $columns) {
+            $column = count($columns) === 1
+                ? $columns[0]
+                : (new CoalesceColumnsExpression($columns))->getSql($this->subQuery->params);
+            $conditions[] = Db::parseParam($column, $fieldAttributes->$handle);
+        }
+
+        return $conditions;
     }
 
     /**
@@ -3180,9 +3249,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     private function _applyRevisionParams(): void
     {
         if ($this->drafts !== false) {
-            $joinType = $this->drafts === true ? 'INNER JOIN' : 'LEFT JOIN';
-            $this->subQuery->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
-            $this->query->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            $useInnerJoin = $this->drafts === true;
 
             $this->query->addSelect([
                 'elements.draftId',
@@ -3193,16 +3260,27 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
 
             if ($this->draftId) {
+                $useInnerJoin = true;
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            if ($this->draftOf === '*') {
-                $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
-            } elseif (isset($this->draftOf)) {
-                $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
+            if (isset($this->draftOf)) {
+                if ($this->draftOf === '*') {
+                    // drafts of any other element
+                    $useInnerJoin = true;
+                    $this->subQuery->andWhere(['not', ['drafts.canonicalId' => null]]);
+                } elseif ($this->draftOf === false) {
+                    // unpublished drafts only
+                    $this->subQuery->andWhere(['drafts.canonicalId' => null]);
+                } else {
+                    // drafts of specific owner elements
+                    $useInnerJoin = true;
+                    $this->subQuery->andWhere(['drafts.canonicalId' => $this->draftOf]);
+                }
             }
 
             if ($this->draftCreator) {
+                $useInnerJoin = true;
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
 
@@ -3231,6 +3309,10 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ['drafts.saved' => true],
                 ]);
             }
+
+            $joinType = $useInnerJoin ? 'INNER JOIN' : 'LEFT JOIN';
+            $this->subQuery->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
+            $this->query->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
         } else {
             $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));
         }

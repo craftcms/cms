@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\elements\Asset as AssetElement;
+use craft\errors\AssetDisallowedExtensionException;
 use craft\events\ReplaceAssetEvent;
 use craft\gql\base\ElementMutationResolver;
 use craft\helpers\Assets as AssetsHelper;
@@ -23,6 +24,9 @@ use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
+use GuzzleHttp\TransferStats;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -72,6 +76,10 @@ class Asset extends ElementMutationResolver
             if (!$asset) {
                 throw new Error('No such asset exists');
             }
+
+            if ($asset->volumeId !== $volume->id) {
+                $this->requireSchemaAction('volumes.' . $asset->getVolume()->uid, 'save');
+            }
         } else {
             $this->requireSchemaAction('volumes.' . $volume->uid, 'create');
 
@@ -108,7 +116,10 @@ class Asset extends ElementMutationResolver
         $asset = $this->populateElementWithData($asset, $arguments, $resolveInfo);
         $triggerReplaceEvents = (
             $asset->getScenario() === AssetElement::SCENARIO_REPLACE &&
-            $assetService->hasEventHandlers(Assets::EVENT_BEFORE_REPLACE_ASSET)
+            (
+                $assetService->hasEventHandlers(Assets::EVENT_BEFORE_REPLACE_ASSET) ||
+                $assetService->hasEventHandlers(Assets::EVENT_AFTER_REPLACE_ASSET)
+            )
         );
 
         if ($triggerReplaceEvents) {
@@ -196,6 +207,8 @@ class Asset extends ElementMutationResolver
         $tempPath = null;
         $filename = null;
 
+        $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
+
         if (!empty($fileInformation['fileData'])) {
             $dataString = $fileInformation['fileData'];
             $fileData = null;
@@ -221,7 +234,13 @@ class Asset extends ElementMutationResolver
                     $filename = 'Upload.' . $extension;
                 } else {
                     $filename = AssetsHelper::prepareAssetName($fileInformation['filename']);
-                    $extension = pathinfo($filename, PATHINFO_EXTENSION);
+                    $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                }
+
+                if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
+                    throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
+                        'extension' => $extension,
+                    ]));
                 }
 
                 $tempPath = AssetsHelper::tempFilePath($extension);
@@ -232,17 +251,34 @@ class Asset extends ElementMutationResolver
         } elseif (!empty($fileInformation['url'])) {
             $url = $fileInformation['url'];
 
+            if (!$this->validateHostname($url)) {
+                throw new UserError("$url contains an invalid hostname.");
+            }
+
             if (empty($fileInformation['filename'])) {
                 $filename = AssetsHelper::prepareAssetName(pathinfo(UrlHelper::stripQueryString($url), PATHINFO_BASENAME));
             } else {
                 $filename = AssetsHelper::prepareAssetName($fileInformation['filename']);
             }
 
-            $extension = pathinfo($filename, PATHINFO_EXTENSION);
+            $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
+                throw new AssetDisallowedExtensionException(Craft::t('app', '“{extension}” is not an allowed file extension.', [
+                    'extension' => $extension,
+                ]));
+            }
 
             // Download the file
             $tempPath = AssetsHelper::tempFilePath($extension);
-            $this->createGuzzleClient()->request('GET', $url, ['sink' => $tempPath]);
+            $this->createGuzzleClient()->request('GET', $url, [
+                RequestOptions::ALLOW_REDIRECTS => false,
+                RequestOptions::SINK => $tempPath,
+                RequestOptions::ON_STATS => function(TransferStats $stats) use ($url) {
+                    if (!$this->validateIp($stats->getHandlerStat('primary_ip'))) {
+                        throw new UserError("$url resolves to an invalid IP address.");
+                    }
+                },
+            ]);
         }
 
         if (!$tempPath || !$filename) {
@@ -258,6 +294,81 @@ class Asset extends ElementMutationResolver
         }
         $asset->setMimeType(FileHelper::getMimeType($tempPath, checkExtension: false));
         $asset->avoidFilenameConflicts = true;
+
+        return true;
+    }
+
+    private function validateHostname(string $url): bool
+    {
+        $hostname = parse_url($url, PHP_URL_HOST);
+
+        // convert hex segments to decimal
+        $hostname = Collection::make(explode('.', $hostname))
+            ->map(function(string $chunk) {
+                if (str_starts_with(strtolower($chunk), '0x')) {
+                    $octets = str_split(substr($chunk, 2), 2);
+                    return implode('.', array_map('hexdec', $octets));
+                }
+                return $chunk;
+            })
+            ->join('.');
+
+        // make sure the hostname is alphanumeric and not an IP address
+        if (
+            !filter_var($hostname, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) ||
+            filter_var($hostname, FILTER_VALIDATE_IP)
+        ) {
+            return false;
+        }
+
+        // Check against well-known cloud metadata domains
+        // h/t https://gist.github.com/BuffaloWill/fa96693af67e3a3dd3fb
+        if (in_array($hostname, [
+            'kubernetes.default',
+            'kubernetes.default.svc',
+            'kubernetes.default.svc.cluster.local',
+            'metadata',
+            'metadata.google.internal',
+            'metadata.packet.net',
+        ])) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function validateIp(string $ip): bool
+    {
+        // make sure the hostname doesn’t resolve to a known cloud metadata IP
+        // h/t https://gist.github.com/BuffaloWill/fa96693af67e3a3dd3fb
+        if (in_array($ip, [
+            '100.100.100.200', // Alibaba
+            '169.254.169.254', // AWS, GCP, DO, Azure, Oracle, OpenStack/RackSpace
+            '169.254.170.2', // ECS
+            '192.0.0.192', // Oracle
+        ])) {
+            return false;
+        }
+
+        $v6Prefixes = [
+            '::1', // Loopback
+            '::ffff:', // IPv4-mapped IPv6
+            'fd00:ec2::', // AWS IMDS, DNS, NTP
+            'fd20:ce::', // GCP
+            'fe80:', // Link-local
+        ];
+
+        foreach ($v6Prefixes as $prefix) {
+            if (str_starts_with($ip, $prefix)) {
+                return false;
+            }
+        }
+
+        // Only allow publicly-routable IPs
+        $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+        if (filter_var($ip, FILTER_VALIDATE_IP, $flags) === false) {
+            return false;
+        }
 
         return true;
     }

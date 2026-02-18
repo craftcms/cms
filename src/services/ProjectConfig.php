@@ -109,6 +109,8 @@ class ProjectConfig extends Component
     public const PATH_CATEGORY_GROUPS = 'categoryGroups';
     public const PATH_DATE_MODIFIED = 'dateModified';
     public const PATH_ELEMENT_SOURCES = 'elementSources';
+    /** @since 5.9.0 */
+    public const PATH_ELEMENT_SOURCE_PAGES = 'elementSourcesPages';
     public const PATH_ENTRY_TYPES = 'entryTypes';
     public const PATH_FIELDS = 'fields';
     public const PATH_GLOBAL_SETS = 'globalSets';
@@ -1289,7 +1291,11 @@ class ProjectConfig extends Component
     {
         Craft::info('Looking for pending changes', __METHOD__);
 
-        $processChanges = fn($path, $triggerUpdate = false) => $this->getCurrentWorkingConfig()->commitChanges($existingConfig->get($path), $incomingConfig->get($path), $path, $triggerUpdate, null, true);
+        $processChanges = function($path, $triggerUpdate = false) use ($existingConfig, $incomingConfig) {
+            $oldValue = $existingConfig->get($path);
+            $newValue = $incomingConfig->get($path);
+            $this->getCurrentWorkingConfig()->commitChanges($oldValue, $newValue, $path, $triggerUpdate, null, true);
+        };
 
         // If we're parsing all the changes, we better work the actual config map.
         if (!empty($changes['removedItems'])) {
@@ -1656,6 +1662,8 @@ class ProjectConfig extends Component
 
         // Let plugins know about it
         $this->trigger(self::EVENT_AFTER_WRITE_YAML_FILES);
+
+        $this->_updateYaml = false;
     }
 
     /**

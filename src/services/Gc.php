@@ -19,6 +19,7 @@ use craft\db\TableSchema;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
+use craft\elements\ContentBlock;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
@@ -133,6 +134,7 @@ class Gc extends Component
         $this->deletePartialElements(Address::class, Table::ADDRESSES, 'id');
         $this->deletePartialElements(Asset::class, Table::ASSETS, 'id');
         $this->deletePartialElements(Category::class, Table::CATEGORIES, 'id');
+        $this->deletePartialElements(ContentBlock::class, Table::CONTENTBLOCKS, 'id');
         $this->deletePartialElements(Entry::class, Table::ENTRIES, 'id');
         $this->deletePartialElements(GlobalSet::class, Table::GLOBALSETS, 'id');
         $this->deletePartialElements(Tag::class, Table::TAGS, 'id');
@@ -146,6 +148,7 @@ class Gc extends Component
 
         $this->_deleteUnsupportedSiteEntries();
         $this->deleteOrphanedNestedElements(Address::class, Table::ADDRESSES);
+        $this->deleteOrphanedNestedElements(ContentBlock::class, Table::CONTENTBLOCKS);
         $this->deleteOrphanedNestedElements(Entry::class, Table::ENTRIES);
 
         // Fire a 'run' event
@@ -157,6 +160,7 @@ class Gc extends Component
 
         $this->_deleteOrphanedDraftsAndRevisions();
         $this->_deleteOrphanedSearchIndexes();
+        $this->_deleteOrphanedSearchIndexJobs();
         $this->_deleteOrphanedRelations();
         $this->_deleteOrphanedStructureElements();
         $this->_deleteOrphanedFkRows();
@@ -510,6 +514,7 @@ class Gc extends Component
     {
         $this->_stdout(sprintf('    > deleting orphaned nested %s ... ', $elementType::pluralLowerDisplayName()));
 
+        // IDs of nested elements where the owner no longer exists
         $ids1 = (new Query())
             ->select('el.id')
             ->from(['el' => Table::ELEMENTS])
@@ -522,6 +527,7 @@ class Gc extends Component
             ])
             ->column();
 
+        // IDs of nested elements where the field no longer exists
         $ids2 = (new Query())
             ->select('el.id')
             ->from(['el' => Table::ELEMENTS])
@@ -572,6 +578,13 @@ class Gc extends Component
     {
         $this->_stdout('    > deleting orphaned search indexes ... ');
         Craft::$app->getSearch()->deleteOrphanedIndexes();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deleteOrphanedSearchIndexJobs(): void
+    {
+        $this->_stdout('    > deleting orphaned search index jobs ... ');
+        Craft::$app->getSearch()->deleteOrphanedIndexJobs();
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 

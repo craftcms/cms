@@ -39,6 +39,8 @@ Craft.CP = Garnish.Base.extend(
     $header: null,
     $mainContent: null,
     $details: null,
+    $detailsToggle: null,
+    $detailsSkipLink: null,
     $sidebarContainer: null,
     $sidebarToggle: null,
     $sidebar: null,
@@ -105,6 +107,8 @@ Craft.CP = Garnish.Base.extend(
       this.$header = $('#header');
       this.$mainContent = $('#main-content');
       this.$details = $('#details');
+      this.$detailsToggle = $('#details-toggle');
+      this.$detailsSkipLink = $('[href="#details-container"]');
       this.$detailsContainer = $('#details-container');
       this.$sidebarContainer = $('#sidebar-container');
       this.$sidebarToggle = $('#sidebar-toggle');
@@ -154,6 +158,15 @@ Craft.CP = Garnish.Base.extend(
       // Toggles
       this.addListener(this.$navToggle, 'click', 'toggleNav');
       this.addListener(this.$sidebarToggle, 'click', 'toggleSidebar');
+
+      // Update skip link target when details are opened/closed
+      this.addListener(this.$detailsToggle, 'open', () => {
+        this.$detailsSkipLink.attr('href', '#details-container');
+      });
+
+      this.addListener(this.$detailsToggle, 'close', () => {
+        this.$detailsSkipLink.attr('href', '#details-toggle-wrapper');
+      });
 
       // Layers
       Garnish.uiLayerManager.on('addLayer', () => {
@@ -1954,6 +1967,36 @@ Craft.CP = Garnish.Base.extend(
         }
       });
     },
+
+    previewCountBadge: function (event, item, thumbLoader = true) {
+      let e = event || window.event;
+
+      if (e.type == 'click' || e.keyCode == 32 || e.keyCode == 13) {
+        // prevent e.g. the space key from scrolling the page too
+        e.preventDefault();
+        // Get the previous item so we can use that to figure out where to focus after removing the expand button
+        const $prevElement = $(e.target).prev();
+
+        // get the item's parent so that the thumb loader can work as expected
+        const parent = $(item).parent();
+
+        let r = $(item).data('other');
+        if (r) {
+          r = JSON.parse(r);
+          $(item).replaceWith(r);
+
+          if (thumbLoader) {
+            this.elementThumbLoader.load(parent);
+          }
+        }
+
+        // Find element to focus
+        const $nextFocusable = Garnish.firstFocusableElement(
+          $prevElement.next()
+        );
+        $nextFocusable.trigger('focus');
+      }
+    },
   },
   {
     /**
@@ -2180,7 +2223,7 @@ Craft.CP.Notification = Garnish.Base.extend(
         this.closeTimeout = null;
 
         this.$container.on('mouseout', (ev) => {
-          if (ev.target == this.$container[0]) {
+          if (ev.currentTarget == this.$container[0]) {
             this.$container.off('mouseout');
             this.delayedClose();
           }
@@ -2357,6 +2400,7 @@ Craft.cp = new Craft.CP();
  */
 var JobProgressIcon = Garnish.Base.extend({
   $li: null,
+  $container: null,
   $a: null,
   $label: null,
   $progressLabel: null,
@@ -2388,16 +2432,17 @@ var JobProgressIcon = Garnish.Base.extend({
   _progressBar: null,
 
   init: function () {
-    this.$li = $('<li/>', {
+    this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
+    this.$container = $('<div/>', {
       class: 'nav-item nav-item--job',
-    }).appendTo(Craft.cp.$nav.children('ul'));
+    }).appendTo(this.$li);
     this.$a = $('<a/>', {
       id: 'job-icon',
       class: 'sidebar-action sidebar-action--job',
       href: Craft.canAccessQueueManager
         ? Craft.getUrl('utilities/queue-manager')
         : null,
-    }).appendTo(this.$li);
+    }).appendTo(this.$container);
     const $prefixContainer = $('<span class="sidebar-action__prefix"/>');
     this.$canvasContainer = $('<span class="nav-icon"/>').appendTo(
       $prefixContainer
@@ -2428,8 +2473,14 @@ var JobProgressIcon = Garnish.Base.extend({
     this._lineWidth = 3 * m;
 
     this._$bgCanvas = this._createCanvas('bg', '#a3afbb');
-    this._$staticCanvas = this._createCanvas('static', this.$li.css('color'));
-    this._$hoverCanvas = this._createCanvas('hover', this.$li.css('color'));
+    this._$staticCanvas = this._createCanvas(
+      'static',
+      this.$container.css('color')
+    );
+    this._$hoverCanvas = this._createCanvas(
+      'hover',
+      this.$container.css('color')
+    );
     this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();
 
     this._staticCtx = this._$staticCanvas[0].getContext('2d');
