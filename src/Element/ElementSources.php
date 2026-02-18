@@ -24,13 +24,13 @@ use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
 
-#[Singleton]
+#[Scoped]
 final class ElementSources
 {
     public const string TYPE_HEADING = 'heading';

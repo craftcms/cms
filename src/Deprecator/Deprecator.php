@@ -14,13 +14,13 @@ use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\TemplateResolver;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use Twig\Template as TwigTemplate;
 
-#[Singleton]
+#[Scoped]
 final class Deprecator
 {
     /**
