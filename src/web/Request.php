@@ -17,6 +17,7 @@ use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\services\Sites;
+use craft\services\Tokens;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
@@ -196,6 +197,12 @@ class Request extends \yii\web\Request
      * @see getToken()
      */
     public ?string $_token = null;
+
+    /**
+     * @var array|null
+     * @see getTokenRoute()
+     */
+    public ?array $_tokenRoute = null;
 
     /**
      * @inheritdoc
@@ -510,13 +517,28 @@ class Request extends \yii\web\Request
      *
      * @return string|null The token, or `null` if there isn’t one.
      * @throws BadRequestHttpException if an invalid token is supplied
-     * @see \craft\services\Tokens::createToken()
+     * @see Tokens::createToken()
      * @see Controller::requireToken()
      */
     public function getToken(): ?string
     {
         $this->_findToken();
         return $this->_token;
+    }
+
+    /**
+     * Returns the route the request’s token resolves to.
+     *
+     * @return array|null The route, or `null` if there isn’t one.
+     * @throws BadRequestHttpException if an invalid token is supplied
+     * @see getToken())
+     * @see Tokens::createToken()
+     * @since 4.17.6
+     */
+    public function getTokenRoute(): ?array
+    {
+        $this->_findToken();
+        return $this->_tokenRoute;
     }
 
     /**
@@ -549,10 +571,17 @@ class Request extends \yii\web\Request
 
         $this->_token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
 
-        if ($this->_token && !preg_match('/^[A-Za-z0-9_-]+$/', $this->_token)) {
-            $this->_token = null;
-            $this->_hadToken = false;
-            throw new BadRequestHttpException('Invalid token');
+        if ($this->_token) {
+            if (!preg_match('/^[A-Za-z0-9_-]+$/', $this->_token)) {
+                $this->_token = null;
+                $this->_hadToken = false;
+                throw new BadRequestHttpException('Invalid token');
+            }
+
+            $this->_tokenRoute = Craft::$app->getTokens()->getTokenRoute($this->_token) ?: null;
+            if (!$this->_tokenRoute) {
+                $this->_token = null;
+            }
         }
 
         $this->_hadToken = isset($this->_token);
