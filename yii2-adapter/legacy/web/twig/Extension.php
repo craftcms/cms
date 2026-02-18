@@ -77,6 +77,7 @@ use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Sequence;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\User\Elements\User;
@@ -160,6 +161,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function __construct(
         private TemplateRenderer $renderer,
+        private PageLifecycle $pageLifecycle,
         View $view,
         TwigEnvironment $environment,
     ) {
@@ -1461,9 +1463,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('ul', [Html::class, 'ul'], ['is_safe' => ['html']]),
 
             // DOM event functions
-            new TwigFunction('head', [$this->renderer, 'head']),
-            new TwigFunction('beginBody', [$this->renderer, 'beginBody']),
-            new TwigFunction('endBody', [$this->renderer, 'endBody']),
+            new TwigFunction('head', [$this->pageLifecycle, 'head']),
+            new TwigFunction('beginBody', [$this->pageLifecycle, 'beginBody']),
+            new TwigFunction('endBody', [$this->pageLifecycle, 'endBody']),
         ];
     }
 

@@ -6,13 +6,10 @@ namespace CraftCms\Cms\Twig;
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Twig\Events\BeginPage;
-use CraftCms\Cms\Twig\Events\EndPage;
 use CraftCms\Cms\Twig\Events\PageTemplateRendered;
 use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
 use CraftCms\Cms\Twig\Events\RenderingTemplate;
 use CraftCms\Cms\Twig\Events\TemplateRendered;
-use CraftCms\Cms\View\AssetRegistry;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Support\Arrayable;
@@ -30,12 +27,6 @@ final class TemplateRenderer
 {
     use ForwardsCalls;
 
-    public const string HEAD_PLACEHOLDER = '<![CDATA[CRAFT-BLOCK-HEAD]]>';
-
-    public const string BODY_BEGIN_PLACEHOLDER = '<![CDATA[CRAFT-BLOCK-BODY-BEGIN]]>';
-
-    public const string BODY_END_PLACEHOLDER = '<![CDATA[CRAFT-BLOCK-BODY-END]]>';
-
     /** @var TemplateWrapper[] Object template cache */
     private array $objectTemplates = [];
 
@@ -50,23 +41,8 @@ final class TemplateRenderer
     public function __construct(
         private readonly Twig $twig,
         private readonly GeneralConfig $generalConfig,
-        private readonly AssetRegistry $assetRegistry,
+        private readonly PageLifecycle $pageLifecycle,
     ) {}
-
-    public function head(): void
-    {
-        echo self::HEAD_PLACEHOLDER;
-    }
-
-    public function beginBody(): void
-    {
-        echo self::BODY_BEGIN_PLACEHOLDER;
-    }
-
-    public function endBody(): void
-    {
-        echo self::BODY_END_PLACEHOLDER;
-    }
 
     /**
      * Returns whether a template is currently being rendered.
@@ -136,7 +112,10 @@ final class TemplateRenderer
 
     /**
      * Renders a page template (with beginPage/endPage lifecycle).
-     * Delegates page lifecycle to PageLifecycle interface.
+     *
+     * Delegates output buffering, BeginPage/EndPage events, and placeholder
+     * replacement to {@see PageLifecycle}, keeping template rendering concerns
+     * separate from page structure and asset injection.
      */
     public function renderPageTemplate(
         string $template,
@@ -155,28 +134,15 @@ final class TemplateRenderer
         $variables = $event->variables;
         $templateMode = $event->templateMode;
 
-        ob_start();
-        ob_implicit_flush(false);
-
-        $oldTemplateMode = TemplateMode::get();
-        TemplateMode::set($templateMode);
-
         $isRenderingPageTemplate = $this->isRenderingPageTemplate;
         $this->isRenderingPageTemplate = true;
 
         try {
-            event(new BeginPage);
-            echo $this->renderTemplate($template, $variables, $templateMode);
-            event($event = new EndPage);
-
-            $output = strtr((string) ob_get_clean(), [
-                self::HEAD_PLACEHOLDER => $event->headHtml ?? $this->assetRegistry->headHtml(),
-                self::BODY_BEGIN_PLACEHOLDER => $event->bodyBeginHtml ?? $this->assetRegistry->bodyBeginHtml(),
-                self::BODY_END_PLACEHOLDER => $event->bodyEndHtml ?? $this->assetRegistry->bodyEndHtml(),
-            ]);
+            $output = $this->pageLifecycle->wrap(
+                fn () => $this->renderTemplate($template, $variables, $templateMode),
+            );
         } finally {
             $this->isRenderingPageTemplate = $isRenderingPageTemplate;
-            TemplateMode::set($oldTemplateMode);
         }
 
         event($event = new PageTemplateRendered($template, $variables, $templateMode, $output));
@@ -348,45 +314,41 @@ final class TemplateRenderer
     public function normalizeObjectTemplate(string $template): string
     {
         $tokens = [];
+        $createToken = function (string $value) use (&$tokens): string {
+            $token = 'tok_'.Str::random(10);
+            $tokens[$token] = $value;
+
+            return $token;
+        };
 
         // Tokenize {% verbatim %} ... {% endverbatim %} tags in their entirety
         $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s',
-            function (array $matches) use (&$tokens) {
-                $token = 'tok_'.Str::random(10);
-                $tokens[$token] = $matches[0];
-
-                return $token;
-            },
+            fn (array $matches): string => $createToken($matches[0]),
             $template
         );
 
         // Tokenize any remaining Twig tags (including print tags)
         $template = preg_replace_callback('/\{%-?\s*\w+.*?%\}|(?<!\{)\{\{(?!\{).+?(?<!\})\}\}(?!\})/s',
-            function (array $matches) use (&$tokens) {
-                $token = 'tok_'.Str::random(10);
-                $tokens[$token] = $matches[0];
-
-                return $token;
-            },
+            fn (array $matches): string => $createToken($matches[0]),
             (string) $template
         );
 
         // Tokenize inline code and code blocks
-        $template = preg_replace_callback('/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s', function (array $matches) use (&$tokens) {
-            $token = 'tok_'.Str::random(10);
-            $tokens[$token] = '{% verbatim %}'.$matches[0].'{% endverbatim %}';
-
-            return $token;
-        }, (string) $template);
+        $template = preg_replace_callback(
+            '/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s',
+            fn (array $matches): string => $createToken('{% verbatim %}'.$matches[0].'{% endverbatim %}'),
+            (string) $template
+        );
 
         // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
         while (true) {
-            $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function (array $matches) use (&$tokens) {
-                $token = 'tok_'.Str::random(10);
-                $tokens[$token] = $matches[0];
-
-                return $token;
-            }, (string) $template, -1, $count);
+            $template = preg_replace_callback(
+                '/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/',
+                fn (array $matches): string => $createToken($matches[0]),
+                (string) $template,
+                -1,
+                $count
+            );
             if ($count === 0) {
                 break;
             }

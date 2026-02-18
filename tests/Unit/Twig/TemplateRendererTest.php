@@ -27,10 +27,6 @@ beforeEach(function () {
     file_put_contents($this->tempDir.'/test-template.twig', 'Hello from test template');
     file_put_contents($this->tempDir.'/other-template.twig', 'Other template content');
     file_put_contents($this->tempDir.'/greeting.twig', 'Hello, {{ name }}!');
-    file_put_contents(
-        $this->tempDir.'/page-with-placeholders.twig',
-        '<head>{{ craft.app.view.head() }}</head><body>{{ craft.app.view.beginBody() }}content{{ craft.app.view.endBody() }}</body>',
-    );
 
     app()->forgetScopedInstances();
 
@@ -39,20 +35,6 @@ beforeEach(function () {
 
 afterEach(function () {
     File::deleteDirectory($this->tempDir);
-});
-
-describe('head, beginBody, endBody', function () {
-    it('outputs the correct placeholder', function (string $method, string $placeholder) {
-        ob_start();
-        $this->renderer->$method();
-        $output = ob_get_clean();
-
-        expect($output)->toBe($placeholder);
-    })->with([
-        'head' => ['head', TemplateRenderer::HEAD_PLACEHOLDER],
-        'beginBody' => ['beginBody', TemplateRenderer::BODY_BEGIN_PLACEHOLDER],
-        'endBody' => ['endBody', TemplateRenderer::BODY_END_PLACEHOLDER],
-    ]);
 });
 
 describe('isRenderingTemplate', function () {
@@ -264,20 +246,6 @@ describe('renderPageTemplate', function () {
 
         expect($result)->toBe('');
     });
-
-    it('allows the EndPage event to override section html', function (string $property, string $html) {
-        Event::listen(EndPage::class, function (EndPage $event) use ($property, $html) {
-            $event->$property = $html;
-        });
-
-        $result = $this->renderer->renderPageTemplate('page-with-placeholders.twig');
-
-        expect($result)->toContain($html);
-    })->with([
-        'head html' => ['headHtml', '<meta name="custom" content="value">'],
-        'body begin html' => ['bodyBeginHtml', '<div id="body-begin">'],
-        'body end html' => ['bodyEndHtml', '<script>console.log("end")</script>'],
-    ]);
 
     it('allows the PageTemplateRendered event to modify output', function () {
         Event::listen(PageTemplateRendered::class, function (PageTemplateRendered $event) {

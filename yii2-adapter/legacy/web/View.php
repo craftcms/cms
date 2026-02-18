@@ -27,6 +27,7 @@ use CraftCms\Cms\Twig\Events\RenderingPageTemplate;
 use CraftCms\Cms\Twig\Events\RenderingTemplate;
 use CraftCms\Cms\Twig\Events\TemplateRendered;
 use CraftCms\Cms\Twig\Events\TwigCreated;
+use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\Twig\Twig;
@@ -1301,12 +1302,12 @@ class View extends \yii\web\View
 
     public function head()
     {
-        app(TemplateRenderer::class)->head();
+        app(PageLifecycle::class)->head();
     }
 
     public function beginBody()
     {
-        app(TemplateRenderer::class)->beginBody();
+        app(PageLifecycle::class)->beginBody();
     }
 
     /**
@@ -1314,7 +1315,7 @@ class View extends \yii\web\View
      */
     public function endBody(): void
     {
-        app(TemplateRenderer::class)->endBody();
+        app(PageLifecycle::class)->endBody();
     }
 
     /**
@@ -1780,6 +1781,22 @@ JS;
     /**
      * Returns HTML that should replace page placeholders after page template rendering.
      *
+     * This method renders all registered assets (head, body-begin, body-end) into
+     * HTML strings and returns them as an array. It is called by the `EndPage` event
+     * listener in {@see self::registerEvents()} to populate the event properties
+     * that `TemplateRenderer::renderPageTemplate()` uses for placeholder replacement.
+     *
+     * **Asset clearing behavior:** When `$clear` is `true` (the default), this method
+     * calls `AssetRegistry::headHtml(clear: true)`, `bodyBeginHtml(clear: true)`, and
+     * `bodyEndHtml(clear: true)` after rendering, which empties the registry's asset
+     * collections for those positions. This prevents assets from being rendered twice
+     * (once here and once via the `AssetRegistry` fallback in `TemplateRenderer`).
+     * Legacy `_readyJs` and `_loadJs` arrays are also cleared.
+     *
+     * @param  bool  $ajaxMode  Whether to render in AJAX mode (omits certain assets).
+     * @param  bool  $clear  Whether to clear rendered assets from the registry after output.
+     *                       When `true`, the `AssetRegistry` fallback in `TemplateRenderer`
+     *                       will produce empty strings since the assets have already been consumed.
      * @return array{headHtml: string, bodyBeginHtml: string, bodyEndHtml: string}
      */
     public function placeholderHtml(bool $ajaxMode = false, bool $clear = true): array
@@ -1797,6 +1814,9 @@ JS;
         $bodyEndHtml = $this->renderBodyEndHtml($ajaxMode);
 
         if ($clear) {
+            // Clear the AssetRegistry so that TemplateRenderer's ?? fallback to
+            // AssetRegistry::headHtml() / bodyBeginHtml() / bodyEndHtml() returns
+            // empty strings — the assets have already been consumed above.
             $this->registry()->headHtml(clear: true);
             $this->registry()->bodyBeginHtml(clear: true);
             $this->registry()->bodyEndHtml(clear: true);

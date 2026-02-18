@@ -84,7 +84,7 @@ final class Twig
         }
 
         $twig->addExtension(new StringLoaderExtension);
-        $twig->addExtension(new Extension($renderer, Craft::$app->getView(), $twig));
+        $twig->addExtension(new Extension($renderer, app(PageLifecycle::class), Craft::$app->getView(), $twig));
 
         if (TemplateMode::is(TemplateMode::Cp)) {
             $twig->addExtension(new CpExtension);
