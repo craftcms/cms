@@ -46,6 +46,7 @@ use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * @inheritdoc

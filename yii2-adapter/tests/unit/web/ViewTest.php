@@ -168,13 +168,13 @@ class ViewTest extends TestCase
         // Assert that the _renderingTemplate prop goes in and comes out as null.
         self::assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
 
-        $result = $this->view->renderTemplate('withvar.twig', ['name' => 'Giel Tettelaar']);
+        $result = $this->view->rendertemplate('withvar', ['name' => 'Giel Tettelaar']);
 
         self::assertSame($result, 'Hello iam Giel Tettelaar');
         self::assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
 
         // Test that templates can work without variables.
-        $result = $this->view->renderTemplate('novar.twig');
+        $result = $this->view->rendertemplate('novar');
 
         self::assertSame($result, 'I have no vars');
     }

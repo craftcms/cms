@@ -9,33 +9,35 @@ use craft\web\assets\systemmessages\SystemMessagesAsset;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\SystemMessage\SystemMessages as SystemMessagesService;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * SystemMessages represents a System Messages utility.
  */
 final class SystemMessages extends Utility
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('System Messages');
     }
 
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'system-messages';
     }
 
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'envelope';
     }
 
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         Edition::require(Edition::Pro);
@@ -43,7 +45,7 @@ final class SystemMessages extends Utility
         $view = Craft::$app->getView();
         $view->registerAssetBundle(SystemMessagesAsset::class);
 
-        return $view->renderTemplate('_components/utilities/SystemMessages/index.twig', [
+        return template('_components/utilities/SystemMessages/index', [
             'messages' => app(SystemMessagesService::class)->getAllMessages(),
         ]);
     }

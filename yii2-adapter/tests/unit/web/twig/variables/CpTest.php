@@ -2,7 +2,9 @@
 
 namespace crafttests\unit\web\twig;
 
-class CpTest extends \craft\test\TestCase
+use craft\test\TestCase;
+
+class CpTest extends TestCase
 {
     public function testGetEnvSuggestions()
     {

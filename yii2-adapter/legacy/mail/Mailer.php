@@ -193,17 +193,17 @@ class Mailer extends \yii\symfonymailer\Mailer
                 // Is there a custom HTML template set?
                 if (Edition::get()->value >= Edition::Pro->value && $this->template) {
                     $template = $this->template;
-                    $templateMode = TemplateMode::Site->value;
+                    $templateMode = TemplateMode::Site;
                 } else {
                     // Default to the _special/email.html template
                     $template = '_special/email.twig';
-                    $templateMode = TemplateMode::Cp->value;
+                    $templateMode = TemplateMode::Cp;
                 }
 
                 try {
-                    $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
+                    $message->setHtmlBody(\CraftCms\Cms\template($template, array_merge($variables, [
                         'body' => Template::raw(Markdown::process($htmlBody, 'gfm')),
-                    ]), $templateMode));
+                    ]), templateMode: $templateMode));
                 } catch (Throwable $e) {
                     // Just log it and don't worry about the HTML body
                     Log::warning('Error rendering email template: ' . $e->getMessage(), [__METHOD__]);

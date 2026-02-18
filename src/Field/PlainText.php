@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Str;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * PlainText represents a Plain Text field.
@@ -98,7 +99,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         }
     }
 
-    #[\Override]
+    #[Override]
     public function getSettings(): array
     {
         $settings = parent::getSettings();
@@ -124,7 +125,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -132,7 +133,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
 
     private function settingsHtml(bool $readOnly): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings.twig', [
+        return template('_components/fieldtypes/PlainText/settings', [
             'field' => $this,
             'readOnly' => $readOnly,
         ]);
@@ -177,7 +178,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
 
     private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input.twig', [
+        return template('_components/fieldtypes/PlainText/input', [
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,

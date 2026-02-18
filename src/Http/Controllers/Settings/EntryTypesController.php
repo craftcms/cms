@@ -36,6 +36,7 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class EntryTypesController
 {
@@ -334,7 +335,7 @@ final class EntryTypesController
         $view = Craft::$app->getView();
 
         $html = InputNamespace::namespaceInputs(
-            fn () => $view->renderTemplate('_includes/forms/entry-type-select/selection-settings.twig', [
+            fn () => template('_includes/forms/entry-type-select/selection-settings', [
                 'entryType' => $entryType,
             ]),
             $namespace,

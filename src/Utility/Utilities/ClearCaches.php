@@ -23,6 +23,7 @@ use Override;
 use Symfony\Component\Filesystem\Path;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * ClearCaches represents a ClearCaches dashboard widget.
@@ -74,7 +75,7 @@ final class ClearCaches extends Utility
         $view->registerAssetBundle(ClearCachesAsset::class);
         AssetRegistry::js('new Craft.ClearCachesUtility(\'clear-caches\');');
 
-        return $view->renderTemplate('_components/utilities/ClearCaches.twig', [
+        return template('_components/utilities/ClearCaches', [
             'cacheOptions' => $cacheOptions,
             'tagOptions' => $tagOptions,
         ]);

@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\Site\Data\SiteGroup;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static \Illuminate\Support\Collection getAllGroups()
- * @method static \CraftCms\Cms\Site\Data\SiteGroup|null getGroupById(int $groupId)
- * @method static \CraftCms\Cms\Site\Data\SiteGroup|null getGroupByUid(string $uid)
- * @method static bool saveGroup(\CraftCms\Cms\Site\Data\SiteGroup $group, bool $runValidation = true)
- * @method static void handleChangedGroup(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
- * @method static void handleDeletedGroup(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
+ * @method static Collection getAllGroups()
+ * @method static SiteGroup|null getGroupById(int $groupId)
+ * @method static SiteGroup|null getGroupByUid(string $uid)
+ * @method static bool saveGroup(SiteGroup $group, bool $runValidation = true)
+ * @method static void handleChangedGroup(ConfigEvent $event)
+ * @method static void handleDeletedGroup(ConfigEvent $event)
  * @method static bool deleteGroupById(int $groupId)
- * @method static bool deleteGroup(\CraftCms\Cms\Site\Data\SiteGroup $group)
+ * @method static bool deleteGroup(SiteGroup $group)
  * @method static void refreshGroups()
  *
  * @see \CraftCms\Cms\Site\SiteGroups

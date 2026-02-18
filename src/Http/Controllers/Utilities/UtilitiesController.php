@@ -14,8 +14,10 @@ use CraftCms\Cms\Utility\Utility;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 
 use function CraftCms\Cms\cp_redirect;
+use function CraftCms\Cms\template;
 
 final readonly class UtilitiesController
 {
@@ -104,7 +106,7 @@ final readonly class UtilitiesController
             if ($svg !== '') {
                 return $svg;
             }
-        } catch (\InvalidArgumentException) {
+        } catch (InvalidArgumentException) {
         }
 
         return $this->defaultUtilityIconSvg($class);
@@ -117,7 +119,7 @@ final readonly class UtilitiesController
      */
     private function defaultUtilityIconSvg(string $class): string
     {
-        return $this->craft->getView()->renderTemplate('_includes/fallback-icon.svg.twig', [
+        return template('_includes/fallback-icon.svg', [
             'label' => $class::displayName(),
         ]);
     }

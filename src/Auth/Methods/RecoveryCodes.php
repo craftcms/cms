@@ -9,9 +9,11 @@ use craft\web\assets\recoverycodes\RecoveryCodesAsset;
 use CraftCms\Cms\Auth\Models\RecoveryCodes as RecoveryCodesModel;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use InvalidArgumentException;
+use Override;
 use PragmaRX\Recovery\Recovery;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class RecoveryCodes extends BaseAuthMethod
 {
@@ -32,13 +34,11 @@ final class RecoveryCodes extends BaseAuthMethod
 
     public function getSetupHtml(string $containerId): string
     {
-        $view = Craft::$app->getView();
-
         AssetRegistry::jsWithVars(fn ($containerId) => <<<JS
 new Craft.RecoveryCodesSetup($containerId)
 JS, [$containerId]);
 
-        return $view->renderTemplate('_components/auth/methods/RecoveryCodes/setup.twig');
+        return template('_components/auth/methods/RecoveryCodes/setup');
     }
 
     public function getAuthFormHtml(): string
@@ -46,10 +46,10 @@ JS, [$containerId]);
         $view = Craft::$app->getView();
         $view->registerAssetBundle(RecoveryCodesAsset::class);
 
-        return $view->renderTemplate('_components/auth/methods/RecoveryCodes/form.twig');
+        return template('_components/auth/methods/RecoveryCodes/form');
     }
 
-    #[\Override]
+    #[Override]
     public function getActionMenuItems(): array
     {
         return [

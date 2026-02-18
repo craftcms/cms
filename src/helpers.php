@@ -9,6 +9,9 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Cms\View\TwigEngine;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Stringable;
@@ -146,6 +149,16 @@ function silence(Closure|string $callable, ?int $mask = null): mixed
     } finally {
         error_reporting($old);
     }
+}
+
+function template(string $view, array|Arrayable $data = [], array $mergeData = [], ?TemplateMode $templateMode = null): string
+{
+    $view = str_contains($view, '::') ? $view : "craftcms::$view";
+
+    return TemplateMode::with(
+        $templateMode ?? TemplateMode::get(),
+        fn () => view($view, $data, $mergeData)->with([TwigEngine::TEMPLATE => true])->render(),
+    );
 }
 
 /**

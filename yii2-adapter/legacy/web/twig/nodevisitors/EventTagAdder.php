@@ -108,7 +108,7 @@ class EventTagAdder extends BaseEventTagVisitor
         if (static::$foundEndBody === false && ($endBodyPos = stripos($data, '</body>')) !== false) {
             static::$foundEndBody = true;
 
-            return $this->_insertEventNode($node, $endBodyPos, 'body');
+            return $this->_insertEventNode($node, $endBodyPos, 'endBody');
         }
 
         return $node;

@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final readonly class PhotoController
 {
@@ -107,22 +108,20 @@ final readonly class PhotoController
 
     private function renderPhotoTemplate(Request $request, User $user): JsonResponse
     {
-        $view = Craft::$app->getView();
-
         $templateMode = TemplateMode::get();
         if (TemplateMode::is(TemplateMode::Site) && ! app(TemplateResolver::class)->exists('users/_photo.twig')) {
             $templateMode = TemplateMode::Cp;
         }
 
         $data = [
-            'html' => $view->renderTemplate('users/_photo.twig', [
+            'html' => template('users/_photo', [
                 'user' => $user,
-            ], $templateMode->value),
+            ], templateMode: $templateMode),
             'photoId' => $user->photoId,
         ];
 
         if ($user->getIsCurrent() && $request->isCpRequest()) {
-            $data['headerPhotoHtml'] = $view->renderTemplate('_layouts/components/header-photo.twig');
+            $data['headerPhotoHtml'] = template('_layouts/components/header-photo');
         }
 
         return new JsonResponse($data);

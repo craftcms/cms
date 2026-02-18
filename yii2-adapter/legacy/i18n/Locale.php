@@ -2,6 +2,7 @@
 
 namespace craft\i18n;
 
+use Craft;
 use InvalidArgumentException;
 use yii\base\BaseObject;
 
@@ -138,7 +139,7 @@ class Locale extends BaseObject
             return $this->_formatter;
         }
 
-        $this->_formatter = \Craft::createObject([
+        $this->_formatter = Craft::createObject([
             'class' => Formatter::class,
             'locale' => $this->aliasOf ?? $this->id,
             'sizeFormatBase' => $this->newFormatter->sizeFormatBase,

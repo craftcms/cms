@@ -125,7 +125,7 @@ class TemplatesController extends Controller
         }
 
         // Output the offline template
-        return $this->renderTemplate('offline', [], $templateMode ?? null);
+        return $this->rendertemplate('offline', [], $templateMode ?? null);
     }
 
     /**
@@ -136,7 +136,7 @@ class TemplatesController extends Controller
     public function actionManualUpdateNotification(): Response
     {
         $this->response->setNoCacheHeaders();
-        return $this->renderTemplate('_special/dbupdate.twig');
+        return $this->rendertemplate('_special/dbupdate');
     }
 
     /**
@@ -169,7 +169,7 @@ class TemplatesController extends Controller
                 throw new ServerErrorHttpException(t('The update can’t be installed :( {message}', ['message' => $message]));
             }
 
-            return $this->renderTemplate('_special/cantrun.twig', [
+            return $this->rendertemplate('_special/cantrun', [
                 'reqCheck' => $reqCheck,
             ]);
         }

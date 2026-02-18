@@ -41,6 +41,7 @@ use Override;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Content Block field type
@@ -120,7 +121,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->_contentBlockManager;
     }
 
-    #[\Override]
+    #[Override]
     public function getSettings(): array
     {
         $fieldLayout = $this->getFieldLayout();
@@ -318,7 +319,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -328,7 +329,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     {
         $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/ContentBlock/settings.twig', [
+        return template('_components/fieldtypes/ContentBlock/settings', [
             'field' => $this,
             'readOnly' => $readOnly,
             'baseIconsUrl' => "$bundle->baseUrl/images/content-block",

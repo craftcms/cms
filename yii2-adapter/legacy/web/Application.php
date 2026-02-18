@@ -30,6 +30,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use IntlDateFormatter;
@@ -419,7 +420,7 @@ class Application extends \yii\web\Application
     private function resourceSourcePathByHash(string $hash): string|null
     {
         try {
-            return \Illuminate\Support\Facades\DB::table(Table::RESOURCEPATHS)
+            return DB::table(Table::RESOURCEPATHS)
                 ->where('hash', $hash)
                 ->value('path');
         } catch (QueryException) {

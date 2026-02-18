@@ -67,7 +67,7 @@ class ControllerTest extends TestCase
         // We need to render a template from the site dir.
         Craft::$app->getView()->setTemplateMode(TemplateMode::Site->value);
 
-        $response = $this->controller->renderTemplate('template.twig');
+        $response = $this->controller->rendertemplate('template');
         (new TemplateResponseFormatter())->format($response);
 
         // Again. If this is all good. We can expect Yii to do its thing.
@@ -87,7 +87,7 @@ class ControllerTest extends TestCase
         Craft::$app->getView()->setTemplateMode(TemplateMode::Site->value);
         Craft::$app->getResponse()->getHeaders()->set('content-type', 'HEADERS');
 
-        $response = $this->controller->renderTemplate('template.twig');
+        $response = $this->controller->rendertemplate('template');
         (new TemplateResponseFormatter())->format($response);
 
         // Again. If this is all good. We can expect Yii to do its thing.

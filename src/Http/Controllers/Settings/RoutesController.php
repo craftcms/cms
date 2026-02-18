@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use Craft;
 use craft\web\assets\routes\RoutesAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -23,7 +24,7 @@ final readonly class RoutesController
 
     public function index(): View
     {
-        \Craft::$app->getView()->registerAssetBundle(RoutesAsset::class);
+        Craft::$app->getView()->registerAssetBundle(RoutesAsset::class);
 
         return view('craftcms::settings.routes', [
             'tokens' => $this->routes->tokens,

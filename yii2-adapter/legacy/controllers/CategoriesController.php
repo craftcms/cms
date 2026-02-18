@@ -65,7 +65,7 @@ class CategoriesController extends Controller
 
         $groups = Craft::$app->getCategories()->getAllGroups();
 
-        return $this->renderTemplate('yii2-adapter/settings/categories/index.twig', [
+        return $this->rendertemplate('yii2-adapter/settings/categories/index', [
             'categoryGroups' => $groups,
             'readOnly' => !Cms::config()->allowAdminChanges,
         ]);
@@ -128,7 +128,7 @@ class CategoriesController extends Controller
         $variables['categoryGroup'] = $categoryGroup;
         $variables['readOnly'] = $readOnly;
 
-        return $this->renderTemplate('yii2-adapter/settings/categories/_edit.twig', $variables);
+        return $this->rendertemplate('yii2-adapter/settings/categories/_edit', $variables);
     }
 
     /**
@@ -236,7 +236,7 @@ class CategoriesController extends Controller
             throw new ForbiddenHttpException('User not permitted to edit categories');
         }
 
-        return $this->renderTemplate('yii2-adapter/categories/_index.twig', [
+        return $this->rendertemplate('yii2-adapter/categories/_index', [
             'groupHandle' => $groupHandle,
             'groups' => $groups,
         ]);

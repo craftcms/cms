@@ -35,6 +35,7 @@ use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Table represents a Table field.
@@ -261,7 +262,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -352,7 +353,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             Json::encode($this->staticRows).', '.
             ');');
 
-        $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable.twig', [
+        $columnsField = template('_components/fieldtypes/Table/columntable', [
             'cols' => $columnSettings,
             'rows' => $this->columns,
             'errors' => $this->errors()->get('columns'),
@@ -379,7 +380,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             'includeRowId' => true,
         ]);
 
-        return $view->renderTemplate('_components/fieldtypes/Table/settings.twig', [
+        return template('_components/fieldtypes/Table/settings', [
             'field' => $this,
             'columnsField' => $columnsField,
             'defaultsField' => $defaultsField,
@@ -858,7 +859,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable.twig', [
+        return template('_includes/forms/editableTable', [
             'id' => $this->getInputId(),
             'name' => $this->handle,
             'cols' => $this->columns,

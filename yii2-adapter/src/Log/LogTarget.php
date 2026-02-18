@@ -3,9 +3,11 @@
 namespace CraftCms\Yii2Adapter\Log;
 
 use Illuminate\Support\Facades\Log;
+use Throwable;
 use yii\helpers\VarDumper;
+use yii\log\Target;
 
-class LogTarget extends \yii\log\Target
+class LogTarget extends Target
 {
     use LogTrait;
 
@@ -24,7 +26,7 @@ class LogTarget extends \yii\log\Target
 
             if (!is_string($text)) {
                 // exceptions may not be serializable if in the call stack somewhere is a Closure
-                if ($text instanceof \Throwable) {
+                if ($text instanceof Throwable) {
                     $context['exception'] = $text;
                     $text = (string) $text;
                 } else {

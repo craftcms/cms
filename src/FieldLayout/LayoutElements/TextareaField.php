@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html as HtmlHelper;
 use Illuminate\Support\Facades\Auth;
 use Override;
+
+use function CraftCms\Cms\template;
 
 class TextareaField extends BaseNativeField
 {
@@ -74,7 +75,7 @@ class TextareaField extends BaseNativeField
 
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::$app->getView()->renderTemplate(
+        return template(
             '_includes/forms/textarea.twig',
             $this->inputTemplateVariables($element, $static),
         );

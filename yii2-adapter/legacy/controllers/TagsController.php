@@ -44,7 +44,7 @@ class TagsController extends Controller
 
         $tagGroups = Craft::$app->getTags()->getAllTagGroups();
 
-        return $this->renderTemplate('yii2-adapter/settings/tags/index.twig', [
+        return $this->rendertemplate('yii2-adapter/settings/tags/index', [
             'tagGroups' => $tagGroups,
             'readOnly' => !Cms::config()->allowAdminChanges,
         ]);
@@ -99,7 +99,7 @@ class TagsController extends Controller
             ],
         ];
 
-        return $this->renderTemplate('yii2-adapter/settings/tags/_edit.twig', [
+        return $this->rendertemplate('yii2-adapter/settings/tags/_edit', [
             'tagGroupId' => $tagGroupId,
             'tagGroup' => $tagGroup,
             'title' => $title,

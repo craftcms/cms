@@ -8,6 +8,7 @@ use CraftCms\Cms\View\Hooks\PrepareElementIndexVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementSourcesVariables;
 use CraftCms\Cms\View\Hooks\PrepareElementToolbarVariables;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Override;
@@ -40,8 +41,25 @@ class ViewServiceProvider extends ServiceProvider
             TemplateMode::set(TemplateMode::Cp);
         }
 
+        $this->registerTemplateRoots();
+
         $hooks->register('cp.layouts.elementindex', PrepareElementIndexVariables::class);
         $hooks->register('cp.elements.toolbar', PrepareElementToolbarVariables::class);
         $hooks->register('cp.elements.sources', PrepareElementSourcesVariables::class);
+    }
+
+    private function registerTemplateRoots(): void
+    {
+        $this->app->booted(function () {
+            $factory = View::getFacadeRoot();
+
+            foreach (TemplateMode::get()->templateRoots() as $namespace => $roots) {
+                $factory->addNamespace($namespace, $roots);
+
+                foreach ($roots as $root) {
+                    $factory->addLocation($root);
+                }
+            }
+        });
     }
 }

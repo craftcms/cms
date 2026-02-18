@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -23,6 +22,7 @@ use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Lightswitch represents a Lightswitch field.
@@ -110,7 +110,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -171,7 +171,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     {
         $id = $this->getInputId();
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch.twig', [
+        return template('_includes/forms/lightswitch', [
             'id' => $id,
             'labelId' => $this->getLabelId(),
             'describedBy' => $this->describedBy,

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
@@ -29,6 +28,7 @@ use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Date represents a Date/Time field.
@@ -169,7 +169,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -208,7 +208,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
             'value' => 'showBoth',
         ];
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings.twig', [
+        return template('_components/fieldtypes/Date/settings', [
             'options' => $options,
             'value' => $dateTimeValue,
             'incrementOptions' => $incrementOptions,
@@ -227,7 +227,6 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var DateTime|null $value */
-        $view = Craft::$app->getView();
         $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : app()->getTimezone();
 
         if ($value === null) {
@@ -258,15 +257,15 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ];
 
         if ($this->showDate) {
-            $components[] = $view->renderTemplate('_includes/forms/date.twig', $variables);
+            $components[] = template('_includes/forms/date', $variables);
         }
 
         if ($this->showTime) {
-            $components[] = $view->renderTemplate('_includes/forms/time.twig', $variables);
+            $components[] = template('_includes/forms/time', $variables);
         }
 
         if ($this->showTimeZone) {
-            $components[] = $view->renderTemplate('_includes/forms/timeZone.twig', [
+            $components[] = template('_includes/forms/timeZone', [
                 'describedBy' => $this->describedBy,
                 'name' => "$this->handle[timezone]",
                 'value' => $timezone,

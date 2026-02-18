@@ -140,7 +140,7 @@ class UsersController extends Controller
         $this->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
 
         $this->response->setNoCacheHeaders();
-        return $this->renderTemplate('_special/setup-2fa.twig', templateMode: TemplateMode::Cp->value);
+        return $this->rendertemplate('_special/setup-2fa', templateMode: TemplateMode::Cp->value);
     }
 
     public static function registerEvents(): void

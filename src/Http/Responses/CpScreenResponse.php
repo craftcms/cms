@@ -25,6 +25,7 @@ use Stringable;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class CpScreenResponse implements Responsable
 {
@@ -534,7 +535,7 @@ final class CpScreenResponse implements Responsable
     public function toolbarTemplate(string $template, array $variables = []): self
     {
         return $this->toolbarHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -580,7 +581,7 @@ final class CpScreenResponse implements Responsable
     public function additionalButtonsTemplate(string $template, array $variables = []): self
     {
         return $this->additionalButtonsHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -600,7 +601,7 @@ final class CpScreenResponse implements Responsable
     public function contentTemplate(string $template, array $variables = []): self
     {
         return $this->contentHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -620,7 +621,7 @@ final class CpScreenResponse implements Responsable
     public function metaSidebarTemplate(string $template, array $variables = []): self
     {
         return $this->metaSidebarHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -640,7 +641,7 @@ final class CpScreenResponse implements Responsable
     public function pageSidebarTemplate(string $template, array $variables = []): self
     {
         return $this->pageSidebarHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -660,7 +661,7 @@ final class CpScreenResponse implements Responsable
     public function noticeTemplate(string $template, array $variables = []): self
     {
         return $this->noticeHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -680,7 +681,7 @@ final class CpScreenResponse implements Responsable
     public function errorSummaryTemplate(string $template, array $variables = []): self
     {
         return $this->errorSummary(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -711,9 +712,9 @@ final class CpScreenResponse implements Responsable
         $extraToolbarItems = is_callable($this->toolbarHtml) ? call_user_func($this->toolbarHtml) : $this->toolbarHtml;
         $notice = $this->noticeHtml ? InputNamespace::namespaceInputs($this->noticeHtml, $namespace) : null;
 
-        $tabs = count($this->tabs) > 1 ? InputNamespace::namespaceInputs(fn () => $view->renderTemplate('_includes/tabs.twig', [
+        $tabs = count($this->tabs) > 1 ? InputNamespace::namespaceInputs(fn () => template('_includes/tabs', [
             'tabs' => $this->tabs,
-        ], TemplateMode::Cp->value), $namespace) : null;
+        ], templateMode: TemplateMode::Cp), $namespace) : null;
 
         $content = InputNamespace::namespaceInputs(function () {
             $components = [];

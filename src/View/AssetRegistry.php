@@ -343,7 +343,7 @@ final class AssetRegistry
 
     public function bodyHtml(bool $clear = true): string
     {
-        return $this->bodyBeginHtml($clear) . $this->bodyEndHtml($clear);
+        return $this->bodyBeginHtml($clear).$this->bodyEndHtml($clear);
     }
 
     /**
@@ -741,10 +741,10 @@ final class AssetRegistry
             ->concat($this->jsFiles[$position->value] ?? [])
             ->unless(
                 empty($this->js[$position->value]),
-                fn(Collection $c) => $c->concat([
+                fn (Collection $c) => $c->concat([
                     Html::script(implode(PHP_EOL, $this->js[$position->value])),
                 ]),
             )
-            ->map(fn(string|Stringable $part) => (string) $part);
+            ->map(fn (string|Stringable $part) => (string) $part);
     }
 }

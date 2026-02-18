@@ -1459,9 +1459,6 @@ XML;
         }
 
         $currentUser = Auth::user();
-        Craft::$app->getView();
-        Craft::$app->getUser();
-
         $canAdministrateUsers = $currentUser->can('administrateUsers');
         $canModerateUsers = $currentUser->can('moderateUsers');
 

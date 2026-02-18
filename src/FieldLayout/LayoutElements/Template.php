@@ -104,10 +104,10 @@ class Template extends BaseUiElement
         $view->setTwig(self::twig());
 
         try {
-            $content = trim((string) $view->renderTemplate($this->template, [
+            $content = trim(\CraftCms\Cms\template($this->template, [
                 'element' => $element,
                 'static' => $static,
-            ], $this->templateMode));
+            ], templateMode: TemplateMode::from($this->templateMode)));
         } catch (Throwable $e) {
             return $this->_error($e->getMessage(), 'error');
         } finally {

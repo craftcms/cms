@@ -14,6 +14,7 @@ use craft\web\User as WebUser;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Yii2Adapter\IdentityWrapper;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use UnitTester;
 
 /**
@@ -79,7 +80,7 @@ class UserTest extends TestCase
      */
     private function _sessionGetStub(?int $returnValue)
     {
-        \Illuminate\Support\Facades\Session::invalidate();
+        Session::invalidate();
 
         $this->tester->mockCraftMethods('session', [
             'getHasSessionId' => fn() => true,

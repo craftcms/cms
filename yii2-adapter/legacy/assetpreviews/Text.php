@@ -7,11 +7,11 @@
 
 namespace craft\assetpreviews;
 
-use Craft;
 use craft\base\AssetPreviewHandler;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Html;
+use function CraftCms\Cms\template;
 
 /**
  * Provides functionality to preview text files as HTML
@@ -31,7 +31,7 @@ class Text extends AssetPreviewHandler
         FileHelper::unlink($localCopy);
         $language = $this->asset->kind === Asset::KIND_HTML ? 'markup' : $this->asset->kind;
 
-        return Craft::$app->getView()->renderTemplate('assets/_previews/text.twig',
+        return template('assets/_previews/text',
             array_merge([
                 'asset' => $this->asset,
                 'language' => $language,

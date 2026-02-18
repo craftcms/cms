@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final readonly class AuthMethodController
 {
@@ -60,7 +61,7 @@ final readonly class AuthMethodController
     public function listingHtml(): JsonResponse
     {
         $view = Craft::$app->getView();
-        $html = $view->renderTemplate('users/_auth-methods.twig', templateMode: TemplateMode::Cp->value);
+        $html = template('users/_auth-methods', templateMode: TemplateMode::Cp);
 
         return new JsonResponse([
             'html' => $html,

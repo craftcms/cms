@@ -133,7 +133,7 @@ describe('BaseCondition::getBuilderInnerHtml()', function () {
             try {
                 $rule = $condition->createConditionRule($selectableRule::class);
                 $condition->addConditionRule($rule);
-            } catch (\InvalidArgumentException) {
+            } catch (InvalidArgumentException) {
                 // Rule may no longer be selectable due to exclusive query param overlap
             }
         }

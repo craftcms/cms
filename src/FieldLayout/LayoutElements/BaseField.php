@@ -20,6 +20,7 @@ use CraftCms\Cms\Support\Str;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 abstract class BaseField extends FieldLayoutElement
 {
@@ -322,7 +323,7 @@ abstract class BaseField extends FieldLayoutElement
 
     protected function settingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings.twig', [
+        return template('_includes/forms/fld/field-settings', [
             'field' => $this,
             'defaultLabel' => $this->defaultLabel(),
             'defaultInstructions' => $this->defaultInstructions(),

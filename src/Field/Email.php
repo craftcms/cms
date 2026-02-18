@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -19,6 +18,7 @@ use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Email represents an Email field.
@@ -67,7 +67,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -101,7 +101,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
+        return template('_includes/forms/text', [
             'type' => 'email',
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
@@ -112,7 +112,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function prepareForElementValidation(mixed $value): mixed
     {
         if (is_string($value)) {
@@ -122,7 +122,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $value;
     }
 
-    #[\Override]
+    #[Override]
     public function getElementRules(ElementInterface $element): array
     {
         return [
