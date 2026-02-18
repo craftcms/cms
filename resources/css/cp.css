@@ -10,6 +10,7 @@ CP Styles
 
 :root {
   --global-sidebar-width: calc(226rem / 16);
+  --global-content-width: calc(1440rem / 16);
   --header-height: calc(44rem / 16);
 }
 

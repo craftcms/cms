@@ -975,9 +975,13 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
 
       this.addListener($a, 'click', () => {
-        setTimeout(() => {
-          this.activatePreviewToken();
-        }, 1);
+        if (
+          decodeURIComponent($a.attr('href')).match(/\bpreview\/create-token\b/)
+        ) {
+          setTimeout(() => {
+            this.activatePreviewToken();
+          }, 1);
+        }
       });
 
       this.previewLinks.push($a);
@@ -1001,11 +1005,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     activatePreviewToken: function () {
-      if (this.settings.isLive) {
-        // don't do anything yet, but leave the event in case we need it later
-        return;
-      }
-
       this.activatedPreviewToken = true;
       this.updatePreviewLinks();
     },
@@ -1035,7 +1034,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         canonicalId: this.settings.canonicalId,
         siteId: this.settings.siteId,
         revisionId: this.settings.revisionId,
-        previewToken: this.settings.previewToken,
+        previewToken: this.settings.hashedPreviewToken,
       };
 
       if (this.settings.draftId && !this.settings.isProvisionalDraft) {
@@ -1073,11 +1072,11 @@ Craft.ElementEditor = Garnish.Base.extend(
      */
     getTokenizedPreviewUrl: function (url, previewParam, asPromise = true) {
       const params = {};
-
-      if (
+      const withPreviewParam =
         this.settings.previewParamValue &&
-        (previewParam || !this.settings.isLive)
-      ) {
+        (previewParam || !this.settings.isLive);
+
+      if (withPreviewParam) {
         // Randomize the URL so CDNs don't return cached pages
         params[previewParam || 'x-craft-preview'] =
           this.settings.previewParamValue;
@@ -1087,8 +1086,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         params[Craft.siteToken] = this.settings.siteToken;
       }
 
-      // No need for a token if we're looking at a live element
-      if (this.settings.isLive) {
+      if (!withPreviewParam) {
         const previewUrl = Craft.getUrl(url, params);
 
         if (asPromise) {
@@ -1100,7 +1098,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         return previewUrl;
       }
 
-      if (!this.settings.previewToken) {
+      if (!this.settings.previewToken || !this.settings.hashedPreviewToken) {
         throw 'Missing preview token';
       }
 
@@ -2314,7 +2312,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     hideTip: function (ev) {
       const targetElement = ev.target;
       if (targetElement) {
-        const $targetParent = $(targetElement).closest('.readable');
+        const $targetParent = $(targetElement).closest('[data-layout-element]');
         if ($targetParent.length) {
           const layoutElementUid = $targetParent.data('layout-element');
           $targetParent.remove();
@@ -2525,6 +2523,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       isUnpublishedDraft: false,
       previewTargets: [],
       previewToken: null,
+      hashedPreviewToken: null,
       previewParamValue: null,
       revisionId: null,
       fieldId: null,

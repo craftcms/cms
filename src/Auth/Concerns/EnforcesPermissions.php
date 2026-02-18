@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Auth\Concerns;
 
 use Craft;
-use craft\elements\Entry;
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\Auth;

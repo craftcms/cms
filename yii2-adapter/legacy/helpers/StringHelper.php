@@ -10,11 +10,11 @@ namespace craft\helpers;
 use Craft;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use InvalidArgumentException;
 use Normalizer;
 use Throwable;
 use voku\helper\ASCII;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use const ENT_COMPAT;
 
@@ -378,6 +378,18 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function convertToUtf8(string $str): string
     {
         return Str::convertToUtf8($str);
+    }
+
+    /**
+     * Converts line breaks to Unix line breaks (LF) within the given string.
+     *
+     * @param string $str
+     * @return string
+     * @since 5.9.0
+     */
+    public static function convertLineBreaks(string $str): string
+    {
+        return preg_replace('/\R/u', "\n", $str);
     }
 
     /**

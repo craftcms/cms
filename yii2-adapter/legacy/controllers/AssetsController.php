@@ -9,10 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\assetpreviews\Image as ImagePreview;
-use craft\base\Element;
 use craft\base\LocalFsInterface;
-use craft\elements\Asset;
-use craft\elements\conditions\ElementCondition;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
 use craft\errors\ElementNotFoundException;
@@ -30,9 +27,12 @@ use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
@@ -41,6 +41,8 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
 use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -700,7 +702,7 @@ class AssetsController extends Controller
             [, $filename] = Assets::parseFileLocation($asset->newLocation);
 
             return $this->asJson([
-                'conflict' => $asset->getFirstError('newLocation'),
+                'conflict' => $asset->errors()->first('newLocation'),
                 'suggestedFilename' => $asset->suggestedFilename,
                 'filename' => $filename,
                 'assetId' => $asset->id,
@@ -1308,7 +1310,9 @@ class AssetsController extends Controller
         $extension = strtolower(pathinfo($uploadedFile->name, PATHINFO_EXTENSION));
 
         if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
-            throw new AssetDisallowedExtensionException(Craft::t('app', "“{$extension}” is not an allowed file extension."));
+            throw new AssetDisallowedExtensionException(t('“{extension}” is not an allowed file extension.', [
+                'extension' => $extension,
+            ]));
         }
 
         // Move the uploaded file to the temp folder
@@ -1330,8 +1334,9 @@ class AssetsController extends Controller
      */
     public function actionGenerateFallbackTransform(string $transform): Response
     {
-        $transform = Craft::$app->getSecurity()->validateData($transform);
-        if ($transform === false) {
+        try {
+            $transform = Crypt::decrypt($transform);
+        } catch (DecryptException) {
             throw new BadRequestHttpException('Request contained an invalid transform param.');
         }
 

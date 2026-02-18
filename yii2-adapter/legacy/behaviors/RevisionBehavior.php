@@ -7,7 +7,7 @@
 
 namespace craft\behaviors;
 
-use craft\base\Element;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 use function CraftCms\Cms\t;

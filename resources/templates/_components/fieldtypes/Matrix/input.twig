@@ -1,6 +1,9 @@
 {% set singleType = entryTypes|length == 1 %}
+{% set static = static ?? false %}
 
-{{ hiddenInput(name, '') }}
+{% if not static %}
+  {{ hiddenInput(name, '') }}
+{% endif %}
 
 <div class="matrix matrix-field" id="{{ id }}">
   <span role="status" class="visually-hidden" data-status-message></span>

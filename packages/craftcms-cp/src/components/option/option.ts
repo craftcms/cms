@@ -15,7 +15,8 @@ export default class CraftOption extends LionOption {
     return html`
       <div class="choice-field__label">
         <slot></slot>
-        ${this.hint ? html` — <span class="hint">${this.hint}</span>` : nothing}
+        ${this.hint ? html`<span class="hint">${this.hint}</span>` : nothing}
+        <slot name="suffix"></slot>
       </div>
     `;
   }

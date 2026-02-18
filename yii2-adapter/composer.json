@@ -23,7 +23,7 @@
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
-    "php": "^8.4",
+    "php": "^8.5",
     "ext-bcmath": "*",
     "ext-curl": "*",
     "ext-dom": "*",
@@ -59,6 +59,7 @@
     "larastan/larastan": "^3.7",
     "league/factory-muffin": "^3.3.0",
     "orchestra/testbench": "^10.6",
+    "pestphp/pest": "^4.0",
     "phpstan/phpstan": "^2.1",
     "rector/rector": "^2.0",
     "vlucas/phpdotenv": "^5.4.1",
@@ -103,11 +104,12 @@
   "config": {
     "sort-packages": true,
     "platform": {
-      "php": "8.4"
+      "php": "8.5"
     },
     "platform-check": false,
     "allow-plugins": {
       "craftcms/plugin-installer": true,
+      "pestphp/pest-plugin": true,
       "yiisoft/yii2-composer": true
     }
   },

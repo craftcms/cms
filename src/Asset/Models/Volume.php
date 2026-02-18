@@ -21,6 +21,7 @@ final class Volume extends BaseModel
 
     protected $table = Table::VOLUMES;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

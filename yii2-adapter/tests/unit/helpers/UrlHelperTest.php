@@ -101,6 +101,8 @@ class UrlHelperTest extends TestCase
      */
     public function testCpUrlCreation(string $expected, string $path, array $params, string $scheme = 'https'): void
     {
+        Aliases::set('@web', 'http://localhost');
+
         $this->tester->mockCraftMethods('request', [
             'getIsSecureConnection' => false,
             'getIsCpRequest' => true,

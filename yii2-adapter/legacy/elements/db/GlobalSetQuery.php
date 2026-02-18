@@ -30,6 +30,7 @@ use craft\helpers\Db;
  * @replace {myElement} myGlobalSet
  * @replace {element-class} \craft\elements\GlobalSet
  * @deprecated in 6.0.0
+ * @phpstan-ignore class.missingExtends
  */
 class GlobalSetQuery extends ElementQuery
 {

@@ -7,17 +7,23 @@ namespace CraftCms\Cms\Field\Data;
 use ArrayAccess;
 use ArrayIterator;
 use craft\base\Serializable;
+use craft\web\twig\AllowedInSandbox;
+use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Support\Json;
 use IteratorAggregate;
-use Spatie\LaravelData\Dto;
+use Stringable;
 use Traversable;
-use yii\base\InvalidCallException;
 
-final class JsonData extends Dto implements \Stringable, ArrayAccess, IteratorAggregate, Serializable
+#[AllowedInSandbox]
+final class JsonData extends Component implements ArrayAccess, IteratorAggregate, Serializable, Stringable
 {
     public function __construct(
         private mixed $value,
-    ) {}
+        public array $config = [],
+    ) {
+        parent::__construct($config);
+    }
 
     public function __toString(): string
     {
@@ -76,7 +82,7 @@ final class JsonData extends Dto implements \Stringable, ArrayAccess, IteratorAg
         }
 
         if (is_array($this->value)) {
-            return array_key_exists($offset, $this->value);
+            return array_key_exists((string) $offset, $this->value);
         }
 
         if ($this->value instanceof ArrayAccess) {

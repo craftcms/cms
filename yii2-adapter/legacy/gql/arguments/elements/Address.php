@@ -8,9 +8,9 @@
 namespace craft\gql\arguments\elements;
 
 use craft\base\GqlInlineFragmentFieldInterface;
-use craft\elements\Address as AddressElement;
 use craft\gql\base\ElementArguments;
 use craft\gql\types\QueryArgument;
+use CraftCms\Cms\Address\Elements\Address as AddressElement;
 use CraftCms\Cms\Field\Fields;
 use GraphQL\Type\Definition\Type;
 

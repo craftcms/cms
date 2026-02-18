@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
-use craft\elements\ElementCollection;
 use craft\web\assets\recententries\RecentEntriesAsset;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
@@ -18,18 +19,12 @@ use function CraftCms\Cms\t;
 
 final class RecentEntries extends Widget
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Recent Entries');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -59,7 +54,7 @@ final class RecentEntries extends Widget
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return [
             'siteId' => ['nullable', 'integer'],
@@ -67,9 +62,6 @@ final class RecentEntries extends Widget
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSettingsHtml(): string
     {
@@ -79,9 +71,6 @@ final class RecentEntries extends Widget
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitle(): string
     {
@@ -113,9 +102,6 @@ final class RecentEntries extends Widget
         return $title;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getBodyHtml(): string
     {
@@ -129,7 +115,7 @@ final class RecentEntries extends Widget
 
         $view->registerAssetBundle(RecentEntriesAsset::class);
         $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
-        $view->registerJs($js);
+        AssetRegistry::js($js);
 
         $entries = $this->getEntries();
 

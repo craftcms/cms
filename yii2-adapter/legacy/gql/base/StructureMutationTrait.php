@@ -8,8 +8,8 @@
 namespace craft\gql\base;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Support\Facades\Structures;
 use GraphQL\Error\Error;
 

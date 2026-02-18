@@ -14,7 +14,6 @@ trait InteractsWithCp
     /** @var bool Whether the plugin has its own section in the control panel */
     public bool $hasCpSection = false;
 
-    /** {@inheritdoc} */
     public function getCpNavItem(): ?array
     {
         $ret = [

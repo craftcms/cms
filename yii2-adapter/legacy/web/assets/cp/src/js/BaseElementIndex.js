@@ -561,6 +561,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (queryParams.search) {
         this.startSearching();
         this.searchText = queryParams.search;
+        Craft.setQueryParam('search', queryParams.search);
       }
 
       // Respect the initial filters
@@ -2035,7 +2036,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     canPasteInternal(elementInfo) {
-      if (!elementInfo.length || !this.$source || this.showingActionTriggers) {
+      if (!elementInfo.length || !this.$source) {
         return false;
       }
 
@@ -2185,7 +2186,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       const oldHistory = this.getSelectedSourceState('orderHistory', []);
-      for (let i = 0; i < oldHistory.length; i++) {
+      for (let i = 0; i < oldHistory?.length; i++) {
         const [a] = oldHistory[i];
         if (a && !attributes.includes(a)) {
           history.push(oldHistory[i]);
@@ -4615,7 +4616,7 @@ const ViewMenu = Garnish.Base.extend({
       .map((group) => [
         {optgroup: group.label},
         ...group.options.map((option) => ({
-          label: Craft.escapeHtml(option.label),
+          label: option.label,
           value: option.attr,
         })),
       ])

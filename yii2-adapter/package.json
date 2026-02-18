@@ -5,12 +5,12 @@
   "scripts": {
     "prebuild": "npm run fix-prettier",
     "build": "webpack --node-env=production --progress",
-    "dev": "webpack --node-env=dev --mode=development --progress",
+    "dev": "webpack --node-env=dev --mode=development -w",
     "serve": "webpack-dev-server --node-env=development",
     "check-prettier": "prettier --check ./legacy/web/assets",
     "fix-prettier": "prettier --write ./legacy/web/assets",
     "prepare": "husky",
-    "lint:styles": "stylelint \"src/**/*.scss\""
+    "lint:styles": "stylelint \"legacy/**/*.scss\""
   },
   "engines": {
     "node": ">=20"
@@ -24,6 +24,7 @@
     "@playwright/test": "^1.52.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.6",
+    "pkg-dir": "^5.0.0",
     "prettier": "3.1.1",
     "stylelint": "^16.6.1",
     "stylelint-config-standard": "^36.0.0",

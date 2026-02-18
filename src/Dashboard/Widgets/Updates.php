@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
 use craft\web\assets\updateswidget\UpdatesWidgetAsset;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Updates\Updates as UpdatesService;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,18 +21,12 @@ final class Updates extends Widget
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
         return t('Updates');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function isSelectable(): bool
     {
@@ -39,27 +34,18 @@ final class Updates extends Widget
         return parent::isSelectable() && Auth::user()->can('performUpdates');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected static function allowMultipleInstances(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'certificate';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getBodyHtml(): ?string
     {
@@ -73,7 +59,7 @@ final class Updates extends Widget
 
         if (! $cached || ! $this->updates->totalAvailableUpdates()) {
             $view->registerAssetBundle(UpdatesWidgetAsset::class);
-            $view->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
+            AssetRegistry::js('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
         }
 
         if ($cached) {

@@ -26,13 +26,51 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.5'
           tools: composer:v2, laravel/pint
           extensions: json, dom, curl, libxml, mbstring
           coverage: none
 
       - name: Run Pint
         run: pint --parallel --test --verbose
+
+  rector:
+    name: 'Code Quality / Rector'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMPOSER_AUTH_JSON: |
+            {
+              "http-basic": {
+                "repo.packagist.com": {
+                  "username": "${{ secrets.packagist_username }}",
+                  "password": "${{ secrets.packagist_token }}"
+                }
+              }
+            }
+
+      - name: Set version
+        run: composer config version "6.x-dev"
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+      
+      - name: Run Rector
+        run: vendor/bin/rector process --dry-run --ansi
 
   phpstan:
     name: 'Code Quality / Phpstan'
@@ -43,7 +81,7 @@ jobs:
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.5'
           coverage: none
 
       - name: Set version
@@ -62,7 +100,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [8.4]
+        php: [8.5]
         db: [mysql, pgsql]
     services:
       # Install Postgres
@@ -96,6 +134,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          ini-values: display_errors=On, memory_limit=2G
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
           coverage: none
         env:
@@ -127,7 +166,10 @@ jobs:
         uses: ramsey/composer-install@v3
 
       - name: Execute CMS tests
-        run: ./vendor/bin/pest --ci
+        run: ./vendor/bin/pest --ci --compact --testsuite=Tests
+
+      - name: Execute Arch tests
+        run: ./vendor/bin/pest --ci --testsuite=Arch
 
       - name: Set version
         run: composer config version "6.x-dev"
@@ -139,4 +181,4 @@ jobs:
           working-directory: yii2-adapter
 
       - name: Execute Yii2 Adapter tests
-        run: vendor/bin/pest --ci --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel
+        run: vendor/bin/pest --ci --compact --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel

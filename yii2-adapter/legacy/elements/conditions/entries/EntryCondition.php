@@ -2,35 +2,20 @@
 
 namespace craft\elements\conditions\entries;
 
-use craft\elements\conditions\ElementCondition;
-use craft\elements\conditions\HasDescendantsRule;
-use craft\elements\conditions\LevelConditionRule;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 
-/**
- * Entry query condition.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class EntryCondition extends ElementCondition
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Entry query condition.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Conditions\EntryCondition} instead.
      */
-    protected function selectableConditionRules(): array
+    class EntryCondition extends ElementCondition
     {
-        return array_merge(parent::selectableConditionRules(), [
-            AuthorConditionRule::class,
-            AuthorGroupConditionRule::class,
-            ExpiryDateConditionRule::class,
-            HasDescendantsRule::class,
-            LevelConditionRule::class,
-            PostDateConditionRule::class,
-            SavableConditionRule::class,
-            SectionConditionRule::class,
-            FieldConditionRule::class,
-            TypeConditionRule::class,
-            ViewableConditionRule::class,
-        ]);
     }
 }
+
+class_alias(\CraftCms\Cms\Entry\Conditions\EntryCondition::class, EntryCondition::class);

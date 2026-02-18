@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\fieldlayoutelements\BaseField;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 
 /**
  * DefineFieldLayoutFieldsEvent event class.

@@ -2,7 +2,7 @@
 
 namespace craft\elements\conditions\tags;
 
-use craft\elements\conditions\ElementCondition;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 
 /**
  * Tag query condition.

@@ -6,21 +6,29 @@ namespace CraftCms\Cms\Tests;
 
 use Craft;
 use craft\test\TestSetup;
+use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\View\TemplateMode;
 use Dotenv\Dotenv;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -37,9 +45,16 @@ class TestCase extends Orchestra
         parent::setUp();
 
         app()->setLocale('en-US');
-        Config::set('app.timezone', 'America/Los_Angeles');
 
+        // Reset timezone to a consistent value for tests
+        // This is needed because AppServiceProvider::setTimezone() runs during boot,
+        // before RefreshDatabase has prepared the database, potentially reading stale data
+        Config::set('app.timezone', 'America/Los_Angeles');
+        date_default_timezone_set('America/Los_Angeles');
+
+        // Tests run in Pro and Cp by default
         Edition::set(Edition::Pro);
+        TemplateMode::set(TemplateMode::Cp);
 
         File::cleanDirectory(config_path('craft/project'));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
@@ -52,8 +67,13 @@ class TestCase extends Orchestra
 
         $this->withoutVite();
 
-        // Always start with an admin user
-        User::first()->update(['admin' => true]);
+        // Always start with a fresh default admin user
+        User::first()->update([
+            'username' => 'craftcms',
+            'password' => Hash::make('craftcms2018!!'),
+            'email' => 'support@craftcms.com',
+            'admin' => true,
+        ]);
     }
 
     protected function connectionsToTransact(): array
@@ -78,24 +98,75 @@ class TestCase extends Orchestra
             TestSetup::tearDownCraft();
         }
 
+        self::resetStaticCaches();
+
         unset($_SERVER['CRAFT_SITE']);
         unset($_SERVER['CRAFT_SITE_UPPER']);
 
         parent::tearDown();
     }
 
+    /**
+     * Reset static caches that accumulate across tests, preventing memory leaks.
+     */
+    private static function resetStaticCaches(): void
+    {
+        // Flush Macroable macros from base classes
+        Element::flushMacros();
+        Field::flushMacros();
+        FieldLayoutComponent::flushMacros();
+        Widget::flushMacros();
+
+        // ElementQuery has its own $macros property (not via Macroable trait)
+        new \ReflectionProperty(ElementQuery::class, 'macros')->setValue(null, []);
+
+        // Reset static array caches that grow unboundedly across tests
+        $resets = [
+            [Element::class, 'sources', []],
+            [\CraftCms\Cms\Field\LinkTypes\BaseElementLinkType::class, 'fetchedElements', []],
+            [\CraftCms\Cms\Support\Typecast::class, 'types', []],
+            [\CraftCms\Cms\Support\PHP::class, 'basePaths', []],
+            [\CraftCms\Cms\FieldLayout\FieldLayoutComponent::class, 'defaultElementConditions', []],
+            [\CraftCms\Cms\FieldLayout\LayoutElements\CustomField::class, 'defaultElementEditConditions', []],
+        ];
+
+        // Reset ProjectConfig "processed" flags
+        $projectConfigFlags = [
+            '_processedFilesystems',
+            '_processedFields',
+            '_processedSites',
+            '_processedUserGroups',
+            '_processedEntryTypes',
+            '_processedSections',
+            '_processedGqlSchemas',
+        ];
+
+        foreach ($projectConfigFlags as $flag) {
+            $resets[] = [\CraftCms\Cms\ProjectConfig\ProjectConfigHelper::class, $flag, false];
+        }
+
+        foreach ($resets as [$class, $property, $default]) {
+            new \ReflectionProperty($class, $property)->setValue(null, $default);
+        }
+    }
+
     protected function migrateDatabases(): void
     {
+        // Clear any stale cached info from previous test runs
+        // This must happen before db:wipe to ensure fresh state
+        Context::forgetHidden('craft.info');
+        Context::forgetHidden('craft.isInstalled');
+
         $this->artisan('db:wipe');
 
-        $site = new Site(
-            name: 'Craft test site',
-            handle: 'defaultSite',
-            language: 'en-US',
-            baseUrl: 'https://localhost/',
-            primary: true,
-            hasUrls: true,
-        );
+        $site = new Site([
+            'name' => 'Craft test site',
+            'handle' => 'defaultSite',
+            'language' => 'en-US',
+            'baseUrl' => 'https://localhost/',
+            'primary' => true,
+            'hasUrls' => true,
+        ]);
 
         $migration = new Install(
             username: 'craftcms',
@@ -130,7 +201,7 @@ class TestCase extends Orchestra
             return;
         }
 
-        $dotenv = Dotenv::createImmutable(__DIR__);
+        $dotenv = Dotenv::createMutable(__DIR__);
         $dotenv->load();
 
         $configKey = 'database.connections.'.env('DB_CONNECTION');
@@ -143,8 +214,8 @@ class TestCase extends Orchestra
                 'database' => env('DB_DATABASE'),
                 'username' => env('DB_USERNAME'),
                 'password' => env('DB_PASSWORD'),
-                'charset' => env('DB_CHARSET', $configKey === 'mysql' ? 'utf8mb4' : 'utf8'),
-                'collation' => env('DB_COLLATION', $configKey === 'mysql' ? 'utf8mb4_unicode_ci' : null),
+                'charset' => env('DB_CHARSET', in_array($configKey, ['mysql', 'mariadb']) ? 'utf8mb4' : 'utf8'),
+                'collation' => env('DB_COLLATION', in_array($configKey, ['mysql', 'mariadb']) ? 'utf8mb4_unicode_ci' : null),
                 'prefix' => env('DB_PREFIX'),
             ]),
         );

@@ -6,24 +6,28 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Entry;
-use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Localization;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use InvalidArgumentException;
+use Override;
 use Throwable;
-use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 use yii\helpers\Markdown;
 
@@ -40,50 +44,35 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
 
     public const string FORMAT_NONE = 'none';
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Number');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'input-numeric';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return 'int|float|null';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function dbType(): string
     {
-        if (DB::getDriverName() === 'mysql') {
+        if (DB::isMysql()) {
             return sprintf('%s(65,16)', Query::TYPE_DECIMAL);
         }
 
         return Query::TYPE_DECIMAL;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         $valueSql = self::valueSql($instances);
@@ -143,9 +132,6 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
      */
     public ?string $previewCurrency = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // Config normalization
@@ -158,8 +144,8 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         parent::__construct($config);
     }
 
-    #[\Override]
-    public static function getRules(): array
+    #[Override]
+    public function getRules(): array
     {
         $conditionalInteger = Rule::when(fn ($input) => ! $input->decimals, 'integer', 'numeric');
 
@@ -181,17 +167,12 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -205,10 +186,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value === null) {
@@ -239,10 +217,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): int|null|float
     {
         if ($value === null) {
@@ -256,13 +231,9 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         return $this->decimals === 0 ? (int) $value : $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        $view = Craft::$app->getView();
         $formatter = I18N::getFormatter();
 
         try {
@@ -289,7 +260,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
                 }
             } else {
                 // Override the initial value being set to null by CustomField::inputHtml()
-                $view->setInitialDeltaValue($this->handle, [
+                DeltaRegistry::setInitialValue($this->handle, [
                     'locale' => I18N::getFormattingLocale()->id,
                     'value' => '',
                 ]);
@@ -297,7 +268,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         }
 
         $id = $this->getInputId();
-        $namespacedId = $view->namespaceInputId($id);
+        $namespacedId = InputNamespace::namespaceId($id);
 
         $js = <<<JS
 (function() {
@@ -308,7 +279,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
 })();
 JS;
 
-        $view->registerJs($js);
+        AssetRegistry::js($js);
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input.twig', [
             'id' => $id,
@@ -319,20 +290,16 @@ JS;
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
-    public function getElementValidationRules(): array
+    #[Override]
+    public function getElementRules(ElementInterface $element): array
     {
-        return [
-            ['number', 'min' => $this->min, 'max' => $this->max],
-        ];
+        return array_filter([
+            'numeric',
+            $this->min !== null ? "min:{$this->min}" : null,
+            $this->max !== null ? "max:{$this->max}" : null,
+        ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): array|string
     {
         if ($this->decimals) {
@@ -345,10 +312,7 @@ JS;
         return NumberFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function dbTypeForValueSql(): string
     {
         if (! $this->decimals) {
@@ -362,10 +326,7 @@ JS;
         return Schema::TYPE_DECIMAL;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         if ($value === null) {
@@ -389,10 +350,7 @@ JS;
         return $formatted;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
@@ -414,19 +372,13 @@ JS;
         return $this->getPreviewHtml($value, $element ?? new Entry);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): Type
     {
         return NumberType::getType();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getContentGqlMutationArgumentType(): array
     {
         return [

@@ -7,7 +7,7 @@
 
 namespace craft\base\imagetransforms;
 
-use craft\elements\Asset;
+use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
  * ImageEditorTransformerInterface defines the common interface to be implemented by image drivers that support the Image Editor

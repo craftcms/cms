@@ -8,17 +8,17 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\errors\FieldNotFoundException;
-use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -33,6 +33,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
 use Twig\Markup;
 use yii\base\Exception;
@@ -264,11 +265,7 @@ class ElementHelper
             ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $element->siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
-            ->when(
-                value: DB::connection()->getDriverName() === 'pgsql',
-                callback: fn(Builder $query) => $query->where(DB::raw('lower(elements_sites.uri)'), mb_strtolower($testUri)),
-                default: fn(Builder $query) => $query->where('elements_sites.uri', $testUri),
-            )
+            ->where(new Lower('elements_sites.uri'), mb_strtolower($testUri))
             ->when(
                 value: $sourceId = $element->getCanonicalId(),
                 callback: fn(Builder $query) => $query->whereNot('elements.id', $sourceId),
@@ -376,7 +373,7 @@ class ElementHelper
             return array_combine($propagatedSiteIds, array_map(fn() => $defaultStatus, $propagatedSiteIds));
         }
 
-        $siteStatusesQuery = $element::find()
+        return $element::find()
             ->drafts($element->getIsDraft())
             ->provisionalDrafts($element->isProvisionalDraft)
             ->revisions($element->getIsRevision())
@@ -385,9 +382,10 @@ class ElementHelper
             ->status(null)
             ->trashed(null)
             ->asArray()
-            ->select(['elements_sites.siteId', 'elements_sites.enabled']);
-
-        return array_map(fn($enabled) => (bool)$enabled, $siteStatusesQuery->pairs());
+            ->select(['siteId', 'enabled'])
+            ->pluck('enabled', 'siteId')
+            ->map(fn($enabled) => (bool)$enabled)
+            ->all();
     }
 
     /**
@@ -1014,6 +1012,24 @@ class ElementHelper
     }
 
     /**
+     * Returns a generic URL for viewing an element’s revisions.
+     *
+     * @param ElementInterface $element
+     * @return string
+     * @since 5.9.7
+     */
+    public static function elementRevisionsUrl(ElementInterface $element): string
+    {
+        $url = sprintf('revisions/%s', $element->getCanonicalId());
+
+        if ($element->slug && !static::isTempSlug($element->slug)) {
+            $url .= "-$element->slug";
+        }
+
+        return UrlHelper::cpUrl($url);
+    }
+
+    /**
      * Returns an element action’s JavaScript configuration.
      *
      * @param ElementActionInterface $action
@@ -1117,7 +1133,9 @@ class ElementHelper
                 $element->hasProvisionalChanges = true;
 
                 foreach ($draft->getModifiedAttributes() as $name) {
-                    $element->$name = $draft->$name;
+                    if ($element->canSetProperty($name)) {
+                        $element->$name = $draft->$name;
+                    }
                 }
 
                 foreach ($draft->getModifiedFields() as $handle) {
@@ -1196,5 +1214,31 @@ class ElementHelper
         }
 
         self::$provisionalDraftUser = $user;
+    }
+
+    /**
+     * Removes values from a posted element query criteria, which would typically not be user-editable.
+     *
+     * @param array $criteria
+     * @return array
+     * @since 5.9.9
+     */
+    public static function cleanseQueryCriteria(array $criteria): array
+    {
+        unset(
+            $criteria['where'],
+            $criteria['orderBy'],
+            $criteria['indexBy'],
+            $criteria['select'],
+            $criteria['selectOption'],
+            $criteria['from'],
+            $criteria['groupBy'],
+            $criteria['join'],
+            $criteria['having'],
+            $criteria['union'],
+            $criteria['withQueries'],
+            $criteria['params'],
+        );
+        return $criteria;
     }
 }

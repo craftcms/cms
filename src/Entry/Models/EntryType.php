@@ -23,12 +23,14 @@ final class EntryType extends BaseModel
 
     protected $table = Table::ENTRYTYPES;
 
+    #[\Override]
     protected function casts(): array
     {
         return [
             'hasTitleField' => 'bool',
             'showSlugField' => 'bool',
             'showStatusField' => 'bool',
+            'allowLineBreaksInTitles' => 'bool',
         ];
     }
 

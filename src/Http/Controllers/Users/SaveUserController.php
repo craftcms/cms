@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\base\Element;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Sites;
@@ -26,9 +26,9 @@ use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
@@ -202,7 +202,7 @@ final readonly class SaveUserController
             ! ($this->isPasswordConfirmed() || $this->existingPasswordVerified($request))
         ) {
             Log::warning('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', [__METHOD__]);
-            $user->addError('currentPassword', t('Incorrect current password.'));
+            $user->errors()->add('currentPassword', t('Incorrect current password.'));
         }
 
         // Handle the rest of the user properties
@@ -251,7 +251,7 @@ final readonly class SaveUserController
         $photo = UploadedFile::getInstanceByName('photo');
 
         if ($photo && ! Image::canManipulateAsImage($photo->getExtension())) {
-            $user->addError('photo', t('The user photo provided is not an image.'));
+            $user->errors()->add('photo', t('The user photo provided is not an image.'));
         }
 
         // Don't validate required custom fields if it's public registration
@@ -269,14 +269,14 @@ final readonly class SaveUserController
 
             if ($isPublicRegistration) {
                 // Move any 'newPassword' errors over to 'password'
-                $user->addErrors(['password' => $user->getErrors('newPassword')]);
-                $user->clearErrors('newPassword');
+                $user->errors()->merge(['password' => $user->errors()->get('newPassword')]);
+                $user->errors()->forget('newPassword');
             }
 
             // Copy any 'unverifiedEmail' errors to 'email'
-            if (! $user->hasErrors('email')) {
-                $user->addErrors(['email' => $user->getErrors('unverifiedEmail')]);
-                $user->clearErrors('unverifiedEmail');
+            if (! $user->errors()->has('email')) {
+                $user->errors()->merge(['email' => $user->errors()->get('unverifiedEmail')]);
+                $user->errors()->forget('unverifiedEmail');
             }
 
             return $this->asModelFailure(

@@ -15,6 +15,8 @@ final class ContentBlock extends BaseModel
 
     public $incrementing = false;
 
+    public $timestamps = false;
+
     /**
      * @return BelongsTo<Element, $this>
      */

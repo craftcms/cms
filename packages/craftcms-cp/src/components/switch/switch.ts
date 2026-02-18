@@ -1,10 +1,11 @@
 import {LionSwitch} from '@lion/ui/switch.js';
 import CraftSwitchButton from '../switch-button/switch-button.js';
 import styles from './switch.styles.js';
+import {baseFieldStyles} from '@src/styles/form.styles';
 
 export default class CraftSwitch extends LionSwitch {
   static override get styles() {
-    return [...super.styles, styles];
+    return [...super.styles, baseFieldStyles, styles];
   }
 
   override get slots() {

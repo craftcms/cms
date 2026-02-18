@@ -8,6 +8,7 @@ use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 
 use function CraftCms\Cms\t;
 
@@ -16,57 +17,36 @@ use function CraftCms\Cms\t;
  */
 final class RadioButtons extends BaseOptionsField implements SortableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $allowCustomOptions = true;
 
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $optionIcons = true;
 
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $optionColors = true;
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
         return t('Radio Buttons');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'circle-dot';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var SingleOptionFieldData $value */
         if (! $value->valid && ! $this->customOptions) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+            DeltaRegistry::setInitialValue($this->handle, null);
         }
 
         $options = $this->translatedOptions(true, $value, $element);
@@ -87,9 +67,6 @@ final class RadioButtons extends BaseOptionsField implements SortableFieldInterf
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function optionsSettingLabel(): string
     {

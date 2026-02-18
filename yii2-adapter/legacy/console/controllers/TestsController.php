@@ -11,8 +11,8 @@ use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
+use InvalidArgumentException;
 use Throwable;
-use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
 
 /**

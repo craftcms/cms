@@ -7,12 +7,12 @@
 
 namespace crafttests\unit\elements;
 
-use craft\elements\Asset;
 use craft\fs\Local;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use UnitTester;
 

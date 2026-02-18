@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
@@ -12,8 +13,10 @@ use CraftCms\Cms\Http\Middleware\Enforce2fa;
 use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
+use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
+use CraftCms\Cms\Http\Middleware\RunQueue;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Http\Middleware\SetCraftGuard;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
@@ -75,6 +78,7 @@ final class RouteServiceProvider extends ServiceProvider
     private function bootMiddleware(Router $router): void
     {
         collect([
+            AddLogContext::class,
             SetCraftGuard::class,
             UpdateLocale::class,
             CheckSchemaVersion::class,
@@ -87,12 +91,14 @@ final class RouteServiceProvider extends ServiceProvider
         collect([
             RequireCpRequest::class,
             CheckRequirements::class,
+            HandleInertiaRequests::class,
             EnforceLicenses::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
 
         collect([
             'web',
             AuthenticateSession::class,
+            RunQueue::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
     }
 }

@@ -11,15 +11,16 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
 use CraftCms\Cms\Utility\Events\RegisterTagOptions;
 use CraftCms\Cms\Utility\Utility;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Override;
+use Symfony\Component\Filesystem\Path;
 
 use function CraftCms\Cms\t;
 
@@ -28,36 +29,24 @@ use function CraftCms\Cms\t;
  */
 final class ClearCaches extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Caches');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function id(): string
     {
         return 'clear-caches';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'trash';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function contentHtml(): string
     {
@@ -83,7 +72,7 @@ final class ClearCaches extends Utility
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(ClearCachesAsset::class);
-        $view->registerJs('new Craft.ClearCachesUtility(\'clear-caches\');');
+        AssetRegistry::js('new Craft.ClearCachesUtility(\'clear-caches\');');
 
         return $view->renderTemplate('_components/utilities/ClearCaches.twig', [
             'cacheOptions' => $cacheOptions,
@@ -109,7 +98,9 @@ final class ClearCaches extends Utility
             [
                 'key' => 'data',
                 'label' => t('Data caches'),
-                'info' => t('Anything cached with `Cache::put`'),
+                'info' => t('Anything cached with {method}', [
+                    'method' => '`Cache::put`',
+                ]),
                 'action' => [Cache::getFacadeRoot(), 'clear'],
             ],
             [
@@ -202,14 +193,25 @@ final class ClearCaches extends Utility
                     DB::table(Table::ASSETINDEXDATA)->truncate();
                 },
             ],
+            [
+                'key' => 'ide-helper',
+                'label' => t('IDE helper'),
+                'info' => t('Contents of {path}', [
+                    'path' => sprintf('`%s/`', Cms::config()->ideHelperPath),
+                ]),
+                'action' => function () {
+                    $configPath = Cms::config()->ideHelperPath;
+                    $path = Path::isAbsolute($configPath) ? $configPath : base_path($configPath);
+                    if (File::isDirectory($path)) {
+                        File::cleanDirectory($path);
+                    }
+                },
+            ],
         ];
 
-        if (Event::hasListeners(RegisterCacheOptions::class)) {
-            Event::dispatch($event = new RegisterCacheOptions($options));
-            $options = $event->options;
-        }
+        event($event = new RegisterCacheOptions($options));
 
-        return Arr::sort($options, 'label');
+        return Arr::sort($event->options, 'label');
     }
 
     /**
@@ -231,11 +233,8 @@ final class ClearCaches extends Utility
             ];
         }
 
-        if (Event::hasListeners(RegisterTagOptions::class)) {
-            Event::dispatch($event = new RegisterTagOptions($options));
-            $options = $event->options;
-        }
+        event($event = new RegisterTagOptions($options));
 
-        return Arr::sort($options, 'label');
+        return Arr::sort($event->options, 'label');
     }
 }

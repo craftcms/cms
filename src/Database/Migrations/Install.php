@@ -7,11 +7,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Migrations;
 
 use Craft;
-use craft\elements\Asset;
-use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\web\Response;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -36,7 +36,6 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use ReflectionClass;
 use Throwable;
@@ -67,9 +66,7 @@ class Install extends Migration
         $this->components->task('Creating indexes', fn () => $this->createIndexes());
         $this->components->task('Adding foreign keys', fn () => $this->addForeignKeys());
 
-        if (Event::hasListeners(PostCreateTables::class)) {
-            Event::dispatch(new PostCreateTables);
-        }
+        event(new PostCreateTables);
 
         DB::afterCommit(function () {
             try {
@@ -416,6 +413,7 @@ class Install extends Migration
             $table->string('titleTranslationMethod')->default(Field::TRANSLATION_METHOD_SITE);
             $table->text('titleTranslationKeyFormat')->nullable();
             $table->string('titleFormat')->nullable();
+            $table->boolean('allowLineBreaksInTitles')->default(false);
             $table->boolean('showSlugField')->default(true)->nullable();
             $table->string('slugTranslationMethod')->default(Field::TRANSLATION_METHOD_SITE);
             $table->text('slugTranslationKeyFormat')->nullable();
@@ -441,7 +439,6 @@ class Install extends Migration
             $table->text('name');
             $table->string('handle', 64);
             $table->string('context')->default('global');
-            $table->char('columnSuffix', 8)->nullable();
             $table->text('instructions')->nullable();
             $table->boolean('searchable')->default(true);
             $table->string('translationMethod')->default(Field::TRANSLATION_METHOD_NONE);
@@ -484,12 +481,12 @@ class Install extends Migration
             $table->string('schemaVersion', 15);
             $table->boolean('maintenance')->default(false);
             $table->char('configVersion', 12)->default('000000000000');
-            $table->char('fieldVersion', 12)->default('000000000000');
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
             $table->char('uid', 36)->default('0');
         });
 
+        Schema::dropIfExists(Table::MIGRATIONS);
         app(Migrator::class)
             ->getRepository()
             ->createRepository();
@@ -510,23 +507,16 @@ class Install extends Migration
             $table->text('value');
         });
 
-        Schema::create('queue', function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->string('channel')->default('queue');
-            $table->binary('job');
-            $table->text('description')->nullable();
-            $table->integer('timePushed');
-            $table->integer('ttr');
-            $table->integer('delay')->default(0);
-            $table->unsignedInteger('priority')->default(1024);
-            $table->dateTime('dateReserved')->nullable();
-            $table->integer('timeUpdated')->nullable();
-            $table->smallInteger('progress')->default(0);
+        Schema::create('jobprogress', function (Blueprint $table) {
+            $table->string('uid')->primary();
+            $table->string('description')->nullable();
+            $table->unsignedTinyInteger('status')->default(1); // JobStatus::Pending
+            $table->unsignedTinyInteger('progress')->default(0);
+            $table->unsignedInteger('delay')->nullable();
             $table->string('progressLabel')->nullable();
-            $table->integer('attempt')->nullable();
-            $table->boolean('fail')->default(false)->nullable();
-            $table->dateTime('dateFailed')->nullable();
             $table->text('error')->nullable();
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
         });
 
         Schema::create('recoverycodes', function (Blueprint $table) {
@@ -903,8 +893,6 @@ class Install extends Migration
         Schema::createIndex(Table::IMAGETRANSFORMS, ['name']);
         Schema::createIndex(Table::IMAGETRANSFORMS, ['handle']);
         Schema::createIndex(Table::PLUGINS, ['handle'], unique: true);
-        Schema::createIndex(Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'timePushed']);
-        Schema::createIndex(Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'delay']);
         Schema::createIndex(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], unique: true);
         Schema::createIndex(Table::RELATIONS, ['sourceId']);
         Schema::createIndex(Table::RELATIONS, ['targetId']);
@@ -964,7 +952,7 @@ class Install extends Migration
             $table->primary(['elementId', 'attribute', 'fieldId', 'siteId']);
         });
 
-        if (DB::getDriverName() === 'mysql') {
+        if (DB::isMysql()) {
             Schema::createIndex(Table::ELEMENTS_SITES, ['uri', 'siteId']);
             Schema::createIndex(Table::USERS, ['email']);
             Schema::createIndex(Table::USERS, ['username']);
@@ -1077,7 +1065,6 @@ class Install extends Migration
                 'schemaVersion' => Cms::SCHEMA_VERSION,
                 'maintenance' => false,
                 'configVersion' => Str::random(12),
-                'fieldVersion' => Str::random(12),
             ]);
         });
 

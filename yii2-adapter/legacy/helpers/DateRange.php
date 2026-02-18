@@ -9,7 +9,7 @@ namespace craft\helpers;
 
 use DateInterval;
 use DateTime;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 
 /**
  * Class DateRange

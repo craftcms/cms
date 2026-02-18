@@ -14,6 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.6.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\DefineAltActions} instead.
  */
 class DefineAltActionsEvent extends Event
 {

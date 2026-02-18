@@ -7,7 +7,7 @@
 
 namespace craft\test\mockclasses\elements;
 
-use craft\base\Element;
+use CraftCms\Cms\Element\Element;
 
 /**
  * Class ExampleElement.

@@ -16,6 +16,7 @@ use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\User\Elements\User;
 use yii\base\Event;
 use yii\base\Model;
@@ -156,7 +157,6 @@ class MailerHelper
         ];
 
         $transportSettings = [];
-        $security = Craft::$app->getSecurity();
 
         // Use the transport adapter settings if it was sent
         /** @var BaseTransportAdapter|null $transportAdapter */
@@ -170,7 +170,7 @@ class MailerHelper
 
         foreach ($transportSettings as $label => $value) {
             if (is_scalar($value)) {
-                $settings[$label] = $security->redactIfSensitive($label, $value);
+                $settings[$label] = Security::redactIfSensitive($label, $value);
             } elseif (is_array($value)) {
                 $settings[$label] = 'Array';
             } elseif (is_object($value)) {

@@ -17,6 +17,8 @@ use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\View\TemplateMode;
 use ErrorException;
 use Illuminate\Support\Facades\Cache;
 use RequirementsChecker;
@@ -95,7 +97,7 @@ class TemplatesController extends Controller
                 $this->request->getIsSiteRequest()
             ) ||
             !Path::ensurePathIsContained($template) || // avoid the Craft::warning() from View::_validateTemplateName()
-            !$this->getView()->doesTemplateExist($template)
+            !app(TemplateResolver::class)->exists($template)
         ) {
             throw new NotFoundHttpException('Template not found: ' . $template);
         }
@@ -118,8 +120,8 @@ class TemplatesController extends Controller
     public function actionOffline(): Response
     {
         // If this is a site request, make sure the offline template exists
-        if ($this->request->getIsSiteRequest() && !$this->getView()->doesTemplateExist('offline')) {
-            $templateMode = View::TEMPLATE_MODE_CP;
+        if ($this->request->getIsSiteRequest() && !app(TemplateResolver::class)->exists('offline')) {
+            $templateMode = TemplateMode::Cp->value;
         }
 
         // Output the offline template
@@ -203,22 +205,22 @@ class TemplatesController extends Controller
 
         if ($this->request->getIsSiteRequest()) {
             $prefix = Cms::config()->errorTemplatePrefix;
+            $resolver = app(TemplateResolver::class);
 
-            if ($this->getView()->doesTemplateExist($prefix . $statusCode)) {
+            if ($resolver->exists($prefix . $statusCode)) {
                 $template = $prefix . $statusCode;
-            } elseif ($statusCode == 503 && $this->getView()->doesTemplateExist($prefix . 'offline')) {
+            } elseif ($statusCode == 503 && $resolver->exists($prefix . 'offline')) {
                 $template = $prefix . 'offline';
-            } elseif ($this->getView()->doesTemplateExist($prefix . 'error')) {
+            } elseif ($resolver->exists($prefix . 'error')) {
                 $template = $prefix . 'error';
             }
         }
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($template)) {
-            $view = $this->getView();
-            $view->setTemplateMode(View::TEMPLATE_MODE_CP);
+            TemplateMode::set(TemplateMode::Cp);
 
-            if ($view->doesTemplateExist($statusCode)) {
+            if (app(TemplateResolver::class)->exists($statusCode)) {
                 $template = $statusCode;
             } else {
                 $template = 'error';

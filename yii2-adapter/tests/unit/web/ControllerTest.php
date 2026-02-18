@@ -14,8 +14,10 @@ use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\Response;
 use craft\web\TemplateResponseFormatter;
-use craft\web\View;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\Crypt;
 use UnitTester;
 use yii\base\Action;
 use yii\base\Exception;
@@ -63,7 +65,7 @@ class ControllerTest extends TestCase
     public function testTemplateRendering(): void
     {
         // We need to render a template from the site dir.
-        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        Craft::$app->getView()->setTemplateMode(TemplateMode::Site->value);
 
         $response = $this->controller->renderTemplate('template.twig');
         (new TemplateResponseFormatter())->format($response);
@@ -82,7 +84,7 @@ class ControllerTest extends TestCase
     public function testTemplateRenderingIfHeadersAlreadySet(): void
     {
         // We need to render a template from the site dir.
-        Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        Craft::$app->getView()->setTemplateMode(TemplateMode::Site->value);
         Craft::$app->getResponse()->getHeaders()->set('content-type', 'HEADERS');
 
         $response = $this->controller->renderTemplate('template.twig');
@@ -106,13 +108,13 @@ class ControllerTest extends TestCase
         ]);
         $this->controller->request = Craft::$app->getRequest();
 
-        $redirect = Craft::$app->getSecurity()->hashData('craft/do/stuff');
+        $redirect = Crypt::encrypt('craft/do/stuff');
 
         // Default
         $default = $this->controller->redirectToPostedUrl();
 
         // Test that with nothing passed in. It defaults to the base. See self::getBaseUrlForRedirect() for more info.
-        self::assertSame(TestSetup::SITE_URL, $default->headers->get('Location'));
+        self::assertSame(TestSetup::SITE_URL, Str::before($default->headers->get('Location'), ':80'));
 
         // What happens when we pass in a param.
         Craft::$app->getRequest()->setBodyParams(['redirect' => $redirect]);
@@ -167,7 +169,7 @@ class ControllerTest extends TestCase
         self::assertSame(TestSetup::SITE_URL . 'do/stuff', $this->controller->redirect('do/stuff')->headers->get('Location'));
 
         // We dont use _getBaseUrlForRedirect because the :port80 wont work with urlWithScheme.
-        self::assertSame(TestSetup::SITE_URL, $this->controller->redirect(null)->headers->get('Location'));
+        self::assertSame(TestSetup::SITE_URL, Str::before($this->controller->redirect(null)->headers->get('Location'), ':80'));
 
         // Absolute url
         self::assertSame(

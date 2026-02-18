@@ -777,16 +777,6 @@ $menuBorderRadius: $mediumBorderRadius;
     margin-top: 0.25em;
   }
 
-  .tip-dismiss-btn {
-    position: absolute;
-    top: 12px;
-    inset-inline-end: 12px;
-
-    & + p {
-      margin-top: 0;
-    }
-  }
-
   blockquote {
     margin: 16px 0;
 
@@ -802,10 +792,6 @@ $menuBorderRadius: $mediumBorderRadius;
       padding: 1em;
       padding-inline-start: 50px;
       border: 1px solid;
-
-      &.dismissible {
-        padding-inline-end: 36px;
-      }
 
       &:not(.tip):not(.warning) {
         border-color: $errorColor;

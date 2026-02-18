@@ -8,6 +8,7 @@ use Craft;
 use craft\web\assets\upgrade\UpgradeAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Utility\Utility;
 
 use function CraftCms\Cms\t;
@@ -17,9 +18,6 @@ use function CraftCms\Cms\t;
  */
 final class Upgrade extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
@@ -28,27 +26,18 @@ final class Upgrade extends Utility
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function id(): string
     {
         return 'upgrade';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'square-arrow-up';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function contentHtml(): string
     {
@@ -69,7 +58,7 @@ final class Upgrade extends Utility
         }
 
         $version = (int) Cms::VERSION + 1;
-        $view->registerJsWithVars(fn ($args) => <<<JS
+        AssetRegistry::jsWithVars(fn ($args) => <<<JS
 window.upgardeUtility = new Craft.UpgradeUtility(...$args)
 JS, [
             [$version, $allPlugins],

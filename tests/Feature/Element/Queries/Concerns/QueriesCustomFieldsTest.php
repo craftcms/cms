@@ -1,0 +1,53 @@
+<?php
+
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\User\Elements\User;
+
+use function Pest\Laravel\actingAs;
+
+it('can query custom fields', function () {
+    actingAs(User::findOne());
+
+    $field = Field::factory()->create([
+        'handle' => 'textField',
+        'type' => PlainText::class,
+    ]);
+
+    $fieldLayout = FieldLayout::factory()->forField($field)->create();
+
+    $entryModel = EntryModel::factory()->create();
+    $entryModel->element->update([
+        'fieldLayoutId' => $fieldLayout->id,
+    ]);
+
+    $entryModel->entryType->update([
+        'fieldLayoutId' => $fieldLayout->id,
+    ]);
+
+    app(Fields::class)->invalidateCaches();
+
+    app(Fields::class)->refreshFields();
+
+    /** @var \CraftCms\Cms\Entry\Elements\Entry $entry */
+    $entry = entryQuery()->first();
+    $entry->title = 'Test entry';
+    $entry->setFieldValue('textField', 'Foo');
+
+    Craft::$app->getElements()->saveElement($entry);
+
+    expect(entryQuery()->textField('Foo')->count())->toBe(1);
+    expect(entryQuery()->textField('Fo*')->count())->toBe(1);
+    expect(entryQuery()->textField([
+        'value' => 'fo*',
+        'caseInsensitive' => true,
+    ])->count())->toBe(1);
+    expect(entryQuery()->textField([
+        'value' => 'fo*',
+        'caseInsensitive' => false,
+    ])->count())->toBe(0);
+    expect(entryQuery()->textField('bar')->count())->toBe(0);
+});

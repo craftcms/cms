@@ -9,13 +9,11 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use craft\events\ApplyFieldSaveEvent;
 use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
 use craft\events\LocateUploadedFilesEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -33,13 +31,15 @@ use CraftCms\Cms\Field\Events\FieldSaving;
 use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -491,7 +491,7 @@ class Fields extends Component
     /**
      * Returns all saved field layouts.
      *
-     * @return FieldLayout[]
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout[]
      * @since 5.0.0
      */
     public function getAllLayouts(): array
@@ -505,7 +505,7 @@ class Fields extends Component
      * @param int $layoutId The field layout’s ID
      * @param bool $withTrashed Whether to return the field layout even if it’s soft-deleted
      *
-     * @return FieldLayout|null The field layout, or null if it doesn’t exist
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutById(int $layoutId, bool $withTrashed = false): ?FieldLayout
     {
@@ -529,7 +529,7 @@ class Fields extends Component
      *
      * @param int[] $layoutIds The field layouts’ IDs
      *
-     * @return FieldLayout[] The field layouts
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout[] The field layouts
      * @since 3.7.27
      */
     public function getLayoutsByIds(array $layoutIds): array
@@ -543,7 +543,7 @@ class Fields extends Component
      * @param class-string<ElementInterface> $type The associated element type
      * @param bool $create Whether to create a field layout if one doesn’t exist
      *
-     * @return FieldLayout|null The field layout
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout|null The field layout
      */
     public function getLayoutByType(string $type, bool $create = true): ?FieldLayout
     {
@@ -568,7 +568,7 @@ class Fields extends Component
      *
      * @param array $config
      *
-     * @return FieldLayout
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout
      * @since 4.0.0
      */
     public function createLayout(array $config): FieldLayout
@@ -579,7 +579,7 @@ class Fields extends Component
     /**
      * Creates a field layout element instance from its config.
      *
-     * @template T of FieldLayoutElement
+     * @template T of \CraftCms\Cms\FieldLayout\FieldLayoutElement
      * @param array $config
      *
      * @phpstan-param array{type:class-string<T>} $config
@@ -608,7 +608,7 @@ class Fields extends Component
     /**
      * Saves a field layout.
      *
-     * @param FieldLayout $layout The field layout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $layout The field layout
      * @param bool $runValidation Whether the layout should be validated
      *
      * @return bool Whether the field layout was saved successfully
@@ -638,7 +638,7 @@ class Fields extends Component
     /**
      * Deletes a field layout.
      *
-     * @param FieldLayout $layout The field layout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $layout The field layout
      *
      * @return bool Whether the field layout was deleted successfully
      */
@@ -680,7 +680,7 @@ class Fields extends Component
      */
     public function getFieldVersion(): ?string
     {
-        return app(\CraftCms\Cms\Field\Fields::class)->getFieldVersion();
+        return null;
     }
 
     /**
@@ -689,7 +689,7 @@ class Fields extends Component
      */
     public function updateFieldVersion(): void
     {
-        app(\CraftCms\Cms\Field\Fields::class)->updateFieldVersion();
+        // Not implemented
     }
 
     /**

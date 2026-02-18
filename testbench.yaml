@@ -1,9 +1,32 @@
 providers:
   - Inertia\ServiceProvider
-  - Spatie\LaravelData\LaravelDataServiceProvider
   - Laravel\Tinker\TinkerServiceProvider
   - CraftCms\Aliases\AliasesServiceProvider
   - CraftCms\DependencyAwareCache\CacheServiceProvider
   - CraftCms\Cms\Providers\CraftServiceProvider
   - CraftCms\Yii2Adapter\Yii2ServiceProvider
   - Laravel\Wayfinder\WayfinderServiceProvider
+
+seeders:
+  - Workbench\Database\Seeders\DatabaseSeeder
+
+workbench:
+  welcome: true
+  start: /admin
+  install: false # We run the Craft install in DatabaseSeeder
+  user: 1
+  guard: craft
+  sync:
+    - from: resources
+      to: public/vendor/craft
+    - from: storage
+      to: workbench/storage
+      reverse: true
+  build:
+    - migrate-fresh
+  discovers:
+    web: true
+    commands: true
+    config: true
+    factories: true
+    seeders: true

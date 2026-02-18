@@ -7,7 +7,7 @@
 
   {% set linkAttributes = {
     id: (item.id ?? null) ? "#{item.id}-link" : null,
-    url: (item.url ?? false) ? url(item.url) : null,
+    href: (item.url ?? false) ? url(item.url) : null,
     external: external,
     target: external ? '_blank',
     indicator: badgeCount > 0,
@@ -18,7 +18,8 @@
   <craft-nav-item {{ attr(linkAttributes) }}>
 
     <span class="nav-icon" slot="icon">
-      {%- if item.icon ?? false -%}
+      {% set icon = item.icon ?? false %}
+      {%- if icon is not same as(false) and icon is not same as(null) and icon is not same as('') -%}
         {{ iconSvg(item.icon) }}
       {%- elseif item.fontIcon ?? false -%}
         <span data-icon="{{ item.fontIcon }}"></span>
@@ -50,6 +51,8 @@
       {% for item in craft.cp.nav() %}
         {{ _self.action(item, false) }}
       {% endfor %}
+
+      <cp-queue-indicator></cp-queue-indicator>
     </craft-nav-list>
 
     <div class="global-sidebar__footer">

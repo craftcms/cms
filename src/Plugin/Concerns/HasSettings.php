@@ -7,10 +7,11 @@ namespace CraftCms\Cms\Plugin\Concerns;
 use Craft;
 use craft\web\Controller;
 use CraftCms\Cms\Component\Concerns\HasComponentEvents;
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Component\Events\ComponentEvent;
 use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use yii\web\Response;
@@ -46,14 +47,13 @@ trait HasSettings
     public const string EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
     /**
-     * @var ValidatableComponentInterface|bool|null The model used to store the plugin’s settings
+     * @var Validatable|bool|null The model used to store the plugin’s settings
      *
      * @see getSettings()
      */
-    private bool|null|ValidatableComponentInterface $settings = null;
+    private bool|null|Validatable $settings = null;
 
-    /** {@inheritdoc} */
-    public function getSettings(): ?ValidatableComponentInterface
+    public function getSettings(): ?Validatable
     {
         if (! isset($this->settings)) {
             $this->settings = $this->createSettingsModel() ?: false;
@@ -62,7 +62,6 @@ trait HasSettings
         return $this->settings ?: null;
     }
 
-    /** {@inheritdoc} */
     public function setSettings(array $settings): void
     {
         if (($model = $this->getSettings()) === null) {
@@ -74,13 +73,11 @@ trait HasSettings
         $model->setAttributes($settings);
     }
 
-    /** {@inheritdoc} */
     public function getSettingsResponse(): mixed
     {
         return $this->settingsResponse(false);
     }
 
-    /** {@inheritdoc} */
     public function getReadOnlySettingsResponse(): mixed
     {
         return $this->settingsResponse(true);
@@ -88,8 +85,7 @@ trait HasSettings
 
     private function settingsResponse(bool $readOnly): Response
     {
-        $view = Craft::$app->getView();
-        $settingsHtml = $view->namespaceInputs(function () use ($readOnly) {
+        $settingsHtml = InputNamespace::namespaceInputs(function () use ($readOnly) {
             if ($readOnly) {
                 // Just return the settings HTML with disabled inputs by default
                 return (string) Html::disableInputs(fn () => $this->settingsHtml());
@@ -108,30 +104,22 @@ trait HasSettings
         ]);
     }
 
-    /** {@inheritdoc} */
     public function beforeSaveSettings(): bool
     {
-        if (Event::hasListeners(self::componentEventName(self::EVENT_BEFORE_SAVE_SETTINGS))) {
-            Event::dispatch(self::componentEventName(self::EVENT_BEFORE_SAVE_SETTINGS), $event = new ComponentEvent($this));
+        event(self::componentEventName(self::EVENT_BEFORE_SAVE_SETTINGS), $event = new ComponentEvent($this));
 
-            return $event->isValid;
-        }
-
-        return true;
+        return $event->isValid;
     }
 
-    /** {@inheritdoc} */
     public function afterSaveSettings(): void
     {
-        if (Event::hasListeners(self::componentEventName(self::EVENT_AFTER_SAVE_SETTINGS))) {
-            Event::dispatch(self::componentEventName(self::EVENT_AFTER_SAVE_SETTINGS), new ComponentEvent($this));
-        }
+        event(self::componentEventName(self::EVENT_AFTER_SAVE_SETTINGS), new ComponentEvent($this));
     }
 
     /**
      * Creates and returns the model used to store the plugin’s settings.
      */
-    protected function createSettingsModel(): ?ValidatableComponentInterface
+    protected function createSettingsModel(): ?Validatable
     {
         return null;
     }

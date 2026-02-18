@@ -26,9 +26,10 @@ use yii\base\InvalidConfigException;
  * @property int|null $primaryOwnerId the primary owner element’s ID
  * @property int|null $ownerId the owner element’s ID
  * @property ElementContainerFieldInterface|null $field the element’s field
- * @mixin Element
+ * @mixin \CraftCms\Cms\Element\Element
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
+ * @phpstan-ignore trait.unused
  */
 trait NestedElementTrait
 {

@@ -8,11 +8,11 @@
 namespace craft\behaviors;
 
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutProviderInterface;
 use craft\models\EntryType;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
@@ -20,7 +20,7 @@ use yii\base\Model;
 /**
  * Field Layout behavior.
  *
- * @property FieldLayout $fieldLayout
+ * @property \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
  * @property ElementInterface|Model $owner
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -104,7 +104,7 @@ class FieldLayoutBehavior extends Behavior
     /**
      * Returns the owner's field layout.
      *
-     * @return FieldLayout
+     * @return \CraftCms\Cms\FieldLayout\FieldLayout
      * @throws InvalidConfigException if the configured field layout ID is invalid
      */
     public function getFieldLayout(): FieldLayout
@@ -145,7 +145,7 @@ class FieldLayoutBehavior extends Behavior
     /**
      * Sets the owner's field layout.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      */
     public function setFieldLayout(FieldLayout $fieldLayout): void
     {

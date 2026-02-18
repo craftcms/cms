@@ -7,9 +7,8 @@
 
 namespace craft\web;
 
+use Carbon\CarbonInterval;
 use Craft;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Session as SessionHelper;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
@@ -122,7 +121,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function getToken(): ?string
     {
-        return SessionHelper::get($this->tokenParam);
+        return \Illuminate\Support\Facades\Session::get($this->tokenParam);
     }
 
     /**
@@ -206,18 +205,8 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     public function getRemainingSessionTime(): int
     {
         // Are they logged in?
-        if (!Auth::guest()) {
-            if (!isset($this->authTimeout)) {
-                // The session duration must have been empty (expire when the HTTP session ends)
-                return -1;
-            }
-
-            $expire = SessionHelper::get($this->authTimeoutParam);
-            $time = DateTimeHelper::currentTimeStamp();
-
-            if ($expire !== null && $expire > $time) {
-                return $expire - $time;
-            }
+        if (Auth::check()) {
+            return (int) CarbonInterval::minutes(config('session.lifetime', 120))->totalSeconds;
         }
 
         return 0;
@@ -342,9 +331,9 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     {
         if ($duration > 0) {
             // Store the duration on the session
-            SessionHelper::set($this->authDurationParam, $duration);
+            \Illuminate\Support\Facades\Session::put($this->authDurationParam, $duration);
         } else {
-            SessionHelper::remove($this->authDurationParam);
+            \Illuminate\Support\Facades\Session::forget($this->authDurationParam);
         }
 
         $this->_clearOtherSessionParams();
@@ -368,6 +357,10 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function setReturnUrl($url): void
     {
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        if ($scheme && !in_array($scheme, ['http', 'https'])) {
+            $url = '/';
+        }
         parent::setReturnUrl(strip_tags($url));
     }
 
@@ -400,8 +393,8 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         } else {
             $authTimeout = $this->authTimeout;
             // Was a specific session duration specified on login?
-            if (SessionHelper::has($this->authDurationParam)) {
-                $this->authTimeout = SessionHelper::get($this->authDurationParam);
+            if (\Illuminate\Support\Facades\Session::has($this->authDurationParam)) {
+                $this->authTimeout = \Illuminate\Support\Facades\Session::get($this->authDurationParam);
             }
             parent::renewAuthStatus();
             $this->authTimeout = $authTimeout;
@@ -418,7 +411,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         }
 
         // Stop keeping track of the session duration specified on login
-        SessionHelper::remove($this->authDurationParam);
+        \Illuminate\Support\Facades\Session::forget($this->authDurationParam);
 
         return true;
     }
@@ -442,6 +435,6 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     {
         // Make sure 2FA data doesn't bleed over
         app(\CraftCms\Cms\Auth\Auth::class)->setUser(null);
-        SessionHelper::remove(app(Passkeys::class)->passkeyCreationOptionsParam);
+        \Illuminate\Support\Facades\Session::forget(app(Passkeys::class)->passkeyCreationOptionsParam);
     }
 }

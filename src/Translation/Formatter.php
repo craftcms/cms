@@ -9,7 +9,7 @@ use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTime;
 use DateTimeInterface;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Facades\Date;
 use IntlDateFormatter;
 use IntlTimeZone;
@@ -19,7 +19,7 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-#[Singleton]
+#[Scoped]
 final class Formatter
 {
     public const string FORMAT_WIDTH_SHORT = 'short';

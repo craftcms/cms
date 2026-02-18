@@ -5,64 +5,59 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Elements;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\NameTrait;
 use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
-use craft\elements\Address;
-use craft\elements\Asset;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\users\UserCondition;
-use craft\elements\db\AddressQuery;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\elements\NestedElementManager;
-use craft\events\DefineValueEvent;
-use craft\fieldlayoutelements\users\FullNameField;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\models\FieldLayout;
-use craft\records\User as UserRecord;
-use craft\validators\DateTimeValidator;
-use craft\validators\UniqueValidator;
-use craft\validators\UsernameValidator;
-use craft\validators\UserPasswordValidator;
 use craft\web\twig\AllowedInSandbox;
-use craft\web\View;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\ElementQuery;
-use CraftCms\Cms\Database\Queries\UserQuery;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Element\Queries\AddressQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\UserQuery;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\User\Data\UserGroup;
+use CraftCms\Cms\User\Events\DefineFriendlyName;
+use CraftCms\Cms\User\Events\DefineName;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
 use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
+use CraftCms\Cms\User\Validation\UserRules;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -73,11 +68,11 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -86,12 +81,8 @@ use Illuminate\Support\Traits\Macroable;
 use Override;
 use Stringable;
 use Throwable;
-use Tpetry\QueryExpressions\Function\String\Lower;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\validators\InlineValidator;
-use yii\validators\RequiredValidator;
-use yii\validators\Validator;
 use yii\web\BadRequestHttpException;
 
 use function CraftCms\Cms\t;
@@ -112,51 +103,21 @@ use function CraftCms\Cms\t;
  * @property-read string|null $preferredLanguage the user’s preferred language
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
  */
-final class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, MustVerifyEmailContract
+#[Ruleset(UserRules::class)]
+class User extends Element implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, MustVerifyEmailContract
 {
     use Authenticatable;
     use Authorizable;
     use CanResetPassword;
     use ConfirmsPasswords;
+    use HasNames;
     use Macroable;
-    use NameTrait;
     use Notifiable;
 
     /**
      * @since 5.0.0
      */
     public const string GQL_TYPE_NAME = 'User';
-
-    /**
-     * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
-     *
-     * If you wish to offload authentication logic, then set [[AuthenticateUserEvent::$performAuthentication]] to `false`, and set [[$authError]] to
-     * something if there is an authentication error.
-     */
-    public const string EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
-
-    /**
-     * @event DefineValueEvent The event that is triggered when defining the user’s name, as returned by [[getName()]] or [[__toString()]].
-     *
-     * @since 3.7.0
-     */
-    public const string EVENT_DEFINE_NAME = 'defineName';
-
-    /**
-     * @event DefineValueEvent The event that is triggered when defining the user’s friendly name, as returned by [[getFriendlyName()]].
-     *
-     * @since 3.7.0
-     */
-    public const string EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
-
-    #[Deprecated(message: 'in 5.6.0. [[\craft\web\User:getImpersonatorId()]] should be used instead.')]
-    public const string IMPERSONATE_KEY = '__impersonator_id';
-
-    /**
-     * @event RegisterUserActionsEvent The event that is triggered when a user’s available actions are being registered
-     */
-    #[Deprecated(message: 'in 5.6.0')]
-    public const string EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
     private static array $photoColors = [
         'red',
@@ -206,9 +167,16 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
 
     public const string SCENARIO_PASSWORD = 'password';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[Override]
+    public function scenarios(): array
+    {
+        return array_merge(parent::scenarios(), [
+            self::SCENARIO_PASSWORD => ['newPassword'],
+            self::SCENARIO_REGISTRATION => ['username', 'email', 'newPassword'],
+            self::SCENARIO_ACTIVATION => ['username', 'email'],
+        ]);
+    }
+
     public function getAuthIdentifierName(): string
     {
         return 'id';
@@ -219,80 +187,53 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('User');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function lowerDisplayName(): string
     {
         return t('user');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function pluralDisplayName(): string
     {
         return t('Users');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function pluralLowerDisplayName(): string
     {
         return t('users');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function refHandle(): string
     {
         return 'user';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function trackChanges(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function hasThumbs(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function hasStatuses(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function statuses(): array
     {
@@ -318,9 +259,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function find(): UserQuery
     {
@@ -328,8 +266,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @return UserCondition
      */
     #[Override]
@@ -338,9 +274,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return Craft::createObject(UserCondition::class, [self::class]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSources(string $context): array
     {
@@ -415,9 +348,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return $sources;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineActions(string $source): array
     {
@@ -442,18 +372,12 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return $actions;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSearchableAttributes(): array
     {
         return ['username', 'fullName', 'firstName', 'lastName', 'email'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineSortOptions(): array
     {
@@ -505,9 +429,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineTableAttributes(): array
     {
@@ -527,9 +448,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineDefaultTableAttributes(string $source): array
     {
@@ -542,13 +460,10 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface|ElementQuery $elementQuery, string $attribute): void
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
-        /** @var \CraftCms\Cms\Database\Queries\UserQuery $elementQuery */
+        /** @var \CraftCms\Cms\Element\Queries\UserQuery $elementQuery */
         if ($attribute === 'groups') {
             $elementQuery->withGroups();
         } else {
@@ -556,9 +471,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function defineCardAttributes(): array
     {
@@ -622,9 +534,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -836,24 +745,21 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
     private ?array $_groups = null;
 
     /**
-     * {@inheritdoc}
+     * @see setAttributesFromRequest()
+     * @see afterSave()
      */
+    private bool $sendVerificationEmailAfterRequest = false;
+
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function hasVerifiedEmail(): bool
     {
         return is_null($this->unverifiedEmail);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function markEmailAsVerified(): bool
     {
         try {
@@ -865,9 +771,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function sendEmailVerificationNotification(): void
     {
         /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
@@ -876,17 +779,11 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         $this->notify(new VerifyEmailNotification($broker->createToken($this)));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getEmailForVerification(): string
     {
         return $this->unverifiedEmail ?? $this->email;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function init(): void
     {
@@ -934,9 +831,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return parent::__toString();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getPostEditUrl(): ?string
     {
         if (
@@ -949,9 +843,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return 'users';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function crumbs(): array
     {
@@ -967,17 +858,11 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function uiLabel(): ?string
     {
         return $this->getName() ?: $this->email;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function attributes(): array
     {
@@ -994,9 +879,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return $names;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function extraFields(): array
     {
@@ -1008,9 +890,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return $names;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function attributeLabels(): array
     {
@@ -1028,117 +907,12 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return $labels;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function afterValidate(): void
-    {
-        $scenario = $this->getScenario();
-
-        if ($scenario === self::SCENARIO_LIVE) {
-            $fullNameElement = $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this);
-            if ($fullNameElement && $fullNameElement->required) {
-                if (Cms::config()->showFirstAndLastNameFields) {
-                    new RequiredValidator(['attributes' => ['firstName', 'lastName']])->validateAttributes($this, ['firstName', 'lastName']);
-                } else {
-                    (new RequiredValidator)->validateAttribute($this, 'fullName');
-                }
-            }
-        }
-
-        parent::afterValidate();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-
-        $treatAsActive = fn () => $this->getIsCredentialed() || in_array($this->getScenario(), [
-            self::SCENARIO_REGISTRATION,
-            self::SCENARIO_ACTIVATION,
-        ]);
-
-        $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate'], DateTimeValidator::class];
-        $rules[] = [['invalidLoginCount', 'photoId', 'affiliatedSiteId'], 'number', 'integerOnly' => true];
-        $rules[] = [['username', 'email', 'unverifiedEmail', 'fullName', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
-        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => PHP::supportsIdn(), 'enableLocalIDN' => PHP::supportsIdn()];
-        $rules[] = [['email', 'username', 'fullName', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
-        $rules[] = [['email'], 'required', 'when' => fn () => ! $this->getIsDraft()];
-        $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
-
-        if (! Cms::config()->useEmailAsUsername) {
-            $rules[] = [['username'], 'required', 'when' => $treatAsActive];
-            $rules[] = [['username'], UsernameValidator::class];
-        }
-
-        if (Craft::$app->getIsInstalled()) {
-            $rules[] = [
-                ['email'],
-                UniqueValidator::class,
-                'targetClass' => UserRecord::class,
-                'caseInsensitive' => true,
-                'filter' => ['or', ['active' => true], ['pending' => true]],
-                'when' => $treatAsActive,
-            ];
-
-            if (! Cms::config()->useEmailAsUsername) {
-                $rules[] = [
-                    ['username'],
-                    UniqueValidator::class,
-                    'targetClass' => UserRecord::class,
-                    'caseInsensitive' => true,
-                    'filter' => ['or', ['active' => true], ['pending' => true]],
-                    'when' => $treatAsActive,
-                ];
-            }
-
-            $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
-        }
-
-        if (isset($this->id) && $this->passwordResetRequired) {
-            // Get the current password hash
-            $currentPassword = DbFacade::table(Table::USERS)
-                ->where('id', $this->id)
-                ->value('password');
-        } else {
-            $currentPassword = null;
-        }
-
-        $rules[] = [
-            ['newPassword'],
-            UserPasswordValidator::class,
-            'forceDifferent' => $this->passwordResetRequired,
-            'currentPassword' => $currentPassword,
-        ];
-
-        $rules[] = [
-            ['fullName', 'firstName', 'lastName', 'username'], function ($attribute, $params, Validator $validator) {
-                if (str_contains((string) $this->$attribute, '://')) {
-                    $validator->addError($this, $attribute, t('Invalid value “{value}”.'));
-                }
-            },
-        ];
-
-        return $rules;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function safeAttributes(): array
     {
         return Arr::except(parent::safeAttributes(), ['photoId']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function setAttributesFromRequest($values): void
     {
@@ -1167,6 +941,7 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
                     ) {
                         // set it as the unverified email instead, and
                         $values['unverifiedEmail'] = Arr::pull($values, 'email');
+                        $this->sendVerificationEmailAfterRequest = true;
                     }
                 } else {
                     unset($values['email']);
@@ -1177,9 +952,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         parent::setAttributesFromRequest($values);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function setAttributes($values, $safeOnly = true): void
     {
@@ -1236,44 +1008,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return Craft::$app->getSso()->identityExists($this->id);
     }
 
-    /**
-     * Validates the unverifiedEmail value is unique.
-     */
-    public function validateUnverifiedEmail(string $attribute, ?array $params, InlineValidator $validator): void
-    {
-        $query = self::find()
-            ->status(null)
-            ->where(new Lower('email'), mb_strtolower((string) $this->unverifiedEmail))
-            ->where(function (Builder $query) {
-                $query->where('active', true)
-                    ->orWhere('pending', true);
-            })
-            ->when($this->id, function (UserQuery $query) {
-                $query->whereNot('elements.id', $this->id);
-            });
-
-        if ($query->exists()) {
-            $validator->addError($this, $attribute, t('{attribute} "{value}" has already been taken.'), $params);
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function scenarios(): array
-    {
-        $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_PASSWORD] = ['newPassword'];
-        $scenarios[self::SCENARIO_REGISTRATION] = ['username', 'email', 'newPassword'];
-        $scenarios[self::SCENARIO_ACTIVATION] = ['username', 'email'];
-
-        return $scenarios;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getFieldLayout(): ?FieldLayout
     {
@@ -1298,8 +1032,8 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
             }
 
             $this->_addresses = $this->createAddressQuery()
-                ->andWhere(['fieldId' => null])
-                ->collect();
+                ->whereNull('fieldId')
+                ->get();
         }
 
         return $this->_addresses;
@@ -1326,9 +1060,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return $this->_addressManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterRestore(): void
     {
@@ -1452,16 +1183,9 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
 
     private function _defineName(): string
     {
-        // Fire a 'defineName' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_NAME)) {
-            $event = new DefineValueEvent;
-            $this->trigger(self::EVENT_DEFINE_NAME, $event);
-            if ($event->value !== null) {
-                return $event->value;
-            }
-        }
+        event($event = new DefineName($this));
 
-        return $this->fullName ?? (string) $this->username;
+        return $event->name ?? $this->fullName ?? (string) $this->username;
     }
 
     /**
@@ -1489,16 +1213,9 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
 
     private function _defineFriendlyName(): ?string
     {
-        // Fire a 'defineFriendlyName' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_FRIENDLY_NAME)) {
-            $event = new DefineValueEvent;
-            $this->trigger(self::EVENT_DEFINE_FRIENDLY_NAME, $event);
-            if ($event->handled || $event->value !== null) {
-                return $event->value;
-            }
-        }
+        event($event = new DefineFriendlyName($this));
 
-        return $this->firstName ?? $this->username;
+        return $event->name ?? $this->firstName ?? $this->username;
     }
 
     /**
@@ -1526,9 +1243,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return Sites::getSiteById($this->affiliatedSiteId, true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getStatus(): ?string
     {
@@ -1557,9 +1271,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return self::STATUS_INACTIVE;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function thumbUrl(int $size): ?string
     {
         $photo = $this->getPhoto();
@@ -1571,9 +1282,6 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function thumbSvg(): ?string
     {
         if (! $this->uid) {
@@ -1612,86 +1320,20 @@ final class User extends Element implements AuthenticatableContract, Authorizabl
 XML;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function thumbAlt(): string
     {
         return $this->getPhoto()->alt ?? $this->getName();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function hasRoundedThumb(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function createAnother(): ElementInterface
     {
         return new self;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canView(AuthorizableContract $user): bool
-    {
-        if (parent::canView($user)) {
-            return true;
-        }
-
-        return
-            $user->id === $this->id ||
-            $user->can('viewUsers');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canSave(AuthorizableContract $user): bool
-    {
-        if (! $this->id) {
-            return $user->canRegisterUsers();
-        }
-
-        if ($user->id === $this->id) {
-            return true;
-        }
-
-        return $user->can('editUsers');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canDuplicate(AuthorizableContract $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[Override]
-    public function canDelete(AuthorizableContract $user): bool
-    {
-        if (parent::canDelete($user)) {
-            return true;
-        }
-
-        return
-            $user->id !== $this->id &&
-            $user->can('deleteUsers') &&
-            (! $this->admin || $user->admin);
     }
 
     /**
@@ -1796,9 +1438,6 @@ XML;
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function cpEditUrl(): ?string
     {
         if (Craft::$app->getRequest()->getIsCpRequest() && $this->getIsCurrent()) {
@@ -1812,9 +1451,6 @@ XML;
         return UrlHelper::cpUrl("users/$this->id");
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function safeActionMenuItems(): array
     {
@@ -1823,7 +1459,7 @@ XML;
         }
 
         $currentUser = Auth::user();
-        $view = Craft::$app->getView();
+        Craft::$app->getView();
         Craft::$app->getUser();
 
         $canAdministrateUsers = $currentUser->can('administrateUsers');
@@ -1868,7 +1504,7 @@ XML;
                         if ($canAdministrateUsers) {
                             // Only need to show the "Copy activation URL" option if they don't have a password
                             if (! $this->password) {
-                                $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy activation URL…'), $view);
+                                $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy activation URL…'));
                             }
                             $statusItems[] = [
                                 'icon' => 'enabled',
@@ -1924,7 +1560,7 @@ XML;
                             ],
                         ];
                         if ($canAdministrateUsers) {
-                            $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy password reset URL…'), $view);
+                            $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy password reset URL…'));
                         }
                     }
                     break;
@@ -1978,7 +1614,7 @@ XML;
                         'label' => t('Copy impersonation URL…'),
                     ];
 
-                    $view->registerJsWithVars(fn ($id, $userId, $message) => <<<JS
+                    AssetRegistry::jsWithVars(fn ($id, $userId, $message) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.elevatedSessionManager.requireElevatedSession(() => {
       Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
@@ -1992,7 +1628,7 @@ $('#' + $id).on('activate', () => {
   });
 });
 JS, [
-                        $view->namespaceInputId($copyImpersonationUrlId),
+                        InputNamespace::namespaceId($copyImpersonationUrlId),
                         $this->id,
                         t('Copy the impersonation URL, and open it in a new private window.'),
                     ]);
@@ -2011,9 +1647,6 @@ JS, [
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function destructiveActionMenuItems(): array
     {
@@ -2061,7 +1694,6 @@ JS, [
                 }
 
                 if ($isCurrentUser || $currentUser->can('deleteUsers')) {
-                    $view = Craft::$app->getView();
                     $deleteId = sprintf('action-delete-%s', mt_rand());
                     $items[] = [
                         'id' => $deleteId,
@@ -2071,7 +1703,7 @@ JS, [
                         ])),
                     ];
 
-                    $view->registerJsWithVars(fn ($id, $userId, $redirect) => <<<JS
+                    AssetRegistry::jsWithVars(fn ($id, $userId, $redirect) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.sendActionRequest('POST', 'users/user-content-summary', {
     data: {userId: $userId}
@@ -2084,10 +1716,10 @@ $('#' + $id).on('activate', () => {
 });
 JS,
                         [
-                            $view->namespaceInputId($deleteId),
+                            InputNamespace::namespaceId($deleteId),
                             $this->id,
                             /** @phpstan-ignore-next-line */
-                            Craft::$app->getSecurity()->hashData(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
+                            Crypt::encrypt(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
                         ]);
                 }
             }
@@ -2096,11 +1728,11 @@ JS,
         return $items;
     }
 
-    private function _copyPasswordResetUrlActionItem(string $label, View $view): array
+    private function _copyPasswordResetUrlActionItem(string $label): array
     {
         $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
 
-        $view->registerJsWithVars(fn ($id, $userId, $message) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id, $userId, $message) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.elevatedSessionManager.requireElevatedSession(() => {
     Craft.sendActionRequest('POST', 'users/get-password-reset-url', {
@@ -2116,7 +1748,7 @@ $('#' + $id).on('activate', () => {
   });
 });
 JS, [
-            $view->namespaceInputId($id),
+            InputNamespace::namespaceId($id),
             $this->id,
             t('Copy the activation URL'),
         ]);
@@ -2213,9 +1845,6 @@ JS, [
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
@@ -2257,9 +1886,6 @@ JS, [
     // Indexes, etc.
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function attributeHtml(string $attribute): string|Stringable
     {
@@ -2317,9 +1943,6 @@ JS, [
         return parent::attributeHtml($attribute);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function htmlAttributes(string $context): array
     {
@@ -2333,18 +1956,12 @@ JS, [
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function statusFieldHtml(): string
     {
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function metadata(): array
     {
@@ -2392,8 +2009,6 @@ JS, [
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @since 3.3.0
      */
     #[Override]
@@ -2405,9 +2020,6 @@ JS, [
     // Events
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     final public function beforeSave(bool $isNew): bool
     {
@@ -2426,8 +2038,6 @@ JS, [
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws InvalidConfigException
      * @throws Exception
      */
@@ -2527,11 +2137,19 @@ JS, [
         if (! $isNew && $changePassword && isset($newPassword) && ! app()->runningInConsole()) {
             Auth::logoutOtherDevices($newPassword);
         }
+
+        if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {
+            // Temporarily set the unverified email on the User so the verification email goes to the right place
+            $originalEmail = $this->email;
+            $this->email = $this->unverifiedEmail;
+
+            $this->sendEmailVerificationNotification();
+
+            // Put the original email back into place
+            $this->email = $originalEmail;
+        }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeDelete(): bool
     {
@@ -2572,13 +2190,12 @@ JS, [
                     ->site('*')
                     ->unique();
 
-                foreach (Db::each($entryQuery) as $entry) {
-                    /** @var Entry $entry */
+                $entryQuery->each(function (Entry $entry) use ($elementsService) {
                     // only delete their entry if they're the sole author
                     if ($entry->getAuthorIds() === [$this->id]) {
                         $elementsService->deleteElement($entry);
                     }
-                }
+                }, 100);
             }
 
             DbFacade::commit();

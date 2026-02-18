@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Str;
 use FilesystemIterator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -24,7 +25,6 @@ use Throwable;
 use UnexpectedValueException;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use ZipArchive;
 
 /**
@@ -378,8 +378,13 @@ class FileHelper extends \yii\helpers\FileHelper
             $mimeType = null;
         }
 
-        // Be forgiving of SVG files, etc., that don't have an XML declaration
-        if ($checkExtension && ($mimeType === null || !static::canTrustMimeType($mimeType))) {
+        if (
+            // Be forgiving of SVG files, etc., that don't have an XML declaration
+            // also, if we're not supposed to check the extension, but the extension is mp3 and the reported mime type is application/octet-stream,
+            // check by extension anyway
+            ($checkExtension || (strtolower(pathinfo($file, PATHINFO_EXTENSION)) === 'mp3')) &&
+            ($mimeType === null || !static::canTrustMimeType($mimeType))
+        ) {
             return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
         }
 
@@ -641,7 +646,7 @@ class FileHelper extends \yii\helpers\FileHelper
             $exists = file_exists($dir);
             try {
                 $files = static::findFiles($dir, $options);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException|\yii\base\InvalidArgumentException $e) {
                 if ($exists) {
                     return null;
                 }

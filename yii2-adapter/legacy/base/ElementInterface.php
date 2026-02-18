@@ -8,20 +8,22 @@
 namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\errors\InvalidFieldException;
-use craft\models\FieldLayout;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
-use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset;
 use GraphQL\Type\Definition\Type;
+use Stringable;
 use Twig\Markup;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -34,20 +36,22 @@ use yii\web\Response;
  * @mixin ElementTrait
  * @mixin CustomFieldBehavior
  * @mixin Component
- * @phpstan-require-extends Element
+ * @phpstan-require-extends \CraftCms\Cms\Element\Element
  * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
  * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:EagerLoadingMapItem[],criteria?:array,createElement?:callable}
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[AllowedInSandbox]
 interface ElementInterface extends
     ComponentInterface,
     ModelInterface,
     \CraftCms\Cms\Component\Contracts\Chippable,
     \CraftCms\Cms\Component\Contracts\CpEditable,
-    Thumbable,
-    Statusable,
-    \CraftCms\Cms\Component\Contracts\Actionable
+    \CraftCms\Cms\Component\Contracts\Thumbable,
+    \CraftCms\Cms\Component\Contracts\Statusable,
+    \CraftCms\Cms\Component\Contracts\Actionable,
+    ValidatableWithRuleset
 {
     /**
      * Returns the lowercase version of [[displayName()]].
@@ -191,7 +195,7 @@ interface ElementInterface extends
      *
      * @return ElementQueryInterface The newly created [[ElementQueryInterface]] instance.
      */
-    public static function find(): ElementQueryInterface|ElementQuery;
+    public static function find(): ElementQueryInterface;
 
     /**
      * Returns a single element instance by a primary key or a set of element criteria parameters.
@@ -454,7 +458,7 @@ interface ElementInterface extends
         bool $includeContainer,
         bool $selectable,
         bool $sortable,
-    ): string;
+    ): string|Stringable;
 
     /**
      * Returns the total number of elements that will be shown on an element index, for the given element query.
@@ -561,10 +565,11 @@ interface ElementInterface extends
      * This method should return an array whose keys represent element attribute names, and whose values make
      * up the table’s column headers.
      *
-     * @param FieldLayout|null $fieldLayout
-     * @since 5.9.0
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout|null $fieldLayout
+     *
      * @return array The card attributes.
      *
+     * @since 5.9.0
      * @since 5.5.0
      */
     public static function cardAttributes(?FieldLayout $fieldLayout = null): array;
@@ -777,7 +782,6 @@ interface ElementInterface extends
      *
      * @return Site
      */
-    #[AllowedInSandbox]
     public function getSite(): Site;
 
     /**
@@ -786,7 +790,6 @@ interface ElementInterface extends
      * @return string
      * @since 3.5.0
      */
-    #[AllowedInSandbox]
     public function getLanguage(): string;
 
     /**
@@ -841,7 +844,6 @@ interface ElementInterface extends
      * @return bool
      * @since 3.3.6
      */
-    #[AllowedInSandbox]
     public function getIsHomepage(): bool;
 
     /**
@@ -849,7 +851,6 @@ interface ElementInterface extends
      *
      * @return string|null
      */
-    #[AllowedInSandbox]
     public function getUrl(): ?string;
 
     /**
@@ -857,7 +858,6 @@ interface ElementInterface extends
      *
      * @return Markup|null
      */
-    #[AllowedInSandbox]
     public function getLink(): ?Markup;
 
     /**
@@ -898,7 +898,7 @@ interface ElementInterface extends
      * @return string
      * @since 5.0.0
      */
-    public function getChipLabelHtml(): string;
+    public function getChipLabelHtml(): string|Stringable;
 
     /**
      * Returns whether chips and cards for this element should include a status indicator.
@@ -1071,7 +1071,7 @@ interface ElementInterface extends
      * @return string
      * @since 4.0.0
      */
-    public function getAdditionalButtons(): string;
+    public function getAdditionalButtons(): string|Stringable;
 
     /**
      * Returns alternative form actions for the element.
@@ -1808,7 +1808,7 @@ interface ElementInterface extends
      * @return string The HTML that should be shown for a given attribute in table and card views.
      * @since 5.0.0
      */
-    public function getAttributeHtml(string $attribute): string;
+    public function getAttributeHtml(string $attribute): string|Stringable;
 
     /**
      * Returns the HTML that should be shown for a given attribute's inline editing input.
@@ -1817,7 +1817,7 @@ interface ElementInterface extends
      * @return string The HTML that should be shown for the element input.
      * @since 5.0.0
      */
-    public function getInlineAttributeInputHtml(string $attribute): string;
+    public function getInlineAttributeInputHtml(string $attribute): string|Stringable;
 
     /**
      * Returns the HTML for any fields/info that should be shown within the editor sidebar.
@@ -1826,7 +1826,7 @@ interface ElementInterface extends
      * @return string
      * @since 3.7.0
      */
-    public function getSidebarHtml(bool $static): string;
+    public function getSidebarHtml(bool $static): string|Stringable;
 
     /**
      * Returns element metadata that should be shown within the editor sidebar.

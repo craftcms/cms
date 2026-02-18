@@ -2388,7 +2388,7 @@ $.extend(Craft, {
     // Adapted from https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
     return document.cookie.replace(
       new RegExp(
-        `(?:(?:^|.*;\\s*)Craft-${Craft.systemUid}.${name}\\s*\\=\\s*([^;]*).*$)|^.*$`
+        `(?:(?:^|.*;\\s*)Craft-${Craft.systemUid}_${name}\\s*\\=\\s*([^;]*).*$)|^.*$`
       ),
       '$1'
     );
@@ -2410,7 +2410,7 @@ $.extend(Craft, {
    */
   setCookie: function (name, value, options) {
     options = $.extend({}, this.defaultCookieOptions, options);
-    let cookie = `Craft-${Craft.systemUid}.${name}=${encodeURIComponent(
+    let cookie = `Craft-${Craft.systemUid}_${name}=${encodeURIComponent(
       value
     )}`;
     if (options.path) {

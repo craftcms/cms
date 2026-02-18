@@ -6,12 +6,13 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
 use craft\web\assets\passkeysetup\PasskeySetupAsset;
-use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,7 +37,7 @@ final readonly class PasskeysController
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(PasskeySetupAsset::class);
-        $view->registerJs(<<<'JS'
+        AssetRegistry::js(<<<'JS'
 new Craft.PasskeySetup();
 JS);
 
@@ -97,6 +98,6 @@ JS);
     {
         return Craft::$app->getView()->renderTemplate('users/_passkeys-table.twig', [
             'passkeys' => $this->passkeys->getPasskeys($user)->all(),
-        ], View::TEMPLATE_MODE_CP);
+        ], TemplateMode::Cp->value);
     }
 }

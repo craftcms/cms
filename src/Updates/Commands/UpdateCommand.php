@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Updates\Commands;
 
 use Closure;
 use Composer\Semver\VersionParser;
+use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Commands\BackupTrait;
@@ -281,7 +282,7 @@ final class UpdateCommand extends Command
             return;
         }
 
-        $requirements[$update->packageName] = $to;
+        $requirements[$update->packageName] = "^$to";
         $info[] = [$handle, $from, $to, $update->hasCritical(), $update->status, $update->phpConstraint];
 
         // Has the package name changed?
@@ -335,7 +336,7 @@ final class UpdateCommand extends Command
     private function revertComposerChanges(): void
     {
         // See if we have composer.json and composer.lock backups
-        $backupsDir = \Craft::$app->getPath()->getComposerBackupsPath();
+        $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
         $jsonBackup = $backupsDir.DIRECTORY_SEPARATOR.'composer.json';
         $lockBackup = $backupsDir.DIRECTORY_SEPARATOR.'composer.lock';
 

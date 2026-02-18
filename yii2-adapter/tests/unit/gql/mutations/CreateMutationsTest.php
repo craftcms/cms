@@ -23,6 +23,7 @@ use craft\models\GqlSchema;
 use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\test\TestCase;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Section\Data\Section;
@@ -68,25 +69,27 @@ class CreateMutationsTest extends TestCase
             ],
         ]);
 
-        $entryType = new \CraftCms\Cms\Entry\Data\EntryType(
-            handle: 'article',
-            uid: 'uid',
-        );
+        $entryType = new EntryType([
+            'handle' => 'article',
+            'uid' => 'uid',
+        ]);
 
-        $section = new Section(
-            handle: 'news',
-            type: SectionType::Channel,
-            uid: 'sectionUid',
-            entryTypes: [
+        $section = new Section([
+            'handle' => 'news',
+            'type' => SectionType::Channel,
+            'uid' => 'sectionUid',
+            'entryTypes' => [
                 $entryType,
             ],
-        );
+        ]);
 
         Sections::shouldReceive('getAllSections')
             ->andReturn(collect([$section]));
 
         EntryTypes::shouldReceive('getAllEntryTypes')
-            ->andReturn(collect([$entryType]));
+            ->andReturn(collect([$entryType]))
+            ->shouldReceive('getEntryType')
+            ->andReturn($entryType);
     }
 
     protected function _after(): void
@@ -300,44 +303,44 @@ class CreateMutationsTest extends TestCase
      */
     public function testCreateEntrySaveMutation(): void
     {
-        $typeA = $this->make(\CraftCms\Cms\Entry\Data\EntryType::class, [
+        $typeA = $this->make(EntryType::class, [
             'name' => 'typeA',
             'handle' => 'typeA',
             'getCustomFields' => [
                 new PlainText(['handle' => 'someTextField']),
             ],
         ]);
-        $sectionA = new Section(
-            handle: 'sectionA',
-            type: SectionType::Single,
-            entryTypes: [$typeA],
-        );
+        $sectionA = new Section([
+            'handle' => 'sectionA',
+            'type' => SectionType::Single,
+            'entryTypes' => [$typeA],
+        ]);
 
-        $typeB = $this->make(\CraftCms\Cms\Entry\Data\EntryType::class, [
+        $typeB = $this->make(EntryType::class, [
             'name' => 'typeB',
             'handle' => 'typeB',
             'getCustomFields' => [
                 new PlainText(['handle' => 'someTextField']),
             ],
         ]);
-        $sectionB = new Section(
-            handle: 'sectionB',
-            type: SectionType::Channel,
-            entryTypes: [$typeB],
-        );
+        $sectionB = new Section([
+            'handle' => 'sectionB',
+            'type' => SectionType::Channel,
+            'entryTypes' => [$typeB],
+        ]);
 
-        $typeC = $this->make(\CraftCms\Cms\Entry\Data\EntryType::class, [
+        $typeC = $this->make(EntryType::class, [
             'name' => 'typeC',
             'handle' => 'typeC',
             'getCustomFields' => [
                 new PlainText(['handle' => 'someTextField']),
             ],
         ]);
-        $sectionC = new Section(
-            handle: 'sectionC',
-            type: SectionType::Structure,
-            entryTypes: [$typeC],
-        );
+        $sectionC = new Section([
+            'handle' => 'sectionC',
+            'type' => SectionType::Structure,
+            'entryTypes' => [$typeC],
+        ]);
 
         [$saveMutation, $draftMutation] = EntryMutations::createSaveMutations($sectionA, $typeA, true);
         self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);

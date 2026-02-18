@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\elements\Asset;
 use craft\helpers\Assets;
-use craft\web\View;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -108,15 +109,15 @@ final readonly class PhotoController
     {
         $view = Craft::$app->getView();
 
-        $templateMode = $view->getTemplateMode();
-        if ($templateMode === View::TEMPLATE_MODE_SITE && ! $view->doesTemplateExist('users/_photo.twig')) {
-            $templateMode = View::TEMPLATE_MODE_CP;
+        $templateMode = TemplateMode::get();
+        if (TemplateMode::is(TemplateMode::Site) && ! app(TemplateResolver::class)->exists('users/_photo.twig')) {
+            $templateMode = TemplateMode::Cp;
         }
 
         $data = [
             'html' => $view->renderTemplate('users/_photo.twig', [
                 'user' => $user,
-            ], $templateMode),
+            ], $templateMode->value),
             'photoId' => $user->photoId,
         ];
 

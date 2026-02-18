@@ -8,10 +8,10 @@
 namespace craft\gql\base;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\errors\GqlException;
 use craft\events\MutationPopulateElementEvent;
+use CraftCms\Cms\Element\Element;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\InputObjectType;

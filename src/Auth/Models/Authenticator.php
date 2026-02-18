@@ -13,6 +13,7 @@ final class Authenticator extends BaseModel
 {
     protected $table = Table::AUTHENTICATOR;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

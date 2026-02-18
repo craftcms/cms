@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
+use Closure;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\Entry as EntryElement;
-use craft\fields\conditions\LinkFieldConditionRule;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\LinkDataType;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Template;
-use craft\validators\StringValidator;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\RelationalField;
+use CraftCms\Cms\Field\Conditions\LinkFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -32,14 +31,17 @@ use CraftCms\Cms\Field\LinkTypes\Phone;
 use CraftCms\Cms\Field\LinkTypes\Sms;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Event;
-use yii\base\InvalidArgumentException;
+use Illuminate\Validation\Validator;
+use InvalidArgumentException;
+use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
@@ -53,37 +55,25 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
 
     private static array $_types;
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Link');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'link';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|null', LinkData::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function dbType(): array
     {
         return [
@@ -105,7 +95,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * @return array<string,class-string<BaseLinkType>>
      */
-    private static function types(): array
+    public static function types(): array
     {
         if (! isset(self::$_types)) {
             /** @var class-string<BaseLinkType>[] $types */
@@ -118,13 +108,12 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
             ];
 
             // Fire a registerLinkTypes event
-            if (Event::hasListeners(RegisterLinkTypes::class)) {
-                Event::dispatch($event = new RegisterLinkTypes($types));
+            event($event = new RegisterLinkTypes($types));
 
-                return $event->types;
-            }
+            $types = $event->types;
 
             // URL *has* to be there
+            /** @var class-string<BaseLinkType>[] $types */
             $types[] = UrlType::class;
 
             self::$_types = array_combine(
@@ -179,9 +168,6 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     public bool $fullGraphqlData = true;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         if (isset($config['types'], $config['typeSettings'])) {
@@ -225,8 +211,8 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         parent::__construct($config);
     }
 
-    #[\Override]
-    public static function getRules(): array
+    #[Override]
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'types' => ['required', 'array'],
@@ -287,17 +273,12 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return UrlType::id();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -357,12 +338,11 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ]);
 
         $linkTypes = $this->getLinkTypes();
-        $view = Craft::$app->getView();
 
         foreach ($types->all() as $typeId => $typeClass) {
             /** @var BaseLinkType $linkType */
             $linkType = $linkTypes[$typeId] ?? Component::createComponent($typeClass, BaseLinkType::class);
-            $typeSettingsHtml = $view->namespaceInputs(
+            $typeSettingsHtml = InputNamespace::namespaceInputs(
                 fn () => $readOnly ? $linkType->getReadOnlySettingsHtml() : $linkType->getSettingsHtml(),
                 "typeSettings[$typeId]",
             );
@@ -426,7 +406,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 'min' => '10',
                 'step' => '10',
                 'value' => $this->maxLength,
-                'errors' => $this->getErrors('maxLength'),
+                'errors' => $this->errors()->get('maxLength'),
                 'data' => ['error-key' => 'maxLength'],
                 'disabled' => $readOnly,
             ]);
@@ -449,10 +429,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $html.Html::endTag('div');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): ?LinkData
     {
         // if this was set due to propagateAll for a fresh element (as opposed to the translation method),
@@ -461,23 +438,35 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
             $value instanceof LinkData &&
             $element?->propagating &&
             ($element->propagateAll || ($element->isNewForSite && ! isset($element->duplicateOf))) &&
-            isset($element->propagatingFrom) &&
-            $this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)
+            isset($element->propagatingFrom)
         ) {
-            $linkedElement = $value->getElement();
-            if ($linkedElement && $linkedElement::isLocalized()) {
-                $localizedQuery = $linkedElement->getLocalized();
-                if (
-                    $localizedQuery instanceof ElementQueryInterface &&
-                    $localizedQuery->siteId($element->siteId)->exists()
-                ) {
-                    $type = $value->getType();
-                    $value = [
-                        'type' => $type,
-                        'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $linkedElement->id, $element->siteId),
-                    ];
+            // in order to avoid infinite loop when using custom translation format with a translation key containing `include()`
+            // we need to prevent `View::renderObjectTemplate()` from trying to normalize this value again and again
+            // to do that, we can e.g. set `propagating` to false before getting the translation key
+            // see https://github.com/craftcms/cms/issues/18363 for more details
+            if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
+                $element->propagating = false;
+            }
+
+            if ($this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)) {
+                $linkedElement = $value->getElement();
+                if ($linkedElement && $linkedElement::isLocalized()) {
+                    $localizedQuery = $linkedElement->getLocalized();
+                    if (
+                        $localizedQuery instanceof ElementQueryInterface &&
+                        $localizedQuery->siteId($element->siteId)->exists()
+                    ) {
+                        $type = $value->getType();
+                        $value = [
+                            'type' => $type,
+                            'value' => sprintf('{%s:%s@%s:url}', $linkedElement::refHandle(), $linkedElement->id, $element->siteId),
+                        ];
+                    }
                 }
             }
+
+            // set $propagating back to true
+            $element->propagating = true;
         }
 
         if ($value instanceof LinkData) {
@@ -542,22 +531,16 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
             $config['linkType'] = $linkTypes[$typeId] ?? Component::createComponent(self::types()[$typeId], BaseLinkType::class);
         }
 
-        return LinkData::from($config);
+        return new LinkData($config['value'], $config['linkType']);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $linkTypes = $this->getLinkTypes();
@@ -582,12 +565,11 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         }
 
         $id = $this->getInputId();
-        $view = Craft::$app->getView();
 
-        $view->registerJsWithVars(fn ($id) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id) => <<<JS
 new Craft.LinkField($('#' + $id));
 JS, [
-            $view->namespaceInputId($id),
+            InputNamespace::namespaceId($id),
         ]);
 
         $typeInputName = "$this->handle[type]";
@@ -595,7 +577,7 @@ JS, [
         if (count($linkTypes) === 1) {
             $innerHtml = Html::hiddenInput($typeInputName, $valueTypeId);
         } else {
-            $namespacedId = $view->namespaceInputId($id);
+            $namespacedId = InputNamespace::namespaceId($id);
             $js = <<<JS
 $('#$namespacedId-type').on('change', e => {
   const type = $('#$namespacedId-type').val();
@@ -604,7 +586,7 @@ $('#$namespacedId-type').on('change', e => {
     .attr('inputmode', type);
 });
 JS;
-            $view->registerJs($js);
+            AssetRegistry::js($js);
 
             $innerHtml = Cp::selectHtml([
                 'id' => "$id-type",
@@ -627,7 +609,7 @@ JS;
 
         foreach ($linkTypes as $typeId => $linkType) {
             $containerId = "$id-$typeId";
-            $nsContainerId = $view->namespaceInputId($containerId);
+            $nsContainerId = InputNamespace::namespaceId($containerId);
             $selected = $typeId === $valueTypeId;
             $typeValue = $selected ? $value?->serialize()['value'] : null;
             $isTextLink = is_subclass_of($linkType, BaseTextLinkType::class);
@@ -641,7 +623,7 @@ JS;
                     ])),
                     'data' => ['link-type' => $typeId],
                 ]).
-                $view->namespaceInputs(
+                InputNamespace::namespaceInputs(
                     fn () => $linkType->inputHtml($this, $typeValue, $nsContainerId),
                     "$this->handle[$typeId]",
                 ).
@@ -772,52 +754,46 @@ JS;
         return $html.Html::endTag('div');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
-    public function getElementValidationRules(): array
+    #[Override]
+    public function getElementRules(ElementInterface $element): array
     {
         return [
-            [
-                function (ElementInterface $element) {
-                    /** @var LinkData $value */
-                    $value = $element->getFieldValue($this->handle);
-                    $linkTypes = $this->getLinkTypes();
-                    if (! isset($linkTypes[$value->getType()])) {
-                        $type = self::types()[$value->getType()] ?? null;
-                        $element->addError("field:$this->handle", t('{attribute} no longer allows {type} links.', [
-                            'attribute' => $this->getUiLabel(),
-                            'type' => is_subclass_of($type, BaseLinkType::class) ? $type::displayName() : $type,
-                        ]));
+            function (string $attribute, LinkData $value, Closure $fail, Validator $validator) {
+                $linkTypes = $this->getLinkTypes();
 
-                        return;
-                    }
-                    $linkType = $linkTypes[$value->getType()];
-                    $value = $value->serialize()['value'];
-                    $error = null;
-                    if (! $linkType->validateValue($value, $error)) {
-                        /** @var string|null $error */
-                        $element->addError("field:$this->handle", $error ?? t('{attribute} is invalid.', [
-                            'attribute' => $this->getUiLabel(),
-                        ]));
+                if (! isset($linkTypes[$value->getType()])) {
+                    $type = self::types()[$value->getType()] ?? null;
+                    $fail(t('{attribute} no longer allows {type} links.', [
+                        'attribute' => $this->getUiLabel(),
+                        'type' => is_subclass_of($type, BaseLinkType::class) ? $type::displayName() : $type,
+                    ]));
 
-                        return;
-                    }
+                    return;
+                }
 
-                    $stringValidator = new StringValidator(['max' => $this->maxLength]);
-                    if (! $stringValidator->validate($value, $error)) {
-                        $element->addError("field:$this->handle", $error);
-                    }
-                },
-            ],
+                $linkType = $linkTypes[$value->getType()];
+                $value = $value->serialize()['value'];
+                $error = null;
+                if (! $linkType->validateValue($value, $error)) {
+                    /** @var string|null $error */
+                    $fail($error ?? t('{attribute} is invalid.', [
+                        'attribute' => $this->getUiLabel(),
+                    ]));
+
+                    return;
+                }
+
+                if (! $validator->validateMax($attribute, $value, [$this->maxLength])) {
+                    $fail(t('{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.', [
+                        'attribute' => $this->getUiLabel(),
+                        'max' => $this->maxLength,
+                    ]));
+                }
+            },
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
         if (parent::isValueEmpty($value, $element)) {
@@ -833,28 +809,19 @@ JS;
         return $linkType->isValueEmpty($value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): string
     {
         return LinkFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var LinkData|null $value */
         return $value?->getLink() ?? '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
@@ -865,10 +832,7 @@ JS;
         return $this->getPreviewHtml($value, new EntryElement);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): Type|array
     {
         if (! $this->fullGraphqlData) {
@@ -878,10 +842,7 @@ JS;
         return LinkDataType::generateType($this);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getContentGqlMutationArgumentType(): Type|array
     {
         if (! $this->fullGraphqlData) {
@@ -901,9 +862,6 @@ JS;
         ]));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getRelationTargetIds(ElementInterface $element): array
     {
         $targetIds = [];

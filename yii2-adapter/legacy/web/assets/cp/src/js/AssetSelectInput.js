@@ -216,16 +216,20 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       data: {
         elements: [
           {
-            type: 'craft\\elements\\Asset',
+            type: 'CraftCms\\Cms\\Asset\\Elements\\Asset',
             id: result.assetId,
             siteId: this.settings.criteria.siteId,
             instances: [
               {
                 context: 'field',
-                ui: ['list', 'large'].includes(this.settings.viewMode)
+                ui: ['list', 'list-inline', 'large', 'thumbs'].includes(
+                  this.settings.viewMode
+                )
                   ? 'chip'
                   : 'card',
-                size: this.settings.viewMode === 'large' ? 'large' : 'small',
+                size: ['large', 'thumbs'].includes(this.settings.viewMode)
+                  ? 'large'
+                  : 'small',
                 showActionMenu: this.settings.showActionMenu,
               },
             ],

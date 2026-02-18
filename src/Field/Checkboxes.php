@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Field;
 use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Data\OptionData;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
@@ -16,61 +17,37 @@ use function CraftCms\Cms\t;
  */
 final class Checkboxes extends BaseOptionsField
 {
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $multi = true;
 
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $allowCustomOptions = true;
 
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $optionIcons = true;
 
-    /**
-     * {@inheritdoc}
-     */
     protected static bool $optionColors = true;
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
         return t('Checkboxes');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'square-check';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if (! $this->customOptions && Collection::make($value)->contains(fn (OptionData $option) => ! $option->valid)) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+            DeltaRegistry::setInitialValue($this->handle, null);
         }
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxGroup.twig', [
@@ -82,9 +59,6 @@ final class Checkboxes extends BaseOptionsField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function optionsSettingLabel(): string
     {

@@ -27,11 +27,12 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use DateTimeZone;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
@@ -186,9 +187,10 @@ class GraphqlController extends Controller
 
         // Check for the cache-bust header
         $cacheHeader = $this->request->getHeaders()->get('x-craft-gql-cache');
-        if ($cacheHeader === 'no-cache') {
+        $cache = $cacheHeader ? ($cacheHeader === 'cache') : null;
+        if ($cache !== null) {
             $cacheSetting = $generalConfig->enableGraphqlCaching;
-            $generalConfig->enableGraphqlCaching = false;
+            $generalConfig->enableGraphqlCaching = $cache;
         }
 
         $result = [];
@@ -234,11 +236,8 @@ class GraphqlController extends Controller
         $this->response->format = Response::FORMAT_GQL;
         $this->response->data = $singleQuery ? reset($result) : $result;
 
-        // send cache headers
-        $cache = isset($cacheHeader) ? $cacheHeader === 'cache' : !$hasMutations;
-        if ($cache) {
-            $this->response->setCacheHeaders();
-        } else {
+        // send no-cache headers?
+        if (!($cache ?? !$hasMutations)) {
             $this->response->setNoCacheHeaders();
         }
 
@@ -815,6 +814,6 @@ class GraphqlController extends Controller
      */
     private function _generateToken(): string
     {
-        return Craft::$app->getSecurity()->generateRandomString(32);
+        return Str::random(32, extendedChars: true);
     }
 }

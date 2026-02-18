@@ -9,8 +9,8 @@ namespace craft\assetpreviews;
 
 use Craft;
 use craft\base\AssetPreviewHandler;
-use craft\elements\Asset;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Html;
 
 /**

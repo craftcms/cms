@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 use craft\helpers\Cp;
 use craft\web\View;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 
 trait InteractsWithWidgets
 {
@@ -30,9 +32,9 @@ trait InteractsWithWidgets
         }
 
         // Get the settings HTML + JS
-        $this->view->startJsBuffer();
-        $settingsHtml = $this->view->namespaceInputs(fn () => (string) $widget->getSettingsHtml(), "widget$widget->id-settings");
-        $settingsJs = $this->view->clearJsBuffer(false);
+        AssetRegistry::startJsBuffer();
+        $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), "widget$widget->id-settings");
+        $settingsJs = AssetRegistry::clearJsBuffer(false);
 
         // Get the colspan (limited to the widget type's max allowed colspan)
         $colspan = $widget->colspan ?? 1;

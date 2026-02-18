@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use Craft;
 use craft\helpers\UrlHelper;
-use craft\web\View;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
@@ -68,13 +68,10 @@ final readonly class TwoFactorAuthenticationController
         }
 
         $view = Craft::$app->getView();
-        $templateMode = $view->getTemplateMode();
-        $view->setTemplateMode(View::TEMPLATE_MODE_CP);
-        try {
-            $html = $method->getAuthFormHtml();
-        } finally {
-            $view->setTemplateMode($templateMode);
-        }
+        $html = TemplateMode::with(
+            TemplateMode::Cp,
+            fn () => $method->getAuthFormHtml(),
+        );
 
         $returnUrl = $request->input('returnUrl');
         if (! $returnUrl) {
@@ -106,7 +103,7 @@ final readonly class TwoFactorAuthenticationController
             ]);
         }
 
-        return $view->renderTemplate('login.twig', compact('authFormData'), View::TEMPLATE_MODE_CP);
+        return $view->renderTemplate('login.twig', compact('authFormData'), TemplateMode::Cp->value);
     }
 
     public function verify(Request $request, Auth $auth): Response

@@ -5,26 +5,26 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Contracts;
 
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
-use craft\fieldlayoutelements\CustomField;
 use craft\models\GqlSchema;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Database\Query\Expression;
-use Illuminate\Database\Query\Builder;
 
 /**
  * FieldInterface defines the common interface to be implemented by field classes.
  * A class implementing this interface should also use {@see \CraftCms\Cms\Component\Concerns\SavableComponent} and extend {@see \CraftCms\Cms\Field\Field}.
  */
-interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEditable, Grippable, SavableComponentInterface, ValidatableComponentInterface
+interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEditable, Grippable, SavableComponentInterface, Validatable
 {
     /** @var string|null The field’s name */
     public ?string $name { get; set; }
@@ -347,33 +347,39 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     public function getStaticHtml(mixed $value, ElementInterface $element): string;
 
     /**
+     * Prepare the field value for validation.
+     *
+     * Use this method to normalize or transform the value before
+     * validation runs (e.g., trimming strings, normalizing slugs).
+     */
+    public function prepareForElementValidation(mixed $value): mixed;
+
+    /**
      * Returns the validation rules for an element with this field.
      *
-     * Rules should be defined in the array syntax required by [[\yii\base\Model::rules()]],
-     * with one difference: you can skip the first argument (the attribute list).
+     * Rules should be defined in the array syntax required by Laravel's Validator
      *
      * ```php
      * [
-     *     // explicitly specify the field attribute
-     *     [$this->handle, 'string', 'min' => 3, 'max' => 12],
-     *     // skip the field attribute
-     *     ['string', 'min' => 3, 'max' => 12],
-     *     // you can only pass the validator class name/handle if not setting any params
-     *     'bool',
+     *      'string',
+     *      'min:3',
+     *      'max:12',
      * ]
      * ```
      *
      * To register validation rules that should only be enforced for _live_ elements,
-     * set the rule [scenario](https://www.yiiframework.com/doc/guide/2.0/en/structure-models#scenarios)
+     * you can use the `inScenarios()` method to conditionally return rules.
      * to `live`:
      *
      * ```php
      * [
-     *     ['string', 'min' => 3, 'max' => 12, 'on' => \craft\base\Element::SCENARIO_LIVE],
-     * ]
+     *       'string',
+     *       'min:3',
+     *       Rule::when($element->inScenarios(self::SCENARIO_LIVE), ['max:12']),
+     *  ]
      * ```
      */
-    public function getElementValidationRules(): array;
+    public function getElementRules(ElementInterface $element): array;
 
     /**
      * Returns whether the given value should be considered “empty” to a validator.
@@ -464,7 +470,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * Returns the element condition rule class that should be used for this field.
      *
-     * The rule class must be an instance of [[\craft\fields\conditions\FieldConditionRuleInterface]].
+     * The rule class must be an instance of [[\CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface]].
      *
      * @phpstan-return string|array{class:string}|null
      */

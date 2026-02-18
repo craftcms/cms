@@ -21,7 +21,6 @@ trait HasEditions
     /** @var string The active edition. */
     public string $edition = 'standard';
 
-    /** {@inheritdoc} */
     public static function editions(): array
     {
         return [
@@ -29,7 +28,6 @@ trait HasEditions
         ];
     }
 
-    /** {@inheritdoc} */
     public function is(string $edition, string $operator = '='): bool
     {
         $editions = static::editions();

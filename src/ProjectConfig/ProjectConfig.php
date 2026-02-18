@@ -6,13 +6,13 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
 use craft\base\FsInterface;
-use craft\elements\Address;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\services\ElementSources;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -36,6 +36,7 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -53,12 +54,12 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Application;
 use yii\base\ErrorException;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
@@ -714,7 +715,7 @@ final class ProjectConfig
                 }
 
                 if (! empty($changeSet['added'])) {
-                    $isMysql = DB::connection()->getDriverName() === 'mysql';
+                    $isMysql = DB::isMysql();
                     $batch = [];
                     $pathsToInsert = [];
                     $additionalCleanupPaths = [];
@@ -1136,16 +1137,13 @@ final class ProjectConfig
         $config[self::PATH_VOLUMES] = $this->_getVolumeData();
 
         // Fire a 'rebuild' event
-        if (Event::hasListeners(RebuildConfig::class)) {
-            Event::dispatch($event = new RebuildConfig($config));
-            $config = $event->config;
-        }
+        event($event = new RebuildConfig($config));
 
         // Reset the component name map
         $this->_setInternal(self::PATH_META_NAMES, [], updateTimestamp: false, force: true);
 
         // Process the changes
-        foreach ($config as $path => $value) {
+        foreach ($event->config as $path => $value) {
             $this->_setInternal($path, $value, 'Project config rebuild', updateTimestamp: false, force: true);
         }
 
@@ -1239,9 +1237,7 @@ final class ProjectConfig
 
         Log::info('Finalizing configuration parsing', [__METHOD__]);
 
-        if (Event::hasListeners(ChangesApplied::class)) {
-            Event::dispatch(new ChangesApplied);
-        }
+        event(new ChangesApplied);
 
         $this->updateParsedConfigTimesAfterRequest();
         $this->isApplyingExternalChanges = false;
@@ -1537,7 +1533,7 @@ final class ProjectConfig
         Cache::forget(self::FILE_ISSUES_CACHE_KEY);
 
         // Let plugins know about it
-        Event::dispatch(new YamlFilesWritten);
+        event(new YamlFilesWritten);
 
         $this->_updateYaml = false;
     }
@@ -1769,13 +1765,11 @@ final class ProjectConfig
      */
     private function _getElementSourceData(array $sourceConfigs): array
     {
-        $conditionsService = Craft::$app->getConditions();
-
         foreach ($sourceConfigs as &$elementTypeConfigs) {
             foreach ($elementTypeConfigs as &$config) {
                 if ($config['type'] === ElementSources::TYPE_CUSTOM && isset($config['condition'])) {
                     try {
-                        $config['condition'] = $conditionsService->createCondition($config['condition'])->getConfig();
+                        $config['condition'] = Conditions::createCondition($config['condition'])->getConfig();
                     } catch (InvalidArgumentException|InvalidConfigException) {
                         // Ignore it
                     }

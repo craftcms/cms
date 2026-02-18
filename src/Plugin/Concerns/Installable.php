@@ -20,7 +20,6 @@ trait Installable
 
     private ?Migrator $migrator = null;
 
-    /** {@inheritdoc} */
     public function install(): void
     {
         $this->beforeInstall();
@@ -42,7 +41,6 @@ trait Installable
         $this->afterInstall();
     }
 
-    /** {@inheritdoc} */
     public function uninstall(): void
     {
         $this->beforeUninstall();
@@ -69,7 +67,6 @@ trait Installable
         return app()->make($class);
     }
 
-    /** {@inheritdoc} */
     public function getMigrator(): Migrator
     {
         return $this->migrator ?? $this->migrator = app(Migrator::class)

@@ -7,8 +7,8 @@
 
 namespace craft\elements\actions;
 
-use Craft;
 use craft\base\ElementAction;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use function CraftCms\Cms\t;
 
 /**
@@ -35,7 +35,7 @@ class CopyUrl extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+        AssetRegistry::jsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,

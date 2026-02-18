@@ -7,8 +7,8 @@
 
 namespace craft\gql\base;
 
-use craft\base\Element;
 use craft\gql\GqlEntityRegistry;
+use CraftCms\Cms\Element\Element;
 use GraphQL\Type\Definition\Type;
 
 /**

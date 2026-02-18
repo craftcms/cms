@@ -20,8 +20,8 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use InvalidArgumentException;
 use yii\base\Action;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\web\BadRequestHttpException;
@@ -405,7 +405,7 @@ abstract class Controller extends \yii\web\Controller
         $data += [
             'modelName' => $modelName,
             $modelName => $model->toArray(),
-            'errors' => $model->getErrors(),
+            'errors' => $model->errors()->getMessages(),
         ];
 
         return $this->asFailure(

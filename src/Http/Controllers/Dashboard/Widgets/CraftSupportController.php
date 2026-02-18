@@ -11,6 +11,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Exception;
@@ -226,7 +227,7 @@ final readonly class CraftSupportController
 
         // project.yaml
         $projectConfig = app(ProjectConfig::class)->get();
-        $projectConfig = Craft::$app->getSecurity()->redactIfSensitive('', $projectConfig);
+        $projectConfig = Security::redactIfSensitive('', $projectConfig);
         $zip->addFromString('project.yaml', Yaml::dump($projectConfig, 20, 2));
 
         // project.yaml backups

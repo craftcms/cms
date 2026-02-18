@@ -278,18 +278,18 @@ class GqlTest extends TestCase
      */
     public function testPermissionListGenerated(): void
     {
-        $typeA = EntryType::from([
+        $typeA = new EntryType([
             'id' => 1,
             'uid' => 'entryTypeUid',
             'name' => 'Test entry type',
         ]);
-        $typeB = EntryType::from([
+        $typeB = new EntryType([
             'id' => 2,
             'uid' => 'entryTypeUid',
             'name' => 'Test entry type',
         ]);
 
-        $sectionA = Section::from([
+        $sectionA = new Section([
             'id' => 1,
             'uid' => 'sectionUid',
             'name' => 'Test section',
@@ -298,7 +298,7 @@ class GqlTest extends TestCase
                 $typeA,
             ],
         ]);
-        $sectionB = Section::from([
+        $sectionB = new Section([
             'id' => 2,
             'uid' => 'otherSectionUid',
             'name' => 'Other test section',
@@ -359,7 +359,7 @@ class GqlTest extends TestCase
 
         $userGroupService = $this->make(UserGroups::class, [
             'getAllGroups' => [
-                UserGroup::from([
+                new UserGroup([
                     'id' => 1,
                     'name' => 'Test user group',
                     'uid' => 'userGroupUid',

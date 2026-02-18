@@ -23,7 +23,7 @@
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
-    "php": "^8.4",
+    "php": "^8.5",
     "ext-bcmath": "*",
     "ext-curl": "*",
     "ext-dom": "*",
@@ -55,7 +55,6 @@
     "pixelandtonic/imagine": "~1.3.3.1",
     "pragmarx/google2fa": "^8.0",
     "pragmarx/recovery": "^0.2.1",
-    "spatie/laravel-data": "^4.17",
     "symfony/css-selector": "^6.0|^7.0",
     "symfony/dom-crawler": "^6.0|^7.0",
     "symfony/filesystem": "^6.3|^7.0",
@@ -69,6 +68,7 @@
     "twig/twig": "~3.21.1",
     "web-auth/webauthn-lib": "~4.9.0",
     "webonyx/graphql-php": "~14.11.10",
+    "yiisoft/arrays": "^3.2",
     "yiisoft/html": "^3.11",
     "yiisoft/translator": "^3.2",
     "yiisoft/translator-message-php": "^1.1"
@@ -109,7 +109,10 @@
     "psr-4": {
       "CraftCms\\Cms\\Tests\\": "tests/",
       "CraftCms\\Cms\\Database\\": "database/",
-      "CraftCms\\Yii2Adapter\\Tests\\": "yii2-adapter/tests-laravel/"
+      "CraftCms\\Yii2Adapter\\Tests\\": "yii2-adapter/tests-laravel/",
+      "Workbench\\App\\": "workbench/app/",
+      "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+      "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
     }
   },
   "scripts": {
@@ -118,12 +121,24 @@
     "phpstan": "phpstan --memory-limit=1G",
     "rector": "rector",
     "tests": "./vendor/bin/pest --compact",
-    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel"
+    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel",
+    "post-autoload-dump": [
+      "@clear",
+      "@prepare"
+    ],
+    "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+    "prepare": "@php vendor/bin/testbench package:discover --ansi",
+    "build": "@php vendor/bin/testbench workbench:build --ansi",
+    "serve": [
+      "Composer\\Config::disableProcessTimeout",
+      "@build",
+      "@php vendor/bin/testbench serve --ansi"
+    ]
   },
   "config": {
     "sort-packages": true,
     "platform": {
-      "php": "8.4"
+      "php": "8.5"
     },
     "platform-check": false,
     "allow-plugins": {

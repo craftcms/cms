@@ -9,15 +9,15 @@ namespace crafttests\unit\web\twig;
 
 use ArrayObject;
 use Craft;
-use craft\elements\Address;
-use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Models\Element;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
@@ -25,6 +25,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Yii2Adapter\IdentityWrapper;
 use crafttests\fixtures\FieldLayoutFixture;
 use crafttests\fixtures\GlobalSetFixture;
@@ -33,6 +34,7 @@ use DateTime;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Throwable;
@@ -112,7 +114,7 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             implode(',', [Edition::Solo->value, Edition::Team->value, Edition::Pro->value]),
             '{{ [CraftSolo, CraftTeam, CraftPro]|join(",") }}',
-            templateMode: View::TEMPLATE_MODE_CP,
+            templateMode: TemplateMode::Cp->value,
         );
     }
 
@@ -659,10 +661,9 @@ class ExtensionTest extends TestCase
      */
     public function testHashFilter(): void
     {
-        $this->testRenderResult(
-            Craft::$app->getSecurity()->hashData('test'),
-            '{{ "test"|hash }}'
-        );
+        $result = $this->view->renderString('{{ "test"|hash }}');
+
+        self::assertEquals(Crypt::decrypt($result), 'test');
 
         $this->testRenderResult(
             '098f6bcd4621d373cade4e832627b4f6',
@@ -1033,25 +1034,6 @@ class ExtensionTest extends TestCase
     /**
      * @throws LoaderError
      * @throws SyntaxError
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
-    public function test_redirect_input_function(): void
-    {
-        $this->testRenderResult(
-            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL') . '">',
-            '{{ redirectInput("A URL") }}'
-        );
-
-        $this->testRenderResult(
-            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^*()😋') . '">',
-            '{{ redirectInput("A URL WITH CHARS !@#$%^*()😋") }}'
-        );
-    }
-
-    /**
-     * @throws LoaderError
-     * @throws SyntaxError
      */
     public function test_action_input_function(): void
     {
@@ -1132,6 +1114,40 @@ class ExtensionTest extends TestCase
         ];
     }
 
+    public function testSwitchTag(): void
+    {
+        $vars = [
+            'foo' => 'foo',
+            'bar' => 'bar or baz',
+            'baz' => 'bar or baz',
+            'qux' => 'qux or quux or corge',
+            'quux' => 'qux or quux or corge',
+            'corge' => 'qux or quux or corge',
+            'xyz' => 'default',
+        ];
+
+        $template = <<<EOL
+{%- switch var -%}
+  {%- case 'foo' -%}
+    foo
+  {%- case 'bar' or 'baz' -%}
+    bar or baz
+  {%- case 'qux' or 'quux' or 'corge' -%}
+    qux or quux or corge
+  {%- default -%}
+    default
+{%- endswitch -%}
+EOL;
+
+        foreach ($vars as $var => $expected) {
+            $this->testRenderResult(
+                $expected,
+                $template,
+                ['var' => $var],
+            );
+        }
+    }
+
     /**
      * @throws LoaderError
      * @throws SyntaxError
@@ -1140,7 +1156,7 @@ class ExtensionTest extends TestCase
         string $expectedString,
         string $renderString,
         array $variables = [],
-        string $templateMode = View::TEMPLATE_MODE_SITE,
+        string $templateMode = TemplateMode::Site->value,
     ) {
         $result = $this->view->renderString($renderString, $variables, $templateMode);
         self::assertSame(

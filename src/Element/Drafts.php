@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\behaviors\EventBehavior;
-use craft\events\ModelEvent;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Events\ApplyingDraft;
 use CraftCms\Cms\Element\Events\CreatingDraft;
 use CraftCms\Cms\Element\Events\DraftApplied;
@@ -20,15 +18,16 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
@@ -48,7 +47,7 @@ final readonly class Drafts
             return collect();
         }
 
-        /** @var \craft\elements\db\ElementQueryInterface $query */
+        /** @var \CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface $query */
         $query = $element::find()
             ->draftOf($element)
             ->siteId($element->siteId)
@@ -92,18 +91,16 @@ final readonly class Drafts
 
         $markAsSaved = Arr::pull($newAttributes, 'markAsSaved', true);
 
-        if (Event::hasListeners(CreatingDraft::class)) {
-            Event::dispatch($event = new CreatingDraft(
-                canonical: $canonical,
-                creatorId: $creatorId,
-                provisional: $provisional,
-                draftName: $name,
-                draftNotes: $notes,
-            ));
+        event($event = new CreatingDraft(
+            canonical: $canonical,
+            creatorId: $creatorId,
+            provisional: $provisional,
+            draftName: $name,
+            draftNotes: $notes,
+        ));
 
-            $name = $event->draftName;
-            $notes = $event->draftNotes;
-        }
+        $name = $event->draftName;
+        $notes = $event->draftNotes;
 
         if ($name === null || $name === '') {
             $name = $this->generateDraftName($canonical->id);
@@ -125,21 +122,28 @@ final readonly class Drafts
             $newAttributes['trackDraftChanges'] = $canonical::trackChanges();
             $newAttributes['markDraftAsSaved'] = $markAsSaved;
 
-            /** @TODO: Remove behavior */
-            $newAttributes['behaviors']['duplicateOwnershipAfterPropagate'] = new EventBehavior([
-                Element::EVENT_AFTER_PROPAGATE => function (ModelEvent $event) use ($canonical) {
-                    /** @var ElementInterface $draft */
-                    $draft = $event->sender;
+            Event::listen(function (AfterPropagate $event) use ($draftId, $canonical) {
+                $draft = $event->element;
 
-                    // Duplicate nested element ownership
-                    DB::table(Table::ELEMENTS_OWNERS)
-                        ->insertUsing(['elementId', 'ownerId', 'sortOrder'],
-                            DB::table(Table::ELEMENTS_OWNERS, 'o')
-                                ->select('o.elementId', DB::raw($draft->id), 'o.sortOrder')
-                                ->where('o.ownerId', $canonical->id)
-                        );
-                },
-            ], true);
+                // Make sure we're dealing with the same element
+                if ($draft->getCanonicalId() !== $canonical->id || $draft->draftId !== $draftId) {
+                    return;
+                }
+
+                // Duplicate nested element ownership
+                DB::table(Table::ELEMENTS_OWNERS)->insertUsing(
+                    columns: ['elementId', 'ownerId', 'sortOrder'],
+                    query: DB::table(Table::ELEMENTS_OWNERS, 'o')
+                        ->select('o.elementId', DB::raw($draft->id), 'o.sortOrder')
+                        ->where('o.ownerId', $canonical->id)
+                        ->whereNotExists(function (Builder $q) use ($draft) {
+                            $q->selectRaw('1')
+                                ->from(Table::ELEMENTS_OWNERS)
+                                ->whereColumn('elementId', 'o.elementId')
+                                ->where('ownerId', $draft->id);
+                        }),
+                );
+            });
 
             $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
 
@@ -149,16 +153,14 @@ final readonly class Drafts
             throw $e;
         }
 
-        if (Event::hasListeners(DraftCreated::class)) {
-            Event::dispatch(new DraftCreated(
-                canonical: $canonical,
-                creatorId: $creatorId,
-                provisional: $provisional,
-                draftName: $name,
-                draftNotes: $notes,
-                draft: $draft,
-            ));
-        }
+        event(new DraftCreated(
+            canonical: $canonical,
+            creatorId: $creatorId,
+            provisional: $provisional,
+            draftName: $name,
+            draftNotes: $notes,
+            draft: $draft,
+        ));
 
         return $draft;
     }
@@ -241,15 +243,13 @@ final readonly class Drafts
             }
         }
 
-        if (Event::hasListeners(ApplyingDraft::class)) {
-            Event::dispatch(new ApplyingDraft(
-                canonical: $canonical,
-                creatorId: $draft->draftCreatorId,
-                draftName: $draft->draftName,
-                draftNotes: $draft->draftNotes,
-                draft: $draft,
-            ));
-        }
+        event(new ApplyingDraft(
+            canonical: $canonical,
+            creatorId: $draft->draftCreatorId,
+            draftName: $draft->draftName,
+            draftNotes: $draft->draftNotes,
+            draft: $draft,
+        ));
 
         $elementsService = Craft::$app->getElements();
         $draftNotes = $draft->draftNotes;
@@ -287,21 +287,19 @@ final readonly class Drafts
 
             if ($e instanceof InvalidElementException && $draft !== $e->element) {
                 // Add the errors from the duplicated element back onto the draft
-                $draft->addErrors($e->element->getErrors());
+                $draft->errors()->merge($e->element->errors()->getMessages());
             }
 
             throw $e;
         }
 
-        if (Event::hasListeners(DraftApplied::class)) {
-            Event::dispatch(new DraftApplied(
-                canonical: $newCanonical,
-                creatorId: $draft->draftCreatorId,
-                draftName: $draft->draftName,
-                draftNotes: $draft->draftNotes,
-                draft: $draft,
-            ));
-        }
+        event(new DraftApplied(
+            canonical: $newCanonical,
+            creatorId: $draft->draftCreatorId,
+            draftName: $draft->draftName,
+            draftNotes: $draft->draftNotes,
+            draft: $draft,
+        ));
 
         // if we were on another site when the applyDraft was triggered,
         // ensure we return the canonical element for the site we were on
@@ -329,7 +327,7 @@ final readonly class Drafts
         $draft->validate();
 
         // If there are any errors on the URI, re-validate as disabled
-        if ($draft->hasErrors('uri') && $draft->enabled) {
+        if ($draft->errors()->has('uri') && $draft->enabled) {
             $draft->enabled = false;
             $draft->validate();
         }
@@ -337,7 +335,7 @@ final readonly class Drafts
         try {
             // no need to propagate or save content here – and it could end up overriding any
             // content changes made to other sites from a previous onAfterPropagate(), etc.
-            if ($draft->hasErrors() || ! Craft::$app->getElements()->saveElement($draft, false, false)) {
+            if ($draft->errors()->isNotEmpty() || ! Craft::$app->getElements()->saveElement($draft, false, false)) {
                 throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
             }
 

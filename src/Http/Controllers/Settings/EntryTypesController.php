@@ -5,24 +5,27 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use Craft;
-use craft\base\FieldLayoutElement;
-use craft\elements\Entry;
-use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
-use craft\models\FieldLayout;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\View\View;
@@ -46,7 +49,7 @@ final class EntryTypesController
         Request $request,
         Fields $fields,
         GeneralConfig $generalConfig,
-        private EntryTypes $entryTypes,
+        private readonly EntryTypes $entryTypes,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
 
@@ -69,13 +72,21 @@ final class EntryTypesController
 
     public function create(): CpScreenResponse
     {
+        $entryType = new EntryType;
+
+        $fieldLayout = $entryType->getFieldLayout();
+
+        if ($entryType->hasTitleField && ! $fieldLayout->isFieldIncluded('title')) {
+            $fieldLayout->prependElements([new EntryTitleField]);
+        }
+
         return new CpScreenResponse()
             ->title(t('Create a new entry type'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
             ->contentTemplate('settings/entry-types/_edit.twig', [
                 'entryTypeId' => null,
-                'entryType' => new EntryType,
+                'entryType' => $entryType,
                 'typeName' => Entry::displayName(),
                 'lowerTypeName' => Entry::lowerDisplayName(),
                 'readOnly' => $this->readOnly,
@@ -216,28 +227,44 @@ final class EntryTypesController
         ]);
     }
 
-    public function store(Request $request, EntryType $entryType): Response
+    public function store(Request $request): Response
     {
         $entryTypeId = $request->input('entryTypeId');
 
         if ($entryTypeId) {
             $entryTypeId = (int) $entryTypeId;
-            abort_if(is_null($found = $this->entryTypes->getEntryTypeById($entryTypeId)), 400, "Invalid entry type ID: $entryType");
+            abort_if(is_null($entryType = $this->entryTypes->getEntryTypeById($entryTypeId)), 400, "Invalid entry type ID: $entryType");
 
-            $entryType->id = $found->id;
-            $entryType->uid = $found->uid;
+            $saveAsNew = $request->boolean('saveAsNew');
+            if ($saveAsNew) {
+                $originalEntryType = $entryType;
+                $entryType = clone $entryType;
+                $entryType->id = $entryType->uid = null;
+            }
+        } else {
+            $entryType = new EntryType;
+            $saveAsNew = false;
         }
 
-        $saveAsNew = false;
-        $originalEntryType = null;
-        if ($entryTypeId && $saveAsNew = (bool) $request->input('saveAsNew')) {
-            $originalEntryType = $entryType;
-            $entryType = clone $entryType;
-            $entryType->id = $entryType->uid = null;
-        }
+        // Set the simple stuff
+        $entryType->name = $request->input('name', $entryType->name);
+        $entryType->handle = $request->input('handle', $entryType->handle);
+        $entryType->description = $request->input('description', $entryType->description);
+        $entryType->icon = $request->input('icon', $entryType->icon);
+        $color = $request->input('color', $entryType->color?->value);
+        $entryType->color = $color && $color !== '__blank__' ? Color::from($color) : null;
+        $entryType->uiLabelFormat = $request->input('uiLabelFormat', $entryType->uiLabelFormat);
+        $entryType->titleTranslationMethod = $request->enum('titleTranslationMethod', TranslationMethod::class, $entryType->titleTranslationMethod);
+        $entryType->titleTranslationKeyFormat = $request->input('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
+        $entryType->titleFormat = $request->input('titleFormat', $entryType->titleFormat);
+        $entryType->allowLineBreaksInTitles = $request->boolean('allowLineBreaksInTitles', $entryType->allowLineBreaksInTitles);
+        $entryType->showSlugField = $request->boolean('showSlugField', $entryType->showSlugField);
+        $entryType->slugTranslationMethod = $request->enum('slugTranslationMethod', TranslationMethod::class, $entryType->slugTranslationMethod);
+        $entryType->slugTranslationKeyFormat = $request->input('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);
+        $entryType->showStatusField = $request->boolean('showStatusField', $entryType->showStatusField);
 
         // If we're duplicating the entry type and the handle hasn't changed, find a unique one
-        if ($originalEntryType && $this->entryTypes->getEntryTypeByHandle($entryType->handle)) {
+        if ($entryType->handle === ($originalEntryType->handle ?? null)) {
             if (preg_match('/^(.*?)(\d+)$/', (string) $entryType->handle, $match)) {
                 $baseHandle = $match[1];
                 $i = (int) $match[2];
@@ -255,6 +282,8 @@ final class EntryTypesController
         }
 
         $entryType->setFieldLayout($this->fieldLayout);
+
+        $entryType->validate(throw: true);
 
         if (! $this->fieldLayout->validate()) {
             return $this->asModelFailure($entryType, t('Couldn’t save entry type.'), 'entryType');
@@ -304,7 +333,7 @@ final class EntryTypesController
         $namespace = Str::random(10);
         $view = Craft::$app->getView();
 
-        $html = $view->namespaceInputs(
+        $html = InputNamespace::namespaceInputs(
             fn () => $view->renderTemplate('_includes/forms/entry-type-select/selection-settings.twig', [
                 'entryType' => $entryType,
             ]),

@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Cp;
 use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -129,7 +130,7 @@ readonly class Navigation
                 $navItems[] = [
                     'label' => 'GraphQL',
                     'url' => 'graphql',
-                    'icon' => 'graphql',
+                    'icon' => 'custom-icons/graphql',
                     'subnav' => $subNavItems,
                 ];
             }
@@ -162,13 +163,9 @@ readonly class Navigation
             ];
         }
 
-        // Fire a 'registerCpNavItems' event
-        // @TODO Bring this back
-        // if ($this->hasEventHandlers(self::EVENT_REGISTER_CP_NAV_ITEMS)) {
-        //     $event = new RegisterCpNavItemsEvent(['navItems' => $navItems]);
-        //     $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
-        //     $navItems = $event->navItems;
-        // }
+        event($event = new RegisterCpNavItems($navItems));
+
+        $navItems = $event->navItems;
 
         // Figure out which item is selected, and normalize the items
         $path = $this->request->getPathInfo();

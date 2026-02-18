@@ -1,63 +1,29 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fieldlayoutelements;
 
-use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
-use craft\helpers\Cp;
-use CraftCms\Cms\Support\Html;
-use function CraftCms\Cms\t;
-
-/**
- * LineBreak represents a line break UI element can be included in field layouts.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.1.0
- */
-class LineBreak extends FieldLayoutElement
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * LineBreak represents a line break UI element can be included in field layouts.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
+     * @since 4.1.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\LayoutElements\LineBreak} instead.
      */
-    public function isMultiInstance(): bool
+    class LineBreak
     {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function selectorHtml(): string
-    {
-        $label = t('Line Break');
-        $indicatorHtml = $this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
-            'class' => ['cp-icon', 'puny', 'orange'],
-            'title' => t('This element is conditional'),
-            'aria' => ['label' => t('This element is conditional')],
-        ]) : '';
-
-        return <<<HTML
-<div>
-  <div class="fld-br">
-    <div class="smalltext light flex flex-nowrap gap-xs">
-      <span>$label</span>
-      $indicatorHtml
-    </div>
-  </div>
-</div>
-HTML;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
-    {
-        return Html::tag('div', '', ['class' => 'line-break']);
     }
 }
+
+class_alias(\CraftCms\Cms\FieldLayout\LayoutElements\LineBreak::class, LineBreak::class);

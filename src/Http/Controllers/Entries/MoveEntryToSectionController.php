@@ -91,7 +91,7 @@ final readonly class MoveEntryToSectionController
             $listHtml = Html::tag(
                 name: 'p',
                 content: t('Couldn’t find any sections that all selected elements could be moved to.'),
-                options: ['class' => 'zilch']
+                attributes: ['class' => 'zilch']
             );
         } else {
             $listHtml = '';
@@ -129,7 +129,7 @@ final readonly class MoveEntryToSectionController
             ->unique()
             ->get();
 
-        abort_if(empty($entries), 400, 'Cannot find the entries to move to the new section.');
+        abort_if($entries->isEmpty(), 400, 'Cannot find the entries to move to the new section.');
 
         $errors = [];
         foreach ($entries as $entry) {

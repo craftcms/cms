@@ -14,6 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.16
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Entry\Events\DefineParentSelectionCriteria} instead.
  */
 class ElementCriteriaEvent extends Event
 {
