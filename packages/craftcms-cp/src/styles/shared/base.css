@@ -76,9 +76,6 @@ hr {
   align-items: center;
 }
 
-.index-grid__aside {
-}
-
 .index-grid--header {
   align-items: center;
   min-height: calc(40rem / 16);
