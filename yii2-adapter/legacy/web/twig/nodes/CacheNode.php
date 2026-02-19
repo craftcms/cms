@@ -24,83 +24,73 @@ use Twig\Node\Node;
 class CacheNode extends Node
 {
     /**
-     * @var int
-     */
-    private static int $_cacheCount = 1;
-
-    /**
      * @inheritdoc
      */
     public function compile(Compiler $compiler): void
     {
-        $n = self::$_cacheCount++;
-
-        $conditions = $this->hasNode('conditions') ? $this->getNode('conditions') : null;
-        $ignoreConditions = $this->hasNode('ignoreConditions') ? $this->getNode('ignoreConditions') : null;
-        $key = $this->hasNode('key') ? $this->getNode('key') : null;
-        $expiration = $this->hasNode('expiration') ? $this->getNode('expiration') : null;
-
-        $durationNum = $this->hasNode('durationNum') ? $this->getNode('durationNum') : null;
-        $durationUnit = $this->getAttribute('durationUnit');
-        $global = $this->getAttribute('global') ? 'true' : 'false';
+        $n = $compiler->getVarName();
 
         $compiler
             ->addDebugInfo($this)
             ->write('$cacheService = ' . Craft::class . "::\$app->getTemplateCaches();\n")
-            ->write('$request = ' . Craft::class . "::\$app->getRequest();\n")
-            ->write("\$ignoreCache$n = (\$request->getIsLivePreview() || \$request->getToken()");
+            ->write("\$request = request();\n")
+            ->write("\$ignoreCache_$n = (\$request->isPreview() || \$request->getToken()");
 
-        if ($conditions) {
+        if ($this->hasNode('conditions')) {
             $compiler
                 ->raw(' || !(')
-                ->subcompile($conditions)
+                ->subcompile($this->getNode('conditions'))
                 ->raw(')');
-        } elseif ($ignoreConditions) {
+        } elseif ($this->hasNode('ignoreConditions')) {
             $compiler
                 ->raw(' || (')
-                ->subcompile($ignoreConditions)
+                ->subcompile($this->getNode('ignoreConditions'))
                 ->raw(')');
         }
 
         $compiler
             ->raw(");\n")
-            ->write("if (!\$ignoreCache$n) {\n")
+            ->write("if (!\$ignoreCache_$n) {\n")
             ->indent()
-            ->write("\$cacheKey$n = ");
+            ->write("\$cacheKey_$n = ");
 
-        if ($key) {
-            $compiler->subcompile($key);
+        if ($this->hasNode('key')) {
+            $compiler->subcompile($this->getNode('key'));
         } else {
             $compiler->raw('"' . Str::random(36) . '"');
         }
 
+        $global = $this->getAttribute('global') ? 'true' : 'false';
+
         $compiler
             ->raw(";\n")
-            ->write("\$cacheBody$n = \$cacheService->getTemplateCache(\$cacheKey$n, $global, true);\n")
+            ->write("\$cacheBody_$n = \$cacheService->getTemplateCache(\$cacheKey_$n, $global, true);\n")
             ->outdent()
             ->write("} else {\n")
             ->indent()
-            ->write("\$cacheBody$n = null;\n")
+            ->write("\$cacheBody_$n = null;\n")
             ->outdent()
             ->write("}\n")
-            ->write("if (\$cacheBody$n === null) {\n")
+            ->write("if (\$cacheBody_$n === null) {\n")
             ->indent()
-            ->write("if (!\$ignoreCache$n) {\n")
+            ->write("if (!\$ignoreCache_$n) {\n")
             ->indent()
             ->write("\$cacheService->startTemplateCache(true, $global);\n")
             ->outdent()
             ->write("}\n")
             ->write("ob_start();\n")
             ->subcompile($this->getNode('body'))
-            ->write("\$cacheBody$n = ob_get_clean();\n")
-            ->write("if (!\$ignoreCache$n) {\n")
+            ->write("\$cacheBody_$n = ob_get_clean();\n")
+            ->write("if (!\$ignoreCache_$n) {\n")
             ->indent()
-            ->write("\$cacheService->endTemplateCache(\$cacheKey$n, $global, ");
+            ->write("\$cacheService->endTemplateCache(\$cacheKey_$n, $global, ");
 
-        if ($durationNum) {
+        if ($this->hasNode('durationNum')) {
+            $durationUnit = $this->getAttribute('durationUnit');
+
             $compiler
                 ->raw(sprintf('%s::relativeTimeStatement(', DateTimeHelper::class))
-                ->subcompile($durationNum)
+                ->subcompile($this->getNode('durationNum'))
                 ->raw(", '$durationUnit')");
         } else {
             $compiler->raw('null');
@@ -108,18 +98,18 @@ class CacheNode extends Node
 
         $compiler->raw(', ');
 
-        if ($expiration) {
-            $compiler->subcompile($expiration);
+        if ($this->hasNode('expiration')) {
+            $compiler->subcompile($this->getNode('expiration'));
         } else {
             $compiler->raw('null');
         }
 
         $compiler
-            ->raw(", \$cacheBody$n, true);\n")
+            ->raw(", \$cacheBody_$n, true);\n")
             ->outdent()
             ->write("}\n")
             ->outdent()
             ->write("}\n")
-            ->write("yield \$cacheBody$n;\n");
+            ->write("yield \$cacheBody_$n;\n");
     }
 }

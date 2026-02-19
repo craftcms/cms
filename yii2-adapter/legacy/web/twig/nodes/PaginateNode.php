@@ -7,6 +7,7 @@
 
 namespace craft\web\twig\nodes;
 
+use craft\helpers\Template;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
@@ -27,13 +28,11 @@ class PaginateNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
-            // the (array) cast bypasses a PHP 5.2.6 bug
-            //->write("\$context['_parent'] = (array) \$context;\n")
             ->write('[')
             ->subcompile($this->getNode('infoVariable'))
             ->raw(', ')
             ->subcompile($this->getNode('resultVariable'))
-            ->raw('] = \craft\helpers\Template::paginateQuery(')
+            ->raw(sprintf('] = %s::paginateQuery(', Template::class))
             ->subcompile($this->getNode('query'))
             ->raw(");\n");
     }

@@ -1,4 +1,4 @@
 // line 1
-\Craft::$app->getSession()->setError("You must log in first");
-\Craft::$app->getResponse()->redirect(craft\helpers\UrlHelper::url("/login"), 302);
-\Craft::$app->end();
+Craft::$app->getSession()->setError("You must log in first");
+Craft::$app->getResponse()->redirect(craft\helpers\UrlHelper::url("/login"), 302);
+Craft::$app->end();

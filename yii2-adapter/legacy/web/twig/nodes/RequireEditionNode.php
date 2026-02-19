@@ -10,7 +10,6 @@ namespace craft\web\twig\nodes;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
-use yii\web\NotFoundHttpException;
 
 /**
  * Class RequireEditionNode
@@ -33,7 +32,7 @@ class RequireEditionNode extends Node
             ->raw(")\n")
             ->write("{\n")
             ->indent()
-            ->write('throw new ' . NotFoundHttpException::class . ";\n")
+            ->write("abort(404);\n")
             ->outdent()
             ->write("}\n");
     }

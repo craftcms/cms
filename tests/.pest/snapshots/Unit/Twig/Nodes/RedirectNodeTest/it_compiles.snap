@@ -1,3 +1,3 @@
 // line 1
-\Craft::$app->getResponse()->redirect(craft\helpers\UrlHelper::url("/dashboard"), 302);
-\Craft::$app->end();
+Craft::$app->getResponse()->redirect(craft\helpers\UrlHelper::url("/dashboard"), 302);
+Craft::$app->end();

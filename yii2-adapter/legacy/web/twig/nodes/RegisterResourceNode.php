@@ -8,11 +8,12 @@
 namespace craft\web\twig\nodes;
 
 use craft\web\View;
+use CraftCms\Cms\View\Enums\Position;
+use InvalidArgumentException;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 use Twig\Node\NodeCaptureInterface;
-use yii\base\NotSupportedException;
 
 /**
  * Class RegisterResourceNode
@@ -63,7 +64,7 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
                 'endBody', 'POS_END' => View::POS_END,
                 'ready', 'POS_READY' => View::POS_READY,
                 'load', 'POS_LOAD' => View::POS_LOAD,
-                default => throw new NotSupportedException($position . ' is not a valid position'),
+                default => throw new InvalidArgumentException($position . ' is not a valid position'),
             };
         }
 

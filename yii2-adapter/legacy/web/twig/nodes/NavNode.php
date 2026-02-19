@@ -23,14 +23,9 @@ use Twig\Node\Node;
 #[YieldReady]
 class NavNode extends ForNode
 {
-    /**
-     * @var NavItem_Node|null
-     */
-    protected ?NavItem_Node $navItemNode = null;
+    private readonly NavItemNode $navItemNode;
 
     /**
-     * NavNode constructor.
-     *
      * @param AssignContextVariable $keyTarget
      * @param AssignContextVariable $valueTarget
      * @param AbstractExpression $seq
@@ -42,7 +37,7 @@ class NavNode extends ForNode
      */
     public function __construct(AssignContextVariable $keyTarget, AssignContextVariable $valueTarget, AbstractExpression $seq, Node $upperBody, ?Node $lowerBody, ?Node $indent, ?Node $outdent, int $lineno)
     {
-        $this->navItemNode = new NavItem_Node($valueTarget, $indent, $outdent, $lowerBody, $lineno);
+        $this->navItemNode = new NavItemNode($valueTarget, $indent, $outdent, $lowerBody, $lineno);
         $body = new BaseNode([$this->navItemNode, $upperBody]);
 
         parent::__construct($keyTarget, $valueTarget, $seq, null, $body, null, $lineno);

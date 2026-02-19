@@ -1,22 +1,22 @@
 // line 1
 $cacheService = Craft::$app->getTemplateCaches();
-$request = Craft::$app->getRequest();
-$ignoreCache6 = ($request->getIsLivePreview() || $request->getToken() || !(($context["shouldCache"] ?? null)));
-if (!$ignoreCache6) {
-    $cacheKey6 = "RANDOM_STRING";
-    $cacheBody6 = $cacheService->getTemplateCache($cacheKey6, false, true);
+$request = request();
+$ignoreCache__v0 = ($request->isPreview() || $request->getToken() || !(($context["shouldCache"] ?? null)));
+if (!$ignoreCache__v0) {
+    $cacheKey__v0 = "RANDOM_STRING";
+    $cacheBody__v0 = $cacheService->getTemplateCache($cacheKey__v0, false, true);
 } else {
-    $cacheBody6 = null;
+    $cacheBody__v0 = null;
 }
-if ($cacheBody6 === null) {
-    if (!$ignoreCache6) {
+if ($cacheBody__v0 === null) {
+    if (!$ignoreCache__v0) {
         $cacheService->startTemplateCache(true, false);
     }
     ob_start();
     yield "cached content";
-    $cacheBody6 = ob_get_clean();
-    if (!$ignoreCache6) {
-        $cacheService->endTemplateCache($cacheKey6, false, null, null, $cacheBody6, true);
+    $cacheBody__v0 = ob_get_clean();
+    if (!$ignoreCache__v0) {
+        $cacheService->endTemplateCache($cacheKey__v0, false, null, null, $cacheBody__v0, true);
     }
 }
-yield $cacheBody6;
+yield $cacheBody__v0;

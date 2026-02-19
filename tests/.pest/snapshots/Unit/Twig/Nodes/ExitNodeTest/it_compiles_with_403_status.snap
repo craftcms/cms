@@ -1,2 +1,2 @@
 // line 1
-throw new yii\web\ForbiddenHttpException();
+abort(403);

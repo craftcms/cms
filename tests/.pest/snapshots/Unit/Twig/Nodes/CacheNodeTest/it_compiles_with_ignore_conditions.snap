@@ -1,22 +1,22 @@
 // line 1
 $cacheService = Craft::$app->getTemplateCaches();
-$request = Craft::$app->getRequest();
-$ignoreCache7 = ($request->getIsLivePreview() || $request->getToken() || (($context["skipCache"] ?? null)));
-if (!$ignoreCache7) {
-    $cacheKey7 = "RANDOM_STRING";
-    $cacheBody7 = $cacheService->getTemplateCache($cacheKey7, false, true);
+$request = request();
+$ignoreCache__v0 = ($request->isPreview() || $request->getToken() || (($context["skipCache"] ?? null)));
+if (!$ignoreCache__v0) {
+    $cacheKey__v0 = "RANDOM_STRING";
+    $cacheBody__v0 = $cacheService->getTemplateCache($cacheKey__v0, false, true);
 } else {
-    $cacheBody7 = null;
+    $cacheBody__v0 = null;
 }
-if ($cacheBody7 === null) {
-    if (!$ignoreCache7) {
+if ($cacheBody__v0 === null) {
+    if (!$ignoreCache__v0) {
         $cacheService->startTemplateCache(true, false);
     }
     ob_start();
     yield "cached content";
-    $cacheBody7 = ob_get_clean();
-    if (!$ignoreCache7) {
-        $cacheService->endTemplateCache($cacheKey7, false, null, null, $cacheBody7, true);
+    $cacheBody__v0 = ob_get_clean();
+    if (!$ignoreCache__v0) {
+        $cacheService->endTemplateCache($cacheKey__v0, false, null, null, $cacheBody__v0, true);
     }
 }
-yield $cacheBody7;
+yield $cacheBody__v0;

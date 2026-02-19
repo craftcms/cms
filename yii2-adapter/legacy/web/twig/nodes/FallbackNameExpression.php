@@ -13,7 +13,7 @@ use Twig\Node\Expression\Variable\ContextVariable;
 use Twig\Node\Node;
 
 /**
- * Class NamespaceNode
+ * Class FallbackNameExpression
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
@@ -33,7 +33,7 @@ class FallbackNameExpression extends ContextVariable
 
     public function compile(Compiler $compiler): void
     {
-        // no special handling for _self/etc.,or always-defined variables
+        // No special handling for _self/etc. or always-defined variables
         if (str_starts_with($this->getAttribute('name'), '_') || $this->getAttribute('always_defined')) {
             parent::compile($compiler);
             return;
@@ -45,42 +45,20 @@ class FallbackNameExpression extends ContextVariable
 
         if ($this->isDefinedTestEnabled()) {
             $compiler
-                ->raw('(array_key_exists(')
+                ->raw(sprintf('%s::variableExists(', Template::class))
                 ->string($name)
-                ->raw(sprintf(', $context) || %s::fallbackExists(', Template::class))
-                ->string($name)
-                ->raw('))');
-        } elseif ($this->getAttribute('ignore_strict_check') || !$compiler->getEnvironment()->isStrictVariables()) {
-            $compiler
-                ->raw('(isset($context[')
-                ->string($name)
-                ->raw(']) || array_key_exists(')
-                ->string($name)
-                ->raw(', $context) ? $context[')
-                ->string($name)
-                ->raw(sprintf('] : (%s::fallbackExists(', Template::class))
-                ->string($name)
-                ->raw(sprintf(') ? %s::fallback(', Template::class))
-                ->string($name)
-                ->raw(') : null))');
-        } else {
-            $compiler
-                ->raw('(isset($context[')
-                ->string($name)
-                ->raw(']) || array_key_exists(')
-                ->string($name)
-                ->raw(', $context) ? $context[')
-                ->string($name)
-                ->raw(sprintf('] : (%s::fallbackExists(', Template::class))
-                ->string($name)
-                ->raw(sprintf(') ? %s::fallback(', Template::class))
-                ->string($name)
-                ->raw(') : (function () { throw new RuntimeError(\'Variable ')
-                ->string($name)
-                ->raw(' does not exist.\', ')
-                ->repr($this->lineno)
-                ->raw(', $this->source); })()')
-                ->raw('))');
+                ->raw(', $context)');
+
+            return;
         }
+
+        $compiler
+            ->raw(sprintf('%s::resolveVariable(', Template::class))
+            ->string($name)
+            ->raw(', $context, ')
+            ->raw(!$this->getAttribute('ignore_strict_check') && $compiler->getEnvironment()->isStrictVariables() ? 'true' : 'false')
+            ->raw(', ')
+            ->repr($this->lineno)
+            ->raw(', $this->source)');
     }
 }

@@ -1,2 +1,2 @@
 // line 1
-throw new yii\web\NotFoundHttpException("Page not found");
+abort(404, "Page not found");

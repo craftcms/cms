@@ -1,2 +1,2 @@
 // line 1
-(isset($context["entry"]) || array_key_exists("entry", $context) ? $context["entry"] : (craft\helpers\Template::fallbackExists("entry") ? craft\helpers\Template::fallback("entry") : (function () { throw new RuntimeError('Variable "entry" does not exist.', 1, $this->source); })()))
+craft\helpers\Template::resolveVariable("entry", $context, true, 1, $this->source)

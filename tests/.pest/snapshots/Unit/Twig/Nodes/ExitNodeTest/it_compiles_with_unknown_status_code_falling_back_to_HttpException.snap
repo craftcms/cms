@@ -1,2 +1,2 @@
 // line 1
-throw new yii\web\HttpException(418);
+abort(418);

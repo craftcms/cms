@@ -7,6 +7,7 @@
 
 namespace craft\web\twig\nodes;
 
+use Craft;
 use craft\helpers\UrlHelper;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -30,24 +31,24 @@ class RedirectNode extends Node
 
         if ($this->hasNode('error')) {
             $compiler
-                ->write('\Craft::$app->getSession()->setError(')
+                ->write(Craft::class . '::$app->getSession()->setError(')
                 ->subcompile($this->getNode('error'))
                 ->raw(");\n");
         }
 
         if ($this->hasNode('notice')) {
             $compiler
-                ->write('\Craft::$app->getSession()->setNotice(')
+                ->write(Craft::class . '::$app->getSession()->setNotice(')
                 ->subcompile($this->getNode('notice'))
                 ->raw(");\n");
         }
 
         $compiler
-            ->write('\Craft::$app->getResponse()->redirect(' . UrlHelper::class . '::url(')
+            ->write(Craft::class . '::$app->getResponse()->redirect(' . UrlHelper::class . '::url(')
             ->subcompile($this->getNode('path'))
             ->raw('), ')
             ->subcompile($this->getNode('httpStatusCode'))
             ->raw(");\n")
-            ->write('\Craft::$app->end();');
+            ->write(Craft::class . "::\$app->end();\n");
     }
 }
