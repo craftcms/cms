@@ -70,27 +70,38 @@ class SinglePreloader implements NodeVisitorInterface
      */
     public function leaveNode(Node $node, Environment $env): ?Node
     {
-        if ($this->isRelevant($node)) {
-            $variables = array_shift($this->_foundVariables);
-            if (
-                !empty($variables) &&
-                $node->hasNode('body')
-            ) {
-                $body = $node->getNode('body');
-                if ($body instanceof BodyNode) {
-                    /** @var Node[] $subNodes */
-                    $subNodes = iterator_to_array($body);
-                    foreach (array_keys($subNodes) as $key) {
-                        $body->removeNode((string)$key);
-                    }
-                    array_unshift($subNodes, new PreloadSinglesNode(attributes: [
-                        'handles' => array_keys($variables),
-                    ]));
-                    foreach ($subNodes as $key => $subNode) {
-                        $body->setNode($key, $subNode);
-                    }
-                }
-            }
+        if (!$this->isRelevant($node)) {
+            return $node;
+        }
+
+        $variables = array_shift($this->_foundVariables);
+
+        if (empty($variables)) {
+            return $node;
+        }
+
+        if (!$node->hasNode('body')) {
+            return $node;
+        }
+
+        $body = $node->getNode('body');
+
+        if (!$body instanceof BodyNode) {
+            return $node;
+        }
+
+        /** @var Node[] $subNodes */
+        $subNodes = iterator_to_array($body);
+        foreach (array_keys($subNodes) as $key) {
+            $body->removeNode((string)$key);
+        }
+
+        array_unshift($subNodes, new PreloadSinglesNode(attributes: [
+            'handles' => array_keys($variables),
+        ]));
+
+        foreach ($subNodes as $key => $subNode) {
+            $body->setNode($key, $subNode);
         }
 
         return $node;
