@@ -51,6 +51,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         app()->setLocale('en-US');
+        app()->maintenanceMode()->deactivate();
 
         // Reset timezone to a consistent value for tests
         // This is needed because AppServiceProvider::setTimezone() runs during boot,
