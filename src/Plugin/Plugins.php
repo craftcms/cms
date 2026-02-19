@@ -224,7 +224,7 @@ final class Plugins
             }
 
             // If we're not updating, check if the plugin’s version number changed, but not its schema version.
-            if (! app('Craft')->getIsInMaintenanceMode() && $hasVersionChanged && ! $this->isPluginUpdatePending($plugin)) {
+            if (! app()->isDownForMaintenance() && $hasVersionChanged && ! $this->isPluginUpdatePending($plugin)) {
                 // Update our record of the plugin’s version number
                 DB::table(Table::PLUGINS)
                     ->where('id', $row['id'])

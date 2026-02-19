@@ -5,6 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Controllers\ConfigSyncController;
+use CraftCms\Cms\Http\Controllers\MigrateController;
+use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
+use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController as PluginStoreRemoveController;
+use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
@@ -25,6 +30,7 @@ use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Routing\Router;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Event;
@@ -55,6 +61,7 @@ final class RouteServiceProvider extends ServiceProvider
 
         $this->bootMiddleware($router);
         $this->loadRoutesFrom(dirname(__DIR__).'/../routes/routes.php');
+        $this->bootMaintenanceModeExceptions();
 
         $this->app->booted(function () use ($routes, $router): void {
             if (! Cms::isInstalled()) {
@@ -73,6 +80,22 @@ final class RouteServiceProvider extends ServiceProvider
 
             $routes->handleDeletedSite($event);
         });
+    }
+
+    /**
+     * Register routes that should remain accessible during maintenance mode.
+     */
+    private function bootMaintenanceModeExceptions(): void
+    {
+        PreventRequestsDuringMaintenance::except([
+            action([UpdaterController::class, 'finish']),
+            action([UpdaterController::class, 'backup']),
+            action([UpdaterController::class, 'serverCheck']),
+            action([ConfigSyncController::class, 'finish']),
+            action([PluginStoreInstallController::class, 'finish']),
+            action([PluginStoreRemoveController::class, 'finish']),
+            action(MigrateController::class),
+        ]);
     }
 
     private function bootMiddleware(Router $router): void
