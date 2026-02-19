@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use craft\web\View;
+use CraftCms\Cms\View\Enums\Position;
 use Twig\Compiler;
 use Twig\Node\Node;
 use Twig\Node\NodeCaptureInterface;

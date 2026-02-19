@@ -333,6 +333,15 @@ class Template
         }
     }
 
+    public static function html(string $html, int|Position $position = Position::BodyEnd): void
+    {
+        if (is_int($position)) {
+            $position = Position::from($position);
+        }
+
+        AssetRegistry::html($html, $position);
+    }
+
     /**
      * Registers a JS file or a JS code block.
      *
@@ -353,6 +362,15 @@ class Template
             $position = Position::tryFrom($options['position']) ?? Position::BodyEnd;
             AssetRegistry::js($js, $position, $key);
         }
+    }
+
+    public static function script(string $script, int|Position $position = Position::BodyEnd): void
+    {
+        if (is_int($position)) {
+            $position = Position::from($position);
+        }
+
+        AssetRegistry::script($script, $position);
     }
 
     /**

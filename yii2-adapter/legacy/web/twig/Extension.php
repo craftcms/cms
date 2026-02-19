@@ -66,7 +66,6 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -180,7 +179,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 'allowTagPair' => true,
                 'allowOptions' => true,
             ]),
-            new RegisterResourceTokenParser('html', AssetRegistry::class . '::html', [
+            new RegisterResourceTokenParser('html', TemplateHelper::class . '::html', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
             ]),
@@ -190,7 +189,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 'allowRuntimePosition' => true,
                 'allowOptions' => true,
             ]),
-            new RegisterResourceTokenParser('script', AssetRegistry::class . '::script', [
+            new RegisterResourceTokenParser('script', TemplateHelper::class . '::script', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
                 'allowOptions' => true,
