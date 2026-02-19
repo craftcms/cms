@@ -101,6 +101,13 @@ jobs:
 
       - name: Install composer dependencies
         uses: ramsey/composer-install@v3
+      
+      - name: PHPStan Cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/phpstan
+          key: ${{ runner.os }}-phpstan-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-phpstan-
 
       - name: Run PHPStan
         run: ./vendor/bin/phpstan --error-format=github
