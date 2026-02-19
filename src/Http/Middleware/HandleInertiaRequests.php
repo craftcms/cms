@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Middleware;
 
-use Craft;
 use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Rebrand;
@@ -14,9 +12,11 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 use Override;
+
+use function CraftCms\Cms\action_url;
+use function CraftCms\Cms\cp_url;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -61,16 +61,7 @@ class HandleInertiaRequests extends Middleware
         $nav = app(Navigation::class);
 
         if (! $updates->isCraftUpdatePending()) {
-            $currentUser = Craft::$app->getUser()->getIdentity();
-
-            if (! $currentUser) {
-                $user = Auth::user();
-
-                if ($user) {
-                    Craft::$app->getUser()->setIdentity(Craft::$app->getUsers()->getUserById($user->id));
-                    $currentUser = Craft::$app->getUser()->getIdentity();
-                }
-            }
+            $currentUser = $request->user();
         }
 
         $systemIcon = Cp::iconSvg('c-outline');
@@ -87,11 +78,11 @@ class HandleInertiaRequests extends Middleware
             ],
             'craft' => [
                 'system' => [
-                    'name' => Craft::$app->getSystemName(),
+                    'name' => Cms::systemName(),
                     'icon' => $systemIcon,
                 ],
                 'app' => [
-                    'version' => Craft::$app->getVersion(),
+                    'version' => Cms::VERSION,
                     'edition' => Edition::get()->toArray(),
                 ],
                 'site' => [
@@ -100,8 +91,8 @@ class HandleInertiaRequests extends Middleware
                 'currentUser' => [
                     'email' => $currentUser->email ?? null,
                 ],
-                'cpUrl' => UrlHelper::cpUrl(),
-                'actionUrl' => UrlHelper::actionUrl(),
+                'cpUrl' => cp_url(),
+                'actionUrl' => action_url(),
                 'nav' => $nav->getItems(),
             ],
         ];

@@ -298,9 +298,7 @@ class UrlHelper
 
         $path = trim($path, '/');
 
-        $request = Craft::$app->getRequest();
-
-        if ($request->getIsCpRequest()) {
+        if (request()->isCpRequest()) {
             $path = static::prependCpTrigger($path);
             $cpUrl = true;
         } else {
@@ -308,7 +306,7 @@ class UrlHelper
         }
 
         // Stick with SSL if the current request is over SSL and a scheme wasn't defined
-        if ($scheme === null && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
+        if ($scheme === null && !app()->runningInConsole() && request()->secure()) {
             $scheme = 'https';
         }
 
