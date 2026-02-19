@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Nodes;
 
 use craft\web\View;
-use CraftCms\Cms\View\Enums\Position;
 use InvalidArgumentException;
 use Override;
 use Twig\Attribute\YieldReady;

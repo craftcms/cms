@@ -31,7 +31,6 @@ use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -137,7 +136,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
                 'allowTagPair' => true,
                 'allowOptions' => true,
             ]),
-            new RegisterResourceTokenParser('html', AssetRegistry::class.'::html', [
+            new RegisterResourceTokenParser('html', TemplateHelper::class.'::html', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
             ]),
@@ -147,7 +146,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
                 'allowRuntimePosition' => true,
                 'allowOptions' => true,
             ]),
-            new RegisterResourceTokenParser('script', AssetRegistry::class.'::script', [
+            new RegisterResourceTokenParser('script', TemplateHelper::class.'::script', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
                 'allowOptions' => true,
