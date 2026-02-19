@@ -13,10 +13,6 @@ use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
-use craft\web\twig\nodevisitors\EventTagAdder;
-use craft\web\twig\nodevisitors\EventTagFinder;
-use craft\web\twig\nodevisitors\GetAttrAdjuster;
-use craft\web\twig\nodevisitors\Profiler;
 use craft\web\twig\tokenparsers\CacheTokenParser;
 use craft\web\twig\tokenparsers\DdTokenParser;
 use craft\web\twig\tokenparsers\DeprecatedTokenParser;
@@ -40,6 +36,7 @@ use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
@@ -54,13 +51,19 @@ use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Sequence;
 use CraftCms\Cms\Twig\Nodes\expressions\binaries\HasEveryBinary;
 use CraftCms\Cms\Twig\Nodes\expressions\binaries\HasSomeBinary;
+use CraftCms\Cms\Twig\NodeVisitors\EventTagAdder;
+use CraftCms\Cms\Twig\NodeVisitors\EventTagFinder;
+use CraftCms\Cms\Twig\NodeVisitors\GetAttrAdjuster;
+use CraftCms\Cms\Twig\NodeVisitors\Profiler;
 use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\User\Elements\User;
@@ -71,6 +74,7 @@ use Illuminate\Support\ViewErrorBag;
 use InvalidArgumentException;
 use Money\Money;
 use Override;
+use Throwable;
 use Twig\Environment as TwigEnvironment;
 use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
@@ -133,7 +137,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
                 'allowTagPair' => true,
                 'allowOptions' => true,
             ]),
-            new RegisterResourceTokenParser('html', \CraftCms\Cms\Support\Facades\AssetRegistry::class.'::html', [
+            new RegisterResourceTokenParser('html', AssetRegistry::class.'::html', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
             ]),
@@ -143,7 +147,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
                 'allowRuntimePosition' => true,
                 'allowOptions' => true,
             ]),
-            new RegisterResourceTokenParser('script', \CraftCms\Cms\Support\Facades\AssetRegistry::class.'::script', [
+            new RegisterResourceTokenParser('script', AssetRegistry::class.'::script', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
                 'allowOptions' => true,
@@ -265,7 +269,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
             new TwigFilter('float', 'floatval'),
             new TwigFilter('integer', 'intval'),
             new TwigFilter('json_encode', $this->jsonEncodeFilter(...)),
-            new TwigFilter('json_decode', \CraftCms\Cms\Support\Json::decode(...)),
+            new TwigFilter('json_decode', Json::decode(...)),
             new TwigFilter('length', $this->lengthFilter(...), ['needs_environment' => true]),
             new TwigFilter('literal', $this->literalFilter(...)),
             new TwigFilter('money', $this->moneyFilter(...)),
@@ -335,7 +339,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
             return '';
         }
 
-        return app(\CraftCms\Cms\Address\Addresses::class)->formatAddress($address, $options, $formatter);
+        return app(Addresses::class)->formatAddress($address, $options, $formatter);
     }
 
     public function moneyFilter(?Money $money, ?string $formatLocale = null): ?string
@@ -372,7 +376,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
 
         try {
             return I18N::getFormatter()->asCurrency($value, $currency, $stripZeros);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return $value;
         }
     }
@@ -385,7 +389,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
 
         try {
             return I18N::getFormatter()->asShortSize($value, $decimals);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return $value;
         }
     }
@@ -398,7 +402,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
 
         try {
             return I18N::getFormatter()->asDecimal($value, $decimals, $options);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return $value;
         }
     }
@@ -411,7 +415,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
 
         try {
             return I18N::getFormatter()->asPercent($value, $decimals);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return $value;
         }
     }
@@ -433,7 +437,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
             return json_encode($value, $options, $depth);
         }
 
-        return \CraftCms\Cms\Support\Json::encode($value, $options);
+        return Json::encode($value, $options);
     }
 
     public function lengthFilter(TwigEnvironment $env, mixed $value): int

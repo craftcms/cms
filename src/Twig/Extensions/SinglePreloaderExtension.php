@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Extensions;
 
-use craft\web\twig\nodevisitors\SinglePreloader;
+use CraftCms\Cms\Twig\NodeVisitors\SinglePreloader;
 use Override;
 use Twig\Extension\AbstractExtension;
 

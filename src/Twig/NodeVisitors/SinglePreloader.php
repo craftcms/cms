@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodevisitors;
+namespace CraftCms\Cms\Twig\NodeVisitors;
 
 use CraftCms\Cms\Twig\Nodes\FallbackNameExpression;
 use CraftCms\Cms\Twig\Nodes\PreloadSinglesNode;
@@ -22,6 +26,7 @@ use Twig\NodeVisitor\NodeVisitorInterface;
  * SinglePreloader preloads Single section entries for a template.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.4.0
  */
 class SinglePreloader implements NodeVisitorInterface
@@ -32,19 +37,19 @@ class SinglePreloader implements NodeVisitorInterface
     private array $_foundVariables = [];
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function enterNode(Node $node, Environment $env): Node
     {
         if ($this->isRelevant($node)) {
             array_unshift($this->_foundVariables, []);
         } elseif (
-            !empty($this->_foundVariables) &&
+            ! empty($this->_foundVariables) &&
             $node instanceof ContextVariable &&
-            !$node instanceof AssignNameExpression &&
+            ! $node instanceof AssignNameExpression &&
             $node->hasAttribute('name') &&
-            !$node->getAttribute('always_defined') &&
-            (!$node->hasAttribute('spread') || !$node->getAttribute('spread'))
+            ! $node->getAttribute('always_defined') &&
+            (! $node->hasAttribute('spread') || ! $node->getAttribute('spread'))
         ) {
             $variables = &$this->_foundVariables[0];
             $variables[$node->getAttribute('name')] = true;
@@ -66,11 +71,11 @@ class SinglePreloader implements NodeVisitorInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function leaveNode(Node $node, Environment $env): ?Node
     {
-        if (!$this->isRelevant($node)) {
+        if (! $this->isRelevant($node)) {
             return $node;
         }
 
@@ -80,20 +85,20 @@ class SinglePreloader implements NodeVisitorInterface
             return $node;
         }
 
-        if (!$node->hasNode('body')) {
+        if (! $node->hasNode('body')) {
             return $node;
         }
 
         $body = $node->getNode('body');
 
-        if (!$body instanceof BodyNode) {
+        if (! $body instanceof BodyNode) {
             return $node;
         }
 
         /** @var Node[] $subNodes */
         $subNodes = iterator_to_array($body);
         foreach (array_keys($subNodes) as $key) {
-            $body->removeNode((string)$key);
+            $body->removeNode((string) $key);
         }
 
         array_unshift($subNodes, new PreloadSinglesNode(attributes: [
@@ -109,14 +114,13 @@ class SinglePreloader implements NodeVisitorInterface
 
     private function isRelevant(Node $node): bool
     {
-        return (
+        return
             $node instanceof ModuleNode ||
-            $node instanceof MacroNode
-        );
+            $node instanceof MacroNode;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getPriority(): int
     {

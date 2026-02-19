@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodevisitors;
+namespace CraftCms\Cms\Twig\NodeVisitors;
 
 use CraftCms\Cms\Twig\TemplateRenderer;
 use Twig\Environment;
@@ -19,22 +23,23 @@ use Twig\Node\PrintNode;
  * EventTagFinder looks for `head()`, `beginBody()`, and `endBody()` event tags in templates as they’re being compiled.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class EventTagFinder extends BaseEventTagVisitor
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function enterNode(Node $node, Environment $env): Node
     {
         // Ignore if we're not rendering a page template
-        if (!app(TemplateRenderer::class)->isRenderingPageTemplate()) {
+        if (! app(TemplateRenderer::class)->isRenderingPageTemplate()) {
             return $node;
         }
 
         // Ignore if this isn't a print/do tag
-        if (!$node instanceof PrintNode && !$node instanceof DoNode) {
+        if (! $node instanceof PrintNode && ! $node instanceof DoNode) {
             return $node;
         }
 
@@ -45,7 +50,7 @@ class EventTagFinder extends BaseEventTagVisitor
         }
 
         // Ignore if the expression isn't a function
-        if (!$expression instanceof FunctionExpression) {
+        if (! $expression instanceof FunctionExpression) {
             return $node;
         }
 
@@ -67,14 +72,14 @@ class EventTagFinder extends BaseEventTagVisitor
 
         if ($node instanceof PrintNode) {
             // Switch it to a {% do %} tag, since the functions do their own `echo`ing
-            $node = new DoNode($expression, $expression->getTemplateLine());
+            return new DoNode($expression, $expression->getTemplateLine());
         }
 
         return $node;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function leaveNode(Node $node, Environment $env): ?Node
     {
@@ -82,7 +87,7 @@ class EventTagFinder extends BaseEventTagVisitor
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getPriority(): int
     {

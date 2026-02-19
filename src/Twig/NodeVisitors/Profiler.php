@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodevisitors;
+namespace CraftCms\Cms\Twig\NodeVisitors;
 
 use craft\helpers\Template;
 use CraftCms\Cms\Twig\Nodes\BaseNode;
@@ -22,12 +26,13 @@ use Twig\NodeVisitor\NodeVisitorInterface;
  * Profiler adds profiling to template bodies, blocks, and macros.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.3.0
  */
 class Profiler implements NodeVisitorInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function enterNode(Node $node, Environment $env): Node
     {
@@ -35,7 +40,7 @@ class Profiler implements NodeVisitorInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function leaveNode(Node $node, Environment $env): ?Node
     {
@@ -69,7 +74,7 @@ class Profiler implements NodeVisitorInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getPriority(): int
     {
