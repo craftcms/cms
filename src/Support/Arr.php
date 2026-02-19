@@ -233,7 +233,7 @@ class Arr extends \Illuminate\Support\Arr
         return Collection::make($array)->every(fn ($v) => is_int($v));
     }
 
-    public static function contains(array $array, callable|string $key, mixed $value = true, bool $strict = false): bool
+    public static function contains(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
     {
         return Collection::make($array)->contains($key, $strict ? '===' : '==', $value);
     }
