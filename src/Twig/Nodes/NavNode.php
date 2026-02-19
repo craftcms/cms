@@ -2,15 +2,9 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Twig\Nodes;
 
+use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Expression\AbstractExpression;
@@ -18,15 +12,8 @@ use Twig\Node\Expression\Variable\AssignContextVariable;
 use Twig\Node\ForNode;
 use Twig\Node\Node;
 
-/**
- * Represents a nav node.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
- */
 #[YieldReady]
-class NavNode extends ForNode
+final class NavNode extends ForNode
 {
     private readonly NavItemNode $navItemNode;
 
@@ -41,7 +28,7 @@ class NavNode extends ForNode
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function compile(Compiler $compiler): void
     {
         // Remember what 'nav' was set to before

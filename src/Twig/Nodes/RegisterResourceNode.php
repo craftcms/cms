@@ -2,37 +2,24 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Twig\Nodes;
 
 use craft\web\View;
 use CraftCms\Cms\View\Enums\Position;
 use InvalidArgumentException;
+use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 use Twig\Node\NodeCaptureInterface;
 
-/**
- * Class RegisterResourceNode
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
- */
 #[YieldReady]
-class RegisterResourceNode extends Node implements NodeCaptureInterface
+final class RegisterResourceNode extends Node implements NodeCaptureInterface
 {
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function compile(Compiler $compiler): void
     {
         $method = $this->getAttribute('method');

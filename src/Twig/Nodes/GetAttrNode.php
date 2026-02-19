@@ -2,16 +2,10 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Twig\Nodes;
 
 use craft\helpers\Template as TemplateHelper;
+use Override;
 use Twig\Compiler;
 use Twig\Extension\SandboxExtension;
 use Twig\Node\Expression\GetAttrExpression;
@@ -21,12 +15,8 @@ use Twig\Template;
 /**
  * GetAttrNode is an alternative to [[\Twig\Node\Expression\GetAttrExpression]], which sends attribute calls to
  * [[TemplateHelper::attribute()]] rather than CoreExtension::getAttribute().
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
  */
-class GetAttrNode extends GetAttrExpression
+final class GetAttrNode extends GetAttrExpression
 {
     /**
      * @param  array  $nodes  An array of named nodes
@@ -44,7 +34,7 @@ class GetAttrNode extends GetAttrExpression
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function compile(Compiler $compiler): void
     {
         // The following code is based on GetAttrExpression::compile().

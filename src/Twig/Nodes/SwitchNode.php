@@ -2,35 +2,21 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Twig\Nodes;
 
+use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Expression\Binary\OrBinary;
 use Twig\Node\Node;
 
-/**
- * Class SwitchNode
- * Based on the rejected Twig pull request: https://github.com/fabpot/Twig/pull/185
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
- */
 #[YieldReady]
-class SwitchNode extends Node
+final class SwitchNode extends Node
 {
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function compile(Compiler $compiler): void
     {
         $compiler

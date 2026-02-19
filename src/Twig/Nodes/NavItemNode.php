@@ -2,31 +2,18 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Twig\Nodes;
 
 use craft\helpers\Template as TemplateHelper;
+use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Expression\Variable\AssignContextVariable;
 use Twig\Node\Node;
 use Twig\Template;
 
-/**
- * Internal node used by the nav node.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
- */
 #[YieldReady]
-class NavItemNode extends Node
+final class NavItemNode extends Node
 {
     public function __construct(AssignContextVariable $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, int $lineno)
     {
@@ -41,7 +28,7 @@ class NavItemNode extends Node
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function compile(Compiler $compiler): void
     {
         $compiler

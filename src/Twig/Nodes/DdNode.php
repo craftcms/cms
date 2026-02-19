@@ -2,35 +2,22 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Twig\Nodes;
 
 use Craft;
 use craft\helpers\Template;
+use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
-/**
- * Class DdNode
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.2.0
- */
 #[YieldReady]
-class DdNode extends Node
+final class DdNode extends Node
 {
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function compile(Compiler $compiler): void
     {
         $compiler->addDebugInfo($this);

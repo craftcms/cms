@@ -2,28 +2,15 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Twig\Nodes;
 
 use craft\helpers\Template;
+use Override;
 use Twig\Compiler;
 use Twig\Node\Expression\Variable\ContextVariable;
 use Twig\Node\Node;
 
-/**
- * Class FallbackNameExpression
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.4.0
- */
-class FallbackNameExpression extends ContextVariable
+final class FallbackNameExpression extends ContextVariable
 {
     public function __construct(string $name, array $attributes = [], int $lineno = 0)
     {
@@ -36,7 +23,7 @@ class FallbackNameExpression extends ContextVariable
         Node::__construct([], $attributes, $lineno);
     }
 
-    #[\Override]
+    #[Override]
     public function compile(Compiler $compiler): void
     {
         // No special handling for _self/etc. or always-defined variables
