@@ -431,11 +431,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
             }
         }
 
-        if ($depth !== 512) {
-            return json_encode($value, $options, $depth);
-        }
-
-        return Json::encode($value, $options);
+        return Json::encode($value, $options, $depth);
     }
 
     public function lengthFilter(TwigEnvironment $env, mixed $value): int
