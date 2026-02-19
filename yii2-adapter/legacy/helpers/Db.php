@@ -79,7 +79,14 @@ class Db
      */
     public static function prepareValuesForDb(mixed $values): array
     {
-        return QueryHelper::prepareValuesForDb($values);
+        // Normalize to an array
+        $values = Arr::toArray($values, [], false);
+
+        foreach ($values as $key => $value) {
+            $values[$key] = self::prepareValueForDb($value);
+        }
+
+        return $values;
     }
 
     /**
