@@ -7,8 +7,6 @@
 
 namespace craft\web\twig;
 
-use Twig\Sandbox\SecurityPolicyInterface;
-
 /** @phpstan-ignore-next-line */
 if (false) {
     /**
@@ -18,7 +16,7 @@ if (false) {
      * @since 4.17.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\SecurityPolicy} instead.
      */
-    class SecurityPolicy implements SecurityPolicyInterface
+    class SecurityPolicy
     {
     }
 }

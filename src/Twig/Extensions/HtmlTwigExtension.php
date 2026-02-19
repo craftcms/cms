@@ -11,7 +11,6 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Log;
@@ -36,12 +35,12 @@ final class HtmlTwigExtension extends AbstractExtension
             new TwigFilter('id', Html::id(...)),
             new TwigFilter('markdown', $this->markdownFilter(...), ['is_safe' => ['html']]),
             new TwigFilter('md', $this->markdownFilter(...), ['is_safe' => ['html']]),
-            new TwigFilter('namespace', InputNamespace::namespaceInputs(...), ['is_safe' => ['html']]),
+            new TwigFilter('namespace', app(\CraftCms\Cms\View\InputNamespace::class)->namespaceInputs(...), ['is_safe' => ['html']]),
             new TwigFilter('namespaceAttributes', Html::namespaceAttributes(...), ['is_safe' => ['html']]),
-            new TwigFilter('ns', InputNamespace::namespaceInputs(...), ['is_safe' => ['html']]),
-            new TwigFilter('namespaceInputName', InputNamespace::namespaceInputName(...)),
-            new TwigFilter('namespaceId', InputNamespace::namespaceId(...)),
-            new TwigFilter('namespaceInputId', InputNamespace::namespaceId(...)),
+            new TwigFilter('ns', app(\CraftCms\Cms\View\InputNamespace::class)->namespaceInputs(...), ['is_safe' => ['html']]),
+            new TwigFilter('namespaceInputName', app(\CraftCms\Cms\View\InputNamespace::class)->namespaceInputName(...)),
+            new TwigFilter('namespaceId', app(\CraftCms\Cms\View\InputNamespace::class)->namespaceId(...)),
+            new TwigFilter('namespaceInputId', app(\CraftCms\Cms\View\InputNamespace::class)->namespaceId(...)),
             new TwigFilter('parseAttr', $this->parseAttrFilter(...)),
             new TwigFilter('parseRefs', $this->parseRefsFilter(...), ['is_safe' => ['html']]),
             new TwigFilter('prepend', $this->prependFilter(...), ['is_safe' => ['html']]),
@@ -123,12 +122,16 @@ final class HtmlTwigExtension extends AbstractExtension
 
     public function removeClassFilter(string $tag, array|string $class): string
     {
-        $class = Arr::wrap($class);
-
         try {
-            return Html::removeTagAttributes($tag, [
-                'class' => $class,
-            ]);
+            $oldClasses = Html::parseTagAttributes($tag)['class'] ?? [];
+            $newClasses = array_filter($oldClasses, fn (string $oldClass) => is_string($class) ? $oldClass !== $class : ! in_array($oldClass, $class, true));
+            $newTag = Html::modifyTagAttributes($tag, ['class' => false]);
+
+            if (! empty($newClasses)) {
+                return Html::modifyTagAttributes($newTag, ['class' => $newClasses]);
+            }
+
+            return $newTag;
         } catch (InvalidArgumentException $e) {
             Log::warning($e->getMessage(), [__METHOD__]);
 

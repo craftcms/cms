@@ -7,9 +7,6 @@
 
 namespace craft\web\twig;
 
-use Twig\Extension\AbstractExtension;
-use Twig\Extension\GlobalsInterface;
-
 /** @phpstan-ignore-next-line */
 if (false) {
     /**
@@ -19,7 +16,7 @@ if (false) {
      * @since 3.7.8
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Extensions\CpExtension} instead.
      */
-    class CpExtension extends AbstractExtension implements GlobalsInterface
+    class CpExtension
     {
     }
 }
