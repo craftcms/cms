@@ -1,9 +1,11 @@
 <script setup lang="ts">
   import {FlexRender} from '@tanstack/vue-table';
-  import {nextTick, onMounted, onUnmounted, ref, watch} from 'vue';
+  import {t} from '@craftcms/cp/utilities/translate.ts';
+  import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue';
   import {useTableDragAndDrop} from '@/composables/useTableDragAndDrop';
   import ReorderButton from '@/components/ReorderButton.vue';
   import DropIndicator from '@/components/DropIndicator.vue';
+  import Select from '@/components/form/Select.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -69,6 +71,28 @@
     },
     {deep: true}
   );
+
+  const pageIndexProxy = computed({
+    get() {
+      return props.table.getState().pagination.pageIndex + 1;
+    },
+    set(newValue) {
+      if (newValue) {
+        props.table.setPageIndex(parseInt(newValue) - 1);
+      }
+    },
+  });
+
+  const pageSizeProxy = computed({
+    get() {
+      return props.table.getState().pagination.pageSize;
+    },
+    set(newValue) {
+      if (newValue) {
+        props.table.setPageSize(parseInt(newValue));
+      }
+    },
+  });
 
   onMounted(() => {
     nextTick(registerRows);
@@ -157,6 +181,58 @@
         </tr>
       </tbody>
     </table>
+
+    <div class="cp-table__footer">
+      <div class="flex gap-3 items-center justify-between">
+        <div class="flex gap-1">
+          <craft-button
+            type="button"
+            @click="table.previousPage()"
+            :disabled="!table.getCanPreviousPage()"
+            icon
+          >
+            <craft-icon
+              name="chevron-left"
+              :label="t('Previous page')"
+            ></craft-icon>
+          </craft-button>
+          <craft-button
+            type="button"
+            @click="table.nextPage()"
+            :disabled="!table.getCanNextPage()"
+            icon
+          >
+            <craft-icon
+              name="chevron-right"
+              label="t('Next page')"
+            ></craft-icon>
+          </craft-button>
+        </div>
+        <span class="flex items-center gap-1">
+          Page
+          <craft-input
+            type="text"
+            v-model="pageIndexProxy"
+            size="3"
+            :label="t('Current page')"
+            label-sr-only
+            center
+            small
+          >
+          </craft-input>
+          of
+          {{ table.getPageCount() }}
+        </span>
+      </div>
+      <div class="flex gap-2 items-center">
+        {{ t('Items per page:') }}
+        <Select
+          :options="['25', '50', '100']"
+          v-model="pageSizeProxy"
+          class="w-auto"
+        />
+      </div>
+    </div>
   </div>
 </template>
 

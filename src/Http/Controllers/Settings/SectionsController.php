@@ -20,9 +20,9 @@ use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -39,11 +39,43 @@ final readonly class SectionsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(): View
+    public function index(Request $request, Sections $sections): \Inertia\Response
     {
-        return view('craftcms::settings.sections._index', [
+        $page = (int) $request->input('page', 1);
+        $limit = (int) $request->input('per_page', 50);
+        $searchTerm = $request->input('search');
+
+        $sort = $request->input('sort');
+
+        $orderBy = match (Arr::get($sort, '0.field')) {
+            '__slot:handle' => 'handle',
+            'type' => 'type',
+            default => 'name',
+        };
+
+        $sortDir = match (Arr::get($sort, '0.direction')) {
+            'desc' => SORT_DESC,
+            default => SORT_ASC,
+        };
+
+        [$pagination, $tableData] = $sections->getSectionTableData(
+            page: $page,
+            limit: $limit,
+            searchTerm: $searchTerm,
+            orderBy: $orderBy,
+            sortDir: $sortDir,
+        );
+
+        return Inertia::render('SettingsSectionsIndexPage', [
+            'title' => t('Sections'),
+            'data' => fn () => $tableData,
+            'pagination' => fn () => $pagination,
+            'emptyMessage' => t('No sections exist yet.'),
             'readOnly' => $this->readOnly,
         ]);
+        // return view('craftcms::settings.sections._index', [
+        //     'readOnly' => $this->readOnly,
+        // ]);
     }
 
     public function create(): CpScreenResponse

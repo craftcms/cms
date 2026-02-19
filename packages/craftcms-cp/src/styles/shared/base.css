@@ -178,3 +178,11 @@ Modify with `cp-table--auto` to apply table-layout: auto
     padding-block: var(--c-spacing-sm);
   }
 }
+
+.cp-table__header,
+.cp-table__footer {
+  padding: var(--c-spacing-md);
+  background-color: var(--c-color-neutral-bg-normal);
+  display: flex;
+  justify-content: space-between;
+}

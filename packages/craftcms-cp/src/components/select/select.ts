@@ -3,11 +3,14 @@ import {LionSelect} from '@lion/ui/select.js';
 import {html} from 'lit';
 import '../option/option.js';
 import '../icon/icon.js';
+import {property} from 'lit/decorators.js';
 
 export default class CraftSelect extends LionSelect {
   static override get styles() {
     return [...super.styles, styles];
   }
+
+  @property({reflect: true, type: Boolean}) small = false;
 
   // eslint-disable-next-line class-methods-use-this
   override _inputGroupInputTemplate() {
