@@ -1,5 +1,5 @@
 // line 1
-if (\CraftCms\Cms\Edition::get() < "pro")
+if (CraftCms\Cms\Edition::get() < "pro")
 {
     abort(404);
 }

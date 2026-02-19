@@ -7,6 +7,7 @@
 
 namespace craft\web\twig\nodes;
 
+use Craft;
 use craft\helpers\DateTimeHelper;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -47,7 +48,6 @@ class ExpiresNode extends Node
         }
 
         $compiler
-            ->write('\Craft::$app->getResponse()->setCacheHeaders($duration);')
-            ->raw("\n");
+            ->write(Craft::class . "::\$app->getResponse()->setCacheHeaders(\$duration);\n");
     }
 }

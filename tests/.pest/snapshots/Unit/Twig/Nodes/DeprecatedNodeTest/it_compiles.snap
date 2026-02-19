@@ -1,2 +1,2 @@
 // line 1
-\app(\CraftCms\Cms\Deprecator\Deprecator::class)->log('template:RANDOM_STRING', "This feature is deprecated", 'template', 1);
+\app(CraftCms\Cms\Deprecator\Deprecator::class)->log('template:RANDOM_STRING', "This feature is deprecated", 'template', 1);

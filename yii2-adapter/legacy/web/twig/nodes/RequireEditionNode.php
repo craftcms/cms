@@ -7,6 +7,7 @@
 
 namespace craft\web\twig\nodes;
 
+use CraftCms\Cms\Edition;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
@@ -27,7 +28,7 @@ class RequireEditionNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write('if (\CraftCms\Cms\Edition::get() < ')
+            ->write('if (' . Edition::class . '::get() < ')
             ->subcompile($this->getNode('editionName'))
             ->raw(")\n")
             ->write("{\n")

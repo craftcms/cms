@@ -7,6 +7,7 @@
 
 namespace craft\web\twig\nodes;
 
+use CraftCms\Cms\View\TemplateHooks;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
@@ -27,7 +28,7 @@ class HookNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write('yield app(\CraftCms\Cms\View\TemplateHooks::class)->invoke(')
+            ->write(sprintf('yield app(%s::class)->invoke(', TemplateHooks::class))
             ->subcompile($this->getNode('hook'))
             ->raw(", \$context);\n\n");
     }

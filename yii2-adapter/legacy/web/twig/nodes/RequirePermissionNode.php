@@ -7,6 +7,7 @@
 
 namespace craft\web\twig\nodes;
 
+use Craft;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
@@ -27,7 +28,7 @@ class RequirePermissionNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write('\Craft::$app->controller->requirePermission(')
+            ->write(Craft::class . '::$app->controller->requirePermission(')
             ->subcompile($this->getNode('permissionName'))
             ->raw(");\n");
     }

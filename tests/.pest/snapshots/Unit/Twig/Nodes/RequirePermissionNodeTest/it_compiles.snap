@@ -1,2 +1,2 @@
 // line 1
-\Craft::$app->controller->requirePermission("editEntries");
+Craft::$app->controller->requirePermission("editEntries");

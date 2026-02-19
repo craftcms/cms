@@ -7,6 +7,7 @@
 
 namespace craft\web\twig\nodes;
 
+use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Support\Str;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -44,7 +45,7 @@ class DeprecatedNode extends Node
         $compiler->addDebugInfo($this);
 
         $compiler
-            ->write(sprintf('\app(\CraftCms\Cms\Deprecator\Deprecator::class)->log(\'template:%s\', ', Str::random()))
+            ->write(sprintf('\app(%s::class)->log(\'template:%s\', ', Deprecator::class, Str::random()))
             ->subcompile($this->getNode('expr'))
             ->raw(sprintf(", '%s', %s);\n", $this->getTemplateName() ?: 'template', $this->getTemplateLine() ?: 'null'));
     }
