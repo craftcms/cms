@@ -128,13 +128,34 @@
             :key="header.id"
             :colSpan="header.colSpan"
             :style="{width: `${header.getSize()}px`}"
-            class="cell cell--header"
+            :class="{
+              cell: true,
+              'cell--header': true,
+              'cursor-pointer select-none': header.column.getCanSort(),
+            }"
+            @click="header.column.getToggleSortingHandler()?.($event)"
           >
-            <FlexRender
-              v-if="!header.isPlaceholder"
-              :render="header.column.columnDef.header"
-              :props="header.getContext()"
-            />
+            <div class="flex gap-1 items-center">
+              <FlexRender
+                v-if="!header.isPlaceholder"
+                :render="header.column.columnDef.header"
+                :props="header.getContext()"
+              />
+              <craft-icon
+                v-if="
+                  header.column.getCanSort() && !header.column.getIsSorted()
+                "
+                name="arrow-up-arrow-down"
+              ></craft-icon>
+              <craft-icon
+                v-else-if="header.column.getIsSorted() === 'asc'"
+                name="arrow-down"
+              ></craft-icon>
+              <craft-icon
+                v-else-if="header.column.getIsSorted() === 'desc'"
+                name="arrow-up"
+              ></craft-icon>
+            </div>
           </th>
         </tr>
       </thead>

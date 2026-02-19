@@ -3,6 +3,7 @@
     createColumnHelper,
     getCoreRowModel,
     type PaginationState,
+    type SortingState,
     useVueTable,
   } from '@tanstack/vue-table';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
@@ -34,10 +35,16 @@
     to: number;
   }
 
+  interface SortItem {
+    field: string;
+    direction: 'desc' | 'asc';
+  }
+
   const props = defineProps<{
     title: string;
     data: Array<SectionModel>;
     pagination: PaginationData;
+    sort?: Array<SortItem>;
     emptyMessage: string;
     readOnly: boolean;
   }>();
@@ -83,6 +90,14 @@
     pageIndex: pageIndex.value,
     pageSize: props.pagination.per_page,
   });
+  const sorting = ref<SortingState>(
+    props.sort
+      ? props.sort.map((sort) => ({
+          id: sort.field,
+          desc: sort.direction === 'desc',
+        }))
+      : []
+  );
   const sectionTable = useVueTable({
     get data() {
       return props.data;
@@ -92,21 +107,60 @@
     },
     getCoreRowModel: getCoreRowModel<SectionModel>(),
     manualPagination: true,
+    manualSorting: true,
     rowCount: props.pagination.total,
+    enableMultiSort: true,
+    enableSortingRemoval: false,
     state: {
       get pagination() {
         return pagination.value;
       },
+      get sorting() {
+        return sorting.value;
+      },
+    },
+
+    onSortingChange: (updater) => {
+      const next =
+        typeof updater === 'function' ? updater(sorting.value) : updater;
+
+      // Convert array of objects to indexed object format
+      const sortQueryParams = next.reduce<
+        Record<number, {field: string; direction: string}>
+      >((acc, sortCol, index) => {
+        acc[index] = {
+          field: sortCol.id,
+          direction: sortCol.desc ? 'desc' : 'asc',
+        };
+        return acc;
+      }, {});
+
+      const currentQuery = new URLSearchParams(window.location.search);
+      router.visit(
+        index({
+          query: {
+            ...Object.entries(currentQuery),
+            sort: sortQueryParams,
+            page: 1,
+          },
+        }),
+        {
+          only: ['data', 'sort'],
+          preserveScroll: true,
+        }
+      );
     },
 
     onPaginationChange: (updater) => {
       const next =
         typeof updater === 'function' ? updater(pagination.value) : updater;
 
-      // Inertia visit instead of fetch — triggers a server roundtrip
+      const currentQuery = new URLSearchParams(window.location.search);
+
       router.visit(
         index({
           query: {
+            ...Object.fromEntries(currentQuery),
             page: next.pageIndex + 1,
             per_page: next.pageSize,
           },

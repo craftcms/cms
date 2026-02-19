@@ -59,6 +59,23 @@ test('index can be loaded', function () {
         ->assertOk();
 });
 
+test('index can be sorted', function () {
+    Section::factory()->create(['name' => 'ZZZ Last Section']);
+    Section::factory()->create(['name' => 'AAA First Section']);
+
+    get(action([SectionsController::class, 'index'], [
+        'sort' => [
+            ['field' => 'name', 'direction' => 'asc'],
+        ],
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+            ->has('data', 3)
+            ->where('data.0.name', 'AAA First Section')
+            ->where('data.2.name', 'ZZZ Last Section')
+        );
+});
+
 test('create can be loaded', function () {
     get(action([SectionsController::class, 'create']))
         ->assertOk()
