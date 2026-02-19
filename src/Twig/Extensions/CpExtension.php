@@ -12,15 +12,13 @@ use CraftCms\Cms\Support\Facades\AssetRegistry;
 use Illuminate\Foundation\ViteException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Vite;
+use Override;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
-/**
- * Control panel Twig extension
- */
-class CpExtension extends AbstractExtension implements GlobalsInterface
+final class CpExtension extends AbstractExtension implements GlobalsInterface
 {
     public function getGlobals(): array
     {
@@ -34,7 +32,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function getFunctions(): array
     {
         return [
@@ -74,7 +72,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         }
     }
 
-    #[\Override]
+    #[Override]
     public function getFilters(): array
     {
         return [

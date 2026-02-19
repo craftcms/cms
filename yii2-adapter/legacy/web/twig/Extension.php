@@ -8,7 +8,10 @@
 namespace craft\web\twig;
 
 use Craft;
+use craft\helpers\ArrayHelper;
+use craft\web\View;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use Twig\DeprecatedCallableInfo;
 use Twig\Environment as TwigEnvironment;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -24,6 +27,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getFilters(): array
     {
         return [
+            new TwigFilter('filterByValue', ArrayHelper::where(...), ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
+            new TwigFilter('firstWhere', ArrayHelper::firstWhere(...), ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '6.0.0')]),
+            new TwigFilter('index', ArrayHelper::index(...), ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '6.0.0')]),
             new TwigFilter('ucfirst', [$this, 'ucfirstFilter']),
             new TwigFilter('ucwords', [$this, 'ucwordsFilter'], ['needs_environment' => true]),
         ];
@@ -33,6 +39,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         return [
             'view' => Craft::$app->getView(),
+            'POS_READY' => View::POS_READY,
+            'POS_LOAD' => View::POS_LOAD,
         ];
     }
 

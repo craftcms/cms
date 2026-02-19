@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Extensions;
 
 use craft\base\ElementInterface;
-use craft\helpers\ArrayHelper;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 use Override;
 use Traversable;
-use Twig\DeprecatedCallableInfo;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
@@ -28,15 +26,12 @@ final class ArrayTwigExtension extends AbstractExtension
     public function getFilters(): array
     {
         return [
-            new TwigFilter('column', ArrayHelper::getColumn(...)),
-            new TwigFilter('contains', ArrayHelper::contains(...)),
+            new TwigFilter('column', Arr::pluck(...)),
+            new TwigFilter('contains', Arr::contains(...)),
             new TwigFilter('diff', 'array_diff'),
             new TwigFilter('filter', $this->filterFilter(...), ['needs_environment' => true]),
-            new TwigFilter('filterByValue', ArrayHelper::where(...), ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
-            new TwigFilter('firstWhere', ArrayHelper::firstWhere(...)),
             new TwigFilter('flatten', Arr::flatten(...)),
             new TwigFilter('group', $this->groupFilter(...)),
-            new TwigFilter('index', ArrayHelper::index(...)),
             new TwigFilter('indexOf', $this->indexOfFilter(...)),
             new TwigFilter('intersect', 'array_intersect'),
             new TwigFilter('map', $this->mapFilter(...), ['needs_environment' => true]),
@@ -48,7 +43,7 @@ final class ArrayTwigExtension extends AbstractExtension
             new TwigFilter('unique', 'array_unique'),
             new TwigFilter('unshift', $this->unshiftFilter(...)),
             new TwigFilter('values', 'array_values'),
-            new TwigFilter('where', ArrayHelper::where(...)),
+            new TwigFilter('where', Arr::where(...)),
             new TwigFilter('without', $this->withoutFilter(...)),
             new TwigFilter('withoutKey', $this->withoutKeyFilter(...)),
         ];
@@ -186,9 +181,10 @@ final class ArrayTwigExtension extends AbstractExtension
     public function multisortFilter(mixed $array, mixed $key, int|array $direction = SORT_ASC, int|array $sortFlag = SORT_REGULAR): array
     {
         $array = array_merge($array);
-        ArrayHelper::multisort($array, $key, $direction, $sortFlag);
 
-        return $array;
+        return collect($array)
+            ->sortBy($key, $sortFlag, $direction === SORT_DESC ? 'desc' : 'asc')
+            ->all();
     }
 
     public function pushFilter(array $array, mixed ...$values): array

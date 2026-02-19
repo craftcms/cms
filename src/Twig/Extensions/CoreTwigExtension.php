@@ -8,8 +8,6 @@ use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\MissingComponentInterface;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
@@ -36,6 +34,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Sequence;
 use CraftCms\Cms\Twig\Nodes\Expressions\Binaries\HasEveryBinary;
 use CraftCms\Cms\Twig\Nodes\Expressions\Binaries\HasSomeBinary;
@@ -66,8 +65,10 @@ use CraftCms\Cms\Twig\TokenParsers\SwitchTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\TagTokenParser;
 use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ViewErrorBag;
 use InvalidArgumentException;
@@ -238,20 +239,18 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
             'SORT_NATURAL' => SORT_NATURAL,
             'SORT_FLAG_CASE' => SORT_FLAG_CASE,
             'PHP_INT_MAX' => PHP_INT_MAX,
-            'POS_HEAD' => View::POS_HEAD,
-            'POS_BEGIN' => View::POS_BEGIN,
-            'POS_END' => View::POS_END,
-            'POS_READY' => View::POS_READY,
-            'POS_LOAD' => View::POS_LOAD,
+            'POS_HEAD' => Position::Head->value,
+            'POS_BEGIN' => Position::BodyBegin->value,
+            'POS_END' => Position::BodyEnd->value,
             'isInstalled' => $isInstalled,
             'isUpdateInfoCached' => $updates->isUpdateInfoCached(),
             'loginUrl' => UrlHelper::siteUrl($generalConfig->getLoginPath()),
             'logoutUrl' => UrlHelper::siteUrl($generalConfig->getLogoutPath()),
             'setPasswordUrl' => $setPasswordRequestPath !== null ? UrlHelper::siteUrl($setPasswordRequestPath) : null,
-            'now' => DateTimeHelper::now(),
-            'today' => DateTimeHelper::today(),
-            'tomorrow' => DateTimeHelper::tomorrow(),
-            'yesterday' => DateTimeHelper::yesterday(),
+            'now' => now(),
+            'today' => today(),
+            'tomorrow' => today()->addDay(),
+            'yesterday' => today()->subDay(),
         ];
     }
 
@@ -450,7 +449,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
 
     public function literalFilter(mixed $value): string
     {
-        return Db::escapeParam((string) $value);
+        return Query::escapeParam((string) $value);
     }
 
     public function appFunction(?string $abstract = null): mixed
@@ -515,7 +514,7 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
         $valueSql = $provider->getFieldLayout()->getFieldByHandle($fieldHandle)->getValueSql($key);
 
         if ($valueSql instanceof \Illuminate\Contracts\Database\Query\Expression) {
-            return $valueSql->getValue(\Illuminate\Support\Facades\DB::getQueryGrammar());
+            return $valueSql->getValue(DB::getQueryGrammar());
         }
 
         return $valueSql;

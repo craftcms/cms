@@ -219,8 +219,6 @@ class Arr extends \Illuminate\Support\Arr
 
     /**
      * Returns whether all the elements in the array are numeric.
-     *
-     * @since 6.x
      */
     public static function isNumeric(array $array): bool
     {
@@ -229,11 +227,14 @@ class Arr extends \Illuminate\Support\Arr
 
     /**
      * Returns whether all the elements in the array are integers.
-     *
-     * @since 6.x
      */
     public static function isIndexed(array $array): bool
     {
         return Collection::make($array)->every(fn ($v) => is_int($v));
+    }
+
+    public static function contains(array $array, callable|string $key, mixed $value = true, bool $strict = false): bool
+    {
+        return Collection::make($array)->contains($key, $strict ? '===' : '==', $value);
     }
 }

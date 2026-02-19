@@ -50,7 +50,7 @@ final class TextTwigExtension extends AbstractExtension
             return $string;
         }
 
-        $length = $length - mb_strlen($suffix);
+        $length -= mb_strlen($suffix);
 
         return Str::limit($string, $length, $suffix, preserveWords: true);
     }

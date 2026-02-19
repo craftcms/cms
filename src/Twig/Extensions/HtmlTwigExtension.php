@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\View\InputNamespace;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Override;
@@ -35,12 +36,12 @@ final class HtmlTwigExtension extends AbstractExtension
             new TwigFilter('id', Html::id(...)),
             new TwigFilter('markdown', $this->markdownFilter(...), ['is_safe' => ['html']]),
             new TwigFilter('md', $this->markdownFilter(...), ['is_safe' => ['html']]),
-            new TwigFilter('namespace', app(\CraftCms\Cms\View\InputNamespace::class)->namespaceInputs(...), ['is_safe' => ['html']]),
+            new TwigFilter('namespace', app(InputNamespace::class)->namespaceInputs(...), ['is_safe' => ['html']]),
             new TwigFilter('namespaceAttributes', Html::namespaceAttributes(...), ['is_safe' => ['html']]),
-            new TwigFilter('ns', app(\CraftCms\Cms\View\InputNamespace::class)->namespaceInputs(...), ['is_safe' => ['html']]),
-            new TwigFilter('namespaceInputName', app(\CraftCms\Cms\View\InputNamespace::class)->namespaceInputName(...)),
-            new TwigFilter('namespaceId', app(\CraftCms\Cms\View\InputNamespace::class)->namespaceId(...)),
-            new TwigFilter('namespaceInputId', app(\CraftCms\Cms\View\InputNamespace::class)->namespaceId(...)),
+            new TwigFilter('ns', app(InputNamespace::class)->namespaceInputs(...), ['is_safe' => ['html']]),
+            new TwigFilter('namespaceInputName', app(InputNamespace::class)->namespaceInputName(...)),
+            new TwigFilter('namespaceId', app(InputNamespace::class)->namespaceId(...)),
+            new TwigFilter('namespaceInputId', app(InputNamespace::class)->namespaceId(...)),
             new TwigFilter('parseAttr', $this->parseAttrFilter(...)),
             new TwigFilter('parseRefs', $this->parseRefsFilter(...), ['is_safe' => ['html']]),
             new TwigFilter('prepend', $this->prependFilter(...), ['is_safe' => ['html']]),
@@ -103,8 +104,7 @@ final class HtmlTwigExtension extends AbstractExtension
         }
 
         if (is_string($config)) {
-            $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'htmlpurifier'.
-                DIRECTORY_SEPARATOR.$config.'.json';
+            $path = app()->configPath("craft/htmlpurifier/$config.json");
             $config = null;
             if (! is_file($path)) {
                 Log::info("No HTML Purifier config found at $path.");
