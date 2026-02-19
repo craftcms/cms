@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Twig\Nodes\expressions\binaries\HasEveryBinary;
+use CraftCms\Cms\Twig\Nodes\Expressions\Binaries\HasEveryBinary;
 use Twig\Compiler;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;

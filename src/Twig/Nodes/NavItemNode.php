@@ -25,9 +25,6 @@ final class NavItemNode extends Node
         ], [], $lineno);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function compile(Compiler $compiler): void
     {

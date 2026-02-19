@@ -10,9 +10,6 @@ use Twig\Extension\AbstractExtension;
 
 class SinglePreloaderExtension extends AbstractExtension
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getNodeVisitors(): array
     {

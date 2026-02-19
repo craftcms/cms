@@ -22,9 +22,6 @@ use Twig\TwigFunction;
  */
 class CpExtension extends AbstractExtension implements GlobalsInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getGlobals(): array
     {
         return [
@@ -37,9 +34,6 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getFunctions(): array
     {
@@ -80,9 +74,6 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getFilters(): array
     {

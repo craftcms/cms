@@ -25,9 +25,6 @@ final class ProfileNode extends Node
         parent::__construct([], compact('stage', 'type', 'name'));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function compile(Compiler $compiler): void
     {

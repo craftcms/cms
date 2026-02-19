@@ -16,9 +16,6 @@ use Twig\Node\NodeCaptureInterface;
 #[YieldReady]
 final class RegisterResourceNode extends Node implements NodeCaptureInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function compile(Compiler $compiler): void
     {

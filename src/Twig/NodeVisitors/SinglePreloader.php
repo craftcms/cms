@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Twig\NodeVisitors;
 
 use CraftCms\Cms\Twig\Nodes\FallbackNameExpression;
@@ -24,34 +17,27 @@ use Twig\NodeVisitor\NodeVisitorInterface;
 
 /**
  * SinglePreloader preloads Single section entries for a template.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.4.0
  */
-class SinglePreloader implements NodeVisitorInterface
+final class SinglePreloader implements NodeVisitorInterface
 {
     /**
      * @var array<string,bool>[]
      */
-    private array $_foundVariables = [];
+    private array $foundVariables = [];
 
-    /**
-     * {@inheritdoc}
-     */
     public function enterNode(Node $node, Environment $env): Node
     {
         if ($this->isRelevant($node)) {
-            array_unshift($this->_foundVariables, []);
+            array_unshift($this->foundVariables, []);
         } elseif (
-            ! empty($this->_foundVariables) &&
+            ! empty($this->foundVariables) &&
             $node instanceof ContextVariable &&
             ! $node instanceof AssignNameExpression &&
             $node->hasAttribute('name') &&
             ! $node->getAttribute('always_defined') &&
             (! $node->hasAttribute('spread') || ! $node->getAttribute('spread'))
         ) {
-            $variables = &$this->_foundVariables[0];
+            $variables = &$this->foundVariables[0];
             $variables[$node->getAttribute('name')] = true;
 
             $isDefinedTest = $node->isDefinedTestEnabled();
@@ -70,16 +56,13 @@ class SinglePreloader implements NodeVisitorInterface
         return $node;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function leaveNode(Node $node, Environment $env): ?Node
+    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
     {
         if (! $this->isRelevant($node)) {
             return $node;
         }
 
-        $variables = array_shift($this->_foundVariables);
+        $variables = array_shift($this->foundVariables);
 
         if (empty($variables)) {
             return $node;
@@ -119,9 +102,6 @@ class SinglePreloader implements NodeVisitorInterface
             $node instanceof MacroNode;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getPriority(): int
     {
         return 0;

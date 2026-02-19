@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Twig\NodeVisitors;
 
 use CraftCms\Cms\Twig\Nodes\GetAttrNode;
@@ -18,17 +11,11 @@ use Twig\Node\Node;
 use Twig\NodeVisitor\NodeVisitorInterface;
 
 /**
- * GetAttrAdjuster swaps [[GetAttrExpression]] nodes with [[GetAttrNode]] nodes.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
+ * GetAttrAdjuster swaps [[GetAttrExpression]]
+ * nodes with [[GetAttrNode]] nodes.
  */
-class GetAttrAdjuster implements NodeVisitorInterface
+final class GetAttrAdjuster implements NodeVisitorInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function enterNode(Node $node, Environment $env): Node
     {
         // Make sure this is a GetAttrExpression (and not a subclass)
@@ -68,17 +55,11 @@ class GetAttrAdjuster implements NodeVisitorInterface
         return $getAttrNode;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function leaveNode(Node $node, Environment $env): ?Node
+    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
     {
         return $node;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getPriority(): int
     {
         return 0;

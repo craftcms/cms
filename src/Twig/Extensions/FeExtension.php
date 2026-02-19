@@ -13,9 +13,6 @@ use Twig\Extension\GlobalsInterface;
  */
 class FeExtension extends AbstractExtension implements GlobalsInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getGlobals(): array
     {
         return [

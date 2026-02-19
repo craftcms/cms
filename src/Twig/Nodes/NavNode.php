@@ -25,9 +25,6 @@ final class NavNode extends ForNode
         parent::__construct($keyTarget, $valueTarget, $seq, null, $body, null, $lineno);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function compile(Compiler $compiler): void
     {

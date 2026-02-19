@@ -14,9 +14,6 @@ use Twig\Node\Node;
 #[YieldReady]
 final class DdNode extends Node
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function compile(Compiler $compiler): void
     {

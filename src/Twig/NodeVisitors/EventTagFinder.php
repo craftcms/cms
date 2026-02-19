@@ -2,13 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Twig\NodeVisitors;
 
 use CraftCms\Cms\Twig\TemplateRenderer;
@@ -20,17 +13,11 @@ use Twig\Node\Node;
 use Twig\Node\PrintNode;
 
 /**
- * EventTagFinder looks for `head()`, `beginBody()`, and `endBody()` event tags in templates as they’re being compiled.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
+ * EventTagFinder looks for `head()`, `beginBody()`, and `endBody()`
+ * event tags in templates as they’re being compiled.
  */
-class EventTagFinder extends BaseEventTagVisitor
+final class EventTagFinder extends BaseEventTagVisitor
 {
-    /**
-     * {@inheritdoc}
-     */
     public function enterNode(Node $node, Environment $env): Node
     {
         // Ignore if we're not rendering a page template
@@ -57,13 +44,13 @@ class EventTagFinder extends BaseEventTagVisitor
         // See which event function they're calling (if any)
         switch ($expression->getAttribute('name')) {
             case 'head':
-                static::$foundHead = true;
+                self::$foundHead = true;
                 break;
             case 'beginBody':
-                static::$foundBeginBody = true;
+                self::$foundBeginBody = true;
                 break;
             case 'endBody':
-                static::$foundEndBody = true;
+                self::$foundEndBody = true;
                 break;
             default:
                 // Not a function we care about
@@ -78,17 +65,11 @@ class EventTagFinder extends BaseEventTagVisitor
         return $node;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function leaveNode(Node $node, Environment $env): ?Node
+    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
     {
         return $node;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getPriority(): int
     {
         // This needs to run before EventTagAdder

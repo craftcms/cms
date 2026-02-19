@@ -31,9 +31,6 @@ final class GetAttrNode extends GetAttrExpression
         Node::__construct($nodes, $attributes, $lineno);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function compile(Compiler $compiler): void
     {

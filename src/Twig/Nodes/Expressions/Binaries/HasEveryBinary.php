@@ -1,24 +1,16 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace CraftCms\Cms\Twig\Nodes\expressions\binaries;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\Nodes\Expressions\Binaries;
 
 use CraftCms\Cms\Twig\Extensions\CoreTwigExtension;
 use Twig\Compiler;
 use Twig\Node\Expression\Binary\AbstractBinary;
 
-/**
- * Class HasEveryBinary
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.4.3
- */
-class HasEveryBinary extends AbstractBinary
+final class HasEveryBinary extends AbstractBinary
 {
+    #[\Override]
     public function compile(Compiler $compiler): void
     {
         $compiler
@@ -26,8 +18,7 @@ class HasEveryBinary extends AbstractBinary
             ->subcompile($this->getNode('left'))
             ->raw(', ')
             ->subcompile($this->getNode('right'))
-            ->raw(')')
-        ;
+            ->raw(')');
     }
 
     public function operator(Compiler $compiler): Compiler
