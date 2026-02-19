@@ -7,7 +7,7 @@
 
 namespace craft\web\twig\nodevisitors;
 
-use craft\web\twig\nodes\GetAttrNode;
+use CraftCms\Cms\Twig\Nodes\GetAttrNode;
 use Twig\Environment;
 use Twig\Node\Expression\GetAttrExpression;
 use Twig\Node\Node;

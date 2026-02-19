@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\web\twig\nodes\RequireEditionNode;
+use CraftCms\Cms\Twig\Nodes\RequireEditionNode;
 use Twig\Compiler;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;

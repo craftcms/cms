@@ -1,41 +1,43 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodes;
+namespace CraftCms\Cms\Twig\Nodes;
 
 use Craft;
-use craft\helpers\Template;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
 /**
- * Class DdNode
+ * Class RequireAdminNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2.0
+ *
+ * @since 3.0.0
  */
 #[YieldReady]
-class DdNode extends Node
+class RequireAdminNode extends Node
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function compile(Compiler $compiler): void
     {
-        $compiler->addDebugInfo($this);
-
         $compiler
-            ->write(Craft::class . '::dd(');
+            ->addDebugInfo($this)
+            ->write(Craft::class.'::$app->controller->requireAdmin(');
 
-        if ($this->hasNode('var')) {
-            $compiler->subcompile($this->getNode('var'));
-        } else {
-            $compiler->raw(sprintf('%s::contextWithoutTemplate($context)', Template::class));
+        if ($this->hasNode('requireAdminChanges')) {
+            $compiler->subcompile($this->getNode('requireAdminChanges'));
         }
 
         $compiler->raw(");\n");

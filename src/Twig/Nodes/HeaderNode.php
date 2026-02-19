@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodes;
+namespace CraftCms\Cms\Twig\Nodes;
 
 use Craft;
 use Twig\Attribute\YieldReady;
@@ -16,21 +20,23 @@ use Twig\Node\Node;
  * Class HeaderNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 #[YieldReady]
 class HeaderNode extends Node
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function compile(Compiler $compiler): void
     {
         $compiler
             ->write('$_headerParts = array_map(\'trim\', explode(\':\', ')
             ->subcompile($this->getNode('header'))
             ->raw(", 2));\n")
-            ->write(Craft::class . "::\$app->getResponse()->getHeaders()->set(\$_headerParts[0], \$_headerParts[1] ?? '');\n")
+            ->write(Craft::class."::\$app->getResponse()->getHeaders()->set(\$_headerParts[0], \$_headerParts[1] ?? '');\n")
             ->write("unset(\$_headerParts);\n");
     }
 }

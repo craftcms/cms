@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodes;
+namespace CraftCms\Cms\Twig\Nodes;
 
 use craft\web\View;
 use CraftCms\Cms\View\Enums\Position;
@@ -19,14 +23,16 @@ use Twig\Node\NodeCaptureInterface;
  * Class RegisterResourceNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 #[YieldReady]
 class RegisterResourceNode extends Node implements NodeCaptureInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function compile(Compiler $compiler): void
     {
         $method = $this->getAttribute('method');
@@ -64,18 +70,18 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
                 'endBody', 'POS_END' => View::POS_END,
                 'ready', 'POS_READY' => View::POS_READY,
                 'load', 'POS_LOAD' => View::POS_LOAD,
-                default => throw new InvalidArgumentException($position . ' is not a valid position'),
+                default => throw new InvalidArgumentException($position.' is not a valid position'),
             };
         }
 
         // Does the method have a dedicated `$position` argument?
-        $positionArgument = ($position !== null && !$allowOptions) || $defaultPosition !== null;
+        $positionArgument = ($position !== null && ! $allowOptions) || $defaultPosition !== null;
         if ($positionArgument) {
-            $compiler->raw(', ' . ($positionPhp ?? $defaultPosition));
+            $compiler->raw(', '.($positionPhp ?? $defaultPosition));
         }
 
         if ($allowOptions) {
-            $positionOption = $position !== null && !$positionArgument;
+            $positionOption = $position !== null && ! $positionArgument;
 
             if ($positionOption || $options !== null) {
                 $compiler->raw(', ');

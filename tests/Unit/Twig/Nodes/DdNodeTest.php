@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\web\twig\nodes\DdNode;
+use CraftCms\Cms\Twig\Nodes\DdNode;
 use Twig\Compiler;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;

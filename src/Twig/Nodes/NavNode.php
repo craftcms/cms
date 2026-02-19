@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodes;
+namespace CraftCms\Cms\Twig\Nodes;
 
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -18,6 +22,7 @@ use Twig\Node\Node;
  * Represents a nav node.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 #[YieldReady]
@@ -25,16 +30,6 @@ class NavNode extends ForNode
 {
     private readonly NavItemNode $navItemNode;
 
-    /**
-     * @param AssignContextVariable $keyTarget
-     * @param AssignContextVariable $valueTarget
-     * @param AbstractExpression $seq
-     * @param Node $upperBody
-     * @param Node|null $lowerBody
-     * @param Node|null $indent
-     * @param Node|null $outdent
-     * @param int $lineno
-     */
     public function __construct(AssignContextVariable $keyTarget, AssignContextVariable $valueTarget, AbstractExpression $seq, Node $upperBody, ?Node $lowerBody, ?Node $indent, ?Node $outdent, int $lineno)
     {
         $this->navItemNode = new NavItemNode($valueTarget, $indent, $outdent, $lowerBody, $lineno);
@@ -44,8 +39,9 @@ class NavNode extends ForNode
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function compile(Compiler $compiler): void
     {
         // Remember what 'nav' was set to before

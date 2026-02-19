@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\web\twig\nodes\NavNode;
+use CraftCms\Cms\Twig\Nodes\NavNode;
 use Twig\Compiler;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;

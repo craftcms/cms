@@ -7,7 +7,7 @@
 
 namespace craft\web\twig\tokenparsers;
 
-use craft\web\twig\nodes\RequirePermissionNode;
+use CraftCms\Cms\Twig\Nodes\RequirePermissionNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 

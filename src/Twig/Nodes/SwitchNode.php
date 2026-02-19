@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodes;
+namespace CraftCms\Cms\Twig\Nodes;
 
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -17,14 +21,16 @@ use Twig\Node\Node;
  * Based on the rejected Twig pull request: https://github.com/fabpot/Twig/pull/185
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 #[YieldReady]
 class SwitchNode extends Node
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function compile(Compiler $compiler): void
     {
         $compiler
@@ -38,7 +44,7 @@ class SwitchNode extends Node
             /** @var Node $case */
             // The 'body' node may have been removed by Twig if it was an empty text node in a sub-template,
             // outside of any blocks
-            if (!$case->hasNode('body')) {
+            if (! $case->hasNode('body')) {
                 continue;
             }
 
@@ -76,6 +82,7 @@ class SwitchNode extends Node
             foreach ($node as $n) {
                 $this->compileCaseValues($n, $compiler);
             }
+
             return;
         }
 

@@ -7,8 +7,8 @@
 
 namespace craft\web\twig\nodevisitors;
 
-use craft\web\twig\nodes\FallbackNameExpression;
-use craft\web\twig\nodes\PreloadSinglesNode;
+use CraftCms\Cms\Twig\Nodes\FallbackNameExpression;
+use CraftCms\Cms\Twig\Nodes\PreloadSinglesNode;
 use Twig\Environment;
 use Twig\Node\BodyNode;
 use Twig\Node\Expression\AssignNameExpression;

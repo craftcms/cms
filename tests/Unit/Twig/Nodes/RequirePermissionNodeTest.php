@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\web\twig\nodes\RequirePermissionNode;
+use CraftCms\Cms\Twig\Nodes\RequirePermissionNode;
 use Twig\Compiler;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;

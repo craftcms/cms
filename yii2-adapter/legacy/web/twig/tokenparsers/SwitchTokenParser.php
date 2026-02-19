@@ -7,8 +7,8 @@
 
 namespace craft\web\twig\tokenparsers;
 
-use craft\web\twig\nodes\BaseNode;
-use craft\web\twig\nodes\SwitchNode;
+use CraftCms\Cms\Twig\Nodes\BaseNode;
+use CraftCms\Cms\Twig\Nodes\SwitchNode;
 use Twig\Error\SyntaxError;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;

@@ -7,7 +7,7 @@
 
 namespace craft\web\twig\tokenparsers;
 
-use craft\web\twig\nodes\PaginateNode;
+use CraftCms\Cms\Twig\Nodes\PaginateNode;
 use Twig\Node\Expression\AssignNameExpression;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;

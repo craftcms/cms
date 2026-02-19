@@ -7,7 +7,7 @@
 
 namespace craft\web\twig\tokenparsers;
 
-use craft\web\twig\nodes\NamespaceNode;
+use CraftCms\Cms\Twig\Nodes\NamespaceNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 

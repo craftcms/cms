@@ -8,7 +8,7 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\helpers\DateTimeHelper;
-use craft\web\twig\nodes\ExpiresNode;
+use CraftCms\Cms\Twig\Nodes\ExpiresNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 

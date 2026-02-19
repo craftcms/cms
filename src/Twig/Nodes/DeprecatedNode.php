@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodes;
+namespace CraftCms\Cms\Twig\Nodes;
 
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Support\Str;
@@ -19,6 +23,7 @@ use Twig\Node\Node;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Yonel Ceruto <yonelceruto@gmail.com>
+ *
  * @since 3.7.24
  */
 #[YieldReady]
@@ -26,9 +31,6 @@ class DeprecatedNode extends Node
 {
     /**
      * Constructor
-     *
-     * @param AbstractExpression $expr
-     * @param int $lineno
      */
     public function __construct(AbstractExpression $expr, int $lineno)
     {
@@ -37,9 +39,8 @@ class DeprecatedNode extends Node
 
     /**
      * Compiles the node.
-     *
-     * @param Compiler $compiler
      */
+    #[\Override]
     public function compile(Compiler $compiler)
     {
         $compiler->addDebugInfo($this);

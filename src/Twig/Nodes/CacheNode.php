@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodes;
+namespace CraftCms\Cms\Twig\Nodes;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
@@ -18,21 +22,23 @@ use Twig\Node\Node;
  * Cache twig node.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 #[YieldReady]
 class CacheNode extends Node
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function compile(Compiler $compiler): void
     {
         $n = $compiler->getVarName();
 
         $compiler
             ->addDebugInfo($this)
-            ->write('$cacheService = ' . Craft::class . "::\$app->getTemplateCaches();\n")
+            ->write('$cacheService = '.Craft::class."::\$app->getTemplateCaches();\n")
             ->write("\$request = request();\n")
             ->write("\$ignoreCache_$n = (\$request->isPreview() || \$request->getToken()");
 
@@ -57,7 +63,7 @@ class CacheNode extends Node
         if ($this->hasNode('key')) {
             $compiler->subcompile($this->getNode('key'));
         } else {
-            $compiler->raw('"' . Str::random(36) . '"');
+            $compiler->raw('"'.Str::random(36).'"');
         }
 
         $global = $this->getAttribute('global') ? 'true' : 'false';

@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodes;
+namespace CraftCms\Cms\Twig\Nodes;
 
 use craft\helpers\Template;
 use Twig\Compiler;
@@ -16,6 +20,7 @@ use Twig\Node\Node;
  * Class FallbackNameExpression
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.4.0
  */
 class FallbackNameExpression extends ContextVariable
@@ -31,11 +36,13 @@ class FallbackNameExpression extends ContextVariable
         Node::__construct([], $attributes, $lineno);
     }
 
+    #[\Override]
     public function compile(Compiler $compiler): void
     {
         // No special handling for _self/etc. or always-defined variables
-        if (str_starts_with($this->getAttribute('name'), '_') || $this->getAttribute('always_defined')) {
+        if (str_starts_with((string) $this->getAttribute('name'), '_') || $this->getAttribute('always_defined')) {
             parent::compile($compiler);
+
             return;
         }
 
@@ -56,7 +63,7 @@ class FallbackNameExpression extends ContextVariable
             ->raw(sprintf('%s::resolveVariable(', Template::class))
             ->string($name)
             ->raw(', $context, ')
-            ->raw(!$this->getAttribute('ignore_strict_check') && $compiler->getEnvironment()->isStrictVariables() ? 'true' : 'false')
+            ->raw(! $this->getAttribute('ignore_strict_check') && $compiler->getEnvironment()->isStrictVariables() ? 'true' : 'false')
             ->raw(', ')
             ->repr($this->lineno)
             ->raw(', $this->source)');

@@ -7,7 +7,7 @@
 
 namespace craft\web\twig\tokenparsers;
 
-use craft\web\twig\nodes\TagNode;
+use CraftCms\Cms\Twig\Nodes\TagNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 

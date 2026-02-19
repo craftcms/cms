@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodes;
+namespace CraftCms\Cms\Twig\Nodes;
 
 use craft\helpers\Template as TemplateHelper;
 use Twig\Attribute\YieldReady;
@@ -18,6 +22,7 @@ use Twig\Template;
  * Internal node used by the nav node.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 #[YieldReady]
@@ -34,21 +39,22 @@ class NavItemNode extends Node
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function compile(Compiler $compiler): void
     {
         $compiler
             // Get this item's level
-            ->write('$_thisItemLevel = (int)' . TemplateHelper::class . '::attribute($this->env, $this->getSourceContext(), ')
+            ->write('$_thisItemLevel = (int)'.TemplateHelper::class.'::attribute($this->env, $this->getSourceContext(), ')
             ->subcompile($this->getNode('value_target'))
-            ->raw(', \'level\', [], ' . Template::class . "::ANY_CALL, false, true);\n")
-            ->write('$_thisItemLft = (int)' . TemplateHelper::class . '::attribute($this->env, $this->getSourceContext(), ')
+            ->raw(', \'level\', [], '.Template::class."::ANY_CALL, false, true);\n")
+            ->write('$_thisItemLft = (int)'.TemplateHelper::class.'::attribute($this->env, $this->getSourceContext(), ')
             ->subcompile($this->getNode('value_target'))
-            ->raw(', \'lft\', [], ' . Template::class . "::ANY_CALL, false, true);\n")
-            ->write('$_thisItemRgt = (int)' . TemplateHelper::class . '::attribute($this->env, $this->getSourceContext(), ')
+            ->raw(', \'lft\', [], '.Template::class."::ANY_CALL, false, true);\n")
+            ->write('$_thisItemRgt = (int)'.TemplateHelper::class.'::attribute($this->env, $this->getSourceContext(), ')
             ->subcompile($this->getNode('value_target'))
-            ->raw(', \'rgt\', [], ' . Template::class . "::ANY_CALL, false, true);\n")
+            ->raw(', \'rgt\', [], '.Template::class."::ANY_CALL, false, true);\n")
             // Was there a previous item?
             ->write("if (isset(\$_contextsByLevel)) {\n")
             ->indent()

@@ -8,8 +8,8 @@
 namespace craft\web\twig\nodevisitors;
 
 use craft\helpers\Template;
-use craft\web\twig\nodes\BaseNode;
-use craft\web\twig\nodes\ProfileNode;
+use CraftCms\Cms\Twig\Nodes\BaseNode;
+use CraftCms\Cms\Twig\Nodes\ProfileNode;
 use Twig\Environment;
 use Twig\Node\BlockNode;
 use Twig\Node\BodyNode;

@@ -7,8 +7,8 @@
 
 namespace craft\web\twig\nodevisitors;
 
-use craft\web\twig\nodes\BaseNode;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Twig\Nodes\BaseNode;
 use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use InvalidArgumentException;

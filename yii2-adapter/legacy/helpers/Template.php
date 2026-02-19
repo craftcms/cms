@@ -99,7 +99,7 @@ class Template
     /**
      * Resolves a template variable from the context, falling back to preloaded singles.
      *
-     * Used by {@see \craft\web\twig\nodes\FallbackNameExpression} to consolidate
+     * Used by {@see \CraftCms\Cms\Twig\Nodes\FallbackNameExpression} to consolidate
      * variable resolution with fallback support into a single runtime call.
      *
      * @param string $name The variable name

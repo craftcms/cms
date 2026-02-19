@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\web\twig\nodes\FallbackNameExpression;
+use CraftCms\Cms\Twig\Nodes\FallbackNameExpression;
 use Twig\Compiler;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;

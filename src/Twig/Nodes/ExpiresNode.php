@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodes;
+namespace CraftCms\Cms\Twig\Nodes;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
@@ -17,14 +21,16 @@ use Twig\Node\Node;
  * Class ExpiresNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 5.2.0
  */
 #[YieldReady]
 class ExpiresNode extends Node
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function compile(Compiler $compiler): void
     {
         $expiration = $this->hasNode('expiration') ? $this->getNode('expiration') : null;
@@ -48,6 +54,6 @@ class ExpiresNode extends Node
         }
 
         $compiler
-            ->write(Craft::class . "::\$app->getResponse()->setCacheHeaders(\$duration);\n");
+            ->write(Craft::class."::\$app->getResponse()->setCacheHeaders(\$duration);\n");
     }
 }

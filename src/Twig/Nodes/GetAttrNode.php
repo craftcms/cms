@@ -1,11 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodes;
+namespace CraftCms\Cms\Twig\Nodes;
 
 use craft\helpers\Template as TemplateHelper;
 use Twig\Compiler;
@@ -19,14 +23,16 @@ use Twig\Template;
  * [[TemplateHelper::attribute()]] rather than CoreExtension::getAttribute().
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class GetAttrNode extends GetAttrExpression
 {
     /**
-     * @param array $nodes An array of named nodes
-     * @param array $attributes An array of attributes (should not be nodes)
-     * @param int $lineno The line number
+     * @param  array  $nodes  An array of named nodes
+     * @param  array  $attributes  An array of attributes (should not be nodes)
+     * @param  int  $lineno  The line number
+     *
      * @noinspection PhpMissingParentConstructorInspection
      */
     public function __construct(array $nodes = [], array $attributes = [], int $lineno = 0)
@@ -36,8 +42,9 @@ class GetAttrNode extends GetAttrExpression
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[\Override]
     public function compile(Compiler $compiler): void
     {
         // The following code is based on GetAttrExpression::compile().
@@ -49,18 +56,18 @@ class GetAttrNode extends GetAttrExpression
         // optimize array calls
         if (
             $this->getAttribute('optimizable')
-            && (!$env->isStrictVariables() || $this->getAttribute('ignore_strict_check'))
-            && !$this->isDefinedTestEnabled() // DIFF: $this->definedTest is private
-            && Template::ARRAY_CALL === $this->getAttribute('type')
+            && (! $env->isStrictVariables() || $this->getAttribute('ignore_strict_check'))
+            && ! $this->isDefinedTestEnabled() // DIFF: $this->definedTest is private
+            && $this->getAttribute('type') === Template::ARRAY_CALL
         ) {
-            $var = '$' . $compiler->getVarName();
+            $var = '$'.$compiler->getVarName();
             $compiler
-                ->raw('((' . $var . ' = ')
+                ->raw('(('.$var.' = ')
                 ->subcompile($this->getNode('node'))
                 ->raw(') && is_array(')
                 ->raw($var);
 
-            if (!$env->hasExtension(SandboxExtension::class)) {
+            if (! $env->hasExtension(SandboxExtension::class)) {
                 $compiler
                     ->raw(') || ')
                     ->raw($var)
@@ -68,8 +75,7 @@ class GetAttrNode extends GetAttrExpression
                     ->raw($var)
                     ->raw('[(string)') // DIFF: `(string)` added
                     ->subcompile($this->getNode('attribute'))
-                    ->raw('] ?? null) : null)')
-                ;
+                    ->raw('] ?? null) : null)');
 
                 return;
             }
@@ -80,17 +86,16 @@ class GetAttrNode extends GetAttrExpression
                 ->raw(') || ')
                 ->raw($var)
                 ->raw(' instanceof ArrayAccess && in_array(')
-                ->raw($var . '::class')
+                ->raw($var.'::class')
                 ->raw(', CoreExtension::ARRAY_LIKE_CLASSES, true) ? (')
                 ->raw($var)
                 ->raw('[(string)') // DIFF: `(string)` added
                 ->subcompile($this->getNode('attribute'))
-                ->raw('] ?? null) : ')
-            ;
+                ->raw('] ?? null) : ');
         }
 
         // DIFF: TemplateHelper::attribute() used instead of CoreExtension::getAttribute()
-        $compiler->raw(TemplateHelper::class . '::attribute($this->env, $this->source, ');
+        $compiler->raw(TemplateHelper::class.'::attribute($this->env, $this->source, ');
 
         if ($this->getAttribute('ignore_strict_check')) {
             $this->getNode('node')->setAttribute('ignore_strict_check', true);
@@ -99,8 +104,7 @@ class GetAttrNode extends GetAttrExpression
         $compiler
             ->subcompile($this->getNode('node'))
             ->raw(', ')
-            ->subcompile($this->getNode('attribute'))
-        ;
+            ->subcompile($this->getNode('attribute'));
 
         if ($this->hasNode('arguments')) {
             $compiler->raw(', ')->subcompile($this->getNode('arguments'));
@@ -114,8 +118,7 @@ class GetAttrNode extends GetAttrExpression
             ->raw(', ')->repr($this->getAttribute('ignore_strict_check'))
             ->raw(', ')->repr($env->hasExtension(SandboxExtension::class))
             ->raw(', ')->repr($this->getNode('node')->getTemplateLine())
-            ->raw(')')
-        ;
+            ->raw(')');
 
         if ($arrayAccessSandbox) {
             $compiler->raw(')');

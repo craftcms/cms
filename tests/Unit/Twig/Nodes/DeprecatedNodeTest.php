@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use craft\web\twig\nodes\DeprecatedNode;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\Nodes\DeprecatedNode;
 use Twig\Compiler;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;

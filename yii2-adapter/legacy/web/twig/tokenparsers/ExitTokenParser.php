@@ -7,7 +7,7 @@
 
 namespace craft\web\twig\tokenparsers;
 
-use craft\web\twig\nodes\ExitNode;
+use CraftCms\Cms\Twig\Nodes\ExitNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 

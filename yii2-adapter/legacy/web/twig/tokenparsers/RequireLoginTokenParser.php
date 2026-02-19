@@ -7,7 +7,7 @@
 
 namespace craft\web\twig\tokenparsers;
 
-use craft\web\twig\nodes\RequireLoginNode;
+use CraftCms\Cms\Twig\Nodes\RequireLoginNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 

@@ -7,7 +7,7 @@
 
 namespace craft\web\twig\tokenparsers;
 
-use craft\web\twig\nodes\DeprecatedNode;
+use CraftCms\Cms\Twig\Nodes\DeprecatedNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 

@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\twig\nodes\expressions\binaries;
+namespace CraftCms\Cms\Twig\Nodes\expressions\binaries;
 
 use CraftCms\Cms\Twig\Extensions\CoreTwigExtension;
 use Twig\Compiler;
