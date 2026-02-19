@@ -45,7 +45,9 @@ final readonly class SectionsController
         $limit = (int) $request->input('per_page', 50);
         $searchTerm = $request->input('search');
 
-        $sort = $request->input('sort');
+        $sort = $request->input('sort', [
+            ['field' => 'name', 'order' => 'asc'],
+        ]);
 
         $orderBy = match (Arr::get($sort, '0.field')) {
             '__slot:handle' => 'handle',
@@ -70,6 +72,7 @@ final readonly class SectionsController
             'title' => t('Sections'),
             'data' => fn () => $tableData,
             'pagination' => fn () => $pagination,
+            'sort' => $sort,
             'emptyMessage' => t('No sections exist yet.'),
             'readOnly' => $this->readOnly,
         ]);

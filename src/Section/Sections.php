@@ -1088,7 +1088,7 @@ final class Sections
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        [$results, $total] = $this->prepTableData($this->createSectionQuery(), $page, $limit, $searchTerm, $orderBy,
+        [$results, $total] = $this->prepTableData($this->createSectionQuery()->reorder(), $page, $limit, $searchTerm, $orderBy,
             $sortDir);
 
         /** @var Collection<Section> $sections */
