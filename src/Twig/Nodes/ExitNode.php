@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
+use CraftCms\Cms\Twig\Exceptions\TemplateExitException;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -31,7 +32,7 @@ final class ExitNode extends Node
 
             $compiler->raw(");\n");
         } else {
-            $compiler->write("abort(0);\n");
+            $compiler->write(sprintf("throw new \\%s;\n", TemplateExitException::class));
         }
     }
 }

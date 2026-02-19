@@ -1,2 +1,2 @@
 // line 1
-abort(0);
+throw new \CraftCms\Cms\Twig\Exceptions\TemplateExitException;
