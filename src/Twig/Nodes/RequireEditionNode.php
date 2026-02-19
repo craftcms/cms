@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Nodes;
 
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -18,10 +19,13 @@ final class RequireEditionNode extends Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write('if ('.Edition::class.'::get() < ')
+            ->write("try {\n")
+            ->indent()
+            ->write(Edition::class.'::require(')
             ->subcompile($this->getNode('editionName'))
-            ->raw(")\n")
-            ->write("{\n")
+            ->raw(");\n")
+            ->outdent()
+            ->write('} catch ('.WrongEditionException::class.") {\n")
             ->indent()
             ->write("abort(404);\n")
             ->outdent()
