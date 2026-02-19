@@ -1,11 +1,8 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\web\twig\tokenparsers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\TokenParsers;
 
 use CraftCms\Cms\Twig\Nodes\BaseNode;
 use CraftCms\Cms\Twig\Nodes\NavNode;
@@ -13,25 +10,13 @@ use Twig\Node\Expression\Variable\AssignContextVariable;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-/**
- * Recursively outputs a hierarchical navigation.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class NavTokenParser extends AbstractTokenParser
+final class NavTokenParser extends AbstractTokenParser
 {
-    /**
-     * @inheritdoc
-     */
     public function getTag(): string
     {
         return 'nav';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function parse(Token $token): NavNode
     {
         $lineno = $token->getLine();
@@ -42,10 +27,10 @@ class NavTokenParser extends AbstractTokenParser
         $seq = $this->parser->parseExpression();
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        $upperBody = $this->parser->subparse([$this, 'decideNavFork']);
-        $lowerBody = new BaseNode();
-        $indent = new BaseNode();
-        $outdent = new BaseNode();
+        $upperBody = $this->parser->subparse($this->decideNavFork(...));
+        $lowerBody = new BaseNode;
+        $indent = new BaseNode;
+        $outdent = new BaseNode;
 
         $nextValue = $stream->next()->getValue();
 
@@ -53,19 +38,13 @@ class NavTokenParser extends AbstractTokenParser
             $stream->expect(Token::BLOCK_END_TYPE);
 
             if ($nextValue === 'ifchildren') {
-                $indent = $this->parser->subparse([
-                    $this,
-                    'decideChildrenFork',
-                ], true);
+                $indent = $this->parser->subparse($this->decideChildrenFork(...), true);
                 $stream->expect(Token::BLOCK_END_TYPE);
-                $outdent = $this->parser->subparse([
-                    $this,
-                    'decideChildrenEnd',
-                ], true);
+                $outdent = $this->parser->subparse($this->decideChildrenEnd(...), true);
                 $stream->expect(Token::BLOCK_END_TYPE);
             }
 
-            $lowerBody = $this->parser->subparse([$this, 'decideNavEnd'], true);
+            $lowerBody = $this->parser->subparse($this->decideNavEnd(...), true);
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);
@@ -84,37 +63,21 @@ class NavTokenParser extends AbstractTokenParser
         return new NavNode($keyTarget, $valueTarget, $seq, $upperBody, $lowerBody, $indent, $outdent, $lineno);
     }
 
-    /**
-     * @param Token $token
-     * @return bool
-     */
     public function decideNavFork(Token $token): bool
     {
         return $token->test(['ifchildren', 'children', 'endnav']);
     }
 
-    /**
-     * @param Token $token
-     * @return bool
-     */
     public function decideChildrenFork(Token $token): bool
     {
         return $token->test('children');
     }
 
-    /**
-     * @param Token $token
-     * @return bool
-     */
     public function decideChildrenEnd(Token $token): bool
     {
         return $token->test('endifchildren');
     }
 
-    /**
-     * @param Token $token
-     * @return bool
-     */
     public function decideNavEnd(Token $token): bool
     {
         return $token->test('endnav');

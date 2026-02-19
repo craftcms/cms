@@ -1,27 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\web\twig\tokenparsers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\TokenParsers;
 
 use CraftCms\Cms\Twig\Nodes\RequireAdminNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-/**
- * Class RequireAdminTokenParser
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class RequireAdminTokenParser extends AbstractTokenParser
+final class RequireAdminTokenParser extends AbstractTokenParser
 {
-    /**
-     * @inheritdoc
-     */
     public function parse(Token $token): RequireAdminNode
     {
         $lineno = $token->getLine();
@@ -29,7 +17,7 @@ class RequireAdminTokenParser extends AbstractTokenParser
 
         $nodes = [];
 
-        if (!$stream->test(Token::BLOCK_END_TYPE)) {
+        if (! $stream->test(Token::BLOCK_END_TYPE)) {
             $nodes['requireAdminChanges'] = $this->parser->parseExpression();
         }
 
@@ -38,9 +26,6 @@ class RequireAdminTokenParser extends AbstractTokenParser
         return new RequireAdminNode($nodes, [], $lineno);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTag(): string
     {
         return 'requireAdmin';

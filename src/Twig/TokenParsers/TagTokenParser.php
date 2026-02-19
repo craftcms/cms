@@ -1,35 +1,20 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\web\twig\tokenparsers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\TokenParsers;
 
 use CraftCms\Cms\Twig\Nodes\TagNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-/**
- * Class TagTokenParser
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.6.0
- */
-class TagTokenParser extends AbstractTokenParser
+final class TagTokenParser extends AbstractTokenParser
 {
-    /**
-     * @inheritdoc
-     */
     public function getTag(): string
     {
         return 'tag';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function parse(Token $token): TagNode
     {
         $lineno = $token->getLine();
@@ -45,7 +30,7 @@ class TagTokenParser extends AbstractTokenParser
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);
-        $nodes['content'] = $this->parser->subparse(fn(Token $token) => $token->test('endtag'), true);
+        $nodes['content'] = $this->parser->subparse(fn (Token $token) => $token->test('endtag'), true);
         $stream->expect(Token::BLOCK_END_TYPE);
 
         return new TagNode($nodes, [], $lineno);

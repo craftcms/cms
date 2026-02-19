@@ -1,36 +1,21 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\web\twig\tokenparsers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\TokenParsers;
 
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Twig\Nodes\CacheNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-/**
- * Class CacheTokenParser
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class CacheTokenParser extends AbstractTokenParser
+final class CacheTokenParser extends AbstractTokenParser
 {
-    /**
-     * @return string
-     */
     public function getTag(): string
     {
         return 'cache';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function parse(Token $token): CacheNode
     {
         $lineno = $token->getLine();
@@ -73,19 +58,12 @@ class CacheTokenParser extends AbstractTokenParser
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);
-        $nodes['body'] = $this->parser->subparse([
-            $this,
-            'decideCacheEnd',
-        ], true);
+        $nodes['body'] = $this->parser->subparse($this->decideCacheEnd(...), true);
         $stream->expect(Token::BLOCK_END_TYPE);
 
         return new CacheNode($nodes, $attributes, $lineno);
     }
 
-    /**
-     * @param Token $token
-     * @return bool
-     */
     public function decideCacheEnd(Token $token): bool
     {
         return $token->test('endcache');

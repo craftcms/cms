@@ -1,27 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\web\twig\tokenparsers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\TokenParsers;
 
 use CraftCms\Cms\Twig\Nodes\RequireEditionNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-/**
- * Class RequireEditionTokenParser
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class RequireEditionTokenParser extends AbstractTokenParser
+final class RequireEditionTokenParser extends AbstractTokenParser
 {
-    /**
-     * @inheritdoc
-     */
     public function parse(Token $token): RequireEditionNode
     {
         $lineno = $token->getLine();
@@ -35,9 +23,6 @@ class RequireEditionTokenParser extends AbstractTokenParser
         return new RequireEditionNode($nodes, [], $lineno);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTag(): string
     {
         return 'requireEdition';

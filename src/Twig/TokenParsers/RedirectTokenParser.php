@@ -1,28 +1,16 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\web\twig\tokenparsers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\TokenParsers;
 
 use CraftCms\Cms\Twig\Nodes\RedirectNode;
 use Twig\Node\Expression\ConstantExpression;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-/**
- * Class RedirectTokenParser
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class RedirectTokenParser extends AbstractTokenParser
+final class RedirectTokenParser extends AbstractTokenParser
 {
-    /**
-     * @inheritdoc
-     */
     public function parse(Token $token): RedirectNode
     {
         $lineno = $token->getLine();
@@ -50,9 +38,6 @@ class RedirectTokenParser extends AbstractTokenParser
         return new RedirectNode($nodes, [], $lineno);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTag(): string
     {
         return 'redirect';

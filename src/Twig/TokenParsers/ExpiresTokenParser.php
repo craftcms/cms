@@ -1,28 +1,16 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\web\twig\tokenparsers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\TokenParsers;
 
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Twig\Nodes\ExpiresNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-/**
- * Class ExpiresTokenParser
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.2.0
- */
-class ExpiresTokenParser extends AbstractTokenParser
+final class ExpiresTokenParser extends AbstractTokenParser
 {
-    /**
-     * @inheritdoc
-     */
     public function parse(Token $token): ExpiresNode
     {
         $lineno = $token->getLine();
@@ -49,9 +37,6 @@ class ExpiresTokenParser extends AbstractTokenParser
         return new ExpiresNode($nodes, $attributes, $lineno);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTag(): string
     {
         return 'expires';

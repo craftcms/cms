@@ -1,11 +1,8 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\web\twig\tokenparsers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\TokenParsers;
 
 use CraftCms\Cms\Twig\Nodes\BaseNode;
 use CraftCms\Cms\Twig\Nodes\SwitchNode;
@@ -15,24 +12,15 @@ use Twig\TokenParser\AbstractTokenParser;
 
 /**
  * Class SwitchTokenParser that parses {% switch %} tags.
- * Based on the rejected Twig pull request: https://github.com/fabpot/Twig/pull/185
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * Based on the rejected Twig pull request: https://github.com/TwigPHP/Twig/pull/185
  */
-class SwitchTokenParser extends AbstractTokenParser
+final class SwitchTokenParser extends AbstractTokenParser
 {
-    /**
-     * @inheritdoc
-     */
     public function getTag(): string
     {
         return 'switch';
     }
 
-    /**
-     * @inheritdoc
-     */
     public function parse(Token $token): SwitchNode
     {
         $lineno = $token->getLine();
@@ -45,7 +33,10 @@ class SwitchTokenParser extends AbstractTokenParser
         $stream->expect(Token::BLOCK_END_TYPE);
 
         // There can be some whitespace between the {% switch %} and first {% case %} tag.
-        while ($stream->getCurrent()->test(Token::TEXT_TYPE) && trim($stream->getCurrent()->getValue()) === '') {
+        while (
+            $stream->getCurrent()->test(Token::TEXT_TYPE)
+            && trim((string) $stream->getCurrent()->getValue()) === ''
+        ) {
             $stream->next();
         }
 
@@ -54,7 +45,7 @@ class SwitchTokenParser extends AbstractTokenParser
         $cases = [];
         $end = false;
 
-        while (!$end) {
+        while (! $end) {
             $next = $stream->next();
 
             switch ($next->getValue()) {
@@ -70,7 +61,7 @@ class SwitchTokenParser extends AbstractTokenParser
                         }
                     }
                     $stream->expect(Token::BLOCK_END_TYPE);
-                    $body = $this->parser->subparse([$this, 'decideIfFork']);
+                    $body = $this->parser->subparse($this->decideIfFork(...));
                     $cases[] = new BaseNode([
                         'values' => new BaseNode($values),
                         'body' => $body,
@@ -78,7 +69,7 @@ class SwitchTokenParser extends AbstractTokenParser
                     break;
                 case 'default':
                     $stream->expect(Token::BLOCK_END_TYPE);
-                    $nodes['default'] = $this->parser->subparse([$this, 'decideIfEnd']);
+                    $nodes['default'] = $this->parser->subparse($this->decideIfEnd(...));
                     break;
                 case 'endswitch':
                     $end = true;
@@ -95,19 +86,11 @@ class SwitchTokenParser extends AbstractTokenParser
         return new SwitchNode($nodes, [], $lineno);
     }
 
-    /**
-     * @param Token $token
-     * @return bool
-     */
     public function decideIfFork(Token $token): bool
     {
         return $token->test(['case', 'default', 'endswitch']);
     }
 
-    /**
-     * @param Token $token
-     * @return bool
-     */
     public function decideIfEnd(Token $token): bool
     {
         return $token->test(['endswitch']);

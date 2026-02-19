@@ -1,28 +1,16 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\web\twig\tokenparsers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\TokenParsers;
 
 use CraftCms\Cms\Twig\Nodes\PaginateNode;
 use Twig\Node\Expression\AssignNameExpression;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-/**
- * Paginates elements via an [[\craft\elements\db\ElementQuery]] instance.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class PaginateTokenParser extends AbstractTokenParser
+final class PaginateTokenParser extends AbstractTokenParser
 {
-    /**
-     * @inheritdoc
-     */
     public function parse(Token $token): PaginateNode
     {
         $lineno = $token->getLine();
@@ -49,9 +37,6 @@ class PaginateTokenParser extends AbstractTokenParser
         return new PaginateNode($nodes, [], $lineno);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTag(): string
     {
         return 'paginate';

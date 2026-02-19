@@ -1,27 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\web\twig\tokenparsers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\TokenParsers;
 
 use CraftCms\Cms\Twig\Nodes\DumpNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-/**
- * Class DumpTokenParser
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.4.0
- */
-class DumpTokenParser extends AbstractTokenParser
+final class DumpTokenParser extends AbstractTokenParser
 {
-    /**
-     * @inheritdoc
-     */
     public function parse(Token $token): DumpNode
     {
         $lineno = $token->getLine();
@@ -29,7 +17,7 @@ class DumpTokenParser extends AbstractTokenParser
 
         $nodes = [];
 
-        if (!$stream->test(Token::BLOCK_END_TYPE)) {
+        if (! $stream->test(Token::BLOCK_END_TYPE)) {
             $nodes['var'] = $this->parser->parseExpression();
         }
 
@@ -38,9 +26,6 @@ class DumpTokenParser extends AbstractTokenParser
         return new DumpNode($nodes, [], $lineno);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTag(): string
     {
         return 'dump';

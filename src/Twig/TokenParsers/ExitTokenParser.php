@@ -1,27 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\web\twig\tokenparsers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\TokenParsers;
 
 use CraftCms\Cms\Twig\Nodes\ExitNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-/**
- * Class ExitTokenParser
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class ExitTokenParser extends AbstractTokenParser
+final class ExitTokenParser extends AbstractTokenParser
 {
-    /**
-     * @inheritdoc
-     */
     public function parse(Token $token): ExitNode
     {
         $lineno = $token->getLine();
@@ -32,7 +20,7 @@ class ExitTokenParser extends AbstractTokenParser
         if ($stream->test(Token::NUMBER_TYPE)) {
             $nodes['status'] = $this->parser->parseExpression();
 
-            if (!$stream->test(Token::BLOCK_END_TYPE)) {
+            if (! $stream->test(Token::BLOCK_END_TYPE)) {
                 $nodes['message'] = $this->parser->parseExpression();
             }
         }
@@ -42,9 +30,6 @@ class ExitTokenParser extends AbstractTokenParser
         return new ExitNode($nodes, [], $lineno);
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTag(): string
     {
         return 'exit';

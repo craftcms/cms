@@ -1,11 +1,8 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\web\twig\tokenparsers;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\TokenParsers;
 
 use CraftCms\Cms\Twig\Nodes\DeprecatedNode;
 use Twig\Token;
@@ -21,23 +18,18 @@ use Twig\TokenParser\AbstractTokenParser;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Yonel Ceruto <yonelceruto@gmail.com>
- * @since 3.7.24
  */
-class DeprecatedTokenParser extends AbstractTokenParser
+final class DeprecatedTokenParser extends AbstractTokenParser
 {
-    /**
-     * @inheritdoc
-     */
     public function parse(Token $token): DeprecatedNode
     {
         $expr = $this->parser->parseExpression();
+
         $this->parser->getStream()->expect(Token::BLOCK_END_TYPE);
+
         return new DeprecatedNode($expr, $token->getLine());
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getTag(): string
     {
         return 'deprecated';
