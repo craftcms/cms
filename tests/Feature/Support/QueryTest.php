@@ -327,3 +327,81 @@ test('prepareDateForDb with null returns null', function () {
 test('prepareDateForDb with invalid value returns null', function () {
     expect(Query::prepareDateForDb('not-a-date'))->toBeNull();
 });
+
+test('prepareValueForDb passes through scalar values', function (mixed $value, mixed $expected) {
+    expect(Query::prepareValueForDb($value))->toBe($expected);
+})->with([
+    'string' => ['hello', 'hello'],
+    'integer' => [42, 42],
+    'float' => [3.14, 3.14],
+    'boolean true' => [true, true],
+    'boolean false' => [false, false],
+    'null' => [null, null],
+]);
+
+test('prepareValueForDb converts DateTime to UTC string', function () {
+    $date = new \DateTime('2024-06-15 14:30:00', new \DateTimeZone('America/New_York'));
+
+    expect(Query::prepareValueForDb($date))->toBe('2024-06-15 18:30:00');
+});
+
+test('prepareValueForDb converts ISO-8601 string to UTC date string', function () {
+    $iso = '2024-06-15T14:30:00-04:00';
+
+    expect(Query::prepareValueForDb($iso))->toBe('2024-06-15 18:30:00');
+});
+
+test('prepareValueForDb leaves Expression instances alone', function () {
+    $expression = DB::raw('NOW()');
+
+    expect(Query::prepareValueForDb($expression))->toBe($expression);
+});
+
+test('prepareValueForDb JSON-encodes arrays for non-JSON columns', function () {
+    $value = ['foo' => 'bar', 'baz' => 1];
+
+    $result = Query::prepareValueForDb($value);
+
+    expect($result)->toBe('{"foo":"bar","baz":1}');
+});
+
+test('prepareValueForDb returns array for JSON column type', function () {
+    $value = ['foo' => 'bar', 'baz' => 1];
+
+    $result = Query::prepareValueForDb($value, Query::TYPE_JSON);
+
+    expect($result)->toBe(['foo' => 'bar', 'baz' => 1]);
+});
+
+test('prepareValueForDb casts bool to int for numeric column types', function () {
+    expect(Query::prepareValueForDb(true, Query::TYPE_INTEGER))->toBe(1);
+    expect(Query::prepareValueForDb(false, Query::TYPE_INTEGER))->toBe(0);
+    expect(Query::prepareValueForDb(true, Query::TYPE_SMALLINT))->toBe(1);
+});
+
+test('prepareValueForDb does not cast bool for non-numeric columns', function () {
+    expect(Query::prepareValueForDb(true))->toBe(true);
+    expect(Query::prepareValueForDb(true, Query::TYPE_BOOLEAN))->toBe(true);
+});
+
+test('prepareValuesForDb processes an array of mixed values', function () {
+    $values = [
+        'name' => 'test',
+        'count' => 42,
+        'date' => new \DateTime('2024-01-01 00:00:00', new \DateTimeZone('UTC')),
+        'data' => ['nested' => true],
+    ];
+
+    $result = Query::prepareValuesForDb($values);
+
+    expect($result)->toBe([
+        'name' => 'test',
+        'count' => 42,
+        'date' => '2024-01-01 00:00:00',
+        'data' => '{"nested":true}',
+    ]);
+});
+
+test('prepareValuesForDb with empty array returns empty array', function () {
+    expect(Query::prepareValuesForDb([]))->toBe([]);
+});

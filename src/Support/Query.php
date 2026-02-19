@@ -14,6 +14,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use Money\Money;
+use Serializable;
 use Tpetry\QueryExpressions\Function\String\Lower;
 
 final readonly class Query
@@ -65,6 +66,8 @@ final readonly class Query
     const string TYPE_MONEY = 'money';
 
     const string TYPE_JSON = 'json';
+
+    const string TYPE_JSONB = 'jsonb';
 
     private const array NUMERIC_COLUMN_TYPES = [
         self::TYPE_TINYINT,
@@ -743,6 +746,61 @@ final readonly class Query
     public static function escapeCommas(string $value): string
     {
         return preg_replace('/(?<!\\\),/', '\\\$0', $value);
+    }
+
+    /**
+     * Prepares an array or object’s values to be sent to the database.
+     */
+    public static function prepareValuesForDb(mixed $values): array
+    {
+        // Normalize to an array
+        $values = Arr::toArray($values, [], false);
+
+        foreach ($values as $key => $value) {
+            $values[$key] = self::prepareValueForDb($value);
+        }
+
+        return $values;
+    }
+
+    /**
+     * Prepares a value to be sent to the database.
+     *
+     * @param  mixed  $value  The value to be prepared
+     * @param  string|null  $columnType  The type of column the value will be stored in
+     * @return mixed The prepped value
+     */
+    public static function prepareValueForDb(mixed $value, ?string $columnType = null): mixed
+    {
+        // Leave expressions alone
+        if ($value instanceof Expression) {
+            return $value;
+        }
+
+        // If the object explicitly defines its savable value, use that
+        if ($value instanceof Serializable) {
+            return $value->serialize();
+        }
+
+        // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
+        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
+            return self::prepareDateForDb($value);
+        }
+
+        // If this isn’t a JSON column and the value is an object or array, JSON-encode it
+        if (is_object($value) || is_array($value)) {
+            if (in_array($columnType, [self::TYPE_JSON, self::TYPE_JSONB])) {
+                return Arr::toArray($value);
+            }
+
+            return Json::encode($value);
+        }
+
+        if ($columnType && self::isNumericColumnType($columnType) && is_bool($value)) {
+            return (int) $value;
+        }
+
+        return $value;
     }
 
     /**

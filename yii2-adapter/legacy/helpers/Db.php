@@ -17,7 +17,6 @@ use craft\db\Table;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query as QueryHelper;
 use DateTimeInterface;
@@ -31,7 +30,6 @@ use yii\base\NotSupportedException;
 use yii\db\BatchQueryResult;
 use yii\db\Exception as DbException;
 use yii\db\ExpressionInterface;
-use yii\db\pgsql\Schema as YiiPgqslSchema;
 use yii\db\Query as YiiQuery;
 use yii\db\QueryInterface;
 use yii\db\Schema;
@@ -41,6 +39,7 @@ use yii\db\Schema;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Support\Query} or {@see DbFacade} instead.
  */
 class Db
 {
@@ -76,17 +75,11 @@ class Db
      *
      * @param mixed $values The values to be prepared
      * @return array The prepared values
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::prepareValuesForDb()} instead.
      */
     public static function prepareValuesForDb(mixed $values): array
     {
-        // Normalize to an array
-        $values = Arr::toArray($values, [], false);
-
-        foreach ($values as $key => $value) {
-            $values[$key] = static::prepareValueForDb($value);
-        }
-
-        return $values;
+        return QueryHelper::prepareValuesForDb($values);
     }
 
     /**
@@ -95,6 +88,7 @@ class Db
      * @param mixed $value The value to be prepared
      * @param string|null $columnType The type of column the value will be stored in
      * @return mixed The prepped value
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::prepareValueForDb()} instead.
      */
     public static function prepareValueForDb(mixed $value, ?string $columnType = null): mixed
     {
@@ -108,24 +102,7 @@ class Db
             return $value->serialize();
         }
 
-        // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
-            return QueryHelper::prepareDateForDb($value);
-        }
-
-        // If this isn’t a JSON column and the value is an object or array, JSON-encode it
-        if (is_object($value) || is_array($value)) {
-            if (in_array($columnType, [Schema::TYPE_JSON, YiiPgqslSchema::TYPE_JSONB])) {
-                return Arr::toArray($value);
-            }
-            return JsonHelper::encode($value);
-        }
-
-        if ($columnType && static::isNumericColumnType($columnType) && is_bool($value)) {
-            return (int)$value;
-        }
-
-        return $value;
+        return QueryHelper::prepareValueForDb($value, $columnType);
     }
 
     /**
@@ -706,6 +683,7 @@ class Db
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @return array|null
      * @since 4.0.0
+     * @deprecated 6.0.0
      */
     public static function parseMoneyParam(
         string $column,
@@ -763,6 +741,7 @@ class Db
      * @param string $columnType The database column type the param is targeting
      * @return array
      * @since 3.4.14
+     * @deprecated 6.0.0
      */
     public static function parseBooleanParam(
         string $column,
@@ -830,6 +809,7 @@ class Db
      * @return array|null
      * @throws InvalidArgumentException if the param value isn’t numeric
      * @since 4.0.0
+     * @deprecated 6.0.0
      */
     public static function parseNumericParam(
         string $column,
@@ -858,6 +838,7 @@ class Db
      * @return array|null
      * @throws InvalidArgumentException if the param value isn’t numeric
      * @since 5.1.0
+     * @deprecated 6.0.0
      */
     public static function parseTimestampParam(
         string $column,
@@ -877,6 +858,7 @@ class Db
      * @param callable $resolver Method to resolve non-model values to models
      * @return bool Whether the value was normalized
      * @since 3.7.40
+     * @deprecated 6.0.0 use {@see QueryHelper::normalizeParam()} instead
      */
     public static function normalizeParam(&$value, callable $resolver): bool
     {

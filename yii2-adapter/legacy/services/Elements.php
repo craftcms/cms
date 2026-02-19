@@ -4024,10 +4024,10 @@ class Elements extends Component
 
                     if ($isNewElement) {
                         if (isset($element->dateCreated)) {
-                            $elementModel->dateCreated = DbHelper::prepareValueForDb($element->dateCreated);
+                            $elementModel->dateCreated = Query::prepareDateForDb($element->dateCreated);
                         }
                         if (isset($element->dateUpdated)) {
-                            $elementModel->dateUpdated = DbHelper::prepareValueForDb($element->dateUpdated);
+                            $elementModel->dateUpdated = Query::prepareDateForDb($element->dateUpdated);
                         }
                     } elseif (!$element->resaving || $forceTouch) {
                         // Force a new dateUpdated value
