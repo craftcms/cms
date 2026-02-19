@@ -14,7 +14,9 @@ final class Paginate extends Component
 {
     public string $basePath {
         get => $this->getBasePath();
-        set => $this->setBasePath($value);
+        set {
+            $this->setBasePath($value);
+        }
     }
 
     public int $first;
