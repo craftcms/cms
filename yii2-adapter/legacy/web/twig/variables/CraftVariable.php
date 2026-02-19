@@ -83,7 +83,7 @@ class CraftVariable extends ServiceLocator
     {
         $this->app = Craft::$app;
 
-        if (Edition::get() !== Edition::Solo) {
+        if (Edition::isAtLeast(Edition::Pro)) {
             $this->rebrand = app()->make(Rebrand::class);
         }
 
