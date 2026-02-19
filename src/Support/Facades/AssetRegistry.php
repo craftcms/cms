@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Support\Facades\Facade;
 
 /**

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\Condition\Contracts\ConditionInterface;
-use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use Illuminate\Support\Facades\Facade;
 use Override;
 

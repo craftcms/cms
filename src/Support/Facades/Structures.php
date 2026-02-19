@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use craft\base\ElementInterface;
-use CraftCms\Cms\Structure\Data\Structure;
-use CraftCms\Cms\Structure\Enums\Mode;
 use Illuminate\Support\Facades\Facade;
 
 /**

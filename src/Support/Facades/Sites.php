@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
-use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Site\Data\Site;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
 
 /**

@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\Twig\Environment;
-use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Facade;
 use Override;
-use Twig\Extension\ExtensionInterface;
 
 /**
  * @method static \CraftCms\Cms\Twig\Environment get(\CraftCms\Cms\View\TemplateMode|null $mode = null)

@@ -4,12 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\Translation\Formatter;
-use CraftCms\Cms\Translation\Locale;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
-use Stringable;
-use Yiisoft\Translator\CategorySource;
 
 /**
  * @method static \CraftCms\Cms\Translation\Formatter getFormatter()

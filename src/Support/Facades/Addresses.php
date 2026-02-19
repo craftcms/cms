@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CommerceGuys\Addressing\AddressFormat\AddressFormatRepository;
-use CommerceGuys\Addressing\Country\CountryRepository;
-use CommerceGuys\Addressing\Formatter\FormatterInterface;
-use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Address\Repositories\SubdivisionRepository;
-use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use Illuminate\Support\Facades\Facade;
 use Override;
 

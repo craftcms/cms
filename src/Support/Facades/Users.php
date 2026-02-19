@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\Edition;
-use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
-use CraftCms\Cms\User\Data\UserGroup;
-use CraftCms\Cms\User\Elements\User;
-use DateTime;
 use Illuminate\Support\Facades\Facade;
 use Override;
 

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
-use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use Illuminate\Support\Facades\Facade;
 use Override;
 

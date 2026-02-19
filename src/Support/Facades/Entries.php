@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Section\Data\Section;
 use Illuminate\Support\Facades\Facade;
 
 /**

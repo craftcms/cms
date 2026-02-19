@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use Illuminate\Support\Facades\Facade;
 use Override;
 
