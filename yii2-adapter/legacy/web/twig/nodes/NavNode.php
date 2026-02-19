@@ -7,6 +7,7 @@
 
 namespace craft\web\twig\nodes;
 
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Expression\AbstractExpression;
 use Twig\Node\Expression\Variable\AssignContextVariable;
@@ -19,6 +20,7 @@ use Twig\Node\Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[YieldReady]
 class NavNode extends ForNode
 {
     /**

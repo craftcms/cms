@@ -11,7 +11,7 @@ if ($_namespace !== null && $_namespace !== '') {
 
         throw $e;
     }
-    echo CraftCms\Cms\Support\Html::namespaceHtml(ob_get_clean(), $_namespace, true);
+    yield CraftCms\Cms\Support\Html::namespaceHtml(ob_get_clean(), $_namespace, true);
     Craft::$app->getView()->setNamespace($_originalNamespace);
 } else {
     yield "<input name=\"title\">";

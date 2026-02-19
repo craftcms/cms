@@ -19,4 +19,4 @@ if ($cacheBody5 === null) {
         $cacheService->endTemplateCache($cacheKey5, false, null, ($context["expiresAt"] ?? null), $cacheBody5, true);
     }
 }
-echo $cacheBody5;
+yield $cacheBody5;

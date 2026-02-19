@@ -9,6 +9,7 @@ namespace craft\web\twig\nodes;
 
 use Craft;
 use craft\helpers\Template;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
@@ -18,6 +19,7 @@ use Twig\Node\Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
  */
+#[YieldReady]
 class DdNode extends Node
 {
     /**

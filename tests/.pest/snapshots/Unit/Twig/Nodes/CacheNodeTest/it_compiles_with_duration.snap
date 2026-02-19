@@ -19,4 +19,4 @@ if ($cacheBody4 === null) {
         $cacheService->endTemplateCache($cacheKey4, false, craft\helpers\DateTimeHelper::relativeTimeStatement(1, 'hours'), null, $cacheBody4, true);
     }
 }
-echo $cacheBody4;
+yield $cacheBody4;

@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use CraftCms\Cms\Support\Html;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
@@ -17,6 +18,7 @@ use Twig\Node\Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
  */
+#[YieldReady]
 class TagNode extends Node
 {
     /**
@@ -28,7 +30,7 @@ class TagNode extends Node
             ->addDebugInfo($this)
             ->write("ob_start();\n")
             ->subcompile($this->getNode('content'))
-            ->write('echo ' . Html::class . '::tag(')
+            ->write('yield ' . Html::class . '::tag(')
             ->subcompile($this->getNode('name'))
             ->raw(', ob_get_clean()');
 

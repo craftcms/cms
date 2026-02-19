@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use craft\web\View;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 use Twig\Node\NodeCaptureInterface;
@@ -19,6 +20,7 @@ use yii\base\NotSupportedException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[YieldReady]
 class RegisterResourceNode extends Node implements NodeCaptureInterface
 {
     /**

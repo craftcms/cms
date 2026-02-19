@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use craft\helpers\Template as TemplateHelper;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Expression\AssignNameExpression;
 use Twig\Node\Node;
@@ -19,6 +20,7 @@ use Twig\Template;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[YieldReady]
 class NavItem_Node extends Node
 {
     /**

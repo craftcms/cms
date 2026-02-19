@@ -9,6 +9,7 @@ namespace craft\web\twig\nodes;
 
 use Craft;
 use craft\web\ServiceUnavailableHttpException;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 use yii\web\BadRequestHttpException;
@@ -32,6 +33,7 @@ use yii\web\UnsupportedMediaTypeHttpException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[YieldReady]
 class ExitNode extends Node
 {
     /**

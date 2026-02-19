@@ -19,4 +19,4 @@ if ($cacheBody3 === null) {
         $cacheService->endTemplateCache($cacheKey3, true, null, null, $cacheBody3, true);
     }
 }
-echo $cacheBody3;
+yield $cacheBody3;

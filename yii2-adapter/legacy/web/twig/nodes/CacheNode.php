@@ -10,6 +10,7 @@ namespace craft\web\twig\nodes;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
@@ -19,6 +20,7 @@ use Twig\Node\Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[YieldReady]
 class CacheNode extends Node
 {
     /**
@@ -118,6 +120,6 @@ class CacheNode extends Node
             ->write("}\n")
             ->outdent()
             ->write("}\n")
-            ->write("echo \$cacheBody$n;\n");
+            ->write("yield \$cacheBody$n;\n");
     }
 }

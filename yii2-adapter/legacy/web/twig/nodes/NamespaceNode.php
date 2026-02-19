@@ -9,6 +9,7 @@ namespace craft\web\twig\nodes;
 
 use Craft;
 use CraftCms\Cms\Support\Html;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
@@ -18,6 +19,7 @@ use Twig\Node\Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[YieldReady]
 class NamespaceNode extends Node
 {
     /**
@@ -45,7 +47,7 @@ class NamespaceNode extends Node
             ->write("throw \$e;\n")
             ->outdent()
             ->write("}\n")
-            ->write('echo ' . Html::class . '::namespaceHtml(ob_get_clean(), $_namespace, ')
+            ->write('yield ' . Html::class . '::namespaceHtml(ob_get_clean(), $_namespace, ')
             ->raw($this->hasAttribute('withClasses') ? 'true' : 'false')
             ->raw(");\n")
             ->write(Craft::class . "::\$app->getView()->setNamespace(\$_originalNamespace);\n")

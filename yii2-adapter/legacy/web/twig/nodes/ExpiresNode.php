@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use craft\helpers\DateTimeHelper;
+use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
@@ -17,6 +18,7 @@ use Twig\Node\Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.2.0
  */
+#[YieldReady]
 class ExpiresNode extends Node
 {
     /**
