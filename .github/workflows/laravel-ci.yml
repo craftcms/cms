@@ -109,7 +109,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/run-tests
         with:
-          test-command: ./vendor/bin/pest --ci --compact --test-directory=tests/Unit
+          test-command: ./vendor/bin/pest --ci --compact --testsuite=Unit
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}
@@ -173,7 +173,7 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/run-tests
         with:
-          test-command: ./vendor/bin/pest --ci --compact --test-directory=tests/Feature
+          test-command: ./vendor/bin/pest --ci --compact --testsuite=Feature
           github-token: ${{ secrets.GITHUB_TOKEN }}
           packagist-username: ${{ secrets.packagist_username }}
           packagist-token: ${{ secrets.packagist_token }}
