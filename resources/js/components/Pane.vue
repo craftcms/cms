@@ -6,7 +6,7 @@
     defineProps<{
       as?: Component | string;
       variant?: 'plain' | 'error' | 'code';
-      appearance?: 'plain' | 'outline';
+      appearance?: 'plain' | 'outline' | 'raised';
       hideHeader?: boolean;
       hideFooter?: boolean;
       title?: string;
@@ -66,6 +66,7 @@
       'pane--code': variant === 'code',
       'pane--error': variant === 'error',
       'pane--outline': appearance === 'outline',
+      'pane--raised': appearance === 'raised',
     }"
     v-bind="$attrs"
   >
@@ -104,11 +105,20 @@
   .pane {
     --_pane-spacing: v-bind(computedPadding);
     --_bg-color: var(--c-pane-bg);
+    --_radius: var(--c-pane-radius);
 
     background-color: var(--_bg-color);
     -webkit-overflow-scrolling: touch;
-    border-radius: var(--c-pane-radius);
+    border-radius: var(--_radius);
     border: var(--c-pane-border);
+    box-shadow: var(--c-pane-shadow);
+    overflow: hidden;
+  }
+
+  .pane--raised {
+    --c-pane-bg: var(--c-elevation-surface-raised);
+    --c-pane-border: 1px solid var(--c-color-neutral-border-subtle);
+    --c-pane-shadow: var(--c-elevation-shadow-raised);
   }
 
   .pane--code {

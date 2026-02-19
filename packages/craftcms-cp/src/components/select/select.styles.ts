@@ -8,6 +8,10 @@ export default css`
     width: 100%;
   }
 
+  :host([small]) .input-group__input {
+    --c-input-height: calc(var(--c-size-control-sm) - 2px);
+  }
+
   ::slotted(.form-control) {
     width: 100%;
     height: 100%;
@@ -24,6 +28,10 @@ export default css`
     padding-inline: 0;
     position: relative;
     min-height: calc(var(--c-input-height, var(--c-size-control-md)) - 2px);
+  }
+
+  :host([small]) .input-group__input {
+    min-height: calc(var(--c-size-control-sm) - 2px);
   }
 
   .indicator {
