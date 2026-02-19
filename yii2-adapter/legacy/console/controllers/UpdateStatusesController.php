@@ -12,9 +12,9 @@ use craft\console\Controller;
 use craft\events\MultiElementActionEvent;
 use craft\helpers\Console;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\services\Elements;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Query\Builder;
 use yii\console\ExitCode;
 
@@ -38,7 +38,7 @@ class UpdateStatusesController extends Controller
      */
     public function actionIndex(): int
     {
-        $now = Db::prepareDateForDb(DateTimeHelper::now());
+        $now = Query::prepareDateForDb(DateTimeHelper::now());
         $elementsService = Craft::$app->getElements();
 
         $conditions = [

@@ -34,7 +34,6 @@ use craft\errors\VolumeException;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
@@ -2980,7 +2979,7 @@ JS;
             $model->size = (int) $this->size ?: null;
             $model->width = (int) $this->_width ?: $fallbackWidth;
             $model->height = (int) $this->_height ?: $fallbackHeight;
-            $model->dateModified = Db::prepareDateForDb($this->dateModified);
+            $model->dateModified = \CraftCms\Cms\Support\Query::prepareDateForDb($this->dateModified);
 
             if (isset($this->_mimeType)) {
                 $model->mimeType = $this->_mimeType;

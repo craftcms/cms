@@ -16,7 +16,6 @@ use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
 use craft\helpers\Component;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -46,6 +45,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
@@ -713,7 +713,7 @@ JS, [
                     ->preferSites([$element->siteId])
                     ->unique()
                     ->status(null)
-                    ->where('elements.dateCreated', '!=', Db::prepareDateForDb($element->dateUpdated))
+                    ->where('elements.dateCreated', '!=', Query::prepareDateForDb($element->dateUpdated))
                     ->with(['revisionCreator']),
             ]);
     }
