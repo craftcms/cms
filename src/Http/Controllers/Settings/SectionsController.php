@@ -241,12 +241,6 @@ final readonly class SectionsController
         $sectionId = $request->integer('id');
         $section = $sections->getSectionById($sectionId);
 
-        if ($section === null) {
-            return back()->withErrors([
-                'id' => t('Section not found. It may have already been deleted.'),
-            ]);
-        }
-
         $name = $section->name;
         $sections->deleteSectionById($sectionId);
 
