@@ -233,9 +233,12 @@ final readonly class SectionsController
             'id' => ['required', Rule::exists(Table::SECTIONS, 'id')],
         ]);
 
-        $sections->deleteSectionById($request->input('id'));
+        $name = $sections->getSectionById($request->input('id'))->name;
+        $sections->deleteSectionById($request->integer('id'));
 
-        return $this->asSuccess();
+        return back()->with('success', t('Section “{name}” deleted.', [
+            'name' => $name,
+        ]));
     }
 
     public function tableData(Request $request, Sections $sections): Response
