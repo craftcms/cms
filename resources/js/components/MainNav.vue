@@ -48,7 +48,6 @@
       </template>
     </craft-nav-item>
     <cp-queue-indicator
-      :enabled.prop="queue.enabled"
       :displayedJob.prop="queue.displayedJob"
       :hasReservedJobs.prop="queue.hasReservedJobs"
       :hasWaitingJobs.prop="queue.hasWaitingJobs"

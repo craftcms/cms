@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Middleware;
 
-use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
-use craft\queue\QueueInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Rebrand;
@@ -81,7 +79,6 @@ class HandleInertiaRequests extends Middleware
                 'error' => $request->session()->get('error'),
             ],
             'queue' => fn () => [
-                'enabled' => Craft::$app->get('queue') instanceof QueueInterface,
                 'displayedJob' => $progressService->getDisplayedJob(),
                 'hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
                 'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,

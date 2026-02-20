@@ -24,7 +24,6 @@ class CpQueueIndicator extends LitElement {
     }
   `;
 
-  @property({type: Boolean}) enabled: boolean = true;
   @property({type: Object, attribute: 'displayed-job'})
   displayedJob: JobInfo | null = null;
   @property({type: Boolean, attribute: 'has-reserved-jobs'})

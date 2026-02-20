@@ -70,7 +70,6 @@ export class QueueService extends EventTarget {
   }
 
   initialize(options: QueueServiceOptions = {}) {
-    this.enabled = options.enabled ?? true;
     this.#appId = options.appId ?? '';
     this.canAccessQueueManager = options.canAccessQueueManager ?? false;
     this.#initBroadcaster();
@@ -83,12 +82,8 @@ export class QueueService extends EventTarget {
    * Sends a request to execute waiting jobs.
    */
   async runQueue(): Promise<void> {
-    if (!this.enabled) {
-      return;
-    }
-
     try {
-      const response = await axios.post(this.#config.getActionUrl('queue/run'));
+      await axios.post(this.#config.getActionUrl('queue/run'));
     } catch (e: unknown) {
       // Ignore errors - queue might already be running
       console.error(e);
@@ -103,10 +98,6 @@ export class QueueService extends EventTarget {
    * @param force - Force tracking even if already tracking
    */
   startTracking(delay: boolean | number = false, force: boolean = false): void {
-    if (!this.enabled) {
-      return;
-    }
-
     if (this.isTracking && !force) {
       return;
     }
@@ -215,8 +206,6 @@ export class QueueService extends EventTarget {
   }
 
   async #trackJobProgress(): Promise<void> {
-    if (!this.enabled) return;
-
     // Notify other tabs we're taking over
     this.#broadcast('beforeTrackJobProgress');
 

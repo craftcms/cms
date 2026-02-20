@@ -54,7 +54,6 @@
 
       {% if queue is instance of("craft\\queue\\QueueInterface") %}
         <cp-queue-indicator
-          enabled="true"
           displayed-job="{{ queue.getJobInfo(1)|first|json_encode|e('html_attr') }}"
           has-reserved-jobs="{{ queue.getHasReservedJobs() }}"
           has-waiting-jobs="{{ queue.getHasWaitingJobs }}"
