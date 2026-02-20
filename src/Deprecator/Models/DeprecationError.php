@@ -4,22 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Deprecator\Models;
 
-use Carbon\Carbon;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Support\Str;
 
-/**
- * @property int $id
- * @property string $key
- * @property string $fingerprint
- * @property Carbon $lastOccurrence
- * @property string $file
- * @property int $line
- * @property string $message
- * @property string $traces
- */
 final class DeprecationError extends BaseModel
 {
     use HasUid;
