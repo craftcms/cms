@@ -73,6 +73,7 @@ final readonly class SectionsController
             'data' => fn () => $tableData,
             'pagination' => fn () => $pagination,
             'sort' => $sort,
+            'searchTerm' => $searchTerm,
             'emptyMessage' => t('No sections exist yet.'),
             'readOnly' => $this->readOnly,
         ]);

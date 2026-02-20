@@ -11,7 +11,7 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import DeleteSectionButton from '@/components/sections/DeleteSectionButton.vue';
   import {create, edit, index} from '@actions/Settings/SectionsController';
-  import {router} from '@inertiajs/vue3';
+  import {Form, router} from '@inertiajs/vue3';
   import AppLayout from '@/layout/AppLayout.vue';
   import Pane from '@/components/Pane.vue';
 
@@ -45,6 +45,7 @@
     data: Array<SectionModel>;
     pagination: PaginationData;
     sort?: Array<SortItem>;
+    searchTerm?: string;
     emptyMessage: string;
     readOnly: boolean;
   }>();
@@ -184,11 +185,23 @@
     </template>
 
     <Pane :padding="0" appearance="raised">
-      <AdminTable
-        spacing="relaxed"
-        :table="sectionTable"
-        :reorderable="false"
-      />
+      <AdminTable spacing="relaxed" :table="sectionTable" :reorderable="false">
+        <template #search-form>
+          <Form :action="index()" v-slot="{processing}">
+            <div class="flex gap-1 items-center">
+              <craft-input
+                name="search"
+                :label="t('Search term')"
+                :value="props.searchTerm"
+                label-sr-only
+              ></craft-input>
+              <craft-button type="submit" :loading="processing">{{
+                t('Search')
+              }}</craft-button>
+            </div>
+          </Form>
+        </template>
+      </AdminTable>
     </Pane>
   </AppLayout>
 </template>
