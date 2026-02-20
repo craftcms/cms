@@ -43,7 +43,7 @@ final class DeprecationErrors extends Utility
     #[Override]
     public static function toolbarHtml(): string
     {
-        return view('c::utilities.deprecation-errors.toolbar', [
+        return view('utilities.deprecation-errors.toolbar', [
             'logs' => Deprecator::getLogs(),
         ])->toHtml();
     }
