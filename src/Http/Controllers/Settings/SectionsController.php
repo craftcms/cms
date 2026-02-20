@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use Craft;
 use craft\helpers\Cp;
+use craft\helpers\UrlHelper;
 use craft\web\assets\editsection\EditSectionAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -69,6 +70,10 @@ final readonly class SectionsController
         );
 
         return Inertia::render('SettingsSectionsIndexPage', [
+            'crumbs' => fn () => [
+                ['label' => t('Settings'), 'url' => UrlHelper::cpUrl('settings')],
+                ['label' => t('Sections')],
+            ],
             'title' => t('Sections'),
             'data' => fn () => $tableData,
             'pagination' => fn () => $pagination,
