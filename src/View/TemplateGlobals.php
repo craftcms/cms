@@ -16,6 +16,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ViewErrorBag;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -52,9 +53,16 @@ final readonly class TemplateGlobals
             $currentSite = $primarySite = $currentUser = $siteName = $siteUrl = $systemName = null;
         }
 
+        try {
+            $errors = $this->request->session()->get('errors') ?: new ViewErrorBag;
+        } catch (Throwable) {
+            // Session is not started yet
+            $errors = new ViewErrorBag;
+        }
+
         return [
             'craft' => new CraftVariable,
-            'sessionErrors' => $this->request->session()->get('errors') ?: new ViewErrorBag,
+            'sessionErrors' => $errors,
             'request' => $this->request,
             'pluginAssets' => $this->plugins->getAssetsHtml(),
             'currentSite' => $currentSite,
