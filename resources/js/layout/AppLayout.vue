@@ -32,7 +32,10 @@
   const errorFlash = computed(() => page.props.flash?.error);
   const successFlash = computed(() => page.props.flash?.success);
   const crumbs = computed(() => page.props.crumbs ?? null);
-  const {announcement} = useAnnouncer();
+  const {announcement, announce} = useAnnouncer();
+
+  watch(successFlash, (newMessage) => announce(newMessage));
+  watch(errorFlash, (newMessage) => announce(newMessage));
 
   const state = reactive<{
     sidebar: {
