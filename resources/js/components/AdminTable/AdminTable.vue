@@ -273,7 +273,7 @@
           >
             <craft-icon
               name="chevron-right"
-              label="t('Next page')"
+              :label="t('Next page')"
             ></craft-icon>
           </craft-button>
         </template>
