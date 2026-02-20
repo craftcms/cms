@@ -26,6 +26,7 @@ use craft\errors\VolumeException;
 use craft\events\AssetPreviewEvent;
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\ReplaceAssetEvent;
+use craft\fs\LaravelDiskFs;
 use craft\fs\Temp;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
@@ -948,12 +949,39 @@ class Assets extends Component
             return new Temp();
         }
 
-        $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
-        if (!$fs) {
-            throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem handle: $handle");
+        if (str_starts_with($handle, 'disk:')) {
+            $diskName = substr($handle, strlen('disk:'));
+            if ($diskName !== '' && $this->diskExists($diskName)) {
+                return new LaravelDiskFs([
+                    'disk' => $diskName,
+                    'name' => $diskName,
+                    'handle' => "disk:$diskName",
+                ]);
+            }
+
+            throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
         }
 
-        return $fs;
+        $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
+        if ($fs) {
+            return $fs;
+        }
+
+        if ($this->diskExists($handle)) {
+            return new LaravelDiskFs([
+                'disk' => $handle,
+                'name' => $handle,
+                'handle' => "disk:$handle",
+            ]);
+        }
+
+        throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
+    }
+
+    private function diskExists(string $diskName): bool
+    {
+        $diskConfigs = config('filesystems.disks', []);
+        return is_array($diskConfigs) && array_key_exists($diskName, $diskConfigs);
     }
 
     /**

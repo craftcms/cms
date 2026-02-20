@@ -8,14 +8,13 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\FsInterface;
-use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\models\Volume;
 use craft\web\Controller;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Json;
@@ -112,19 +111,25 @@ class VolumesController extends Controller
             $title = trim($volume->name) ?: t('Edit Volume');
         }
 
-        $fsHandle = $volume->getFsHandle();
+        $fsTarget = $volume->getResolvedFsTarget();
         $allVolumes = $volumesServices->getAllVolumes();
-        /** @var Collection<string> $takenFsHandles */
-        $takenFsHandles = Collection::make($allVolumes)
+        /** @var Collection<string> $takenFsTargets */
+        $takenFsTargets = Collection::make($allVolumes)
             ->filter(fn(Volume $volume) => !$volume->getSubpath())
-            ->map(fn(Volume $volume) => $volume->getFsHandle());
-        $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
-            ->map(fn(FsInterface $fs) => [
-                'label' => t($fs->name, category: 'site'),
-                'value' => $fs->handle,
-                'disabled' => Assets::isTempUploadFs($fs) || ($takenFsHandles->contains($fs->handle) && $fs->handle !== $fsHandle),
-            ])
+            ->map(fn(Volume $volume) => $volume->getResolvedFsTarget())
+            ->filter();
+
+        $fsOptions = Collection::make(SelectOptions::getFsOptions())
+            ->map(function(array $option) use ($takenFsTargets, $fsTarget): array {
+                $optionTarget = $this->fsOptionTargetKey($option['value'] ?? null);
+                $option['disabled'] = $optionTarget !== null &&
+                    $takenFsTargets->contains($optionTarget) &&
+                    $optionTarget !== $fsTarget;
+
+                return $option;
+            })
             ->sortBy(fn(array $option) => $option['label'])
+            ->values()
             ->all();
         array_unshift($fsOptions, ['label' => t('Select a filesystem'), 'value' => '']);
 
@@ -159,6 +164,19 @@ class VolumesController extends Controller
         }
 
         return $response;
+    }
+
+    private function fsOptionTargetKey(mixed $value): ?string
+    {
+        if (!is_string($value) || $value === '') {
+            return null;
+        }
+
+        if (str_starts_with($value, 'disk:')) {
+            return $value;
+        }
+
+        return "fs:$value";
     }
 
     /**

@@ -3113,8 +3113,12 @@ class GeneralConfig extends BaseConfig
     public ?string $systemTemplateCss = null;
 
     /**
-     * @var string|null The handle of the filesystem that should be used for storing temporary asset uploads. A local temp folder will
-     *                  be used by default.
+     * @var string|null The filesystem target that should be used for storing temporary asset uploads.
+     *
+     *                  This can be set to a Craft filesystem handle, a Laravel disk in the format `disk:<name>`,
+     *                  or a plain legacy value (resolved as Craft FS first, then Laravel disk).
+     *
+     *                  A local temp folder will be used by default.
      *
      * ::: code
      * ```php Static Config
@@ -6940,8 +6944,12 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The handle of the filesystem that should be used for storing temporary asset uploads. A local temp folder will
-     * be used by default.
+     * The filesystem target that should be used for storing temporary asset uploads.
+     *
+     * This can be set to a Craft filesystem handle, a Laravel disk in the format `disk:<name>`,
+     * or a plain legacy value (resolved as Craft FS first, then Laravel disk).
+     *
+     * A local temp folder will be used by default.
      *
      *  ```php
      *  ->tempAssetUploadFs('$TEMP_ASSET_UPLOADS_FS')

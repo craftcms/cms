@@ -5,6 +5,7 @@ namespace CraftCms\Yii2Adapter;
 use Craft;
 use craft\base\Event as YiiEvent;
 use craft\base\FieldLayoutComponent;
+use craft\base\FsInterface;
 use craft\console\controllers\HelpController;
 use craft\controllers\UsersController;
 use craft\elements\Asset;
@@ -30,6 +31,7 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\linktypes\Category as CategoryLinkType;
 use craft\fields\Tags as TagsField;
+use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\gql\ArgumentManager;
 use craft\gql\base\ElementArguments;
 use craft\gql\ElementQueryConditionBuilder;
@@ -128,12 +130,16 @@ use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Console\Application as ConsoleApplication;
+use Illuminate\Filesystem\FilesystemAdapter as LaravelFilesystemAdapter;
+use Illuminate\Filesystem\FilesystemManager;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
+use League\Flysystem\Filesystem as Flysystem;
 use PDOException;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
@@ -154,10 +160,46 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->registerConstants();
         $this->registerMacros();
         $this->registerLegacyApp();
+        $this->registerFilesystemBridgeDriver();
 
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
         $this->setLaravelDefaults();
+    }
+
+    private function registerFilesystemBridgeDriver(): void
+    {
+        $this->app->make(FilesystemManager::class)->extend(LegacyFsFlysystemAdapter::DISK_DRIVER, function($app, array $config) {
+            $handle = $config['fsHandle'] ?? null;
+            if (!is_string($handle) || $handle === '') {
+                throw new InvalidArgumentException('Missing `fsHandle` configuration for craft-fs-bridge disk.');
+            }
+
+            // Ensure the legacy Craft app is bootstrapped before resolving filesystem components.
+            if (!isset(Craft::$app)) {
+                $app->make('Craft');
+            }
+
+            $filesystem = Craft::$app->getFs()->getFilesystemByHandle($handle);
+            if (!$filesystem instanceof FsInterface) {
+                throw new InvalidArgumentException("Craft filesystem [$handle] is not registered.");
+            }
+
+            $adapter = new LegacyFsFlysystemAdapter($filesystem);
+
+            return new LaravelFilesystemAdapter(
+                new Flysystem($adapter, Arr::only($config, [
+                    'directory_visibility',
+                    'disable_asserts',
+                    'retain_visibility',
+                    'temporary_url',
+                    'url',
+                    'visibility',
+                ])),
+                $adapter,
+                $config,
+            );
+        });
     }
 
     protected function registerMultiEnvironmentConfigs(): void

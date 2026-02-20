@@ -12,6 +12,7 @@ use craft\base\BaseFsInterface;
 use craft\base\FsInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
+use craft\fs\LaravelDiskFs;
 use craft\fs\MissingFs;
 use craft\helpers\UrlHelper;
 use craft\records\Volume as VolumeRecord;
@@ -24,6 +25,7 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Filesystem\DiskRegistry;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -51,6 +53,9 @@ class Volume extends Model implements
     CpEditable,
     FieldLayoutProviderInterface
 {
+    private const string STORAGE_FS_PREFIX = 'fs:';
+    private const string STORAGE_DISK_PREFIX = 'disk:';
+
     /**
      * @inheritdoc
      */
@@ -249,7 +254,7 @@ class Volume extends Model implements
         $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class];
-        $rules[] = [['name', 'handle', 'fsHandle'], 'required'];
+        $rules[] = [['name', 'handle'], 'required'];
         $rules[] = [
             ['handle'],
             HandleValidator::class,
@@ -264,25 +269,19 @@ class Volume extends Model implements
             ],
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
+        $rules[] = [['fsHandle'], fn(string $attribute) => $this->validateFilesystemHandle($attribute)];
+        $rules[] = [['transformFsHandle'], fn(string $attribute) => $this->validateFilesystemHandle($attribute), 'skipOnEmpty' => true];
         $rules[] = [['subpath'], fn($attribute) => $this->validateUniqueSubpath($attribute), 'skipOnEmpty' => false];
 
-        $tempAssetUploadFs = Env::parse(Cms::config()->tempAssetUploadFs);
-        if ($tempAssetUploadFs) {
+        $tempAssetUploadTarget = $this->resolveStorageTargetKey(Cms::config()->tempAssetUploadFs);
+        if ($tempAssetUploadTarget !== null) {
             $rules[] = [
                 ['fsHandle'],
-                'compare',
-                'compareAttribute' => 'fsHandle',
-                'compareValue' => $tempAssetUploadFs,
-                'operator' => '!=',
-                'message' => t('This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
+                fn(string $attribute) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget),
             ];
             $rules[] = [
                 ['transformFsHandle'],
-                'compare',
-                'compareAttribute' => 'transformFsHandle',
-                'compareValue' => $tempAssetUploadFs,
-                'operator' => '!=',
-                'message' => t('This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
+                fn(string $attribute) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget),
             ];
         }
 
@@ -299,11 +298,16 @@ class Volume extends Model implements
      */
     private function validateUniqueSubpath(string $attribute): void
     {
+        $storageTarget = $this->resolveStorageTargetKey($this->_fsHandle);
+        if ($storageTarget === null) {
+            return;
+        }
+
         // get all volumes that use the same FS, excluding current volume
         $records = \CraftCms\Cms\Asset\Models\Volume::query()
-            ->where('fs', $this->_fsHandle)
             ->when($this->id !== null, fn(Builder $query) => $query->whereNot('id', $this->id))
-            ->get();
+            ->get()
+            ->filter(fn(\CraftCms\Cms\Asset\Models\Volume $record): bool => $this->resolveStorageTargetKey($record->fs) === $storageTarget);
 
         // if there are other volumes using the same FS
         // and this volume wants to have an empty subpath - add error
@@ -369,15 +373,17 @@ class Volume extends Model implements
     public function getFs(): FsInterface
     {
         if (!isset($this->_fs)) {
-            $handle = $this->getFsHandle();
-            if (!$handle) {
+            if (!$this->getFsHandle()) {
                 throw new InvalidConfigException('Volume is missing its filesystem handle.');
             }
-            $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
+
+            $target = $this->resolveStorageTargetKey($this->_fsHandle);
+            $fs = $target !== null ? $this->filesystemFromTargetKey($target) : null;
             if (!$fs) {
                 Log::error("Invalid filesystem handle: $this->_fsHandle for the $this->name volume.");
                 return new MissingFs(['handle' => $this->_fsHandle]);
             }
+
             $this->_fs = $fs;
         }
 
@@ -392,7 +398,7 @@ class Volume extends Model implements
     public function setFs(FsInterface $fs): void
     {
         $this->_fs = $fs;
-        $this->_fsHandle = $fs->handle;
+        $this->_fsHandle = $fs->handle ?? null;
     }
 
     /**
@@ -416,7 +422,7 @@ class Volume extends Model implements
      */
     public function setFsHandle(string $handle): void
     {
-        $this->_fsHandle = $handle;
+        $this->_fsHandle = $this->normalizeStorageHandle($handle);
         $this->_fs = null;
     }
 
@@ -430,14 +436,16 @@ class Volume extends Model implements
     public function getTransformFs(): FsInterface
     {
         if (!isset($this->_transformFs)) {
-            $handle = $this->getTransformFsHandle();
-            if (!$handle) {
+            if (!$this->getTransformFsHandle()) {
                 return $this->getFs();
             }
-            $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
+
+            $target = $this->resolveStorageTargetKey($this->_transformFsHandle);
+            $fs = $target !== null ? $this->filesystemFromTargetKey($target) : null;
             if (!$fs) {
-                throw new InvalidConfigException("Invalid filesystem handle: $handle");
+                throw new InvalidConfigException("Invalid filesystem handle: $this->_transformFsHandle");
             }
+
             $this->_transformFs = $fs;
         }
 
@@ -453,7 +461,7 @@ class Volume extends Model implements
     {
         if ($fs) {
             $this->_transformFs = $fs;
-            $this->_transformFsHandle = $fs->handle;
+            $this->_transformFsHandle = $fs->handle ?? null;
         } else {
             $this->_transformFsHandle = $this->_transformFs = null;
         }
@@ -480,8 +488,197 @@ class Volume extends Model implements
      */
     public function setTransformFsHandle(?string $handle): void
     {
-        $this->_transformFsHandle = $handle;
+        $this->_transformFsHandle = $this->normalizeStorageHandle($handle);
         $this->_transformFs = null;
+    }
+
+    /**
+     * Returns the resolved storage target key for this volume’s asset filesystem.
+     *
+     * @param bool $parse Whether dynamic values should be resolved
+     * @return string|null
+     */
+    public function getResolvedFsTarget(bool $parse = true): ?string
+    {
+        return $this->resolveStorageTargetKey($this->_fsHandle, $parse);
+    }
+
+    /**
+     * Returns the resolved storage target key for this volume’s transform filesystem.
+     *
+     * @param bool $parse Whether dynamic values should be resolved
+     * @return string|null
+     */
+    public function getResolvedTransformFsTarget(bool $parse = true): ?string
+    {
+        return $this->resolveStorageTargetKey($this->_transformFsHandle, $parse);
+    }
+
+    private function validateFilesystemHandle(string $attribute): void
+    {
+        $handle = match ($attribute) {
+            'fsHandle' => $this->_fsHandle,
+            'transformFsHandle' => $this->_transformFsHandle,
+            default => null,
+        };
+
+        if ($handle === null || $handle === '') {
+            if ($attribute === 'fsHandle') {
+                $this->addError($attribute, t('{attribute} cannot be blank.', [
+                    'attribute' => $this->getAttributeLabel($attribute),
+                ]));
+            }
+
+            return;
+        }
+
+        if ($this->isUnresolvedEnvValue($handle)) {
+            return;
+        }
+
+        if ($this->isInternalDiskReference($handle)) {
+            $this->addError($attribute, t('This disk is reserved for internal use.'));
+            return;
+        }
+
+        if ($this->resolveStorageTargetKey($handle) === null) {
+            $this->addError($attribute, t('This filesystem reference is invalid.'));
+        }
+    }
+
+    private function validateReservedTempUploadFilesystem(string $attribute, string $tempUploadTarget): void
+    {
+        $handle = match ($attribute) {
+            'fsHandle' => $this->_fsHandle,
+            'transformFsHandle' => $this->_transformFsHandle,
+            default => null,
+        };
+
+        if ($handle === null || $handle === '') {
+            return;
+        }
+
+        $target = $this->resolveStorageTargetKey($handle);
+        if ($target !== null && $target === $tempUploadTarget) {
+            $this->addError(
+                $attribute,
+                t('This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
+            );
+        }
+    }
+
+    private function resolveStorageTargetKey(?string $value, bool $parse = true): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $value = $parse ? Env::parse($value) : $value;
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (str_starts_with($value, self::STORAGE_DISK_PREFIX)) {
+            $diskName = substr($value, strlen(self::STORAGE_DISK_PREFIX));
+            if ($diskName === '' || !$this->diskExists($diskName) || $this->isInternalDiskName($diskName)) {
+                return null;
+            }
+
+            return self::STORAGE_DISK_PREFIX . $diskName;
+        }
+
+        if (Craft::$app->getFs()->getFilesystemByHandle($value)) {
+            return self::STORAGE_FS_PREFIX . $value;
+        }
+
+        if ($this->diskExists($value)) {
+            if ($this->isInternalDiskName($value)) {
+                return null;
+            }
+
+            return self::STORAGE_DISK_PREFIX . $value;
+        }
+
+        return null;
+    }
+
+    private function normalizeStorageHandle(?string $value): ?string
+    {
+        if ($value === null || $value === '' || str_starts_with($value, self::STORAGE_DISK_PREFIX)) {
+            return $value;
+        }
+
+        if ($this->isDynamicStorageHandle($value)) {
+            return $value;
+        }
+
+        if (Craft::$app->getFs()->getFilesystemByHandle($value)) {
+            return $value;
+        }
+
+        if ($this->diskExists($value)) {
+            return self::STORAGE_DISK_PREFIX . $value;
+        }
+
+        return $value;
+    }
+
+    private function filesystemFromTargetKey(string $target): ?FsInterface
+    {
+        if (str_starts_with($target, self::STORAGE_FS_PREFIX)) {
+            $handle = substr($target, strlen(self::STORAGE_FS_PREFIX));
+            return Craft::$app->getFs()->getFilesystemByHandle($handle);
+        }
+
+        if (str_starts_with($target, self::STORAGE_DISK_PREFIX)) {
+            $diskName = substr($target, strlen(self::STORAGE_DISK_PREFIX));
+            if ($diskName === '' || !$this->diskExists($diskName)) {
+                return null;
+            }
+
+            return new LaravelDiskFs([
+                'disk' => $diskName,
+                'name' => $diskName,
+                'handle' => self::STORAGE_DISK_PREFIX . $diskName,
+            ]);
+        }
+
+        return null;
+    }
+
+    private function isUnresolvedEnvValue(string $value): bool
+    {
+        if (!preg_match('/\\$\\{?\\w+\\}?/', $value)) {
+            return false;
+        }
+
+        return Env::parse($value) === null;
+    }
+
+    private function diskExists(string $diskName): bool
+    {
+        $diskConfigs = config('filesystems.disks', []);
+        return is_array($diskConfigs) && array_key_exists($diskName, $diskConfigs);
+    }
+
+    private function isInternalDiskReference(string $value): bool
+    {
+        $diskName = str_starts_with($value, self::STORAGE_DISK_PREFIX)
+            ? substr($value, strlen(self::STORAGE_DISK_PREFIX))
+            : $value;
+
+        return $diskName !== '' && $this->diskExists($diskName) && $this->isInternalDiskName($diskName);
+    }
+
+    private function isInternalDiskName(string $diskName): bool
+    {
+        return in_array($diskName, ['craft-tmp', 'rebrand'], true) ||
+            str_starts_with($diskName, DiskRegistry::PREFIX);
+    }
+
+    private function isDynamicStorageHandle(string $value): bool
+    {
+        return str_contains($value, '$') || str_starts_with($value, '@');
     }
 
     /**

@@ -1,5 +1,6 @@
 <?php
 
+use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\helpers\Assets;
 use CraftCms\Cms\Cp\SelectOptions;
 
@@ -285,6 +286,38 @@ describe('getFsOptions', function () {
         sort($sorted);
 
         expect($labels)->toBe($sorted);
+    });
+
+    it('includes manually configured Laravel disks with a disk: prefix', function () {
+        config()->set('filesystems.disks.manual-select-options-disk', [
+            'driver' => 'local',
+            'root' => storage_path('framework/testing/select-options/manual-select-options-disk'),
+        ]);
+
+        $values = array_column(SelectOptions::getFsOptions(), 'value');
+
+        expect($values)->toContain('disk:manual-select-options-disk');
+    });
+
+    it('excludes internal and Craft-registered system disks', function () {
+        config()->set('filesystems.disks.craft-fs-internal-test', [
+            'driver' => LegacyFsFlysystemAdapter::DISK_DRIVER,
+            'fsHandle' => 'internal-test',
+        ]);
+        config()->set('filesystems.disks.craft-tmp', [
+            'driver' => 'local',
+            'root' => storage_path('framework/testing/select-options/craft-tmp'),
+        ]);
+        config()->set('filesystems.disks.rebrand', [
+            'driver' => 'local',
+            'root' => storage_path('framework/testing/select-options/rebrand'),
+        ]);
+
+        $values = array_column(SelectOptions::getFsOptions(), 'value');
+
+        expect($values)->not->toContain('disk:craft-fs-internal-test')
+            ->and($values)->not->toContain('disk:craft-tmp')
+            ->and($values)->not->toContain('disk:rebrand');
     });
 });
 

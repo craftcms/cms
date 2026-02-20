@@ -16,9 +16,13 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\fs\Local;
 use craft\fs\MissingFs;
 use craft\helpers\Component as ComponentHelper;
+use CraftCms\Cms\Filesystem\DiskRegistry;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -153,6 +157,22 @@ class Fs extends Component
     }
 
     /**
+     * Returns the Laravel disk name for a Craft filesystem handle.
+     */
+    public function toDiskName(string $handle): string
+    {
+        return app(DiskRegistry::class)->toDiskName($handle);
+    }
+
+    /**
+     * Returns a Laravel disk for the given Craft filesystem handle.
+     */
+    public function disk(string $handle): LaravelFilesystem
+    {
+        return Storage::disk($this->toDiskName($handle));
+    }
+
+    /**
      * Creates or updates a filesystem.
      *
      * @param FsInterface $fs the filesystem to be saved.
@@ -213,6 +233,7 @@ class Fs extends Component
 
         // Clear caches
         $this->_filesystems = null;
+        $this->syncDiskRegistrations();
 
         return true;
     }
@@ -256,9 +277,33 @@ class Fs extends Component
 
         // Clear caches
         $this->_filesystems = null;
+        $this->syncDiskRegistrations();
 
         $fs->afterDelete();
 
         return true;
+    }
+
+    /**
+     * Handle filesystem config changes.
+     */
+    public function handleChangedFilesystem(ConfigEvent $event): void
+    {
+        $this->_filesystems = null;
+        $this->syncDiskRegistrations();
+    }
+
+    /**
+     * Handle filesystem config deletions.
+     */
+    public function handleDeletedFilesystem(ConfigEvent $event): void
+    {
+        $this->_filesystems = null;
+        $this->syncDiskRegistrations();
+    }
+
+    private function syncDiskRegistrations(): void
+    {
+        app(DiskRegistry::class)->sync();
     }
 }
