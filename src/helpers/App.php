@@ -242,12 +242,20 @@ class App
                 return $result ? 'true' : 'false';
             }
 
+            // todo: remove this in v6
+            if ($result === '') {
+                $result = '__EMPTY__';
+            }
+
             return (string)$result;
         }, $value);
 
         if ($value === '') {
             return null;
         }
+
+        // todo: remove this in v6
+        $value = str_replace('__EMPTY__', '', $value);
 
         if (str_starts_with($value, '@')) {
             $value = Craft::getAlias($value, false) ?: $value;

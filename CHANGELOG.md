@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed an unintended change in behavior where `craft\helpers\App::parseEnv()` was returning `null` instad of an empty string, when an environment variable name was passed in, which was set to an empty string.
+
 ## 5.9.12 - 2026-02-18
 
 - Added `craft\services\Tokens::getRemainingTokenUsages()`.

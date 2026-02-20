@@ -42,6 +42,7 @@ class AppHelperTest extends TestCase
             'TEST_2' => 'foo-${TEST_1}-bar',
             'TEST_3' => 'true',
             'TEST_4' => 'false',
+            'TEST_EMPTY' => '',
         ];
 
         foreach ($variables as $name => $value) {
@@ -52,6 +53,8 @@ class AppHelperTest extends TestCase
         self::assertSame('foo-testing1-bar', App::env('TEST_2'));
         self::assertTrue(App::env('TEST_3'));
         self::assertFalse(App::env('TEST_4'));
+        // todo: this should be assertNull() in v6
+        self::assertSame('', App::env('TEST_EMPTY'));
 
         foreach (array_keys($variables) as $name) {
             putenv($name);
@@ -100,6 +103,7 @@ class AppHelperTest extends TestCase
             'TEST_1' => 'testing1',
             'TEST_2' => 'foo${TEST_1}bar',
             'TEST_DEFAULT_SITE_API_KEY' => 'abcdef',
+            'TEST_EMPTY' => '',
         ];
 
         foreach ($variables as $name => $value) {
@@ -120,6 +124,8 @@ class AppHelperTest extends TestCase
         self::assertSame(CRAFT_TESTS_PATH . '/foo/bar', App::parseEnv('$CRAFT_TESTS_PATH/foo/bar'));
         self::assertSame('CRAFT_TESTS_PATH', App::parseEnv('CRAFT_TESTS_PATH'));
         self::assertSame(Craft::getAlias('@vendor/foo/bar'), App::parseEnv('@vendor/foo/bar'));
+        // todo: this should be assertNull() in v6
+        self::assertSame('', App::parseEnv('$TEST_EMPTY'));
         self::assertNull(App::parseEnv('$TEST_MISSING'));
         self::assertNull(App::parseEnv(null));
 
