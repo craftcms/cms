@@ -9,7 +9,6 @@ use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -53,11 +52,7 @@ final readonly class ClearCachesController
             }
         }
 
-        if ($request->inertia()) {
-            return back();
-        }
-
-        return new JsonResponse;
+        return back();
     }
 
     public function invalidateTags(Request $request): Response
@@ -71,10 +66,6 @@ final readonly class ClearCachesController
             TagDependency::invalidate($tag);
         }
 
-        if ($request->inertia()) {
-            return back();
-        }
-
-        return new JsonResponse;
+        return back();
     }
 }
