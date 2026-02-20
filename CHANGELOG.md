@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an unintended change in behavior where `craft\helpers\App::parseEnv()` was returning `null` instad of an empty string, when an environment variable name was passed in, which was set to an empty string.
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-2fph-6v5w-89hh](https://github.com/craftcms/cms/security/advisories/GHSA-2fph-6v5w-89hh))
 
 ## 5.9.12 - 2026-02-18
 
