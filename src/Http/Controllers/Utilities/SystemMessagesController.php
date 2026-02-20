@@ -39,13 +39,7 @@ final readonly class SystemMessagesController
         $message = $this->systemMessages->getMessage($data['key'], $data['language'] ?? null);
 
         return new JsonResponse([
-            'message' => [
-                'key' => $message->key,
-                'heading' => $message->heading,
-                'subject' => $message->subject,
-                'body' => $message->body,
-                'language' => $message->language,
-            ],
+            'message' => $message,
         ]);
     }
 
