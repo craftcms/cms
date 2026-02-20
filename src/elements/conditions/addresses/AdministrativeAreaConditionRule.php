@@ -101,7 +101,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
         $countrySelect = Cp::selectFieldHtml([
             'id' => 'country-code',
             'name' => 'countryCode',
-            'options' => Craft::$app->getAddresses()->getCountryRepository()->getList(),
+            'options' => Craft::$app->getAddresses()->getCountryList(),
             'value' => $this->countryCode,
             'inputAttributes' => [
                 'hx' => [

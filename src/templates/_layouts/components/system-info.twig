@@ -1,3 +1,5 @@
+{% set hasSystemIcon = CraftEdition >= CraftPro and craft.rebrand.isIconUploaded %}
+
 {% tag siteUrl ? 'a' : 'div' with {
     id: 'system-info',
     href: siteUrl ?? false,

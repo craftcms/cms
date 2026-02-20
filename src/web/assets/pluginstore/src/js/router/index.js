@@ -12,6 +12,7 @@ import NotFound from '../pages/_not-found';
 import Search from '../pages/search';
 import PluginsHandle from '../pages/_handle';
 import PluginsHandleEditions from '../pages/_handle/editions';
+import PluginsHandleReviews from '../pages/_handle/reviews';
 import PluginsHandleChangelog from '../pages/_handle/changelog';
 
 Vue.use(VueRouter);
@@ -80,6 +81,11 @@ export default new VueRouter({
       path: '/:handle',
       name: 'PluginsHandle',
       component: PluginsHandle,
+    },
+    {
+      path: '/:handle/reviews',
+      name: 'PluginsHandleReviews',
+      component: PluginsHandleReviews,
     },
     {
       path: '/:handle/editions',

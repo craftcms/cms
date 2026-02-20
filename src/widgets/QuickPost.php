@@ -12,6 +12,7 @@ use craft\base\Widget;
 use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 
@@ -55,6 +56,12 @@ class QuickPost extends Widget
     public ?int $entryType = null;
 
     /**
+     * @var string|null The custom widget title.
+     * @since 5.6.0
+     */
+    public ?string $customTitle = null;
+
+    /**
      * @var Section|false
      * @see section()
      */
@@ -81,6 +88,10 @@ class QuickPost extends Widget
             }
 
             unset($config['sections']);
+        }
+
+        if (isset($config['customTitle']) && $config['customTitle'] === '') {
+            unset($config['customTitle']);
         }
 
         unset($config['fields']);
@@ -119,8 +130,8 @@ class QuickPost extends Widget
             'sections' => $sections,
             'widget' => $this,
             'siteId' => $this->siteId,
-            'sectionId' => $this->section()?->id,
-            'entryTypeId' => $this->entryType()?->id,
+            'section' => $this->section(),
+            'entryType' => $this->entryType(),
         ]);
     }
 
@@ -129,6 +140,10 @@ class QuickPost extends Widget
      */
     public function getTitle(): ?string
     {
+        if (isset($this->customTitle)) {
+            return Craft::t('site', $this->customTitle);
+        }
+
         $entryType = $this->entryType();
         if (!$entryType) {
             return static::displayName();
@@ -218,9 +233,9 @@ JS, [
         return $view->renderTemplate('_includes/forms/button.twig', [
             'id' => $buttonId,
             'class' => ['huge', 'icon', 'add', 'dashed', 'fullwidth'],
-            'label' => Craft::t('app', 'Create {type}', [
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Create {type}', [
                 'type' => Entry::lowerDisplayName(),
-            ]),
+            ])),
             'spinner' => true,
         ]);
     }

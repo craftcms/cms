@@ -209,7 +209,6 @@ class BaseContentRefactorMigration extends Migration
     {
         $elementType = $element['type'];
         if ($elementType && class_exists($elementType) && is_subclass_of($elementType, ElementInterface::class)) {
-            /** @var string|ElementInterface $elementType */
             $label = $elementType::lowerDisplayName();
         } else {
             $label = 'element';

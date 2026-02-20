@@ -1,5 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "Category Groups"|t('app') %}
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
@@ -11,13 +12,19 @@
 ]) %}
 
 {% block actionButton %}
-    {% set buttonLabel = "New category group"|t('app') %}
-    <a href="{{ url('settings/categories/new') }}" class="btn submit add icon" aria-label="{{ buttonLabel }}">{{ buttonLabel }}</a>
+    {% if not readOnly %}
+        {% set buttonLabel = "New category group"|t('app') %}
+        <a href="{{ url('settings/categories/new') }}" class="btn submit add icon" aria-label="{{ buttonLabel }}">{{ buttonLabel }}</a>
+    {% endif %}
 {% endblock %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
 {% block content %}
     <div id="categorygroups-vue-admin-table"></div>
@@ -54,11 +61,16 @@
         },
     ];
 
-    new Craft.VueAdminTable({
+    let config = {
         columns: columns,
         container: '#categorygroups-vue-admin-table',
-        deleteAction: 'categories/delete-category-group',
         emptyMessage: Craft.t('app', 'No category groups exist yet.'),
         tableData: {{ tableData|json_encode|raw }}
-    });
+    };
+
+    {% if not readOnly %}
+        config['deleteAction'] = 'categories/delete-category-group';
+    {% endif %}
+
+    new Craft.VueAdminTable(config);
 {% endjs %}

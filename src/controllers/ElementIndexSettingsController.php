@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
 use craft\services\ProjectConfig;
@@ -49,8 +50,7 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionGetCustomizeSourcesModalData(): Response
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
+        /** @var class-string<ElementInterface> $elementType */
         $elementType = $this->elementType();
         $conditionsService = Craft::$app->getConditions();
         $view = Craft::$app->getView();
@@ -68,8 +68,17 @@ class ElementIndexSettingsController extends BaseElementsController
         // Get the source info
         $sourcesService = Craft::$app->getElementSources();
         $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX, true);
+        $multiPage = $elementType::multiPageSources();
 
         foreach ($sources as &$source) {
+            if ($multiPage) {
+                // ensure we're using the EN translation here
+                $language = Craft::$app->language;
+                Craft::$app->language = Craft::$app->sourceLanguage;
+                $source['page'] ??= $elementType::pluralDisplayName();
+                Craft::$app->language = $language;
+            }
+
             if ($source['type'] === ElementSources::TYPE_HEADING) {
                 continue;
             }
@@ -164,6 +173,10 @@ class ElementIndexSettingsController extends BaseElementsController
         }
         unset($source);
 
+        $viewModes = array_map(fn(array $viewMode) => array_merge($viewMode, [
+            'iconSvg' => Cp::iconSvg($viewMode['icon'] ?? 'table'),
+        ]), $elementType::indexViewModes());
+
         // Get the default sort options for custom sources
         $defaultSortOptions = Collection::make($sourcesService->getSourceSortOptions($elementType, 'custom:x'))
             ->map(fn(array $option) => [
@@ -211,8 +224,13 @@ class ElementIndexSettingsController extends BaseElementsController
             ])
             ->all();
 
+        $pageSettings = $sourcesService->getPageSettings($elementType);
+
         return $this->asJson([
+            'multiPage' => $multiPage,
             'sources' => $sources,
+            'pageSettings' => $pageSettings,
+            'viewModes' => $viewModes,
             'baseSortOptions' => $baseSortOptions,
             'defaultSortOptions' => $defaultSortOptions,
             'availableTableAttributes' => $availableTableAttributes,
@@ -234,11 +252,12 @@ class ElementIndexSettingsController extends BaseElementsController
     public function actionSaveCustomizeSourcesModalSettings(): Response
     {
         $elementType = $this->elementType();
+        $multiPage = $elementType::multiPageSources();
 
         // Get the old source configs
         $projectConfig = Craft::$app->getProjectConfig();
         $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType") ?? [];
-        $oldSourceConfigs = ArrayHelper::index(array_filter($oldSourceConfigs, fn($s) => $s['type'] !== ElementSources::TYPE_HEADING), 'key');
+        $oldSourceConfigs = ArrayHelper::index($oldSourceConfigs, 'key');
 
         $conditionsService = Craft::$app->getConditions();
 
@@ -247,63 +266,97 @@ class ElementIndexSettingsController extends BaseElementsController
         $newSourceConfigs = [];
         $disabledSourceKeys = [];
 
+        if ($multiPage) {
+            $sourcePages = $this->request->getBodyParam('sourcePages', []);
+            $pageSettings = $this->request->getBodyParam('pageSettings', []);
+            $sourcePageIndexes = [];
+        }
+
         // Normalize to the way it's stored in the DB
-        foreach ($sourceOrder as $source) {
-            if (isset($source['heading'])) {
-                $newSourceConfigs[] = [
-                    'type' => ElementSources::TYPE_HEADING,
-                    'heading' => $source['heading'],
-                ];
-            } elseif (isset($source['key'])) {
-                $isCustom = str_starts_with($source['key'], 'custom:');
-                $sourceConfig = [
-                    'type' => $isCustom ? ElementSources::TYPE_CUSTOM : ElementSources::TYPE_NATIVE,
-                    'key' => $source['key'],
-                ];
+        foreach ($sourceOrder as $key) {
+            $type = match (true) {
+                str_starts_with($key, 'custom:') => ElementSources::TYPE_CUSTOM,
+                str_starts_with($key, 'heading:') => ElementSources::TYPE_HEADING,
+                default => ElementSources::TYPE_NATIVE,
+            };
 
-                // Were new settings posted?
-                if (isset($sourceSettings[$source['key']])) {
-                    $postedSettings = $sourceSettings[$source['key']];
+            $isCustom = $type === ElementSources::TYPE_CUSTOM;
+            $sourceConfig = [
+                'type' => $type,
+                'key' => $key,
+            ];
+
+            if (isset($sourcePages[$key])) {
+                $sourceConfig['page'] = $sourcePages[$key];
+            }
+
+            // Were new settings posted?
+            if (isset($sourceSettings[$key])) {
+                $postedSettings = $sourceSettings[$key];
+
+                if ($type !== ElementSources::TYPE_HEADING) {
                     $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? [])) ?: '-';
-
-                    if (isset($postedSettings['defaultSort'])) {
-                        $sourceConfig['defaultSort'] = $postedSettings['defaultSort'];
-                    }
-
-                    if ($isCustom) {
-                        $sourceConfig += [
-                            'label' => $postedSettings['label'],
-                            'condition' => $conditionsService->createCondition($postedSettings['condition'])->getConfig(),
-                        ];
-
-                        if (isset($postedSettings['sites']) && $postedSettings['sites'] !== '*') {
-                            $sourceConfig['sites'] = is_array($postedSettings['sites']) ? $postedSettings['sites'] : false;
-                        }
-
-                        if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
-                            $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
-                        }
-                    } elseif (isset($postedSettings['enabled'])) {
-                        $sourceConfig['disabled'] = !$postedSettings['enabled'];
-                        if ($sourceConfig['disabled']) {
-                            $disabledSourceKeys[] = $source['key'];
-                        }
-                    }
-                } elseif (isset($oldSourceConfigs[$source['key']])) {
-                    $sourceConfig += $oldSourceConfigs[$source['key']];
-                    if (!empty($sourceConfig['disabled'])) {
-                        $disabledSourceKeys[] = $source['key'];
-                    }
-                } elseif ($isCustom) {
-                    // Ignore it
-                    continue;
                 }
 
-                $newSourceConfigs[] = $sourceConfig;
+                if (isset($postedSettings['defaultSort'])) {
+                    $sourceConfig['defaultSort'] = $postedSettings['defaultSort'];
+                }
+
+                if (isset($postedSettings['defaultViewMode'])) {
+                    $sourceConfig['defaultViewMode'] = $postedSettings['defaultViewMode'];
+                }
+
+                if ($isCustom) {
+                    $sourceConfig += [
+                        'label' => $postedSettings['label'],
+                        'condition' => $conditionsService->createCondition($postedSettings['condition'])->getConfig(),
+                    ];
+
+                    if (isset($postedSettings['sites']) && $postedSettings['sites'] !== '*') {
+                        $sourceConfig['sites'] = is_array($postedSettings['sites']) ? $postedSettings['sites'] : false;
+                    }
+
+                    if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
+                        $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
+                    }
+                } elseif ($type === ElementSources::TYPE_HEADING) {
+                    $sourceConfig['heading'] = $postedSettings['heading'];
+                } elseif (isset($postedSettings['enabled'])) {
+                    $sourceConfig['disabled'] = !$postedSettings['enabled'];
+                    if ($sourceConfig['disabled']) {
+                        $disabledSourceKeys[] = $key;
+                    }
+                }
+            } elseif (isset($oldSourceConfigs[$key])) {
+                $sourceConfig += $oldSourceConfigs[$key];
+                if (!empty($sourceConfig['disabled'])) {
+                    $disabledSourceKeys[] = $key;
+                }
+            } elseif ($isCustom) {
+                // Ignore it
+                continue;
+            }
+
+            $newSourceConfigs[] = $sourceConfig;
+
+            if ($multiPage) {
+                $sourcePageIndexes[] = array_search($sourceConfig['page'], array_keys($pageSettings));
             }
         }
 
-        $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType", $newSourceConfigs);
+        if ($multiPage) {
+            /** @phpstan-ignore-next-line */
+            array_multisort($sourcePageIndexes, SORT_NUMERIC, range(1, count($newSourceConfigs)), SORT_NUMERIC, $newSourceConfigs);
+        }
+
+        $sourcesService = Craft::$app->getElementSources();
+        $sourcesService->saveSources($elementType, $newSourceConfigs);
+        if ($multiPage) {
+            $sourcesService->savePageSettings($elementType, array_map(
+                fn(array $settings) => array_filter($settings, fn($setting) => $setting !== null && $setting !== ''),
+                $pageSettings,
+            ));
+        }
 
         Craft::$app->getSession()->setSuccess(Craft::t('app', 'Source settings saved'));
 

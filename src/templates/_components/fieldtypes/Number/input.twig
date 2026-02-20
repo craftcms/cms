@@ -16,8 +16,8 @@
         id: descriptionId,
         class: 'visually-hidden',
         text: [
-            hasPrefix ? 'Value prefixed by “{prefix}”.'|t('app', {prefix: prefix}),
-            hasSuffix ? 'Value suffixed by “{suffix}”.'|t('app', {suffix: suffix}),
+            hasPrefix ? 'Value prefixed by “{prefix}”.'|t('app', {prefix: prefix|t('site')}),
+            hasSuffix ? 'Value suffixed by “{suffix}”.'|t('app', {suffix: suffix|t('site')}),
         ]|filter|join(' '),
     }) }}
 {% endif %}
@@ -25,22 +25,33 @@
 <div class="flex">
     {% if hasPrefix %}
         <div aria-hidden="true">
-            {{ prefix|md(inlineOnly=true)|raw }}
+            {{ prefix|t('site')|md(inlineOnly=true,encode=true)|raw }}
         </div>
     {% endif %}
     <div>
-        {{ text({
+        {% set config = {
+            type: field.step ? 'number' : 'text',
             id: id,
             name: formatNumber ? "#{field.handle}[value]" : field.handle,
             value: value,
             inputmode: field.decimals ? 'decimal' : 'numeric',
+            step: field.step,
             size: field.size,
             describedBy: [describedBy ?? null, hasPrefix or hasSuffix ? descriptionId : null]|filter|join(' ') ?: false,
-        }) }}
+        } %}
+        
+        {% if config.type == 'number' %}
+            {% set config = config|merge({
+                min: field.min ?? null,
+                max: field.max ?? null,
+            }) %}
+        {% endif %}
+
+        {{ text(config) }}
     </div>
     {% if hasSuffix %}
         <div aria-hidden="true">
-            {{ suffix|md(inlineOnly=true)|raw }}
+            {{ suffix|t('site')|md(inlineOnly=true,encode=true)|raw }}
         </div>
     {% endif %}
 </div>

@@ -23,8 +23,10 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
+use craft\utilities\QueueManager;
 use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
+use craft\web\assets\animationblocker\AnimationBlockerAsset;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
@@ -38,6 +40,7 @@ use craft\web\assets\jqueryui\JqueryUiAsset;
 use craft\web\assets\picturefill\PicturefillAsset;
 use craft\web\assets\selectize\SelectizeAsset;
 use craft\web\assets\tailwindreset\TailwindResetAsset;
+use craft\web\assets\theme\ThemeAsset;
 use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
@@ -58,6 +61,7 @@ class CpAsset extends AssetBundle
      */
     public $depends = [
         TailwindResetAsset::class,
+        AnimationBlockerAsset::class,
         AxiosAsset::class,
         D3Asset::class,
         GarnishAsset::class,
@@ -73,6 +77,7 @@ class CpAsset extends AssetBundle
         XregexpAsset::class,
         FabricAsset::class,
         IframeResizerAsset::class,
+        ThemeAsset::class,
     ];
 
     /**
@@ -118,22 +123,31 @@ JS;
             '<span class="visually-hidden">Characters left:</span> {chars, number}',
             'A server error occurred.',
             'Actions',
+            'Add Group',
             'Add',
             'Add…',
             'All',
             'Announcements',
+            'Another page already has that name.',
             'Any changes will be lost if you leave this page.',
             'Apply this to the {number} remaining conflicts?',
             'Apply',
             'Are you sure you want to close the editor? Any changes will be lost.',
             'Are you sure you want to close this screen? Any changes will be lost.',
+            'Are you sure you want to delete the selected {type}?',
             'Are you sure you want to delete this image?',
             'Are you sure you want to delete this {type}?',
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to discard your changes?',
+            'Are you sure you want to move the selected items?',
+            'Are you sure you want to remove the page “{name}”?',
             'Are you sure you want to transfer your license to this domain?',
+            'Are you sure you want to undo the move?',
             'Ascending',
             'Assets',
+            'Attributes',
+            'Back to pages',
+            'Back to sources',
             'Breadcrumbs',
             'Buy {name}',
             'Cancel',
@@ -145,29 +159,40 @@ JS;
             'Choose which sites this source should be visible for.',
             'Choose which table columns should be visible for this source by default.',
             'Choose which user groups should have access to this source.',
+            'Choose',
             'Clear search',
             'Clear',
             'Close Preview',
             'Close',
+            'Collapse all blocks',
+            'Collapse selected blocks',
             'Color hex value',
             'Color picker',
             'Content',
             'Continue',
             'Copied to clipboard.',
+            'Copy URL',
+            'Copy all {type}',
+            'Copy from',
+            'Copy selected {type}',
             'Copy the URL',
             'Copy the reference tag',
             'Copy to clipboard',
+            'Copy “{name}” value',
+            'Copy',
             'Could not save due to validation errors.',
             'Couldn’t delete “{name}”.',
             'Couldn’t reorder items.',
             'Couldn’t save new order.',
+            'Create {type}',
             'Create',
+            'Custom',
             'Customize sources',
             'Default Sort',
             'Default Table Columns',
+            'Default View Mode',
             'Delete custom source',
             'Delete folder',
-            'Delete heading',
             'Delete their content',
             'Delete them',
             'Delete {num, plural, =1{user} other{users}} and content',
@@ -183,9 +208,8 @@ JS;
             'Display in a structured table',
             'Display in a table',
             'Done',
-            'Don’t show in element cards',
-            'Don’t use for element thumbnails',
             'Draft Name',
+            'Duplicate',
             'Edit draft settings',
             'Edit {type}',
             'Edit',
@@ -197,6 +221,9 @@ JS;
             'Enter the name of the folder',
             'Enter your password to log back in.',
             'Error',
+            'Existing {type}',
+            'Expand all blocks',
+            'Expand selected blocks',
             'Export Type',
             'Export',
             'Export…',
@@ -213,13 +240,16 @@ JS;
             'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.',
             'From {date}',
             'From',
+            'General',
             'Give your tab a name.',
+            'Group Name',
             'Handle',
             'Heading',
             'Height unit',
             'Hide sidebar',
             'Hide',
             'Incorrect password.',
+            'Indexing assets: {progress}',
             'Information',
             'Instructions',
             'Invalid email.',
@@ -233,6 +263,7 @@ JS;
             'Level {num}',
             'License transferred.',
             'Limit',
+            'Loading complete',
             'Loading',
             'Make not required',
             'Make optional',
@@ -249,8 +280,12 @@ JS;
             'Move down',
             'Move folder',
             'Move forward',
+            'Move reverted.',
+            'Move to next group',
+            'Move to previous group',
             'Move to the left',
             'Move to the right',
+            'Move to {page}',
             'Move to',
             'Move up',
             'Move',
@@ -265,6 +300,7 @@ JS;
             'New file uploaded.',
             'New heading',
             'New order saved.',
+            'New page',
             'New position saved.',
             'New position saved.',
             'New subfolder',
@@ -275,12 +311,17 @@ JS;
             'No limit',
             'Notes',
             'Notice',
+            'Number of columns',
             'OK',
             'Open in a new tab',
             'Options',
+            'Page Name',
+            'Page settings',
+            'Pages',
             'Password',
             'Past year',
             'Past {num} days',
+            'Paste {type}',
             'Pay {price}',
             'Pending',
             'Phone',
@@ -290,10 +331,14 @@ JS;
             'Previewing {type} device in {orientation}',
             'Previewing {type} device',
             'Previous Page',
+            'Process complete',
+            'Processing',
             'Really delete folder “{folder}”?',
             'Recent Activity',
             'Refresh',
             'Reload',
+            'Remove heading',
+            'Remove page',
             'Remove {label}',
             'Remove',
             'Rename folder',
@@ -301,6 +346,7 @@ JS;
             'Reorder',
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
+            'Replace',
             'Required',
             'Rotate',
             'Row could not be added. Maximum number of rows reached.',
@@ -320,7 +366,6 @@ JS;
             'Select {element}',
             'Select',
             'Settings',
-            'Show in element cards',
             'Show nav',
             'Show nested sources',
             'Show sidebar',
@@ -332,7 +377,8 @@ JS;
             'Showing {total, number} {total, plural, =1{{item}} other{{items}}}',
             'Sign out now',
             'Sites',
-            'Skip to {title}',
+            'Skip to card view designer',
+            'Skip to top of preview',
             'Sort ascending',
             'Sort attribute',
             'Sort by',
@@ -340,7 +386,7 @@ JS;
             'Sort direction',
             'Source settings saved',
             'Source settings',
-            'Source',
+            'Sources',
             'Structure',
             'Submit',
             'Success',
@@ -363,7 +409,6 @@ JS;
             'To {date}',
             'To',
             'Today',
-            'Top of preview',
             'Transfer it to:',
             'Try again',
             'Try another way',
@@ -375,10 +420,11 @@ JS;
             'Upload failed.',
             'Upload files',
             'Use defaults',
-            'Use for element thumbnails',
+            'Use the arrow keys to change position, Tab or Spacebar to drop.',
             'User Groups',
             'View in a new tab',
             'View in a new tab',
+            'View mode options',
             'View settings',
             'View',
             'Volume path',
@@ -395,6 +441,7 @@ JS;
             'days',
             'draft',
             'element',
+            'elements',
             'files',
             'folders',
             'hour',
@@ -409,24 +456,56 @@ JS;
             '{element} pagination',
             '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
             '{first}-{last} of {total}',
+            '{item} dropped.',
+            '{item} picked up.',
             '{name} active, more info',
             '{name} folder',
             '{name} sorted by {attribute}, {direction}',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{num, number} {num, plural, =1{degree} other{degrees}}',
             '{num, number} {num, plural, =1{notification} other{notifications}}',
+            '{num, number} {num, plural, =1{result} other{results}}',
+            '{num} percent complete',
             '{pct} width',
             '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
             '{total, number} {total, plural, =1{{item}} other{{items}}}',
+            '{total, number} {type} copied.',
             '{totalItems, plural, =1{Item} other{Items}} moved.',
             '{type} Criteria',
+            '{type} copied.',
             '{type} saved.',
             '“{name}” deleted.',
         ]);
 
         $view->registerTranslations('yii', [
+            '{attribute} cannot be blank.',
             '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',
             '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
+        ]);
+
+        $view->registerIcons([
+            'arrow-down',
+            'arrow-left',
+            'arrow-right',
+            'arrow-up',
+            'arrows-rotate',
+            'asterisk',
+            'asterisk-slash',
+            'clipboard',
+            'clone',
+            'clone-dashed',
+            'duplicate',
+            'edit',
+            'gear',
+            'image',
+            'image-slash',
+            'move',
+            'pencil',
+            'plus',
+            'remove',
+            'share',
+            'trash',
+            'xmark',
         ]);
     }
 
@@ -450,14 +529,11 @@ JS;
             'Enterprise' => CmsEdition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
-            'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'baseApiUrl' => Craft::$app->baseApiUrl,
-            'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
             'clientOs' => $request->getClientOs(),
-            'cpTrigger' => $generalConfig->cpTrigger,
             'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
             'fileKinds' => Assets::getFileKinds(),
@@ -485,9 +561,19 @@ JS;
             'usePathInfo' => $generalConfig->usePathInfo,
         ];
 
+        if ($request->getIsCpRequest()) {
+            $data += [
+                'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
+                'baseCpUrl' => UrlHelper::cpUrl(),
+                'cpTrigger' => $generalConfig->cpTrigger,
+            ];
+        }
+
         if ($generalConfig->enableCsrfProtection) {
-            $data['csrfTokenName'] = $request->csrfParam;
-            $data['csrfTokenValue'] = $request->getCsrfToken();
+            $data += [
+                'csrfTokenName' => $request->csrfParam,
+                'csrfTokenValue' => $request->getCsrfToken(),
+            ];
         }
 
         // If no one's logged in yet, leave it at that
@@ -497,8 +583,7 @@ JS;
 
         $elementTypeNames = [];
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** @var string|ElementInterface $elementType */
-            /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
+            /** @var class-string<ElementInterface> $elementType */
             $elementTypeNames[$elementType] = [
                 $elementType::displayName(),
                 $elementType::pluralDisplayName(),
@@ -515,10 +600,14 @@ JS;
             'appId' => Craft::$app->id,
             'autofocusPreferred' => $currentUser->getAutofocusPreferred(),
             'autosaveDrafts' => $generalConfig->autosaveDrafts,
-            'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
+            'canAccessQueueManager' => Craft::$app->getUtilities()->checkAuthorization(QueueManager::class),
             'dataAttributes' => Html::$dataAttributes,
             'defaultIndexCriteria' => [],
-            'disableAutofocus' => (bool)($currentUser->getPreference('disableAutofocus') ?? false),
+            'disableAutofocus' => (bool)(
+                $currentUser->getPreference('disableAutofocus')
+                ?? $generalConfig->accessibilityDefaults['disableAutofocus']
+                ?? false
+            ),
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->edition->value,
             'elementTypeNames' => $elementTypeNames,
@@ -530,7 +619,17 @@ JS;
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
-            'notificationDuration' => (int)($currentUser->getPreference('notificationDuration') ?? 5000),
+            'notificationDuration' => (int)(
+                $currentUser->getPreference('notificationDuration')
+                ?? $generalConfig->accessibilityDefaults['notificationDuration']
+                ?? 5000
+            ),
+            'notificationPosition' => $currentUser->getPreference('notificationPosition')
+                ?? $generalConfig->accessibilityDefaults['notificationPosition']
+                ?? 'end-start',
+            'slideoutPosition' => $currentUser->getPreference('slideoutPosition')
+                ?? $generalConfig->accessibilityDefaults['slideoutPosition']
+                ?? 'end',
             'previewIframeResizerOptions' => $this->_previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
             'primarySiteLanguage' => $primarySite->language ?? null,
@@ -542,7 +641,8 @@ JS;
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'userEmail' => $currentUser->email,
-            'userHasPasskeys' => Craft::$app->getAuth()->hasPasskeys($currentUser),
+            'userHasPasskeys' => Craft::$app->getAuth()->hasPasskeys($userSession->getImpersonator() ?? $currentUser),
+            'userId' => $currentUser->id,
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
         ];
@@ -554,6 +654,7 @@ JS;
     {
         return [
             'constrainInput' => false,
+            'changeYear' => true,
             'dateFormat' => $formattingLocale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_JUI),
             'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
             'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
@@ -563,6 +664,7 @@ JS;
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
             'prevText' => Craft::t('app', 'Prev'),
+            'yearRange' => 'c-100:c+100',
         ];
     }
 

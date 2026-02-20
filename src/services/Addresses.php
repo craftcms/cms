@@ -21,6 +21,7 @@ use craft\addresses\SubdivisionRepository;
 use craft\base\FieldLayoutProviderInterface;
 use craft\elements\Address;
 use craft\events\ConfigEvent;
+use craft\events\DefineAddressCountriesEvent;
 use craft\events\DefineAddressFieldLabelEvent;
 use craft\events\DefineAddressFieldsEvent;
 use craft\events\DefineAddressSubdivisionsEvent;
@@ -31,7 +32,7 @@ use yii\base\Component;
 
 /**
  * Addresses service.
- * An instance of the Addresses service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAddresses()|`Craft::$app->addresses`]].
+ * An instance of the Addresses service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAddresses()|`Craft::$app->getAddresses()`]].
  *
  * @property-read AddressFormatRepository $addressFormatRepository
  * @property-read CountryRepository $countryRepository
@@ -69,6 +70,18 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      * @since 4.5.0
      */
     public const EVENT_DEFINE_ADDRESS_SUBDIVISIONS = 'defineAddressSubdivisions';
+
+    /**
+     * @event DefineAddressCountriesEvent The event that is triggered when defining country options for an address.
+     *
+     * This event is primarily used to modify the list of countries that are available for selection. You can also use
+     * the event to add additional countries to the list, however, this will require you to use dependency injection to override the
+     * `Addresses::getCountryRepository()` method and provide your own `CountryRepository` instance.
+     *
+     * @see getCountryList()
+     * @since 5.5.0
+     */
+    public const EVENT_DEFINE_ADDRESS_COUNTRIES = 'defineAddressCountries';
 
     /**
      * @var FormatterInterface|null The default address formatter used by [[formatAddress()]]
@@ -154,6 +167,31 @@ class Addresses extends Component implements FieldLayoutProviderInterface
         }
 
         return $options;
+    }
+
+    /**
+     * Returns a list of countries to be used as options for selection.
+     *
+     * @param string|null $locale
+     * @return array
+     * @since 5.5.0
+     */
+    public function getCountryList(?string $locale = null): array
+    {
+        $locale ??= Craft::$app->language;
+        $countries = $this->getCountryRepository()->getList($locale);
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDRESS_COUNTRIES)) {
+            $event = new DefineAddressCountriesEvent([
+                'locale' => $locale,
+                'countries' => $countries,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ADDRESS_COUNTRIES, $event);
+
+            return $event->countries;
+        }
+
+        return $countries;
     }
 
     /**
@@ -274,9 +312,10 @@ class Addresses extends Component implements FieldLayoutProviderInterface
     public function getLocalityTypeLabel(?string $type): string
     {
         return match ($type) {
-            LocalityType::SUBURB => Craft::t('app', 'Suburb'),
             LocalityType::DISTRICT => Craft::t('app', 'District'),
             LocalityType::POST_TOWN => Craft::t('app', 'Post Town'),
+            LocalityType::SUBURB => Craft::t('app', 'Suburb'),
+            LocalityType::TOWN_CITY => Craft::t('app', 'City/Town'),
             default => Craft::t('app', 'City'),
         };
     }

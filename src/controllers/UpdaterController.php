@@ -14,6 +14,7 @@ use craft\helpers\App;
 use RequirementsChecker;
 use Symfony\Component\Process\Process;
 use Throwable;
+use yii\base\NotSupportedException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -30,6 +31,7 @@ class UpdaterController extends BaseUpdaterController
     public const ACTION_BACKUP = 'backup';
     public const ACTION_SERVER_CHECK = 'server-check';
     public const ACTION_REVERT = 'revert';
+    /** @deprecated in 5.8.4 */
     public const ACTION_RESTORE_DB = 'restore-db';
     public const ACTION_MIGRATE = 'migrate';
 
@@ -67,8 +69,13 @@ class UpdaterController extends BaseUpdaterController
      */
     public function actionBackup(): Response
     {
+        // make sure migrations are pending
+        if (!Craft::$app->getUpdates()->getAreMigrationsPending()) {
+            return $this->sendFinished();
+        }
+
         try {
-            $this->data['dbBackupPath'] = Craft::$app->getDb()->backup();
+            Craft::$app->getDb()->backup();
         } catch (Throwable $e) {
             Craft::error('Error backing up the database: ' . $e->getMessage(), __METHOD__);
             if (!empty($this->data['install'])) {
@@ -96,30 +103,11 @@ class UpdaterController extends BaseUpdaterController
      * Restores the database.
      *
      * @return Response
+     * @deprecated in 5.8.4
      */
     public function actionRestoreDb(): Response
     {
-        try {
-            Craft::$app->getDb()->restore($this->data['dbBackupPath']);
-        } catch (Throwable $e) {
-            Craft::error('Error restoring up the database: ' . $e->getMessage(), __METHOD__);
-            return $this->send([
-                'error' => Craft::t('app', 'Couldn’t restore the database. How would you like to proceed?'),
-                'options' => [
-                    $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RESTORE_DB),
-                    $this->actionOption(Craft::t('app', 'Continue anyway'), self::ACTION_MIGRATE),
-                ],
-            ]);
-        }
-
-        // Did we install new versions of things?
-        if (!empty($this->data['install'])) {
-            return $this->sendNextAction(self::ACTION_REVERT);
-        }
-
-        return $this->sendFinished([
-            'status' => Craft::t('app', 'The database was restored successfully.'),
-        ]);
+        throw new NotSupportedException('Restoring the database is no longer supported.');
     }
 
     /**
@@ -204,7 +192,7 @@ class UpdaterController extends BaseUpdaterController
             $handles = array_merge($this->data['migrate']);
         }
 
-        return $this->runMigrations($handles, self::ACTION_RESTORE_DB) ?? $this->sendFinished();
+        return $this->runMigrations($handles) ?? $this->sendFinished();
     }
 
     /**
@@ -341,7 +329,6 @@ class UpdaterController extends BaseUpdaterController
         return match ($action) {
             self::ACTION_FORCE_UPDATE => Craft::t('app', 'Updating…'),
             self::ACTION_BACKUP => Craft::t('app', 'Backing-up database…'),
-            self::ACTION_RESTORE_DB => Craft::t('app', 'Restoring database…'),
             self::ACTION_MIGRATE => Craft::t('app', 'Updating database…'),
             self::ACTION_REVERT => Craft::t('app', 'Reverting update (this may take a minute)…'),
             self::ACTION_SERVER_CHECK => Craft::t('app', 'Checking server requirements…'),
@@ -408,7 +395,7 @@ class UpdaterController extends BaseUpdaterController
         }
 
         // Normalize the versions in case only one of them starts with a 'v' or something
-        $toVersion = App::normalizeVersion($toVersion);
+        $toVersion = App::normalizeVersion(ltrim($toVersion, '^'));
         $fromVersion = App::normalizeVersion($fromVersion);
 
         return Comparator::greaterThan($toVersion, $fromVersion);

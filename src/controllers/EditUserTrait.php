@@ -63,8 +63,8 @@ trait EditUserTrait
         }
 
         if (!$user->getIsCurrent()) {
-            // Make sure they have permission to edit other users
-            $this->requirePermission('editUsers');
+            // Make sure they have permission to view other users
+            $this->requirePermission('viewUsers');
         }
 
         return $user;
@@ -107,7 +107,7 @@ trait EditUserTrait
             $screens = $event->screens;
         }
 
-        if ($user->getIsCurrent()) {
+        if ($user->getIsCurrent() && $user->getHasPassword()) {
             $screens[self::SCREEN_PASSWORD] = ['label' => Craft::t('app', 'Password & Verification')];
             $screens[self::SCREEN_PASSKEYS] = ['label' => Craft::t('app', 'Passkeys')];
         }
@@ -123,10 +123,7 @@ trait EditUserTrait
             $response->docTitle($pageName);
         } else {
             $username = $user->getUiLabel();
-            $extendedTitle = Craft::t('app', 'User {page}', [
-                'page' => $pageName,
-            ]);
-            $docTitle = "$username - $extendedTitle";
+            $docTitle = "$username - $pageName";
             $response->title($username);
             $response->docTitle($docTitle);
         }
@@ -160,7 +157,10 @@ trait EditUserTrait
             $response->crumbs([
                 ...$user->getCrumbs(),
                 [
-                    'html' => Cp::elementChipHtml($user, ['showDraftName' => false]),
+                    'html' => Cp::elementChipHtml($user, [
+                        'showDraftName' => false,
+                        'class' => 'chromeless',
+                    ]),
                     'current' => true,
                 ],
             ]);

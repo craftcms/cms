@@ -11,7 +11,8 @@ use craft\web\twig\nodes\FallbackNameExpression;
 use craft\web\twig\nodes\PreloadSinglesNode;
 use Twig\Environment;
 use Twig\Node\BodyNode;
-use Twig\Node\Expression\NameExpression;
+use Twig\Node\Expression\AssignNameExpression;
+use Twig\Node\Expression\Variable\ContextVariable;
 use Twig\Node\MacroNode;
 use Twig\Node\ModuleNode;
 use Twig\Node\Node;
@@ -39,20 +40,26 @@ class SinglePreloader implements NodeVisitorInterface
             array_unshift($this->_foundVariables, []);
         } elseif (
             !empty($this->_foundVariables) &&
-            get_class($node) === NameExpression::class &&
+            $node instanceof ContextVariable &&
+            !$node instanceof AssignNameExpression &&
             $node->hasAttribute('name') &&
-            !$node->isSpecial() &&
             !$node->getAttribute('always_defined') &&
             (!$node->hasAttribute('spread') || !$node->getAttribute('spread'))
         ) {
             $variables = &$this->_foundVariables[0];
             $variables[$node->getAttribute('name')] = true;
 
+            $isDefinedTest = $node->isDefinedTestEnabled();
+
             // swap the node with a FallbackNameExpression
             $node = new FallbackNameExpression($node->getAttribute('name'), [
-                'is_defined_test' => $node->getAttribute('is_defined_test'),
+                'is_defined_test' => $isDefinedTest,
                 'ignore_strict_check' => $node->getAttribute('ignore_strict_check'),
             ], $node->getTemplateLine());
+
+            if ($isDefinedTest) {
+                $node->enableDefinedTest();
+            }
         }
 
         return $node;

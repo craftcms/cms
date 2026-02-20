@@ -42,7 +42,7 @@ abstract class BaseTextLinkType extends BaseLinkType
 
     public function normalizeValue(string $value): string
     {
-        if ($this->supports($value)) {
+        if (str_contains($value, ':') || $this->supports($value)) {
             return $value;
         }
 
@@ -56,6 +56,9 @@ abstract class BaseTextLinkType extends BaseLinkType
     {
         foreach ((array)$this->urlPrefix() as $prefix) {
             $value = StringHelper::removeLeft($value, $prefix);
+        }
+        if (preg_match('/^[^\/]+\/$/', $value)) {
+            $value = rtrim($value, '/');
         }
         return $value;
     }
@@ -91,15 +94,18 @@ JS, [
             $linkText = $this->linkLabel($value);
             $html =
                 Html::beginTag('div', [
-                    'class' => ['chip', 'small'],
+                    'class' => ['chip', 'chromeless'],
                 ]) .
                 Html::beginTag('div', [
                     'class' => 'chip-content',
                 ]) .
-                Html::a($linkText, $value, [
+                Html::a($linkText, str_replace(' ', '+', $value), [
+                    'class' => ['truncate'],
                     'target' => '_blank',
                 ]) .
-                Html::endTag('div') . // .chip-content
+                Html::beginTag('div', [
+                    'class' => 'chip-actions',
+                ]) .
                 Cp::disclosureMenu([], [
                     'omitIfEmpty' => false,
                     'hiddenLabel' => Craft::t('app', 'Actions'),
@@ -109,6 +115,8 @@ JS, [
                         'data' => ['icon' => 'ellipsis'],
                     ],
                 ]) .
+                Html::endTag('div') . // .chip-actions
+                Html::endTag('div') . // .chip-content
                 Html::endTag('div'); // .chip;
         } else {
             $html = Cp::textHtml(array_merge($textInputAttributes, [

@@ -8,23 +8,29 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
+use craft\elements\Entry;
 use craft\fields\data\ColorData;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
+use Illuminate\Support\Arr;
 use yii\db\Schema;
 
 /**
  * Color represents a Color field.
  *
+ * @property string|null $defaultColor
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Color extends Field implements InlineEditableFieldInterface, MergeableFieldInterface
+class Color extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -51,32 +57,6 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
     }
 
     /**
-     * @var string[] Preset colors
-     * @since 4.8.0
-     */
-    public array $presets = [];
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($config = [])
-    {
-        if (isset($config['presets'])) {
-            $config['presets'] = array_values(array_filter(array_map(
-                fn($color) => is_array($color) ? $color['color'] : $color,
-                $config['presets']
-            )));
-            // Normalize afterward so empty strings have been filtered out
-            $config['presets'] = array_map(
-                fn(string $color) => ColorValidator::normalizeColor($color),
-                $config['presets']
-            );
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
      * @inheritdoc
      */
     public static function dbType(): string
@@ -85,43 +65,160 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
     }
 
     /**
-     * @var string|null The default color hex
+     * @var array Color palette
+     * @phpstan-var array{color:string,label:string|null,default:bool|null}[]
+     * @since 5.6.0
      */
-    public ?string $defaultColor = null;
+    public array $palette = [];
 
-    /** @inheritdoc */
+    /**
+     * @var bool Allow custom culors
+     * @since 5.6.0
+     */
+    public bool $allowCustomColors = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // presets => palette
+        if (array_key_exists('presets', $config) || array_key_exists('defaultColor', $config)) {
+            $defaultColor = ArrayHelper::remove($config, 'defaultColor');
+            $config['palette'] = array_map(fn(string $color) => [
+                'color' => $color,
+                'label' => null,
+                'default' => ($color === $defaultColor),
+            ], ArrayHelper::remove($config, 'presets') ?? []);
+        }
+
+        if (isset($config['palette'])) {
+            $config['palette'] = array_map(
+                fn(array $color) => [
+                    'color' => $color['color'] ? ColorValidator::normalizeColor($color['color']) : null,
+                ] + $color,
+                $config['palette']
+            );
+        }
+
+        // Default allowCustomColors to true for existing fields
+        if (isset($config['id']) && !isset($config['allowCustomColors'])) {
+            $config['allowCustomColors'] = true;
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * Returns the default color
+     *
+     * @return string|null
+     * @since 5.6.0
+     */
+    public function getDefaultColor(): ?string
+    {
+        $color = Arr::first($this->palette, fn(array $color) => $color['default'] ?? false);
+        return $color ? $color['color'] : null;
+    }
+
+    /**
+     * Sets the default color
+     *
+     * @param string|null $defaultColor
+     * @since 5.6.0
+     */
+    public function setDefaultValue(?string $defaultColor): void
+    {
+        $this->palette = Arr::map($this->palette, fn(array $color) => ['default' => false] + $color);
+
+        if ($defaultColor) {
+            $defaultColor = ColorValidator::normalizeColor($defaultColor);
+            foreach ($this->palette as $color) {
+                if (($color['color'] ?? null) === $defaultColor) {
+                    $color['default'] = true;
+                    return;
+                }
+            }
+        }
+
+        // If we're still here, the default color didn’t exist in the palette
+        $this->palette[] = ['color' => $defaultColor, 'label' => null, 'default' => true];
+    }
+
+    /**
+     * @return string[]
+     * @deprecated in 5.6.0
+     */
+    public function getPresets(): array
+    {
+        return array_values(array_filter(array_map(fn(array $color) => $color['color'], $this->palette)));
+    }
+
+    /**
+     * @param string[] $presets
+     * @deprecated in 5.6.0
+     */
+    public function setPresets(array $presets): void
+    {
+        $this->palette = array_map(
+            fn(string $color) => ['color' => $color, 'label' => null, 'default' => false],
+            $presets,
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSettingsHtml(): ?string
     {
-        return Cp::colorFieldHtml([
-            'label' => Craft::t('app', 'Default Color'),
-            'id' => 'default-color',
-            'name' => 'defaultColor',
-            'value' => $this->defaultColor,
-            'errors' => $this->getErrors('defaultColor'),
-            'data' => ['error-key' => 'defaultColor'],
-        ]) .
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
+        return
             Cp::editableTableFieldHtml([
-                'label' => Craft::t('app', 'Presets'),
-                'name' => 'presets',
-                'instructions' => Craft::t('app', 'Choose colors which should be recommended by the color picker.'),
+                'label' => Craft::t('app', 'Palette'),
+                'name' => 'palette',
+                'instructions' => Craft::t('app', 'Define the available colors to choose from.'),
                 'cols' => [
                     'color' => [
                         'type' => 'color',
                         'heading' => Craft::t('app', 'Color'),
                     ],
+                    'label' => [
+                        'type' => 'singleline',
+                        'heading' => Craft::t('app', 'Label'),
+                    ],
+                    'default' => [
+                        'type' => 'checkbox',
+                        'heading' => Craft::t('app', 'Default'),
+                        'radioMode' => true,
+                    ],
                 ],
-                'rows' => array_map(fn(string $color) => compact('color'), $this->presets),
+                'rows' => $this->palette,
                 'allowAdd' => true,
                 'allowReorder' => true,
                 'allowDelete' => true,
                 'addRowLabel' => Craft::t('app', 'Add a color'),
-                'inputContainerAttributes' => [
-                    'style' => [
-                        'max-width' => '15em',
-                    ],
-                ],
-                'errors' => $this->getErrors('presets'),
-                'data' => ['error-key' => 'presets'],
+                'errors' => $this->getErrors('palette'),
+                'data' => ['error-key' => 'palette'],
+                'static' => $readOnly,
+            ]) .
+            Cp::lightswitchFieldHtml([
+                'label' => Craft::t('app', 'Allow custom colors'),
+                'id' => 'allow-custom-colors',
+                'name' => 'allowCustomColors',
+                'on' => $this->allowCustomColors,
+                'disabled' => $readOnly,
             ]);
     }
 
@@ -130,21 +227,25 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
      */
     protected function defineRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['defaultColor'], ColorValidator::class];
-
-        $rules[] = [['presets'], function() {
-            $validator = new ColorValidator();
-            foreach ($this->presets as $color) {
-                if (!$validator->validate($color, $error)) {
-                    $this->addError('presets', Craft::t('yii', '{attribute} is invalid.', [
-                        'attribute' => "#$color",
-                    ]));
+        return [
+            ...parent::defineRules(),
+            [
+                ['palette'],
+                'required',
+                'when' => fn() => !$this->allowCustomColors,
+                'message' => Craft::t('app', 'Palette cannot be blank if custom colors aren’t allowed.'),
+            ],
+            [['palette'], function() {
+                $validator = new ColorValidator();
+                foreach ($this->palette as $color) {
+                    if (!$validator->validate($color['color'], $error)) {
+                        $this->addError('palette', Craft::t('yii', '{attribute} is invalid.', [
+                            'attribute' => StringHelper::ensureLeft($color['color'] ?? '', '#'),
+                        ]));
+                    }
                 }
-            }
-        }];
-
-        return $rules;
+            }],
+        ];
     }
 
     /**
@@ -164,9 +265,24 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
             return $value;
         }
 
+        if (is_array($value)) {
+            if (($value['color'] ?? null) !== '__custom__') {
+                $value = $value['color'];
+            } else {
+                $value = $value['custom'] ?? null;
+            }
+        }
+
+        if ($value === '__blank__') {
+            return null;
+        }
+
         // If this is a new entry, look for any default options
-        if ($value === null && $this->isFresh($element) && $this->defaultColor) {
-            $value = $this->defaultColor;
+        if ($value === null && $this->isFresh($element)) {
+            $defaultColor = $this->getDefaultColor();
+            if ($defaultColor) {
+                $value = $defaultColor;
+            }
         }
 
         $value = trim($value);
@@ -176,7 +292,15 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
         }
 
         $value = ColorValidator::normalizeColor($value);
-        return new ColorData($value);
+        $value = new ColorData($value);
+
+        // set the label on the value too?
+        $option = Arr::first($this->palette, fn(array $color) => $color['color'] === $value->getHex());
+        if (isset($option['label']) && $option['label'] !== '') {
+            $value->label = $option['label'];
+        }
+
+        return $value;
     }
 
     /**
@@ -186,6 +310,19 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
     {
         return [
             ColorValidator::class,
+            [
+                function(ElementInterface $element) {
+                    if (!$this->allowCustomColors) {
+                        /** @var ColorData $value */
+                        $value = $element->getFieldValue($this->handle);
+                        if (!ArrayHelper::contains($this->palette, fn(array $color) => $color['color'] === $value->getHex())) {
+                            $element->addError("field:$this->handle", Craft::t('yii', '{attribute} is invalid.', [
+                                'attribute' => $this->getUiLabel(),
+                            ]));
+                        }
+                    }
+                },
+            ],
         ];
     }
 
@@ -194,14 +331,106 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
+        $id = $this->getInputId();
+
+        if (empty($this->palette)) {
+            return Cp::colorHtml([
+                'id' => $id,
+                'describedBy' => $this->describedBy,
+                'name' => $this->handle,
+                'value' => $value?->getHex(),
+            ]);
+        }
+
         /** @var ColorData|null $value */
-        return Craft::$app->getView()->renderTemplate('_includes/forms/color.twig', [
-            'id' => $this->getInputId(),
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $value?->getHex(),
-            'presets' => $this->presets,
-        ]);
+        $isInPalette = (
+            $value &&
+            ArrayHelper::contains($this->palette, fn(array $color) => $color['color'] === $value->getHex())
+        );
+        $isCustom = (
+            $value &&
+            $this->allowCustomColors &&
+            !$isInPalette
+        );
+        $showBlankOption = (
+            !$value ||
+            !$this->layoutElement->required ||
+            (!$this->allowCustomColors && !$isInPalette)
+        );
+
+        $html =
+            Html::beginTag('div', [
+                'class' => ['flex', 'flex-col', 'items-stretch'],
+                'style' => [
+                    'width' => '25em',
+                    'max-width' => '100%',
+                ],
+            ]) .
+            Cp::colorSelectFieldHtml([
+                'id' => $id,
+                'labelledBy' => $this->getLabelId(),
+                'describedBy' => $this->describedBy,
+                'class' => 'fullwidth',
+                'name' => "$this->handle[color]",
+                'options' => array_filter([
+                    ...array_map(
+                        fn(array $color) => [
+                            'label' => isset($color['label']) && $color['label'] !== ''
+                                ? Craft::t('site', $color['label'])
+                                : $color['color'],
+                            'value' => $color['color'],
+                        ],
+                        $this->palette,
+                    ),
+                    $this->allowCustomColors ? [
+                        'label' => Craft::t('app', 'Custom…'),
+                        'value' => '__custom__',
+                    ] : null,
+                ]),
+                'withBlankOption' => $showBlankOption,
+                'value' => $isInPalette ? $value->getHex() : ($isCustom ? '__custom__' : '__blank__'),
+                'toggle' => $this->allowCustomColors,
+                'targetPrefix' => $this->allowCustomColors ? "$id-custom-" : null,
+            ]);
+
+        if ($this->allowCustomColors) {
+            $customLabelId = "$id-custom-label";
+            $html .=
+                Html::beginTag('div', [
+                    'id' => "$id-custom-__custom__",
+                    'class' => array_filter([
+                        'pane',
+                        'hairline',
+                        'py-s',
+                        'mt-0',
+                        'flex',
+                        'flex-inline',
+                        !$isCustom ? 'hidden' : null,
+                    ]),
+                    'style' => [
+                        'width' => '25em',
+                        'max-width' => '100%',
+                        'padding-inline' => '9px',
+                    ],
+                ]) .
+                Html::label(Craft::t('app', 'Custom color:'), "$id-custom-input", [
+                    'id' => $customLabelId,
+                ]) .
+                Cp::colorHtml([
+                    'id' => "$id-custom-input",
+                    'labelledBy' => $customLabelId,
+                    'describedBy' => $this->describedBy,
+                    'name' => "$this->handle[custom]",
+                    'value' => $isCustom ? $value->getHex() : null,
+                ]) .
+                Html::endTag('div');
+        } elseif ($value && !$isInPalette) {
+            Craft::$app->getView()->setInitialDeltaValue($this->handle, $value->getHex());
+        }
+
+        $html .= Html::endTag('div');
+
+        return $html;
     }
 
     /**
@@ -214,11 +443,20 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
             return '';
         }
 
-        return Html::encodeParams(
-            '<div class="color noteditable"><div class="color-preview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
-            [
-                'bgColor' => $value->getHex(),
-            ]);
+        $html = Html::beginTag('div', ['class' => ['color', 'noteditable']]) .
+            Html::tag('div', options: [
+                'class' => 'color-preview',
+                'style' => ['background-color' => $value->getHex()],
+            ]) .
+            Html::endTag('div');
+
+        if (isset($value->label)) {
+            $html .= Html::tag('div', Html::encode($value->label), ['class' => 'colorhex']);
+        } else {
+            $html .= Html::tag('div', $value->getHex(), ['class' => ['colorhex', 'code']]);
+        }
+
+        return $html;
     }
 
     /**
@@ -228,10 +466,46 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
     {
         /** @var ColorData|null $value */
         if (!$value) {
-            return '<div class="color small static"><div class="color-preview"></div></div>';
+            return Html::beginTag('div', ['class' => ['color', 'small', 'static']]) .
+                Html::tag('div', options: ['class' => 'color-preview']) .
+                Html::endTag('div');
         }
 
-        return "<div class='color small static'><div class='color-preview' style='background-color: {$value->getHex()};'></div></div>" .
-            "<div class='colorhex code'>{$value->getHex()}</div>";
+        $html = Html::beginTag('div', ['class' => ['color', 'small', 'static']]) .
+            Html::tag('div', options: [
+                'class' => 'color-preview',
+                'style' => [
+                    'background-color' => $value->getHex(),
+                ],
+            ]) .
+            Html::endTag('div');
+
+        if (isset($value->label)) {
+            $html .= Html::tag('span', Html::encode($value->label), ['class' => 'colorhex']);
+        } else {
+            $html .= Html::tag('div', $value->getHex(), ['class' => ['colorhex', 'code']]);
+        }
+
+        return $html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            if (empty($this->palette)) {
+                $value = new ColorData(sprintf('#%06X', mt_rand(0, 0xFFFFFF)));
+            } else {
+                $example = $this->palette[array_rand($this->palette)];
+                $value = new ColorData($example['color']);
+                if (isset($example['label']) && $example['label'] !== '') {
+                    $value->label = $example['label'];
+                }
+            }
+        }
+
+        return $this->getPreviewHtml($value, $element ?? new Entry());
     }
 }

@@ -55,6 +55,11 @@ class Entry extends ElementMutationArguments
                 'type' => Type::int(),
                 'description' => 'Determines which site the elements should be saved to. Defaults to the primary site.',
             ],
+            'revisionNotes' => [
+                'name' => 'revisionNotes',
+                'type' => Type::string(),
+                'description' => 'Sets the revision notes for the entry.',
+            ],
         ]);
     }
 }

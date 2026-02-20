@@ -13,6 +13,7 @@ use craft\models\ImageTransform;
 use craft\validators\ColorValidator;
 use craft\web\assets\edittransform\EditTransformAsset;
 use craft\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -26,6 +27,8 @@ use yii\web\Response;
  */
 class ImageTransformsController extends Controller
 {
+    private bool $readOnly;
+
     /**
      * @inheritdoc
      */
@@ -35,8 +38,16 @@ class ImageTransformsController extends Controller
             return false;
         }
 
-        // All image transform actions require an admin
-        $this->requireAdmin();
+        $viewActions = ['index', 'edit'];
+        if (in_array($action->id, $viewActions)) {
+            // Some actions require admin but not allowAdminChanges
+            $this->requireAdmin(false);
+        } else {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
+
+        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         return true;
     }
@@ -51,7 +62,9 @@ class ImageTransformsController extends Controller
         $variables = [];
 
         $variables['transforms'] = Craft::$app->getImageTransforms()->getAllTransforms();
+        usort($variables['transforms'], fn(ImageTransform $a, ImageTransform $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name));
         $variables['modes'] = ImageTransform::modes();
+        $variables['readOnly'] = $this->readOnly;
 
         return $this->renderTemplate('settings/assets/transforms/_index.twig', $variables);
     }
@@ -66,6 +79,10 @@ class ImageTransformsController extends Controller
      */
     public function actionEdit(?string $transformHandle = null, ?ImageTransform $transform = null): Response
     {
+        if ($transformHandle === null && $this->readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
+
         if ($transform === null) {
             if ($transformHandle !== null) {
                 $transform = Craft::$app->getImageTransforms()->getTransformByHandle($transformHandle);
@@ -74,11 +91,11 @@ class ImageTransformsController extends Controller
                     throw new NotFoundHttpException('Transform not found');
                 }
             } else {
-                $transform = new ImageTransform();
+                $transform = Craft::createObject(ImageTransform::class);
             }
         }
 
-        $this->getView()->registerAssetBundle(EditTransformAsset::class);
+        $bundle = $this->getView()->registerAssetBundle(EditTransformAsset::class);
 
         if ($transform->id) {
             $title = trim($transform->name) ?: Craft::t('app', 'Edit Image Transform');
@@ -115,6 +132,8 @@ class ImageTransformsController extends Controller
             'title' => $title,
             'qualityPickerOptions' => $qualityPickerOptions,
             'qualityPickerValue' => $qualityPickerValue,
+            'readOnly' => $this->readOnly,
+            'baseIconsUrl' => $bundle->baseUrl,
         ]);
     }
 
@@ -127,7 +146,7 @@ class ImageTransformsController extends Controller
     {
         $this->requirePostRequest();
 
-        $transform = new ImageTransform();
+        $transform = Craft::createObject(ImageTransform::class);
         $transform->id = $this->request->getBodyParam('transformId');
         $transform->name = $this->request->getBodyParam('name');
         $transform->handle = $this->request->getBodyParam('handle');

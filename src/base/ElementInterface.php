@@ -10,7 +10,6 @@ namespace craft\base;
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\User;
@@ -18,7 +17,11 @@ use craft\enums\AttributeStatus;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\web\twig\AllowedInSandbox;
+use GraphQL\Type\Definition\Type;
 use Twig\Markup;
+use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 use yii\web\Response;
 
 /**
@@ -29,9 +32,12 @@ use yii\web\Response;
  * @mixin CustomFieldBehavior
  * @mixin Component
  * @phpstan-require-extends Element
+ * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
+ * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:EagerLoadingMapItem[],criteria?:array,createElement?:callable}
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
+#[AllowedInSandbox]
 interface ElementInterface extends
     ComponentInterface,
     Chippable,
@@ -258,11 +264,20 @@ interface ElementInterface extends
     public static function createCondition(): ElementConditionInterface;
 
     /**
+     * Returns whether the element type’s sources can be split into multiple pages.
+     *
+     * @return bool
+     * @since 5.9.0
+     */
+    public static function multiPageSources(): bool;
+
+    /**
      * Returns the source definitions that elements of this type may belong to.
      *
      * This defines what will show up in the source list on element indexes and element selector modals.
      *
      * Each item in the array should be set to an array that has the following keys:
+     * - **`page`** – The source’s page label. (Optional)
      * - **`key`** – The source’s key. This is the string that will be passed into the $source argument of [[actions()]],
      *   [[indexHtml()]], and [[defaultTableAttributes()]].
      * - **`label`** – The human-facing label of the source.
@@ -343,7 +358,7 @@ interface ElementInterface extends
     public static function modifyCustomSource(array $config): array;
 
     /**
-     * Returns the available [bulk element actions](https://craftcms.com/docs/4.x/extend/element-actions.html)
+     * Returns the available [bulk element actions](https://craftcms.com/docs/5.x/extend/element-actions.html)
      * for a given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name
@@ -405,6 +420,14 @@ interface ElementInterface extends
      * @return string[] The element attributes that should be searchable
      */
     public static function searchableAttributes(): array;
+
+    /**
+     * Returns the base attributes that should be applied when bulk-duplicating elements of this type.
+     *
+     * @return array
+     * @since 5.7.0
+     */
+    public static function baseBulkDuplicateAttributes(): array;
 
     /**
      * Returns the element index HTML.
@@ -482,6 +505,33 @@ interface ElementInterface extends
     public static function sortOptions(): array;
 
     /**
+     * Returns the view modes available for the element type.
+     *
+     * This method should return an array, where each item is a sub-array with the following keys:
+     *
+     * - `mode` – Name of the view mode
+     * - `title` – How this mode should be described to the user
+     * - `icon` – Icon representing this view mode
+     * - `availableOnMobile` - Whether the view mode is available on mobile devices (defaults to `true`)
+     * - `structuresOnly` – Whether the view mode should only be available for structured sources (defaults to `false`)
+     *
+     * ```php
+     * return [
+     *     [
+     *         'mode' => 'table',
+     *         'title' => Craft::t('app', 'Display in a table'),
+     *         'icon' => 'list',
+     *         'availableOnMobile' => false,
+     *     ],
+     * ];
+     *  ```
+     *
+     * @return array The view modes.
+     * @since 5.5.0
+     */
+    public static function indexViewModes(): array;
+
+    /**
      * Defines all of the available columns that can be shown in table views.
      *
      * This method should return an array whose keys represent element attribute names, and whose values make
@@ -503,16 +553,57 @@ interface ElementInterface extends
     public static function defaultTableAttributes(string $source): array;
 
     /**
+     * Defines all the available attributes that can be shown in card views.
+     *
+     * This method should return an array whose keys represent element attribute names, and whose values make
+     * up the table’s column headers.
+     *
+     * @param FieldLayout|null $fieldLayout
+     * @since 5.9.0
+     * @return array The card attributes.
+     *
+     * @since 5.5.0
+     */
+    public static function cardAttributes(?FieldLayout $fieldLayout = null): array;
+
+    /**
+     * Returns the list of card attribute keys that should be shown by default, if the field layout hasn't been customised.
+     *
+     * This method should return an array where each element in the array maps to one of the keys of the array returned
+     * by [[cardAttributes()]].
+     *
+     * @return string[] The card attribute keys
+     * @since 5.5.0
+     */
+    public static function defaultCardAttributes(): array;
+
+    /**
+     * Return HTML for the attribute in the card preview.
+     *
+     * @param array $attribute
+     * @return mixed
+     * @since 5.5.0
+     */
+    public static function attributePreviewHtml(array $attribute): mixed;
+
+    /**
      * Returns an array that maps source-to-target element IDs based on the given sub-property handle.
      *
      * This method aids in the eager-loading of elements when performing an element query. The returned array should
      * contain the following keys:
-     * - `elementType` – the fully qualified class name of the element type that should be eager-loaded
-     * - `map` – an array of element ID mappings, where each element is a sub-array with `source` and `target` keys
+     * - `map` – an array defining source-target element mappings
+     * - `elementType` *(optional)* – the fully qualified class name of the element type that should be eager-loaded,
+     *   if each target element is of the same element type
      * - `criteria` *(optional)* – any criteria parameters that should be applied to the element query when fetching the
      *   eager-loaded elements
      * - `createElement` *(optional)* - an element factory function, which will be passed the element query, the current
      *   query result data, and the first source element that the result was eager-loaded for
+     *
+     * Each mapping listed in `map` should be an array with the following keys:
+     * - `source` – the source element ID
+     * - `target` – the target element ID
+     * - `elementType` *(optional)* – the target element type (only checked for if the top-level array doesn’t specify
+     *   an `elementType` key)
      *
      * ```php
      * use craft\base\ElementInterface;
@@ -549,12 +640,23 @@ interface ElementInterface extends
      * }
      * ```
      *
+     * Alternatively, the method can return an array of multiple sets of mappings, each with their own nested `map`,
+     * `elementType`, `criteria`, and `createElement` keys.
+     *
      * @param self[] $sourceElements An array of the source elements
      * @param string $handle The property handle used to identify which target elements should be included in the map
-     * @return array|null|false The eager-loading element ID mappings, false if no mappings exist, or null if the result
-     * should be ignored
+     * @return EagerLoadingMap|EagerLoadingMap[]|null|false The eager-loading element ID mappings, false if no mappings
+     * exist, or null if the result should be ignored
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false;
+
+    /**
+     * Returns the base GraphQL type name that represents elements of this type.
+     *
+     * @return Type
+     * @since 5.7.0
+     */
+    public static function baseGqlType(): Type;
 
     /**
      * Returns the GraphQL scopes required by element’s context.
@@ -791,6 +893,22 @@ interface ElementInterface extends
     public function getChipLabelHtml(): string;
 
     /**
+     * Returns whether chips and cards for this element should include a status indicator.
+     *
+     * @return bool
+     * @since 5.4.0
+     */
+    public function showStatusIndicator(): bool;
+
+    /**
+     * Returns the titlebar label for element cards.
+     *
+     * @return string|null
+     * @since 5.7.0
+     */
+    public function getCardTitle(): ?string;
+
+    /**
      * Returns the body HTML for element cards.
      *
      * @return string|null
@@ -858,6 +976,15 @@ interface ElementInterface extends
      * @since 5.0.0
      */
     public function canDuplicateAsDraft(User $user): bool;
+
+    /**
+     * Returns whether the given user is authorized to copy this element, to be duplicated elsewhere.
+     *
+     * @param User $user
+     * @return bool
+     * @since 5.7.0
+     */
+    public function canCopy(User $user): bool;
 
     /**
      * Returns whether the given user is authorized to delete this element.
@@ -939,6 +1066,16 @@ interface ElementInterface extends
     public function getAdditionalButtons(): string;
 
     /**
+     * Returns alternative form actions for the element.
+     *
+     * See [[\craft\web\CpScreenResponseBehavior::altActions()]] for documentation on supported action properties.
+     *
+     * @return array
+     * @since 5.6.0
+     */
+    public function getAltActions(): array;
+
+    /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
      *
      * Each target should be represented by a sub-array with the following keys:
@@ -978,6 +1115,14 @@ interface ElementInterface extends
      * @since 3.4.0
      */
     public function setEnabledForSite(array|bool $enabledForSite): void;
+
+    /**
+     * Returns the root owner element.
+     *
+     * @return self
+     * @since 5.4.0
+     */
+    public function getRootOwner(): self;
 
     /**
      * Returns the same element in other locales.
@@ -1165,6 +1310,7 @@ interface ElementInterface extends
      * Sets the element’s attributes from an element editor submission.
      *
      * @param array $values The attribute values
+     * @since 5.0.0
      */
     public function setAttributesFromRequest(array $values): void;
 
@@ -1332,6 +1478,18 @@ interface ElementInterface extends
     public function getSerializedFieldValues(?array $fieldHandles = null): array;
 
     /**
+     * Returns an array of the element’s serialized custom field values, indexed by their handles,
+     * for database storage.
+     *
+     * @param string[]|null $fieldHandles The list of field handles whose values
+     * need to be returned. Defaults to null, meaning all fields’ values will be
+     * returned. If it is an array, only the fields in the array will be returned.
+     * @return array
+     * @since 5.7.0
+     */
+    public function getSerializedFieldValuesForDb(?array $fieldHandles = null): array;
+
+    /**
      * Sets the element’s custom field values.
      *
      * @param array $values The custom field values (handle => value)
@@ -1480,6 +1638,22 @@ interface ElementInterface extends
     public function getFieldContext(): string;
 
     /**
+     * Returns the generated field values for the element, indexed by handle.
+     *
+     * @return array<string,string>
+     * @since 5.8.0
+     */
+    public function getGeneratedFieldValues(): array;
+
+    /**
+     * Sets the generated field values for the element, indexed by handle.
+     *
+     * @param array<string,string|null> $values
+     * @since 5.8.0
+     */
+    public function setGeneratedFieldValues(array $values): void;
+
+    /**
      * Returns the element’s invalid nested element IDs.
      *
      * @return int[]
@@ -1585,6 +1759,16 @@ interface ElementInterface extends
      * @since 3.2.0
      */
     public function getCurrentRevision(): ?self;
+
+    /**
+     * Return if the element is copyable between sites.
+     * Checks if it's a multisite installation, if user can edit the element in other sites,
+     * and if the element actually exists in other sites.
+     *
+     * @return bool
+     * @since 5.6.0
+     */
+    public function getIsCrossSiteCopyable(): bool;
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
@@ -1731,9 +1915,6 @@ interface ElementInterface extends
      *
      * @param int $structureId The structure ID
      * @return bool Whether the element should be moved within the structure
-     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_BEFORE_INSERT_ELEMENT]] or
-     * [[\craft\services\Structures::EVENT_BEFORE_MOVE_ELEMENT|EVENT_BEFORE_MOVE_ELEMENT]]
-     * should be used instead.
      */
     public function beforeMoveInStructure(int $structureId): bool;
 
@@ -1741,9 +1922,6 @@ interface ElementInterface extends
      * Performs actions after an element is moved within a structure.
      *
      * @param int $structureId The structure ID
-     * @deprecated in 4.5.0. [[\craft\services\Structures::EVENT_AFTER_INSERT_ELEMENT]] or
-     * [[\craft\services\Structures::EVENT_AFTER_MOVE_ELEMENT|EVENT_AFTER_MOVE_ELEMENT]]
-     * should be used instead.
      */
     public function afterMoveInStructure(int $structureId): void;
 
@@ -1751,4 +1929,17 @@ interface ElementInterface extends
      * Returns the string representation of the element.
      */
     public function __toString(): string;
+
+    /**
+     * Renders the element using its partial template.
+     *
+     * If no partial template exists for the element, its string representation will be output instead.
+     *
+     * @param array $variables
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @since 5.8.0
+     */
+    public function render(array $variables = []): Markup;
 }

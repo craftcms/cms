@@ -259,12 +259,8 @@ class ViewTest extends TestCase
     {
         $this->setInaccessibleProperty($this->view, '_hooks', [
             'demoHook' => [
-                function() {
-                    return '22';
-                },
-                function($val) {
-                    return $val[0];
-                },
+                fn() => '22',
+                fn($val) => $val[0],
             ],
         ]);
 

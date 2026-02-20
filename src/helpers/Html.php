@@ -12,7 +12,9 @@ use craft\elements\Asset;
 use craft\errors\InvalidHtmlTagException;
 use craft\image\SvgAllowedAttributes;
 use craft\web\View;
+use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
+use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -26,6 +28,11 @@ use yii\base\InvalidConfigException;
  */
 class Html extends \yii\helpers\Html
 {
+    /**
+     * @since 5.6.0
+     */
+    public const TITLE_TAG_RE = '/<title(\s+([\s\S]*?))?>.*?<\/title>\s*/is';
+
     /**
      * @var array List of tag attributes that should be specially handled when their values are of array type.
      * In particular, if the value of the `data` attribute is `['name' => 'xyz', 'age' => 13]`, two attributes
@@ -60,16 +67,12 @@ class Html extends \yii\helpers\Html
         // Normalize the param keys
         $normalizedVariables = [];
 
-        if (is_array($variables)) {
-            foreach ($variables as $key => $value) {
-                $key = '{' . trim($key, '{}') . '}';
-                $normalizedVariables[$key] = static::encode($value);
-            }
-
-            $html = strtr($html, $normalizedVariables);
+        foreach ($variables as $key => $value) {
+            $key = '{' . trim($key, '{}') . '}';
+            $normalizedVariables[$key] = static::encode($value);
         }
 
-        return $html;
+        return strtr($html, $normalizedVariables);
     }
 
     /**
@@ -82,6 +85,50 @@ class Html extends \yii\helpers\Html
     public static function encodeSpaces(string $str): string
     {
         return str_replace(' ', '%20', $str);
+    }
+
+    /**
+     * Disables any form inputs in the given HTML.
+     *
+     * @param callable|string|null $html
+     * @return string|null
+     * @since 5.6.0
+     */
+    public static function disableInputs(callable|string|null $html): ?string
+    {
+        if (is_callable($html)) {
+            // Call it to get the HTML, but disregard the JS
+            Craft::$app->getView()->startJsBuffer();
+            try {
+                $html = $html();
+            } finally {
+                Craft::$app->getView()->clearJsBuffer();
+            }
+        }
+
+        if ($html === null || $html === '') {
+            return $html;
+        }
+
+        $crawler = new Crawler("<html><body>$html</body></html>");
+
+        $inputContainers = $crawler->filter('.field > .input');
+        foreach ($inputContainers as $inputContainer) {
+            /** @var DOMElement $inputContainer */
+            $class = array_filter(explode(' ', $inputContainer->getAttribute('class')));
+            $class = array_unique([...$class, 'disabled']);
+            $inputContainer->setAttribute('class', implode(' ', $class));
+        }
+
+        $inputs = $crawler->filter('input,textarea,select,button:not(.fieldtoggle)');
+        foreach ($inputs as $input) {
+            /** @var DOMElement $input */
+            if (!$input->hasAttribute('disabled')) {
+                $input->setAttribute('disabled', '');
+            }
+        }
+
+        return $crawler->filter('body')->first()->html();
     }
 
     /**
@@ -358,6 +405,7 @@ class Html extends \yii\helpers\Html
      * @param string $tag The HTML tag to parse
      * @param int $offset The offset to start looking for a tag
      * @param int|null $start The start position of the first attribute in the given tag
+     * @param-out int $start
      * @param int|null $end The end position of the last attribute in the given tag
      * @param bool $decode Whether the attributes should be HTML decoded in the process
      * @return array The parsed HTML tag attributes
@@ -451,7 +499,7 @@ class Html extends \yii\helpers\Html
             }
         }
 
-        $start = $match[1][1];
+        $start = (int) $match[1][1];
         $end = $offset;
 
         return [$match[1][0], $value];
@@ -567,7 +615,7 @@ class Html extends \yii\helpers\Html
      *
      * @param string $html
      * @param int $offset
-     * @return array The tag type and starting position
+     * @return array{non-empty-string, int} The tag type and starting position
      * @throws InvalidHtmlTagException
      */
     private static function _findTag(string $html, int $offset = 0): array
@@ -628,9 +676,7 @@ class Html extends \yii\helpers\Html
     {
         if (!isset(self::$_sortedDataAttributes)) {
             self::$_sortedDataAttributes = array_merge(static::$dataAttributes);
-            usort(self::$_sortedDataAttributes, function(string $a, string $b): int {
-                return strlen($b) - strlen($a);
-            });
+            usort(self::$_sortedDataAttributes, fn(string $a, string $b): int => strlen($b) - strlen($a));
         }
         return self::$_sortedDataAttributes;
     }
@@ -677,7 +723,7 @@ class Html extends \yii\helpers\Html
     }
 
     /**
-     * Normalizes an element ID into only alphanumeric characters, underscores, and dashes, or generates one at random.
+     * Normalizes an element ID into only alphanumeric characters, underscores, and hyphens, or generates one at random.
      *
      * @param string $id
      * @return string
@@ -691,7 +737,12 @@ class Html extends \yii\helpers\Html
             return $id;
         }
 
-        $id = trim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
+        // remove any non-alphanumeric characters that are already preceded/followed by a hyphen
+        $id = preg_replace('/(?<=-)[^A-Za-z0-9_.-]+|[^A-Za-z0-9_.-]+(?=-)/', '', $id);
+
+        // convert any remaining consecutive non-alphanumeric characters to hyphens
+        $id = trim(preg_replace('/[^A-Za-z0-9_.-]+/', '-', $id), '-');
+
         return $id ?: StringHelper::randomString(10);
     }
 
@@ -787,7 +838,7 @@ class Html extends \yii\helpers\Html
      */
     private static function _namespaceInputs(string &$html, string $namespace): void
     {
-        $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '${1}' . $namespace . '[$3]$4$2', $html);
+        $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '${1}' . $namespace . '[$3]$4$2', $html) ?? '';
     }
 
     /**
@@ -840,7 +891,7 @@ class Html extends \yii\helpers\Html
         $html = preg_replace_callback('/(?<=\sid=)(\'|")([^\'"\s]*)\1/i', function($match) use ($namespace, &$ids): string {
             $ids[] = $match[2];
             return $match[1] . $namespace . '-' . $match[2] . $match[1];
-        }, $html);
+        }, $html) ?? '';
         $ids = array_flip($ids);
 
         // normal HTML attributes
@@ -873,7 +924,7 @@ class Html extends \yii\helpers\Html
                     $namespacedIds .= $id;
                 }
                 return sprintf('%s%s%s', $match[1], $namespacedIds, $match[3]);
-            }, $html);
+            }, $html) ?? '';
 
         // ID references in url() calls
         $html = preg_replace_callback(
@@ -883,7 +934,7 @@ class Html extends \yii\helpers\Html
                     return $namespace . '-' . $match[0];
                 }
                 return $match[0];
-            }, $html);
+            }, $html) ?? '';
 
         // class attributes
         if ($withClasses) {
@@ -893,7 +944,7 @@ class Html extends \yii\helpers\Html
                     $newClasses[] = "$namespace-$class";
                 }
                 return 'class=' . $match[1] . implode(' ', $newClasses) . $match[1];
-            }, $html);
+            }, $html) ?? '';
         }
 
         // CSS selectors
@@ -912,14 +963,14 @@ class Html extends \yii\helpers\Html
                     $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,:\\s{])/", ".$namespace-$1", $match[2]);
                 }
                 return $match[1] . $html . $match[3];
-            }, $html);
+            }, $html) ?? '';
     }
 
     /**
      * Replaces textareas with markers
      *
      * @param string $html
-     * @return array
+     * @return array<string, string>
      */
     private static function _escapeTextareas(string &$html): array
     {
@@ -962,8 +1013,7 @@ class Html extends \yii\helpers\Html
      * Replaces markers with textareas.
      *
      * @param string $html
-     * @param array $markers
-     * @return string
+     * @param array<string, string> $markers
      */
     private static function _restoreTextareas(string $html, array $markers): string
     {
@@ -999,7 +1049,7 @@ class Html extends \yii\helpers\Html
         $svg = $sanitizer->sanitize($svg);
         // Remove comments, title & desc
         $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
-        $svg = preg_replace('/<title>.*?<\/title>\s*/is', '', $svg);
+        $svg = preg_replace(self::TITLE_TAG_RE, '', $svg);
         return preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
     }
 
@@ -1018,11 +1068,28 @@ class Html extends \yii\helpers\Html
             throw new InvalidArgumentException("Invalid file path: $file");
         }
 
+        $file = FileHelper::absolutePath(Craft::getAlias($file), '/');
+
+        // make sure it's contained within the project rot
+        $rootPath = FileHelper::absolutePath(Craft::getAlias('@root'), '/');
+        if (!str_starts_with($file, "$rootPath/")) {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));
+        }
+
+        if (Craft::$app->getSecurity()->isSystemDir(dirname($file))) {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path within or above system directories.', __METHOD__));
+        }
+
+        $ext = pathinfo($file, PATHINFO_EXTENSION);
+        if (strtolower($ext) === 'php') {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path to a PHP file.', __METHOD__));
+        }
+
         if ($mimeType === null) {
             try {
                 $mimeType = FileHelper::getMimeType($file);
             } catch (Throwable $e) {
-                Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage());
+                Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage(), __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
             }
         }
@@ -1117,6 +1184,18 @@ class Html extends \yii\helpers\Html
     }
 
     /**
+     * Decodes any double-encoded entities.
+     *
+     * @param string $html
+     * @return string
+     * @since 5.8.3
+     */
+    public static function decodeDoubles(string $html): string
+    {
+        return preg_replace('/&amp;(\w+);/', '&$1;', $html);
+    }
+
+    /**
      * Returns the contents of a given SVG file.
      *
      * @param string|Asset $svg An SVG asset, a file path, or raw SVG markup
@@ -1169,13 +1248,13 @@ class Html extends \yii\helpers\Html
             $svg = file_get_contents($svg);
 
             // This came from a file path, so pretty good chance that the SVG can be trusted.
-            $sanitize = $sanitize ?? false;
-            $namespace = $namespace ?? false;
+            $sanitize ??= false;
+            $namespace ??= false;
         }
 
         // Sanitize and namespace the SVG by default
-        $sanitize = $sanitize ?? true;
-        $namespace = $namespace ?? true;
+        $sanitize ??= true;
+        $namespace ??= true;
 
         // Sanitize?
         if ($sanitize) {

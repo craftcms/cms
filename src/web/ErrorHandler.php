@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\events\ExceptionEvent;
+use craft\events\RedirectEvent;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\Template;
@@ -39,6 +40,12 @@ class ErrorHandler extends \yii\web\ErrorHandler
     public const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
 
     /**
+     * @event RedirectEvent The event that is triggered before a 404 redirect.
+     * @since 5.6.0
+     */
+    public const EVENT_BEFORE_REDIRECT = 'beforeRedirect';
+
+    /**
      * @inheritdoc
      */
     public function handleException($exception): void
@@ -57,6 +64,35 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         // 404?
         if ($exception instanceof HttpException && $exception->statusCode === 404) {
+            $redirectRules = Craft::$app->getConfig()->getConfigFromFile('redirects');
+            if ($redirectRules) {
+                foreach ($redirectRules as $from => $rule) {
+                    if (!$rule instanceof RedirectRule) {
+                        $config = is_string($rule) ? ['to' => $rule] : $rule;
+                        $rule = Craft::createObject([
+                            'class' => RedirectRule::class,
+                            'from' => $from,
+                            ...$config,
+                        ]);
+                    }
+
+                    $url = $rule->getMatch();
+
+                    if ($url === null) {
+                        continue;
+                    }
+
+                    if ($this->hasEventHandlers(self::EVENT_BEFORE_REDIRECT)) {
+                        $this->trigger(self::EVENT_BEFORE_REDIRECT, new RedirectEvent([
+                            'rule' => $rule,
+                        ]));
+                    }
+
+                    Craft::$app->getResponse()->redirect($url, $rule->statusCode);
+                    Craft::$app->end();
+                }
+            }
+
             $request = Craft::$app->getRequest();
             if ($request->getIsSiteRequest() && $request->getPathInfo() === 'wp-admin') {
                 $exception->statusCode = 418;
@@ -150,13 +186,12 @@ class ErrorHandler extends \yii\web\ErrorHandler
             // Override the status code and error message if this is a Guzzle client exception
             if ($exception instanceof ClientException) {
                 $response->setStatusCode($exception->getCode());
-                if (($guzzleResponse = $exception->getResponse()) !== null) {
+                $guzzleResponse = $exception->getResponse();
 
-                    // TODO: review for v5
-                    $body = Json::decodeIfJson((string)$guzzleResponse->getBody());
-                    if (isset($body['message'])) {
-                        $response->data['error'] = $body['message'];
-                    }
+                // TODO: review for v5
+                $body = Json::decodeIfJson((string)$guzzleResponse->getBody());
+                if (isset($body['message'])) {
+                    $response->data['error'] = $body['message'];
                 }
             } else {
                 $response->setStatusCodeByException($exception);
@@ -175,7 +210,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         if (
             $exception instanceof NotFoundHttpException &&
             $request &&
-            $request->getAcceptsImage() &&
+            $request->getWantsImage() &&
             Craft::$app->getConfig()->getGeneral()->brokenImagePath
         ) {
             $this->errorAction = 'app/broken-image';

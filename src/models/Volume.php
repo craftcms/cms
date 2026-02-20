@@ -201,7 +201,10 @@ class Volume extends Model implements
      */
     public function getCpEditUrl(): ?string
     {
-        return $this->id ? UrlHelper::cpUrl("settings/assets/volumes/$this->id") : null;
+        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+            return null;
+        }
+        return UrlHelper::cpUrl("settings/assets/volumes/$this->id");
     }
 
     /**
@@ -238,6 +241,7 @@ class Volume extends Model implements
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'trim'];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class];
         $rules[] = [['name', 'handle', 'fsHandle'], 'required'];
         $rules[] = [
@@ -530,7 +534,7 @@ class Volume extends Model implements
      */
     public function getSubpath(bool $ensureTrailing = true, bool $parse = true): string
     {
-        $subpath = $parse ? App::parseEnv($this->_subpath) : $this->_subpath;
+        $subpath = $parse ? (App::parseEnv($this->_subpath) ?? '') : $this->_subpath;
 
         if ($ensureTrailing && $subpath !== '' && !str_ends_with($subpath, '/')) {
             $subpath .= '/';

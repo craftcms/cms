@@ -412,7 +412,10 @@ export default Base.extend(
         return;
       }
 
-      if (Garnish.hasAttr(this.$btn[0], 'disabled')) {
+      if (
+        Garnish.hasAttr(this.$btn[0], 'disabled') ||
+        this.$btn.attr('aria-disabled') === 'true'
+      ) {
         this.disabled = true;
         this.$btn.addClass('disabled');
       } else {

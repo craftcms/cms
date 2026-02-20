@@ -10,6 +10,7 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
+use craft\events\DefineFieldActionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -24,6 +25,13 @@ use craft\helpers\StringHelper;
  */
 abstract class BaseField extends FieldLayoutElement
 {
+    /**
+     * @event DefineFieldActionsEvent The event that is triggered when defining action menu items.
+     * @see actionMenuItems()
+     * @since 5.9.0
+     */
+    public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
+
     /**
      * @var string|null The field’s label
      */
@@ -52,12 +60,14 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @var bool Whether this field should be used to define element thumbnails.
      * @since 5.0.0
+     * @deprecated in 5.9.0
      */
     public bool $providesThumbs = false;
 
     /**
      * @var bool Whether this field’s contents should be included in element cards.
      * @since 5.0.0
+     * @deprecated in 5.9.0
      */
     public bool $includeInCards = false;
 
@@ -74,11 +84,34 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * @inheritdoc
+     */
+    public function fields(): array
+    {
+        $fields = parent::fields();
+        unset($fields['includeInCards'], $fields['providesThumbs']);
+        return $fields;
+    }
+
+    /**
      * Returns the element attribute this field is for.
      *
      * @return string
      */
     abstract public function attribute(): string;
+
+    /**
+     * Returns the key for this field.
+     *
+     * @return string
+     * @since 5.9.0
+     */
+    public function key(): string
+    {
+        $uid = $this->uid ?? '{uid}';
+
+        return "layoutElement:$uid";
+    }
 
     /**
      * Returns whether the attribute should be shown for admin users with “Show field handles in edit forms” enabled.
@@ -159,6 +192,46 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns the card preview options supplied by this field.
+     *
+     * @return array|null
+     * @since 5.9.0
+     */
+    public function getPreviewOptions(): ?array
+    {
+        if (!$this->previewable()) {
+            return null;
+        }
+
+        return [
+            [
+                'label' => $this->selectorLabel() ?? $this->attribute(),
+                'value' => 'layoutElement:{uid}',
+            ],
+        ];
+    }
+
+    /**
+     * Returns the card thumbnail options supplied by this field.
+     *
+     * @return array|null
+     * @since 5.9.6
+     */
+    public function getThumbOptions(): ?array
+    {
+        if (!$this->thumbable()) {
+            return null;
+        }
+
+        return [
+            [
+                'label' => $this->selectorLabel() ?? $this->attribute(),
+                'value' => 'layoutElement:{uid}',
+            ],
+        ];
+    }
+
+    /**
      * @inheritdoc
      */
     public function selectorHtml(): string
@@ -178,10 +251,9 @@ abstract class BaseField extends FieldLayoutElement
         $label = $this->selectorLabel();
         $icon = $this->selectorIcon();
 
-        $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', Cp::iconSvg($indicator['icon']), [
+        $indicatorHtml = implode('', array_map(fn(array $indicator) => Html::tag('div', Cp::iconSvg($indicator['icon'], altText: $indicator['label']), [
             'class' => array_filter(['cp-icon', 'puny', $indicator['iconColor'] ?? null]),
             'title' => $indicator['label'],
-            'aria' => ['label' => $indicator['label']],
         ]), $this->selectorIndicators()));
 
         if ($label !== null) {
@@ -206,7 +278,7 @@ abstract class BaseField extends FieldLayoutElement
 
         if ($indicatorHtml) {
             $innerHtml .= Html::tag('div', $indicatorHtml, [
-                'class' => ['flex', 'flex-nowrap', 'gap-xs'],
+                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'gap-xs'],
             ]);
         }
 
@@ -237,7 +309,8 @@ abstract class BaseField extends FieldLayoutElement
                 'mandatory' => $this->mandatory(),
                 'requirable' => $this->requirable(),
                 'thumbable' => $this->thumbable(),
-                'previewable' => $this->previewable(),
+                'preview-options' => $this->getPreviewOptions(),
+                'thumb-options' => $this->getThumbOptions(),
             ],
         ];
     }
@@ -258,7 +331,7 @@ abstract class BaseField extends FieldLayoutElement
      * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
      * the path to an SVG file, or raw SVG markup.
      *
-     * System icons can be found in `src/icons/solid/.`
+     * System icons can be found in `src/icons/solid/`.
      *
      * @return string|null
      * @since 5.0.0
@@ -285,27 +358,27 @@ abstract class BaseField extends FieldLayoutElement
             ];
         }
 
+        if (isset($this->tip)) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field has a tip'),
+                'icon' => 'lightbulb',
+                'iconColor' => 'sky',
+            ];
+        }
+
+        if (isset($this->warning)) {
+            $indicators[] = [
+                'label' => Craft::t('app', 'This field has a warning'),
+                'icon' => 'alert',
+                'iconColor' => 'amber',
+            ];
+        }
+
         if ($this->hasConditions()) {
             $indicators[] = [
                 'label' => Craft::t('app', 'This field is conditional'),
                 'icon' => 'diamond',
                 'iconColor' => 'orange',
-            ];
-        }
-
-        if ($this->thumbable() && $this->providesThumbs) {
-            $indicators[] = [
-                'label' => Craft::t('app', 'This field provides thumbnails for elements'),
-                'icon' => 'image',
-                'iconColor' => 'violet',
-            ];
-        }
-
-        if ($this->previewable() && $this->includeInCards) {
-            $indicators[] = [
-                'label' => Craft::t('app', 'This field is included in element cards'),
-                'icon' => 'eye',
-                'iconColor' => 'blue',
             ];
         }
 
@@ -351,13 +424,61 @@ abstract class BaseField extends FieldLayoutElement
             return null;
         }
 
-        $statusClass = $this->statusClass($element, $static);
+        $showStatus = $this->showStatus();
+        $statusClass = $showStatus ? $this->statusClass($element, $static) : null;
         $label = $this->showLabel() ? $this->label() : null;
         $instructions = $this->instructions($element, $static);
         $tip = $this->tip($element, $static);
         $warning = $this->warning($element, $static);
+        $translatable = $this->translatable($element, $static);
+        $actionMenuItems = $this->actionMenuItems($element, $static);
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+            $event = new DefineFieldActionsEvent([
+                'element' => $element,
+                'static' => $static,
+                'items' => $actionMenuItems,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
+            $actionMenuItems = $event->items;
+        }
+
+        if (
+            $this->uid &&
+            $element?->id &&
+            !$static &&
+            $this->isCrossSiteCopyable($element) &&
+            $this->translatable($element, $static) &&
+            $element->getIsCrossSiteCopyable()
+        ) {
+            // prepare namespace for the purpose of copying
+            $namespace = Craft::$app->getView()->getNamespace();
+
+            $actionMenuItems = array_filter([
+                [
+                    'icon' => 'clone',
+                    'label' => Craft::t('app', 'Copy value from site…'),
+                    'attributes' => [
+                        'data' => [
+                            'cross-site-copy' => true,
+                            'element-id' => $element->id,
+                            'layout-element' => $this->uid,
+                            'label' => $label,
+                            'namespace' => ($namespace && $namespace !== 'fields')
+                                ? StringHelper::removeRight($namespace, '[fields]')
+                                : null,
+                        ],
+                    ],
+                ],
+                !empty($actionMenuItems) ? ['type' => 'hr'] : null,
+                ...$actionMenuItems,
+            ]);
+        }
 
         return Cp::fieldHtml($inputHtml, [
+            'fieldClass' => array_keys(array_filter([
+                'no-status' => !$showStatus,
+            ])),
             'fieldset' => $this->useFieldset(),
             'id' => $this->id(),
             'labelId' => $this->labelId(),
@@ -365,11 +486,12 @@ abstract class BaseField extends FieldLayoutElement
             'tipId' => $this->tipId(),
             'warningId' => $this->warningId(),
             'errorsId' => $this->errorsId(),
-            'statusId' => $this->statusId(),
+            'statusId' => $showStatus ? $this->statusId() : null,
             'fieldAttributes' => $this->containerAttributes($element, $static),
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
             'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
+            'static' => $static,
             'label' => $label !== null ? Html::encode($label) : null,
             'attribute' => $this->attribute(),
             'showAttribute' => $this->showAttribute(),
@@ -378,9 +500,11 @@ abstract class BaseField extends FieldLayoutElement
             'tip' => $tip !== null ? Html::encode($tip) : null,
             'warning' => $warning !== null ? Html::encode($warning) : null,
             'orientation' => $this->orientation($element, $static),
-            'translatable' => $this->translatable($element, $static),
+            'translatable' => $translatable,
             'translationDescription' => $this->translationDescription($element, $static),
-            'errors' => !$static ? $this->errors($element) : [],
+            'actionMenuItems' => $actionMenuItems,
+            // show errors regardless of whether the field is static
+            'errors' => $this->errors($element),
         ]);
     }
 
@@ -627,6 +751,17 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns whether the field should show a status indicator when modified.
+     *
+     * @return bool
+     * @since 5.8.0
+     */
+    protected function showStatus(): bool
+    {
+        return true;
+    }
+
+    /**
      * Returns the field’s status class.
      *
      * @param ElementInterface|null $element The element the form is being rendered for
@@ -760,5 +895,98 @@ abstract class BaseField extends FieldLayoutElement
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
+    }
+
+    /**
+     * Returns whether field supports copying its value across sites.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     */
+    public function isCrossSiteCopyable(ElementInterface $element): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns any action menu items that should be shown for the field.
+     *
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     *
+     * @param ElementInterface|null $element The element the form is being rendered for
+     * @param bool $static Whether the form should be static (non-interactive)
+     * @return array
+     * @since 5.6.0
+     */
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns a “Copy field handle” action menu item definition for [[actionMenuItems()]].
+     *
+     * @param array $config
+     * @return array
+     * @since 5.9.0
+     */
+    protected function copyAttributeAction(array $config = []): array
+    {
+        $config += [
+            'id' => sprintf('action-copy-handle-%s', mt_rand()),
+            'icon' => 'clipboard',
+            'label' => Craft::t('app', 'Copy attribute name'),
+            'promptLabel' => Craft::t('app', 'Attribute Name'),
+            'attribute' => $this->attribute(),
+        ];
+
+        $view = Craft::$app->getView();
+
+        $view->registerJsWithVars(fn($id, $promptLabel, $attribute) => <<<JS
+(() => {
+  $('#' + $id).on('activate', () => {
+    Craft.ui.createCopyTextPrompt({
+      label: $promptLabel,
+      value: $attribute,
+    });
+  });
+})();
+JS, [
+            $view->namespaceInputId($config['id']),
+            $config['promptLabel'],
+            $config['attribute'],
+        ]);
+
+        return [
+            'id' => $config['id'],
+            'icon' => $config['icon'],
+            'label' => $config['label'],
+        ];
+    }
+
+    /**
+     * Return the HTML that should be shown for the native field in the card preview.
+     * It can be used outside an element context, e.g. in a card view designer.
+     *
+     * @param mixed $value
+     * @param ElementInterface|null $element
+     * @return string
+     * @since 5.5.0
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$this->previewable()) {
+            return '';
+        }
+
+        if ($value !== null) {
+            return $value;
+        }
+
+        if ($element !== null) {
+            return $element->{$this->attribute()};
+        }
+
+        return $this->label();
     }
 }

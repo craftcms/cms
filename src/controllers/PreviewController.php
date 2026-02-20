@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\ElementHelper;
 use craft\web\Application;
 use craft\web\Controller;
 use Exception;
@@ -63,6 +64,13 @@ class PreviewController extends Controller
         $token = $this->request->getParam('previewToken');
         $redirect = $this->request->getParam('redirect');
 
+        if ($token) {
+            $token = Craft::$app->getSecurity()->validateData($token);
+            if ($token === false) {
+                throw new BadRequestHttpException('Request contained an invalid preview token');
+            }
+        }
+
         if ($draftId) {
             $this->requireAuthorization('previewDraft:' . $draftId);
         } elseif ($revisionId) {
@@ -97,8 +105,7 @@ class PreviewController extends Controller
     /**
      * Substitutes an element for the element being previewed for the remainder of the request, and reroutes the request.
      *
-     * @param string $elementType
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param int $canonicalId
      * @param int $siteId
      * @param int|null $draftId
@@ -119,7 +126,6 @@ class PreviewController extends Controller
         // Make sure a token was used to get here
         $this->requireToken();
 
-        /** @var ElementInterface $elementType */
         $query = $elementType::find()
             ->siteId($siteId)
             ->status(null);
@@ -135,6 +141,8 @@ class PreviewController extends Controller
         } else {
             if ($userId) {
                 // First check if there's a provisional draft
+                $user = Craft::$app->getUsers()->getUserById($userId);
+                ElementHelper::setProvisionalDraftUser($user);
                 $element = (clone $query)
                     ->draftOf($canonicalId)
                     ->provisionalDrafts()

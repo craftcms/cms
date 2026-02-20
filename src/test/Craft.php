@@ -169,7 +169,10 @@ class Craft extends Yii2
 
         // If full mock, create the mock app and don't perform to any further actions
         if ($this->_getConfig('fullMock') === true) {
-            /** @var ConsoleApplication|WebApplication|MockObject $mockApp */
+            /**
+             * @var ConsoleApplication|WebApplication|MockObject $mockApp
+             * @phpstan-ignore varTag.nativeType
+             */
             $mockApp = TestSetup::getMockModule($test);
             \Craft::$app = $mockApp;
             Yii::$app = $mockApp;
@@ -421,7 +424,7 @@ class Craft extends Yii2
     }
 
     /**
-     * @param string $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param array $searchProperties
      * @param int $amount
      * @param bool $searchAll Whether `status(null)` and `trashed(null)` should be applied
@@ -429,8 +432,6 @@ class Craft extends Yii2
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementQuery = $elementType::find();
         if ($searchAll) {
             $elementQuery->status(null);
@@ -546,7 +547,6 @@ class Craft extends Yii2
      */
     public function runQueue(string $queueItem, array $params = []): void
     {
-        /** @var BaseJob $job */
         $job = new $queueItem($params);
 
         if (!$job instanceof BaseJob) {
@@ -676,8 +676,7 @@ class Craft extends Yii2
 
     /**
      * @param CodeceptionTestCase $test
-     * @param string $moduleClass
-     * @phpstan-param class-string<Module> $moduleClass
+     * @param class-string<Module> $moduleClass
      * @throws ReflectionException
      */
     protected function addModule(CodeceptionTestCase $test, string $moduleClass): void
@@ -686,7 +685,10 @@ class Craft extends Yii2
             return;
         }
 
-        /** @var array $componentMap */
+        /**
+         * @var array $componentMap
+         * @phpstan-ignore argument.type
+         */
         $componentMap = call_user_func([$moduleClass, 'getComponentMap']);
 
         // Set it.

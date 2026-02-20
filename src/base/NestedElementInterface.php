@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\web\twig\AllowedInSandbox;
 use yii\base\InvalidConfigException;
 
 /**
@@ -28,6 +29,7 @@ interface NestedElementInterface extends ElementInterface
      * @return int|null
      * @throws InvalidConfigException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getPrimaryOwnerId(): ?int;
 
     /**
@@ -58,6 +60,7 @@ interface NestedElementInterface extends ElementInterface
      * @return int|null
      * @throws InvalidConfigException if the element is misconfigured
      */
+    #[AllowedInSandbox]
     public function getOwnerId(): ?int;
 
     /**
@@ -81,6 +84,16 @@ interface NestedElementInterface extends ElementInterface
      * @param ElementInterface|null $owner
      */
     public function setOwner(?ElementInterface $owner): void;
+
+    /**
+     * Returns each of the element’s owners
+     *
+     * @param array $criteria
+     * @return ElementInterface[]
+     * @throws InvalidConfigException if the element is misconfigured
+     * @since 5.8.17
+     */
+    public function getOwners(array $criteria = []): array;
 
     /**
      * Returns the field that contains the element.

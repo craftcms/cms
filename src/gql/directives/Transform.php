@@ -51,7 +51,7 @@ class Transform extends Directive
                 DirectiveLocation::FIELD,
             ],
             'args' => TransformArguments::getArguments(),
-            'description' => 'Returns a URL for an [asset transform](https://craftcms.com/docs/4.x/image-transforms.html). Accepts the same arguments you would use for a transform in Craft.',
+            'description' => 'Returns a URL for an [asset transform](https://craftcms.com/docs/5.x/development/image-transforms.html). Accepts the same arguments you would use for a transform in Craft.',
         ]));
     }
 
@@ -76,7 +76,7 @@ class Transform extends Directive
 
         if ($value instanceof Asset) {
             $value->setTransform($transform);
-        } elseif ($value instanceof Collection) {
+        } elseif ($value instanceof Collection || is_array($value)) {
             foreach ($value as $asset) {
                 // If this somehow ended up being a mix of elements, don't explicitly fail, just set the transform on the asset elements
                 if ($asset instanceof Asset) {

@@ -1,0 +1,86 @@
+{% from '_includes/forms' import text %}
+
+{% set class = (class ?? [])|explodeClass|merge([
+    'range',
+]|filter) %}
+{% set id = id ?? "range#{random()}" %}
+{% set numberInputId = numberInputId ?? "#{id}-num" %}
+{% set descriptionId = descriptionId ?? "#{id}-desc" %}
+{% set step = step ?? 1 %}
+{% set value = value ?? null %}
+{% set labelledBy = (inputAttributes.aria.label ?? false) ? false : (labelledBy ?? labelId ?? false) %}
+
+{% set orientation = orientation ?? inputAttributes.dir ?? craft.app.locale.getOrientation() %}
+
+{%- set suffix = suffix ?? false %}
+{%- set hasSuffix = suffix is not same as(false) %}
+
+{% set inputAttributes = {
+    class: class,
+    type: 'range',
+    id: id,
+    name: name ?? false,
+    value: value,
+    disabled: disabled ?? false,
+    title: title ?? false,
+    step: step,
+    min: min,
+    max: max,
+    dir: orientation,
+    aria: {
+        labelledby: labelledBy,
+        describedby: [
+            describedBy ?? null,
+            hasSuffix ? descriptionId : null,
+        ]|filter|join(' ') ?: false,
+    },
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+{% if showCharsLeft ?? false %}
+    {% set inputAttributes = inputAttributes|merge({
+        data: {
+            'show-chars-left': showCharsLeft,
+        },
+        style: {
+            ("padding-#{orientation == 'ltr' ? 'right' : 'left'}"): (maxlength ?? false) ? "#{7.2*maxlength|length+14}px",
+        },
+    }, recursive=true) %}
+{% endif %}
+
+<div class="flex">
+    <div class="range-wrapper">
+        {{ tag('input', inputAttributes) }}
+    </div>
+    <div>
+        {{ text({
+            type: 'number',
+            id: numberInputId,
+            descriptionId,
+            value: value,
+            inputmode: 'numeric',
+            min: min,
+            max: max,
+            step: step,
+            suffix,
+            labelledBy: labelledBy,
+        }) }}
+    </div>
+</div>
+
+{% js %}
+  (() =>{
+    const $rangeInput = $('#{{ id|namespaceInputId }}');
+    const $numInput = $('#{{ numberInputId|namespaceInputId }}');
+
+    $rangeInput.on('input', () => {
+      $numInput.val($rangeInput.val());
+    });
+    $numInput.on('input', () => {
+      $rangeInput.val($numInput.val());
+    });
+    $numInput.on('blur', () => {
+      // update the number input in case the value was out of bounds
+      $numInput.val($rangeInput.val());
+    });
+  })();
+{% endjs %}

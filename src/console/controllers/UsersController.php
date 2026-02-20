@@ -8,6 +8,8 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\auth\methods\AuthMethodInterface;
+use craft\auth\methods\RecoveryCodes;
 use craft\console\Controller;
 use craft\db\Table;
 use craft\elements\User;
@@ -53,10 +55,16 @@ class UsersController extends Controller
     public ?bool $admin = null;
 
     /**
-     * @var bool|null Whether teh user account should be activated.
+     * @var bool|null Whether the user account should be activated.
      * @since 4.1.0
      */
     public ?bool $activate = null;
+
+    /**
+     * @var bool Whether to send the user an activation email.
+     * @since 5.7.0
+     */
+    public ?bool $sendActivationEmail = false;
 
     /**
      * @var string[] The group handles to assign the created user to.
@@ -103,6 +111,7 @@ class UsersController extends Controller
                 $options[] = 'admin';
                 $options[] = 'groups';
                 $options[] = 'groupIds';
+                $options[] = 'sendActivationEmail';
                 break;
             case 'delete':
                 $options[] = 'inheritor';
@@ -115,6 +124,14 @@ class UsersController extends Controller
         }
 
         return $options;
+    }
+
+    protected function defineActions(): array
+    {
+        return parent::defineActions() + [
+            // Fix sluggification of the action ID
+            'remove-2fa' => [$this, 'remove2fa'],
+        ];
     }
 
     /**
@@ -182,7 +199,7 @@ class UsersController extends Controller
 
         $user = new User($attributesFromArgs);
 
-        if (!$user->validate(array_keys($attributesFromArgs))) {
+        if (!empty($attributesFromArgs) && !$user->validate(array_keys($attributesFromArgs))) {
             $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $user->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
             return ExitCode::USAGE;
         }
@@ -224,7 +241,7 @@ class UsersController extends Controller
 
         $this->stdout('Saving the user ... ');
 
-        if (!Craft::$app->getElements()->saveElement($user)) {
+        if (!Craft::$app->getElements()->saveElement($user, false)) {
             $this->stderr('failed:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $user->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
 
             return ExitCode::USAGE;
@@ -232,25 +249,39 @@ class UsersController extends Controller
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
 
-        $groupIds = array_merge($this->groupIds, array_map(function($handle) {
-            return Craft::$app->getUserGroups()->getGroupByHandle($handle)->id ?? null;
-        }, $this->groups));
+        $groupIds = array_merge($this->groupIds, array_map(fn($handle) => Craft::$app->getUserGroups()->getGroupByHandle($handle)->id ?? null, $this->groups));
 
-        if (!$groupIds) {
-            return ExitCode::OK;
+        if ($groupIds) {
+            $this->stdout('Assigning user to groups ... ');
+
+            // Most likely an invalid group ID will throw…
+            try {
+                Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
+            } catch (Throwable) {
+                $this->stderr('failed: Couldn’t assign user to specified groups.' . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 
-        $this->stdout('Assigning user to groups ... ');
+        if (!$user->active) {
+            if ($this->confirm('Send an activation email now?', $this->sendActivationEmail)) {
+                $this->stdout('Sending activation email ... ');
 
-        // Most likely an invalid group ID will throw…
-        try {
-            Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
-        } catch (Throwable) {
-            $this->stderr('failed: Couldn’t assign user to specified groups.' . PHP_EOL, Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
+                if (Craft::$app->getUsers()->sendActivationEmail($user)) {
+                    $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+                    return ExitCode::OK;
+                }
+
+                $this->stderr('failed: Couldn’t send activation email.' . PHP_EOL, Console::FG_RED);
+            }
+
+            $url = Craft::$app->getUsers()->getActivationUrl($user);
+            $this->stdout($this->markdownToAnsi("Activation URL for `$user->username`: "));
+            $this->stdout($url . PHP_EOL, Console::FG_CYAN, PHP_EOL);
         }
 
-        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 
@@ -492,6 +523,59 @@ class UsersController extends Controller
     }
 
     /**
+     * Removes user's two-step verification method(s)
+     * @param string $user The ID, username, or email address of the user account.
+     * @return int
+     * @since 5.5.0
+     */
+    public function remove2fa(string $user): int
+    {
+        try {
+            $user = $this->_user($user);
+        } catch (InvalidArgumentException $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED) . PHP_EOL;
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $authService = Craft::$app->getAuth();
+        $activeMethods = $authService->getActiveMethods($user);
+
+        // if user doesn't have any, say so, and we're done
+        if (empty($activeMethods)) {
+            $this->stdout("User “{$user->username}” doesn’t have any active two-step verification methods." . PHP_EOL);
+            return ExitCode::OK;
+        }
+
+        $activeMethods = array_combine(
+            array_map(fn(AuthMethodInterface $method) => $method::displayName(), $activeMethods),
+            $activeMethods,
+        );
+
+        // allow removal of all options in one go
+        $activeMethods = array_merge(['all' => 'all'], $activeMethods);
+
+        $methodToRemove = $this->select(
+            "Which two-step verification method would you like to remove for user “{$user->username}”",
+            $activeMethods,
+        );
+
+        if ($methodToRemove === 'all') {
+            $this->stdout('Removing all two-step verification methods for the user ...' . PHP_EOL);
+            unset($activeMethods['all']);
+            // remove recovery codes as we'll remove those after the last 2sv method is removed
+            unset($activeMethods[RecoveryCodes::displayName()]);
+
+            foreach ($activeMethods as $method) {
+                $this->_remove2faMethod($method, $user);
+            }
+        } else {
+            $this->_remove2faMethod($activeMethods[$methodToRemove], $user);
+        }
+
+        return ExitCode::OK;
+    }
+
+    /**
      * Resolves a `user` argument.
      *
      * @param string $value The `user` argument value
@@ -513,5 +597,32 @@ class UsersController extends Controller
         }
 
         return $user;
+    }
+
+    /**
+     * Removes auth method for a specific user.
+     *
+     * @param AuthMethodInterface $method
+     * @param User $user
+     * @return void
+     */
+    private function _remove2faMethod(AuthMethodInterface $method, User $user): void
+    {
+        $this->stdout("   > Removing “{$method::displayName()}” two-step verification method for the user ...");
+
+        $auth = Craft::$app->getAuth();
+        $method->remove();
+
+        $this->stdout(" done" . PHP_EOL, Console::FG_GREEN);
+
+        // if that was the last non-Recovery Codes method, remove Recovery Codes too
+        if (empty($auth->getActiveMethods($user))) {
+            $recoveryCodes = $auth->getMethod(RecoveryCodes::class, $user);
+            if ($recoveryCodes->isActive()) {
+                $this->stdout("No further two-step verification methods left. Removing “{$recoveryCodes::displayName()}” for the user ...");
+                $recoveryCodes->remove();
+                $this->stdout(" done" . PHP_EOL, Console::FG_GREEN);
+            }
+        }
     }
 }

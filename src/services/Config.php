@@ -16,7 +16,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Typecast;
-use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -25,7 +24,7 @@ use yii\base\InvalidArgumentException;
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->config`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->getConfig()`]].
  *
  * @property-read DbConfig $db the DB config settings
  * @property-read GeneralConfig $general the general config settings
@@ -172,7 +171,6 @@ class Config extends Component
             Craft::configure($existingConfig, $config);
             $config = $existingConfig;
         } else {
-            /** @var BaseObject $config */
             $config = new $configClass($config);
         }
 

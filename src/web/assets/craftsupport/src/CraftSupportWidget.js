@@ -19,6 +19,7 @@ import './CraftSupportWidget.scss';
       currentScreen: null,
       $helpBody: null,
       $feedbackBody: null,
+      searchQuery: null,
 
       init: function (widgetId, settings) {
         this.widgetId = widgetId;
@@ -207,11 +208,16 @@ import './CraftSupportWidget.scss';
         );
         this.$searchSubmit = this.$searchForm.find('.submit:first');
         this.addListener(this.$searchForm, 'submit', 'handleSearchFormSubmit');
-        this.addListener(
-          this.$searchForm.find('.cs-button-wrapper > p > a'),
-          'click',
-          'handleSupportLinkClick'
+
+        const $supportLink = this.$searchForm.find(
+          '.cs-button-wrapper > p > a'
         );
+        const $supportButton = $('<button/>', {
+          type: 'button',
+          text: $supportLink.text(),
+        });
+        $supportLink.replaceWith($supportButton);
+        this.addListener($supportButton, 'click', 'handleSupportLinkClick');
 
         // Support mode stuff
         this.$supportForm = this.$formContainer.children(
@@ -333,6 +339,7 @@ import './CraftSupportWidget.scss';
         this.clearSearchTimeout();
 
         var text = this.$body.val();
+        this.searchQuery = text;
 
         if (text) {
           var url = this.getSearchUrl(this.$body.val());
@@ -385,6 +392,13 @@ import './CraftSupportWidget.scss';
             );
           }
 
+          // Announce the results for SR users
+          Craft.cp.announce(
+            Craft.t('app', 'Showing results for “{searchQuery}”', {
+              searchQuery: this.searchQuery,
+            })
+          );
+
           var endResultsHeight = this.$searchResultsContainer
             .height('auto')
             .height();
@@ -425,6 +439,7 @@ import './CraftSupportWidget.scss';
           );
 
         this.showingResults = false;
+        this.searchQuery = null;
         this.$screen.removeClass('with-results');
       },
 

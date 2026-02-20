@@ -109,9 +109,7 @@ class ContextProcessor implements ProcessorInterface
     protected function dumpVars(array $vars): string
     {
         return Collection::make($vars)
-            ->map(function($value, $name) {
-                return "\${$name} = " . VarDumper::dumpAsString($value);
-            })
+            ->map(fn($value, $name) => "\${$name} = " . VarDumper::dumpAsString($value))
             ->join("\n\n");
     }
 

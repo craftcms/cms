@@ -1,11 +1,11 @@
-{% requireAdmin %}
+{% requireAdmin false %}
 
 {% extends "settings/users/_layout" %}
 {% set selectedNavItem = 'settings' %}
-{% set fullPageForm = true %}
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+{% set fullPageForm = not readOnly %}
 
 {% import "_includes/forms" as forms %}
-
 
 {% if settings is not defined %}
   {% set settings = craft.app.projectConfig.get('users') ?? [] %}
@@ -36,7 +36,7 @@
   {% endif %}
 {% endfor %}
 
-{% macro assetLocationInput(volumeOptions, photoVolume, subpath) %}
+{% macro assetLocationInput(volumeOptions, photoVolume, subpath, disabled) %}
   {% import '_includes/forms' as forms %}
   <div class="flex">
     <div>
@@ -45,6 +45,7 @@
         name: 'photoVolumeId',
         options: volumeOptions,
         value: photoVolume.id ?? null,
+        disabled: disabled,
       }) }}
     </div>
     <div class="flex-grow">
@@ -53,15 +54,22 @@
         class: 'ltr',
         name: 'photoSubpath',
         value: subpath,
-        placeholder: "path/to/subfolder"|t('app')
+        placeholder: "path/to/subfolder"|t('app'),
+        disabled: disabled,
       }) }}
     </div>
   </div>
 {% endmacro %}
 
+{% if readOnly %}
+  {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
 {% block content %}
-  {{ actionInput('user-settings/save-user-settings') }}
-  {{ csrfInput() }}
+  {% if not readOnly %}
+    {{ actionInput('user-settings/save-user-settings') }}
+    {{ csrfInput() }}
+  {% endif %}
 
   {% if CraftEdition >= CraftTeam %}
     <h2 class="first">{{ 'User Photos'|t('app') }}</h2>
@@ -77,7 +85,7 @@
       first: true,
       label: "User Photo Location"|t('app'),
       instructions: "Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>."|t('app')
-    }, _self.assetLocationInput(volumeOptions, photoVolume, settings.photoSubpath)) }}
+    }, _self.assetLocationInput(volumeOptions, photoVolume, settings.photoSubpath, readOnly)) }}
   {% else %}
     {{ forms.field({
       first: true,
@@ -100,6 +108,7 @@
       allLabel: 'All users'|t('app'),
       allValue: 'all',
       values: settings.require2fa ?? false,
+      disabled: readOnly,
     }) }}
   {% endif %}
 
@@ -110,6 +119,7 @@
       instructions: 'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)'|t('app'),
       name: 'requireEmailVerification',
       on: settings.requireEmailVerification,
+      disabled: readOnly,
     }) }}
 
     <hr>
@@ -120,7 +130,8 @@
       label: 'Allow public registration'|t('app'),
       name: 'allowPublicRegistration',
       on: settings.allowPublicRegistration,
-      toggle: 'publicRegistrationSettings'
+      toggle: 'publicRegistrationSettings',
+      disabled: readOnly,
     }) }}
 
     <div id="publicRegistrationSettings" class="nested-fields{% if not settings.allowPublicRegistration %} hidden{% endif %}">
@@ -129,6 +140,7 @@
         instructions: 'Whether custom fields should be validated during public registration.'|t('app'),
         name: 'validateOnPublicRegistration',
         on: settings.validateOnPublicRegistration,
+        disabled: readOnly,
       }) }}
 
       {{ forms.lightswitchField({
@@ -136,6 +148,7 @@
         instructions: 'Should users who register their own accounts be deactivated by default? This will prevent them from receiving an activation email or logging in.'|t('app'),
         name: 'deactivateByDefault',
         on: settings.deactivateByDefault,
+        disabled: readOnly,
       }) }}
 
       {% set groups = [{ label: "None"|t('app'), value: '' }] %}
@@ -148,7 +161,8 @@
         instructions: "Choose a user group that publicly-registered members will be added to by default."|t('app'),
         name: 'defaultGroup',
         options: groups,
-        value: settings.defaultGroup
+        value: settings.defaultGroup,
+        disabled: readOnly,
       }) }}
     </div>
   {% endif %}

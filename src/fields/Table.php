@@ -8,14 +8,18 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\TableRowType;
 use craft\gql\types\TableRow;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
@@ -35,8 +39,10 @@ use yii\validators\EmailValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Table extends Field
+class Table extends Field implements CrossSiteCopyableFieldInterface
 {
+    private static array $typeOptions;
+
     /**
      * @inheritdoc
      */
@@ -59,6 +65,31 @@ class Table extends Field
     public static function phpType(): string
     {
         return 'array|null';
+    }
+
+    private static function typeOptions(): array
+    {
+        if (!isset(self::$typeOptions)) {
+            self::$typeOptions = [
+                'checkbox' => Craft::t('app', 'Checkbox'),
+                'color' => Craft::t('app', 'Color'),
+                'date' => Craft::t('app', 'Date'),
+                'select' => Craft::t('app', 'Dropdown'),
+                'email' => Craft::t('app', 'Email'),
+                'heading' => Craft::t('app', 'Row heading'),
+                'lightswitch' => Craft::t('app', 'Lightswitch'),
+                'multiline' => Craft::t('app', 'Multi-line text'),
+                'number' => Craft::t('app', 'Number'),
+                'singleline' => Craft::t('app', 'Single-line text'),
+                'time' => Craft::t('app', 'Time'),
+                'url' => Craft::t('app', 'URL'),
+            ];
+
+            // Make sure they are sorted alphabetically (post-translation)
+            asort(self::$typeOptions);
+        }
+
+        return self::$typeOptions;
     }
 
     /**
@@ -146,9 +177,10 @@ class Table extends Field
             }
         }
 
-        // Convert default date cell values to ISO8601 strings
+        // handle some default cell values
         if (!empty($config['columns']) && isset($config['defaults'])) {
             foreach ($config['columns'] as $colId => $col) {
+                // Convert default date cell values to ISO8601 strings
                 if (in_array($col['type'], ['date', 'time'], true)) {
                     foreach ($config['defaults'] as &$row) {
                         if (isset($row[$colId])) {
@@ -200,7 +232,13 @@ class Table extends Field
      */
     public function validateColumns(): void
     {
+        $typeOptions = self::typeOptions();
+
         foreach ($this->columns as &$col) {
+            if (!isset($typeOptions[$col['type']])) {
+                $col['type'] = 'singleline';
+            }
+
             if ($col['handle']) {
                 $error = null;
 
@@ -246,24 +284,19 @@ class Table extends Field
      */
     public function getSettingsHtml(): ?string
     {
-        $typeOptions = [
-            'checkbox' => Craft::t('app', 'Checkbox'),
-            'color' => Craft::t('app', 'Color'),
-            'date' => Craft::t('app', 'Date'),
-            'select' => Craft::t('app', 'Dropdown'),
-            'email' => Craft::t('app', 'Email'),
-            'heading' => Craft::t('app', 'Row heading'),
-            'lightswitch' => Craft::t('app', 'Lightswitch'),
-            'multiline' => Craft::t('app', 'Multi-line text'),
-            'number' => Craft::t('app', 'Number'),
-            'singleline' => Craft::t('app', 'Single-line text'),
-            'time' => Craft::t('app', 'Time'),
-            'url' => Craft::t('app', 'URL'),
-        ];
+        return $this->settingsHtml(false);
+    }
 
-        // Make sure they are sorted alphabetically (post-translation)
-        asort($typeOptions);
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
 
+    private function settingsHtml(bool $readOnly): string
+    {
         $columnSettings = [
             'heading' => [
                 'heading' => Craft::t('app', 'Column Heading'),
@@ -285,7 +318,7 @@ class Table extends Field
                 'heading' => Craft::t('app', 'Type'),
                 'class' => 'thin',
                 'type' => 'select',
-                'options' => $typeOptions,
+                'options' => self::typeOptions(),
             ],
         ];
 
@@ -342,13 +375,15 @@ class Table extends Field
             Json::encode($this->defaults ?? []) . ', ' .
             Json::encode($columnSettings) . ', ' .
             Json::encode($dropdownSettingsHtml) . ', ' .
-            Json::encode($dropdownSettingsCols) .
+            Json::encode($dropdownSettingsCols) . ', ' .
+            Json::encode($this->staticRows) . ', ' .
             ');');
 
         $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable.twig', [
             'cols' => $columnSettings,
             'rows' => $this->columns,
             'errors' => $this->getErrors('columns'),
+            'readOnly' => $readOnly,
         ]);
 
         $defaultsField = Cp::editableTableFieldHtml([
@@ -360,15 +395,41 @@ class Table extends Field
             'allowReorder' => true,
             'allowDelete' => true,
             'cols' => $columns,
-            'rows' => $this->defaults,
+            'rows' => array_map(function(array $row) {
+                // make sure the row has a UUID
+                $row['rowId'] ??= StringHelper::uuid();
+                return $row;
+            }, $this->defaults ?? []),
             'initJs' => false,
+            'static' => $readOnly,
+            'includeRowId' => true,
         ]);
 
         return $view->renderTemplate('_components/fieldtypes/Table/settings.twig', [
             'field' => $this,
             'columnsField' => $columnsField,
             'defaultsField' => $defaultsField,
+            'readOnly' => $readOnly,
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        if (!parent::beforeSave($isNew)) {
+            return false;
+        }
+
+        if ($this->staticRows && !empty($this->defaults)) {
+            // make sure the default rows have IDs assigned
+            foreach ($this->defaults as &$row) {
+                $row['rowId'] ??= StringHelper::UUID();
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -456,7 +517,7 @@ class Table extends Field
 
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
-        } elseif ($value === null && $this->isFresh($element)) {
+        } elseif ($value === null && ($this->isFresh($element) || $this->staticRows)) {
             $value = $defaults;
         }
 
@@ -468,11 +529,60 @@ class Table extends Field
         $value = array_values($value);
 
         if ($this->staticRows) {
+            // get the order of the default rows
+            $order = ArrayHelper::getColumn($this->defaults ?? [], 'rowId');
+            $missingValueRowIds = null;
+
+            if (!empty($order)) {
+                // if there's no rowIds, add them
+                if (ArrayHelper::containsRecursive($value, 'rowId') === false) {
+                    foreach ($value as $key => &$row) {
+                        $row['rowId'] = $order[$key];
+                    }
+                }
+
+                // the rowIds present in the $value array
+                $usedValueRowIds = ArrayHelper::getColumn($value, 'rowId');
+
+                // if the field has a set order
+                $missingValueRowIds = array_values(array_diff($order, $usedValueRowIds));
+                $leftoverValueRowIds = array_diff($usedValueRowIds, $order);
+
+                // if the rowId is missing from the defaults - remove it from the $value array
+                if (!empty($leftoverValueRowIds)) {
+                    foreach ($leftoverValueRowIds as $key => $rowId) {
+                        unset($value[$key]);
+                    }
+                }
+            }
+
             $valueRows = count($value);
             $totalRows = count($defaults);
+
+            // if we have too few rows
             if ($valueRows < $totalRows) {
-                $value = array_pad($value, $totalRows, []);
-            } elseif ($valueRows > $totalRows) {
+                if ($missingValueRowIds === null) {
+                    $value = array_pad($value, $totalRows, []);
+                } else {
+                    // if we have the missing value rowIds - add them in places where settings rowId doesn't exist in the $value array
+                    while (count($value) < $totalRows) {
+                        $value[] = ['rowId' => reset($missingValueRowIds)];
+                        array_shift($missingValueRowIds);
+                    }
+                }
+            }
+
+            if (!empty($order)) {
+                // sort as per the field's settings
+                usort($value, function($a, $b) use ($order) {
+                    $posA = array_search($a['rowId'], $order);
+                    $posB = array_search($b['rowId'], $order);
+                    return $posA - $posB;
+                });
+            }
+
+            // now that we've sorted the rows, if we have too many rows - splice
+            if ($valueRows > $totalRows) {
                 array_splice($value, $totalRows);
             }
         }
@@ -525,12 +635,62 @@ class Table extends Field
 
                 $value = $row[$colId];
 
-                if (is_string($value) && !$supportsMb4) {
-                    $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
+                if (is_string($value)) {
+                    $value = StringHelper::escapeShortcodes($value);
+                    if (!$supportsMb4) {
+                        $value = StringHelper::emojiToShortcodes($value);
+                    }
                 }
 
                 $serializedRow[$colId] = parent::serializeValue($value ?? null, null);
             }
+            $serialized[] = $serializedRow;
+        }
+
+        return $serialized;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
+    {
+        if (!is_array($value) || empty($this->columns)) {
+            return null;
+        }
+
+        $serialized = [];
+        $supportsMb4 = Craft::$app->getDb()->getSupportsMb4();
+
+        foreach ($value as $row) {
+            $serializedRow = [];
+            foreach ($this->columns as $colId => $column) {
+                if ($column['type'] === 'heading') {
+                    continue;
+                }
+
+                $value = $row[$colId];
+
+                if (is_string($value) && !$supportsMb4) {
+                    $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
+                }
+
+                // can't call parent::serializeValueForDb() here because that calls $this->serializeValue()
+                // see https://github.com/craftcms/cms/pull/17091
+                if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
+                    $serializedRow[$colId] = Db::prepareDateForDb($value);
+                } else {
+                    $serializedRow[$colId] = parent::serializeValue($value, $element);
+                }
+            }
+
+            // if the table has static rows, store the rowId too
+            if ($this->staticRows) {
+                if (isset($row['rowId'])) {
+                    $serializedRow['rowId'] = $row['rowId'];
+                }
+            }
+
             $serialized[] = $serializedRow;
         }
 
@@ -587,7 +747,8 @@ class Table extends Field
 
         return Type::listOf(GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
-            'fields' => fn() => TableRow::prepareRowFieldDefinition($this->columns, false),
+            'description' => sprintf('Defines a row within the “%s” Table field’s data.', $this->name),
+            'fields' => fn() => TableRow::prepareRowFieldDefinition($this->columns),
         ])));
     }
 
@@ -630,7 +791,7 @@ class Table extends Field
                     if (!$fromRequest) {
                         $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
                     }
-                    return trim(preg_replace('/\R/u', "\n", $value));
+                    return trim(StringHelper::convertLineBreaks($value));
                 }
                 // no break
             case 'date':
@@ -714,7 +875,10 @@ class Table extends Field
                 if (isset($row[$colId])) {
                     $hasErrors = $checkForErrors && !$this->_validateCellValue($col['type'], $row[$colId]);
                     $row[$colId] = [
-                        'value' => $row[$colId],
+                        'value' => match ($col['type']) {
+                            'heading' => Html::encode($row[$colId]),
+                            default => $row[$colId],
+                        },
                         'hasErrors' => $hasErrors,
                     ];
                 }
@@ -743,6 +907,7 @@ class Table extends Field
             'allowReorder' => true,
             'addRowLabel' => Craft::t('site', $this->addRowLabel),
             'describedBy' => $this->describedBy,
+            'includeRowId' => $this->staticRows,
         ]);
     }
 }

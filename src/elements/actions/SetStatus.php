@@ -81,15 +81,20 @@ JS, [static::class]);
      */
     public function performAction(ElementQueryInterface $query): bool
     {
-        /** @var ElementInterface $elementType */
+        /** @var class-string<ElementInterface> $elementType */
         $elementType = $this->elementType;
         $isLocalized = $elementType::isLocalized() && Craft::$app->getIsMultiSite();
         $elementsService = Craft::$app->getElements();
+        $user = Craft::$app->getUser()->getIdentity();
 
         $elements = $query->all();
         $failCount = 0;
 
         foreach ($elements as $element) {
+            if (!$elementsService->canSave($element, $user)) {
+                continue;
+            }
+
             switch ($this->status) {
                 case self::ENABLED:
                     // Skip if there's nothing to change

@@ -21,11 +21,15 @@ use yii\base\InvalidArgumentException;
  */
 trait SiteFilterTrait
 {
+    use ConditionalFilterTrait {
+        isActive as conditionalFilterTraitIsActive;
+    }
+
     private null|array $siteIds = null;
 
     protected function isActive(mixed $action): bool
     {
-        if (!parent::isActive($action)) {
+        if (!$this->conditionalFilterTraitIsActive($action)) {
             return false;
         }
 
@@ -34,6 +38,12 @@ trait SiteFilterTrait
 
     protected function setSite(null|array|int|string|Site $value): void
     {
+        // if the app is not fully initialised, ensure Craft's edition is set
+        // @see https://github.com/craftcms/cms/issues/16288 for details on why this is needed
+        if (!Craft::$app->getIsInitialized()) {
+            Craft::$app->ensureEdition();
+        }
+
         $this->siteIds = match (true) {
             $value === null, $value === '*' => null,
             is_array($value) => array_map(fn($site) => $this->getSiteId($site), $value),

@@ -215,7 +215,7 @@ import './install.scss';
                 $('#' + what).find('.buttons')
               );
 
-              for (let input in response.data.errors) {
+              for (const input in response.data.errors) {
                 if (!response.data.errors.hasOwnProperty(input)) {
                   continue;
                 }

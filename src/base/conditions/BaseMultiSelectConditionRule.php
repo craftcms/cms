@@ -27,16 +27,40 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     private array $_values = [];
 
     /**
+     * @var bool Whether “has a value” and “is empty” operators should be available to the condition rule.
+     * @since 5.7.0
+     */
+    protected bool $includeEmptyOperators = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if ($this->includeEmptyOperators) {
+            $this->reloadOnOperatorChange = true;
+        }
+    }
+
+    /**
      * Returns the operators that should be allowed for this rule.
      *
      * @return array
      */
     protected function operators(): array
     {
-        return [
+        $operators = [
             self::OPERATOR_IN,
             self::OPERATOR_NOT_IN,
         ];
+
+        if ($this->includeEmptyOperators) {
+            array_push($operators, self::OPERATOR_NOT_EMPTY, self::OPERATOR_EMPTY);
+        }
+
+        return $operators;
     }
 
     /**
@@ -84,6 +108,10 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      */
     protected function inputHtml(): string
     {
+        if (!in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])) {
+            return '';
+        }
+
         $multiSelectId = 'multiselect';
 
         return
@@ -112,10 +140,17 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      * Returns the rule’s value, prepped for [[Db::parseParam()]] based on the selected operator.
      *
      * @param callable|null $normalizeValue Method for normalizing a given selected value.
-     * @return array|null
+     * @return string|array|null
      */
-    protected function paramValue(?callable $normalizeValue = null): ?array
+    protected function paramValue(?callable $normalizeValue = null): string|array|null
     {
+        if (in_array($this->operator, [self::OPERATOR_EMPTY, self::OPERATOR_NOT_EMPTY])) {
+            return match ($this->operator) {
+                self::OPERATOR_NOT_EMPTY => ':notempty:',
+                self::OPERATOR_EMPTY => ':empty:',
+            };
+        }
+
         $values = [];
         foreach ($this->_values as $value) {
             if ($normalizeValue !== null) {
@@ -159,6 +194,8 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
         return match ($this->operator) {
             self::OPERATOR_IN => !empty(array_intersect($value, $this->_values)),
             self::OPERATOR_NOT_IN => empty(array_intersect($value, $this->_values)),
+            self::OPERATOR_NOT_EMPTY => !empty($value),
+            self::OPERATOR_EMPTY => empty($value),
             default => throw new InvalidConfigException("Invalid operator: $this->operator"),
         };
     }

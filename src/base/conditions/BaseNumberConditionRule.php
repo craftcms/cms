@@ -62,7 +62,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     }
 
     /**
-     * @inerhitdoc
+     * @inheritdoc
      */
     protected function operatorLabel(string $operator): string
     {

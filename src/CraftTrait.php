@@ -13,6 +13,7 @@ use craft\web\Application as WebApplication;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.12.1
+ * @phpstan-ignore trait.unused
  */
 trait CraftTrait
 {

@@ -20,6 +20,7 @@ Craft.LoginForm = Garnish.Base.extend(
     $errors: null,
     $altMethodContainer: null,
     $passkeyBtn: null,
+    passkeyBtn: null,
 
     modal: null,
     resetPasswordForm: null,
@@ -47,6 +48,7 @@ Craft.LoginForm = Garnish.Base.extend(
       this.submitBtn = new Garnish.MultiFunctionBtn(this.$submitBtn, {
         changeButtonText: true,
       });
+      this.passkeyBtn = new Garnish.MultiFunctionBtn(this.$passkeyBtn);
 
       this.$spinner = document.createElement('craft-spinner');
       this.$spinner.setAttribute('visible', false);
@@ -96,6 +98,7 @@ Craft.LoginForm = Garnish.Base.extend(
         this.$altMethodContainer.children().filter('.btn:not(.hidden)').length
       ) {
         this.$altMethodContainer.removeClass('hidden');
+        Garnish.$win.trigger('resize');
       }
     },
 
@@ -239,7 +242,7 @@ Craft.LoginForm = Garnish.Base.extend(
           '<div id="login-alt-menu" class="login-alt-menu menu menu--disclosure"/>'
         ).appendTo($altContainer);
         const $ul = $('<ul/>').appendTo($menu);
-        for (let method of data.otherMethods) {
+        for (const method of data.otherMethods) {
           $('<li/>')
             .append(
               $('<button/>', {
@@ -289,14 +292,17 @@ Craft.LoginForm = Garnish.Base.extend(
       this.onResize();
     },
 
-    showError(error) {
+    showError(error, $container = null) {
       this.clearErrors();
 
+      $container = $container || this.$errors.first();
+
       $('<p style="display: none;">' + error + '</p>')
-        .appendTo(this.$errors)
+        .appendTo($container)
         .velocity('fadeIn');
 
-      this.$errors.removeClass('hidden');
+      $container.removeClass('hidden');
+      Craft.cp.announce(error);
       this.onResize();
     },
 
@@ -318,7 +324,7 @@ Craft.LoginForm = Garnish.Base.extend(
         return;
       }
 
-      this.$passkeyBtn.addClass('loading');
+      this.passkeyBtn.busyEvent();
 
       try {
         const optionsResponse = await Craft.sendActionRequest(
@@ -339,14 +345,18 @@ Craft.LoginForm = Garnish.Base.extend(
           }
         );
 
+        this.passkeyBtn.successEvent();
         this.settings.onLogin(loginResponse.data.returnUrl);
       } catch (e) {
         const message = e?.response?.data?.message;
+
+        this.passkeyBtn.failureEvent();
+
         if (message) {
           this.showError(message);
         }
       } finally {
-        this.$passkeyBtn.removeClass('loading');
+        this.passkeyBtn.endBusyState();
       }
     },
   },
@@ -381,6 +391,7 @@ Craft.LoginForm.ResetPasswordForm = Garnish.Base.extend({
   $form: null,
   $usernameInput: null,
   $submitBtn: null,
+  $errors: null,
   $backBtn: null,
   validateOnInput: false,
 
@@ -392,6 +403,7 @@ Craft.LoginForm.ResetPasswordForm = Garnish.Base.extend({
       .removeClass('hidden');
     this.$usernameInput = this.$form.find('.login-username');
     this.$submitBtn = this.$form.find('button.submit');
+    this.$errors = this.$form.find('.login-errors');
     this.$backBtn = this.$form.find('.login-reset-back-btn');
 
     this.addListener(this.$usernameInput, 'input', 'onInput');
@@ -415,13 +427,14 @@ Craft.LoginForm.ResetPasswordForm = Garnish.Base.extend({
 
     const error = this.validate();
     if (error !== true) {
-      this.loginForm.showError(error);
+      this.loginForm.showError(error, this.$errors);
       this.validateOnInput = true;
       return;
     }
 
     this.loginForm.clearErrors();
     this.$submitBtn.addClass('loading');
+    Craft.cp.announce(Craft.t('app', 'Loading'));
 
     const data = {
       loginName: this.$usernameInput.val(),
@@ -432,12 +445,13 @@ Craft.LoginForm.ResetPasswordForm = Garnish.Base.extend({
         new Craft.LoginForm.ResetPasswordForm.MessageSentModal();
       })
       .catch((error) => {
-        this.showError(
+        this.loginForm.showError(
           (error &&
             error.response &&
             error.response.data &&
             error.response.data.message) ||
-            Craft.t('app', 'A server error occurred.')
+            Craft.t('app', 'A server error occurred.'),
+          this.$errors
         );
       })
       .finally(() => {

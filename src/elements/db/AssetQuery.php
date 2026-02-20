@@ -209,11 +209,11 @@ class AssetQuery extends ElementQuery
     public bool $includeSubfolders = false;
 
     /**
-     * @var string|null The folder path that resulting assets must live within
+     * @var mixed The folder path that resulting assets must live within
      * @used-by folderPath()
      * @since 3.7.39
      */
-    public ?string $folderPath = null;
+    public mixed $folderPath = null;
 
     /**
      * @var mixed The asset transform indexes that should be eager-loaded, if they exist
@@ -921,6 +921,11 @@ class AssetQuery extends ElementQuery
             'folderPath' => 'volumeFolders.path',
         ]);
 
+        // todo: update after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::ASSETS, 'mimeType')) {
+            $this->query->addSelect('assets.mimeType');
+        }
+
         if ($this->volumeId) {
             if ($this->volumeId === ':empty:') {
                 $this->subQuery->andWhere(['assets.volumeId' => null]);
@@ -930,6 +935,12 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->folderId) {
+            // [X] => X, so includeSubfolders works with GraphQL
+            // (see https://github.com/craftcms/cms/issues/17023)
+            if (is_array($this->folderId) && count($this->folderId) === 1 && ArrayHelper::isNumeric($this->folderId)) {
+                $this->folderId = reset($this->folderId);
+            }
+
             $folderCondition = Db::parseNumericParam('assets.folderId', $this->folderId);
             if (is_numeric($this->folderId) && $this->includeSubfolders) {
                 $assetsService = Craft::$app->getAssets();
@@ -940,7 +951,18 @@ class AssetQuery extends ElementQuery
         }
 
         if ($this->folderPath) {
-            $this->subQuery->andWhere(Db::parseParam('volumeFolders.path', $this->folderPath));
+            $folderPath = (array)$this->folderPath;
+            foreach ($folderPath as &$path) {
+                if (
+                    is_strinG($path) &&
+                    !str_ends_with($path, '/') &&
+                    Db::escapeParam($path) === $path
+                ) {
+                    $path .= '/';
+                }
+            }
+
+            $this->subQuery->andWhere(Db::parseParam('volumeFolders.path', $folderPath));
         }
 
         if ($this->uploaderId) {
@@ -994,8 +1016,28 @@ class AssetQuery extends ElementQuery
         if ($this->hasAlt !== null) {
             $hasAltCondition = [
                 'or',
-                ['assets.alt' => null],
-                ['assets_sites.alt' => null],
+                ['not', ['assets_sites.alt' => '']],
+                [
+                    'and',
+                    ['assets_sites.alt' => null],
+                    ['not', ['assets.alt' => '']],
+                    ['not', ['assets.alt' => null]],
+                ],
+            ];
+
+            $withoutAltCondition = [
+                'or',
+                ['assets_sites.alt' => ''],
+                [
+                    'and',
+                    ['assets_sites.alt' => null],
+                    [
+                        'or',
+                        ['assets.alt' => ''],
+                        ['assets.alt' => null],
+                    ],
+
+                ],
             ];
 
             $this->subQuery
@@ -1004,7 +1046,7 @@ class AssetQuery extends ElementQuery
                     '[[assets_sites.assetId]] = [[assets.id]]',
                     '[[assets_sites.siteId]] = [[elements_sites.siteId]]',
                 ])
-                ->andWhere($this->hasAlt ? ['not', $hasAltCondition] : $hasAltCondition);
+                ->andWhere($this->hasAlt ? $hasAltCondition : $withoutAltCondition);
         }
 
         return parent::afterPrepare();

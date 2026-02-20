@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Chippable;
 use craft\base\CpEditable;
+use craft\base\Iconic;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
@@ -17,12 +18,13 @@ use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\db\Schema;
 
 /**
  * Section model class.
@@ -33,7 +35,7 @@ use craft\validators\UniqueValidator;
  * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
-class Section extends Model implements Chippable, CpEditable
+class Section extends Model implements Chippable, CpEditable, Iconic
 {
     public const TYPE_SINGLE = 'single';
     public const TYPE_CHANNEL = 'channel';
@@ -81,15 +83,15 @@ class Section extends Model implements Chippable, CpEditable
     public ?string $handle = null;
 
     /**
-     * @var string|null Type
+     * @var self::TYPE_*|null Type
      */
     public ?string $type = null;
 
     /**
-     * @var int Max authors
+     * @var int|null Max authors
      * @since 5.0.0
      */
-    public int $maxAuthors = 1;
+    public int|null $maxAuthors = 1;
 
     /**
      * @var int|null Max levels
@@ -109,7 +111,7 @@ class Section extends Model implements Chippable, CpEditable
      *  - [[PropagationMethod::None]] – Only save entries in the site they were created in
      *  - [[PropagationMethod::SiteGroup]] – Save  entries to other sites in the same site group
      *  - [[PropagationMethod::Language]] – Save entries to other sites with the same language
-     *  - [[PropagationMethod::Custom]] – Save entries to other sites based on a custom [[$propagationKeyFormat|propagation key format]]
+     *  - [[PropagationMethod::Custom]] – Let each entry choose which sites it should be saved to
      *  - [[PropagationMethod::All]] – Save entries to all sites supported by the owner element
      *
      * @since 3.2.0
@@ -118,7 +120,7 @@ class Section extends Model implements Chippable, CpEditable
 
     /**
      * @var string Default placement
-     * @phpstan-var self::DEFAULT_PLACEMENT_BEGINNING|self::DEFAULT_PLACEMENT_END
+     * @phpstan-var self::DEFAULT_PLACEMENT_*
      * @since 3.7.0
      */
     public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;
@@ -142,6 +144,11 @@ class Section extends Model implements Chippable, CpEditable
      * @var EntryType[]|null
      */
     private ?array $_entryTypes = null;
+
+    /**
+     * @see page()
+     */
+    private string|false $page;
 
     /**
      * @inheritdoc
@@ -199,8 +206,15 @@ class Section extends Model implements Chippable, CpEditable
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
-        $rules[] = [['maxAuthors'], 'number', 'integerOnly' => true, 'min' => 1];
+        $rules[] = [['id', 'structureId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name', 'handle'], 'trim'];
+        $rules[] = [
+            ['maxLevels', 'maxAuthors'],
+            'number',
+            'integerOnly' => true,
+            'min' => 0,
+            'max' => Db::getMaxAllowedValueForNumericColumn(Schema::TYPE_SMALLINT),
+        ];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [
             ['type'], 'in', 'range' => [
@@ -209,7 +223,7 @@ class Section extends Model implements Chippable, CpEditable
                 self::TYPE_STRUCTURE,
             ],
         ];
-        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
+        $rules[] = [['handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
         $rules[] = [['name', 'handle', 'type', 'entryTypes', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
@@ -305,7 +319,10 @@ class Section extends Model implements Chippable, CpEditable
      */
     public function setSiteSettings(array $siteSettings): void
     {
-        $this->_siteSettings = ArrayHelper::index($siteSettings, 'siteId');
+        $this->_siteSettings = ArrayHelper::index(
+            $siteSettings,
+            fn(Section_SiteSettings $siteSettings) => $siteSettings->siteId,
+        );
 
         foreach ($this->_siteSettings as $settings) {
             $settings->setSection($this);
@@ -366,7 +383,11 @@ class Section extends Model implements Chippable, CpEditable
      */
     public function setEntryTypes(array $entryTypes): void
     {
-        $this->_entryTypes = $entryTypes;
+        $entriesService = Craft::$app->getEntries();
+        $this->_entryTypes = array_values(array_filter(array_map(
+            fn($entryType) => $entriesService->getEntryType($entryType),
+            $entryTypes,
+        )));
     }
 
     /**
@@ -389,7 +410,51 @@ class Section extends Model implements Chippable, CpEditable
      */
     public function getCpEditUrl(): ?string
     {
-        return $this->id ? UrlHelper::cpUrl("settings/sections/$this->id") : null;
+        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+            return null;
+        }
+        return UrlHelper::cpUrl("settings/sections/$this->id");
+    }
+
+    /**
+     * Returns the section’s control panel index page URI.
+     *
+     * @return string
+     * @since 5.9.0
+     */
+    public function getCpIndexUri(): string
+    {
+        $page = $this->getPage();
+        return sprintf(
+            'content/%s/%s',
+            $page ? StringHelper::toKebabCase($page) : 'entries',
+            $this->type === self::TYPE_SINGLE ? 'singles' : $this->handle,
+        );
+    }
+
+    /**
+     * Returns the page name this section belongs to.
+     *
+     * @return string|null
+     * @since 5.9.0
+     */
+    public function getPage(): ?string
+    {
+        if (!isset($this->page)) {
+            $sourceKey = $this->type === Section::TYPE_SINGLE ? 'singles' : "section:$this->uid";
+            $source = ElementHelper::findSource(Entry::class, $sourceKey, withDisabled: true);
+            $this->page = $source['page'] ?? false;
+        }
+
+        return $this->page ?: null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIcon(): ?string
+    {
+        return 'newspaper';
     }
 
     /**
@@ -404,7 +469,7 @@ class Section extends Model implements Chippable, CpEditable
             'name' => $this->name,
             'handle' => $this->handle,
             'type' => $this->type,
-            'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $this->getEntryTypes()),
+            'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->getUsageConfig(), $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,
@@ -413,7 +478,7 @@ class Section extends Model implements Chippable, CpEditable
         ];
 
         if (!empty($this->previewTargets)) {
-            $config['previewTargets'] = ProjectConfigHelper::packAssociativeArray($this->previewTargets);
+            $config['previewTargets'] = array_values($this->previewTargets);
         }
 
         if ($this->type === self::TYPE_STRUCTURE) {

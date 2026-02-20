@@ -8,6 +8,8 @@
 namespace craft\services;
 
 use Craft;
+use craft\helpers\FileHelper;
+use SensitiveParameter;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -16,7 +18,7 @@ use yii\helpers\Inflector;
 /**
  * Security service.
  *
- * An instance of the service is available via [[\yii\base\Application::getSecurity()|`Craft::$app->security`]].
+ * An instance of the service is available via [[\yii\base\Application::getSecurity()|`Craft::$app->getSecurity()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -66,7 +68,7 @@ class Security extends \yii\base\Security
      * validation fails.
      * @return string The hash.
      */
-    public function hashPassword(string $password, bool $validateHash = false): string
+    public function hashPassword(#[SensitiveParameter] string $password, bool $validateHash = false): string
     {
         $hash = $this->generatePasswordHash($password, $this->_blowFishHashCost);
 
@@ -92,7 +94,7 @@ class Security extends \yii\base\Security
      * @see hkdf()
      * @see pbkdf2()
      */
-    public function hashData($data, $key = null, $rawHash = false): string
+    public function hashData(#[SensitiveParameter] $data, #[SensitiveParameter] $key = null, $rawHash = false): string
     {
         if ($key === null) {
             $key = Craft::$app->getConfig()->getGeneral()->securityKey;
@@ -117,7 +119,7 @@ class Security extends \yii\base\Security
      * @throws InvalidConfigException when HMAC generation fails.
      * @see hashData()
      */
-    public function validateData($data, $key = null, $rawHash = false): string|false
+    public function validateData($data, #[SensitiveParameter] $key = null, $rawHash = false): string|false
     {
         if ($key === null) {
             $key = Craft::$app->getConfig()->getGeneral()->securityKey;
@@ -137,7 +139,7 @@ class Security extends \yii\base\Security
      * @see decryptByKey()
      * @see encryptByPassword()
      */
-    public function encryptByKey($data, $inputKey = null, $info = null): string
+    public function encryptByKey(#[SensitiveParameter] $data, #[SensitiveParameter] $inputKey = null, $info = null): string
     {
         if ($inputKey === null) {
             $inputKey = Craft::$app->getConfig()->getGeneral()->securityKey;
@@ -156,7 +158,7 @@ class Security extends \yii\base\Security
      * @throws Exception on OpenSSL error
      * @see encryptByKey()
      */
-    public function decryptByKey($data, $inputKey = null, $info = null): string|false
+    public function decryptByKey($data, #[SensitiveParameter] $inputKey = null, $info = null): string|false
     {
         if ($inputKey === null) {
             $inputKey = Craft::$app->getConfig()->getGeneral()->securityKey;
@@ -184,7 +186,7 @@ class Security extends \yii\base\Security
      * @param mixed $value
      * @return mixed The possibly-redacted value
      */
-    public function redactIfSensitive(string $key, mixed $value): mixed
+    public function redactIfSensitive(string $key, #[SensitiveParameter] mixed $value): mixed
     {
         if (is_array($value)) {
             foreach ($value as $n => &$v) {
@@ -195,5 +197,26 @@ class Security extends \yii\base\Security
         }
 
         return $value;
+    }
+
+    /**
+     * Returns whether the given file path is located within or above any system directories.
+     *
+     * @param string $path
+     * @return bool
+     * @since 5.4.2
+     */
+    public function isSystemDir(string $path): bool
+    {
+        $path = FileHelper::absolutePath($path, '/');
+
+        foreach (Craft::$app->getPath()->getSystemPaths() as $dir) {
+            $dir = FileHelper::absolutePath($dir, '/');
+            if (str_starts_with("$path/", "$dir/") || str_starts_with("$dir/", "$path/")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

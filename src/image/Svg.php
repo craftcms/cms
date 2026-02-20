@@ -24,7 +24,7 @@ class Svg extends Image
     public const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/i';
     public const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/i';
     public const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(-?[\d.]+(?:,|\s)-?[\d.]+(?:,|\s)-?([\d.]+)(?:,|\s)(-?[\d.]+))"/i';
-    public const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/i';
+    public const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+(?:\s[a-z]+)?)"/i';
     public const SVG_TAG_RE = '/<svg/i';
     public const SVG_CLEANUP_WIDTH_RE = '/(<svg[^>]*\s)width="[\d\.]+%"/i';
     public const SVG_CLEANUP_HEIGHT_RE = '/(<svg[^>]*\s)height="[\d\.]+%"/i';
@@ -162,9 +162,9 @@ class Svg extends Image
      */
     public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $cropPosition = 'center-center'): self
     {
-        // TODO If we encounter a focal point, rasterize and crop with focal.
+        // SVGs don’t support focal points yet
         if (is_array($cropPosition)) {
-            throw new ImageException(Craft::t('app', 'Currently SVG images do not support focal point.'));
+            $cropPosition = 'center-center';
         }
 
         $this->normalizeDimensions($targetWidth, $targetHeight);

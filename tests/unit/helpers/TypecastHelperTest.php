@@ -48,10 +48,28 @@ class TypecastHelperTest extends TestCase
     {
         return [
             [GeneralConfig::class, 'aliases', ['foo', 'bar'], 'foo,bar'],
+            [GeneralConfig::class, 'allowAdminChanges', true, 'yes'],
+            [GeneralConfig::class, 'allowAdminChanges', false, 'no'],
+            [GeneralConfig::class, 'allowAdminChanges', true, 'on'],
+            [GeneralConfig::class, 'allowAdminChanges', false, 'off'],
             [GeneralConfig::class, 'allowAdminChanges', true, '1'],
-            [GeneralConfig::class, 'allowUpdates', false, '0'],
+            [GeneralConfig::class, 'allowAdminChanges', false, '0'],
+            [GeneralConfig::class, 'allowAdminChanges', true, 'true'],
+            [GeneralConfig::class, 'allowAdminChanges', false, 'false'],
+            [GeneralConfig::class, 'allowAdminChanges', false, ''],
+            [GeneralConfig::class, 'allowAdminChanges', false, 'whatever'],
             [GeneralConfig::class, 'baseCpUrl', null, ''],
             [GeneralConfig::class, 'blowfishHashCost', 123, 123],
+            [GeneralConfig::class, 'isSystemLive', true, 'yes'],
+            [GeneralConfig::class, 'isSystemLive', false, 'no'],
+            [GeneralConfig::class, 'isSystemLive', true, 'on'],
+            [GeneralConfig::class, 'isSystemLive', false, 'off'],
+            [GeneralConfig::class, 'isSystemLive', true, '1'],
+            [GeneralConfig::class, 'isSystemLive', false, '0'],
+            [GeneralConfig::class, 'isSystemLive', true, 'true'],
+            [GeneralConfig::class, 'isSystemLive', false, 'false'],
+            [GeneralConfig::class, 'isSystemLive', null, ''],
+            [GeneralConfig::class, 'isSystemLive', null, 'whatever'],
             [GeneralConfig::class, 'maxUploadFileSize', 123, '123'],
             [GeneralConfig::class, 'maxUploadFileSize', '123abc', '123abc'],
         ];
@@ -81,10 +99,6 @@ class TypecastHelperTest extends TestCase
      */
     public function testEnumProperties(): void
     {
-        if (PHP_VERSION_ID < 80100) {
-            $this->markTestSkipped('PHP 8.1+ only');
-        }
-
         $config = [
             'suit' => 'H',
             'anotherSuit' => Suit::Hearts,

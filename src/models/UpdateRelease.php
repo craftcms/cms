@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use craft\base\Model;
+use craft\events\UpdateReleaseEvent;
 use craft\helpers\DateTimeHelper;
 use DateTime;
 use DateTimeZone;
@@ -20,6 +21,13 @@ use DateTimeZone;
  */
 class UpdateRelease extends Model
 {
+    /**
+     * @event UpdateReleaseEvent The event that is triggered when determining if this release should be flagged as critical.
+     * @see isCritical()
+     * @since 5.7.0
+     */
+    public const EVENT_IS_CRITICAL = 'isCritical';
+
     /**
      * @var string Version
      */
@@ -56,5 +64,30 @@ class UpdateRelease extends Model
         };
 
         return $fields;
+    }
+
+    /**
+     * Returns whether the release should be flagged as critical.
+     *
+     * @return bool
+     * @since 5.7.0
+     */
+    public function isCritical(Update $update): bool
+    {
+        if (!$this->critical) {
+            return false;
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_IS_CRITICAL)) {
+            $event = new UpdateReleaseEvent([
+                'update' => $update,
+            ]);
+            $this->trigger(self::EVENT_IS_CRITICAL, $event);
+            if ($event->handled) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

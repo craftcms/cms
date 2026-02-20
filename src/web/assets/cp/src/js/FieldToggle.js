@@ -46,8 +46,18 @@ Craft.FieldToggle = Garnish.Base.extend({
     this.findTargets();
 
     switch (this.type) {
-      case 'link':
-        this.addListener(this.$toggle, 'click', 'onToggleChange');
+      case 'button':
+        if (this._isButtonToggle()) {
+          if (!this._$target.attr('id')) {
+            this._$target.attr(
+              'id',
+              `toggle-target-${Math.floor(Math.random() * 1000000)}`
+            );
+          }
+          this.$toggle.attr('aria-controls', this._$target.attr('id'));
+          this._updateButtonExpanded();
+        }
+        this.addListener(this.$toggle, 'activate', 'onToggleChange');
         break;
       case 'fieldset':
         this.addListener(
@@ -57,7 +67,18 @@ Craft.FieldToggle = Garnish.Base.extend({
         );
         break;
       default:
-        this.addListener(this.$toggle, 'change', 'onToggleChange');
+        this.addListener(this.$toggle, 'change', () => {
+          this.onToggleChange();
+
+          // if this is a radio button, trigger onToggleChange() for the other radio buttons with the same name
+          if (this.$toggle.attr('type') === 'radio') {
+            $(`input[type="radio"][name="${this.$toggle.attr('name')}"]`)
+              .not(this.$toggle)
+              .each((i, radio) => {
+                $(radio).data('fieldtoggle')?.onToggleChange();
+              });
+          }
+        });
         this.onToggleChange();
     }
   },
@@ -71,9 +92,10 @@ Craft.FieldToggle = Garnish.Base.extend({
   },
 
   getType: function () {
-    let nodeName = this.$toggle.prop('nodeName');
+    let nodeName = this._toggleNodeName();
     if (
-      (nodeName === 'INPUT' && this.$toggle.attr('type') === 'checkbox') ||
+      (nodeName === 'INPUT' &&
+        ['checkbox', 'radio'].includes(this.$toggle.attr('type'))) ||
       this.$toggle.attr('role') === 'checkbox' ||
       this.$toggle.attr('role') === 'switch'
     ) {
@@ -86,8 +108,9 @@ Craft.FieldToggle = Garnish.Base.extend({
           return 'booleanMenu';
         }
         return 'select';
+      case 'BUTTON':
       case 'A':
-        return 'link';
+        return 'button';
       default:
         return 'fieldset';
     }
@@ -96,7 +119,9 @@ Craft.FieldToggle = Garnish.Base.extend({
   findTargets: function () {
     if (this.targetPrefix !== null) {
       this._$target = $(
-        this.normalizeTargetSelector(this.targetPrefix + this.getToggleVal())
+        this.normalizeTargetSelector(
+          this.targetPrefix + (this.getToggleVal() || '')
+        )
       );
     } else {
       if (this.targetSelector) {
@@ -110,36 +135,29 @@ Craft.FieldToggle = Garnish.Base.extend({
   },
 
   getToggleVal: function () {
-    if (this.targetPrefix !== null) {
-      return this.normalizeToggleVal(this.$toggle.val());
+    if (this.type === 'checkbox' && this.targetPrefix === null) {
+      if (typeof this.$toggle.prop('checked') !== 'undefined') {
+        return this.$toggle.prop('checked');
+      }
+      return this.$toggle.attr('aria-checked') === 'true';
     }
 
-    switch (this.type) {
-      case 'checkbox':
-        if (typeof this.$toggle.prop('checked') !== 'undefined') {
-          return this.$toggle.prop('checked');
-        }
-        return this.$toggle.attr('aria-checked') === 'true';
-
-      case 'booleanMenu':
-        const boolean = this.$toggle.data('boolean');
-        if (typeof boolean !== 'undefined') {
-          return boolean;
-        }
-        const val = this.$toggle.val();
-        return val && val !== '0';
-
-      default:
-        let postVal;
-        if (this.type === 'fieldset') {
-          postVal = this.$toggle.find('input:checked:first').val();
-        } else {
-          postVal = Garnish.getInputPostVal(this.$toggle);
-        }
-
-        // Normalize the value
-        return this.normalizeToggleVal(postVal);
+    if (this.type === 'booleanMenu') {
+      const boolean = this.$toggle.data('boolean');
+      if (typeof boolean !== 'undefined') {
+        return boolean;
+      }
+      const val = this.$toggle.val();
+      return val && val !== '0';
     }
+
+    if (this.type === 'fieldset') {
+      return this.normalizeToggleVal(
+        this.$toggle.find('input:checked:first').val()
+      );
+    }
+
+    return this.normalizeToggleVal(this.$toggle.val());
   },
 
   normalizeToggleVal: function (val) {
@@ -149,7 +167,16 @@ Craft.FieldToggle = Garnish.Base.extend({
     return val.replace(/[^\w]+/g, '-');
   },
 
-  onToggleChange: function () {
+  onToggleChange: async function (force = false) {
+    // is this a selectize input and does it look like it was just opened?
+    const selectize = this.$toggle.data('selectize');
+    if (selectize && this.$toggle.val() === '') {
+      await Craft.sleep(1);
+      if (selectize.isOpen) {
+        return;
+      }
+    }
+
     if (this.type === 'select' || this.type === 'fieldset') {
       this.hideTarget(this._$target);
       this.findTargets();
@@ -157,10 +184,8 @@ Craft.FieldToggle = Garnish.Base.extend({
     } else {
       this.findTargets();
 
-      if (this.type === 'link') {
-        this.onToggleChange._show =
-          this.$toggle.hasClass('collapsed') ||
-          !this.$toggle.hasClass('expanded');
+      if (this.type === 'button') {
+        this.onToggleChange._show = this._buttonIsCollapsed();
       } else if (this.type === 'checkbox' && this.targetPrefix !== null) {
         this.onToggleChange._show = this.$toggle.prop('checked');
       } else {
@@ -177,6 +202,8 @@ Craft.FieldToggle = Garnish.Base.extend({
 
       delete this.onToggleChange._show;
     }
+
+    this.trigger('toggleChange');
   },
 
   showTarget: function ($target) {
@@ -186,9 +213,12 @@ Craft.FieldToggle = Garnish.Base.extend({
       $target.removeClass('hidden');
 
       if (this.type !== 'select' && this.type !== 'fieldset') {
-        if (this.type === 'link') {
+        if (this.type === 'button') {
           this.$toggle.removeClass('collapsed');
           this.$toggle.addClass('expanded');
+          if (this._isButtonToggle()) {
+            this._updateButtonExpanded();
+          }
         }
 
         for (let i = 0; i < $target.length; i++) {
@@ -232,9 +262,12 @@ Craft.FieldToggle = Garnish.Base.extend({
       if (this.type === 'select' || this.type === 'fieldset') {
         $target.addClass('hidden');
       } else {
-        if (this.type === 'link') {
+        if (this.type === 'button') {
           this.$toggle.removeClass('expanded');
           this.$toggle.addClass('collapsed');
+          if (this._isButtonToggle()) {
+            this._updateButtonExpanded();
+          }
         }
 
         for (let i = 0; i < $target.length; i++) {
@@ -255,6 +288,27 @@ Craft.FieldToggle = Garnish.Base.extend({
         }
       }
     }
+  },
+
+  _toggleNodeName: function () {
+    return this.$toggle.prop('nodeName');
+  },
+
+  _isButtonToggle: function () {
+    return this._toggleNodeName() === 'BUTTON';
+  },
+
+  _buttonIsCollapsed: function () {
+    return (
+      this.$toggle.hasClass('collapsed') || !this.$toggle.hasClass('expanded')
+    );
+  },
+
+  _updateButtonExpanded() {
+    this.$toggle.attr(
+      'aria-expanded',
+      this._buttonIsCollapsed() ? 'false' : 'true'
+    );
   },
 
   destroy: function () {

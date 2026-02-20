@@ -70,11 +70,7 @@ JS;
     private function _getCurrencySubUnits(): string
     {
         $currencies = new ISOCurrencies();
-        $subUnitsByCurrencyCode = ArrayHelper::map(iterator_to_array($currencies), static function(Currency $currency) {
-            return $currency->getCode();
-        }, static function(Currency $currency) use ($currencies) {
-            return $currencies->subunitFor($currency);
-        });
+        $subUnitsByCurrencyCode = ArrayHelper::map(iterator_to_array($currencies), static fn(Currency $currency) => $currency->getCode(), static fn(Currency $currency) => $currencies->subunitFor($currency));
 
         return Json::encode($subUnitsByCurrencyCode);
     }

@@ -12,6 +12,7 @@ use craft\base\Component;
 use craft\errors\GqlException;
 use craft\events\RegisterGqlArgumentHandlersEvent;
 use craft\gql\base\ArgumentHandlerInterface;
+use craft\gql\base\RelationArgumentHandler;
 use craft\gql\handlers\RelatedAssets;
 use craft\gql\handlers\RelatedCategories;
 use craft\gql\handlers\RelatedEntries;
@@ -51,6 +52,9 @@ class ArgumentManager extends Component
      */
     public const EVENT_DEFINE_GQL_ARGUMENT_HANDLERS = 'defineGqlArgumentHandlers';
 
+    /**
+     * @var array<string,class-string<ArgumentHandlerInterface>|ArgumentHandlerInterface>
+     */
     private array $_argumentHandlers = [];
 
     private bool $_handlersCreated = false;
@@ -142,9 +146,7 @@ class ArgumentManager extends Component
         if (isset($arguments['relatedToAll'])) {
             Craft::$app->getDeprecator()->log('graphql.arguments.relatedToAll', 'The `relatedToAll` argument has been deprecated. Use the `relatedTo` argument with the `["and", ...ids]` syntax instead.');
             $ids = (array)$arguments['relatedToAll'];
-            $ids = array_map(function($value) {
-                return ['element' => $value];
-            }, $ids);
+            $ids = array_map(fn($value) => ['element' => $value], $ids);
             $arguments['relatedTo'] = array_merge(['and'], $ids);
             unset($arguments['relatedToAll']);
         }
@@ -152,6 +154,15 @@ class ArgumentManager extends Component
         foreach ($this->_argumentHandlers as $argumentName => $handler) {
             if (!empty($arguments[$argumentName]) && $handler instanceof ArgumentHandlerInterface) {
                 $arguments = $handler->handleArgumentCollection($arguments);
+            }
+            // if it's one of the relatedToXYZ arguments,
+            // if the value is empty/null unset that arg so that it doesn't go into the criteria
+            if (
+                array_key_exists($argumentName, $arguments) &&
+                empty($arguments[$argumentName]) &&
+                $handler instanceof RelationArgumentHandler
+            ) {
+                unset($arguments[$argumentName]);
             }
         }
 

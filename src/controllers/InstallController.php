@@ -57,7 +57,12 @@ class InstallController extends Controller
             throw new BadRequestHttpException('Craft is already installed');
         }
 
-        return parent::beforeAction($action);
+        if (!parent::beforeAction($action)) {
+            return false;
+        };
+
+        $this->response->setNoCacheHeaders();
+        return true;
     }
 
     /**

@@ -20,8 +20,7 @@ use craft\elements\db\EagerLoadPlan;
 class EagerLoadElementsEvent extends Event
 {
     /**
-     * @var string The source element type
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface> The source element type
      */
     public string $elementType;
 

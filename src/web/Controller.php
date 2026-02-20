@@ -391,7 +391,7 @@ abstract class Controller extends \yii\web\Controller
         array $data = [],
         array $routeParams = [],
     ): ?YiiResponse {
-        $modelName = $modelName ?? 'model';
+        $modelName ??= 'model';
         $routeParams += [$modelName => $model];
         $data += [
             'modelName' => $modelName,
@@ -568,7 +568,8 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireToken(): void
     {
-        if (!$this->request->getHadToken()) {
+        $tokenRoute = $this->request->getTokenRoute()[0] ?? null;
+        if ($tokenRoute !== $this->getRoute()) {
             throw new BadRequestHttpException('Valid token required');
         }
     }

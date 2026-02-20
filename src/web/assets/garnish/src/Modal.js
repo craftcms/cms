@@ -11,9 +11,7 @@ export default Base.extend(
     $container: null,
     $shade: null,
     $triggerElement: null,
-    $liveRegion: $(
-      '<span class="visually-hidden" role="status" data-status-message></span>'
-    ),
+    $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
 
     visible: false,
 
@@ -54,13 +52,17 @@ export default Base.extend(
         }
       }
 
-      if (this.settings.triggerElement) {
-        this.$triggerElement = this.settings.triggerElement;
-      } else {
-        this.$triggerElement = Garnish.getFocusedElement();
+      if (!this.settings.triggerElement) {
+        this.settings.triggerElement = Garnish.getFocusedElement();
       }
 
       Garnish.Modal.instances.push(this);
+    },
+
+    addLiveRegion: function () {
+      if (!this.$container) return;
+
+      this.$liveRegion.appendTo(this.$container);
     },
 
     setContainer: function (container) {
@@ -93,8 +95,7 @@ export default Base.extend(
         });
       }
 
-      // add live region
-      this.$liveRegion.appendTo(this.$container);
+      this.addLiveRegion();
 
       this.addListener(this.$container, 'click', function (ev) {
         ev.stopPropagation();
@@ -104,22 +105,6 @@ export default Base.extend(
       if (this.visible) {
         this.show();
       }
-    },
-
-    updateLiveRegion: function (message) {
-      if (!message) return;
-
-      this.$liveRegion.empty().text(message);
-
-      // Clear message after interval
-      setTimeout(() => {
-        const currentMessage = this.$liveRegion.text();
-
-        // Check that this is the same message and hasn't been updated since
-        if (message !== currentMessage) return;
-
-        this.$liveRegion.empty();
-      }, 5000);
     },
 
     show: function () {
@@ -179,6 +164,7 @@ export default Base.extend(
           });
         }
 
+        Garnish.$bod.addClass('no-scroll');
         this.onShow();
       }
     },
@@ -227,13 +213,41 @@ export default Base.extend(
         this.removeListener(Garnish.$win, 'resize');
       }
 
-      this.$triggerElement.focus();
-
       this.visible = false;
+      Garnish.$bod.removeClass('no-scroll');
       Garnish.Modal.visibleModal = null;
       Garnish.uiLayerManager.removeLayer();
       Garnish.resetModalBackgroundLayerVisibility();
       this.onHide();
+
+      setTimeout(() => {
+        let $focusTarget = this.$triggerElement ?? this.settings.triggerElement;
+        if (typeof $focusTarget === 'function') {
+          $focusTarget = $focusTarget();
+        }
+        if (!($focusTarget instanceof jQuery)) {
+          $focusTarget = $($focusTarget);
+        }
+
+        // Check for visibility of trigger
+        if ($focusTarget?.is(':hidden')) {
+          const $disclosure = $focusTarget.closest('.menu--disclosure');
+          if ($disclosure.length) {
+            const menuId = $disclosure.attr('id');
+            $focusTarget = $(`[aria-controls="${menuId}"]`);
+          } else {
+            $focusTarget = null;
+          }
+        }
+
+        if ($focusTarget?.length) {
+          $focusTarget.focus();
+        } else {
+          console.error(
+            'There is no trigger element set for this modal. Set one with modal.$triggerElement = $(...)'
+          );
+        }
+      }, 200);
     },
 
     onHide: function () {
@@ -398,7 +412,7 @@ export default Base.extend(
         this.resizeDragger.destroy();
       }
 
-      Garnish.Modal.instances = Craft.Preview.instances.filter(
+      Garnish.Modal.instances = Garnish.Modal.instances.filter(
         (o) => o !== this
       );
 

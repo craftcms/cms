@@ -113,6 +113,11 @@
 {% endmacro %}
 
 
+{% macro buttonGroup(config) %}
+    {% include "_includes/forms/buttonGroup" with config only %}
+{% endmacro %}
+
+
 {% macro file(config) %}
     {% include "_includes/forms/file" with config only %}
 {% endmacro %}
@@ -120,6 +125,11 @@
 
 {% macro lightswitch(config) %}
     {% include "_includes/forms/lightswitch" with config only %}
+{% endmacro %}
+
+
+{% macro range(config) %}
+    {% include "_includes/forms/range" with config only %}
 {% endmacro %}
 
 
@@ -273,8 +283,8 @@
     {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
         {% set config = config|merge({
             tip: (config.allowedEnvValues is not defined)
-            ? 'This can be set to an environment variable matching one of the option values.'|t('app')
-            : 'This can be set to an environment variable.'|t('app'),
+            ? 'This can begin with an environment variable or alias.'|t('app')
+            : 'This can begin with an environment variable.'|t('app'),
         }) %}
     {% endif %}
     {{ _self.field(config, 'template:_includes/forms/selectize') }}
@@ -290,10 +300,10 @@
 {% macro checkboxField(config) %}
     {# label --> checkboxLabel #}
     {% set config = config|merge({
-        fieldset: config.fieldLabel is defined,
+        fieldset: config.fieldset ?? (config.fieldLabel is defined),
         fieldClass: (config.fieldClass ?? [])|explodeClass|push('checkboxfield'),
         id: config.id ?? "checkbox#{random()}",
-        checkboxLabel: config.label ?? null,
+        checkboxLabel: config.checkboxLabel ?? config.label ?? null,
         instructionsPosition: config.instructionsPosition ?? 'after',
     })|withoutKey('label') %}
     {{ _self.field(config, 'template:_includes/forms/checkbox') }}
@@ -327,6 +337,15 @@
 {% endmacro %}
 
 
+{% macro buttonGroupField(config) %}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "buttongroup#{random()}",
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/buttonGroup') }}
+{% endmacro %}
+
+
 {% macro fileField(config) %}
     {% set config = config|merge({id: config.id ?? "file#{random()}"}) %}
     {{ _self.field(config, 'template:_includes/forms/file') }}
@@ -340,6 +359,12 @@
         fieldLabel: config.fieldLabel ?? config.label ?? null,
     })|withoutKey('label') %}
     {{ _self.field(config, 'template:_includes/forms/lightswitch') }}
+{% endmacro %}
+
+
+{% macro rangeField(config) %}
+    {% set config = config|merge({id: config.id ?? "range#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/range') }}
 {% endmacro %}
 
 
@@ -378,9 +403,9 @@
         {% if config.tip is not defined and value[0:1] not in ['$', '@'] %}
             {% set config = config|merge({
                 tip: ((config.suggestAliases ?? false)
-                ? 'This can be set to an environment variable, or begin with an alias.'|t('app')
-                : 'This can be set to an environment variable.'|t('app')) ~ ' ' ~ tag('a', {
-                    href: 'https://craftcms.com/docs/4.x/config/#control-panel-settings',
+                ? 'This can begin with an environment variable or alias.'|t('app')
+                : 'This can begin with an environment variable.'|t('app')) ~ ' ' ~ tag('a', {
+                    href: 'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                     class: 'go',
                     text: 'Learn more'|t('app'),
                 }),
@@ -464,10 +489,33 @@
 
 
 {% macro fieldLayoutDesignerField(config) %}
-    {{ _self.field({
-        label: 'Field Layout'|t('app'),
-        errors: (config.fieldLayout ?? false) ? config.fieldLayout.getErrorSummary(true),
-    }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
+    <div class="fld-cvd">
+    <h2 class="visually-hidden">{{ 'Field Layout'|t('app') }}</h2>
+        {{ _self.field({
+            label: 'Field Layout'|t('app'),
+            fieldset: true,
+            errors: config.fieldLayout.getErrors('customFields') ?? [],
+            data: {'error-key': 'fieldLayout.customFields'},
+        }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
+
+        {% if config.withGeneratedFields ?? false %}
+            {{ _self.field({
+                label: 'Generated Fields'|t('app'),
+                instructions: 'Define any additional values that should be saved on your elements.'|t('app'),
+                errors: config.fieldLayout.getErrors('generatedFields') ?? [],
+                data: {'error-key': 'fieldLayout.generatedFields'},
+                fieldLayout: config.fieldLayout ?? null,
+                disabled: config.disabled ?? false,
+            }, 'template:_includes/forms/generatedFieldsTable') }}
+        {% endif %}
+
+        {% if config.withCardViewDesigner ?? false %}
+            {% include '_includes/forms/cardViewDesigner' with {
+                fieldLayout: config.fieldLayout,
+                disabled: config.disabled ?? false,
+            } only %}
+        {% endif %}
+    </div>
 {% endmacro %}
 
 

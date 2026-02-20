@@ -119,14 +119,14 @@ trait FieldConditionRuleTrait
                     throw new InvalidConfigException("Field $this->_fieldUid is not included in the available field layouts.");
                 }
 
-                if (!empty($potentialInstances)) {
-                    // Just go with the first one
-                    $this->_fieldInstances[] = $first = array_shift($potentialInstances);
-                    $selectedInstance = $first;
-                    $selectedInstanceLabel = $first->layoutElement->label();
-                } else {
+                if (empty($potentialInstances)) {
                     throw new InvalidConfigException("Invalid field layout element UUID: $this->_layoutElementUid");
                 }
+
+                // Just go with the first one
+                $this->_fieldInstances[] = $first = array_shift($potentialInstances);
+                $selectedInstance = $first;
+                $selectedInstanceLabel = $first->layoutElement->label();
             }
 
             // Add any potential fields to the mix if they have a matching label and handle
@@ -182,9 +182,15 @@ trait FieldConditionRuleTrait
      */
     public function getLabelHint(): ?string
     {
-        static $showHandles = null;
-        $showHandles ??= Craft::$app->getUser()->getIdentity()?->getPreference('showFieldHandles') ?? false;
-        return $showHandles ? $this->field()->handle : null;
+        return $this->field()->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function showLabelHint(): bool
+    {
+        return Craft::$app->getUser()->getIdentity()?->getPreference('showFieldHandles') ?? false;
     }
 
     /**
@@ -192,12 +198,16 @@ trait FieldConditionRuleTrait
      */
     public function getExclusiveQueryParams(): array
     {
-        $params = [];
-
-        foreach ($this->fieldInstances() as $field) {
-            $params[] = $field->handle;
+        try {
+            $instances = $this->fieldInstances();
+        } catch (InvalidConfigException) {
+            return [];
         }
 
+        $params = [];
+        foreach ($instances as $field) {
+            $params[] = $field->handle;
+        }
         return array_values(array_unique($params));
     }
 

@@ -39,6 +39,7 @@ use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\fieldlayoutelements\TitleField;
+use craft\fieldlayoutelements\users\AffiliatedSiteField;
 use craft\fieldlayoutelements\users\EmailField;
 use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
 use craft\fieldlayoutelements\users\PhotoField;
@@ -107,6 +108,7 @@ use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
+use craft\web\UrlManager;
 use craft\web\User as UserSession;
 use craft\web\View;
 use Illuminate\Support\Collection;
@@ -185,6 +187,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read TemplateCaches $templateCaches The template caches service
  * @property-read Tokens $tokens The tokens service
  * @property-read Updates $updates The updates service
+ * @property-read UrlManager $urlManager The URL manager for this application
  * @property-read UserGroups $userGroups The user groups service
  * @property-read UserPermissions $userPermissions The user permissions service
  * @property-read Users $users The users service
@@ -206,6 +209,7 @@ use yii\web\ServerErrorHttpException;
  * @method Formatter getFormatter() Returns the formatter component.
  * @method I18N getI18n() Returns the internationalization (i18n) component.
  * @method Security getSecurity() Returns the security component.
+ * @method UrlManager getUrlManager() Returns the URL manager for this application.
  * @method View getView() Returns the view component.
  * @mixin WebApplication
  * @mixin ConsoleApplication
@@ -293,6 +297,19 @@ trait ApplicationTrait
      * @see onAfterRequest()
      */
     private array $afterRequestCallbacks = [];
+
+    /**
+     * Returns the application ID combined with the environment name.
+     *
+     * @return string
+     * @since 5.4.0
+     * @see id
+     * @see env
+     */
+    public function getEnvId(): string
+    {
+        return $this->env ? sprintf('%s--%s', $this->id, $this->env) : $this->id;
+    }
 
     /**
      * @inheritdoc
@@ -606,7 +623,7 @@ trait ApplicationTrait
      */
     public function getLicensedEdition(): ?CmsEdition
     {
-        $licenseInfo = $this->getCache()->get('licenseInfo') ?: [];
+        $licenseInfo = $this->getCache()->get(App::CACHE_KEY_LICENSE_INFO) ?: [];
 
         if (!isset($licenseInfo['craft']['edition'])) {
             return null;
@@ -726,7 +743,7 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
-        if (App::env('CRAFT_NO_TRIALS')) {
+        if (App::normalizeBooleanValue(App::env('CRAFT_NO_TRIALS'))) {
             return false;
         }
 
@@ -1543,7 +1560,7 @@ trait ApplicationTrait
 
         // Register Collection::set() as an alias of put() - with support for bulk-setting values
         Collection::macro('set', function(mixed $values) {
-            /** @var Collection $this */
+            assert($this instanceof Collection);
             if (is_array($values)) {
                 foreach ($values as $key => $value) {
                     $this->put($key, $value);
@@ -1556,29 +1573,23 @@ trait ApplicationTrait
 
         // Register Collection::one() as an alias of first(), for consistency with yii\db\Query.
         Collection::macro('one', function() {
-            /** @var Collection $this */
+            assert($this instanceof Collection);
             return $this->first(...func_get_args());
         });
 
+        // Set the Craft edition
+        $this->_setCraftEdition();
+
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
-        $request = $this->getRequest();
+        $this->getRequest();
         $this->getLog();
-
-        // Set the Craft edition
-        $edition = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
-        $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
 
         // Set the timezone
         $this->_setTimeZone();
 
         // Set the language
         $this->updateTargetLanguage();
-
-        // Prevent browser caching if this is a control panel request
-        if ($this instanceof WebApplication && $request->getIsCpRequest()) {
-            $this->getResponse()->setNoCacheHeaders();
-        }
 
         // Register the variable dumper
         VarDumper::setHandler(function($var) {
@@ -1635,7 +1646,6 @@ trait ApplicationTrait
      */
     private function _setTimeZone(): void
     {
-        /** @var WebApplication|ConsoleApplication $this */
         $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
         if ($timeZone) {
@@ -1715,6 +1725,9 @@ trait ApplicationTrait
                     $event->fields[] = UserFullNameField::class;
                     $event->fields[] = PhotoField::class;
                     $event->fields[] = EmailField::class;
+                    if (Craft::$app->getIsMultiSite()) {
+                        $event->fields[] = AffiliatedSiteField::class;
+                    }
                     break;
             }
         });
@@ -1815,5 +1828,31 @@ trait ApplicationTrait
         return function() use ($id, $method) {
             return $this->get($id)->$method(...func_get_args());
         };
+    }
+
+    /**
+     * Set Craft's edition
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function _setCraftEdition(): void
+    {
+        $edition = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
+        $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
+    }
+
+    /**
+     * Ensure that edition is set.
+     *
+     * @return void
+     * @throws Exception
+     * @since 5.8.18
+     */
+    public function ensureEdition(): void
+    {
+        if (!isset($this->edition)) {
+            $this->_setCraftEdition();
+        }
     }
 }

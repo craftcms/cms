@@ -52,6 +52,7 @@ Craft.PasskeySetup = Garnish.Base.extend({
     }
 
     this.$addPasskeyBtn.addClass('loading');
+    Craft.cp.announce(Craft.t('app', 'Loading'));
 
     try {
       await (() =>
@@ -137,6 +138,18 @@ Craft.PasskeySetup = Garnish.Base.extend({
   },
 
   async deletePasskey(uid, name) {
+    // Store a reference to the row
+    const row = this.$passkeysTable[0]
+      .querySelector(`[role="button"][data-uid="${uid}"]`)
+      .closest('tr');
+
+    const getTableRowArray = () => {
+      const tbody = this.$passkeysTable[0].querySelector('tbody');
+      return Array.from(tbody.querySelectorAll('tr'));
+    };
+    let rowArray = getTableRowArray();
+    const rowIndex = rowArray.indexOf(row);
+
     if (
       !confirm(
         Craft.t(
@@ -167,6 +180,23 @@ Craft.PasskeySetup = Garnish.Base.extend({
 
     Craft.cp.displaySuccess(data.message);
     this.updateTable(data.tableHtml);
+
+    // Manage focus
+    if (rowArray.length > 1) {
+      // If this was now the first row, move focus to the previous row
+      // If it was the first row, keep the index the same (it will now be the next row)
+      const newRowIndex = rowIndex - 1 >= 0 ? rowIndex - 1 : rowIndex;
+
+      // Get new array of rows
+      rowArray = getTableRowArray();
+      const targetBtn = rowArray[newRowIndex].querySelector([
+        '[role="button"]',
+      ]);
+      targetBtn.focus();
+    } else {
+      // If there are no more rows, focus on the container instead
+      document.querySelector('#passkeys').focus();
+    }
   },
 
   platformName() {

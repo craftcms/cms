@@ -9,6 +9,8 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use Throwable;
 use yii\base\Application as BaseApplication;
@@ -28,6 +30,21 @@ class Response extends \yii\web\Response
      * @since 3.4.0
      */
     public const FORMAT_CSV = 'csv';
+
+    /**
+     * @since 4.16.10
+     */
+    public const FORMAT_GQL = 'gql';
+
+    /**
+     * @since 5.9.0
+     */
+    public const FORMAT_XLSX = 'xlsx';
+
+    /**
+     * @since 5.9.0
+     */
+    public const FORMAT_YAML = 'yaml';
 
     /**
      * Default response formatter configurations.
@@ -60,7 +77,6 @@ class Response extends \yii\web\Response
      */
     public array $defaultFormatters = [];
 
-
     /**
      * @var bool whether the response has been prepared.
      */
@@ -92,6 +108,8 @@ class Response extends \yii\web\Response
                     return 'application/javascript';
                 case self::FORMAT_CSV:
                     return 'text/csv';
+                case self::FORMAT_GQL:
+                    return 'application/graphql-response+json';
             }
         }
 
@@ -121,7 +139,8 @@ class Response extends \yii\web\Response
             return $this;
         }
 
-        $this->setHeader('Expires', sprintf('%s GMT', gmdate('D, d M Y H:i:s', time() + $duration)), $overwrite);
+        $expires = DateTimeHelper::currentTimeStamp() + $duration;
+        $this->setHeader('Expires', sprintf('%s GMT', gmdate('D, d M Y H:i:s', $expires)), $overwrite);
         $this->setHeader('Pragma', 'cache', $overwrite);
         $this->setHeader('Cache-Control', "public, max-age=$duration", $overwrite);
         return $this;
@@ -215,7 +234,7 @@ class Response extends \yii\web\Response
     public function redirect($url, $statusCode = 302, $checkAjax = true): self
     {
         if (is_string($url)) {
-            $url = UrlHelper::url($url);
+            $url = UrlHelper::encodeUrl(UrlHelper::url($url));
         }
 
         if ($this->format === TemplateResponseFormatter::FORMAT) {
@@ -305,7 +324,7 @@ class Response extends \yii\web\Response
         $this->send();
 
         // Close the session.
-        Craft::$app->getSession()->close();
+        Session::close();
 
         // In case we're running on php-fpm (https://secure.php.net/manual/en/book.fpm.php)
         if (function_exists('fastcgi_finish_request')) {
@@ -322,9 +341,10 @@ class Response extends \yii\web\Response
         return ArrayHelper::merge(
             parent::defaultFormatters(),
             [
-                self::FORMAT_CSV => [
-                    'class' => CsvResponseFormatter::class,
-                ],
+                self::FORMAT_CSV => ['class' => CsvResponseFormatter::class],
+                self::FORMAT_GQL => ['class' => GqlResponseFormatter::class],
+                self::FORMAT_XLSX => ['class' => XlsxResponseFormatter::class],
+                self::FORMAT_YAML => ['class' => YamlResponseFormatter::class],
             ],
             $this->defaultFormatters,
         );

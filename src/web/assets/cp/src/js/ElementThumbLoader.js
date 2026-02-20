@@ -65,8 +65,8 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
   {
     invisibleThumbs: {},
     retryAll: function () {
-      for (let key in Craft.ElementThumbLoader.invisibleThumbs) {
-        let [queue, $thumb] = Craft.ElementThumbLoader.invisibleThumbs[key];
+      for (const key in Craft.ElementThumbLoader.invisibleThumbs) {
+        const [queue, $thumb] = Craft.ElementThumbLoader.invisibleThumbs[key];
         delete Craft.ElementThumbLoader.invisibleThumbs[key];
         queue.load($thumb.parent());
       }
@@ -150,6 +150,7 @@ Craft.ElementThumbLoader.Worker = Garnish.Base.extend({
       sizes: $container.attr('data-sizes'),
       srcset: $container.attr('data-srcset'),
       alt: $container.attr('data-alt') || '',
+      'data-animated': $container.attr('data-animated'),
     });
     this.addListener($img, 'load,abort,error', 'loadNext');
     $img.appendTo($container);

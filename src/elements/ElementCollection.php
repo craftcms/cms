@@ -75,7 +75,7 @@ class ElementCollection extends Collection
     /**
      * Eager-loads related elements for the collected elements.
      *
-     * See [Eager-Loading Elements](https://craftcms.com/docs/4.x/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
+     * See [Eager-Loading Elements](https://craftcms.com/docs/5.x/development/eager-loading.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -178,6 +178,7 @@ class ElementCollection extends Collection
     public function map(callable $callback)
     {
         $result = parent::map($callback);
+        /** @phpstan-ignore instanceof.alwaysTrue */
         return $result->contains(fn($item) => !$item instanceof ElementInterface) ? $result->toBase() : $result;
     }
 
@@ -195,6 +196,7 @@ class ElementCollection extends Collection
     public function mapWithKeys(callable $callback)
     {
         $result = parent::mapWithKeys($callback);
+        /** @phpstan-ignore instanceof.alwaysTrue */
         return $result->contains(fn($item) => !$item instanceof ElementInterface) ? $result->toBase() : $result;
     }
 
@@ -223,7 +225,7 @@ class ElementCollection extends Collection
         $freshElements = [];
 
         foreach ($idsByClass as $class => $ids) {
-            /** @var string|TElement $class */
+            /** @var class-string<TElement>|class-string<ElementInterface> $class */
             $freshElements[$class] = $class::find()
                 ->site('*')
                 ->siteSettingsId($ids)
@@ -300,7 +302,6 @@ class ElementCollection extends Collection
             return parent::unique($key, $strict);
         }
 
-        /** @phpstan-ignore-next-line */
         return $this->keyBy('id')->values();
     }
 

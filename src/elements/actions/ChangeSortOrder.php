@@ -65,8 +65,9 @@ class ChangeSortOrder extends ElementAction
       const flex = $('<div/>', {class: 'flex flex-nowrap'});
       const select = Craft.ui.createSelect({
         options: [...Array(totalPages).keys()].map(num => ({label: num + 1, value: num + 1})),
-        value: elementIndex.page,
+        value: elementIndex.page === totalPages ? elementIndex.page - 1 : elementIndex.page + 1,
       }).appendTo(flex);
+      select.find('option[value=' + elementIndex.page + ']').attr('disabled', 'disabled');
       const button = Craft.ui.createSubmitButton({
         label: Craft.t('app', 'Move'),
         spinner: true,
@@ -76,35 +77,44 @@ class ChangeSortOrder extends ElementAction
       }).appendTo(container);
       const hud = new Garnish.HUD(elementIndex.\$actionMenuBtn, container);
 
-      button.one('activate', () => {
+      button.one('activate', async () => {
         const page = parseInt(select.find('select').val());
-
-        if (page === elementIndex.page) {
-          hud.hide();
-          return;
-        }
-
-        button.addClass('loading');
-        const data = Object.assign($params, {
-          elementIds: elementIndex.getSelectedElementIds(),
-          offset: (page - 1) * elementIndex.settings.batchSize,
-        });
-        Craft.sendActionRequest('POST', 'nested-elements/reorder', {data})
-          .then(({data}) => {
-            Craft.cp.displayNotice(data.message);
-            elementIndex.setPage(page);
-            elementIndex.updateElements(true, true)
-          })
-          .catch(({response}) => {
-            Craft.cp.displayError(response.data && response.data.error);
-          })
-          .finally(() => {
-            button.removeClass('loading');
-            hud.hide();
-          });
+        moveToPage(selectedItems, elementIndex, page, button, hud);
       });
     },
   });
+  
+  async function moveToPage(selectedItems, elementIndex, page, button, hud) {
+    button.addClass('loading');
+    await elementIndex.settings.onBeforeMoveElementsToPage(selectedItems, page);
+
+    const data = Object.assign($params, {
+      elementIds: elementIndex.getSelectedElementIds(),
+      offset: (page - 1) * elementIndex.settings.batchSize,
+    });
+
+    // swap out the ownerId with the new draft ownerId
+    const elementEditor = elementIndex.\$container.closest('form').data('elementEditor');
+    if (elementEditor) {
+      data.ownerId = elementEditor.getDraftElementId(data.ownerId);
+    }
+
+    let response;
+    try {
+      response = await Craft.sendActionRequest('POST', 'nested-elements/reorder', {data});
+    } catch (e) {
+      Craft.cp.displayError(e?.response?.data?.error);
+      return;
+    } finally {
+      button.removeClass('loading');
+    }
+
+    hud.hide();
+    Craft.cp.displayNotice(response.data.message);
+    await elementIndex.settings.onMoveElementsToPage(selectedItems, page);
+    elementIndex.setPage(page);
+    elementIndex.updateElements(true, true)
+  }
 })();
 JS,
             [

@@ -43,7 +43,7 @@
         $allDone = $form.data('allDone');
       }
 
-      progressBar.$progressBar.removeClass('hidden');
+      progressBar.showProgressBar();
 
       progressBar.$progressBar.velocity('stop').velocity(
         {
@@ -67,17 +67,11 @@
                     $form.data('allDone', $allDone);
                   }
 
-                  progressBar.$progressBar.velocity(
-                    {opacity: 0},
-                    {
-                      duration: 'fast',
-                      complete: () => {
-                        $allDone.velocity({opacity: 1}, {duration: 'fast'});
-                        $trigger.removeClass('disabled');
-                        $trigger.focus();
-                      },
-                    }
-                  );
+                  progressBar.hideProgressBar();
+                  $allDone.velocity({opacity: 1}, {duration: 'fast'});
+                  Craft.cp.announce(Craft.t('app', 'Success'));
+                  $trigger.removeClass('disabled');
+                  $trigger.focus();
                 }, 300);
               })
               .catch(({response}) => {

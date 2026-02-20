@@ -1,0 +1,42 @@
+{% import '_includes/forms.twig' as forms %}
+
+{{ forms.fieldLayoutDesignerField({
+  label: 'Field Layout'|t('app'),
+  fieldLayout: field.getFieldLayout(),
+  customizableTabs: false,
+  withGeneratedFields: true,
+  disabled: readOnly,
+}) }}
+
+{% embed '_includes/forms/field.twig' with {
+  label: 'View Mode'|t('app')
+} %}
+  {% block input %}
+    <div class="flex items-start gap-l">
+      <label class="nowrap">
+        <img class="mb-xs" src="{{ baseIconsUrl }}/grouped.svg" width="80" height="80" alt="">
+        {{ input('radio', 'viewMode', 'grouped', {
+          checked: field.viewMode == 'grouped',
+          disabled: readOnly,
+        }) }}
+        {{ 'Grouped'|t('app') }}
+      </label>
+      <label class="nowrap">
+        <img class="mb-xs" src="{{ baseIconsUrl }}/pane.svg" width="80" height="80" alt="">
+        {{ input('radio', 'viewMode', 'pane', {
+          checked: field.viewMode == 'pane',
+          disabled: readOnly,
+        }) }}
+        {{ 'In a pane'|t('app') }}
+      </label>
+      <label class="nowrap">
+        <img class="mb-xs" src="{{ baseIconsUrl }}/inline.svg" width="80" height="80" alt="">
+        {{ input('radio', 'viewMode', 'inline', {
+          checked: field.viewMode == 'inline',
+          disabled: readOnly,
+        }) }}
+        {{ 'Inline'|t('app') }}
+      </label>
+    </div>
+  {% endblock %}
+{% endembed %}

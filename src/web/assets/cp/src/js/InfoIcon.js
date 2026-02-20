@@ -11,6 +11,10 @@ Craft.InfoIcon = Garnish.Base.extend({
   hud: null,
 
   init: function (icon) {
+    if ($(icon).hasClass('disabled')) {
+      return;
+    }
+
     this.$icon = $(icon);
     this.$liveRegion = $('<span/>', {
       role: 'status',

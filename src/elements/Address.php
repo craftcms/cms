@@ -11,8 +11,8 @@ use craft\base\Element;
 use craft\base\NameTrait;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
-use craft\db\Query;
 use craft\db\Table;
+use craft\elements\actions\Copy;
 use craft\elements\conditions\addresses\AddressCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AddressQuery;
@@ -21,9 +21,10 @@ use craft\fieldlayoutelements\addresses\OrganizationField;
 use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
-use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
+use craft\validators\StringValidator;
+use craft\web\twig\AllowedInSandbox;
 use yii\base\InvalidConfigException;
 
 /**
@@ -83,7 +84,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
-     * @inerhitdoc
+     * @inheritdoc
      */
     public static function hasTitles(): bool
     {
@@ -104,6 +105,73 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public static function createCondition(): ElementConditionInterface
     {
         return Craft::createObject(AddressCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineActions(string $source): array
+    {
+        return [
+            Copy::class,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineTableAttributes(): array
+    {
+        return array_merge(parent::defineTableAttributes(), [
+            'country' => ['label' => Craft::t('app', 'Country')],
+        ]);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    protected function attributeHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'country':
+                return $this->getCountry()->getName();
+            default:
+                return parent::attributeHtml($attribute);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineSortOptions(): array
+    {
+        return [
+            [
+                'label' => Craft::t('app', 'Label'),
+                'orderBy' => 'title',
+                'attribute' => 'title',
+            ],
+            [
+                'label' => Craft::t('app', 'Country'),
+                'orderBy' => 'countryCode',
+                'attribute' => 'country',
+            ],
+            [
+                'label' => Craft::t('app', 'Date Created'),
+                'orderBy' => 'dateCreated',
+                'defaultDir' => 'desc',
+            ],
+            [
+                'label' => Craft::t('app', 'Date Updated'),
+                'orderBy' => 'dateUpdated',
+                'defaultDir' => 'desc',
+            ],
+            [
+                'label' => Craft::t('app', 'ID'),
+                'orderBy' => 'id',
+            ],
+        ];
     }
 
     /**
@@ -167,67 +235,80 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      * @var string Two-letter country code
      * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      */
+    #[AllowedInSandbox]
     public string $countryCode;
 
     /**
      * @var string|null Administrative area
      */
+    #[AllowedInSandbox]
     public ?string $administrativeArea = null;
 
     /**
      * @var string|null Locality
      */
+    #[AllowedInSandbox]
     public ?string $locality = null;
 
     /**
      * @var string|null Dependent locality
      */
+    #[AllowedInSandbox]
     public ?string $dependentLocality = null;
 
     /**
      * @var string|null Postal code
      */
+    #[AllowedInSandbox]
     public ?string $postalCode = null;
 
     /**
      * @var string|null Sorting code
      */
+    #[AllowedInSandbox]
     public ?string $sortingCode = null;
 
     /**
      * @var string|null First line of the address
      */
+    #[AllowedInSandbox]
     public ?string $addressLine1 = null;
 
     /**
      * @var string|null Second line of the address
      */
+    #[AllowedInSandbox]
     public ?string $addressLine2 = null;
 
     /**
      * @var string|null Third line of the address
      * @since 5.0.0
      */
+    #[AllowedInSandbox]
     public ?string $addressLine3 = null;
 
     /**
      * @var string|null Organization name
      */
+    #[AllowedInSandbox]
     public ?string $organization = null;
 
     /**
      * @var string|null Organization tax ID
      */
+    #[AllowedInSandbox]
     public ?string $organizationTaxId = null;
 
     /**
      * @var string|null Latitude
      */
+    #[AllowedInSandbox]
     public ?string $latitude = null;
 
     /**
      * @var string|null Longitude
      */
+    #[AllowedInSandbox]
     public ?string $longitude = null;
 
     /**
@@ -336,6 +417,31 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    public function canDuplicate(User $user): bool
+    {
+        if (parent::canDuplicate($user)) {
+            return true;
+        }
+
+        $owner = $this->getOwner()?->getCanonical(true);
+        if (!$owner) {
+            return false;
+        }
+
+        return Craft::$app->getElements()->canSave($owner, $user);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canCopy(User $user): bool
+    {
+        return Craft::$app->getElements()->canDuplicate($this, $user);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function canDelete(User $user): bool
     {
         if (parent::canDelete($user)) {
@@ -361,6 +467,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getCountryCode(): string
     {
         return $this->countryCode;
@@ -372,14 +479,16 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      * @return Country
      * @since 5.3.0
      */
+    #[AllowedInSandbox]
     public function getCountry(): Country
     {
-        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode);
+        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode, Craft::$app->language);
     }
 
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getAdministrativeArea(): ?string
     {
         return $this->administrativeArea;
@@ -388,6 +497,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getLocality(): ?string
     {
         return $this->locality;
@@ -396,6 +506,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getDependentLocality(): ?string
     {
         return $this->dependentLocality;
@@ -404,6 +515,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getPostalCode(): ?string
     {
         return $this->postalCode;
@@ -412,6 +524,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getSortingCode(): ?string
     {
         return $this->sortingCode;
@@ -420,6 +533,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getAddressLine1(): ?string
     {
         return $this->addressLine1;
@@ -428,6 +542,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getAddressLine2(): ?string
     {
         return $this->addressLine2;
@@ -436,6 +551,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getAddressLine3(): ?string
     {
         return $this->addressLine3;
@@ -444,6 +560,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getOrganization(): ?string
     {
         return $this->organization;
@@ -452,6 +569,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getGivenName(): ?string
     {
         return $this->firstName;
@@ -460,6 +578,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getAdditionalName(): ?string
     {
         return null;
@@ -468,6 +587,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getFamilyName(): ?string
     {
         return $this->lastName;
@@ -476,9 +596,10 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    #[AllowedInSandbox]
     public function getLocale(): string
     {
-        return 'und';
+        return Craft::$app->language;
     }
 
     /**
@@ -488,6 +609,16 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public function getGqlTypeName(): string
     {
         return self::GQL_TYPE_NAME;
+    }
+
+    /**
+     * Returns whether the element’s `title` attribute should be validated
+     * @return bool
+     */
+    protected function shouldValidateTitle(): bool
+    {
+        $titleField = $this->getFieldLayout()?->getField('title');
+        return $titleField->required && $titleField->showInForm($this);
     }
 
     /**
@@ -524,6 +655,27 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
         $rules[] = [['fieldId', 'ownerId', 'primaryOwnerId'], 'number'];
         $rules[] = [['countryCode'], 'required'];
+
+        $stringFields = [
+            'countryCode',
+            'administrativeArea',
+            'locality',
+            'dependentLocality',
+            'postalCode',
+            'sortingCode',
+            'addressLine1',
+            'addressLine2',
+            'addressLine3',
+            'organization',
+            'organizationTaxId',
+            'fullName',
+            'firstName',
+            'lastName',
+            'latitude',
+            'longitude',
+        ];
+        $rules[] = [$stringFields, 'trim', 'skipOnEmpty' => true];
+        $rules[] = [$stringFields, StringValidator::class, 'max' => 255, 'disallowMb4' => true];
 
         $addressesService = Craft::$app->getAddresses();
         $countryCodes = array_keys($addressesService->getCountryRepository()->getList());
@@ -576,7 +728,9 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             }
         }
 
-        $rules[] = [['longitude', 'latitude'], 'safe'];
+        $rules[] = ['latitude', 'number', 'min' => -90, 'max' => 90, 'on' => [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]];
+        $rules[] = ['longitude', 'number', 'min' => -180, 'max' => 180, 'on' => [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]];
+
         $rules[] = [self::_addressAttributes(), 'safe'];
 
         if ($generalConfig->showFirstAndLastNameFields) {
@@ -584,6 +738,14 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         }
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return $this->title ?? '';
     }
 
     /**
@@ -666,64 +828,10 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
         // Capture the dirty attributes from the record
         $dirtyAttributes = array_keys($record->getDirtyAttributes());
-
         $record->save(false);
-
-        $ownerId = $this->getOwnerId();
-        if (isset($this->fieldId) && $ownerId && $this->saveOwnership) {
-            if (!isset($this->sortOrder) && (!$isNew || $this->duplicateOf)) {
-                // figure out if we should proceed this way
-                // if we're dealing with an element that's being duplicated, and it has a draftId
-                // it means we're creating a draft of something
-                // if we're duplicating element via duplicate action - draftId would be empty
-                $elementId = null;
-                if ($this->duplicateOf) {
-                    if ($this->draftId) {
-                        $elementId = $this->duplicateOf->id;
-                    }
-                } else {
-                    // if we're not duplicating - use element's id
-                    $elementId = $this->id;
-                }
-                if ($elementId) {
-                    $this->sortOrder = (new Query())
-                        ->select('sortOrder')
-                        ->from(Table::ELEMENTS_OWNERS)
-                        ->where([
-                            'elementId' => $elementId,
-                            'ownerId' => $ownerId,
-                        ])
-                        ->scalar() ?: null;
-                }
-            }
-            if (!isset($this->sortOrder)) {
-                $max = (new Query())
-                    ->from(['eo' => Table::ELEMENTS_OWNERS])
-                    ->innerJoin(['a' => Table::ADDRESSES], '[[a.id]] = [[eo.elementId]]')
-                    ->where([
-                        'eo.ownerId' => $ownerId,
-                        'a.fieldId' => $this->fieldId,
-                    ])
-                    ->max('[[eo.sortOrder]]');
-                $this->sortOrder = $max ? $max + 1 : 1;
-            }
-            if ($isNew) {
-                Db::insert(Table::ELEMENTS_OWNERS, [
-                    'elementId' => $this->id,
-                    'ownerId' => $ownerId,
-                    'sortOrder' => $this->sortOrder,
-                ]);
-            } else {
-                Db::update(Table::ELEMENTS_OWNERS, [
-                    'sortOrder' => $this->sortOrder,
-                ], [
-                    'elementId' => $this->id,
-                    'ownerId' => $ownerId,
-                ]);
-            }
-        }
-
         $this->setDirtyAttributes($dirtyAttributes);
+
+        $this->saveOwnership($isNew, Table::ADDRESSES);
 
         parent::afterSave($isNew);
     }

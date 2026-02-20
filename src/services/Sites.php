@@ -32,6 +32,7 @@ use craft\models\SiteGroup;
 use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -42,7 +43,7 @@ use yii\db\Exception as DbException;
 /**
  * Sites service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getSites()|`Craft::$app->sites`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getSites()|`Craft::$app->getSites()`]].
  *
  * @property-read Site[] $allSites all of the sites
  * @property int[] $allSiteIds all of the site IDs
@@ -459,17 +460,17 @@ class Sites extends Component
     /**
      * Returns the current site.
      *
+     * > [!NOTE]
+     * > This will always return the primary site for control panel requests. To fetch the site the control panel
+     * > is currently working with, based on the `site` query string param, use [[\craft\helpers\Cp::requestedSite()]].
+     *
      * @return Site the current site
      * @throws SiteNotFoundException if no sites exist
      */
     public function getCurrentSite(): Site
     {
-        if (isset($this->_currentSite)) {
-            return $this->_currentSite;
-        }
-
         // Default to the primary site
-        return $this->_currentSite = $this->getPrimarySite();
+        return $this->_currentSite ?? ($this->_currentSite = $this->getPrimarySite());
     }
 
     /**
@@ -509,6 +510,14 @@ class Sites extends Component
         // (make sure the request component has been initialized first so we don't create an infinite loop)
         if (Craft::$app->has('request', true) && Craft::$app->getRequest()->getIsSiteRequest()) {
             Craft::$app->language = $this->_currentSite->language;
+        }
+
+        // Set the CRAFT_SITE and CRAFT_SITE_UPPER env vars
+        if (isset($this->_currentSite->handle)) {
+            $_SERVER['CRAFT_SITE'] = $this->_currentSite->handle;
+            $_SERVER['CRAFT_SITE_UPPER'] = strtoupper(StringHelper::toSnakeCase($this->_currentSite->handle));
+        } else {
+            unset($_SERVER['CRAFT_SITE'], $_SERVER['CRAFT_SITE_UPPER']);
         }
     }
 
@@ -600,6 +609,23 @@ class Sites extends Component
         ArrayHelper::multisort($sites, 'sortOrder', SORT_ASC, SORT_NUMERIC);
 
         return $sites;
+    }
+
+    /**
+     * Returns editable sites by a group ID.
+     *
+     * @param int $groupId
+     * @param bool|null $withDisabled
+     * @return Site[]
+     * @since 5.4.0
+     */
+    public function getEditableSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
+    {
+        $editableSiteIds = array_flip($this->getEditableSiteIds());
+        return Collection::make($this->getSitesByGroupId($groupId, $withDisabled))
+            ->filter(fn(Site $site) => isset($editableSiteIds[$site->id]))
+            ->values()
+            ->all();
     }
 
     /**
@@ -844,6 +870,7 @@ class Sites extends Component
                         'siteId' => $oldPrimarySiteId,
                     ],
                     'siteId' => $site->id,
+                    'isNewSite' => true,
                 ]));
             }
         }
@@ -1308,7 +1335,7 @@ class Sites extends Component
             $nonLocalizedElementTypes = [];
 
             foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-                /** @var ElementInterface|string $elementType */
+                /** @var class-string<ElementInterface> $elementType */
                 if (!$elementType::isLocalized()) {
                     $nonLocalizedElementTypes[] = $elementType;
                 }

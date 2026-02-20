@@ -1,5 +1,7 @@
 {% import "_includes/forms" as forms %}
 
+{% set readOnly = readOnly ?? false %}
+
 {{ forms.selectizeField({
     label: 'Sendmail Command'|t('app'),
     instructions: 'The command to run Sendmail with.'|t('app'),
@@ -9,5 +11,6 @@
     includeEnvVars: true,
     allowedEnvValues: null,
     value: adapter.command,
-    errors: adapter.getErrors('command')
+    errors: adapter.getErrors('command'),
+    disabled: readOnly,
 }) }}

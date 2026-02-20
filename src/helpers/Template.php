@@ -12,8 +12,10 @@ use craft\base\ElementInterface;
 use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
+use Stringable;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
+use Twig\Extension\CoreExtension;
 use Twig\Extension\SandboxExtension;
 use Twig\Markup;
 use Twig\Source;
@@ -25,7 +27,6 @@ use yii\base\UnknownMethodException;
 use yii\base\UnknownPropertyException;
 use yii\db\Query;
 use yii\db\QueryInterface;
-use function twig_get_attribute;
 
 /**
  * Class Template
@@ -145,7 +146,12 @@ class Template
         }
 
         try {
-            return twig_get_attribute(
+            // workaround for https://github.com/twigphp/Twig/issues/4701
+            if ($type !== TwigTemplate::METHOD_CALL && $item instanceof Stringable) {
+                $item = (string) $item;
+            }
+
+            return CoreExtension::getAttribute(
                 $env,
                 $source,
                 $object,

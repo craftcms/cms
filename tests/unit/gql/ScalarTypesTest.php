@@ -122,9 +122,7 @@ class ScalarTypesTest extends TestCase
         ]);
         $resolver = $dateField->getContentGqlType()['resolve'];
         $element = $this->make(Entry::class, [
-            'getFieldValue' => function() use ($dateTime) {
-                return clone $dateTime;
-            },
+            'getFieldValue' => fn() => clone $dateTime,
         ]);
 
         $settingValue = Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone;

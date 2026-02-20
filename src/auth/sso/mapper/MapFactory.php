@@ -27,6 +27,7 @@ class MapFactory
      */
     public static function createUserMap(string|array|callable|UserMapInterface $mapper, string $defaultClass = UserAttributesMapper::class): UserMapInterface
     {
+        /** When $mapper is callable or UserMapInterface */
         if (is_callable($mapper)) {
             return $mapper;
         }
@@ -37,16 +38,14 @@ class MapFactory
             $mapper = [];
         } else {
             // Apply defaults?
-            if (is_array($mapper)) {
-                $mapper = ArrayHelper::merge(
-                    [
-                        'class' => $defaultClass,
-                    ],
-                    $mapper
-                );
-            }
+            $mapper = ArrayHelper::merge(
+                [
+                    'class' => $defaultClass,
+                ],
+                $mapper
+            );
 
-            $class = $mapper['class'] ?? $mapper['class'];
+            $class = $mapper['class'];
             unset($mapper['type'], $mapper['__class']);
         }
 

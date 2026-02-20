@@ -39,6 +39,8 @@ Craft.ElementEditor = Garnish.Base.extend(
     cancelToken: null,
     ignoreFailedRequest: false,
     queue: null,
+    savingDraft: false,
+    saveDraftCallbacks: null,
     submittingForm: false,
 
     draftElementIds: null,
@@ -129,7 +131,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       const $spinnerContainer =
         this.settings.$spinnerContainer ??
-        (this.isFullPage ? $('#page-title') : $());
+        (this.isFullPage ? $('#revision-indicators') : $());
+
       this.$spinner = $('<div/>', {
         class: 'revision-spinner spinner hidden',
         title: Craft.t('app', 'Saving'),
@@ -137,12 +140,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$statusIcon = $('<div/>', {
         class: `revision-status ${this.isFullPage ? 'invisible' : 'hidden'}`,
       }).appendTo($spinnerContainer);
-      this.$statusMessage = $('<div/>', {
-        class: 'revision-status-message visually-hidden',
-        'aria-live': 'polite',
-      }).appendTo($spinnerContainer);
 
-      this.$expandSiteStatusesBtn = $('.expand-status-btn');
+      this.$expandSiteStatusesBtn = this.$container.find('.expand-status-btn');
 
       if (this.settings.canEditMultipleSites) {
         this.addListener(
@@ -150,6 +149,20 @@ Craft.ElementEditor = Garnish.Base.extend(
           'click',
           'expandSiteStatuses'
         );
+
+        // Use event delegation so we don't have to reinitialize when markup is replaced
+        Garnish.$bod.on('activate', '[data-cross-site-copy]', (ev) => {
+          // Make sure the action menu is within this element editor container
+          const $target = $(ev.currentTarget);
+          const $field = $target
+            .closest('.menu')
+            .data('disclosureMenu')
+            ?.$trigger.closest('.field');
+          if ($field.closest(this.$container).length) {
+            ev.preventDefault();
+            this.showFieldCopyModal($target, $field);
+          }
+        });
       }
 
       if (this.settings.previewTargets.length && this.isFullPage) {
@@ -181,7 +194,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         throw 'Element editors may only be used with forms.';
       }
 
-      if (this.isFullPage && Craft.edition !== Craft.Solo) {
+      if (Craft.edition !== Craft.Solo) {
         this.$activityContainer = this.$container.find('.activity-container');
         this._checkActivity();
       }
@@ -332,9 +345,19 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     pause: function () {
       this.formObserver?.pause();
+      return new Promise((resolve) => {
+        if (this.savingDraft) {
+          // wait until that's done before we give the go-ahead
+          this.saveDraftCallbacks.push(() => {
+            resolve();
+          });
+        } else {
+          resolve();
+        }
+      });
     },
 
-    resume: function (checkBeforeListening = true) {
+    resume: function () {
       this.formObserver?.resume();
     },
 
@@ -425,6 +448,8 @@ Craft.ElementEditor = Garnish.Base.extend(
                     redirect: this.settings.hashedCpEditUrl,
                     params: {
                       draftId: this.settings.draftId,
+                      fieldId: this.settings.fieldId,
+                      ownerId: this.settings.ownerId,
                       provisional: 1,
                     },
                   });
@@ -433,6 +458,9 @@ Craft.ElementEditor = Garnish.Base.extend(
                     data: {
                       elementId: this.settings.canonicalId,
                       draftId: this.settings.draftId,
+                      fieldId: this.settings.fieldId,
+                      ownerId: this.settings.ownerId,
+                      siteId: this.settings.siteId,
                       provisional: 1,
                     },
                   })
@@ -562,8 +590,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       // Are there additional sites that can be added?
       if (
         this.settings.additionalSites &&
-        this.settings.additionalSites.length &&
-        this.isFullPage
+        this.settings.additionalSites.length
       ) {
         this._createAddlSiteField();
       }
@@ -573,6 +600,101 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.$globalLightswitch.on('change', this._updateSiteStatuses.bind(this));
       this._updateGlobalStatus();
+    },
+
+    showFieldCopyModal: function ($btn, $field) {
+      const headingId =
+        'cross-site-copy-heading-' + Math.floor(Math.random() * 1000000);
+
+      const $hudContent = $('<div/>', {
+        class: 'modal fitted cross-site-copy-modal',
+        'aria-labelledby': headingId,
+      });
+      const $body = $('<div/>', {
+        class: 'body',
+      }).appendTo($hudContent);
+
+      $body.append(
+        `<div class="header"><h1 id="${headingId}" class="h2">${Craft.t(
+          'app',
+          'Copy “{name}” value',
+          {
+            name: $btn.data('label'),
+          }
+        )}</h1></div>`
+      );
+
+      const $form = Craft.createForm().appendTo($body);
+      $form.append(Craft.getCsrfInput());
+
+      const $fields = $('<div/>', {
+        class: 'flex flex-end flex-nowrap',
+      }).appendTo($form);
+
+      const $siteSelectField = Craft.ui
+        .createSelectField({
+          label: Craft.t('app', 'Copy from'),
+          class: ['fullwidth'],
+          options: this._getOtherSupportedSites().map((s) => ({
+            label: s.name,
+            value: s.id,
+          })),
+        })
+        .addClass('flex-grow')
+        .appendTo($fields);
+
+      Craft.ui
+        .createSubmitButton({
+          label: Craft.t('app', 'Copy'),
+          spinner: true,
+        })
+        .appendTo($fields);
+
+      const modal = new Garnish.Modal($hudContent);
+
+      const $siteSelect = $siteSelectField.find('select').focus();
+
+      this.addListener($form, 'submit', async (ev) => {
+        ev.preventDefault();
+        const $submitBtn = $form.find('[type=submit]');
+        $submitBtn.addClass('loading');
+        Craft.cp.announce(Craft.t('app', 'Loading'));
+
+        try {
+          const response = await Craft.sendActionRequest(
+            'POST',
+            'elements/copy-values-from-site',
+            {
+              data: {
+                elementId: this.getDraftElementId($btn.data('element-id')),
+                siteId: this.settings.siteId,
+                fromSiteId: parseInt($siteSelect.val()),
+                layoutElementUid: $btn.data('layout-element'),
+                namespace: $btn.data('namespace'),
+              },
+            }
+          );
+
+          const {fieldHtml, headHtml, bodyHtml, message} = response.data;
+
+          const $newField = $(fieldHtml);
+          $field.replaceWith($newField);
+          // Execute the response JS first so any Selectize inputs, etc.,
+          // get instantiated before field toggles
+          await Craft.appendHeadHtml(headHtml);
+          await Craft.appendBodyHtml(bodyHtml);
+          Craft.initUiElements($newField);
+
+          // Set new focus target since the old one just got replaced
+          modal.$triggerElement = $newField.find('[data-disclosure-trigger]');
+
+          Craft.cp.displaySuccess(message);
+        } finally {
+          $submitBtn.removeClass('loading');
+          Craft.cp.announce(Craft.t('app', 'Loading complete'));
+          modal.hide();
+        }
+      });
     },
 
     /**
@@ -822,10 +944,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       return this.$statusIcon;
     },
 
-    statusMessage: function () {
-      return this.$statusMessage;
-    },
-
     createEditMetaAction: function () {
       if (!this.isFullPage) {
         return;
@@ -837,7 +955,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       const button = menu.addItem(
         {
           type: 'button',
-          icon: 'edit',
+          icon: async () => await Craft.ui.icon('edit'),
           label: Craft.t('app', 'Edit draft settings'),
         },
         group
@@ -857,9 +975,13 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
 
       this.addListener($a, 'click', () => {
-        setTimeout(() => {
-          this.activatePreviewToken();
-        }, 1);
+        if (
+          decodeURIComponent($a.attr('href')).match(/\bpreview\/create-token\b/)
+        ) {
+          setTimeout(() => {
+            this.activatePreviewToken();
+          }, 1);
+        }
       });
 
       this.previewLinks.push($a);
@@ -883,11 +1005,6 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     activatePreviewToken: function () {
-      if (this.settings.isLive) {
-        // don't do anything yet, but leave the event in case we need it later
-        return;
-      }
-
       this.activatedPreviewToken = true;
       this.updatePreviewLinks();
     },
@@ -917,7 +1034,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         canonicalId: this.settings.canonicalId,
         siteId: this.settings.siteId,
         revisionId: this.settings.revisionId,
-        previewToken: this.settings.previewToken,
+        previewToken: this.settings.hashedPreviewToken,
       };
 
       if (this.settings.draftId && !this.settings.isProvisionalDraft) {
@@ -949,28 +1066,27 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {string} url
-     * @param {?string} [randoParam]
-     * @param {boolean} [asPromise=false]
+     * @param {?string} [previewParam]
+     * @param {boolean} [asPromise=true]
      * @returns {(Promise|string)}
      */
-    getTokenizedPreviewUrl: function (url, randoParam, asPromise) {
-      if (typeof asPromise === 'undefined') {
-        asPromise = true;
-      }
-
+    getTokenizedPreviewUrl: function (url, previewParam, asPromise = true) {
       const params = {};
+      const withPreviewParam =
+        this.settings.previewParamValue &&
+        (previewParam || !this.settings.isLive);
 
-      if (randoParam || !this.settings.isLive) {
+      if (withPreviewParam) {
         // Randomize the URL so CDNs don't return cached pages
-        params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
+        params[previewParam || 'x-craft-preview'] =
+          this.settings.previewParamValue;
       }
 
       if (this.settings.siteToken) {
         params[Craft.siteToken] = this.settings.siteToken;
       }
 
-      // No need for a token if we're looking at a live element
-      if (this.settings.isLive) {
+      if (!withPreviewParam) {
         const previewUrl = Craft.getUrl(url, params);
 
         if (asPromise) {
@@ -982,7 +1098,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         return previewUrl;
       }
 
-      if (!this.settings.previewToken) {
+      if (!this.settings.previewToken || !this.settings.hashedPreviewToken) {
         throw 'Missing preview token';
       }
 
@@ -1124,7 +1240,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           `${encodeURIComponent(name)}=${encodeURIComponent(value)}`
         )
       ) {
-        return;
+        return false;
       }
 
       $('<input/>', {
@@ -1135,6 +1251,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       if (this.settings.canCreateDrafts) {
         await this.saveDraft();
       }
+
+      return true;
     },
 
     async markDeltaNameAsModified(name) {
@@ -1170,7 +1288,16 @@ Craft.ElementEditor = Garnish.Base.extend(
       // remove embedded element index names
       data = data.replace(/&elementindex-[^&]*/g, '');
 
-      return data;
+      // Give other things the ability to customize the serialized data
+      // (need to be passed via a nested object so changes persist upstream)
+      const eventData = {
+        serialized: data,
+      };
+      this.trigger('serializeForm', {
+        data: eventData,
+      });
+
+      return eventData.serialized;
     },
 
     /**
@@ -1182,10 +1309,23 @@ Craft.ElementEditor = Garnish.Base.extend(
       return this.queue.push(
         () =>
           new Promise((resolve, reject) => {
-            // If this is a draft, there's nothing to check
+            // If this is a revision, there's nothing to check
             if (this.settings.revisionId) {
               resolve();
               return;
+            }
+
+            // If we're already saving a draft, try again later
+            if (this.savingDraft) {
+              this.saveDraftCallbacks.push(async () => {
+                try {
+                  await this.checkForm(force, saveDraft);
+                } catch (e) {
+                  reject(e);
+                  return;
+                }
+                resolve();
+              });
             }
 
             // If we haven't had a chance to fetch the initial data yet, try again in a bit
@@ -1193,8 +1333,14 @@ Craft.ElementEditor = Garnish.Base.extend(
               typeof this.$container.data('initialSerializedValue') ===
               'undefined'
             ) {
-              setTimeout(() => {
-                this.checkForm(force).then(resolve).catch(reject);
+              setTimeout(async () => {
+                try {
+                  await this.checkForm(force, saveDraft);
+                } catch (e) {
+                  reject(e);
+                  return;
+                }
+                resolve();
               }, 500);
               return;
             }
@@ -1238,7 +1384,8 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @returns {Promise<void>}
      */
     async refreshContent(params) {
-      this.settings.visibleLayoutElements = [];
+      this.settings.visibleLayoutElements = {};
+      this.settings.staticLayoutElements = {};
       const data = [this.serializeForm(true)];
       data.push(
         $.param({
@@ -1256,14 +1403,13 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     /**
-     * @param {Object} [params]
      * @returns {Promise}
      */
-    saveDraft: function (params) {
+    saveDraft: function () {
       return this.queue.push(
         () =>
           new Promise((resolve, reject) => {
-            this._saveDraftInternal(this.serializeForm(true), params)
+            this._saveDraftInternal(this.serializeForm(true))
               .then(resolve)
               .catch(reject);
           })
@@ -1272,163 +1418,210 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {Object} data
-     * @param {Object} [params]
      * @returns {Promise}
      */
-    _saveDraftInternal: function (data, params) {
-      return new Promise((resolve, reject) => {
-        // Ignore if we're already submitting the main form
-        if (this.submittingForm) {
-          reject('Form already being submitted.');
-          return;
-        }
+    _saveDraftInternal: async function (data) {
+      // Ignore if we're already submitting the main form
+      if (this.submittingForm) {
+        throw 'Form already being submitted.';
+      }
 
-        this.lastSerializedValue = data;
-        this.failed = false;
-        this.httpStatus = null;
-        this.httpError = null;
-        this.cancelToken = axios.CancelToken.source();
+      // Ignore if we're already saving the draft
+      if (this.savingDraft) {
+        throw 'Draft already being saved.';
+      }
 
-        this.statusIcons()
-          .velocity('stop')
-          .css('opacity', '')
-          .removeClass('hidden invisible checkmark-icon alert-icon fade-out')
-          .addClass('hidden');
+      this.lastSerializedValue = data;
+      this.savingDraft = true;
+      this.saveDraftCallbacks = [];
+      this.failed = false;
+      this.httpStatus = null;
+      this.httpError = null;
+      this.cancelToken = axios.CancelToken.source();
 
-        // Clear previous status message
-        this.statusMessage().empty();
+      this.statusIcons()
+        .velocity('stop')
+        .css('opacity', '')
+        .removeClass('hidden invisible checkmark-icon alert-icon fade-out')
+        .addClass('hidden');
 
-        if (this.$saveMetaBtn) {
-          this.$saveMetaBtn.addClass('active');
-        }
+      if (this.$saveMetaBtn) {
+        this.$saveMetaBtn.addClass('active');
+      }
 
-        // Prep the data to be saved, keeping track of the first input name for each delta group
-        const [modifiedDeltaNames] = Craft.findModifiedDeltaNames(
-          this.$container.data('initialSerializedValue'),
-          data,
-          this.$container.data('delta-names'),
-          this.$container.data('initial-delta-values'),
-          this.$container.data('modified-delta-names'),
-          true
-        );
+      // Prep the data to be saved, keeping track of the first input name for each delta group
+      const [modifiedDeltaNames] = Craft.findModifiedDeltaNames(
+        this.$container.data('initialSerializedValue'),
+        data,
+        this.$container.data('delta-names'),
+        this.$container.data('initial-delta-values'),
+        this.$container.data('modified-delta-names'),
+        true
+      );
 
-        const params = this.prepareData(data, null, true);
+      const params = this.prepareData(data, null, true);
 
-        let $modifiedFields = $();
-        for (const name of modifiedDeltaNames) {
-          const $field = ($modifiedFields = $modifiedFields.add(
-            this.$container.find(
-              `.field[data-base-input-name="${$.escapeSelector(name)}"]`
-            )
-          ));
-          $modifiedFields = $modifiedFields
-            .add($field)
-            .add($field.parentsUntil(this.$container, '.field'));
-        }
+      let $modifiedFields = $();
+      for (const name of modifiedDeltaNames) {
+        const $field = ($modifiedFields = $modifiedFields.add(
+          this.$container.find(
+            `.field[data-base-input-name="${$.escapeSelector(name)}"]`
+          )
+        ));
+        $modifiedFields = $modifiedFields
+          .add($field)
+          .add($field.parentsUntil(this.$container, '.field'));
+      }
 
-        params.push(
-          $.param({
-            [this.namespaceInputName('visibleLayoutElements')]:
-              this.settings.visibleLayoutElements,
-          })
-        );
-
-        // Are we saving a provisional draft?
-        if (this.settings.isProvisionalDraft || !this.settings.draftId) {
-          params.push(`${this.namespaceInputName('provisional')}=1`);
-        }
-
-        const selectedTabId = this.$contentContainer
-          .children('[data-layout-tab]:not(.hidden)')
-          .data('id');
-        if (selectedTabId) {
-          params.push(
-            `${this.namespaceInputName('selectedTab')}=${selectedTabId}`
-          );
-        }
-
-        Craft.sendActionRequest('POST', 'elements/save-draft', {
-          cancelToken: this.cancelToken.token,
-          headers: this._saveHeaders,
-          data: params.join('&'),
+      params.push(
+        $.param({
+          [this.namespaceInputName('visibleLayoutElements')]:
+            this.settings.visibleLayoutElements,
+        }),
+        $.param({
+          [this.namespaceInputName('staticLayoutElements')]:
+            this.settings.staticLayoutElements,
         })
-          .then((response) => {
-            this._afterSaveDraft();
-            this._afterUpdateFieldLayout(data, selectedTabId, response);
-            this._handleSaveDraftResponse(response);
+      );
 
-            if ($.isPlainObject(response.data.draftElementUids)) {
-              this.draftElementUids = {
-                ...this.draftElementUids,
-                ...response.data.draftElementUids,
-              };
+      // Are we saving a provisional draft?
+      if (this.settings.isProvisionalDraft || !this.settings.draftId) {
+        params.push(`${this.namespaceInputName('provisional')}=1`);
+      }
+
+      const selectedTabId = this.$contentContainer
+        .children('[data-layout-tab]:not(.hidden)')
+        .data('id');
+      if (selectedTabId) {
+        params.push(
+          `${this.namespaceInputName('selectedTab')}=${selectedTabId}`
+        );
+      }
+
+      let response;
+
+      try {
+        response = await Craft.sendActionRequest(
+          'POST',
+          'elements/save-draft',
+          {
+            cancelToken: this.cancelToken.token,
+            headers: this._saveHeaders,
+            data: params.join('&'),
+          }
+        );
+      } catch (e) {
+        this._afterSaveDraft();
+
+        const ignore = this.ignoreFailedRequest;
+        this.ignoreFailedRequest = false;
+
+        if (!ignore) {
+          this.failed = true;
+          if (e && e.response) {
+            this.httpStatus = e.response.status;
+            this.httpError = e.response.data ? e.response.data.message : null;
+          }
+          this._showFailStatus();
+          throw e;
+        }
+      } finally {
+        this.savingDraft = false;
+        const callbacks = [...this.saveDraftCallbacks];
+        this.saveDraftCallbacks = [];
+
+        for (const callback of callbacks) {
+          await callback();
+        }
+      }
+
+      this._afterSaveDraft();
+      this.settings.previewParamValue = response.data.previewParamValue;
+      await this._afterUpdateFieldLayout(data, selectedTabId, response);
+      const newInitialDeltaValues = {};
+
+      if (response.data.deltaNames?.length) {
+        let deltaNames = this.$container.data('delta-names');
+        deltaNames = Array.isArray(deltaNames) ? [...deltaNames] : [];
+        const newDeltaNames = [];
+        for (const name of response.data.deltaNames) {
+          if (deltaNames.indexOf(name) === -1) {
+            deltaNames.push(name);
+            newDeltaNames.push(name);
+          }
+        }
+        if (newDeltaNames.length) {
+          this.$container.data('delta-names', deltaNames);
+
+          // update the initial delta values with the initial values of the new field inputs
+          const groupedParams = Craft.groupParams(
+            this.serializeForm(),
+            newDeltaNames
+          );
+          for (const [deltaName, params] of Object.entries(groupedParams)) {
+            for (const param of params) {
+              const [name, value] = param.split('=', 2);
+              newInitialDeltaValues[decodeURIComponent(name)] =
+                decodeURIComponent(value);
             }
+          }
+        }
+      }
 
-            // Add missing field modified indicators
-            const selector = response.data.modifiedAttributes
-              .map((attr) => {
-                attr = this.namespaceInputName(attr);
-                return [`[name="${attr}"]`, `[name^="${attr}["]`];
-              })
-              .flat()
-              .join(',');
+      this._handleSaveDraftResponse(response);
 
-            $modifiedFields = $modifiedFields
-              .add(
-                this.$contentContainer
-                  .find(selector)
-                  .parentsUntil(this.$container, '.flex-fields > .field')
-              )
-              .add(this.$sidebar?.find(selector).closest('.field'))
-              .not(':has(> .status-badge)');
+      if ($.isPlainObject(response.data.draftElementUids)) {
+        this.draftElementUids = {
+          ...this.draftElementUids,
+          ...response.data.draftElementUids,
+        };
+      }
 
-            for (let i = 0; i < $modifiedFields.length; i++) {
-              $modifiedFields.eq(i).prepend(
-                $('<div/>', {
-                  class: 'status-badge modified',
-                  title: Craft.t('app', 'This field has been modified.'),
-                }).append(
-                  $('<span/>', {
-                    class: 'visually-hidden',
-                    html: Craft.t('app', 'This field has been modified.'),
-                  })
-                )
-              );
-            }
+      // Add missing field modified indicators
+      const selector = response.data.modifiedAttributes
+        .map((attr) => {
+          attr = this.namespaceInputName(attr);
+          return [`[name="${attr}"]`, `[name^="${attr}["]`];
+        })
+        .flat()
+        .join(',');
 
-            this.afterUpdate(data);
-            this.trigger('afterSaveDraft', {response});
+      $modifiedFields = $modifiedFields
+        .add(
+          this.$contentContainer
+            .find(selector)
+            .parentsUntil(this.$container, '.flex-fields > .field')
+        )
+        .add(this.$sidebar?.find(selector).closest('.field'))
+        .not('.no-status,:has(> .status-badge)');
 
-            if (Craft.broadcaster) {
-              Craft.broadcaster.postMessage({
-                pageId: Craft.pageId,
-                event: 'saveDraft',
-                canonicalId: this.settings.canonicalId,
-                draftId: this.settings.draftId,
-                isProvisionalDraft: this.settings.isProvisionalDraft,
-              });
-            }
+      for (let i = 0; i < $modifiedFields.length; i++) {
+        $modifiedFields.eq(i).prepend(
+          $('<div/>', {
+            class: 'status-badge modified',
+            'aria-hidden': 'true',
+            title: Craft.t('app', 'This field has been modified.'),
+          }).append(
+            $('<span/>', {
+              class: 'visually-hidden',
+              html: Craft.t('app', 'This field has been modified.'),
+            })
+          )
+        );
+      }
 
-            resolve();
-          })
-          .catch((e) => {
-            this._afterSaveDraft();
+      this.afterUpdate(this.lastSerializedValue, newInitialDeltaValues);
+      this.trigger('afterSaveDraft', {response});
 
-            if (!this.ignoreFailedRequest) {
-              this.failed = true;
-              if (e && e.response) {
-                this.httpStatus = e.response.status;
-                this.httpError = e.response.data
-                  ? e.response.data.message
-                  : null;
-              }
-              this._showFailStatus();
-              reject(e);
-            }
-
-            this.ignoreFailedRequest = false;
-          });
-      });
+      if (Craft.broadcaster) {
+        Craft.broadcaster.postMessage({
+          pageId: Craft.pageId,
+          event: 'saveDraft',
+          canonicalId: this.settings.canonicalId,
+          draftId: this.settings.draftId,
+          isProvisionalDraft: this.settings.isProvisionalDraft,
+        });
+      }
     },
 
     _handleSaveDraftResponse(response) {
@@ -1550,66 +1743,69 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @param {Object} data
      * @returns {Promise}
      */
-    updateFieldLayout: function (data) {
-      return new Promise((resolve, reject) => {
-        // Ignore if we're already submitting the main form
-        if (this.submittingForm) {
-          reject('Form already being submitted.');
-          return;
+    updateFieldLayout: async function (data) {
+      // Ignore if we're already submitting the main form
+      if (this.submittingForm) {
+        throw 'Form already being submitted.';
+      }
+
+      this.lastSerializedValue = data;
+      this.cancelToken = axios.CancelToken.source();
+
+      // Prep the data to be saved, keeping track of the first input name for each delta group
+      let preparedData = this.prepareData(data);
+
+      const extraData = {
+        [this.namespaceInputName('visibleLayoutElements')]:
+          this.settings.visibleLayoutElements,
+        [this.namespaceInputName('staticLayoutElements')]:
+          this.settings.staticLayoutElements,
+      };
+
+      // Are we editing a provisional draft?
+      if (this.settings.isProvisionalDraft) {
+        extraData[this.namespaceInputName('provisional')] = 1;
+      }
+
+      const selectedTabId = this.$contentContainer
+        .children('[data-layout-tab]:not(.hidden)')
+        .data('id');
+      if (selectedTabId) {
+        extraData[this.namespaceInputName('selectedTab')] = selectedTabId;
+      }
+
+      preparedData += `&${$.param(extraData)}`;
+
+      let response;
+
+      try {
+        response = await Craft.sendActionRequest(
+          'POST',
+          'elements/update-field-layout',
+          {
+            cancelToken: this.cancelToken.token,
+            headers: this._saveHeaders,
+            data: preparedData,
+          }
+        );
+      } catch (e) {
+        this._afterSaveDraft();
+
+        const ignore = this.ignoreFailedRequest;
+        this.ignoreFailedRequest = false;
+
+        if (!ignore) {
+          this.failed = true;
+          if (e && e.response) {
+            this.httpStatus = e.response.status;
+            this.httpError = e.response.data ? e.response.data.message : null;
+          }
+          this._showFailStatus();
+          reject(e);
         }
+      }
 
-        this.lastSerializedValue = data;
-        this.cancelToken = axios.CancelToken.source();
-
-        // Prep the data to be saved, keeping track of the first input name for each delta group
-        let preparedData = this.prepareData(data);
-
-        const extraData = {
-          [this.namespaceInputName('visibleLayoutElements')]:
-            this.settings.visibleLayoutElements,
-        };
-
-        // Are we editing a provisional draft?
-        if (this.settings.isProvisionalDraft) {
-          extraData[this.namespaceInputName('provisional')] = 1;
-        }
-
-        const selectedTabId = this.$contentContainer
-          .children('[data-layout-tab]:not(.hidden)')
-          .data('id');
-        if (selectedTabId) {
-          extraData[this.namespaceInputName('selectedTab')] = selectedTabId;
-        }
-
-        preparedData += `&${$.param(extraData)}`;
-
-        Craft.sendActionRequest('POST', 'elements/update-field-layout', {
-          cancelToken: this.cancelToken.token,
-          headers: this._saveHeaders,
-          data: preparedData,
-        })
-          .then((response) => {
-            this._afterUpdateFieldLayout(data, selectedTabId, response);
-            resolve();
-          })
-          .catch((e) => {
-            this._afterSaveDraft();
-
-            if (!this.ignoreFailedRequest) {
-              this.failed = true;
-              if (e && e.response) {
-                this.httpStatus = e.response.status;
-                this.httpError = e.response.data
-                  ? e.response.data.message
-                  : null;
-              }
-              this._showFailStatus();
-              reject(e);
-            }
-
-            this.ignoreFailedRequest = false;
-          });
-      });
+      await this._afterUpdateFieldLayout(data, selectedTabId, response);
     },
 
     /**
@@ -1643,8 +1839,28 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       if (this.settings.draftName !== null) {
         params.push(
-          `${this.namespaceInputName('draftName')}=${this.settings.draftName}`
+          `${this.namespaceInputName('draftName')}=${encodeURIComponent(
+            this.settings.draftName
+          )}`
         );
+      }
+
+      if (this.settings.fieldId !== null) {
+        params.push(
+          `${this.namespaceInputName('fieldId')}=${this.settings.fieldId}`
+        );
+      }
+
+      if (this.settings.ownerId !== null) {
+        params.push(
+          `${this.namespaceInputName('ownerId')}=${this.settings.ownerId}`
+        );
+      }
+
+      if (this.settings.saveParams) {
+        for (const [name, value] of Object.entries(this.settings.saveParams)) {
+          params.push(`${this.namespaceInputName(name)}=${value}`);
+        }
       }
 
       return asArray ? params : params.join('&');
@@ -1663,6 +1879,9 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     getDraftElementId(elementId) {
+      if (elementId == this.settings.canonicalId) {
+        return this.settings.elementId;
+      }
       return this.draftElementIds[elementId] || elementId;
     },
 
@@ -1702,6 +1921,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       // Update the visible elements
       let $allTabContainers = $();
       const visibleLayoutElements = {};
+      const staticLayoutElements = {};
       let changedElements = false;
 
       for (const tabInfo of response.data.missingElements) {
@@ -1731,6 +1951,13 @@ Craft.ElementEditor = Garnish.Base.extend(
             }
             visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
 
+            if (elementInfo.static) {
+              if (!staticLayoutElements[tabInfo.uid]) {
+                staticLayoutElements[tabInfo.uid] = [];
+              }
+              staticLayoutElements[tabInfo.uid].push(elementInfo.uid);
+            }
+
             if (typeof elementInfo.html === 'string') {
               const $oldElement = $tabContainer.children(
                 `[data-layout-element="${elementInfo.uid}"]`
@@ -1741,7 +1968,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               } else {
                 $newElement.appendTo($tabContainer);
               }
-              Craft.initUiElements($newElement);
+              Craft.cp.elementThumbLoader.load($newElement);
               changedElements = true;
             }
           } else {
@@ -1787,6 +2014,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
 
       this.settings.visibleLayoutElements = visibleLayoutElements;
+      this.settings.staticLayoutElements = staticLayoutElements;
 
       // Update the tabs
       const updateTabs =
@@ -1818,6 +2046,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       await Craft.appendHeadHtml(response.data.headHtml);
       await Craft.appendBodyHtml(response.data.bodyHtml);
+      Craft.initUiElements(this.$contentContainer);
 
       // Did any layout elements get added or removed?
       if (changedElements) {
@@ -1838,9 +2067,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.handleDismissibleTips();
     },
 
-    afterUpdate: function (data) {
+    afterUpdate: function (data, newInitialDeltaValues = {}) {
       this.$container.data('initialSerializedValue', data);
-      this.$container.data('initial-delta-values', {});
+      this.$container.data('initial-delta-values', newInitialDeltaValues);
 
       const $statusIcons = this.statusIcons()
         .velocity('stop')
@@ -1867,7 +2096,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.trigger('update');
 
-      if (this.settings.isProvisionalDraft && Craft.broadcaster) {
+      if (
+        (this.settings.isProvisionalDraft ||
+          this.settings.isUnpublishedDraft) &&
+        Craft.broadcaster
+      ) {
         // Broadcast a saveMessage event, in case any chips/cards should be
         // updated to show the provisional changes
         Craft.broadcaster.postMessage({
@@ -1879,14 +2112,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     setStatusMessage: function (message) {
       this.statusIcons().attr('title', message);
-      this.statusMessage()
-        .empty()
-        .append(
-          $('<span/>', {
-            class: 'visually-hidden',
-            text: message,
-          })
-        );
+      Craft.cp.announce(message);
     },
 
     showMetaModal: function () {
@@ -2049,7 +2275,22 @@ Craft.ElementEditor = Garnish.Base.extend(
         } finally {
           this.submittingForm = false;
           this.trigger('afterSubmit');
+
+          // after fully saving the element in a slideout, trigger checkForm but without creating a draft
+          // see https://github.com/craftcms/cms/issues/15938
+          this.checkForm(false, false);
         }
+
+        if (this.settings.isUnpublishedDraft) {
+          // Remove the draft-id data from existing chips/cards
+          const $elements = $(
+            `div.element[data-id="${this.settings.elementId}"][data-settings]`
+          );
+          for (let i = 0; i < $elements.length; i++) {
+            $elements.eq(i).removeData('draft-id').removeAttr('data-draft-id');
+          }
+        }
+
         this.settings.handleSubmitResponse(response);
       }
     },
@@ -2071,7 +2312,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     hideTip: function (ev) {
       const targetElement = ev.target;
       if (targetElement) {
-        const $targetParent = $(targetElement).closest('.readable');
+        const $targetParent = $(targetElement).closest('[data-layout-element]');
         if ($targetParent.length) {
           const layoutElementUid = $targetParent.data('layout-element');
           $targetParent.remove();
@@ -2173,7 +2414,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                 }
 
                 // hide any tooltips that are no longer relevant
-                for (let userId of Object.keys(this.activityTooltips)) {
+                for (const userId of Object.keys(this.activityTooltips)) {
                   if (
                     !data.activity.find((activity) => activity.userId == userId)
                   ) {
@@ -2181,41 +2422,47 @@ Craft.ElementEditor = Garnish.Base.extend(
                   }
                 }
 
-                // if the element has been updated upstream, show a notification about it
-                const elementUpdated =
-                  this.settings.updatedTimestamp &&
-                  this.settings.updatedTimestamp !== data.updatedTimestamp;
-                const canonicalUpdated =
-                  this.settings.canonicalUpdatedTimestamp &&
-                  this.settings.canonicalUpdatedTimestamp !==
-                    data.canonicalUpdatedTimestamp;
+                if (this.isFullPage) {
+                  // if the element has been updated upstream, show a notification about it
+                  const elementUpdated =
+                    this.settings.updatedTimestamp &&
+                    this.settings.updatedTimestamp !== data.updatedTimestamp;
+                  const canonicalUpdated =
+                    this.settings.canonicalUpdatedTimestamp &&
+                    this.settings.canonicalUpdatedTimestamp !==
+                      data.canonicalUpdatedTimestamp;
 
-                if (elementUpdated || canonicalUpdated) {
-                  const $reloadBtn = Craft.ui.createButton({
-                    label: Craft.t('app', 'Reload'),
-                    spinner: true,
-                  });
+                  if (elementUpdated || canonicalUpdated) {
+                    const $reloadBtn = Craft.ui.createButton({
+                      label: Craft.t('app', 'Reload'),
+                      spinner: true,
+                    });
 
-                  Craft.cp.displayNotice(
-                    Craft.t('app', 'This {type} has been updated.', {
-                      type:
-                        elementUpdated &&
-                        this.settings.draftId &&
-                        !this.settings.isProvisionalDraft
-                          ? Craft.t('app', 'draft')
-                          : Craft.elementTypeNames[this.settings.elementType]
-                            ? Craft.elementTypeNames[
-                                this.settings.elementType
-                              ][2]
-                            : Craft.t('app', 'element'),
-                    }),
-                    {
-                      details: $reloadBtn,
-                    }
-                  );
-                  $reloadBtn.on('click', () => {
-                    window.location.reload();
-                  });
+                    Craft.cp.displayNotice(
+                      Craft.uppercaseFirst(
+                        Craft.t('app', 'This {type} has been updated.', {
+                          type:
+                            elementUpdated &&
+                            this.settings.draftId &&
+                            !this.settings.isProvisionalDraft
+                              ? Craft.t('app', 'draft')
+                              : Craft.elementTypeNames[
+                                    this.settings.elementType
+                                  ]
+                                ? Craft.elementTypeNames[
+                                    this.settings.elementType
+                                  ][2]
+                                : Craft.t('app', 'element'),
+                        })
+                      ),
+                      {
+                        details: $reloadBtn,
+                      }
+                    );
+                    $reloadBtn.on('click', () => {
+                      window.location.reload();
+                    });
+                  }
                 }
 
                 this.settings.updatedTimestamp = data.updatedTimestamp;
@@ -2276,11 +2523,17 @@ Craft.ElementEditor = Garnish.Base.extend(
       isUnpublishedDraft: false,
       previewTargets: [],
       previewToken: null,
+      hashedPreviewToken: null,
+      previewParamValue: null,
       revisionId: null,
+      fieldId: null,
+      ownerId: null,
       siteId: null,
       siteStatuses: [],
+      saveParams: null,
       siteToken: null,
       visibleLayoutElements: {},
+      staticLayoutElements: {},
       updatedTimestamp: null,
       canonicalUpdatedTimestamp: null,
       reloadOnBroadcastSave: true,

@@ -68,7 +68,7 @@ class ImageTransforms
             'width' => $matches['width'] ?? null,
             'height' => $matches['height'] ?? null,
             'mode' => $matches['mode'],
-            'position' => $matches['position'],
+            'position' => $matches['position'] ?? 'center-center',
             'quality' => $matches['quality'] ?? null,
             'interlace' => $matches['interlace'] ?? 'none',
             'fill' => $fill ?? null,
@@ -111,17 +111,7 @@ class ImageTransforms
             // Don't change the same transform
             $transform = clone $transform;
 
-            $whiteList = [
-                'width',
-                'height',
-                'format',
-                'mode',
-                'format',
-                'position',
-                'quality',
-                'interlace',
-                'transformer',
-            ];
+            $attributes = $transform->attributes();
 
             $nullables = [
                 'id',
@@ -131,15 +121,14 @@ class ImageTransforms
                 'parameterChangeTime',
             ];
 
-            foreach ($parameters as $parameter => $value) {
-                if (in_array($parameter, $whiteList, true)) {
-                    /** @phpstan-ignore-next-line */
-                    $transform->$parameter = $value;
+            foreach ($parameters as $name => $value) {
+                if (in_array($name, $attributes, true)) {
+                    $transform->$name = $value;
                 }
             }
 
-            foreach ($nullables as $nullable) {
-                $transform->{$nullable} = null;
+            foreach ($nullables as $name) {
+                $transform->$name = null;
             }
         }
 
@@ -236,9 +225,13 @@ class ImageTransforms
             return '_' . $transform->handle;
         }
 
+        $position = preg_match('/^(top|center|bottom)-(left|center|right)$/', $transform->position)
+            ? $transform->position
+            : 'center-center';
+
         return '_' . ($transform->width ?: 'AUTO') . 'x' . ($transform->height ?: 'AUTO') .
             '_' . $transform->mode .
-            '_' . $transform->position .
+            "_$position" .
             ($transform->quality ? '_' . $transform->quality : '') .
             '_' . $transform->interlace .
             ($transform->fill ? '_' . ltrim($transform->fill, '#') : '') .
@@ -289,22 +282,7 @@ class ImageTransforms
         }
 
         if (is_object($transform)) {
-            $transform = ArrayHelper::toArray($transform, [
-                'id',
-                'name',
-                'transformer',
-                'handle',
-                'width',
-                'height',
-                'format',
-                'parameterChangeTime',
-                'mode',
-                'position',
-                'fill',
-                'upscale',
-                'quality',
-                'interlace',
-            ]);
+            $transform = ArrayHelper::toArray($transform);
         }
 
         if (is_array($transform)) {
@@ -333,7 +311,10 @@ class ImageTransforms
                 return self::extendTransform($baseTransform, $transform);
             }
 
-            return new ImageTransform($transform);
+            return Craft::createObject([
+                'class' => ImageTransform::class,
+                ...$transform,
+            ]);
         }
 
         if (is_string($transform)) {
@@ -390,6 +371,7 @@ class ImageTransforms
      * @param ImageTransform $transform The image transform
      * @param callable|null $heartbeat A callback that should be called while the transform is being generated
      * @param BaseImage|null $image The image object loaded for the transform
+     * @param-out BaseImage $image The image object loaded for the transform
      * @return string The temp path that the transform was saved to
      * @throws ImageTransformException if the transform couldn’t be generated.
      */
@@ -435,10 +417,10 @@ class ImageTransforms
 
         if ($asset->getHasFocalPoint() && $transform->mode === 'crop') {
             $position = $asset->getFocalPoint();
-        } elseif (!preg_match('/^(top|center|bottom)-(left|center|right)$/', $transform->position)) {
-            $position = 'center-center';
-        } else {
+        } elseif (preg_match('/^(top|center|bottom)-(left|center|right)$/', $transform->position)) {
             $position = $transform->position;
+        } else {
+            $position = 'center-center';
         }
 
         $scaleIfSmaller = $transform->upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;

@@ -108,6 +108,7 @@ class Json extends \yii\helpers\Json
      * @param int $options The encoding options. `JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT`
      * is used by default.
      * @param string $defaultIndent The default indentation sequence to use if the file doesn’t exist
+     * @since 5.0.0
      */
     public static function encodeToFile(
         string $path,
@@ -124,13 +125,25 @@ class Json extends \yii\helpers\Json
                 $indent = $defaultIndent;
             }
 
-            if ($indent !== '    ') {
-                $json = preg_replace_callback('/^ {4,}/m', function(array $match) use ($indent) {
-                    return strtr($match[0], ['    ' => $indent]);
-                }, $json);
-            }
+            $json = static::reindent($json, $indent);
         }
 
-        FileHelper::writeToFile($path, $json);
+        FileHelper::writeToFile($path, $json . "\n");
+    }
+
+    /**
+     * Re-indents JSON with the given indentation string.
+     *
+     * @param string $json
+     * @param string $indent
+     * @return string
+     * @since 5.7.0
+     */
+    public static function reindent(string $json, string $indent = '  '): string
+    {
+        if ($indent !== '    ') {
+            return preg_replace_callback('/^ {4,}/m', fn(array $match) => strtr($match[0], ['    ' => $indent]), $json);
+        }
+        return $json;
     }
 }

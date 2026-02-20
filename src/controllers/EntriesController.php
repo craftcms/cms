@@ -21,6 +21,7 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
@@ -42,6 +43,16 @@ use yii\web\ServerErrorHttpException;
  */
 class EntriesController extends BaseEntriesController
 {
+    /**
+     * @since 5.9.0
+     */
+    public function actionIndex(): Response
+    {
+        $firstPage = Craft::$app->getElementSources()->getFirstPage(Entry::class);
+        $slug = $firstPage ? StringHelper::toKebabCase($firstPage) : 'entries';
+        return $this->redirect("content/$slug");
+    }
+
     /**
      * Creates a new unpublished draft and redirects to its edit page.
      *
@@ -86,7 +97,7 @@ class EntriesController extends BaseEntriesController
             if (count($editableSiteIds) > 1 && $section->propagationMethod !== PropagationMethod::All) {
                 return $this->renderTemplate('_special/sitepicker.twig', [
                     'siteIds' => $editableSiteIds,
-                    'baseUrl' => "entries/$section->handle/new",
+                    'baseUrl' => sprintf('%s/new', $section->getCpIndexUri()),
                 ]);
             }
 
@@ -187,9 +198,9 @@ class EntriesController extends BaseEntriesController
         DateTimeHelper::resume();
 
         if (!$success) {
-            return $this->asModelFailure($entry, Craft::t('app', 'Couldn’t create {type}.', [
+            return $this->asModelFailure($entry, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => Entry::lowerDisplayName(),
-            ]), 'entry');
+            ])), 'entry');
         }
 
         // Set its position in the structure if a before/after param was passed
@@ -241,20 +252,6 @@ class EntriesController extends BaseEntriesController
         // Permission enforcement
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry, $duplicate);
-        $currentUser = static::currentUser();
-        $section = $entry->getSection();
-
-        // Is this another user’s entry (and it’s not a Single)?
-        if (
-            $entry->id &&
-            !$duplicate &&
-            !in_array($currentUser->id, $entry->getAuthorIds(), true) &&
-            $section->type !== Section::TYPE_SINGLE &&
-            $entry->enabled
-        ) {
-            // Make sure they have permission to make live changes to those
-            $this->requirePermission("savePeerEntries:$section->uid");
-        }
 
         // Keep track of whether the entry was disabled as a result of duplication
         $forceDisabled = false;
@@ -297,17 +294,6 @@ class EntriesController extends BaseEntriesController
 
         if ($forceDisabled) {
             $entry->enabled = false;
-        }
-
-        $section = $entry->getSection();
-
-        // Even more permission enforcement
-        if ($entry->enabled) {
-            if ($entry->id) {
-                $this->requirePermission("saveEntries:$section->uid");
-            } elseif (!$currentUser->can("saveEntries:$section->uid")) {
-                $entry->enabled = false;
-            }
         }
 
         // Save the entry (finally!)
@@ -490,6 +476,8 @@ class EntriesController extends BaseEntriesController
             ->id($entryIds)
             ->status(null)
             ->drafts(null)
+            ->site('*')
+            ->unique()
             ->all();
         if (empty($entries)) {
             throw new BadRequestHttpException('Cannot find the entries to move to the new section.');
@@ -581,14 +569,14 @@ class EntriesController extends BaseEntriesController
     private function _populateEntryModel(Entry $entry): void
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->typeId = $this->request->getBodyParam('typeId', $entry->typeId);
-        $entry->slug = $this->request->getBodyParam('slug', $entry->slug);
-        if (($postDate = $this->request->getBodyParam('postDate')) !== null) {
-            $entry->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
-        }
-        if (($expiryDate = $this->request->getBodyParam('expiryDate')) !== null) {
-            $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
-        }
+        $entry->setAttributesFromRequest(array_filter([
+            'authorIds' => $this->request->getBodyParam('authors') ?? $this->request->getBodyParam('author') ?? $entry->getAuthorId() ?? static::currentUser()->id,
+            'expiryDate' => $this->request->getBodyParam('expiryDate'),
+            'postDate' => $this->request->getBodyParam('postDate'),
+            'slug' => $this->request->getBodyParam('slug'),
+            'title' => $this->request->getBodyParam('title'),
+            'typeId' => $this->request->getBodyParam('typeId'),
+        ], fn($value) => $value !== null));
 
         $enabledForSite = $this->enabledForSiteValue();
         if (is_array($enabledForSite)) {
@@ -598,24 +586,14 @@ class EntriesController extends BaseEntriesController
             $entry->enabled = (bool)$this->request->getBodyParam('enabled', $entry->enabled);
         }
         $entry->setEnabledForSite($enabledForSite ?? $entry->getEnabledForSite());
-        $entry->title = $this->request->getBodyParam('title', $entry->title);
 
         if (!$entry->typeId) {
             // Default to the section's first entry type
             $entry->typeId = $entry->getAvailableEntryTypes()[0]->id;
         }
 
-        // Prevent the last entry type's field layout from being used
-        $entry->fieldLayoutId = null;
-
-        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
-        $entry->setFieldValuesFromRequest($fieldsLocation);
-
         // Authors
-        $authorIds = $this->request->getBodyParam('authors') ?? $this->request->getBodyParam('author');
-        if ($authorIds !== null) {
-            $entry->setAuthorIds($authorIds);
-        } elseif (!$entry->id) {
+        if (empty($entry->getAuthorIds()) && !$entry->id) {
             $entry->setAuthor(static::currentUser());
         }
 
@@ -623,6 +601,13 @@ class EntriesController extends BaseEntriesController
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
             $entry->setParentId($parentId);
         }
+
+        // Prevent the last entry type's field layout from being used
+        $entry->fieldLayoutId = null;
+
+        // Set the custom field values now that everything that could affect field conditions has been set
+        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
+        $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Is fresh?
         if ($this->request->getBodyParam('isFresh')) {

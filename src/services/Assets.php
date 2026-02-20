@@ -53,7 +53,7 @@ use yii\db\Expression;
 /**
  * Assets service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->assets`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->getAssets()`]].
  *
  * @property-read VolumeFolder $currentUserTemporaryUploadFolder
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -146,8 +146,9 @@ class Assets extends Component
      * @param Asset $asset
      * @param string $pathOnServer
      * @param string $filename
+     * @param string|null $mimeType The default MIME type to use, if it can’t be determined based on the server path
      */
-    public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename): void
+    public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename, ?string $mimeType = null): void
     {
         // Fire a 'beforeReplaceFile' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REPLACE_ASSET)) {
@@ -162,6 +163,7 @@ class Assets extends Component
 
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
+        $asset->setMimeType(FileHelper::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
         $asset->uploaderId = Craft::$app->getUser()->getId();
         $asset->avoidFilenameConflicts = true;
         $asset->setScenario(Asset::SCENARIO_REPLACE);
@@ -308,13 +310,20 @@ class Assets extends Component
      */
     public function deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true): void
     {
-        $folders = [];
+        $allFolderIds = [];
 
         foreach ((array)$folderIds as $folderId) {
             $folder = $this->getFolderById((int)$folderId);
-            $folders[] = $folder;
+            if (!$folder) {
+                continue;
+            }
 
-            if ($folder && $deleteDir) {
+            $allFolderIds[] = $folder->id;
+            $descendants = $this->getAllDescendantFolders($folder, withParent: false);
+            array_push($allFolderIds, ...array_map(fn(VolumeFolder $folder) => $folder->id, $descendants));
+
+            // Delete the directory on the filesystem
+            if ($folder->path && $deleteDir) {
                 $volume = $folder->getVolume();
                 try {
                     $volume->deleteDirectory($folder->path);
@@ -325,25 +334,18 @@ class Assets extends Component
             }
         }
 
-        /** @var Asset[] $assets */
-        $assets = Asset::find()->folderId($folderIds)->all();
-
+        // Delete the elements
+        $assetQuery = Asset::find()->folderId($allFolderIds);
         $elementService = Craft::$app->getElements();
 
-        foreach ($assets as $asset) {
+        foreach (Db::each($assetQuery) as $asset) {
+            /** @var Asset $asset */
             $asset->keepFileOnDelete = !$deleteDir;
             $elementService->deleteElement($asset, true);
         }
 
-        foreach ($folders as $folder) {
-            $descendants = $this->getAllDescendantFolders($folder);
-            usort($descendants, static fn($a, $b) => substr_count($a->path, '/') < substr_count($b->path, '/'));
-
-            foreach ($descendants as $descendant) {
-                VolumeFolderRecord::deleteAll(['id' => $descendant->id]);
-            }
-            VolumeFolderRecord::deleteAll(['id' => $folder->id]);
-        }
+        // Delete the folder records
+        VolumeFolderRecord::deleteAll(['id' => $allFolderIds]);
     }
 
     /**
@@ -487,7 +489,7 @@ class Assets extends Component
      * @param string $orderBy
      * @param bool $withParent Whether the parent folder should be included in the results
      * @param bool $asTree Whether the folders should be returned hierarchically
-     * @return VolumeFolder[]
+     * @return array<int,VolumeFolder> The descendant folders, indexed by their IDs
      */
     public function getAllDescendantFolders(
         VolumeFolder $parentFolder,
@@ -545,7 +547,7 @@ class Assets extends Component
         $criteria->limit = 1;
         $folder = $this->findFolders($criteria);
 
-        if (is_array($folder) && !empty($folder)) {
+        if (!empty($folder)) {
             return array_pop($folder);
         }
 
@@ -680,7 +682,8 @@ class Assets extends Component
             return $iconFallback ? AssetsHelper::iconUrl($extension) : null;
         }
 
-        $transform = new ImageTransform([
+        $transform = Craft::createObject([
+            'class' => ImageTransform::class,
             'width' => $width,
             'height' => $height,
             'mode' => 'crop',
@@ -724,7 +727,8 @@ class Assets extends Component
             $originalWidth > $width ||
             $originalHeight > $height
         ) {
-            $transform = new ImageTransform([
+            $transform = Craft::createObject([
+                'class' => ImageTransform::class,
                 'width' => $width,
                 'height' => $height,
                 'mode' => 'crop',
@@ -811,9 +815,7 @@ class Assets extends Component
         }
 
         // Check whether a filename we'd want to use does not exist
-        $canUse = static function($filenameToTest) use ($potentialConflicts, $volume, $folder) {
-            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
-        };
+        $canUse = static fn($filenameToTest) => !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
 
         if ($canUse($originalFilename)) {
             return $originalFilename;
@@ -868,9 +870,11 @@ class Assets extends Component
         $folderModel = $parentFolder;
         $parentId = $parentFolder->id;
 
+        $fullPath = trim($fullPath, '/\\');
+
         if ($fullPath !== '') {
             // If we don't have a folder matching these, create a new one
-            $parts = preg_split('/\\\\|\//', trim($fullPath, '/\\'));
+            $parts = preg_split('/\\\\|\//', $fullPath);
 
             // creep up the folder path
             $path = '';
