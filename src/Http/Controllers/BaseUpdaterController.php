@@ -17,11 +17,11 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -76,7 +76,7 @@ abstract class BaseUpdaterController
         }
     }
 
-    public function index(#[Give('Craft')] Application $craft): Response
+    public function index(#[Give('Craft')] Application $craft): Response|View
     {
         // Load the updater JS
         $view = $craft->getView();
