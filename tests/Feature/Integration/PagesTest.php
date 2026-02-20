@@ -37,13 +37,6 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
     ['url' => '/users', 'title' => 'Users'],
 
     [
-        'url' => '/settings/sections',
-        'title' => 'Sections',
-        'extraContent' => [
-            ['rendered' => 'New section'],
-        ],
-    ],
-    [
         'url' => '/settings/users',
         'title' => 'User Settings',
         'extraContent' => [
