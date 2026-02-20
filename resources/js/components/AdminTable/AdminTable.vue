@@ -6,6 +6,7 @@
   import ReorderButton from '@/components/ReorderButton.vue';
   import DropIndicator from '@/components/DropIndicator.vue';
   import Select from '@/components/form/Select.vue';
+  import Text from '@/components/Text.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -15,9 +16,21 @@
       readOnly?: boolean;
       layout?: 'auto' | 'fixed';
       spacing?: 'compact' | 'relaxed';
+      from?: number;
+      to?: number;
+      total?: number;
+      enableAdjustPageSize?: boolean;
+      pageSizeOptions?: Array<number>;
     }>(),
 
-    {reorderable: true, selectable: true, layout: 'auto', spacing: 'compact'}
+    {
+      reorderable: true,
+      selectable: true,
+      layout: 'auto',
+      spacing: 'compact',
+      enableAdjustPageSize: false,
+      pageSizeOptions: () => [50, 100, 250],
+    }
   );
 
   const emit = defineEmits<{
@@ -94,6 +107,15 @@
     },
   });
 
+  const showPagination = computed(() => props.table.getPageCount() > 1);
+  const showPageSize = computed(() => props.enableAdjustPageSize);
+  const showDisplayedRows = computed(
+    () => props.from && props.to && props.total
+  );
+  const showFooter = computed(
+    () => showPagination.value || showPageSize.value || showDisplayedRows.value
+  );
+
   onMounted(() => {
     nextTick(registerRows);
   });
@@ -105,7 +127,7 @@
 
 <template>
   <div class="admin-table-wrapper">
-    <div class="cp-table-header">
+    <div class="cp-table-header" v-if="$slots['search-form']">
       <slot name="search-form"></slot>
     </div>
     <table
@@ -168,7 +190,8 @@
           :key="row.id"
           :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
           :class="{
-            'row--dragging': !readOnly && getDragState(row.id) === 'dragging',
+            'row--dragging':
+              !readOnly && getDragState(row.id).type === 'dragging',
           }"
         >
           <template v-if="reorderable && !readOnly">
@@ -206,9 +229,16 @@
       </tbody>
     </table>
 
-    <div class="cp-table-footer">
-      <div class="flex gap-3 items-center justify-between">
-        <div class="flex gap-1">
+    <div class="cp-table-footer" v-if="showFooter">
+      <div>
+        <Text
+          v-if="showDisplayedRows"
+          template="{from} – {to} of {total, plural, =1{# item} other{# items}}"
+          :params="{from, to, total}"
+        />
+      </div>
+      <div class="flex gap-1">
+        <template v-if="showPagination">
           <craft-button
             type="button"
             @click="table.previousPage()"
@@ -220,6 +250,21 @@
               :label="t('Previous page')"
             ></craft-icon>
           </craft-button>
+          <div class="flex items-center gap-1 mx-2">
+            Page
+            <craft-input
+              type="text"
+              v-model="pageIndexProxy"
+              size="3"
+              :label="t('Current page')"
+              label-sr-only
+              center
+              small
+            >
+            </craft-input>
+            of
+            {{ table.getPageCount() }}
+          </div>
           <craft-button
             type="button"
             @click="table.nextPage()"
@@ -231,30 +276,17 @@
               label="t('Next page')"
             ></craft-icon>
           </craft-button>
-        </div>
-        <span class="flex items-center gap-1">
-          Page
-          <craft-input
-            type="text"
-            v-model="pageIndexProxy"
-            size="3"
-            :label="t('Current page')"
-            label-sr-only
-            center
-            small
-          >
-          </craft-input>
-          of
-          {{ table.getPageCount() }}
-        </span>
+        </template>
       </div>
       <div class="flex gap-2 items-center">
-        {{ t('Items per page:') }}
-        <Select
-          :options="['25', '50', '100']"
-          v-model="pageSizeProxy"
-          class="w-auto"
-        />
+        <template v-if="showPageSize">
+          {{ t('Items per page:') }}
+          <Select
+            :options="pageSizeOptions"
+            v-model="pageSizeProxy"
+            class="w-auto"
+          />
+        </template>
       </div>
     </div>
   </div>

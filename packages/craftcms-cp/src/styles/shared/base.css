@@ -184,5 +184,6 @@ Modify with `cp-table--auto` to apply table-layout: auto
   padding: var(--c-spacing-md);
   background-color: var(--c-color-neutral-bg-normal);
   display: flex;
+  align-items: center;
   justify-content: space-between;
 }

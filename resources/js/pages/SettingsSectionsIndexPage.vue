@@ -87,7 +87,7 @@
   const pageIndex = computed(() =>
     props.pagination.current_page ? props.pagination.current_page - 1 : 0
   );
-  const pagination = ref<PaginationState>({
+  const tablePagination = ref<PaginationState>({
     pageIndex: pageIndex.value,
     pageSize: props.pagination.per_page,
   });
@@ -114,7 +114,7 @@
     enableSortingRemoval: false,
     state: {
       get pagination() {
-        return pagination.value;
+        return tablePagination.value;
       },
       get sorting() {
         return sorting.value;
@@ -154,7 +154,9 @@
 
     onPaginationChange: (updater) => {
       const next =
-        typeof updater === 'function' ? updater(pagination.value) : updater;
+        typeof updater === 'function'
+          ? updater(tablePagination.value)
+          : updater;
 
       const currentQuery = new URLSearchParams(window.location.search);
 
@@ -185,14 +187,22 @@
     </template>
 
     <Pane :padding="0" appearance="raised">
-      <AdminTable spacing="relaxed" :table="sectionTable" :reorderable="false">
+      <AdminTable
+        spacing="relaxed"
+        :table="sectionTable"
+        :reorderable="false"
+        :from="pagination.from"
+        :to="pagination.to"
+        :total="pagination.total"
+        :enable-adjust-page-size="true"
+      >
         <template #search-form>
           <Form :action="index()" v-slot="{processing}">
             <div class="flex gap-1 items-center">
               <craft-input
                 name="search"
                 :label="t('Search term')"
-                :value="props.searchTerm"
+                :value="searchTerm"
                 label-sr-only
               ></craft-input>
               <craft-button type="submit" :loading="processing">{{
