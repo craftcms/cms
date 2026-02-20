@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {FlexRender} from '@tanstack/vue-table';
-  import {t} from '@craftcms/cp/utilities/translate.ts';
+  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue';
   import {useTableDragAndDrop} from '@/composables/useTableDragAndDrop';
   import ReorderButton from '@/components/ReorderButton.vue';
@@ -105,6 +105,9 @@
 
 <template>
   <div class="admin-table-wrapper">
+    <div class="cp-table-header">
+      <slot name="search-form"></slot>
+    </div>
     <table
       :class="{
         'cp-table': true,
@@ -203,7 +206,7 @@
       </tbody>
     </table>
 
-    <div class="cp-table__footer">
+    <div class="cp-table-footer">
       <div class="flex gap-3 items-center justify-between">
         <div class="flex gap-1">
           <craft-button
