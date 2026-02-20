@@ -20,8 +20,10 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use DOMElement;
 use GraphQL\Type\Definition\Type;
+use Override;
 use Symfony\Component\DomCrawler\Crawler;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Tags represents a Tags field.
@@ -33,7 +35,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Tags', category: 'yii2-adapter');
@@ -42,7 +44,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'tag';
@@ -59,7 +61,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function defaultSelectionLabel(): string
     {
         return t('Add a tag', category: 'yii2-adapter');
@@ -68,7 +70,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', TagQuery::class, ElementCollection::class, Tag::class);
@@ -92,7 +94,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): string
     {
         $html = parent::getSettingsHtml();
@@ -109,7 +111,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
@@ -127,7 +129,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
         $tagGroup = $this->_getTagGroup();
 
         if ($tagGroup) {
-            return Craft::$app->getView()->renderTemplate('yii2-adapter/_components/fieldtypes/Tags/input.twig',
+            return template('yii2-adapter/_components/fieldtypes/Tags/input',
                 [
                     'elementType' => self::elementType(),
                     'id' => $this->getInputId(),
@@ -138,8 +140,9 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
                     'tagGroupId' => $tagGroup->id,
                     'targetSiteId' => $this->targetSiteId($element),
                     'sourceElementId' => $element?->id,
-                    'selectionLabel' => $this->selectionLabel ? t($this->selectionLabel, category: 'site') : self::defaultSelectionLabel(),
-                    'allowSelfRelations' => (bool) $this->allowSelfRelations,
+                    'selectionLabel' => $this->selectionLabel ? t($this->selectionLabel,
+                        category: 'site') : self::defaultSelectionLabel(),
+                    'allowSelfRelations' => (bool)$this->allowSelfRelations,
                     'defaultPlacement' => $this->defaultPlacement,
                 ]);
         }
@@ -150,7 +153,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function supportedViewModes(): array
     {
         return [
@@ -161,7 +164,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryTags($schema);
@@ -170,7 +173,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): array
     {
         return [
@@ -185,7 +188,7 @@ final class Tags extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();

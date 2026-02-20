@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Updates\Updates as UpdatesService;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -15,31 +16,31 @@ use function CraftCms\Cms\t;
  */
 final class Updates extends Utility
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Updates');
     }
 
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'updates';
     }
 
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'certificate';
     }
 
-    #[\Override]
+    #[Override]
     public static function badgeCount(): int
     {
         return app(UpdatesService::class)->totalAvailableUpdates();
     }
 
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         return Html::tag('Updates');

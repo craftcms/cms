@@ -72,7 +72,7 @@ final readonly class EnforceLicenses
         };
 
         return response()
-            ->view('craftcms::_special/licensing-issues', [
+            ->view('_special/licensing-issues', [
                 'issues' => $licenseIssues,
                 'hash' => $hash,
                 'cartUrl' => $cartUrl,

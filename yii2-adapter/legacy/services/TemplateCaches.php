@@ -321,14 +321,14 @@ class TemplateCaches extends Component
         array $bufferedJsImports,
     ): void {
         foreach ($bufferedJs as $pos => $scripts) {
-            $pos = Position::tryFrom($pos) ?? Position::Body;
+            $pos = Position::tryFrom($pos) ?? Position::BodyEnd;
             foreach ($scripts as $key => $js) {
                 AssetRegistry::js($js, $pos, $key);
             }
         }
 
         foreach ($bufferedScripts as $pos => $tags) {
-            $pos = Position::tryFrom($pos) ?? Position::Body;
+            $pos = Position::tryFrom($pos) ?? Position::BodyEnd;
             foreach ($tags as $key => [$script, $options]) {
                 AssetRegistry::script($script, $pos, $options, $key);
             }
@@ -350,7 +350,7 @@ class TemplateCaches extends Component
         }
 
         foreach ($bufferedHtml as $pos => $tags) {
-            $pos = Position::tryFrom($pos) ?? Position::Body;
+            $pos = Position::tryFrom($pos) ?? Position::BodyEnd;
             foreach ($tags as $key => $html) {
                 AssetRegistry::html($html, $pos, $key);
             }

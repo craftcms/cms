@@ -7,7 +7,7 @@
 
 namespace craft\web\twig\nodevisitors;
 
-use Craft;
+use CraftCms\Cms\Twig\TemplateRenderer;
 use Twig\Environment;
 use Twig\Node\DoNode;
 use Twig\Node\Expression\FilterExpression;
@@ -29,7 +29,7 @@ class EventTagFinder extends BaseEventTagVisitor
     public function enterNode(Node $node, Environment $env): Node
     {
         // Ignore if we're not rendering a page template
-        if (!Craft::$app->getView()->getIsRenderingPageTemplate()) {
+        if (!app(TemplateRenderer::class)->isRenderingPageTemplate()) {
             return $node;
         }
 

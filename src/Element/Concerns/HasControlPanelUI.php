@@ -161,7 +161,6 @@ trait HasControlPanelUI
     {
         $items = [];
         $elementsService = Craft::$app->getElements();
-        Craft::$app->getView();
 
         // Validate
         if (

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\gql\types\Money as MoneyType;
 use craft\helpers\Cp;
@@ -28,6 +27,7 @@ use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Money field type
@@ -151,7 +151,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -166,7 +166,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Money/settings.twig', [
+        return template('_components/fieldtypes/Money/settings', [
             'field' => $this,
             'currencies' => $this->_isoCurrencies,
             'subUnits' => $this->subunits(),

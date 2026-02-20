@@ -4,40 +4,28 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console\Commands\Twig;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
-use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
+use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
-use Illuminate\View\Factory as ViewFactory;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Throwable;
 use Twig\Cache\NullCache;
-use Twig\Error\Error;
 
 final class TwigCacheCommand extends Command
 {
     use CraftCommand;
 
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'craft:twig:cache';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = "Compile all of the application's Twig templates";
 
-    public function handle(): void
+    public function handle(Twig $twig): void
     {
-        $originalCache = Craft::$app->getView()->getTwig()->getCache();
+        $originalCache = $twig->get()->getCache();
 
         if ($originalCache instanceof NullCache) {
             // There's no point to warm up a cache that won't be used afterward
@@ -48,19 +36,29 @@ final class TwigCacheCommand extends Command
 
         $this->callSilent('craft:twig:clear');
 
-        $this->paths()->each(function ($path) {
-            $prefix = $this->output->isVeryVerbose() ? '<fg=yellow;options=bold>DIR</> ' : '';
+        foreach (TemplateMode::cases() as $mode) {
+            TemplateMode::set($mode);
 
-            $files = $this->twigFilesIn([$path]);
+            $templateRoots = $mode->templateRoots();
 
-            if (! $files->count()) {
-                return;
-            }
+            collect($templateRoots)
+                ->put('', [$mode->templatesPath()])
+                ->each(function ($paths, $root) use ($mode, $twig) {
+                    $prefix = $this->output->isVeryVerbose() ? '<fg=yellow;options=bold>DIR</> ' : '';
 
-            $this->components->task($prefix.$path, null, OutputInterface::VERBOSITY_VERBOSE);
+                    foreach ($paths as $path) {
+                        $files = $this->twigFilesIn([$path]);
 
-            $this->compileTemplates($files);
-        });
+                        if (! $files->count()) {
+                            continue;
+                        }
+
+                        $this->components->task($prefix.$path, null, OutputInterface::VERBOSITY_VERBOSE);
+
+                        $this->compileTemplates($twig, $mode, $root, $files);
+                    }
+                });
+        }
 
         $this->newLine();
 
@@ -70,23 +68,17 @@ final class TwigCacheCommand extends Command
     /**
      * Compile the given view files.
      */
-    private function compileTemplates(Collection $views): void
+    private function compileTemplates(Twig $twig, TemplateMode $mode, string $root, Collection $views): void
     {
-        $views->map(function (SplFileInfo $file) {
-            $this->components->task('    '.$file->getRelativePathname(), null, OutputInterface::VERBOSITY_VERY_VERBOSE);
+        $views->map(function (SplFileInfo $file) use ($mode, $twig, $root) {
+            $relativePathName = $root ? $root.'/'.$file->getRelativePathname() : $file->getRelativePathname();
 
             try {
-                TemplateMode::set(TemplateMode::Site);
-                Craft::$app->getView()->getTwig()->load($file->getRelativePathname());
-            } catch (TemplateLoaderException) {
-                try {
-                    TemplateMode::set(TemplateMode::Cp);
-                    Craft::$app->getView()->getTwig()->load($file->getRelativePathname());
-                } catch (Error $e) {
-                    $this->error($e->getMessage());
-                }
-            } catch (Error $e) {
-                $this->error($e->getMessage());
+                $twig->get($mode)->load($relativePathName);
+
+                $this->components->task("    $relativePathName", null, OutputInterface::VERBOSITY_VERY_VERBOSE);
+            } catch (Throwable $e) {
+                $this->error('    '.$e->getMessage());
             }
         });
 
@@ -95,30 +87,14 @@ final class TwigCacheCommand extends Command
         }
     }
 
-    /**
-     * Get the Twig files in the given path.
-     */
     private function twigFilesIn(array $paths): Collection
     {
         return Collection::make(
             Finder::create()
                 ->in($paths)
                 ->exclude('vendor')
-                ->name('*.twig')
+                ->name(['*.twig', '*.html'])
                 ->files()
-        );
-    }
-
-    /**
-     * Get all the possible view paths.
-     */
-    private function paths(): Collection
-    {
-        /** @var \Illuminate\View\FileViewFinder $finder */
-        $finder = $this->laravel->make(ViewFactory::class)->getFinder();
-
-        return Collection::make($finder->getPaths())->merge(
-            (Collection::make($finder->getHints()))->flatten()
         );
     }
 }

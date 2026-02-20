@@ -15,6 +15,8 @@ use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Traits\Conditionable;
 
+use function CraftCms\Cms\template;
+
 final class CpModalResponse implements Responsable
 {
     use Conditionable;
@@ -123,7 +125,7 @@ final class CpModalResponse implements Responsable
     public function contentTemplate(string $template, array $variables = []): self
     {
         return $this->contentHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 
@@ -143,7 +145,7 @@ final class CpModalResponse implements Responsable
     public function errorSummaryTemplate(string $template, array $variables = []): self
     {
         return $this->errorSummary(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, TemplateMode::Cp->value)
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp)
         );
     }
 

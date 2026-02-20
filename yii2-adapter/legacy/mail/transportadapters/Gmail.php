@@ -12,6 +12,7 @@ use craft\behaviors\EnvAttributeParserBehavior;
 use CraftCms\Cms\Support\Env;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
@@ -95,7 +96,7 @@ class Gmail extends BaseTransportAdapter
 
     private function settingsHtml(bool $readOnly): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Gmail/settings.twig', [
+        return template('_components/mailertransportadapters/Gmail/settings', [
             'adapter' => $this,
             'readOnly' => $readOnly,
         ]);

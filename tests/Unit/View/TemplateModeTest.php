@@ -8,6 +8,7 @@ use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Once;
 
 it('defaults to site mode for non-cp requests', function () {
     Context::forgetHidden(TemplateMode::class);
@@ -118,6 +119,7 @@ it('has the correct backing values', function () {
 });
 
 it('dispatches the correct event for template roots', function () {
+    Once::flush();
     Event::fake([RegisterCpTemplateRoots::class, RegisterSiteTemplateRoots::class]);
 
     TemplateMode::Cp->templateRoots();

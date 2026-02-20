@@ -41,7 +41,7 @@ final readonly class SectionsController
 
     public function index(): View
     {
-        return view('craftcms::settings.sections._index', [
+        return view('settings.sections._index', [
             'readOnly' => $this->readOnly,
         ]);
     }

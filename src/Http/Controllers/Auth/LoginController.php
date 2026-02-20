@@ -11,6 +11,7 @@ use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
@@ -19,10 +20,11 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\cp_url;
+use function CraftCms\Cms\template;
 
 final readonly class LoginController extends AuthenticationController
 {
-    public function showLogin(Request $request): Response|\Illuminate\Contracts\View\View
+    public function showLogin(Request $request): Response|View
     {
         // see if they're already logged in
         if ($user = $request->user()) {
@@ -57,10 +59,10 @@ final readonly class LoginController extends AuthenticationController
         }
 
         $view = Craft::$app->getView();
-        $html = $view->renderTemplate('_special/login-modal.twig', [
+        $html = template('_special/login-modal', [
             'staticEmail' => $staticEmail,
             'forElevatedSession' => $forElevatedSession,
-        ], TemplateMode::Cp->value);
+        ], templateMode: TemplateMode::Cp);
 
         return new JsonResponse([
             'html' => $html,

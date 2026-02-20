@@ -32,6 +32,7 @@ use yii\db\Schema;
 use yii\helpers\Markdown;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Number represents a Number field.
@@ -172,7 +173,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -180,7 +181,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
 
     private function settingsHtml(bool $readOnly): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings.twig', [
+        return template('_components/fieldtypes/Number/settings', [
             'field' => $this,
             'readOnly' => $readOnly,
         ]);
@@ -281,7 +282,7 @@ JS;
 
         AssetRegistry::js($js);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input.twig', [
+        return template('_components/fieldtypes/Number/input', [
             'id' => $id,
             'describedBy' => $this->describedBy,
             'field' => $this,

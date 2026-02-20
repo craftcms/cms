@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Html;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Sendmail implements a Sendmail transport adapter into Craft’s mailer.
@@ -113,7 +114,7 @@ class Sendmail extends BaseTransportAdapter
             ],
         ], $this->_allowedCommands());
 
-        return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Sendmail/settings.twig', [
+        return template('_components/mailertransportadapters/Sendmail/settings', [
             'adapter' => $this,
             'commandOptions' => $commandOptions,
             'readOnly' => $readOnly,

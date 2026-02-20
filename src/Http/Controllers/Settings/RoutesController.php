@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use Craft;
 use craft\web\assets\routes\RoutesAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -23,17 +24,28 @@ final readonly class RoutesController
 
     public function index(): View
     {
-        \Craft::$app->getView()->registerAssetBundle(RoutesAsset::class);
+        Craft::$app->getView()->registerAssetBundle(RoutesAsset::class);
 
-        return view('craftcms::settings.routes', [
+        return view('settings.routes', [
             'tokens' => $this->routes->tokens,
             'routes' => $this->routes->getProjectConfigRoutes(),
             'readOnly' => ! Cms::config()->allowAdminChanges,
         ]);
     }
 
-    public function store(Route $route): Response
+    public function store(Request $request): Response
     {
+        $data = $request->validate([
+            'uriParts' => ['required', 'array'],
+            'uriParts.*' => ['string'],
+            'template' => ['required', 'string'],
+            'siteUid' => ['nullable', 'uuid'],
+            'uid' => ['nullable', 'uuid'],
+            'sortOrder' => ['nullable', 'integer'],
+        ]);
+
+        $route = new Route(...$data);
+
         $routeUid = $this->routes->saveRoute($route);
 
         return $this->asSuccess(data: [

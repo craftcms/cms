@@ -6,23 +6,22 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
-use craft\web\Application;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates;
 use CraftCms\Cms\Utility\Utilities\Upgrade;
 use CraftCms\Cms\Utility\Utility;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
+use InvalidArgumentException;
 
 use function CraftCms\Cms\cp_redirect;
+use function CraftCms\Cms\template;
 
 final readonly class UtilitiesController
 {
     public function __construct(
         private Utilities $utilitiesService,
-        #[Give('Craft')] private Application $craft,
     ) {}
 
     public function badgeCount(): JsonResponse
@@ -108,7 +107,7 @@ final readonly class UtilitiesController
             if ($svg !== '') {
                 return $svg;
             }
-        } catch (\InvalidArgumentException) {
+        } catch (InvalidArgumentException) {
         }
 
         return $this->defaultUtilityIconSvg($class);
@@ -121,7 +120,7 @@ final readonly class UtilitiesController
      */
     private function defaultUtilityIconSvg(string $class): string
     {
-        return $this->craft->getView()->renderTemplate('_includes/fallback-icon.svg.twig', [
+        return template('_includes/fallback-icon-svg', [
             'label' => $class::displayName(),
         ]);
     }

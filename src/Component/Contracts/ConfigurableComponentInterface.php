@@ -39,7 +39,7 @@ interface ConfigurableComponentInterface
      * `resources/templates/_settings.html`, passing the settings to it:
      *
      * ```php
-     * return Craft::$app->view->renderTemplate('plugin-handle/_widget-settings', [
+     * return \CraftCms\Cms\template('pluginHandle::plugin-handle/_widget-settings', [
      *     'widget' => $this
      * ]);
      * ```
@@ -85,7 +85,7 @@ interface ConfigurableComponentInterface
      *     $id = 'foo';
      *     $namespacedId = Craft::$app->view->namespaceInputId($id);
      *     // Render and return the input template
-     *     return Craft::$app->view->renderTemplate('plugin-handle/_widget-settings', [
+     *     return \CraftCms\Cms\template('pluginHandle::plugin-handle/_widget-settings', [
      *         'id' => $id,
      *         'namespacedId' => $namespacedId,
      *         'widget' => $this,

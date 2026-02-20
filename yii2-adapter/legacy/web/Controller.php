@@ -30,6 +30,7 @@ use yii\web\JsonResponseFormatter;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response as YiiResponse;
 use yii\web\UnauthorizedHttpException;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -651,7 +652,7 @@ abstract class Controller extends \yii\web\Controller
         $url = $this->request->getValidatedBodyParam('redirect');
 
         if ($url && $object) {
-            $url = $this->getView()->renderObjectTemplate($url, $object);
+            $url = renderObjectTemplate($url, $object);
         }
 
         return $url;

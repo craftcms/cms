@@ -39,7 +39,7 @@ final class FilesystemsController
         $variables['filesystems'] = Craft::$app->getFs()->getAllFilesystems();
         $variables['readOnly'] = $this->readOnly;
 
-        return view('craftcms::settings/filesystems/_index', $variables);
+        return view('settings/filesystems/_index', $variables);
     }
 
     public function create(): CpScreenResponse

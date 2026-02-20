@@ -4,25 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use craft\web\Application;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\DeprecationErrors;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final readonly class DeprecationErrorsController
 {
     public function __construct(
         Utilities $utilitiesService,
-        private Deprecator $deprecator,
-        #[Give('Craft')] private Application $craft
+        private Deprecator $deprecator
     ) {
         if (! $utilitiesService->checkAuthorization(DeprecationErrors::class)) {
             abort(403, 'User is not authorized to perform this action.');
@@ -35,7 +33,7 @@ final readonly class DeprecationErrorsController
             'logId' => ['required', 'integer', Rule::exists(Table::DEPRECATIONERRORS, 'id')],
         ]);
 
-        $html = $this->craft->getView()->renderTemplate('_components/utilities/DeprecationErrors/traces_modal.twig', [
+        $html = template('_components/utilities/DeprecationErrors/traces_modal', [
             'log' => $this->deprecator->getLogById($request->integer('logId')),
         ]);
 

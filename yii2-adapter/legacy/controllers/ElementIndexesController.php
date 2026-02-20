@@ -42,6 +42,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
@@ -356,7 +357,7 @@ class ElementIndexesController extends BaseElementsController
         $sources = app(ElementSources::class)->getSources($this->elementType, $this->context);
 
         return $this->asJson([
-            'html' => $this->getView()->renderTemplate('_elements/sources.twig', [
+            'html' => template('_elements/sources', [
                 'elementType' => $this->elementType,
                 'sources' => $sources->all(),
             ]),

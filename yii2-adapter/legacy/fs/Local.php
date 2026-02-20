@@ -28,6 +28,7 @@ use RecursiveIteratorIterator;
 use UnexpectedValueException;
 use yii\validators\InlineValidator;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Local represents a local filesystem.
@@ -158,7 +159,7 @@ class Local extends Fs implements LocalFsInterface
 
     private function settingsHtml(bool $readOnly): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fs/Local/settings.twig', [
+        return template('_components/fs/Local/settings', [
             'volume' => $this,
             'readOnly' => $readOnly,
         ]);

@@ -579,11 +579,11 @@ JS, [
             $element->revisionId,
             $element->siteId,
             $redirectUrl,
-        ], Position::Body);
+        ], Position::BodyEnd);
 
         [$docTitle, $title] = $this->_editElementTitles($element);
 
-        return $this->renderTemplate('_layouts/base.twig', [
+        return $this->rendertemplate('_layouts/base', [
             'docTitle' => $docTitle,
             'title' => $title,
         ]);
@@ -2447,10 +2447,10 @@ JS, [
         $tabs = $form->getTabMenu();
         if (count($tabs) > 1) {
             $selectedTab = isset($tabs[$this->_selectedTab]) ? $this->_selectedTab : null;
-            $tabHtml = InputNamespace::namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
+            $tabHtml = InputNamespace::namespaceInputs(fn() => \CraftCms\Cms\template('_includes/tabs', [
                 'tabs' => $tabs,
                 'selectedTab' => $selectedTab,
-            ], TemplateMode::Cp->value), $namespace);
+            ], templateMode: TemplateMode::Cp), $namespace);
         } else {
             $tabHtml = null;
         }

@@ -91,9 +91,9 @@ abstract class BaseUpdaterController
         $stateJs = Json::encode($state);
         AssetRegistry::js("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
 
-        return response($view->renderPageTemplate('_special/updater.twig', [
+        return view('_special/updater', [
             'title' => $this->pageTitle(),
-        ]));
+        ]);
     }
 
     public function precheck(): Response

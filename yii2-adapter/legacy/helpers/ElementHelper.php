@@ -39,6 +39,7 @@ use Twig\Markup;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -244,7 +245,7 @@ class ElementHelper
             }
         }
 
-        $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element, $variables);
+        $uri = renderObjectTemplate($uriFormat, $element, $variables);
 
         // Remove any leading/trailing/double slashes
         return preg_replace('/^\/+|(?<=\/)\/+|\/+$/', '', $uri);
@@ -799,7 +800,7 @@ class ElementHelper
                 if ($translationKeyFormat === null) {
                     return (string)$element->siteId;
                 }
-                return Craft::$app->getView()->renderObjectTemplate($translationKeyFormat, $element);
+                return renderObjectTemplate($translationKeyFormat, $element);
         }
     }
 

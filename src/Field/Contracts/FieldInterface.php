@@ -258,7 +258,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * `path/to/myplugin/templates/_fieldinput.html`, passing the `$name` and `$value` variables to it:
      *
      * ```php
-     * return Craft::$app->view->renderTemplate('myplugin/_fieldinput', [
+     * return \CraftCms\Cms\template('myplugin/_fieldinput', [
      *     'name'  => $name,
      *     'value' => $value
      * ]);
@@ -307,7 +307,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      *     // Figure out what that ID is going to be namespaced into
      *     $namespacedId = Craft::$app->view->namespaceInputId($id);
      *     // Render and return the input template
-     *     return Craft::$app->view->renderTemplate('myplugin/_fieldinput', [
+     *     return \CraftCms\Cms\template('myplugin/_fieldinput', [
      *         'name' => $name,
      *         'id' => $id,
      *         'namespacedId' => $namespacedId,

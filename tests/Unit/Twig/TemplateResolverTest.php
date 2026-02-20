@@ -9,6 +9,7 @@ use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Once;
 
 beforeEach(function () {
     $this->tempDir = sys_get_temp_dir().'/craft-template-resolver-test-'.uniqid();
@@ -226,6 +227,8 @@ describe('template roots', function () {
         mkdir($rootDir, 0777, true);
         file_put_contents($rootDir.'/page.twig', 'root content');
 
+        Once::flush();
+
         Event::listen(RegisterCpTemplateRoots::class, function (RegisterCpTemplateRoots $event) use ($rootDir) {
             $event->roots['myroot'] = $rootDir;
         });
@@ -242,6 +245,8 @@ describe('template roots', function () {
         $rootDir = $this->tempDir.'/fallback-root';
         mkdir($rootDir, 0777, true);
         file_put_contents($rootDir.'/fallback.twig', 'fallback content');
+
+        Once::flush();
 
         Event::listen(RegisterCpTemplateRoots::class, function (RegisterCpTemplateRoots $event) use ($rootDir) {
             $event->roots[''] = $rootDir;

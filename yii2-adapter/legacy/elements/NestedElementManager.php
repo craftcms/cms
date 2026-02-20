@@ -42,6 +42,7 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -177,7 +178,7 @@ class NestedElementManager extends Component
         if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
             return (
                 $owner === null ||
-                Craft::$app->getView()->renderObjectTemplate($this->propagationKeyFormat, $owner) !== ''
+                renderObjectTemplate($this->propagationKeyFormat, $owner) !== ''
             );
         }
 
@@ -340,7 +341,7 @@ class NestedElementManager extends Component
         if ($this->propagationMethod === PropagationMethod::Custom && $this->propagationKeyFormat !== null) {
             $cacheKey = sprintf('%s-%s-%s', md5($this->propagationKeyFormat), $owner->id, $owner->siteId);
             if (!isset(self::$renderedPropagationFormats[$cacheKey])) {
-                self::$renderedPropagationFormats[$cacheKey] = $view->renderObjectTemplate($this->propagationKeyFormat, $owner);
+                self::$renderedPropagationFormats[$cacheKey] = renderObjectTemplate($this->propagationKeyFormat, $owner);
             }
             $propagationKey = self::$renderedPropagationFormats[$cacheKey];
         }
@@ -364,7 +365,7 @@ class NestedElementManager extends Component
                         if (!isset(self::$renderedPropagationFormats[$cacheKey])) {
                             $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
                             self::$renderedPropagationFormats[$cacheKey] = $siteOwner
-                                ? $view->renderObjectTemplate($this->propagationKeyFormat, $siteOwner)
+                                ? renderObjectTemplate($this->propagationKeyFormat, $siteOwner)
                                 : false;
                         }
                         $include = $propagationKey === self::$renderedPropagationFormats[$cacheKey];

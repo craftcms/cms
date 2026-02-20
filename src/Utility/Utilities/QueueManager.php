@@ -8,6 +8,7 @@ use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -18,25 +19,25 @@ use function CraftCms\Cms\t;
  */
 final class QueueManager extends Utility
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Queue Manager');
     }
 
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'queue-manager';
     }
 
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'play';
     }
 
-    #[\Override]
+    #[Override]
     public static function toolbarHtml(): string
     {
         $progressService = app(JobProgress::class);
@@ -47,13 +48,13 @@ final class QueueManager extends Utility
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public static function footerHtml(): string
     {
         return '';
     }
 
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $progressService = app(JobProgress::class);
@@ -68,7 +69,7 @@ final class QueueManager extends Utility
         ]);
     }
 
-    private static function getActiveJob(JobProgress $progressService)
+    private static function getActiveJob(JobProgress $progressService): ?\CraftCms\Cms\Queue\Models\JobProgress
     {
         $jobId = request()->route('extra');
 

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class Feed extends Widget
 {
@@ -46,7 +47,7 @@ final class Feed extends Widget
     #[Override]
     public function getSettingsHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/settings.twig',
+        return template('_components/widgets/Feed/settings',
             [
                 'widget' => $this,
             ]);
@@ -91,7 +92,7 @@ final class Feed extends Widget
 
     private function render(mixed $data): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body.twig', [
+        return template('_components/widgets/Feed/body', [
             'feed' => $data,
         ]);
     }

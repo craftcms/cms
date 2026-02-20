@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use Craft;
 use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -77,8 +76,8 @@ final readonly class CheckRequirements
             throw new RuntimeException(t('The update can’t be installed :( {message}', ['message' => $message]));
         }
 
-        return response(Craft::$app->getView()->renderPageTemplate('_special/cantrun.twig', [
+        return view('_special/cantrun', [
             'reqCheck' => $reqCheck,
-        ]));
+        ]);
     }
 }

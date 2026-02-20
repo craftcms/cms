@@ -26,6 +26,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final readonly class CreateEntryController
 {
@@ -156,7 +157,7 @@ final readonly class CreateEntryController
         if ($editableSiteIds->doesntContain($site->id)) {
             // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
             if ($editableSiteIds->count() > 1 && $section->propagationMethod !== PropagationMethod::All) {
-                return response(Craft::$app->getView()->renderTemplate('_special/sitepicker.twig', [
+                return response(template('_special/sitepicker', [
                     'siteIds' => $editableSiteIds->all(),
                     'baseUrl' => sprintf('%s/new', $section->getCpIndexUri()),
                 ]));

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Events\Render;
 use CraftCms\Cms\Support\Arr;
@@ -12,6 +11,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\TemplateMode;
 use Twig\Markup;
+
+use function CraftCms\Cms\template;
 
 /**
  * Renderable provides element rendering functionality.
@@ -45,13 +46,12 @@ trait Renderable
         $variables = $event->variables;
 
         if (! empty($templates)) {
-            $view = Craft::$app->getView();
             foreach (Arr::sort($templates, 'priority') as $template) {
                 if (! app(TemplateResolver::class)->exists($template['template'], TemplateMode::Site)) {
                     continue;
                 }
 
-                $output = $view->renderTemplate($template['template'], $variables, TemplateMode::Site->value);
+                $output = template($template['template'], $variables, templateMode: TemplateMode::Site);
 
                 return new Markup($output, 'UTF-8');
             }

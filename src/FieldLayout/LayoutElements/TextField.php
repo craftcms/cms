@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Override;
+
+use function CraftCms\Cms\template;
 
 class TextField extends BaseNativeField
 {
@@ -107,7 +108,7 @@ class TextField extends BaseNativeField
 
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
+        return template('_includes/forms/text', [
             'type' => $this->inputType,
             'autocomplete' => $this->autocomplete,
             'class' => $this->class,

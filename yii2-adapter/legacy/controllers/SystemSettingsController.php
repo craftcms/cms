@@ -128,7 +128,7 @@ class SystemSettingsController extends Controller
             }
         }
 
-        return $this->renderTemplate('settings/email/_index.twig', [
+        return $this->rendertemplate('settings/email/_index', [
             'settings' => $settings,
             'adapter' => $adapter,
             'transportTypeOptions' => $transportTypeOptions,
@@ -234,7 +234,7 @@ class SystemSettingsController extends Controller
             'No global sets exist yet.',
         ]);
 
-        return $this->renderTemplate('yii2-adapter/settings/globals/_index.twig', [
+        return $this->rendertemplate('yii2-adapter/settings/globals/_index', [
             'title' => t('Globals', category: 'yii2-adapter'),
             'crumbs' => [
                 [
@@ -300,7 +300,7 @@ class SystemSettingsController extends Controller
         ];
 
         // Render the template!
-        return $this->renderTemplate('yii2-adapter/settings/globals/_edit.twig', [
+        return $this->rendertemplate('yii2-adapter/settings/globals/_edit', [
             'globalSetId' => $globalSetId,
             'globalSet' => $globalSet,
             'title' => $title,

@@ -64,19 +64,19 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         ->name('utilities.show');
 
     Route::middleware(RequireAdminChanges::class)->group(function () {
-        Route::view('settings/addresses', 'craftcms::settings/addresses/_fields');
+        Route::view('settings/addresses', 'settings/addresses/_fields');
     });
 
     /**
      * Entries & Content
      */
     Route::get('entries', EntriesIndexController::class);
-    Route::view('entries/{sectionHandle}', 'craftcms::entries.index');
+    Route::view('entries/{sectionHandle}', 'entries.index');
     Route::get('entries/{section}/new', CreateEntryController::class);
 
     Route::get('content', EntriesIndexController::class);
-    Route::view('content/{page}', 'craftcms::entries.index')->where('page', '[^\/]+');
-    Route::view('content/{page}/{sectionHandle}', 'craftcms::entries.index')->where('page', '[^\/]+');
+    Route::view('content/{page}', 'entries.index')->where('page', '[^\/]+');
+    Route::view('content/{page}/{sectionHandle}', 'entries.index')->where('page', '[^\/]+');
     Route::get('content/{section}/new', CreateEntryController::class);
 
     /**

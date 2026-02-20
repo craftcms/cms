@@ -221,7 +221,7 @@ class QueueController extends Controller
         if (isset($details['job'])) {
             try {
                 $details['job'] = Json::encode($details['job'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-            } catch (\InvalidArgumentException) {
+            } catch (InvalidArgumentException) {
                 // Just leave the message alone
             }
         }

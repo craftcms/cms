@@ -95,6 +95,6 @@ final readonly class DashboardController
 
         $variables['widgetTypes'] = $widgetTypeInfo;
 
-        return $this->view->renderPageTemplate('dashboard/_index.twig', $variables);
+        return view('dashboard/_index', $variables);
     }
 }

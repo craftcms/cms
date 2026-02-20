@@ -60,7 +60,7 @@ describe('get', function () {
 
         $this->twig->get();
 
-        Event::assertDispatched(fn (\CraftCms\Cms\Twig\Events\TwigCreated $event) => $event->templateMode === TemplateMode::Site);
+        Event::assertDispatched(fn (TwigCreated $event) => $event->templateMode === TemplateMode::Site);
     });
 
     it('uses the specified template mode when provided', function () {
@@ -70,7 +70,7 @@ describe('get', function () {
 
         $this->twig->get(TemplateMode::Site);
 
-        Event::assertDispatched(fn (\CraftCms\Cms\Twig\Events\TwigCreated $event) => $event->templateMode === TemplateMode::Site);
+        Event::assertDispatched(fn (TwigCreated $event) => $event->templateMode === TemplateMode::Site);
     });
 
     it('caches Cp and Site environments independently', function () {
@@ -235,7 +235,7 @@ describe('create', function () {
         TemplateMode::set(TemplateMode::Cp);
         $env = $this->twig->create();
 
-        Event::assertDispatched(fn (\CraftCms\Cms\Twig\Events\TwigCreated $event) => $event->twig === $env
+        Event::assertDispatched(fn (TwigCreated $event) => $event->twig === $env
             && $event->templateMode === TemplateMode::Cp);
     });
 
@@ -245,7 +245,7 @@ describe('create', function () {
         TemplateMode::set($mode);
         $this->twig->create();
 
-        Event::assertDispatched(fn (\CraftCms\Cms\Twig\Events\TwigCreated $event) => $event->templateMode === $mode);
+        Event::assertDispatched(fn (TwigCreated $event) => $event->templateMode === $mode);
     })->with([
         'Cp mode' => [TemplateMode::Cp],
         'Site mode' => [TemplateMode::Site],

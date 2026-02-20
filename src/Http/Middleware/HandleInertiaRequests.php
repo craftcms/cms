@@ -18,7 +18,6 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 use Override;
 
@@ -66,16 +65,7 @@ class HandleInertiaRequests extends Middleware
         $progressService = app(JobProgress::class);
 
         if (! $updates->isCraftUpdatePending()) {
-            $currentUser = Craft::$app->getUser()->getIdentity();
-
-            if (! $currentUser) {
-                $user = Auth::user();
-
-                if ($user) {
-                    Craft::$app->getUser()->setIdentity(Craft::$app->getUsers()->getUserById($user->id));
-                    $currentUser = Craft::$app->getUser()->getIdentity();
-                }
-            }
+            $currentUser = $request->user();
         }
 
         $systemIcon = Cp::iconSvg('c-outline');
@@ -98,11 +88,11 @@ class HandleInertiaRequests extends Middleware
             ],
             'craft' => fn () => [
                 'system' => [
-                    'name' => Craft::$app->getSystemName(),
+                    'name' => Cms::systemName(),
                     'icon' => $systemIcon,
                 ],
                 'app' => [
-                    'version' => Craft::$app->getVersion(),
+                    'version' => Cms::VERSION,
                     'edition' => Edition::get()->toArray(),
                 ],
                 'site' => [

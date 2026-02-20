@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Cp;
@@ -20,6 +19,7 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Range represents a Range field, which provides a tactile UI around a numeric value.
@@ -113,7 +113,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -121,7 +121,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
 
     private function settingsHtml(bool $readOnly): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Range/settings.twig', [
+        return template('_components/fieldtypes/Range/settings', [
             'field' => $this,
             'readOnly' => $readOnly,
         ]);

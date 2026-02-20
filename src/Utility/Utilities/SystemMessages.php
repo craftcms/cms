@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\SystemMessage\SystemMessages as SystemMessagesService;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -19,25 +20,25 @@ use function CraftCms\Cms\t;
  */
 final class SystemMessages extends Utility
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('System Messages');
     }
 
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'system-messages';
     }
 
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'envelope';
     }
 
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         Edition::require(Edition::Pro);

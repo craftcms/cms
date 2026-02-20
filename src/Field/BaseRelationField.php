@@ -59,6 +59,7 @@ use yii\base\InvalidConfigException;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * BaseRelationField is the base class for classes representing a relational field.
@@ -485,7 +486,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
     }
 
-    #[\Override]
+    #[Override]
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
@@ -507,7 +508,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         return $attributes;
     }
 
-    #[\Override]
+    #[Override]
     public function getSettings(): array
     {
         $settings = parent::getSettings();
@@ -530,7 +531,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     public function getSettingsHtml(): string
     {
         $variables = $this->settingsTemplateVariables();
-        $view = Craft::$app->getView();
 
         AssetRegistry::jsWithVars(fn ($args) => <<<JS
 new Craft.ElementFieldSettings(...$args)
@@ -547,7 +547,7 @@ JS, [
             ],
         ]);
 
-        return $view->renderTemplate($this->settingsTemplate, $variables);
+        return template($this->settingsTemplate, $variables);
     }
 
     #[Override]
@@ -925,7 +925,7 @@ JS, [
             }
         }
 
-        return Craft::$app->getView()->renderTemplate($template, $variables);
+        return template($template, $variables);
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use Override;
 
 /**
  * @method static void log(string $key, string $message, string|null $file = null, int|null $line = null)
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\Facade;
  */
 final class Deprecator extends Facade
 {
-    #[\Override]
+    #[Override]
     protected static function getFacadeAccessor(): string
     {
         return \CraftCms\Cms\Deprecator\Deprecator::class;

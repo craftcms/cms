@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -16,25 +17,25 @@ use function CraftCms\Cms\t;
  */
 final class Migrations extends Utility
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Migrations');
     }
 
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'migrations';
     }
 
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'up';
     }
 
-    #[\Override]
+    #[Override]
     public static function badgeCount(): int
     {
         return count(app(Migrator::class)
@@ -42,7 +43,7 @@ final class Migrations extends Utility
             ->getPendingMigrations());
     }
 
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $migrator = app(Migrator::class)->track('content');

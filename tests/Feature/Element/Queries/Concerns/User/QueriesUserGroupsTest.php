@@ -1,10 +1,11 @@
 <?php
 
+use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\Models\UserGroup;
 
 it('can query users in groups', function () {
     $userGroup = UserGroup::factory()->create();
-    $user = \CraftCms\Cms\User\Models\User::factory()->create();
+    $user = User::factory()->create();
     $userGroup->users()->attach($user);
 
     expect(userQuery()->count())->toBe(2);

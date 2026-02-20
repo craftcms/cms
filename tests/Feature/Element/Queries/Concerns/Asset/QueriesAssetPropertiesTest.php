@@ -1,14 +1,15 @@
 <?php
 
 use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\User\Models\User;
 
 test('uploader', function () {
     $asset1 = Asset::factory()->create([
-        'uploaderId' => \CraftCms\Cms\User\Models\User::factory()->create()->id,
+        'uploaderId' => User::factory()->create()->id,
     ]);
 
     Asset::factory()->create([
-        'uploaderId' => \CraftCms\Cms\User\Models\User::factory()->create()->id,
+        'uploaderId' => User::factory()->create()->id,
     ]);
 
     expect(assetQuery()->count())->toBe(2);

@@ -27,6 +27,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Class MatrixController
@@ -181,7 +182,7 @@ class MatrixController extends Controller
         $view = $this->getView();
         /** @var Entry[] $entries */
         $entries = $value->all();
-        $html = InputNamespace::namespaceInputs(fn() => $view->renderTemplate('_components/fieldtypes/Matrix/block.twig', [
+        $html = InputNamespace::namespaceInputs(fn() => template('_components/fieldtypes/Matrix/block', [
             'name' => $field->handle,
             'entryTypes' => $field->getEntryTypesForField($entries, $owner),
             'entry' => $entry,
@@ -237,7 +238,7 @@ class MatrixController extends Controller
                     throw new ForbiddenHttpException('User not authorized to view this element.');
                 }
 
-                $html .= InputNamespace::namespaceInputs(fn() => $view->renderTemplate('_components/fieldtypes/Matrix/block.twig', [
+                $html .= InputNamespace::namespaceInputs(fn() => template('_components/fieldtypes/Matrix/block', [
                     'name' => $field->handle,
                     'entryTypes' => $entryTypes,
                     'entry' => $entry,

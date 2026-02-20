@@ -182,7 +182,7 @@ class AppController extends Controller
         };
 
         $this->response->setNoCacheHeaders();
-        return $this->renderTemplate('_special/licensing-issues.twig', [
+        return $this->rendertemplate('_special/licensing-issues', [
             'issues' => $issues,
             'hash' => $hash,
             'cartUrl' => $cartUrl,

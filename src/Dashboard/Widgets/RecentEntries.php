@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Json;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class RecentEntries extends Widget
 {
@@ -65,7 +66,7 @@ final class RecentEntries extends Widget
     #[Override]
     public function getSettingsHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings.twig',
+        return template('_components/widgets/RecentEntries/settings',
             [
                 'widget' => $this,
             ]);
@@ -119,7 +120,7 @@ final class RecentEntries extends Widget
 
         $entries = $this->getEntries();
 
-        return $view->renderTemplate('_components/widgets/RecentEntries/body.twig',
+        return template('_components/widgets/RecentEntries/body',
             [
                 'entries' => $entries->all(),
             ]);

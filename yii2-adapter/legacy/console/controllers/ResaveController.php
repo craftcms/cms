@@ -41,6 +41,7 @@ use Throwable;
 use yii\console\Exception;
 use yii\console\ExitCode;
 use function CraftCms\Cms\normalizeValue;
+use function CraftCms\Cms\renderObjectTemplate;
 
 /**
  * Allows you to bulk-save elements.
@@ -70,8 +71,7 @@ class ResaveController extends Controller
         // object template
         if (str_starts_with($to, '=')) {
             $template = substr($to, 1);
-            $view = Craft::$app->getView();
-            return fn(ElementInterface $element) => $view->renderObjectTemplate($template, $element);
+            return fn(ElementInterface $element) => renderObjectTemplate($template, $element);
         }
 
         // PHP arrow function

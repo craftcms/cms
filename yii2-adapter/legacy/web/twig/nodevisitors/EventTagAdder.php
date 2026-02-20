@@ -7,10 +7,11 @@
 
 namespace craft\web\twig\nodevisitors;
 
-use Craft;
 use craft\web\twig\nodes\BaseNode;
-use craft\web\View;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Twig\PageLifecycle;
+use CraftCms\Cms\Twig\TemplateRenderer;
+use InvalidArgumentException;
 use Twig\Environment;
 use Twig\Node\DoNode;
 use Twig\Node\Expression\FunctionExpression;
@@ -26,8 +27,6 @@ use Twig\TwigFunction;
  */
 class EventTagAdder extends BaseEventTagVisitor
 {
-    private View $view;
-
     /**
      * @var string|null As much of the <body> tag as we’ve found so far
      */
@@ -38,9 +37,9 @@ class EventTagAdder extends BaseEventTagVisitor
      */
     private ?int $_bodyAttrOffset = null;
 
-    public function __construct(View $view)
-    {
-        $this->view = $view;
+    public function __construct(
+        private PageLifecycle $lifecycle,
+    ) {
     }
 
     /**
@@ -49,7 +48,7 @@ class EventTagAdder extends BaseEventTagVisitor
     public function enterNode(Node $node, Environment $env): Node
     {
         // Ignore if we're not rendering a page template
-        if (!Craft::$app->getView()->getIsRenderingPageTemplate()) {
+        if (!app(TemplateRenderer::class)->isRenderingPageTemplate()) {
             return $node;
         }
 
@@ -141,7 +140,7 @@ class EventTagAdder extends BaseEventTagVisitor
         do {
             try {
                 $attribute = Html::parseTagAttribute($this->_bodyTag, $this->_bodyAttrOffset, $start, $end);
-            } catch (\InvalidArgumentException) {
+            } catch (InvalidArgumentException) {
                 // The tag is probably split between a couple text nodes. Keep trying on the next text node
                 break;
             }
@@ -178,7 +177,7 @@ class EventTagAdder extends BaseEventTagVisitor
 
         return new BaseNode([
             new TextNode($preSplitHtml, $startLine),
-            new DoNode(new FunctionExpression(new TwigFunction($functionName, [$this->view, $functionName]), new BaseNode(), $splitLine), $splitLine),
+            new DoNode(new FunctionExpression(new TwigFunction($functionName, [$this->lifecycle, $functionName]), new BaseNode(), $splitLine), $splitLine),
             new TextNode($postSplitHtml, $splitLine),
         ], [], $startLine);
     }

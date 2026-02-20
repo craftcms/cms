@@ -103,8 +103,10 @@ use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
@@ -973,7 +975,7 @@ class Yii2ServiceProvider extends ServiceProvider
                 ->onUpdate(LegacyProjectConfig::PATH_GLOBAL_SETS . '.{uid}', fn($event) => Craft::$app->getGlobals()->handleChangedGlobalSet($event))
                 ->onRemove(LegacyProjectConfig::PATH_GLOBAL_SETS . '.{uid}', fn($event) => Craft::$app->getGlobals()->handleDeletedGlobalSet($event));
 
-            Craft::$app->getView()->registerSiteTwigExtension(new GlobalsExtension());
+            Twig::registerExtension(new GlobalsExtension(), TemplateMode::Site);
         }
 
         Event::listen(function(DefineNativeFields $event) {

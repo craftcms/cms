@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class QuickPost extends Widget
 {
@@ -111,7 +112,7 @@ final class QuickPost extends Widget
             $sections[] = $section;
         }
 
-        return Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/settings.twig', [
+        return template('_components/widgets/QuickPost/settings', [
             'sections' => $sections,
             'widget' => $this,
             'siteId' => $this->siteId,
@@ -157,7 +158,6 @@ final class QuickPost extends Widget
 
         $buttonId = sprintf('quickpost%s', mt_rand());
 
-        $view = Craft::$app->getView();
         AssetRegistry::jsWithVars(fn ($buttonId, $params, $elementType) => <<<JS
 (() => {
   const button = $('#' + $buttonId);
@@ -211,7 +211,7 @@ JS, [
             Entry::class,
         ]);
 
-        return $view->renderTemplate('_includes/forms/button.twig', [
+        return template('_includes/forms/button', [
             'id' => $buttonId,
             'class' => ['huge', 'icon', 'add', 'dashed', 'fullwidth'],
             'label' => mb_ucfirst(t('Create {type}', [

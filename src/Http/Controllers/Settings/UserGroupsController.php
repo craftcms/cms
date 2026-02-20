@@ -43,7 +43,7 @@ final readonly class UserGroupsController
             return redirect()->action([self::class, 'edit'], $this->userGroups->getTeamGroup()->id);
         }
 
-        return view('craftcms::settings/users/groups/_index');
+        return view('settings/users/groups/_index');
     }
 
     public function create(): CpScreenResponse
@@ -75,7 +75,7 @@ final readonly class UserGroupsController
         if (Edition::get() === Edition::Team) {
             $group = $this->userGroups->getTeamGroup();
 
-            return view('craftcms::settings/users/groups/_team', [
+            return view('settings/users/groups/_team', [
                 'group' => $group,
                 'readOnly' => $this->readOnly,
             ]);

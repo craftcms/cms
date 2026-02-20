@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Container\Attributes\Give;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,7 +31,7 @@ final readonly class PluginStoreController
         #[Give('Craft')] private Application $craft,
     ) {}
 
-    public function index(License $license, Composer $composer, GeneralConfig $generalConfig): Response
+    public function index(License $license, Composer $composer, GeneralConfig $generalConfig): View
     {
         $view = $this->craft->getView();
         AssetRegistry::jsFile('https://js.stripe.com/v2/');
@@ -57,7 +58,7 @@ final readonly class PluginStoreController
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 
-        return response($view->renderPageTemplate('plugin-store/_index.twig'));
+        return view('plugin-store/_index');
     }
 
     public function craftData(Request $request): Response

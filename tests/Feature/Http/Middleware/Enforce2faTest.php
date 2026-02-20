@@ -48,7 +48,7 @@ test('redirects user to 2fa setup when required but not active', function () {
     $this->actingAs($user, 'craft')
         ->get('/test-2fa')
         ->assertStatus(200)
-        ->assertViewIs('craftcms::_special.setup-2fa')
+        ->assertViewIs('_special.setup-2fa')
         ->assertHeader('Cache-Control', 'must-revalidate, no-cache, no-store, private');
 });
 
