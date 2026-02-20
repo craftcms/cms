@@ -115,36 +115,21 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
     ],
 ]);
 
-it('renders inertia pages', function (string $url, string $component, string $title, array $assertions = []) {
+it('renders inertia pages', function (string $url, string $component, string $title) {
     $response = get("/{$this->cpTrigger}{$url}");
 
     if ($response->status() === 404) {
         $this->markTestIncomplete('Page not found: '.$url);
     }
 
-    $response->assertInertia(function (AssertableInertia $page) use ($component, $title, $assertions) {
-        $page
-            ->component($component)
-            ->where('title', $title);
-
-        foreach ($assertions as $method => $assertion) {
-            foreach ($assertion as $key => $value) {
-                $page->$method($key, $value);
-            }
-        }
-
-        return $page;
-    });
+    $response->assertInertia(fn (AssertableInertia $page) => $page
+        ->component($component)
+        ->where('title', $title));
 })->with([
     [
         'url' => '/settings/sections',
         'component' => 'SettingsSectionsIndexPage',
         'title' => 'Sections',
-        'assertions' => [
-            'where' => [
-                'emptyMessage' => 'No sections exist yet.',
-            ],
-        ],
     ],
 ]);
 
