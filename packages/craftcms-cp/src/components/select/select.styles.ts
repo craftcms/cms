@@ -30,10 +30,6 @@ export default css`
     min-height: calc(var(--c-input-height, var(--c-size-control-md)) - 2px);
   }
 
-  :host([small]) .input-group__input {
-    min-height: calc(var(--c-size-control-sm) - 2px);
-  }
-
   .indicator {
     position: absolute;
     inset-block-start: 50%;
