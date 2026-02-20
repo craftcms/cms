@@ -42,10 +42,20 @@ class ViewServiceProvider extends ServiceProvider
         }
 
         $this->registerTemplateRoots();
+        $this->registerTemplateGlobals();
 
         $hooks->register('cp.layouts.elementindex', PrepareElementIndexVariables::class);
         $hooks->register('cp.elements.toolbar', PrepareElementToolbarVariables::class);
         $hooks->register('cp.elements.sources', PrepareElementSourcesVariables::class);
+    }
+
+    private function registerTemplateGlobals(): void
+    {
+        View::composer('*', function (\Illuminate\View\View $view): void {
+            foreach (app(TemplateGlobals::class)->resolve() as $key => $value) {
+                $view->with($key, $value);
+            }
+        });
     }
 
     private function registerTemplateRoots(): void

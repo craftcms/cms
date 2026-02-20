@@ -16,7 +16,6 @@ use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -31,7 +30,6 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query;
@@ -63,14 +61,11 @@ use CraftCms\Cms\Twig\TokenParsers\RequireLoginTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\RequirePermissionTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\SwitchTokenParser;
 use CraftCms\Cms\Twig\TokenParsers\TagTokenParser;
-use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\Enums\Position;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use CraftCms\Cms\View\TemplateGlobals;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\ViewErrorBag;
 use InvalidArgumentException;
 use Money\Money;
 use Override;
@@ -198,38 +193,12 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
 
     public function getGlobals(): array
     {
-        $isInstalled = Cms::isInstalled();
-        $generalConfig = Cms::config();
-        $setPasswordRequestPath = $generalConfig->getSetPasswordRequestPath();
-        $updates = app(Updates::class);
+        $globals = app(TemplateGlobals::class)->resolve();
 
-        if ($isInstalled && ! $updates->isCraftUpdatePending()) {
-            $currentSite = Sites::getCurrentSite();
-            $primarySite = Sites::getPrimarySite();
-
-            $currentUser = Auth::user();
-            $siteName = t($currentSite->getName(), category: 'site');
-            $siteUrl = $currentSite->getBaseUrl();
-            $systemName = Cms::systemName();
-        } else {
-            $currentSite = $primarySite = $currentUser = $siteName = $siteUrl = $systemName = null;
-        }
-
-        $variable = new CraftVariable;
-
-        return [
-            'app' => $variable,
-            'craft' => $variable,
-            'sessionErrors' => Session::get('errors') ?: new ViewErrorBag,
-            'request' => app(Request::class),
-            'pluginAssets' => app(Plugins::class)->getAssetsHtml(),
-            'currentSite' => $currentSite,
-            'currentUser' => $currentUser,
-            'primarySite' => $primarySite,
-            'siteName' => $siteName,
-            'siteUrl' => $siteUrl,
-            'systemName' => $systemName,
-            'devMode' => app()->hasDebugModeEnabled(),
+        return array_merge($globals, [
+            // Twig-only: CraftVariable as 'app' (Blade can't use this — conflicts with Laravel's $app)
+            'app' => $globals['craft'],
+            // Twig-only: convenience constants (PHP devs access these directly in Blade)
             'SORT_ASC' => SORT_ASC,
             'SORT_DESC' => SORT_DESC,
             'SORT_REGULAR' => SORT_REGULAR,
@@ -239,19 +208,11 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
             'SORT_NATURAL' => SORT_NATURAL,
             'SORT_FLAG_CASE' => SORT_FLAG_CASE,
             'PHP_INT_MAX' => PHP_INT_MAX,
+            // Twig-only: asset injection positions
             'POS_HEAD' => Position::Head->value,
             'POS_BEGIN' => Position::BodyBegin->value,
             'POS_END' => Position::BodyEnd->value,
-            'isInstalled' => $isInstalled,
-            'isUpdateInfoCached' => $updates->isUpdateInfoCached(),
-            'loginUrl' => UrlHelper::siteUrl($generalConfig->getLoginPath()),
-            'logoutUrl' => UrlHelper::siteUrl($generalConfig->getLogoutPath()),
-            'setPasswordUrl' => $setPasswordRequestPath !== null ? UrlHelper::siteUrl($setPasswordRequestPath) : null,
-            'now' => now(),
-            'today' => today(),
-            'tomorrow' => today()->addDay(),
-            'yesterday' => today()->subDay(),
-        ];
+        ]);
     }
 
     #[Override]
