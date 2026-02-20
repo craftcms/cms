@@ -40,11 +40,12 @@ export function useHelpers() {
   return {
     // @TODO move to NPM package
     getActionUrl(action: string) {
-      return getUrl(craftData.actionUrl, action);
+      return `${craftData.actionUrl}${action}`;
+      // return getUrl(craftData.actionUrl, action);
     },
     // @TODO move to NPM package
     getCpUrl(action: string) {
-      return getUrl(craftData.cpUrl, action);
+      return `${craftData.cpUrl}${action}`;
     },
     getApiUrl(path: string) {
       return getUrl(craftData.baseApiUrl, path);

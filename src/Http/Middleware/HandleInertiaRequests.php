@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Rebrand;
@@ -18,6 +17,9 @@ use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Override;
+
+use function CraftCms\Cms\action_url;
+use function CraftCms\Cms\cp_url;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -98,8 +100,8 @@ class HandleInertiaRequests extends Middleware
                 'currentUser' => [
                     'email' => $currentUser->email ?? null,
                 ],
-                'cpUrl' => UrlHelper::cpUrl(),
-                'actionUrl' => UrlHelper::actionUrl(),
+                'cpUrl' => cp_url(),
+                'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),
                 'nav' => $nav->getItems(),
             ],
