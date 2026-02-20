@@ -26,7 +26,7 @@ final class Route
         /**
          * @var string|null The site UID the route should be limited to, if any
          */
-        public ?string $siteUid,
+        public ?string $siteUid = null,
 
         /**
          * @var string $uid The route UID.

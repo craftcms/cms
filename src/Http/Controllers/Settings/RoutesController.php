@@ -33,8 +33,19 @@ final readonly class RoutesController
         ]);
     }
 
-    public function store(Route $route): Response
+    public function store(Request $request): Response
     {
+        $data = $request->validate([
+            'uriParts' => ['required', 'array'],
+            'uriParts.*' => ['string'],
+            'template' => ['required', 'string'],
+            'siteUid' => ['nullable', 'uuid'],
+            'uid' => ['nullable', 'uuid'],
+            'sortOrder' => ['nullable', 'integer'],
+        ]);
+
+        $route = new Route(...$data);
+
         $routeUid = $this->routes->saveRoute($route);
 
         return $this->asSuccess(data: [
