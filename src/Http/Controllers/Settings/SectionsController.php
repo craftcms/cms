@@ -47,7 +47,7 @@ final readonly class SectionsController
         $searchTerm = $request->input('search');
 
         $sort = $request->input('sort', [
-            ['field' => 'name', 'order' => 'asc'],
+            ['field' => 'name', 'direction' => 'asc'],
         ]);
 
         $orderBy = match (Arr::get($sort, '0.field')) {
@@ -238,8 +238,17 @@ final readonly class SectionsController
             'id' => ['required', Rule::exists(Table::SECTIONS, 'id')],
         ]);
 
-        $name = $sections->getSectionById($request->input('id'))->name;
-        $sections->deleteSectionById($request->integer('id'));
+        $sectionId = $request->integer('id');
+        $section = $sections->getSectionById($sectionId);
+
+        if ($section === null) {
+            return back()->withErrors([
+                'id' => t('Section not found. It may have already been deleted.'),
+            ]);
+        }
+
+        $name = $section->name;
+        $sections->deleteSectionById($sectionId);
 
         return back()->with('success', t('Section “{name}” deleted.', [
             'name' => $name,

@@ -140,7 +140,7 @@
       router.visit(
         index({
           query: {
-            ...Object.entries(currentQuery),
+            ...Object.fromEntries(currentQuery),
             sort: sortQueryParams,
             page: 1,
           },
