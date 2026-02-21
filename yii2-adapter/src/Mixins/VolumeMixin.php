@@ -8,6 +8,7 @@ use Closure;
 use craft\errors\FsException;
 use craft\errors\FsObjectNotFoundException;
 use craft\models\FsListing;
+use CraftCms\Cms\Filesystem\Filesystem as FilesystemComponent;
 use CraftCms\Cms\Support\Str;
 use Generator;
 use League\Flysystem\StorageAttributes;
@@ -58,18 +59,32 @@ final class VolumeMixin
 
     public function getFileSize(): Closure
     {
-        return fn(string $uri): int => $this->sourceDisk()->size($uri);
+        return function(string $uri): int {
+            try {
+                return $this->sourceDisk()->size($uri);
+            } catch (Throwable $e) {
+                throw new FsException($e->getMessage(), previous: $e);
+            }
+        };
     }
 
     public function getDateModified(): Closure
     {
-        return fn(string $uri): int => $this->sourceDisk()->lastModified($uri);
+        return function(string $uri): int {
+            try {
+                return $this->sourceDisk()->lastModified($uri);
+            } catch (Throwable $e) {
+                throw new FsException($e->getMessage(), previous: $e);
+            }
+        };
     }
 
     public function write(): Closure
     {
+        $mixin = $this;
+
         return function(string $path, string $contents, array $config = []): void {
-            if (!$this->sourceDisk()->put($path, $contents, $config)) {
+            if (!$this->sourceDisk()->put($path, $contents, $mixin->legacyConfigForDisk($config))) {
                 throw new FsException("Unable to write file at path: $path");
             }
         };
@@ -77,11 +92,15 @@ final class VolumeMixin
 
     public function read(): Closure
     {
+        $mixin = $this;
+
         return function(string $path): string {
+            $disk = $this->sourceDisk();
+
             try {
-                $contents = $this->sourceDisk()->get($path);
+                $contents = $disk->get($path);
             } catch (Throwable $e) {
-                throw new FsException($e->getMessage(), previous: $e);
+                throw $mixin->readException($disk, $path, $e);
             }
 
             if ($contents === null) {
@@ -94,9 +113,19 @@ final class VolumeMixin
 
     public function writeFileFromStream(): Closure
     {
+        $mixin = $this;
+
         return function(string $path, $stream, array $config = []): void {
-            if (!is_resource($stream) || !$this->sourceDisk()->writeStream($path, $stream, $config)) {
+            if (!is_resource($stream)) {
                 throw new FsException("Unable to write stream to path: $path");
+            }
+
+            try {
+                if (!$this->sourceDisk()->writeStream($path, $stream, $mixin->legacyConfigForDisk($config))) {
+                    throw new FsException("Unable to write stream to path: $path");
+                }
+            } catch (Throwable $e) {
+                throw new FsException($e->getMessage(), previous: $e);
             }
         };
     }
@@ -133,8 +162,16 @@ final class VolumeMixin
 
     public function getFileStream(): Closure
     {
+        $mixin = $this;
+
         return function(string $uriPath) {
-            $stream = $this->sourceDisk()->readStream($uriPath);
+            $disk = $this->sourceDisk();
+
+            try {
+                $stream = $disk->readStream($uriPath);
+            } catch (Throwable $e) {
+                throw $mixin->readException($disk, $uriPath, $e);
+            }
 
             if (!is_resource($stream)) {
                 throw new FsObjectNotFoundException("Unable to open $uriPath.");
@@ -151,8 +188,15 @@ final class VolumeMixin
 
     public function createDirectory(): Closure
     {
+        $mixin = $this;
+
         return function(string $path, array $config = []): void {
-            if (!$this->sourceDisk()->makeDirectory($path)) {
+            $path = trim($path, '/');
+            if ($path === '') {
+                return;
+            }
+
+            if (!$this->sourceDisk()->makeDirectory($path, $mixin->legacyConfigForDisk($config))) {
                 throw new FsException("Unable to create directory at path: $path");
             }
         };
@@ -231,5 +275,36 @@ final class VolumeMixin
 
             $disk->deleteDirectory($sourcePath);
         };
+    }
+
+    /**
+     * @param  array<string,mixed>  $config
+     * @return array<string,mixed>
+     */
+    private function legacyConfigForDisk(array $config): array
+    {
+        if (empty($config[FilesystemComponent::CONFIG_VISIBILITY])) {
+            return $config;
+        }
+
+        $config['visibility'] = $config[FilesystemComponent::CONFIG_VISIBILITY] === FilesystemComponent::VISIBILITY_HIDDEN
+            ? 'private'
+            : 'public';
+        unset($config[FilesystemComponent::CONFIG_VISIBILITY]);
+
+        return $config;
+    }
+
+    private function readException(\Illuminate\Contracts\Filesystem\Filesystem $disk, string $path, Throwable $exception): FsException
+    {
+        try {
+            if (!$disk->exists($path)) {
+                return new FsObjectNotFoundException("Unable to read file at path: $path", previous: $exception);
+            }
+        } catch (Throwable) {
+            // Fall through to a generic filesystem exception.
+        }
+
+        return new FsException($exception->getMessage(), previous: $exception);
     }
 }

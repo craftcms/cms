@@ -197,12 +197,12 @@ class Local extends Fs implements LocalFsInterface
             'root' => $this->getRootPath(),
             'permissions' => [
                 'file' => [
-                    'public' => $this->visibilityMap[self::VISIBILITY_FILE][self::VISIBILITY_PUBLIC],
-                    'private' => $this->visibilityMap[self::VISIBILITY_FILE][self::VISIBILITY_HIDDEN],
+                    'public' => $this->diskPermission(self::VISIBILITY_FILE, 'public'),
+                    'private' => $this->diskPermission(self::VISIBILITY_FILE, 'private'),
                 ],
                 'dir' => [
-                    'public' => $this->visibilityMap[self::VISIBILITY_DIR][self::VISIBILITY_PUBLIC],
-                    'private' => $this->visibilityMap[self::VISIBILITY_DIR][self::VISIBILITY_HIDDEN],
+                    'public' => $this->diskPermission(self::VISIBILITY_DIR, 'public'),
+                    'private' => $this->diskPermission(self::VISIBILITY_DIR, 'private'),
                 ],
             ],
             'visibility' => $this->defaultDiskVisibility(self::VISIBILITY_FILE),
@@ -552,19 +552,31 @@ class Local extends Fs implements LocalFsInterface
     {
         $visibility = $this->diskVisibility($type, $config);
 
-        return $visibility !== null ? ['visibility' => $visibility] : [];
+        return ['visibility' => $visibility];
     }
 
     /**
      * @param  array<string,mixed>  $config
      */
-    private function diskVisibility(string $type, array $config): ?string
+    private function diskVisibility(string $type, array $config): string
     {
         if (!empty($config[self::CONFIG_VISIBILITY])) {
             return $config[self::CONFIG_VISIBILITY] === self::VISIBILITY_HIDDEN ? 'private' : 'public';
         }
 
         return $this->defaultDiskVisibility($type);
+    }
+
+    private function diskPermission(string $type, string $visibility): int
+    {
+        $defaultVisibility = $this->defaultDiskVisibility($type);
+        if ($defaultVisibility === $visibility) {
+            return $this->visibilityMap[$type][self::VISIBILITY_DEFAULT];
+        }
+
+        return $visibility === 'private'
+            ? $this->visibilityMap[$type][self::VISIBILITY_HIDDEN]
+            : $this->visibilityMap[$type][self::VISIBILITY_PUBLIC];
     }
 
     private function defaultDiskVisibility(string $type): string
