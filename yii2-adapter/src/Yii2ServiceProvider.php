@@ -58,6 +58,7 @@ use craft\services\Drafts;
 use craft\services\Elements;
 use craft\services\Entries;
 use craft\services\Fields;
+use craft\services\Fs;
 use craft\services\Gc;
 use craft\services\Gql;
 use craft\services\Plugins as LegacyPlugins;
@@ -555,6 +556,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Drafts::registerEvents();
         Entries::registerEvents();
         Fields::registerEvents();
+        Fs::registerEvents();
         Gc::registerEvents();
         Utilities::registerEvents();
         Dashboard::registerEvents();

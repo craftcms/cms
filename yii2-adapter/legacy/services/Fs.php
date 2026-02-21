@@ -9,23 +9,17 @@ namespace craft\services;
 
 use Craft;
 use craft\base\FsInterface;
-use craft\base\MemoizableArray;
-use craft\errors\MissingComponentException;
 use craft\events\FsEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\fs\Local;
-use craft\fs\MissingFs;
-use craft\helpers\Component as ComponentHelper;
-use CraftCms\Cms\Filesystem\DiskRegistry;
+use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
+use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
+use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event as EventFacade;
 use Throwable;
 use yii\base\Component;
-use yii\base\InvalidConfigException;
 
 /**
  * Filesystems service.
@@ -50,47 +44,19 @@ class Fs extends Component
     public const EVENT_RENAME_FILESYSTEM = 'renameFs';
 
     /**
-     * @var MemoizableArray<FsInterface>|null
-     * @see _filesystems()
-     */
-    private ?MemoizableArray $_filesystems = null;
-
-    /**
      * Serializer
      */
     public function __serialize(): array
     {
-        $vars = get_object_vars($this);
-        unset($vars['_filesystems']);
-        return $vars;
+        return get_object_vars($this);
     }
 
-    // FileSystems
-
-    // -------------------------------------------------------------------------
     /**
      * Returns the config for the given filesystem.
-     *
-     * @param FsInterface $fs
-     * @return array
      */
     public function createFilesystemConfig(FsInterface $fs): array
     {
-        $config = [
-            'name' => $fs->name,
-            'type' => get_class($fs),
-            'settings' => ProjectConfigHelper::packAssociativeArrays($fs->getSettings()),
-        ];
-
-        if ($fs->getShowHasUrlSetting()) {
-            $config['hasUrls'] = $fs->hasUrls;
-        }
-
-        if ($fs->getShowUrlSetting()) {
-            $config['url'] = $fs->url;
-        }
-
-        return $config;
+        return $this->service()->createFilesystemConfig($fs);
     }
 
     /**
@@ -101,38 +67,7 @@ class Fs extends Component
      */
     public function getAllFilesystemTypes(): array
     {
-        $fsTypes = [
-            Local::class,
-        ];
-
-        // Fire a 'registerFilesystemTypes' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_FILESYSTEM_TYPES)) {
-            $event = new RegisterComponentTypesEvent(['types' => $fsTypes]);
-            $this->trigger(self::EVENT_REGISTER_FILESYSTEM_TYPES, $event);
-            return $event->types;
-        }
-
-        return $fsTypes;
-    }
-
-    /**
-     * Returns a memoizable array of all filesystems.
-     *
-     * @return MemoizableArray<FsInterface>
-     */
-    private function _filesystems(): MemoizableArray
-    {
-        if (!isset($this->_filesystems)) {
-            $configs = app(ProjectConfig::class)->get(ProjectConfig::PATH_FS) ?? [];
-            $configs = array_map(function(string $handle, array $config) {
-                $config['handle'] = $handle;
-                $config['settings'] = ProjectConfigHelper::unpackAssociativeArrays($config['settings'] ?? []);
-                return $config;
-            }, array_keys($configs), $configs);
-            $this->_filesystems = new MemoizableArray($configs, fn(array $config) => $this->createFilesystem($config));
-        }
-
-        return $this->_filesystems;
+        return $this->service()->getAllFilesystemTypes()->values()->all();
     }
 
     /**
@@ -142,18 +77,15 @@ class Fs extends Component
      */
     public function getAllFilesystems(): array
     {
-        return $this->_filesystems()->all();
+        return $this->service()->getAllFilesystems()->values()->all();
     }
 
     /**
      * Returns a filesystem by its handle.
-     *
-     * @param string $handle
-     * @return FsInterface|null
      */
     public function getFilesystemByHandle(string $handle): ?FsInterface
     {
-        return $this->_filesystems()->firstWhere('handle', $handle, true);
+        return $this->service()->getFilesystemByHandle($handle);
     }
 
     /**
@@ -161,7 +93,7 @@ class Fs extends Component
      */
     public function toDiskName(string $handle): string
     {
-        return app(DiskRegistry::class)->toDiskName($handle);
+        return $this->service()->toDiskName($handle);
     }
 
     /**
@@ -169,7 +101,7 @@ class Fs extends Component
      */
     public function disk(string $handle): LaravelFilesystem
     {
-        return Storage::disk($this->toDiskName($handle));
+        return $this->service()->disk($handle);
     }
 
     /**
@@ -182,60 +114,7 @@ class Fs extends Component
      */
     public function saveFilesystem(FsInterface $fs, bool $runValidation = true): bool
     {
-        $projectConfig = app(ProjectConfig::class);
-        $configPath = sprintf('%s.%s', ProjectConfig::PATH_FS, $fs->handle);
-        $isNewFs = $projectConfig->get($configPath) !== null;
-
-        if (!$fs->beforeSave($isNewFs)) {
-            return false;
-        }
-
-        if ($runValidation && !$fs->validate()) {
-            Log::info('Filesystem not saved due to validation error.', [__METHOD__]);
-            return false;
-        }
-
-        $configData = $this->createFilesystemConfig($fs);
-        $projectConfig->set($configPath, $configData, "Save the “{$fs->handle}” filesystem");
-
-        // Remove the old one?
-        if ($fs->oldHandle && $fs->oldHandle !== $fs->handle) {
-            $existingFilesystem = $this->getFilesystemByHandle($fs->oldHandle);
-            if ($existingFilesystem) {
-                $this->removeFilesystem($existingFilesystem);
-
-                // Update any volumes that were pointing to the old handle, but only if the handle was hard-coded
-                $volumesService = Craft::$app->getVolumes();
-                $volumes = $volumesService->getAllVolumes();
-                foreach ($volumes as $volume) {
-                    $changed = false;
-                    if ($volume->getFsHandle(false) === $fs->oldHandle) {
-                        $volume->setFsHandle($fs->handle);
-                        $changed = true;
-                    }
-                    if ($volume->getTransformFsHandle(false) === $fs->oldHandle) {
-                        $volume->setTransformFsHandle($fs->handle);
-                        $changed = true;
-                    }
-                    if ($changed) {
-                        $volumesService->saveVolume($volume);
-                    }
-                }
-
-                // Fire a 'renameFs' event
-                if ($this->hasEventHandlers(self::EVENT_RENAME_FILESYSTEM)) {
-                    $this->trigger(self::EVENT_RENAME_FILESYSTEM, new FsEvent($fs));
-                }
-            }
-        }
-
-        $fs->afterSave($isNewFs);
-
-        // Clear caches
-        $this->_filesystems = null;
-        $this->syncDiskRegistrations();
-
-        return true;
+        return $this->service()->saveFilesystem($fs, $runValidation);
     }
 
     /**
@@ -248,16 +127,7 @@ class Fs extends Component
      */
     public function createFilesystem(mixed $config): FsInterface
     {
-        try {
-            return ComponentHelper::createComponent($config, FsInterface::class);
-        } catch (MissingComponentException|InvalidConfigException $e) {
-            $config['errorMessage'] = $e->getMessage();
-            $config['expectedType'] = $config['type'];
-            /** @var array $config */
-            /** @phpstan-var array{errorMessage:string,expectedType:string,type:string} $config */
-            unset($config['type']);
-            return new MissingFs($config);
-        }
+        return $this->service()->createFilesystem($config);
     }
 
     /**
@@ -269,19 +139,7 @@ class Fs extends Component
      */
     public function removeFilesystem(FsInterface $fs): bool
     {
-        if (!$fs->beforeDelete()) {
-            return false;
-        }
-
-        app(ProjectConfig::class)->remove(sprintf('%s.%s', ProjectConfig::PATH_FS, $fs->handle), "Remove the “{$fs->handle}” filesystem");
-
-        // Clear caches
-        $this->_filesystems = null;
-        $this->syncDiskRegistrations();
-
-        $fs->afterDelete();
-
-        return true;
+        return $this->service()->removeFilesystem($fs);
     }
 
     /**
@@ -289,8 +147,7 @@ class Fs extends Component
      */
     public function handleChangedFilesystem(ConfigEvent $event): void
     {
-        $this->_filesystems = null;
-        $this->syncDiskRegistrations();
+        $this->service()->handleChangedFilesystem($event);
     }
 
     /**
@@ -298,12 +155,33 @@ class Fs extends Component
      */
     public function handleDeletedFilesystem(ConfigEvent $event): void
     {
-        $this->_filesystems = null;
-        $this->syncDiskRegistrations();
+        $this->service()->handleDeletedFilesystem($event);
     }
 
-    private function syncDiskRegistrations(): void
+    public static function registerEvents(): void
     {
-        app(DiskRegistry::class)->sync();
+        EventFacade::listen(RegisterFilesystemTypes::class, function(RegisterFilesystemTypes $event) {
+            if (!Craft::$app->getFs()->hasEventHandlers(self::EVENT_REGISTER_FILESYSTEM_TYPES)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
+            Craft::$app->getFs()->trigger(self::EVENT_REGISTER_FILESYSTEM_TYPES, $yiiEvent);
+
+            $event->types = Collection::make($yiiEvent->types);
+        });
+
+        EventFacade::listen(FilesystemRenamed::class, function(FilesystemRenamed $event) {
+            if (!Craft::$app->getFs()->hasEventHandlers(self::EVENT_RENAME_FILESYSTEM)) {
+                return;
+            }
+
+            Craft::$app->getFs()->trigger(self::EVENT_RENAME_FILESYSTEM, new FsEvent($event->filesystem));
+        });
+    }
+
+    private function service(): Filesystems
+    {
+        return app(Filesystems::class);
     }
 }

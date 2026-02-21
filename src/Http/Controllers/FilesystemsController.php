@@ -6,12 +6,13 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\base\Fs;
-use craft\base\FsInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -36,7 +37,7 @@ final class FilesystemsController
     public function index(): View
     {
         $variables = [];
-        $variables['filesystems'] = Craft::$app->getFs()->getAllFilesystems();
+        $variables['filesystems'] = Filesystems::getAllFilesystems();
         $variables['readOnly'] = $this->readOnly;
 
         return view('settings/filesystems/_index', $variables);
@@ -53,16 +54,15 @@ final class FilesystemsController
             abort(403, 'Administrative changes are disallowed in this environment.');
         }
 
-        $fsService = Craft::$app->getFs();
         $filesystem = null;
 
         if ($handle !== null) {
-            $filesystem = $fsService->getFilesystemByHandle($handle);
+            $filesystem = Filesystems::getFilesystemByHandle($handle);
 
             abort_if(is_null($filesystem), 404, 'Filesystem not found');
         }
 
-        $allFsTypes = Craft::$app->getFs()->getAllFilesystemTypes();
+        $allFsTypes = Filesystems::getAllFilesystemTypes();
 
         $fsInstances = [];
         $fsOptions = [];
@@ -85,7 +85,7 @@ final class FilesystemsController
         // Sort them by name
         $fsOptions = Arr::sort($fsOptions, 'label');
 
-        if ($handle && $fsService->getFilesystemByHandle($handle)) {
+        if ($handle && Filesystems::getFilesystemByHandle($handle)) {
             $title = trim((string) $filesystem->name ?: t('Edit Filesystem'));
         } else {
             $title = t('Create a new filesystem');
@@ -123,11 +123,10 @@ final class FilesystemsController
 
     public function save(Request $request): Response
     {
-        $fsService = Craft::$app->getFs();
         $type = $request->input('type');
 
         /** @var FsInterface|Fs $fs */
-        $fs = $fsService->createFilesystem([
+        $fs = Filesystems::createFilesystem([
             'type' => $type,
             'name' => $request->input('name'),
             'handle' => $request->input('handle'),
@@ -135,7 +134,7 @@ final class FilesystemsController
             'settings' => $request->input('types')[Html::id($type)] ?? [],
         ]);
 
-        if (! $fsService->saveFilesystem($fs)) {
+        if (! Filesystems::saveFilesystem($fs)) {
             return $this->asModelFailure($fs, t('Couldn’t save filesystem.'), 'filesystem');
         }
 
@@ -148,11 +147,10 @@ final class FilesystemsController
             'id' => ['required', 'string'],
         ]);
 
-        $fsService = Craft::$app->getFs();
-        $fs = $fsService->getFilesystemByHandle($request->input('id'));
+        $fs = Filesystems::getFilesystemByHandle($request->input('id'));
 
         if ($fs) {
-            $fsService->removeFilesystem($fs);
+            Filesystems::removeFilesystem($fs);
         }
 
         return $this->asSuccess();

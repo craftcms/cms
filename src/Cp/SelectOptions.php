@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use Craft;
-use craft\base\FsInterface;
 use craft\helpers\Assets;
 use craft\models\Volume;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\DiskRegistry;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Translation\Locale;
@@ -272,7 +273,7 @@ class SelectOptions
      */
     public static function getFsOptions(): array
     {
-        $craftFilesystemOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
+        $craftFilesystemOptions = Filesystems::getAllFilesystems()
             ->reject(fn (FsInterface $fs): bool => Assets::isTempUploadFs($fs))
             ->map(fn (FsInterface $fs) => [
                 'label' => t($fs->name, category: 'site'),

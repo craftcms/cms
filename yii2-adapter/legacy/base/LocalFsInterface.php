@@ -7,18 +7,17 @@
 
 namespace craft\base;
 
-/**
- * LocalFsInterface is the interface that must be implemented by all filesystems that operate locally.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-interface LocalFsInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Return the root path of the FS.
+     * LocalFsInterface is the interface that must be implemented by all filesystems that operate locally.
      *
-     * @return string
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Contracts\LocalFsInterface} instead.
      */
-    public function getRootPath(): string;
+    interface LocalFsInterface extends \CraftCms\Cms\Filesystem\Contracts\LocalFsInterface
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Filesystem\Contracts\LocalFsInterface::class, LocalFsInterface::class);
