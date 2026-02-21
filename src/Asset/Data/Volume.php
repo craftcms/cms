@@ -24,8 +24,8 @@ use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Filesystem\DiskRegistry;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Filesystem\FilesystemAdapter as LaravelFilesystemAdapter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -692,7 +692,7 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         throw new InvalidConfigException('Volume has an invalid filesystem handle.');
     }
 
-    private function storageDisk(): LaravelFilesystemAdapter
+    private function storageDisk(): Filesystem
     {
         $diskName = $this->diskNameForOperations();
         $prefix = $this->diskPrefix();

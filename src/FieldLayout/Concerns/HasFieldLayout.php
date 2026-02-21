@@ -11,6 +11,7 @@ use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
 use RuntimeException;
+use Throwable;
 
 trait HasFieldLayout
 {
@@ -83,11 +84,11 @@ trait HasFieldLayout
             return true;
         }
 
-        if (method_exists($this, 'canGetProperty')) {
-            return $this->canGetProperty($attribute);
+        try {
+            return isset($this->{$attribute}) || $this->{$attribute} === null;
+        } catch (Throwable) {
+            return false;
         }
-
-        return false;
     }
 
     /**

@@ -3236,6 +3236,10 @@ JS;
 
                 $tempPath = $this->tempFilePath;
             } else {
+                if ($oldVolume === null || $oldPath === null) {
+                    throw new FileException(t('There was an error relocating the file.'));
+                }
+
                 $tempFilename = FileHelper::uniqueName($filename);
                 $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
                 Assets::downloadFile($oldVolume, $oldPath, $tempPath);

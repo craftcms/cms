@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Filesystem;
 
 use Craft;
+use craft\base\FsInterface;
 use craft\base\MemoizableArray;
 use craft\errors\MissingComponentException;
 use craft\fs\Local;
 use craft\fs\MissingFs;
 use craft\helpers\Component as ComponentHelper;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
 use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -95,7 +95,9 @@ final class Filesystems
 
                 return $config;
             }, array_keys($configs), $configs);
-            $this->_filesystems = new MemoizableArray($configs, fn (array $config) => $this->createFilesystem($config));
+            /** @var MemoizableArray<FsInterface> $filesystems */
+            $filesystems = new MemoizableArray($configs, fn (array $config): FsInterface => $this->createFilesystem($config));
+            $this->_filesystems = $filesystems;
         }
 
         return $this->_filesystems;

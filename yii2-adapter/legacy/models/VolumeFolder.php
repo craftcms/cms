@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\Model;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Gate;
 use yii\base\InvalidConfigException;
@@ -96,7 +97,7 @@ class VolumeFolder extends Model
     /**
      * Returns the volume this folder belongs to.
      *
-     * @return Volume
+     * @return \CraftCms\Cms\Asset\Data\Volume
      * @throws InvalidConfigException if [[volumeId]] is invalid
      */
     public function getVolume(): Volume

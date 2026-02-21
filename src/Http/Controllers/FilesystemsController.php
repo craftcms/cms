@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\base\Fs;
+use craft\base\FsInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
