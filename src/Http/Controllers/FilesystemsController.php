@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
-use craft\base\Fs;
-use craft\base\FsInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
@@ -68,7 +67,7 @@ final class FilesystemsController
         $fsOptions = [];
 
         foreach ($allFsTypes as $fsType) {
-            /** @var Fs $fsInstance */
+            /** @var FsInterface $fsInstance */
             $fsInstance = Craft::createObject($fsType);
 
             if ($filesystem === null) {
@@ -125,7 +124,7 @@ final class FilesystemsController
     {
         $type = $request->input('type');
 
-        /** @var FsInterface|Fs $fs */
+        /** @var FsInterface $fs */
         $fs = Filesystems::createFilesystem([
             'type' => $type,
             'name' => $request->input('name'),

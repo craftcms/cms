@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Filesystem;
 
 use Craft;
-use craft\base\FsInterface;
 use craft\base\MemoizableArray;
 use craft\errors\MissingComponentException;
 use craft\fs\Local;
 use craft\fs\MissingFs;
 use craft\helpers\Component as ComponentHelper;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
 use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;

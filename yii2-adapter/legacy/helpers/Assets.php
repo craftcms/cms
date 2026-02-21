@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use craft\errors\FsException;
 use craft\errors\InvalidSubpathException;
@@ -22,6 +21,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;

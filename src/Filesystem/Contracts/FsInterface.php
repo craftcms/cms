@@ -4,15 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Filesystem\Contracts;
 
-use craft\base\ModelInterface;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 
 /**
  * FsInterface defines the common interface to be implemented by filesystem classes.
+ *
+ * @property string|null $name
+ * @property string|null $handle
+ * @property string|null $oldHandle
+ * @property bool $hasUrls
+ * @property string|null $url
+ * @property string|null $uid
+ *
+ * @phpstan-require-extends \CraftCms\Cms\Filesystem\Filesystem
  */
-interface FsInterface extends BaseFsInterface, ConfigurableComponentInterface, ModelInterface, SavableComponentInterface, Validatable
+interface FsInterface extends BaseFsInterface, ConfigurableComponentInterface, SavableComponentInterface, Validatable
 {
     /**
      * Returns whether the “Files in this filesystem have public URLs” setting should be shown.

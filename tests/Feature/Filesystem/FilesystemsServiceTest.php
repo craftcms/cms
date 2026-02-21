@@ -6,6 +6,7 @@ use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\DiskRegistry;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
 use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
+use CraftCms\Cms\Filesystem\Filesystem;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -20,6 +21,10 @@ beforeEach(function () {
 it('is a singleton and is available via the facade', function () {
     expect($this->service)->toBe(app(Filesystems::class))
         ->and($this->service)->toBe(FilesystemsFacade::getFacadeRoot());
+});
+
+it('keeps the legacy base Fs class as a subclass of the new filesystem base', function () {
+    expect(is_subclass_of(\craft\base\Fs::class, Filesystem::class))->toBeTrue();
 });
 
 it('can register extra filesystem types through an event', function () {
@@ -76,6 +81,51 @@ it('dispatches a filesystem renamed event when renaming', function () {
     expect($this->service->saveFilesystem($filesystem, false))->toBeTrue();
 
     Event::assertDispatched(fn (\CraftCms\Cms\Filesystem\Events\FilesystemRenamed $event) => $event->filesystem->handle === 'service-rename-new');
+});
+
+it('runs legacy defineRules declarations during validation', function () {
+    $filesystem = new class(['name' => 'Legacy Rules', 'handle' => 'legacyRules', 'path' => sys_get_temp_dir().'/legacy-rules-fs']) extends \craft\fs\Local
+    {
+        public bool $defineRulesCalled = false;
+
+        #[\Override]
+        protected function defineRules(): array
+        {
+            $this->defineRulesCalled = true;
+
+            return parent::defineRules();
+        }
+    };
+
+    expect($filesystem->validate())->toBeTrue()
+        ->and($filesystem->defineRulesCalled)->toBeTrue();
+});
+
+it('still validates local filesystems with legacy defineRules path requirements', function () {
+    $filesystem = \Craft::$app->getFs()->createFilesystem([
+        'type' => \craft\fs\Local::class,
+        'name' => 'Missing Path',
+        'handle' => 'missingPath',
+    ]);
+
+    expect($filesystem->validate())->toBeFalse()
+        ->and($filesystem->errors()->get('path'))->not()->toBeEmpty();
+});
+
+it('calls init for legacy filesystem subclasses after construction', function () {
+    $filesystem = new class(['name' => 'Init Hook', 'handle' => 'initHook', 'path' => sys_get_temp_dir().'/init-hook-fs']) extends \craft\fs\Local
+    {
+        public bool $initCalled = false;
+
+        #[\Override]
+        public function init(): void
+        {
+            $this->initCalled = true;
+            parent::init();
+        }
+    };
+
+    expect($filesystem->initCalled)->toBeTrue();
 });
 
 it('syncs stale craft disk registrations when handling delete config changes', function () {

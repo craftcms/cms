@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use Craft;
-use craft\base\FsInterface;
 use craft\helpers\Assets;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\DiskRegistry;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;

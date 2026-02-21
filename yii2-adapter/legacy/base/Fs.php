@@ -7,9 +7,13 @@
 
 namespace craft\base;
 
-use craft\validators\HandleValidator;
-use CraftCms\Cms\Support\Env;
-use function CraftCms\Cms\t;
+use Closure;
+use CraftCms\Cms\Filesystem\Filesystem;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Yii2Adapter\ModelWrapper;
+use ReflectionFunction;
+use ReflectionMethod;
+use yii\validators\Validator;
 
 /**
  * Field is the base class for classes representing filesystems in terms of objects.
@@ -18,89 +22,98 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-abstract class Fs extends SavableComponent implements FsInterface
+abstract class Fs extends Filesystem implements FsInterface
 {
-    use FsTrait;
-
-    public const CONFIG_MIMETYPE = 'mimetype';
-    public const CONFIG_VISIBILITY = 'visibility';
-
-    public const VISIBILITY_DEFAULT = 'default';
-    public const VISIBILITY_HIDDEN = 'hidden';
-    public const VISIBILITY_PUBLIC = 'public';
-
-    /**
-     * @inheritdoc
-     */
-    public function getRootUrl(): ?string
+    public function getRules(): array
     {
-        if (!$this->hasUrls) {
-            return null;
+        $yiiRules = $this->defineRules();
+
+        $rules = parent::getRules();
+        $legacyAttributes = [];
+
+        foreach ($yiiRules as $rule) {
+            if (!is_array($rule) || !isset($rule[0], $rule[1])) {
+                continue;
+            }
+
+            foreach ((array)$rule[0] as $attribute) {
+                if (is_string($attribute) && $attribute !== '') {
+                    $legacyAttributes[$attribute] = true;
+                }
+            }
         }
 
-        $url = Env::parse($this->url);
-        if (is_string($url)) {
-            $url = rtrim($url, '/');
+        foreach (array_keys($legacyAttributes) as $legacyAttribute) {
+            $rules[$legacyAttribute] ??= [];
+            $rules[$legacyAttribute] = Arr::wrap($rules[$legacyAttribute]);
+
+            array_unshift($rules[$legacyAttribute], function($attribute, $value, $fail) use ($yiiRules) {
+                foreach ($yiiRules as $rule) {
+                    if (!is_array($rule) || !isset($rule[0], $rule[1])) {
+                        continue;
+                    }
+
+                    $attributes = (array)$rule[0];
+                    $type = $rule[1];
+                    $options = array_slice($rule, 2, null, true);
+
+                    if (!in_array($attribute, $attributes, true)) {
+                        continue;
+                    }
+
+                    if (is_string($type) && method_exists($this, $type)) {
+                        $method = $type;
+                        $filesystem = $this;
+                        $type = function(string $attribute, ?array $params, Validator $validator, mixed $current) use ($method, $filesystem): void {
+                            $parameterCount = (new ReflectionMethod($filesystem, $method))->getNumberOfParameters();
+
+                            match (true) {
+                                $parameterCount === 0 => $filesystem->$method(),
+                                $parameterCount === 1 => $filesystem->$method($attribute),
+                                $parameterCount === 2 => $filesystem->$method($attribute, $params),
+                                $parameterCount === 3 => $filesystem->$method($attribute, $params, $validator),
+                                default => $filesystem->$method($attribute, $params, $validator, $current),
+                            };
+                        };
+                    }
+
+                    if (isset($options['when']) && is_callable($options['when'])) {
+                        $options['when'] = $this->normalizeWhenCallback($options['when']);
+                    }
+
+                    $wrappedModel = new ModelWrapper($this);
+                    $validator = Validator::createValidator($type, $wrappedModel, $attributes, $options);
+                    $validator->validateAttribute($wrappedModel, $attribute);
+
+                    foreach ($wrappedModel->getErrors($attribute) as $error) {
+                        $fail((string)$error);
+                    }
+                }
+            });
         }
 
-        return $url ? "$url/" : null;
+        return $rules;
     }
 
     /**
-     * @inheritdoc
-     */
-    public function attributeLabels(): array
-    {
-        return [
-            'handle' => t('Handle'),
-            'name' => t('Name'),
-            'url' => t('Base URL'),
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getShowHasUrlSetting(): bool
-    {
-        return static::$showHasUrlSetting;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getShowUrlSetting(): bool
-    {
-        return static::$showUrlSetting;
-    }
-
-    /**
-     * @inheritdoc
+     * @return array<int, array|string>
      */
     protected function defineRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['name', 'handle'], 'required'];
-        $rules[] = [
-            'url',
-            'required',
-            'when' => fn(self $fs) => $fs->hasUrls && $this->getShowUrlSetting(),
-        ];
+        return [];
+    }
 
-        $rules[] = [
-            ['handle'],
-            HandleValidator::class,
-            'reservedWords' => [
-                'dateCreated',
-                'dateUpdated',
-                'edit',
-                'id',
-                'new',
-                'title',
-                'uid',
-            ],
-        ];
+    private function normalizeWhenCallback(callable $callback): Closure
+    {
+        return function($model, string $attribute) use ($callback): bool {
+            $callback = Closure::fromCallable($callback);
+            $parameterCount = (new ReflectionFunction($callback))->getNumberOfParameters();
 
-        return $rules;
+            return match (true) {
+                $parameterCount === 0 => (bool)$callback(),
+                $parameterCount === 1 => (bool)$callback($this),
+                default => (bool)$callback($this, $attribute),
+            };
+        };
     }
 }

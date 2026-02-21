@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
-use craft\base\FsInterface;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Data\ProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;

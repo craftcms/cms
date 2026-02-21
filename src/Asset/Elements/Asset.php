@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Asset\Elements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Fs;
 use craft\controllers\ElementIndexesController;
 use craft\controllers\ElementSelectorModalsController;
 use craft\db\Query;
@@ -68,6 +67,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Contracts\LocalFsInterface;
+use CraftCms\Cms\Filesystem\Filesystem;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -3264,7 +3264,7 @@ JS;
             // Upload the file to the new location
             try {
                 if (! $newVolume->sourceDisk()->writeStream($newPath, $stream, [
-                    Fs::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
+                    Filesystem::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
                 ])) {
                     throw new FsException("Unable to write stream to path: $newPath");
                 }

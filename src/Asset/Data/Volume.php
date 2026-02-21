@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Asset\Data;
 
 use BadMethodCallException;
 use Craft;
-use craft\base\FsInterface;
 use craft\base\Model;
 use craft\fs\LaravelDiskFs;
 use craft\fs\MissingFs;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\DiskRegistry;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;

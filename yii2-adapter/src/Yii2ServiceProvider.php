@@ -97,6 +97,7 @@ use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
+use CraftCms\Cms\Filesystem\Filesystem as FilesystemComponent;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
@@ -287,6 +288,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Element::mixin(new ElementMixin());
         Field::mixin(new ValidateMixin());
         FieldLayoutComponent::mixin(new ValidateMixin());
+        FilesystemComponent::mixin(new ValidateMixin());
         ElementQuery::mixin(new ElementQueryMixin());
         User::mixin(new UserMixin());
         AssetVolume::mixin(new VolumeMixin());
