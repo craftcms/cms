@@ -36,6 +36,11 @@ class MissingFs extends Fs implements MissingComponentInterface
         return null;
     }
 
+    public function getDiskConfig(): array
+    {
+        throw new NotSupportedException('getDiskConfig() is not implemented.');
+    }
+
     /**
      * @inheritdoc
      */

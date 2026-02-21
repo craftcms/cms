@@ -20,8 +20,15 @@ use CraftCms\Cms\Validation\Contracts\Validatable;
  *
  * @phpstan-require-extends \CraftCms\Cms\Filesystem\Filesystem
  */
-interface FsInterface extends BaseFsInterface, ConfigurableComponentInterface, SavableComponentInterface, Validatable
+interface FsInterface extends ConfigurableComponentInterface, SavableComponentInterface, Validatable
 {
+    /**
+     * Returns the Laravel disk configuration for this filesystem.
+     *
+     * @return array<string,mixed>
+     */
+    public function getDiskConfig(): array;
+
     /**
      * Returns whether the “Files in this filesystem have public URLs” setting should be shown.
      */

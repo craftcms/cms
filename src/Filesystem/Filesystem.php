@@ -80,6 +80,8 @@ abstract class Filesystem extends Component implements FsInterface
         return $url ? "$url/" : null;
     }
 
+    abstract public function getDiskConfig(): array;
+
     #[\Override]
     public function attributeLabels(): array
     {

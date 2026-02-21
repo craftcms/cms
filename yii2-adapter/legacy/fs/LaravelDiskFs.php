@@ -11,6 +11,7 @@ use craft\base\Fs;
 use craft\errors\FsException;
 use craft\errors\FsObjectNotFoundException;
 use craft\models\FsListing;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
 use Generator;
 use Illuminate\Filesystem\FilesystemAdapter as LaravelFilesystem;
@@ -78,6 +79,20 @@ class LaravelDiskFs extends Fs
         return Str::finish($url, '/');
     }
 
+    public function getDiskConfig(): array
+    {
+        if (!$this->disk) {
+            throw new FsException('The Laravel disk name is missing.');
+        }
+
+        $diskConfig = config("filesystems.disks.$this->disk");
+        if (!is_array($diskConfig)) {
+            throw new FsException("Invalid Laravel disk configuration for [$this->disk].");
+        }
+
+        return $diskConfig;
+    }
+
     /**
      * @inheritdoc
      */
@@ -101,6 +116,8 @@ class LaravelDiskFs extends Fs
      */
     public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         foreach ($this->storageDisk()->listContents($directory, $recursive) as $item) {
             if (!$item instanceof StorageAttributes) {
                 continue;
@@ -131,6 +148,8 @@ class LaravelDiskFs extends Fs
      */
     public function getFileSize(string $uri): int
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         try {
             return $this->storageDisk()->size($uri);
         } catch (Throwable $e) {
@@ -143,6 +162,8 @@ class LaravelDiskFs extends Fs
      */
     public function getDateModified(string $uri): int
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         try {
             return $this->storageDisk()->lastModified($uri);
         } catch (Throwable $e) {
@@ -155,6 +176,8 @@ class LaravelDiskFs extends Fs
      */
     public function write(string $path, string $contents, array $config = []): void
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         if (!$this->storageDisk()->put($path, $contents, $config)) {
             throw new FsException("Unable to write file at path: $path");
         }
@@ -165,6 +188,8 @@ class LaravelDiskFs extends Fs
      */
     public function read(string $path): string
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         try {
             $contents = $this->storageDisk()->get($path);
         } catch (Throwable $e) {
@@ -183,6 +208,8 @@ class LaravelDiskFs extends Fs
      */
     public function writeFileFromStream(string $path, $stream, array $config = []): void
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         if (!is_resource($stream) || !$this->storageDisk()->writeStream($path, $stream, $config)) {
             throw new FsException("Unable to write stream to path: $path");
         }
@@ -193,6 +220,8 @@ class LaravelDiskFs extends Fs
      */
     public function fileExists(string $path): bool
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         return $this->storageDisk()->exists($path);
     }
 
@@ -201,6 +230,8 @@ class LaravelDiskFs extends Fs
      */
     public function deleteFile(string $path): void
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         $this->storageDisk()->delete($path);
     }
 
@@ -209,6 +240,8 @@ class LaravelDiskFs extends Fs
      */
     public function renameFile(string $path, string $newPath, array $config = []): void
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         if (!$this->storageDisk()->move($path, $newPath)) {
             throw new FsException("Unable to move $path to $newPath");
         }
@@ -219,6 +252,8 @@ class LaravelDiskFs extends Fs
      */
     public function copyFile(string $path, string $newPath, array $config = []): void
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         if (!$this->storageDisk()->copy($path, $newPath)) {
             throw new FsException("Unable to copy $path to $newPath");
         }
@@ -229,6 +264,8 @@ class LaravelDiskFs extends Fs
      */
     public function getFileStream(string $uriPath)
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         $stream = $this->storageDisk()->readStream($uriPath);
 
         if (!is_resource($stream)) {
@@ -243,6 +280,8 @@ class LaravelDiskFs extends Fs
      */
     public function directoryExists(string $path): bool
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         return $this->storageDisk()->directoryExists($path);
     }
 
@@ -251,6 +290,8 @@ class LaravelDiskFs extends Fs
      */
     public function createDirectory(string $path, array $config = []): void
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         if (!$this->storageDisk()->makeDirectory($path)) {
             throw new FsException("Unable to create directory at path: $path");
         }
@@ -261,6 +302,8 @@ class LaravelDiskFs extends Fs
      */
     public function deleteDirectory(string $path): void
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         $this->storageDisk()->deleteDirectory($path);
     }
 
@@ -269,6 +312,8 @@ class LaravelDiskFs extends Fs
      */
     public function renameDirectory(string $path, string $newName): void
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         $path = trim($path, '/');
         if ($path === '' || !$this->directoryExists($path)) {
             throw new FsObjectNotFoundException("No folder exists at path: $path");
@@ -338,5 +383,19 @@ class LaravelDiskFs extends Fs
             trim($path, '/'),
             1,
         ) ?? trim($path, '/');
+    }
+
+    private function logLegacyOperationDeprecation(string $method): void
+    {
+        $methodName = str_contains($method, '::') ? explode('::', $method)[1] : $method;
+
+        Deprecator::log(
+            sprintf('filesystem-legacy-operation:%s::%s', static::class, $methodName),
+            sprintf(
+                'Calling `%s::%s()` is deprecated. Use Laravel disk operations instead.',
+                static::class,
+                $methodName,
+            ),
+        );
     }
 }

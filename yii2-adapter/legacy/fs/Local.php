@@ -17,15 +17,14 @@ use craft\helpers\Path;
 use craft\models\FsListing;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Security;
-use CraftCms\Cms\Support\Str;
-use DirectoryIterator;
-use FilesystemIterator;
 use Generator;
+use Illuminate\Filesystem\FilesystemAdapter as LaravelFilesystem;
 use Illuminate\Support\Facades\Log;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use UnexpectedValueException;
+use Illuminate\Support\Facades\Storage;
+use League\Flysystem\StorageAttributes;
+use Throwable;
 use yii\validators\InlineValidator;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -191,35 +190,69 @@ class Local extends Fs implements LocalFsInterface
         return realpath($path) ?: $path;
     }
 
+    public function getDiskConfig(): array
+    {
+        $config = [
+            'driver' => 'local',
+            'root' => $this->getRootPath(),
+            'permissions' => [
+                'file' => [
+                    'public' => $this->visibilityMap[self::VISIBILITY_FILE][self::VISIBILITY_PUBLIC],
+                    'private' => $this->visibilityMap[self::VISIBILITY_FILE][self::VISIBILITY_HIDDEN],
+                ],
+                'dir' => [
+                    'public' => $this->visibilityMap[self::VISIBILITY_DIR][self::VISIBILITY_PUBLIC],
+                    'private' => $this->visibilityMap[self::VISIBILITY_DIR][self::VISIBILITY_HIDDEN],
+                ],
+            ],
+            'visibility' => $this->defaultDiskVisibility(self::VISIBILITY_FILE),
+            'directory_visibility' => $this->defaultDiskVisibility(self::VISIBILITY_DIR),
+        ];
+
+        $rootUrl = $this->getRootUrl();
+        if ($rootUrl !== null) {
+            $config['url'] = rtrim($rootUrl, '/');
+        }
+
+        return $config;
+    }
+
     /**
      * @inheritdoc
      */
     public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
-        $targetDir = $this->prefixPath($directory);
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        $directory = $this->normalizeDiskPath($directory);
+
         try {
-            $iterator = $recursive ? $this->getRecursiveIterator($targetDir) : new DirectoryIterator($targetDir);
-        } catch (UnexpectedValueException $e) {
+            $fileList = $this->storageDisk()->listContents($directory, $recursive);
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             return;
         }
 
-        /** @var DirectoryIterator $listing */
-        foreach ($iterator as $listing) {
-            if ($listing->isDir() && $listing->isDot()) {
+        foreach ($fileList as $listing) {
+            if (!$listing instanceof StorageAttributes) {
                 continue;
             }
 
-            $filePath = FileHelper::normalizePath(Str::chopStart($listing->getRealPath(), $this->prefixPath()), '/');
-            $dirname = pathinfo($filePath, PATHINFO_DIRNAME);
-            $basename = $listing->getFilename();
+            $uri = trim($listing->path(), '/');
+            if ($uri === '') {
+                continue;
+            }
+
+            $dirname = pathinfo($uri, PATHINFO_DIRNAME);
+            if ($dirname === '.') {
+                $dirname = '';
+            }
 
             yield new FsListing([
                 'dirname' => $dirname,
-                'basename' => $basename,
+                'basename' => pathinfo($uri, PATHINFO_BASENAME),
                 'type' => $listing->isDir() ? 'dir' : 'file',
-                'dateModified' => filemtime($listing->getRealPath()),
-                'fileSize' => !$listing->isDir() ? filesize($listing->getRealPath()) : null,
+                'dateModified' => $listing->lastModified(),
+                'fileSize' => !$listing->isDir() && method_exists($listing, 'fileSize') ? $listing->fileSize() : null,
             ]);
         }
     }
@@ -229,15 +262,14 @@ class Local extends Fs implements LocalFsInterface
      */
     public function getFileSize(string $uri): int
     {
-        $targetPath = $this->prefixPath($uri);
-        clearstatcache();
-        $fileSize = is_file($targetPath) ? filesize($targetPath) : false;
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        $path = $this->normalizeDiskPath($uri);
 
-        if ($fileSize === false) {
-            throw new FsException("Unable to get file size for “{$uri}”");
+        try {
+            return $this->storageDisk()->size($path);
+        } catch (Throwable $e) {
+            throw new FsException($e->getMessage(), previous: $e);
         }
-
-        return $fileSize;
     }
 
     /**
@@ -245,15 +277,14 @@ class Local extends Fs implements LocalFsInterface
      */
     public function getDateModified(string $uri): int
     {
-        $targetPath = $this->prefixPath($uri);
-        clearstatcache();
-        $dateModified = filemtime($targetPath);
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        $path = $this->normalizeDiskPath($uri);
 
-        if ($dateModified === false) {
-            throw new FsException("Unable to get date modified for “{$uri}”");
+        try {
+            return $this->storageDisk()->lastModified($path);
+        } catch (Throwable $e) {
+            throw new FsException($e->getMessage(), previous: $e);
         }
-
-        return $dateModified;
     }
 
     /**
@@ -261,21 +292,20 @@ class Local extends Fs implements LocalFsInterface
      */
     public function writeFileFromStream(string $path, $stream, array $config = []): void
     {
-        $this->createDirectory(pathinfo($path, PATHINFO_DIRNAME));
-        $fullPath = $this->prefixPath($path);
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        $path = $this->normalizeDiskPath($path);
 
-        $targetStream = @fopen($fullPath, 'w+b');
-
-        if (!$targetStream || !@stream_copy_to_stream($stream, $targetStream)) {
-            throw new FsException("Unable to copy stream to `$fullPath`");
+        if (!is_resource($stream)) {
+            throw new FsException("Unable to write stream to path: $path");
         }
 
-        fclose($targetStream);
+        $directory = pathinfo($path, PATHINFO_DIRNAME);
+        if ($directory !== '.' && $directory !== '') {
+            $this->createDirectory($directory, $config);
+        }
 
-        $visibility = $this->resolveVisibility(self::VISIBILITY_FILE, $config);
-
-        if ($visibility) {
-            @chmod($fullPath, $visibility);
+        if (!$this->storageDisk()->writeStream($path, $stream, $this->legacyConfigForDisk($config, self::VISIBILITY_FILE))) {
+            throw new FsException("Unable to write stream to path: $path");
         }
     }
 
@@ -284,9 +314,18 @@ class Local extends Fs implements LocalFsInterface
      */
     public function read(string $path): string
     {
-        $stream = $this->getFileStream($path);
-        $contents = stream_get_contents($stream);
-        fclose($stream);
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        $path = $this->normalizeDiskPath($path);
+
+        try {
+            $contents = $this->storageDisk()->get($path);
+        } catch (Throwable $e) {
+            throw new FsException($e->getMessage(), previous: $e);
+        }
+
+        if ($contents === null) {
+            throw new FsObjectNotFoundException("Unable to read file at path: $path");
+        }
 
         return $contents;
     }
@@ -296,11 +335,12 @@ class Local extends Fs implements LocalFsInterface
      */
     public function write(string $path, string $contents, array $config = []): void
     {
-        $stream = tmpfile();
-        fwrite($stream, $contents);
-        rewind($stream);
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        $path = $this->normalizeDiskPath($path);
 
-        $this->writeFileFromStream($path, $stream, $config);
+        if (!$this->storageDisk()->put($path, $contents, $this->legacyConfigForDisk($config, self::VISIBILITY_FILE))) {
+            throw new FsException("Unable to write file at path: $path");
+        }
     }
 
     /**
@@ -308,8 +348,10 @@ class Local extends Fs implements LocalFsInterface
      */
     public function fileExists(string $path): bool
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+
         try {
-            return file_exists($this->prefixPath($path));
+            return $this->storageDisk()->exists($this->normalizeDiskPath($path));
         } catch (FsException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
         }
@@ -322,11 +364,14 @@ class Local extends Fs implements LocalFsInterface
      */
     public function deleteFile(string $path): void
     {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        $path = $this->normalizeDiskPath($path);
+
         if (!$this->fileExists($path)) {
             return;
         }
 
-        if (!unlink($this->prefixPath($path))) {
+        if (!$this->storageDisk()->delete($path)) {
             Log::info("Tried to delete `$path`, but could not.");
         }
     }
@@ -336,8 +381,18 @@ class Local extends Fs implements LocalFsInterface
      */
     public function renameFile(string $path, string $newPath, array $config = []): void
     {
-        $this->createDirectory(pathinfo($newPath, PATHINFO_DIRNAME));
-        @rename($this->prefixPath($path), $this->prefixPath($newPath));
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        $path = $this->normalizeDiskPath($path);
+        $newPath = $this->normalizeDiskPath($newPath);
+
+        $directory = pathinfo($newPath, PATHINFO_DIRNAME);
+        if ($directory !== '.' && $directory !== '') {
+            $this->createDirectory($directory, $config);
+        }
+
+        if (!$this->storageDisk()->move($path, $newPath)) {
+            Log::info("Tried to move `$path` to `$newPath`, but could not.");
+        }
     }
 
     /**
@@ -345,8 +400,18 @@ class Local extends Fs implements LocalFsInterface
      */
     public function copyFile(string $path, string $newPath, array $config = []): void
     {
-        $this->createDirectory(pathinfo($newPath, PATHINFO_DIRNAME));
-        @copy($this->prefixPath($path), $this->prefixPath($newPath));
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        $path = $this->normalizeDiskPath($path);
+        $newPath = $this->normalizeDiskPath($newPath);
+
+        $directory = pathinfo($newPath, PATHINFO_DIRNAME);
+        if ($directory !== '.' && $directory !== '') {
+            $this->createDirectory($directory, $config);
+        }
+
+        if (!$this->storageDisk()->copy($path, $newPath)) {
+            Log::info("Tried to copy `$path` to `$newPath`, but could not.");
+        }
     }
 
     /**
@@ -354,12 +419,14 @@ class Local extends Fs implements LocalFsInterface
      */
     public function getFileStream(string $uriPath)
     {
-        $path = $this->prefixPath($uriPath);
-        $file = @fopen($path, 'rb');
-        if (!$file) {
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        $path = $this->normalizeDiskPath($uriPath);
+        $stream = $this->storageDisk()->readStream($path);
+        if (!is_resource($stream)) {
             throw new FsObjectNotFoundException("Unable to open $path.");
         }
-        return $file;
+
+        return $stream;
     }
 
     /**
@@ -367,7 +434,8 @@ class Local extends Fs implements LocalFsInterface
      */
     public function directoryExists(string $path): bool
     {
-        return is_dir($this->prefixPath($path));
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        return $this->storageDisk()->directoryExists($this->normalizeDiskPath($path));
     }
 
     /**
@@ -375,8 +443,16 @@ class Local extends Fs implements LocalFsInterface
      */
     public function createDirectory(string $path, array $config = []): void
     {
-        $dirPath = Str::chopEnd($this->prefixPath($path), '.');
-        FileHelper::createDirectory($dirPath, $this->resolveVisibility(self::VISIBILITY_DIR, $config), true);
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        $path = $this->normalizeDiskPath($path);
+
+        if ($path === '') {
+            return;
+        }
+
+        if (!$this->storageDisk()->makeDirectory($path)) {
+            throw new FsException("Unable to create directory at path: $path");
+        }
     }
 
     /**
@@ -384,7 +460,8 @@ class Local extends Fs implements LocalFsInterface
      */
     public function deleteDirectory(string $path): void
     {
-        FileHelper::removeDirectory($this->prefixPath($path));
+        $this->logLegacyOperationDeprecation(__METHOD__);
+        $this->storageDisk()->deleteDirectory($this->normalizeDiskPath($path));
     }
 
     /**
@@ -392,33 +469,52 @@ class Local extends Fs implements LocalFsInterface
      */
     public function renameDirectory(string $path, string $newName): void
     {
-        $fullPath = $this->prefixPath($path);
+        $this->logLegacyOperationDeprecation(__METHOD__);
 
-        if (!is_dir($fullPath)) {
+        $path = $this->normalizeDiskPath($path);
+        if ($path === '' || !$this->directoryExists($path)) {
             throw new FsObjectNotFoundException('No folder exists at path: ' . $path);
         }
 
-        $components = explode(DIRECTORY_SEPARATOR, $fullPath);
-        array_pop($components);
-        $components[] = $newName;
-        $newPath = implode(DIRECTORY_SEPARATOR, $components);
+        $newName = trim($newName, '/');
+        if ($newName === '') {
+            throw new FsException('New directory name cannot be empty.');
+        }
 
-        @rename($fullPath, $newPath);
-    }
+        $parentPath = pathinfo($path, PATHINFO_DIRNAME);
+        if ($parentPath === '.') {
+            $parentPath = '';
+        }
 
-    /**
-     * Create the recursive iterator for traversing file system.
-     *
-     * @param string $targetDir
-     * @return RecursiveIteratorIterator
-     */
-    protected function getRecursiveIterator(string $targetDir): RecursiveIteratorIterator
-    {
-        $directoryMode = FilesystemIterator::FOLLOW_SYMLINKS | FilesystemIterator::SKIP_DOTS | FilesystemIterator::CURRENT_AS_SELF;
-        $recursiveIteratorMode = RecursiveIteratorIterator::SELF_FIRST;
+        $newPath = ($parentPath !== '' ? "$parentPath/" : '') . $this->normalizeDiskPath($newName);
+        if ($newPath === $path) {
+            return;
+        }
 
-        $recursiveDirectoryIterator = new RecursiveDirectoryIterator($targetDir, $directoryMode);
-        return new RecursiveIteratorIterator($recursiveDirectoryIterator, $recursiveIteratorMode);
+        $disk = $this->storageDisk();
+
+        if (!$disk->makeDirectory($newPath)) {
+            throw new FsException("Unable to create directory at path: $newPath");
+        }
+
+        $directories = $disk->allDirectories($path);
+        usort($directories, fn(string $a, string $b) => substr_count($a, '/') <=> substr_count($b, '/'));
+
+        foreach ($directories as $directory) {
+            $targetDirectory = $this->swapDirectoryPrefix($directory, $path, $newPath);
+            if (!$disk->makeDirectory($targetDirectory)) {
+                throw new FsException("Unable to create directory at path: $targetDirectory");
+            }
+        }
+
+        foreach ($disk->allFiles($path) as $file) {
+            $targetFile = $this->swapDirectoryPrefix($file, $path, $newPath);
+            if (!$disk->move($file, $targetFile)) {
+                throw new FsException("Unable to move $file to $targetFile");
+            }
+        }
+
+        $disk->deleteDirectory($path);
     }
 
     /**
@@ -435,6 +531,83 @@ class Local extends Fs implements LocalFsInterface
         }
 
         return $this->getRootPath() . DIRECTORY_SEPARATOR . FileHelper::normalizePath($path);
+    }
+
+    private function storageDisk(): LaravelFilesystem
+    {
+        $disk = Storage::build($this->getDiskConfig());
+
+        if (!$disk instanceof LaravelFilesystem) {
+            throw new FsException('Invalid Laravel disk configuration.');
+        }
+
+        return $disk;
+    }
+
+    /**
+     * @param  array<string,mixed>  $config
+     * @return array<string,mixed>
+     */
+    private function legacyConfigForDisk(array $config, string $type): array
+    {
+        $visibility = $this->diskVisibility($type, $config);
+
+        return $visibility !== null ? ['visibility' => $visibility] : [];
+    }
+
+    /**
+     * @param  array<string,mixed>  $config
+     */
+    private function diskVisibility(string $type, array $config): ?string
+    {
+        if (!empty($config[self::CONFIG_VISIBILITY])) {
+            return $config[self::CONFIG_VISIBILITY] === self::VISIBILITY_HIDDEN ? 'private' : 'public';
+        }
+
+        return $this->defaultDiskVisibility($type);
+    }
+
+    private function defaultDiskVisibility(string $type): string
+    {
+        $defaultMode = $this->visibilityMap[$type][self::VISIBILITY_DEFAULT];
+        $hiddenMode = $this->visibilityMap[$type][self::VISIBILITY_HIDDEN];
+
+        return $defaultMode === $hiddenMode ? 'private' : 'public';
+    }
+
+    private function normalizeDiskPath(string $path = ''): string
+    {
+        $path = trim(FileHelper::normalizePath($path), '/');
+        $path = $path === '.' ? '' : $path;
+
+        if (!Path::ensurePathIsContained($path)) {
+            throw new FsException("The path `$path` is not contained.");
+        }
+
+        return $path;
+    }
+
+    private function swapDirectoryPrefix(string $path, string $prefix, string $replacement): string
+    {
+        $prefix = trim($prefix, '/');
+        $replacement = trim($replacement, '/');
+
+        return preg_replace(
+            '/^' . preg_quote($prefix, '/') . '(?=\/|$)/',
+            $replacement,
+            trim($path, '/'),
+            1,
+        ) ?? trim($path, '/');
+    }
+
+    private function logLegacyOperationDeprecation(string $method): void
+    {
+        $methodName = str_contains($method, '::') ? explode('::', $method)[1] : $method;
+
+        Deprecator::log(
+            sprintf('filesystem-legacy-operation:%s::%s', static::class, $methodName),
+            sprintf('Calling `%s::%s()` is deprecated. Use Laravel disk operations instead.', static::class, $methodName),
+        );
     }
 
     /**

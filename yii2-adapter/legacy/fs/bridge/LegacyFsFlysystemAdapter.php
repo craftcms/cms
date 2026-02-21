@@ -7,7 +7,7 @@
 
 namespace craft\fs\bridge;
 
-use craft\base\FsInterface;
+use craft\base\BaseFsInterface;
 use craft\models\FsListing;
 use League\Flysystem\Config;
 use League\Flysystem\DirectoryAttributes;
@@ -33,7 +33,7 @@ final class LegacyFsFlysystemAdapter implements FilesystemAdapter
     public const string DISK_DRIVER = 'craft-fs-bridge';
 
     public function __construct(
-        private readonly FsInterface $filesystem,
+        private readonly BaseFsInterface $filesystem,
     ) {
     }
 

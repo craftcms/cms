@@ -3,6 +3,7 @@
 namespace CraftCms\Yii2Adapter;
 
 use Craft;
+use craft\base\BaseFsInterface;
 use craft\base\Event as YiiEvent;
 use craft\base\FieldLayoutComponent;
 use craft\base\FsInterface;
@@ -148,6 +149,7 @@ use League\Flysystem\PathPrefixing\PathPrefixedAdapter;
 use PDOException;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
+use Throwable;
 use yii\BaseYii;
 use yii\caching\TagDependency as YiiTagDependency;
 use Yiisoft\Translator\CategorySource;
@@ -190,24 +192,78 @@ class Yii2ServiceProvider extends ServiceProvider
                 throw new InvalidArgumentException("Craft filesystem [$handle] is not registered.");
             }
 
-            $adapter = new LegacyFsFlysystemAdapter($filesystem);
-            $flysystemAdapter = !empty($config['prefix'])
-                ? new PathPrefixedAdapter($adapter, $config['prefix'])
-                : $adapter;
+            try {
+                $disk = $app->make(FilesystemManager::class)->build($filesystem->getDiskConfig());
 
-            return new LaravelFilesystemAdapter(
-                new Flysystem($flysystemAdapter, Arr::only($config, [
-                    'directory_visibility',
-                    'disable_asserts',
-                    'retain_visibility',
-                    'temporary_url',
-                    'url',
-                    'visibility',
-                ])),
-                $flysystemAdapter,
-                $config,
-            );
+                if (!$disk instanceof LaravelFilesystemAdapter) {
+                    throw new InvalidArgumentException("Filesystem [$handle] returned an invalid disk configuration.");
+                }
+
+                return $this->filesystemWithPrefix($disk, $config);
+            } catch (Throwable $e) {
+                if (!$filesystem instanceof BaseFsInterface) {
+                    throw new InvalidArgumentException(
+                        "Filesystem [$handle] does not provide a usable Laravel disk configuration.",
+                        previous: $e,
+                    );
+                }
+
+                Deprecator::log(
+                    sprintf('filesystem-bridge-fallback:%s', $filesystem::class),
+                    sprintf(
+                        'Filesystem [%s] is using a legacy operation fallback. Implement `%s::getDiskConfig()` so it can be used as a native Laravel disk.',
+                        $handle,
+                        $filesystem::class,
+                    ),
+                );
+
+                return $this->legacyFilesystemAdapter($filesystem, $config);
+            }
         });
+    }
+
+    private function filesystemWithPrefix(LaravelFilesystemAdapter $disk, array $config): LaravelFilesystemAdapter
+    {
+        $prefix = $config['prefix'] ?? null;
+        if (!is_string($prefix) || $prefix === '') {
+            return $disk;
+        }
+
+        $flysystemAdapter = new PathPrefixedAdapter($disk->getAdapter(), $prefix);
+
+        return new LaravelFilesystemAdapter(
+            new Flysystem($flysystemAdapter, Arr::only($config, [
+                'directory_visibility',
+                'disable_asserts',
+                'retain_visibility',
+                'temporary_url',
+                'url',
+                'visibility',
+            ])),
+            $flysystemAdapter,
+            array_merge($disk->getConfig(), $config),
+        );
+    }
+
+    private function legacyFilesystemAdapter(BaseFsInterface $filesystem, array $config): LaravelFilesystemAdapter
+    {
+        $adapter = new LegacyFsFlysystemAdapter($filesystem);
+        $flysystemAdapter = !empty($config['prefix'])
+            ? new PathPrefixedAdapter($adapter, $config['prefix'])
+            : $adapter;
+
+        return new LaravelFilesystemAdapter(
+            new Flysystem($flysystemAdapter, Arr::only($config, [
+                'directory_visibility',
+                'disable_asserts',
+                'retain_visibility',
+                'temporary_url',
+                'url',
+                'visibility',
+            ])),
+            $flysystemAdapter,
+            $config,
+        );
     }
 
     protected function registerMultiEnvironmentConfigs(): void

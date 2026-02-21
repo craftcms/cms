@@ -22,7 +22,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-abstract class Fs extends Filesystem implements FsInterface
+abstract class Fs extends Filesystem implements BaseFsInterface, FsInterface
 {
     public function getRules(): array
     {
