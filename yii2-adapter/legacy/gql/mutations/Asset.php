@@ -15,7 +15,7 @@ use craft\gql\resolvers\mutations\Asset as AssetResolver;
 use craft\gql\types\generators\AssetType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 

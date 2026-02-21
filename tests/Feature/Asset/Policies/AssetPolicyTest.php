@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use craft\base\Fs;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Policies\AssetPolicy;
 use CraftCms\Cms\User\Elements\User;

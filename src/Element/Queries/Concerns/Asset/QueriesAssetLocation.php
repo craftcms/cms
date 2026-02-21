@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use Craft;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;

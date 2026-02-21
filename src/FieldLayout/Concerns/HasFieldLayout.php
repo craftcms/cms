@@ -22,7 +22,7 @@ trait HasFieldLayout
     /**
      * @var int|string|callable|null The field layout ID, or the name of a method on the owner that will return it, or a callback function that will return it
      */
-    private $fieldLayoutId;
+    private $fieldLayoutIdConfig;
 
     /**
      * @var FieldLayout|null The field layout associated with the owner
@@ -41,27 +41,32 @@ trait HasFieldLayout
      */
     public function getFieldLayoutId(): int
     {
-        if (! isset($this->fieldLayoutId) && ! isset($this->idAttribute)) {
+        if (! isset($this->fieldLayoutIdConfig) && ! isset($this->idAttribute)) {
             $this->idAttribute = 'fieldLayoutId';
         }
 
-        if (is_int($this->fieldLayoutId)) {
-            return $this->fieldLayoutId;
+        if (is_int($this->fieldLayoutIdConfig)) {
+            return $this->fieldLayoutIdConfig;
         }
 
         if (isset($this->idAttribute)) {
-            $id = $this->{$this->idAttribute};
-        } elseif (is_callable($this->fieldLayoutId)) {
-            $id = call_user_func($this->fieldLayoutId);
-        } elseif (is_string($this->fieldLayoutId)) {
-            $id = $this->{$this->fieldLayoutId}();
+            if ($this->canReadFieldLayoutIdAttribute($this->idAttribute)) {
+                $id = $this->{$this->idAttribute};
+            } elseif ($this->idAttribute === 'fieldLayoutId') {
+                // Keep backwards compatibility with providers that don't declare a fieldLayoutId property.
+                $id = $this->fieldLayoutIdConfig;
+            }
+        } elseif (is_callable($this->fieldLayoutIdConfig)) {
+            $id = call_user_func($this->fieldLayoutIdConfig);
+        } elseif (is_string($this->fieldLayoutIdConfig)) {
+            $id = $this->{$this->fieldLayoutIdConfig}();
         }
 
         if (! isset($id) || ! is_numeric($id)) {
             throw new RuntimeException('Unable to determine the field layout ID for '.$this::class.'.');
         }
 
-        return $this->fieldLayoutId = (int) $id;
+        return $this->fieldLayoutIdConfig = (int) $id;
     }
 
     /**
@@ -69,7 +74,20 @@ trait HasFieldLayout
      */
     public function setFieldLayoutId(callable|int|string|null $id): void
     {
-        $this->fieldLayoutId = $id;
+        $this->fieldLayoutIdConfig = $id;
+    }
+
+    private function canReadFieldLayoutIdAttribute(string $attribute): bool
+    {
+        if (property_exists($this, $attribute)) {
+            return true;
+        }
+
+        if (method_exists($this, 'canGetProperty')) {
+            return $this->canGetProperty($attribute);
+        }
+
+        return false;
     }
 
     /**

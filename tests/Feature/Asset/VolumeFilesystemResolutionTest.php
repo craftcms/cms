@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 use craft\base\FsInterface;
 use craft\fs\LaravelDiskFs;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 it('resolves explicit disk targets to Laravel disk wrappers', function () {
     config()->set('filesystems.disks.explicit-disk', [
@@ -171,6 +172,78 @@ it('resolves tempAssetUploadFs for Craft handles and disk targets', function () 
 
     $fsFirstTarget = \Craft::$app->getAssets()->getTempAssetUploadFs();
     expect($fsFirstTarget)->not->toBeInstanceOf(LaravelDiskFs::class);
+});
+
+it('forwards laravel filesystem operations to the resolved disk with volume subpaths', function () {
+    config()->set('filesystems.disks.disk-forwarding', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/volume-disks/disk-forwarding'),
+    ]);
+
+    createVolumeLocalFilesystem('disk-forwarding');
+
+    $volume = new Volume([
+        'name' => 'Forwarding',
+        'handle' => 'forwarding',
+        'fsHandle' => 'disk-forwarding',
+        'subpath' => 'nested',
+    ]);
+
+    expect($volume->put('alpha.txt', 'alpha'))->toBeTrue()
+        ->and($volume->exists('alpha.txt'))->toBeTrue()
+        ->and($volume->get('alpha.txt'))->toBe('alpha');
+
+    expect($volume->copy('alpha.txt', 'copy.txt'))->toBeTrue()
+        ->and($volume->move('copy.txt', 'moved.txt'))->toBeTrue();
+
+    expect($volume->makeDirectory('docs'))->toBeTrue()
+        ->and($volume->put('docs/readme.txt', 'readme'))->toBeTrue();
+
+    expect($volume->files())->toContain('alpha.txt')
+        ->and($volume->files())->toContain('moved.txt')
+        ->and($volume->directories())->toContain('docs')
+        ->and($volume->allFiles())->toContain('docs/readme.txt')
+        ->and($volume->size('alpha.txt'))->toBe(5)
+        ->and($volume->lastModified('alpha.txt'))->toBeInt();
+
+    $disk = Storage::disk('craft-fs-disk-forwarding');
+    expect($disk->exists('nested/alpha.txt'))->toBeTrue()
+        ->and($disk->exists('nested/moved.txt'))->toBeTrue()
+        ->and($disk->exists('nested/docs/readme.txt'))->toBeTrue();
+
+    expect($volume->delete('moved.txt'))->toBeTrue();
+    expect($disk->exists('nested/moved.txt'))->toBeFalse();
+});
+
+it('supports macro-backed legacy methods and property assignment', function () {
+    config()->set('filesystems.disks.macro-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/volume-disks/macro-disk'),
+    ]);
+
+    $volume = new Volume([
+        'name' => 'Macro',
+        'handle' => 'macro',
+        'fs' => 'macro-disk',
+        'transformFs' => 'macro-disk',
+        'subpath' => 'initial',
+    ]);
+
+    expect($volume->getFsHandle(false))->toBe('disk:macro-disk')
+        ->and($volume->getTransformFsHandle(false))->toBe('disk:macro-disk')
+        ->and($volume->getResolvedFsTarget())->toBe('disk:macro-disk')
+        ->and($volume->getSubpath())->toBe('initial/')
+        ->and($volume->getFs())->toBeInstanceOf(LaravelDiskFs::class);
+
+    $volume->fsHandle = 'macro-disk';
+    $volume->transformFsHandle = 'macro-disk';
+    $volume->subpath = 'changed';
+    $volume->transformSubpath = 'transforms';
+
+    expect($volume->getFsHandle(false))->toBe('disk:macro-disk')
+        ->and($volume->getTransformFsHandle(false))->toBe('disk:macro-disk')
+        ->and($volume->getSubpath())->toBe('changed/')
+        ->and($volume->getTransformSubpath())->toBe('transforms/');
 });
 
 function createVolumeLocalFilesystem(string $handle): FsInterface

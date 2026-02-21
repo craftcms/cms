@@ -81,6 +81,7 @@ use craft\web\twig\variables\Cp as CpVariable;
 use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Data\Volume as AssetVolume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
@@ -126,6 +127,7 @@ use CraftCms\Yii2Adapter\Mixins\ElementMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
+use CraftCms\Yii2Adapter\Mixins\VolumeMixin;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Login;
@@ -141,6 +143,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use League\Flysystem\Filesystem as Flysystem;
+use League\Flysystem\PathPrefixing\PathPrefixedAdapter;
 use PDOException;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
@@ -187,9 +190,12 @@ class Yii2ServiceProvider extends ServiceProvider
             }
 
             $adapter = new LegacyFsFlysystemAdapter($filesystem);
+            $flysystemAdapter = !empty($config['prefix'])
+                ? new PathPrefixedAdapter($adapter, $config['prefix'])
+                : $adapter;
 
             return new LaravelFilesystemAdapter(
-                new Flysystem($adapter, Arr::only($config, [
+                new Flysystem($flysystemAdapter, Arr::only($config, [
                     'directory_visibility',
                     'disable_asserts',
                     'retain_visibility',
@@ -197,7 +203,7 @@ class Yii2ServiceProvider extends ServiceProvider
                     'url',
                     'visibility',
                 ])),
-                $adapter,
+                $flysystemAdapter,
                 $config,
             );
         });
@@ -283,6 +289,7 @@ class Yii2ServiceProvider extends ServiceProvider
         FieldLayoutComponent::mixin(new ValidateMixin());
         ElementQuery::mixin(new ElementQueryMixin());
         User::mixin(new UserMixin());
+        AssetVolume::mixin(new VolumeMixin());
         Widget::mixin(new ValidateMixin());
     }
 

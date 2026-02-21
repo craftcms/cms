@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "985bccedd957279a43fc378cde6484a6",
+    "content-hash": "5a9417205e4fc3005da03b4c1bb9bbe1",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -716,7 +716,7 @@
             "dist": {
                 "type": "path",
                 "url": "./yii2-adapter",
-                "reference": "434cc11c1bc28921cfeac5b6731a3a75fc5f7a2c"
+                "reference": "714d12751531688b15a6e7221b1719bb9f1e24b6"
             },
             "require": {
                 "craftcms/cms": "self.version",
@@ -762,6 +762,7 @@
                 "larastan/larastan": "^3.7",
                 "league/factory-muffin": "^3.3.0",
                 "orchestra/testbench": "^10.6",
+                "pestphp/pest": "^4.0",
                 "phpstan/phpstan": "^2.1",
                 "rector/rector": "^2.0",
                 "vlucas/phpdotenv": "^5.4.1",
@@ -2991,6 +2992,52 @@
             ],
             "support": {
                 "source": "https://github.com/thephpleague/flysystem-local/tree/3.31.0"
+            },
+            "time": "2026-01-23T15:30:45+00:00"
+        },
+        {
+            "name": "league/flysystem-path-prefixing",
+            "version": "3.31.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/thephpleague/flysystem-path-prefixing.git",
+                "reference": "d7f667c2d9d6684b74f30c6ad81ae7a0c23232f3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/thephpleague/flysystem-path-prefixing/zipball/d7f667c2d9d6684b74f30c6ad81ae7a0c23232f3",
+                "reference": "d7f667c2d9d6684b74f30c6ad81ae7a0c23232f3",
+                "shasum": ""
+            },
+            "require": {
+                "league/flysystem": "^3.10.0",
+                "php": "^8.0.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "League\\Flysystem\\PathPrefixing\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Frank de Jonge",
+                    "email": "info@frankdejonge.nl"
+                }
+            ],
+            "description": "Path prefixing filesystem adapter for Flysystem.",
+            "keywords": [
+                "Flysystem",
+                "filesystem",
+                "prefix",
+                "prefixing"
+            ],
+            "support": {
+                "source": "https://github.com/thephpleague/flysystem-path-prefixing/tree/3.31.0"
             },
             "time": "2026-01-23T15:30:45+00:00"
         },
@@ -14665,5 +14712,5 @@
     "platform-overrides": {
         "php": "8.5"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

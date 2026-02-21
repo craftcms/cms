@@ -11,8 +11,8 @@ use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
 use craft\models\AssetIndexingSession;
 use craft\models\FsListing;
-use craft\models\Volume;
 use craft\services\AssetIndexer;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Str;
@@ -42,7 +42,7 @@ trait IndexesAssets
     }
 
     /**
-     * @param  \craft\models\Volume[]  $volumes
+     * @param  \CraftCms\Cms\Asset\Data\Volume[]  $volumes
      */
     protected function indexAssets(Application $craft, array $volumes, string $path = '', int $startAt = 0): void
     {

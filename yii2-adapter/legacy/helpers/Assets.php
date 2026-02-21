@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\BaseFsInterface;
 use craft\base\ElementInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
@@ -18,9 +17,9 @@ use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
-use craft\models\Volume;
 use craft\models\VolumeFolder;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
@@ -30,6 +29,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use Twig\Error\RuntimeError;
@@ -872,16 +872,19 @@ class Assets
     /**
      * Save a file from a filesystem locally.
      *
-     * @param BaseFsInterface $fs
+     * @param LaravelFilesystem|Volume $fs
      * @param string $uriPath
      * @param string $localPath
      * @return int
      * @throws FsException
      * @since 4.0.0
      */
-    public static function downloadFile(BaseFsInterface $fs, string $uriPath, string $localPath): int
+    public static function downloadFile(LaravelFilesystem|Volume $fs, string $uriPath, string $localPath): int
     {
-        $stream = $fs->getFileStream($uriPath);
+        $stream = $fs->readStream($uriPath);
+        if (!is_resource($stream)) {
+            throw new FsException("Unable to open $uriPath.");
+        }
         $outputStream = fopen($localPath, 'wb');
 
         $bytes = stream_copy_to_stream($stream, $outputStream);

@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Cp;
 
 use Craft;
 use craft\helpers\Assets;
-use craft\models\Volume;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\DiskRegistry;
 use CraftCms\Cms\Support\Arr;
