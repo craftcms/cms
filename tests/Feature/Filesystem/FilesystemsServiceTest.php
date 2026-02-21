@@ -8,6 +8,7 @@ use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
 use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
 use CraftCms\Cms\Filesystem\Filesystem;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Filesystem\MissingFs;
 use CraftCms\Cms\Filesystem\Temp;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -54,7 +55,7 @@ it('creates a missing filesystem if type is not recognized', function () {
         'type' => 'some\\missing\\FilesystemType',
     ]);
 
-    expect($filesystem)->toBeInstanceOf(\craft\fs\MissingFs::class)
+    expect($filesystem)->toBeInstanceOf(MissingFs::class)
         ->and($filesystem->expectedType)->toBe('some\\missing\\FilesystemType');
 });
 
