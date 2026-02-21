@@ -193,7 +193,21 @@ class Yii2ServiceProvider extends ServiceProvider
             }
 
             try {
-                $disk = $app->make(FilesystemManager::class)->build($filesystem->getDiskConfig());
+                $diskConfig = $filesystem->getDiskConfig();
+                if (
+                    ($diskConfig['driver'] ?? null) === LegacyFsFlysystemAdapter::DISK_DRIVER &&
+                    ($diskConfig['fsHandle'] ?? null) === $handle
+                ) {
+                    if (!$filesystem instanceof BaseFsInterface) {
+                        throw new InvalidArgumentException(
+                            "Filesystem [$handle] does not provide a usable Laravel disk configuration.",
+                        );
+                    }
+
+                    return $this->legacyFilesystemAdapter($filesystem, array_merge($config, $diskConfig));
+                }
+
+                $disk = $app->make(FilesystemManager::class)->build($diskConfig);
 
                 if (!$disk instanceof LaravelFilesystemAdapter) {
                     throw new InvalidArgumentException("Filesystem [$handle] returned an invalid disk configuration.");
