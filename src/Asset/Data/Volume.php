@@ -385,14 +385,24 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
                 return null;
             }
 
-            return new LaravelDiskFs([
-                'disk' => $diskName,
-                'name' => $diskName,
-                'handle' => self::STORAGE_DISK_PREFIX.$diskName,
-            ]);
+            return $this->diskFilesystem($diskName);
         }
 
         return null;
+    }
+
+    private function diskFilesystem(string $diskName): LaravelDiskFs
+    {
+        $url = config("filesystems.disks.$diskName.url");
+        $url = is_string($url) && $url !== '' ? rtrim($url, '/') : null;
+
+        return new LaravelDiskFs([
+            'disk' => $diskName,
+            'name' => $diskName,
+            'handle' => self::STORAGE_DISK_PREFIX.$diskName,
+            'hasUrls' => $url !== null,
+            'url' => $url,
+        ]);
     }
 
     private function isUnresolvedEnvValue(string $value): bool

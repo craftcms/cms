@@ -990,9 +990,38 @@ class Assets
             return false;
         }
 
-        $handle = Env::parse(Cms::config()->tempAssetUploadFs);
+        $target = self::normalizedTempUploadTarget();
 
-        return $fs->handle === $handle;
+        return $target !== null && $fs->handle === $target;
+    }
+
+    private static function normalizedTempUploadTarget(): ?string
+    {
+        $handle = Env::parse(Cms::config()->tempAssetUploadFs);
+        if (!is_string($handle) || $handle === '') {
+            return null;
+        }
+
+        if (str_starts_with($handle, 'disk:')) {
+            $diskName = substr($handle, strlen('disk:'));
+
+            return $diskName !== '' && self::diskExists($diskName)
+                ? "disk:$diskName"
+                : null;
+        }
+
+        if (Craft::$app->getFs()->getFilesystemByHandle($handle)) {
+            return $handle;
+        }
+
+        return self::diskExists($handle) ? "disk:$handle" : null;
+    }
+
+    private static function diskExists(string $diskName): bool
+    {
+        $diskConfigs = config('filesystems.disks', []);
+
+        return is_array($diskConfigs) && array_key_exists($diskName, $diskConfigs);
     }
 
     /**

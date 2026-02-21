@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use craft\fs\LaravelDiskFs;
+use craft\helpers\Assets as AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -26,6 +27,26 @@ it('resolves explicit disk targets to Laravel disk wrappers', function () {
 
     expect($volume->getFs())->toBeInstanceOf(LaravelDiskFs::class)
         ->and($volume->getFs()->disk)->toBe('explicit-disk');
+});
+
+it('hydrates URL settings on Laravel disk wrappers resolved from volumes', function () {
+    config()->set('filesystems.disks.url-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/volume-disks/url-disk'),
+        'url' => 'https://cdn.example.test/assets/',
+    ]);
+
+    $volume = new Volume([
+        'name' => 'URL Disk',
+        'handle' => 'urlDisk',
+        'fsHandle' => 'disk:url-disk',
+    ]);
+
+    $filesystem = $volume->getFs();
+
+    expect($filesystem)->toBeInstanceOf(LaravelDiskFs::class)
+        ->and($filesystem->hasUrls)->toBeTrue()
+        ->and($filesystem->url)->toBe('https://cdn.example.test/assets');
 });
 
 it('resolves plain values as Craft filesystems first, then Laravel disks', function () {
@@ -160,18 +181,21 @@ it('resolves tempAssetUploadFs for Craft handles and disk targets', function () 
 
     $diskTarget = \Craft::$app->getAssets()->getTempAssetUploadFs();
     expect($diskTarget)->toBeInstanceOf(LaravelDiskFs::class)
-        ->and($diskTarget->disk)->toBe('temp-disk');
+        ->and($diskTarget->disk)->toBe('temp-disk')
+        ->and(AssetsHelper::isTempUploadFs($diskTarget))->toBeTrue();
 
     Cms::config()->tempAssetUploadFs = 'temp-disk';
 
     $plainFallbackTarget = \Craft::$app->getAssets()->getTempAssetUploadFs();
     expect($plainFallbackTarget)->toBeInstanceOf(LaravelDiskFs::class)
-        ->and($plainFallbackTarget->disk)->toBe('temp-disk');
+        ->and($plainFallbackTarget->disk)->toBe('temp-disk')
+        ->and(AssetsHelper::isTempUploadFs($plainFallbackTarget))->toBeTrue();
 
     createVolumeLocalFilesystem('temp-disk');
 
     $fsFirstTarget = \Craft::$app->getAssets()->getTempAssetUploadFs();
-    expect($fsFirstTarget)->not->toBeInstanceOf(LaravelDiskFs::class);
+    expect($fsFirstTarget)->not->toBeInstanceOf(LaravelDiskFs::class)
+        ->and(AssetsHelper::isTempUploadFs($fsFirstTarget))->toBeTrue();
 });
 
 it('applies laravel filesystem operations via sourceDisk() with volume subpaths', function () {
