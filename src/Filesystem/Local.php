@@ -14,16 +14,6 @@ use CraftCms\Cms\Support\Facades\Security;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-/**
- * Local represents a local filesystem.
- *
- * @property-read mixed $settingsHtml
- * @property-read string $rootPath
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 4.0.0
- */
 class Local extends Filesystem implements LocalFsInterface
 {
     public const VISIBILITY_FILE = 'file';
@@ -45,6 +35,18 @@ class Local extends Filesystem implements LocalFsInterface
             self::VISIBILITY_HIDDEN => 0700,
         ],
     ];
+
+    public ?string $settingsHtml {
+        get => $this->getSettingsHtml();
+        set {
+        }
+    }
+
+    public string $rootPath {
+        get => $this->getRootPath();
+        set {
+        }
+    }
 
     #[\Override]
     public static function displayName(): string

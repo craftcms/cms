@@ -15,11 +15,6 @@ use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
 
-/**
- * Provides the base implementation for filesystem components.
- *
- * @property-read null|string $rootUrl
- */
 abstract class Filesystem extends Component implements FsInterface
 {
     use ConfigurableComponent;
@@ -57,6 +52,12 @@ abstract class Filesystem extends Component implements FsInterface
     public ?string $url = null;
 
     public ?string $uid = null;
+
+    public ?string $rootUrl {
+        get => $this->getRootUrl();
+        set {
+        }
+    }
 
     public function __construct(array|object $config = [])
     {

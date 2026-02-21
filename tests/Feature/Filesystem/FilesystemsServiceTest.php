@@ -8,6 +8,7 @@ use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
 use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
 use CraftCms\Cms\Filesystem\Filesystem;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Filesystem\Temp;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Filesystems as FilesystemsFacade;
@@ -30,13 +31,13 @@ it('keeps the legacy base Fs class as a subclass of the new filesystem base', fu
 it('can register extra filesystem types through an event', function () {
     expect($this->service->getAllFilesystemTypes())
         ->toBeInstanceOf(Collection::class)
-        ->not()->toContain(\craft\fs\Temp::class);
+        ->not()->toContain(Temp::class);
 
     Event::listen(RegisterFilesystemTypes::class, function (RegisterFilesystemTypes $event) {
-        $event->types->add(\craft\fs\Temp::class);
+        $event->types->add(Temp::class);
     });
 
-    expect($this->service->getAllFilesystemTypes())->toContain(\craft\fs\Temp::class);
+    expect($this->service->getAllFilesystemTypes())->toContain(Temp::class);
 });
 
 it('returns filesystems as a collection', function () {

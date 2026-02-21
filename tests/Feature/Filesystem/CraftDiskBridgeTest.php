@@ -6,13 +6,13 @@ use craft\base\BaseFsInterface as LegacyBaseFsInterface;
 use craft\events\FsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
-use craft\fs\Temp;
 use craft\services\Fs as LegacyFsService;
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface as NewFsInterface;
 use CraftCms\Cms\Filesystem\Contracts\LocalFsInterface as NewLocalFsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Filesystem\Temp;
 use Illuminate\Support\Facades\Storage;
 use yii\base\Event as YiiEvent;
 
