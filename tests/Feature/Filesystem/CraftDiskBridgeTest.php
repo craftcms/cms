@@ -3,15 +3,21 @@
 declare(strict_types=1);
 
 use craft\base\BaseFsInterface as LegacyBaseFsInterface;
+use craft\base\Fs;
+use craft\base\FsInterface;
+use craft\base\LocalFsInterface;
 use craft\events\FsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\services\Fs as LegacyFsService;
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
+use CraftCms\Cms\Filesystem\Contracts\BaseFsInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface as NewFsInterface;
 use CraftCms\Cms\Filesystem\Contracts\LocalFsInterface as NewLocalFsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
+use CraftCms\Cms\Filesystem\Local;
 use CraftCms\Cms\Filesystem\Temp;
 use Illuminate\Support\Facades\Storage;
 use yii\base\Event as YiiEvent;
@@ -21,9 +27,9 @@ it('registers Craft filesystems as Laravel disks and exposes helper accessors', 
 
     expect(config('filesystems.disks.craft-fs-bridge-helper.driver'))->toBe(LegacyFsFlysystemAdapter::DISK_DRIVER)
         ->and(config('filesystems.disks.craft-fs-bridge-helper.fsHandle'))->toBe('bridge-helper')
-        ->and(\Craft::$app->getFs()->toDiskName('bridge-helper'))->toBe('craft-fs-bridge-helper');
+        ->and(Craft::$app->getFs()->toDiskName('bridge-helper'))->toBe('craft-fs-bridge-helper');
 
-    $disk = \Craft::$app->getFs()->disk('bridge-helper');
+    $disk = Craft::$app->getFs()->disk('bridge-helper');
     expect($disk->put('helper.txt', 'helper'))->toBeTrue();
 
     expect(Storage::disk('craft-fs-bridge-helper')->get('helper.txt'))->toBe('helper');
@@ -38,21 +44,21 @@ it('syncs and purges Craft disk registrations when filesystems are renamed or de
     $filesystem->handle = 'bridge-new';
     $filesystem->name = 'Bridge New';
 
-    expect(\Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
+    expect(Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
 
     expect(config('filesystems.disks.craft-fs-bridge-old'))->toBeNull()
         ->and(config('filesystems.disks.craft-fs-bridge-new.fsHandle'))->toBe('bridge-new');
 
-    expect(fn () => Storage::disk('craft-fs-bridge-old'))->toThrow(\InvalidArgumentException::class);
+    expect(fn () => Storage::disk('craft-fs-bridge-old'))->toThrow(InvalidArgumentException::class);
 
-    expect(\Craft::$app->getFs()->removeFilesystem($filesystem))->toBeTrue();
+    expect(Craft::$app->getFs()->removeFilesystem($filesystem))->toBeTrue();
     expect(config('filesystems.disks.craft-fs-bridge-new'))->toBeNull();
-    expect(fn () => Storage::disk('craft-fs-bridge-new'))->toThrow(\InvalidArgumentException::class);
+    expect(fn () => Storage::disk('craft-fs-bridge-new'))->toThrow(InvalidArgumentException::class);
 });
 
 it('bridges disk operations through Craft handle disks', function () {
     createBridgeLocalFilesystem('bridge-ops');
-    $disk = \Craft::$app->getFs()->disk('bridge-ops');
+    $disk = Craft::$app->getFs()->disk('bridge-ops');
     $bridgeDisk = Storage::disk('craft-fs-bridge-ops');
 
     $disk->put('from-disk.txt', 'from disk');
@@ -73,17 +79,17 @@ it('bridges disk operations through Craft handle disks', function () {
 });
 
 it('keeps legacy filesystem interfaces aliased while decoupling fs and operation contracts', function () {
-    $localInterfaces = class_implements(\CraftCms\Cms\Filesystem\Local::class);
+    $localInterfaces = class_implements(Local::class);
 
-    expect(is_a(\craft\base\FsInterface::class, NewFsInterface::class, true))->toBeTrue()
-        ->and(is_a(\craft\base\LocalFsInterface::class, NewLocalFsInterface::class, true))->toBeTrue()
-        ->and(interface_exists(\CraftCms\Cms\Filesystem\Contracts\BaseFsInterface::class))->toBeFalse()
+    expect(is_a(FsInterface::class, NewFsInterface::class, true))->toBeTrue()
+        ->and(is_a(LocalFsInterface::class, NewLocalFsInterface::class, true))->toBeTrue()
+        ->and(interface_exists(BaseFsInterface::class))->toBeFalse()
         ->and(is_a(NewFsInterface::class, LegacyBaseFsInterface::class, true))->toBeFalse()
-        ->and(is_a(\craft\base\Fs::class, LegacyBaseFsInterface::class, true))->toBeTrue()
+        ->and(is_a(Fs::class, LegacyBaseFsInterface::class, true))->toBeTrue()
         ->and($localInterfaces)->toHaveKey(NewLocalFsInterface::class)
-        ->and($localInterfaces)->not()->toHaveKey(\craft\base\FsInterface::class)
-        ->and($localInterfaces)->not()->toHaveKey(\craft\base\LocalFsInterface::class)
-        ->and(is_a(\craft\fs\Local::class, \CraftCms\Cms\Filesystem\Local::class, true))->toBeTrue();
+        ->and($localInterfaces)->not()->toHaveKey(FsInterface::class)
+        ->and($localInterfaces)->not()->toHaveKey(LocalFsInterface::class)
+        ->and(is_a(\craft\fs\Local::class, Local::class, true))->toBeTrue();
 });
 
 it('provides Laravel disk configuration for built-in filesystem classes', function () {
@@ -94,8 +100,8 @@ it('provides Laravel disk configuration for built-in filesystem classes', functi
         ->toHaveKey('driver', 'local')
         ->toHaveKey('root', $localFilesystem->getRootPath());
 
-    $laravelDiskFs = new \craft\fs\LaravelDiskFs([
-        'disk' => \Craft::$app->getFs()->toDiskName('bridge-config-local'),
+    $laravelDiskFs = new DiskFilesystem([
+        'disk' => Craft::$app->getFs()->toDiskName('bridge-config-local'),
     ]);
 
     expect($laravelDiskFs->getDiskConfig())
@@ -104,7 +110,7 @@ it('provides Laravel disk configuration for built-in filesystem classes', functi
 });
 
 it('provides a default bridge disk config for plugin-style legacy filesystems', function () {
-    $filesystem = \Craft::$app->getFs()->createFilesystem([
+    $filesystem = Craft::$app->getFs()->createFilesystem([
         'type' => BridgePluginFs::class,
         'name' => 'Bridge Plugin',
         'handle' => 'bridge-plugin',
@@ -114,7 +120,7 @@ it('provides a default bridge disk config for plugin-style legacy filesystems', 
         ->toHaveKey('driver', LegacyFsFlysystemAdapter::DISK_DRIVER)
         ->toHaveKey('fsHandle', 'bridge-plugin');
 
-    expect(\Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
+    expect(Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
 
     $disk = Storage::disk('craft-fs-bridge-plugin');
     expect($disk->put('plugin.txt', 'plugin'))->toBeTrue()
@@ -125,7 +131,7 @@ it('falls back to the legacy bridge adapter and records a deprecation when disk 
     Deprecator::$logTarget = 'db';
     DeprecationError::query()->delete();
 
-    $filesystem = \Craft::$app->getFs()->createFilesystem([
+    $filesystem = Craft::$app->getFs()->createFilesystem([
         'type' => BridgeFallbackLocalFs::class,
         'name' => 'Bridge Fallback',
         'handle' => 'bridge-fallback',
@@ -134,7 +140,7 @@ it('falls back to the legacy bridge adapter and records a deprecation when disk 
         ],
     ]);
 
-    expect(\Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
+    expect(Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
 
     $disk = Storage::disk('craft-fs-bridge-fallback');
     expect($disk->put('fallback.txt', 'fallback'))->toBeTrue()
@@ -180,7 +186,7 @@ it('bridges register filesystem types and rename events to legacy listeners', fu
 
 function createBridgeLocalFilesystem(string $handle): NewFsInterface
 {
-    $filesystem = \Craft::$app->getFs()->createFilesystem([
+    $filesystem = Craft::$app->getFs()->createFilesystem([
         'type' => 'craft\\fs\\Local',
         'name' => $handle,
         'handle' => $handle,
@@ -189,22 +195,22 @@ function createBridgeLocalFilesystem(string $handle): NewFsInterface
         ],
     ]);
 
-    expect(\Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
+    expect(Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
 
     return $filesystem;
 }
 
-class BridgeFallbackLocalFs extends \craft\fs\Local implements LegacyBaseFsInterface
+class BridgeFallbackLocalFs extends Local implements LegacyBaseFsInterface
 {
     /**
      * @var array<string,string>
      */
     private static array $contents = [];
 
-    #[\Override]
+    #[Override]
     public function getDiskConfig(): array
     {
-        throw new \RuntimeException('No disk config available.');
+        throw new RuntimeException('No disk config available.');
     }
 
     public function write(string $path, string $contents, array $config = []): void
@@ -217,7 +223,7 @@ class BridgeFallbackLocalFs extends \craft\fs\Local implements LegacyBaseFsInter
         $path = trim($path, '/');
 
         if (! array_key_exists($path, self::$contents)) {
-            throw new \craft\errors\FsObjectNotFoundException("Unable to read file at path: $path");
+            throw new FsObjectNotFoundException("Unable to read file at path: $path");
         }
 
         return self::$contents[$path];
@@ -233,7 +239,7 @@ class BridgeFallbackLocalFs extends \craft\fs\Local implements LegacyBaseFsInter
         unset(self::$contents[self::normalizePath($path)]);
     }
 
-    public function getFileList(string $directory = '', bool $recursive = true): \Generator
+    public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
         $directory = self::normalizePath($directory);
 
@@ -247,7 +253,7 @@ class BridgeFallbackLocalFs extends \craft\fs\Local implements LegacyBaseFsInter
                 $dirname = '';
             }
 
-            yield new \craft\models\FsListing([
+            yield new FsListing([
                 'dirname' => $dirname,
                 'basename' => pathinfo($path, PATHINFO_BASENAME),
                 'type' => 'file',
@@ -272,12 +278,12 @@ class BridgeFallbackLocalFs extends \craft\fs\Local implements LegacyBaseFsInter
     public function writeFileFromStream(string $path, $stream, array $config = []): void
     {
         if (! is_resource($stream)) {
-            throw new \craft\errors\FsException('Invalid stream.');
+            throw new FsException('Invalid stream.');
         }
 
         $contents = stream_get_contents($stream);
         if (! is_string($contents)) {
-            throw new \craft\errors\FsException('Invalid stream contents.');
+            throw new FsException('Invalid stream contents.');
         }
 
         $this->write($path, $contents, $config);
@@ -311,7 +317,7 @@ class BridgeFallbackLocalFs extends \craft\fs\Local implements LegacyBaseFsInter
         $contents = $this->read($uriPath);
         $stream = fopen('php://temp', 'rb+');
         if (! is_resource($stream)) {
-            throw new \craft\errors\FsException('Unable to open stream.');
+            throw new FsException('Unable to open stream.');
         }
 
         fwrite($stream, $contents);
@@ -371,7 +377,7 @@ class BridgeFallbackLocalFs extends \craft\fs\Local implements LegacyBaseFsInter
     }
 }
 
-class BridgePluginFs extends \craft\base\Fs implements LegacyBaseFsInterface
+class BridgePluginFs extends Fs implements LegacyBaseFsInterface
 {
     /**
      * @var array<string,string>
@@ -387,13 +393,13 @@ class BridgePluginFs extends \craft\base\Fs implements LegacyBaseFsInterface
     {
         $path = self::normalizePath($path);
         if (! array_key_exists($path, self::$contents)) {
-            throw new \craft\errors\FsObjectNotFoundException("Unable to read file at path: $path");
+            throw new FsObjectNotFoundException("Unable to read file at path: $path");
         }
 
         return self::$contents[$path];
     }
 
-    public function getFileList(string $directory = '', bool $recursive = true): \Generator
+    public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
         $directory = self::normalizePath($directory);
 
@@ -407,7 +413,7 @@ class BridgePluginFs extends \craft\base\Fs implements LegacyBaseFsInterface
                 $dirname = '';
             }
 
-            yield new \craft\models\FsListing([
+            yield new FsListing([
                 'dirname' => $dirname,
                 'basename' => pathinfo($path, PATHINFO_BASENAME),
                 'type' => 'file',
@@ -432,12 +438,12 @@ class BridgePluginFs extends \craft\base\Fs implements LegacyBaseFsInterface
     public function writeFileFromStream(string $path, $stream, array $config = []): void
     {
         if (! is_resource($stream)) {
-            throw new \craft\errors\FsException('Invalid stream.');
+            throw new FsException('Invalid stream.');
         }
 
         $contents = stream_get_contents($stream);
         if (! is_string($contents)) {
-            throw new \craft\errors\FsException('Invalid stream contents.');
+            throw new FsException('Invalid stream contents.');
         }
 
         $this->write($path, $contents, $config);
@@ -481,7 +487,7 @@ class BridgePluginFs extends \craft\base\Fs implements LegacyBaseFsInterface
         $contents = $this->read($uriPath);
         $stream = fopen('php://temp', 'rb+');
         if (! is_resource($stream)) {
-            throw new \craft\errors\FsException('Unable to open stream.');
+            throw new FsException('Unable to open stream.');
         }
 
         fwrite($stream, $contents);

@@ -27,7 +27,7 @@ use craft\errors\VolumeException;
 use craft\events\AssetPreviewEvent;
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\ReplaceAssetEvent;
-use craft\fs\LaravelDiskFs;
+use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -931,7 +931,7 @@ class Assets extends Component
         if (str_starts_with($handle, 'disk:')) {
             $diskName = substr($handle, strlen('disk:'));
             if ($diskName !== '' && $this->diskExists($diskName)) {
-                return new LaravelDiskFs([
+                return new DiskFileSystem([
                     'disk' => $diskName,
                     'name' => $diskName,
                     'handle' => "disk:$diskName",
@@ -947,7 +947,7 @@ class Assets extends Component
         }
 
         if ($this->diskExists($handle)) {
-            return new LaravelDiskFs([
+            return new DiskFileSystem([
                 'disk' => $handle,
                 'name' => $handle,
                 'handle' => "disk:$handle",

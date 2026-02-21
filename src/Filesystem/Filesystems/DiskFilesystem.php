@@ -1,11 +1,8 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\fs;
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Filesystem\Filesystems;
 
 use craft\base\Fs;
 use craft\errors\FsException;
@@ -17,21 +14,23 @@ use Generator;
 use Illuminate\Filesystem\FilesystemAdapter as LaravelFilesystem;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\StorageAttributes;
+use Override;
 use Throwable;
+
 use function CraftCms\Cms\t;
 
 /**
- * LaravelDiskFs represents a Laravel-configured filesystem disk.
+ * DiskFileSystem represents a Laravel-configured filesystem disk.
  */
-class LaravelDiskFs extends Fs
+class DiskFilesystem extends Fs
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static bool $showHasUrlSetting = false;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static bool $showUrlSetting = false;
 
@@ -41,15 +40,16 @@ class LaravelDiskFs extends Fs
     public ?string $disk = null;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[Override]
     public static function displayName(): string
     {
         return t('Laravel Disk');
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __construct($config = [])
     {
@@ -63,30 +63,32 @@ class LaravelDiskFs extends Fs
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[Override]
     public function getRootUrl(): ?string
     {
-        if (!$this->disk) {
+        if (! $this->disk) {
             return null;
         }
 
         $url = config("filesystems.disks.$this->disk.url");
-        if (!is_string($url) || $url === '') {
+        if (! is_string($url) || $url === '') {
             return null;
         }
 
         return Str::finish($url, '/');
     }
 
+    #[Override]
     public function getDiskConfig(): array
     {
-        if (!$this->disk) {
+        if (! $this->disk) {
             throw new FsException('The Laravel disk name is missing.');
         }
 
         $diskConfig = config("filesystems.disks.$this->disk");
-        if (!is_array($diskConfig)) {
+        if (! is_array($diskConfig)) {
             throw new FsException("Invalid Laravel disk configuration for [$this->disk].");
         }
 
@@ -94,17 +96,19 @@ class LaravelDiskFs extends Fs
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
+    #[Override]
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
         $rules[] = [['disk'], 'required'];
+
         return $rules;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getSettingsHtml(): ?string
     {
@@ -112,14 +116,14 @@ class LaravelDiskFs extends Fs
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
         $this->logLegacyOperationDeprecation(__METHOD__);
 
         foreach ($this->storageDisk()->listContents($directory, $recursive) as $item) {
-            if (!$item instanceof StorageAttributes) {
+            if (! $item instanceof StorageAttributes) {
                 continue;
             }
 
@@ -138,13 +142,13 @@ class LaravelDiskFs extends Fs
                 'basename' => pathinfo($uri, PATHINFO_BASENAME),
                 'type' => $item->isDir() ? 'dir' : 'file',
                 'dateModified' => $item->lastModified(),
-                'fileSize' => !$item->isDir() && method_exists($item, 'fileSize') ? $item->fileSize() : null,
+                'fileSize' => ! $item->isDir() && method_exists($item, 'fileSize') ? $item->fileSize() : null,
             ]);
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFileSize(string $uri): int
     {
@@ -158,7 +162,7 @@ class LaravelDiskFs extends Fs
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDateModified(string $uri): int
     {
@@ -172,19 +176,19 @@ class LaravelDiskFs extends Fs
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function write(string $path, string $contents, array $config = []): void
     {
         $this->logLegacyOperationDeprecation(__METHOD__);
 
-        if (!$this->storageDisk()->put($path, $contents, $config)) {
+        if (! $this->storageDisk()->put($path, $contents, $config)) {
             throw new FsException("Unable to write file at path: $path");
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function read(string $path): string
     {
@@ -204,19 +208,19 @@ class LaravelDiskFs extends Fs
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function writeFileFromStream(string $path, $stream, array $config = []): void
     {
         $this->logLegacyOperationDeprecation(__METHOD__);
 
-        if (!is_resource($stream) || !$this->storageDisk()->writeStream($path, $stream, $config)) {
+        if (! is_resource($stream) || ! $this->storageDisk()->writeStream($path, $stream, $config)) {
             throw new FsException("Unable to write stream to path: $path");
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function fileExists(string $path): bool
     {
@@ -226,7 +230,7 @@ class LaravelDiskFs extends Fs
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function deleteFile(string $path): void
     {
@@ -236,39 +240,38 @@ class LaravelDiskFs extends Fs
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function renameFile(string $path, string $newPath, array $config = []): void
     {
         $this->logLegacyOperationDeprecation(__METHOD__);
 
-        if (!$this->storageDisk()->move($path, $newPath)) {
+        if (! $this->storageDisk()->move($path, $newPath)) {
             throw new FsException("Unable to move $path to $newPath");
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function copyFile(string $path, string $newPath, array $config = []): void
     {
         $this->logLegacyOperationDeprecation(__METHOD__);
 
-        if (!$this->storageDisk()->copy($path, $newPath)) {
+        if (! $this->storageDisk()->copy($path, $newPath)) {
             throw new FsException("Unable to copy $path to $newPath");
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFileStream(string $uriPath)
     {
         $this->logLegacyOperationDeprecation(__METHOD__);
 
         $stream = $this->storageDisk()->readStream($uriPath);
-
-        if (!is_resource($stream)) {
+        if (! is_resource($stream)) {
             throw new FsObjectNotFoundException("Unable to open $uriPath.");
         }
 
@@ -276,7 +279,7 @@ class LaravelDiskFs extends Fs
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function directoryExists(string $path): bool
     {
@@ -286,19 +289,19 @@ class LaravelDiskFs extends Fs
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function createDirectory(string $path, array $config = []): void
     {
         $this->logLegacyOperationDeprecation(__METHOD__);
 
-        if (!$this->storageDisk()->makeDirectory($path)) {
+        if (! $this->storageDisk()->makeDirectory($path)) {
             throw new FsException("Unable to create directory at path: $path");
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function deleteDirectory(string $path): void
     {
@@ -308,14 +311,14 @@ class LaravelDiskFs extends Fs
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function renameDirectory(string $path, string $newName): void
     {
         $this->logLegacyOperationDeprecation(__METHOD__);
 
         $path = trim($path, '/');
-        if ($path === '' || !$this->directoryExists($path)) {
+        if ($path === '' || ! $this->directoryExists($path)) {
             throw new FsObjectNotFoundException("No folder exists at path: $path");
         }
 
@@ -329,30 +332,29 @@ class LaravelDiskFs extends Fs
             $parentPath = '';
         }
 
-        $newPath = ($parentPath !== '' ? "$parentPath/" : '') . $newName;
+        $newPath = ($parentPath !== '' ? "$parentPath/" : '').$newName;
         if ($newPath === $path) {
             return;
         }
 
         $disk = $this->storageDisk();
-
-        if (!$disk->makeDirectory($newPath)) {
+        if (! $disk->makeDirectory($newPath)) {
             throw new FsException("Unable to create directory at path: $newPath");
         }
 
         $directories = $disk->allDirectories($path);
-        usort($directories, fn(string $a, string $b) => substr_count($a, '/') <=> substr_count($b, '/'));
+        usort($directories, fn (string $a, string $b): int => substr_count($a, '/') <=> substr_count($b, '/'));
 
         foreach ($directories as $directory) {
             $targetDirectory = $this->swapDirectoryPrefix($directory, $path, $newPath);
-            if (!$disk->makeDirectory($targetDirectory)) {
+            if (! $disk->makeDirectory($targetDirectory)) {
                 throw new FsException("Unable to create directory at path: $targetDirectory");
             }
         }
 
         foreach ($disk->allFiles($path) as $file) {
             $targetFile = $this->swapDirectoryPrefix($file, $path, $newPath);
-            if (!$disk->move($file, $targetFile)) {
+            if (! $disk->move($file, $targetFile)) {
                 throw new FsException("Unable to move $file to $targetFile");
             }
         }
@@ -362,7 +364,7 @@ class LaravelDiskFs extends Fs
 
     private function storageDisk(): LaravelFilesystem
     {
-        if (!$this->disk) {
+        if (! $this->disk) {
             throw new FsException('The Laravel disk name is missing.');
         }
 
@@ -378,7 +380,7 @@ class LaravelDiskFs extends Fs
         $replacement = trim($replacement, '/');
 
         return preg_replace(
-            '/^' . preg_quote($prefix, '/') . '(?=\/|$)/',
+            '/^'.preg_quote($prefix, '/').'(?=\/|$)/',
             $replacement,
             trim($path, '/'),
             1,

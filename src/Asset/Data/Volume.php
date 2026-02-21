@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Asset\Data;
 use BadMethodCallException;
 use Craft;
 use craft\base\Model;
-use craft\fs\LaravelDiskFs;
 use craft\helpers\UrlHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
@@ -21,6 +20,7 @@ use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\DiskRegistry;
+use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\MissingFs;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Traits\Macroable;
+use Override;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
@@ -101,7 +102,7 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         parent::__construct($config);
     }
 
-    #[\Override]
+    #[Override]
     public function __get($name)
     {
         try {
@@ -121,7 +122,7 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         }
     }
 
-    #[\Override]
+    #[Override]
     public function __set($name, $value): void
     {
         try {
@@ -143,7 +144,7 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         }
     }
 
-    #[\Override]
+    #[Override]
     public function __call($name, $params)
     {
         try {
@@ -153,7 +154,7 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         }
     }
 
-    #[\Override]
+    #[Override]
     public function canGetProperty($name, $checkVars = true, $checkBehaviors = true): bool
     {
         if (parent::canGetProperty($name, $checkVars, $checkBehaviors)) {
@@ -163,7 +164,7 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         return static::hasMacro('get'.ucfirst((string) $name));
     }
 
-    #[\Override]
+    #[Override]
     public function canSetProperty($name, $checkVars = true, $checkBehaviors = true): bool
     {
         if (parent::canSetProperty($name, $checkVars, $checkBehaviors)) {
@@ -173,7 +174,7 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         return static::hasMacro('set'.ucfirst((string) $name));
     }
 
-    #[\Override]
+    #[Override]
     public function attributes(): array
     {
         $attributes = parent::attributes();
@@ -183,7 +184,7 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         return $attributes;
     }
 
-    #[\Override]
+    #[Override]
     public function attributeLabels(): array
     {
         return [
@@ -197,7 +198,7 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         ];
     }
 
-    #[\Override]
+    #[Override]
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -391,12 +392,12 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         return null;
     }
 
-    private function diskFilesystem(string $diskName): LaravelDiskFs
+    private function diskFilesystem(string $diskName): DiskFilesystem
     {
         $url = config("filesystems.disks.$diskName.url");
         $url = is_string($url) && $url !== '' ? rtrim($url, '/') : null;
 
-        return new LaravelDiskFs([
+        return new DiskFilesystem([
             'disk' => $diskName,
             'name' => $diskName,
             'handle' => self::STORAGE_DISK_PREFIX.$diskName,

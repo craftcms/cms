@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use craft\fs\LaravelDiskFs;
 use craft\helpers\Assets as AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -25,7 +25,7 @@ it('resolves explicit disk targets to Laravel disk wrappers', function () {
         'fsHandle' => 'disk:explicit-disk',
     ]);
 
-    expect($volume->getFs())->toBeInstanceOf(LaravelDiskFs::class)
+    expect($volume->getFs())->toBeInstanceOf(DiskFilesystem::class)
         ->and($volume->getFs()->disk)->toBe('explicit-disk');
 });
 
@@ -44,7 +44,7 @@ it('hydrates URL settings on Laravel disk wrappers resolved from volumes', funct
 
     $filesystem = $volume->getFs();
 
-    expect($filesystem)->toBeInstanceOf(LaravelDiskFs::class)
+    expect($filesystem)->toBeInstanceOf(DiskFilesystem::class)
         ->and($filesystem->hasUrls)->toBeTrue()
         ->and($filesystem->url)->toBe('https://cdn.example.test/assets');
 });
@@ -69,7 +69,7 @@ it('resolves plain values as Craft filesystems first, then Laravel disks', funct
 
     expect($craftVolume->getFs())->toBeInstanceOf(FsInterface::class)
         ->and($craftVolume->getFsHandle(false))->toBe('shared-target')
-        ->and($craftVolume->getFs())->not->toBeInstanceOf(LaravelDiskFs::class);
+        ->and($craftVolume->getFs())->not->toBeInstanceOf(DiskFilesystem::class);
 
     $diskVolume = new Volume([
         'name' => 'Disk-backed',
@@ -77,7 +77,7 @@ it('resolves plain values as Craft filesystems first, then Laravel disks', funct
         'fsHandle' => 'manual-only',
     ]);
 
-    expect($diskVolume->getFs())->toBeInstanceOf(LaravelDiskFs::class)
+    expect($diskVolume->getFs())->toBeInstanceOf(DiskFilesystem::class)
         ->and($diskVolume->getFsHandle(false))->toBe('disk:manual-only')
         ->and($diskVolume->getFs()->disk)->toBe('manual-only');
 });
@@ -179,22 +179,22 @@ it('resolves tempAssetUploadFs for Craft handles and disk targets', function () 
 
     Cms::config()->tempAssetUploadFs = 'disk:temp-disk';
 
-    $diskTarget = \Craft::$app->getAssets()->getTempAssetUploadFs();
-    expect($diskTarget)->toBeInstanceOf(LaravelDiskFs::class)
+    $diskTarget = Craft::$app->getAssets()->getTempAssetUploadFs();
+    expect($diskTarget)->toBeInstanceOf(DiskFilesystem::class)
         ->and($diskTarget->disk)->toBe('temp-disk')
         ->and(AssetsHelper::isTempUploadFs($diskTarget))->toBeTrue();
 
     Cms::config()->tempAssetUploadFs = 'temp-disk';
 
-    $plainFallbackTarget = \Craft::$app->getAssets()->getTempAssetUploadFs();
-    expect($plainFallbackTarget)->toBeInstanceOf(LaravelDiskFs::class)
+    $plainFallbackTarget = Craft::$app->getAssets()->getTempAssetUploadFs();
+    expect($plainFallbackTarget)->toBeInstanceOf(DiskFilesystem::class)
         ->and($plainFallbackTarget->disk)->toBe('temp-disk')
         ->and(AssetsHelper::isTempUploadFs($plainFallbackTarget))->toBeTrue();
 
     createVolumeLocalFilesystem('temp-disk');
 
-    $fsFirstTarget = \Craft::$app->getAssets()->getTempAssetUploadFs();
-    expect($fsFirstTarget)->not->toBeInstanceOf(LaravelDiskFs::class)
+    $fsFirstTarget = Craft::$app->getAssets()->getTempAssetUploadFs();
+    expect($fsFirstTarget)->not->toBeInstanceOf(DiskFilesystem::class)
         ->and(AssetsHelper::isTempUploadFs($fsFirstTarget))->toBeTrue();
 });
 
@@ -259,7 +259,7 @@ it('supports macro-backed legacy methods and property assignment', function () {
         ->and($volume->getTransformFsHandle(false))->toBe('disk:macro-disk')
         ->and($volume->getResolvedFsTarget())->toBe('disk:macro-disk')
         ->and($volume->getSubpath())->toBe('initial/')
-        ->and($volume->getFs())->toBeInstanceOf(LaravelDiskFs::class);
+        ->and($volume->getFs())->toBeInstanceOf(DiskFilesystem::class);
 
     $volume->fsHandle = 'macro-disk';
     $volume->transformFsHandle = 'macro-disk';
@@ -274,7 +274,7 @@ it('supports macro-backed legacy methods and property assignment', function () {
 
 function createVolumeLocalFilesystem(string $handle): FsInterface
 {
-    $filesystem = \Craft::$app->getFs()->createFilesystem([
+    $filesystem = Craft::$app->getFs()->createFilesystem([
         'type' => 'craft\\fs\\Local',
         'name' => $handle,
         'handle' => $handle,
@@ -283,7 +283,7 @@ function createVolumeLocalFilesystem(string $handle): FsInterface
         ],
     ]);
 
-    expect(\Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
+    expect(Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
 
     return $filesystem;
 }

@@ -10,7 +10,7 @@
 namespace craft\debug;
 
 use Craft;
-use craft\fs\LaravelDiskFs;
+use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use craft\web\View;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Env;
@@ -80,7 +80,7 @@ class Module extends \yii\debug\Module
         }
 
         if ($this->fs instanceof FsInterface) {
-            if ($this->fs instanceof LaravelDiskFs && is_string($this->fs->disk) && $this->fs->disk !== '') {
+            if ($this->fs instanceof DiskFileSystem && is_string($this->fs->disk) && $this->fs->disk !== '') {
                 return Storage::disk($this->fs->disk);
             }
 
