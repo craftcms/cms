@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use craft\base\FsInterface;
 use craft\fs\LaravelDiskFs;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 

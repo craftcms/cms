@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -8,9 +10,9 @@
 namespace craft\debug;
 
 use Craft;
-use craft\base\FsInterface;
 use craft\fs\LaravelDiskFs;
 use craft\web\View;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
@@ -20,23 +22,22 @@ use yii\base\InvalidConfigException;
  * The Yii Debug Module provides the debug toolbar and debugger
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class Module extends \yii\debug\Module
 {
     /**
      * @var FsInterface|FilesystemAdapter|string|array|null The filesystem or disk config that debug cache files should be stored in.
+     *
      * @since 4.0.0
      */
     public FsInterface|FilesystemAdapter|string|array|null $fs = null;
 
-    /**
-     * @var FilesystemAdapter|null
-     */
     public ?FilesystemAdapter $disk = null;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function bootstrap($app): void
     {
@@ -52,7 +53,7 @@ class Module extends \yii\debug\Module
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function renderToolbar($event): void
     {

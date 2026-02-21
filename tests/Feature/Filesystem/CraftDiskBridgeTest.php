@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use craft\base\BaseFsInterface as LegacyBaseFsInterface;
-use craft\base\FsInterface;
 use craft\events\FsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
@@ -74,11 +73,17 @@ it('bridges disk operations through Craft handle disks', function () {
 });
 
 it('keeps legacy filesystem interfaces aliased while decoupling fs and operation contracts', function () {
+    $localInterfaces = class_implements(\CraftCms\Cms\Filesystem\Local::class);
+
     expect(is_a(\craft\base\FsInterface::class, NewFsInterface::class, true))->toBeTrue()
         ->and(is_a(\craft\base\LocalFsInterface::class, NewLocalFsInterface::class, true))->toBeTrue()
         ->and(interface_exists(\CraftCms\Cms\Filesystem\Contracts\BaseFsInterface::class))->toBeFalse()
         ->and(is_a(NewFsInterface::class, LegacyBaseFsInterface::class, true))->toBeFalse()
-        ->and(is_a(\craft\base\Fs::class, LegacyBaseFsInterface::class, true))->toBeTrue();
+        ->and(is_a(\craft\base\Fs::class, LegacyBaseFsInterface::class, true))->toBeTrue()
+        ->and($localInterfaces)->toHaveKey(NewLocalFsInterface::class)
+        ->and($localInterfaces)->not()->toHaveKey(\craft\base\FsInterface::class)
+        ->and($localInterfaces)->not()->toHaveKey(\craft\base\LocalFsInterface::class)
+        ->and(is_a(\craft\fs\Local::class, \CraftCms\Cms\Filesystem\Local::class, true))->toBeTrue();
 });
 
 it('provides Laravel disk configuration for built-in filesystem classes', function () {
@@ -155,7 +160,7 @@ it('bridges register filesystem types and rename events to legacy listeners', fu
     }
 });
 
-function createBridgeLocalFilesystem(string $handle): FsInterface
+function createBridgeLocalFilesystem(string $handle): NewFsInterface
 {
     $filesystem = \Craft::$app->getFs()->createFilesystem([
         'type' => 'craft\\fs\\Local',
@@ -171,7 +176,7 @@ function createBridgeLocalFilesystem(string $handle): FsInterface
     return $filesystem;
 }
 
-class BridgeFallbackLocalFs extends \craft\fs\Local
+class BridgeFallbackLocalFs extends \craft\fs\Local implements LegacyBaseFsInterface
 {
     /**
      * @var array<string,string>
@@ -184,13 +189,11 @@ class BridgeFallbackLocalFs extends \craft\fs\Local
         throw new \RuntimeException('No disk config available.');
     }
 
-    #[\Override]
     public function write(string $path, string $contents, array $config = []): void
     {
         self::$contents[trim($path, '/')] = $contents;
     }
 
-    #[\Override]
     public function read(string $path): string
     {
         $path = trim($path, '/');
@@ -202,15 +205,150 @@ class BridgeFallbackLocalFs extends \craft\fs\Local
         return self::$contents[$path];
     }
 
-    #[\Override]
     public function fileExists(string $path): bool
     {
         return array_key_exists(trim($path, '/'), self::$contents);
     }
 
-    #[\Override]
     public function deleteFile(string $path): void
     {
-        unset(self::$contents[trim($path, '/')]);
+        unset(self::$contents[self::normalizePath($path)]);
+    }
+
+    public function getFileList(string $directory = '', bool $recursive = true): \Generator
+    {
+        $directory = self::normalizePath($directory);
+
+        foreach (self::$contents as $path => $contents) {
+            if ($directory !== '' && ! str_starts_with("$path/", "$directory/") && $path !== $directory) {
+                continue;
+            }
+
+            $dirname = pathinfo($path, PATHINFO_DIRNAME);
+            if ($dirname === '.') {
+                $dirname = '';
+            }
+
+            yield new \craft\models\FsListing([
+                'dirname' => $dirname,
+                'basename' => pathinfo($path, PATHINFO_BASENAME),
+                'type' => 'file',
+                'dateModified' => time(),
+                'fileSize' => strlen($contents),
+            ]);
+        }
+    }
+
+    public function getFileSize(string $uri): int
+    {
+        return strlen($this->read($uri));
+    }
+
+    public function getDateModified(string $uri): int
+    {
+        $this->read($uri);
+
+        return time();
+    }
+
+    public function writeFileFromStream(string $path, $stream, array $config = []): void
+    {
+        if (! is_resource($stream)) {
+            throw new \craft\errors\FsException('Invalid stream.');
+        }
+
+        $contents = stream_get_contents($stream);
+        if (! is_string($contents)) {
+            throw new \craft\errors\FsException('Invalid stream contents.');
+        }
+
+        $this->write($path, $contents, $config);
+    }
+
+    public function renameFile(string $path, string $newPath, array $config = []): void
+    {
+        $oldPath = self::normalizePath($path);
+        $newPath = self::normalizePath($newPath);
+        if (! array_key_exists($oldPath, self::$contents)) {
+            return;
+        }
+
+        self::$contents[$newPath] = self::$contents[$oldPath];
+        unset(self::$contents[$oldPath]);
+    }
+
+    public function copyFile(string $path, string $newPath, array $config = []): void
+    {
+        $oldPath = self::normalizePath($path);
+        $newPath = self::normalizePath($newPath);
+        if (! array_key_exists($oldPath, self::$contents)) {
+            return;
+        }
+
+        self::$contents[$newPath] = self::$contents[$oldPath];
+    }
+
+    public function getFileStream(string $uriPath)
+    {
+        $contents = $this->read($uriPath);
+        $stream = fopen('php://temp', 'rb+');
+        if (! is_resource($stream)) {
+            throw new \craft\errors\FsException('Unable to open stream.');
+        }
+
+        fwrite($stream, $contents);
+        rewind($stream);
+
+        return $stream;
+    }
+
+    public function directoryExists(string $path): bool
+    {
+        $path = self::normalizePath($path);
+        if ($path === '') {
+            return true;
+        }
+
+        return array_any(array_keys(self::$contents), fn ($filePath) => str_starts_with("$filePath/", "$path/"));
+    }
+
+    public function createDirectory(string $path, array $config = []): void
+    {
+        // Directory operations are virtual in this in-memory fallback.
+    }
+
+    public function deleteDirectory(string $path): void
+    {
+        $path = self::normalizePath($path);
+        foreach (array_keys(self::$contents) as $filePath) {
+            if ($path === '' || str_starts_with("$filePath/", "$path/")) {
+                unset(self::$contents[$filePath]);
+            }
+        }
+    }
+
+    public function renameDirectory(string $path, string $newName): void
+    {
+        $path = self::normalizePath($path);
+        $newName = self::normalizePath($newName);
+        if ($path === '' || $newName === '') {
+            return;
+        }
+
+        foreach (array_keys(self::$contents) as $filePath) {
+            if (! str_starts_with("$filePath/", "$path/")) {
+                continue;
+            }
+
+            $suffix = substr($filePath, strlen($path));
+            $renamedPath = trim("$newName/$suffix", '/');
+            self::$contents[$renamedPath] = self::$contents[$filePath];
+            unset(self::$contents[$filePath]);
+        }
+    }
+
+    private static function normalizePath(string $path): string
+    {
+        return trim(str_replace('\\', '/', $path), '/');
     }
 }

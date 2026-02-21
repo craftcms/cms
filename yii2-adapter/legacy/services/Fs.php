@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -8,9 +10,9 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\FsInterface;
 use craft\events\FsEvent;
 use craft\events\RegisterComponentTypesEvent;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
 use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
 use CraftCms\Cms\Filesystem\Filesystems;
@@ -28,7 +30,9 @@ use yii\base\Component;
  *
  * @property-read FsInterface[] $allFilesystems All filesystems
  * @property-read string[] $allFilesystemTypes All registered filesystem types
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  */
 class Fs extends Component
@@ -63,6 +67,7 @@ class Fs extends Component
      * Returns all registered filesystem types.
      *
      * @return string[]
+     *
      * @phpstan-return class-string<FsInterface>[]
      */
     public function getAllFilesystemTypes(): array
@@ -107,9 +112,10 @@ class Fs extends Component
     /**
      * Creates or updates a filesystem.
      *
-     * @param FsInterface $fs the filesystem to be saved.
-     * @param bool $runValidation Whether the filesystem should be validated
+     * @param  FsInterface  $fs  the filesystem to be saved.
+     * @param  bool  $runValidation  Whether the filesystem should be validated
      * @return bool Whether the filesystem was saved successfully
+     *
      * @throws Throwable
      */
     public function saveFilesystem(FsInterface $fs, bool $runValidation = true): bool
@@ -121,8 +127,11 @@ class Fs extends Component
      * Creates a filesystem from a given config.
      *
      * @template T as FsInterface
-     * @param class-string<T>|array $config The filesystem’s class name, or its config, with a `type` value and optionally a `settings` value
+     *
+     * @param  class-string<T>|array  $config  The filesystem’s class name, or its config, with a `type` value and optionally a `settings` value
+     *
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
+     *
      * @return T The filesystem
      */
     public function createFilesystem(mixed $config): FsInterface
@@ -133,8 +142,8 @@ class Fs extends Component
     /**
      * Removes a filesystem.
      *
-     * @param FsInterface $fs The filesystem to remove
-     * @return bool
+     * @param  FsInterface  $fs  The filesystem to remove
+     *
      * @throws Throwable
      */
     public function removeFilesystem(FsInterface $fs): bool

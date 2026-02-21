@@ -83,25 +83,7 @@ it('dispatches a filesystem renamed event when renaming', function () {
     Event::assertDispatched(fn (\CraftCms\Cms\Filesystem\Events\FilesystemRenamed $event) => $event->filesystem->handle === 'service-rename-new');
 });
 
-it('runs legacy defineRules declarations during validation', function () {
-    $filesystem = new class(['name' => 'Legacy Rules', 'handle' => 'legacyRules', 'path' => sys_get_temp_dir().'/legacy-rules-fs']) extends \craft\fs\Local
-    {
-        public bool $defineRulesCalled = false;
-
-        #[\Override]
-        protected function defineRules(): array
-        {
-            $this->defineRulesCalled = true;
-
-            return parent::defineRules();
-        }
-    };
-
-    expect($filesystem->validate())->toBeTrue()
-        ->and($filesystem->defineRulesCalled)->toBeTrue();
-});
-
-it('still validates local filesystems with legacy defineRules path requirements', function () {
+it('validates local filesystems with laravel path requirements', function () {
     $filesystem = \Craft::$app->getFs()->createFilesystem([
         'type' => \craft\fs\Local::class,
         'name' => 'Missing Path',
@@ -112,20 +94,45 @@ it('still validates local filesystems with legacy defineRules path requirements'
         ->and($filesystem->errors()->get('path'))->not()->toBeEmpty();
 });
 
-it('calls init for legacy filesystem subclasses after construction', function () {
-    $filesystem = new class(['name' => 'Init Hook', 'handle' => 'initHook', 'path' => sys_get_temp_dir().'/init-hook-fs']) extends \craft\fs\Local
-    {
-        public bool $initCalled = false;
+it('rejects local filesystems inside system directories', function () {
+    $filesystem = \Craft::$app->getFs()->createFilesystem([
+        'type' => \craft\fs\Local::class,
+        'name' => 'System Path',
+        'handle' => 'systemPath',
+        'settings' => [
+            'path' => '/',
+        ],
+    ]);
 
-        #[\Override]
-        public function init(): void
-        {
-            $this->initCalled = true;
-            parent::init();
-        }
-    };
+    expect($filesystem->validate())->toBeFalse()
+        ->and($filesystem->errors()->get('path'))->not()->toBeEmpty();
+});
 
-    expect($filesystem->initCalled)->toBeTrue();
+it('applies configured default visibility modes during construction', function () {
+    $generalConfig = \CraftCms\Cms\Cms::config();
+    $previousFileMode = $generalConfig->defaultFileMode;
+    $previousDirMode = $generalConfig->defaultDirMode;
+    $generalConfig->defaultFileMode = 0600;
+    $generalConfig->defaultDirMode = 0700;
+
+    try {
+        $filesystem = new \craft\fs\Local([
+            'name' => 'Visibility Modes',
+            'handle' => 'visibilityModes',
+            'path' => sys_get_temp_dir().'/visibility-modes-fs',
+        ]);
+
+        $diskConfig = $filesystem->getDiskConfig();
+
+        expect($diskConfig)
+            ->toHaveKey('visibility', 'private')
+            ->toHaveKey('directory_visibility', 'private')
+            ->and($diskConfig['permissions']['file']['private'])->toBe(0600)
+            ->and($diskConfig['permissions']['dir']['private'])->toBe(0700);
+    } finally {
+        $generalConfig->defaultFileMode = $previousFileMode;
+        $generalConfig->defaultDirMode = $previousDirMode;
+    }
 });
 
 it('syncs stale craft disk registrations when handling delete config changes', function () {

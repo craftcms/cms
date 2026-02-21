@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -13,7 +15,6 @@ use craft\assetpreviews\Pdf;
 use craft\assetpreviews\Text;
 use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandlerInterface;
-use craft\base\FsInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\AssetQuery;
@@ -41,6 +42,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -55,6 +57,7 @@ use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\db\Expression;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -63,7 +66,9 @@ use function CraftCms\Cms\t;
  * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->getAssets()`]].
  *
  * @property-read VolumeFolder $currentUserTemporaryUploadFolder
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class Assets extends Component
@@ -80,6 +85,7 @@ class Assets extends Component
 
     /**
      * @event DefineAssetThumbUrlEvent The event that is triggered when a thumbnail is being requested for an asset.
+     *
      * @see getThumbUrl()
      * @since 4.0.0
      */
@@ -87,40 +93,41 @@ class Assets extends Component
 
     /**
      * @event AssetPreviewEvent The event that is triggered when determining the preview handler for an asset.
+     *
      * @since 3.4.0
      */
     public const EVENT_REGISTER_PREVIEW_HANDLER = 'registerPreviewHandler';
 
     /**
      * @var array<int,VolumeFolder|null>
+     *
      * @see getFolderById()
      */
     private array $_foldersById = [];
 
     /**
      * @var array<string,VolumeFolder|null>
+     *
      * @see getFolderByUid()
      */
     private array $_foldersByUid = [];
 
     /**
      * @var array<int,VolumeFolder|null>
+     *
      * @see getRootFolderByVolumeId()
      */
     private array $_rootFolders = [];
 
     /**
      * @var VolumeFolder[]
+     *
      * @see getUserTemporaryUploadFolder()
      */
     private array $_userTempFolders = [];
 
     /**
      * Returns a file by its ID.
-     *
-     * @param int $assetId
-     * @param int|null $siteId
-     * @return Asset|null
      */
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
     {
@@ -129,9 +136,6 @@ class Assets extends Component
 
     /**
      * Gets the total number of assets that match a given criteria.
-     *
-     * @param mixed $criteria
-     * @return int
      */
     public function getTotalAssets(mixed $criteria = null): int
     {
@@ -150,10 +154,7 @@ class Assets extends Component
     /**
      * Replace an asset's file.
      *
-     * @param Asset $asset
-     * @param string $pathOnServer
-     * @param string $filename
-     * @param string|null $mimeType The default MIME type to use, if it can’t be determined based on the server path
+     * @param  string|null  $mimeType  The default MIME type to use, if it can’t be determined based on the server path
      */
     public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename, ?string $mimeType = null): void
     {
@@ -188,9 +189,9 @@ class Assets extends Component
     /**
      * Move or rename an asset.
      *
-     * @param Asset $asset The asset whose file should be renamed
-     * @param VolumeFolder $folder The volume folder to move the asset to.
-     * @param string $filename The new filename
+     * @param  Asset  $asset  The asset whose file should be renamed
+     * @param  VolumeFolder  $folder  The volume folder to move the asset to.
+     * @param  string  $filename  The new filename
      * @return bool Whether the asset was renamed successfully
      */
     public function moveAsset(Asset $asset, VolumeFolder $folder, string $filename = ''): bool
@@ -219,7 +220,6 @@ class Assets extends Component
     /**
      * Save a volume folder.
      *
-     * @param VolumeFolder $folder
      * @throws FsObjectExistsException if a folder already exists with such a name
      * @throws FsException if unable to create the directory on volume
      * @throws AssetException if invalid folder provided
@@ -257,9 +257,8 @@ class Assets extends Component
     /**
      * Renames a folder by its ID.
      *
-     * @param int $folderId
-     * @param string $newName
      * @return string The new folder name after cleaning it.
+     *
      * @throws AssetOperationException If the folder to be renamed can't be found or trying to rename the top folder.
      * @throws FsObjectExistsException
      * @throws FsObjectNotFoundException
@@ -314,16 +313,16 @@ class Assets extends Component
     /**
      * Deletes a folder by its ID.
      *
-     * @param int|array $folderIds
-     * @param bool $deleteDir Should the volume directory be deleted along the record, if applicable. Defaults to true.
+     * @param  bool  $deleteDir  Should the volume directory be deleted along the record, if applicable. Defaults to true.
+     *
      * @throws InvalidConfigException if the volume cannot be fetched from folder.
      */
     public function deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true): void
     {
         $allFolderIds = [];
 
-        foreach ((array)$folderIds as $folderId) {
-            $folder = $this->getFolderById((int)$folderId);
+        foreach ((array) $folderIds as $folderId) {
+            $folder = $this->getFolderById((int) $folderId);
             if (!$folder) {
                 continue;
             }
@@ -360,9 +359,8 @@ class Assets extends Component
     /**
      * Returns a list of hierarchical folders for the given volume IDs, indexed by volume ID.
      *
-     * @param array $volumeIds
-     * @param array $additionalCriteria additional criteria for filtering the tree
-     * @return array
+     * @param  array  $additionalCriteria  additional criteria for filtering the tree
+     *
      * @deprecated in 4.4.0
      */
     public function getFolderTreeByVolumeIds(array $volumeIds, array $additionalCriteria = []): array
@@ -398,8 +396,6 @@ class Assets extends Component
     /**
      * Returns the folder tree for assets by a folder ID.
      *
-     * @param int $folderId
-     * @return array
      * @deprecated in 4.4.0
      */
     public function getFolderTreeByFolderId(int $folderId): array
@@ -415,9 +411,6 @@ class Assets extends Component
 
     /**
      * Returns a folder by its ID.
-     *
-     * @param int $folderId
-     * @return VolumeFolder|null
      */
     public function getFolderById(int $folderId): ?VolumeFolder
     {
@@ -434,9 +427,6 @@ class Assets extends Component
 
     /**
      * Returns a folder by its UUID.
-     *
-     * @param string $folderUid
-     * @return VolumeFolder|null
      */
     public function getFolderByUid(string $folderUid): ?VolumeFolder
     {
@@ -454,7 +444,6 @@ class Assets extends Component
     /**
      * Finds folders that match a given criteria.
      *
-     * @param mixed $criteria
      * @return VolumeFolder[]
      */
     public function findFolders(mixed $criteria = []): array
@@ -494,10 +483,8 @@ class Assets extends Component
     /**
      * Returns all of the folders that are descendants of a given folder.
      *
-     * @param VolumeFolder $parentFolder
-     * @param string $orderBy
-     * @param bool $withParent Whether the parent folder should be included in the results
-     * @param bool $asTree Whether the folders should be returned hierarchically
+     * @param  bool  $withParent  Whether the parent folder should be included in the results
+     * @param  bool  $asTree  Whether the folders should be returned hierarchically
      * @return array<int,VolumeFolder> The descendant folders, indexed by their IDs
      */
     public function getAllDescendantFolders(
@@ -543,9 +530,6 @@ class Assets extends Component
 
     /**
      * Finds the first folder that matches a given criteria.
-     *
-     * @param mixed $criteria
-     * @return VolumeFolder|null
      */
     public function findFolder(mixed $criteria = []): ?VolumeFolder
     {
@@ -566,7 +550,7 @@ class Assets extends Component
     /**
      * Returns the root folder for a given volume ID.
      *
-     * @param int $volumeId The volume ID
+     * @param  int  $volumeId  The volume ID
      * @return VolumeFolder|null The root folder in that volume, or null if the volume doesn’t exist
      */
     public function getRootFolderByVolumeId(int $volumeId): ?VolumeFolder
@@ -600,9 +584,6 @@ class Assets extends Component
 
     /**
      * Gets the total number of folders that match a given criteria.
-     *
-     * @param mixed $criteria
-     * @return int
      */
     public function getTotalFolders(mixed $criteria): int
     {
@@ -615,14 +596,14 @@ class Assets extends Component
 
         $this->_applyFolderConditions($query, $criteria);
 
-        return (int)$query->count('[[id]]');
+        return (int) $query->count('[[id]]');
     }
 
     /**
      * Returns whether any folders exist which match a given criteria.
      *
-     * @param mixed $criteria
-     * @return bool
+     * @param  mixed  $criteria
+     *
      * @since 4.4.0
      */
     public function foldersExist($criteria = null): bool
@@ -645,10 +626,10 @@ class Assets extends Component
     /**
      * Returns the URL for an asset, possibly with a given transform applied.
      *
-     * @param Asset $asset
-     * @param ImageTransform|string|array|null $transform
-     * @return string|null
+     * @param  ImageTransform|string|array|null  $transform
+     *
      * @throws InvalidConfigException
+     *
      * @deprecated in 4.0.0. [[Asset::getUrl()]] should be used instead.
      */
     public function getAssetUrl(Asset $asset, mixed $transform = null): ?string
@@ -659,11 +640,10 @@ class Assets extends Component
     /**
      * Returns the control panel thumbnail URL for a given asset.
      *
-     * @param Asset $asset asset to return a thumb for
-     * @param int $width width of the returned thumb
-     * @param int|null $height height of the returned thumb (defaults to $width if null)
-     * @param bool $iconFallback Whether an icon URL fallback should be returned as a fallback
-     * @return string|null
+     * @param  Asset  $asset  asset to return a thumb for
+     * @param  int  $width  width of the returned thumb
+     * @param  int|null  $height  height of the returned thumb (defaults to $width if null)
+     * @param  bool  $iconFallback  Whether an icon URL fallback should be returned as a fallback
      */
     public function getThumbUrl(Asset $asset, int $width, ?int $height = null, $iconFallback = true): ?string
     {
@@ -716,19 +696,16 @@ class Assets extends Component
     /**
      * Returns an image asset’s URL, scaled to fit within a max width and height.
      *
-     * @param Asset $asset
-     * @param int $maxWidth
-     * @param int $maxHeight
-     * @return string
      * @throws NotSupportedException if the asset’s volume doesn’t have a filesystem with public URLs
+     *
      * @since 4.0.0
      */
     public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
     {
         $isWebSafe = Image::isWebSafe($asset->getExtension());
-        $originalWidth = (int)$asset->getWidth();
-        $originalHeight = (int)$asset->getHeight();
-        [$width, $height] = AssetsHelper::scaledDimensions((int)$asset->getWidth(), (int)$asset->getHeight(), $maxWidth, $maxHeight);
+        $originalWidth = (int) $asset->getWidth();
+        $originalHeight = (int) $asset->getHeight();
+        [$width, $height] = AssetsHelper::scaledDimensions((int) $asset->getWidth(), (int) $asset->getHeight(), $maxWidth, $maxHeight);
 
         if (
             !$isWebSafe ||
@@ -759,8 +736,6 @@ class Assets extends Component
      * Returns a generic file extension icon path, that can be used as a fallback
      * for assets that don't have a normal thumbnail.
      *
-     * @param Asset $asset
-     * @return string
      * @deprecated in 4.0.0. [[AssetsHelper::iconSvg()]] or [[Asset::getThumbSvg()]] should be used instead.
      */
     public function getIconPath(Asset $asset): string
@@ -771,9 +746,10 @@ class Assets extends Component
     /**
      * Find a replacement for a filename
      *
-     * @param string $originalFilename the original filename for which to find a replacement.
-     * @param int $folderId The folder in which to find the replacement
+     * @param  string  $originalFilename  the original filename for which to find a replacement.
+     * @param  int  $folderId  The folder in which to find the replacement
      * @return string If a suitable filename replacement cannot be found.
+     *
      * @throws AssetOperationException If a suitable filename replacement cannot be found.
      * @throws InvalidConfigException
      * @throws VolumeException
@@ -801,6 +777,7 @@ class Assets extends Component
             if (strlen($name) > $maxLength) {
                 $name = substr($name, 0, $maxLength);
             }
+
             return $name . $suffix;
         };
 
@@ -863,10 +840,9 @@ class Assets extends Component
     /**
      * Ensures a folder entry exists in the DB for the full path. Depending on the use, it’s also possible to ensure a physical folder exists.
      *
-     * @param string $fullPath The path to ensure the folder exists at.
-     * @param Volume $volume
-     * @param bool $justRecord If set to false, will also make sure the physical folder exists on the volume.
-     * @return VolumeFolder
+     * @param  string  $fullPath  The path to ensure the folder exists at.
+     * @param  bool  $justRecord  If set to false, will also make sure the physical folder exists on the volume.
+     *
      * @throws VolumeException if something went catastrophically wrong creating the folder.
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, Volume $volume, bool $justRecord = true): VolumeFolder
@@ -920,8 +896,6 @@ class Assets extends Component
 
     /**
      * Store a folder by model
-     *
-     * @param VolumeFolder $folder
      */
     public function storeFolderRecord(VolumeFolder $folder): void
     {
@@ -945,7 +919,6 @@ class Assets extends Component
      * Get the Filesystem that should be used for temporary uploads.
      * If one is not specified, use a local folder wrapped in a Temp FS.
      *
-     * @return FsInterface
      * @throws InvalidConfigException
      */
     public function getTempAssetUploadFs(): FsInterface
@@ -1023,14 +996,15 @@ class Assets extends Component
     private function diskExists(string $diskName): bool
     {
         $diskConfigs = config('filesystems.disks', []);
+
         return is_array($diskConfigs) && array_key_exists($diskName, $diskConfigs);
     }
 
     /**
      * Creates an asset query that is configured to return assets in the temporary upload location.
      *
-     * @return AssetQuery
      * @throws InvalidConfigException If the temp volume is invalid
+     *
      * @since 3.7.39
      */
     public function createTempAssetQuery(): AssetQuery
@@ -1047,8 +1021,6 @@ class Assets extends Component
      * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
      * the current session ID.
      *
-     * @param User|null $user
-     * @return VolumeFolder
      * @throws VolumeException
      */
     public function getUserTemporaryUploadFolder(?User $user = null): VolumeFolder
@@ -1065,7 +1037,7 @@ class Assets extends Component
             $folderName = 'user_' . $user->id;
         } elseif (Craft::$app->getRequest()->getIsConsoleRequest()) {
             // For console requests, just make up a folder name.
-            $folderName = 'temp_' . sha1((string)time());
+            $folderName = 'temp_' . sha1((string) time());
         } else {
             // A little obfuscation never hurt anyone
             $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
@@ -1113,8 +1085,6 @@ class Assets extends Component
     /**
      * Returns the asset preview handler for a given asset, or `null` if the asset is not previewable.
      *
-     * @param Asset $asset
-     * @return AssetPreviewHandlerInterface|null
      * @since 3.4.0
      */
     public function getAssetPreviewHandler(Asset $asset): ?AssetPreviewHandlerInterface
@@ -1202,7 +1172,6 @@ class Assets extends Component
     /**
      * Returns a DbCommand object prepped for retrieving assets.
      *
-     * @return Query
      * @since 4.4.0
      */
     public function createFolderQuery(): Query
@@ -1215,7 +1184,7 @@ class Assets extends Component
     /**
      * Arranges the given array of folders hierarchically.
      *
-     * @param VolumeFolder[] $folders
+     * @param  VolumeFolder[]  $folders
      * @return VolumeFolder[]
      */
     private function _getFolderTreeByFolders(array $folders): array
@@ -1243,9 +1212,6 @@ class Assets extends Component
 
     /**
      * Applies WHERE conditions to a DbCommand query for folders.
-     *
-     * @param Query $query
-     * @param FolderCriteria $criteria
      */
     private function _applyFolderConditions(Query $query, FolderCriteria $criteria): void
     {

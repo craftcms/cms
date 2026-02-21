@@ -61,10 +61,7 @@ abstract class Filesystem extends Component implements FsInterface
     public function __construct(array|object $config = [])
     {
         parent::__construct($config);
-        $this->init();
     }
-
-    public function init(): void {}
 
     public function getRootUrl(): ?string
     {

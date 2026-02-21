@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -8,12 +10,13 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\FsInterface;
 use craft\base\Model;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Gate;
 use yii\base\InvalidConfigException;
+
 use function CraftCms\Cms\t;
 
 /**
@@ -22,7 +25,9 @@ use function CraftCms\Cms\t;
  * @property-read Volume $volume
  * @property-read VolumeFolder|null $parent
  * @property VolumeFolder[] $children
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class VolumeFolder extends Model
@@ -58,7 +63,6 @@ class VolumeFolder extends Model
     public ?string $uid = null;
 
     /**
-     * @var FsInterface|null
      * @see getFs()
      * @see setFs()
      */
@@ -69,35 +73,30 @@ class VolumeFolder extends Model
      */
     private ?array $_children = null;
 
-    /**
-     * @var bool
-     */
     private bool $_hasChildren;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'parentId', 'volumeId'], 'number', 'integerOnly' => true];
+
         return $rules;
     }
 
     /**
      * Use the folder name as the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
-        return (string)$this->name ?: static::class;
+        return (string) $this->name ?: static::class;
     }
 
     /**
      * Returns the volume this folder belongs to.
      *
-     * @return \CraftCms\Cms\Asset\Data\Volume
      * @throws InvalidConfigException if [[volumeId]] is invalid
      */
     public function getVolume(): Volume
@@ -116,7 +115,6 @@ class VolumeFolder extends Model
     /**
      * Return the filesystem this folder belongs to.
      *
-     * @return FsInterface
      * @since 5.0.0
      */
     public function getFs(): FsInterface
@@ -127,7 +125,6 @@ class VolumeFolder extends Model
     /**
      * Sets the filesystem this folder belongs to.
      *
-     * @param FsInterface $fs
      * @since 5.0.0
      */
     public function setFs(FsInterface $fs): void
@@ -138,7 +135,6 @@ class VolumeFolder extends Model
     /**
      * Returns info about the folder for an element index’s source path configuration.
      *
-     * @return array|null
      * @since 4.4.0
      */
     public function getSourcePathInfo(): ?array
@@ -155,7 +151,7 @@ class VolumeFolder extends Model
 
         $info = [
             'uri' => sprintf('assets/%s%s', $volume->handle, $this->path ? sprintf('/%s', trim($this->path, '/')) : ''),
-            'folderId' => (int)$this->id,
+            'folderId' => (int) $this->id,
             'hasChildren' => $this->getHasChildren(),
             'canView' => $canView,
             'canCreate' => $canCreate,
@@ -193,7 +189,6 @@ class VolumeFolder extends Model
     /**
      * Returns whether the folder has any child folders.
      *
-     * @return bool
      * @since 4.4.0
      */
     public function getHasChildren(): bool
@@ -212,7 +207,6 @@ class VolumeFolder extends Model
     /**
      * Sets whether the folder has any child folders.
      *
-     * @param bool $value
      * @since 4.4.0
      */
     public function setHasChildren(bool $value)
@@ -223,7 +217,7 @@ class VolumeFolder extends Model
     /**
      * Set the child folders.
      *
-     * @param VolumeFolder[] $children
+     * @param  VolumeFolder[]  $children
      */
     public function setChildren(array $children): void
     {
@@ -240,9 +234,6 @@ class VolumeFolder extends Model
         return $this->_children ?? ($this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]));
     }
 
-    /**
-     * @return VolumeFolder|null
-     */
     public function getParent(): ?VolumeFolder
     {
         if (!$this->parentId) {
@@ -254,8 +245,6 @@ class VolumeFolder extends Model
 
     /**
      * Add a child folder manually.
-     *
-     * @param VolumeFolder $folder
      */
     public function addChild(VolumeFolder $folder): void
     {

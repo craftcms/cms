@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use Craft;
-use craft\fs\Temp;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
-use CraftCms\Cms\Field\Link;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Override;

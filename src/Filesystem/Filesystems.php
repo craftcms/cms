@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Filesystem;
 use Craft;
 use craft\base\MemoizableArray;
 use craft\errors\MissingComponentException;
-use craft\fs\Local;
 use craft\fs\MissingFs;
 use craft\helpers\Component as ComponentHelper;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
