@@ -24,12 +24,11 @@ use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Filesystem\DiskRegistry;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
-use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Traits\ForwardsCalls;
 use Illuminate\Support\Traits\Macroable;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
@@ -38,8 +37,6 @@ use yii\base\UnknownPropertyException;
 use function CraftCms\Cms\t;
 
 /**
- * @mixin \Illuminate\Contracts\Filesystem\Filesystem
- *
  * @property FsInterface $fs
  * @property string $fsHandle
  * @property string $subpath
@@ -47,7 +44,6 @@ use function CraftCms\Cms\t;
  */
 class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
 {
-    use ForwardsCalls;
     use HasFieldLayout;
     use Macroable {
         __call as macroCall;
@@ -153,26 +149,8 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         try {
             return $this->macroCall($name, $params);
         } catch (BadMethodCallException) {
-            try {
-                return parent::__call($name, $params);
-            } catch (BadMethodCallException) {
-                return $this->forwardFilesystemCall((string) $name, $params);
-            }
+            return parent::__call($name, $params);
         }
-    }
-
-    private function forwardFilesystemCall(string $method, array $params): mixed
-    {
-        if ($method === 'deleteDirectory') {
-            $directory = $params[0] ?? null;
-            if (($directory === null || $directory === '') && $this->diskPrefix() === null) {
-                return false;
-            }
-
-            $params[0] = $directory ?? '';
-        }
-
-        return $this->forwardCallTo($this->storageDisk(), $method, $params);
     }
 
     #[\Override]
@@ -657,9 +635,25 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         $this->_transformSubpath = $subpath ?? '';
     }
 
-    private function diskPrefix(): ?string
+    public function sourceDisk(): FilesystemAdapter
     {
-        $subpath = Env::parse($this->_subpath) ?? '';
+        return $this->storageDiskFor(
+            $this->diskNameForOperations(),
+            $this->diskPrefix(),
+        );
+    }
+
+    public function transformDisk(): FilesystemAdapter
+    {
+        return $this->storageDiskFor(
+            $this->diskNameForOperations($this->getTransformFsHandle(false) ?: $this->getFsHandle(false)),
+            $this->diskPrefix($this->_transformSubpath),
+        );
+    }
+
+    private function diskPrefix(?string $subpath = null): ?string
+    {
+        $subpath = Env::parse($subpath ?? $this->_subpath) ?? '';
         $subpath = trim($subpath, '/');
 
         if ($subpath === '') {
@@ -669,9 +663,9 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         return $subpath;
     }
 
-    private function diskNameForOperations(): string
+    private function diskNameForOperations(?string $handle = null): string
     {
-        $target = $this->resolveStorageTargetKey($this->_fsHandle);
+        $target = $this->resolveStorageTargetKey($handle ?? $this->_fsHandle);
         if ($target === null) {
             throw new InvalidConfigException('Volume is missing or has an invalid filesystem handle.');
         }
@@ -692,32 +686,22 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         throw new InvalidConfigException('Volume has an invalid filesystem handle.');
     }
 
-    private function storageDisk(): Filesystem
+    private function storageDiskFor(string $diskName, ?string $prefix): FilesystemAdapter
     {
-        $diskName = $this->diskNameForOperations();
-        $prefix = $this->diskPrefix();
-
         if ($prefix === null) {
             return Storage::disk($diskName);
         }
 
-        return Storage::build([
+        $disk = Storage::build([
             'driver' => 'scoped',
             'disk' => $diskName,
             'prefix' => $prefix,
         ]);
-    }
 
-    private function swapDirectoryPrefix(string $path, string $prefix, string $replacement): string
-    {
-        $prefix = trim($prefix, '/');
-        $replacement = trim($replacement, '/');
+        if (! $disk instanceof FilesystemAdapter) {
+            throw new InvalidConfigException('Invalid filesystem disk configuration.');
+        }
 
-        return preg_replace(
-            '/^'.preg_quote($prefix, '/').'(?=\/|$)/',
-            $replacement,
-            trim($path, '/'),
-            1,
-        ) ?? trim($path, '/');
+        return $disk;
     }
 }

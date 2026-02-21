@@ -467,7 +467,7 @@ class AssetsController extends Controller
                 // - targetFilename - filename of the file we're replacing with,
                 // - replaceFile - the file we're replacing with
                 $volume = $sourceAsset->getVolume();
-                $volume->deleteFile(rtrim($sourceAsset->folderPath, '/') . '/' . $targetFilename);
+                $volume->sourceDisk()->delete(rtrim($sourceAsset->folderPath, '/') . '/' . $targetFilename);
                 $sourceAsset->newFilename = $targetFilename;
                 // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($sourceAsset);
@@ -692,7 +692,7 @@ class AssetsController extends Controller
                 Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
-                $volume->deleteFile(rtrim($folder->path, '/') . '/' . $asset->getFilename());
+                $volume->sourceDisk()->delete(rtrim($folder->path, '/') . '/' . $asset->getFilename());
             }
         }
 
@@ -759,7 +759,7 @@ class AssetsController extends Controller
         ]);
 
         if (!$existingFolder) {
-            $existingFolder = $targetVolume->directoryExists(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+            $existingFolder = $targetVolume->sourceDisk()->directoryExists(trim(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name, '/'));
         }
 
         // If there's a conflict and `force`/`merge` flags weren't passed in, then STOP RIGHT THERE!
@@ -811,7 +811,7 @@ class AssetsController extends Controller
                 }
             } elseif ($force) {
                 // An un-indexed folder is conflicting. If we're forcing things, just remove it.
-                $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+                $targetVolume->sourceDisk()->deleteDirectory(trim(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name, '/'));
             }
 
             // Mirror the structure, passing along the existing folder map

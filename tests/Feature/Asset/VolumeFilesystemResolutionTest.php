@@ -174,7 +174,7 @@ it('resolves tempAssetUploadFs for Craft handles and disk targets', function () 
     expect($fsFirstTarget)->not->toBeInstanceOf(LaravelDiskFs::class);
 });
 
-it('forwards laravel filesystem operations to the resolved disk with volume subpaths', function () {
+it('applies laravel filesystem operations via sourceDisk() with volume subpaths', function () {
     config()->set('filesystems.disks.disk-forwarding', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/volume-disks/disk-forwarding'),
@@ -189,30 +189,32 @@ it('forwards laravel filesystem operations to the resolved disk with volume subp
         'subpath' => 'nested',
     ]);
 
-    expect($volume->put('alpha.txt', 'alpha'))->toBeTrue()
-        ->and($volume->exists('alpha.txt'))->toBeTrue()
-        ->and($volume->get('alpha.txt'))->toBe('alpha');
+    $disk = $volume->sourceDisk();
 
-    expect($volume->copy('alpha.txt', 'copy.txt'))->toBeTrue()
-        ->and($volume->move('copy.txt', 'moved.txt'))->toBeTrue();
+    expect($disk->put('alpha.txt', 'alpha'))->toBeTrue()
+        ->and($disk->exists('alpha.txt'))->toBeTrue()
+        ->and($disk->get('alpha.txt'))->toBe('alpha');
 
-    expect($volume->makeDirectory('docs'))->toBeTrue()
-        ->and($volume->put('docs/readme.txt', 'readme'))->toBeTrue();
+    expect($disk->copy('alpha.txt', 'copy.txt'))->toBeTrue()
+        ->and($disk->move('copy.txt', 'moved.txt'))->toBeTrue();
 
-    expect($volume->files())->toContain('alpha.txt')
-        ->and($volume->files())->toContain('moved.txt')
-        ->and($volume->directories())->toContain('docs')
-        ->and($volume->allFiles())->toContain('docs/readme.txt')
-        ->and($volume->size('alpha.txt'))->toBe(5)
-        ->and($volume->lastModified('alpha.txt'))->toBeInt();
+    expect($disk->makeDirectory('docs'))->toBeTrue()
+        ->and($disk->put('docs/readme.txt', 'readme'))->toBeTrue();
 
-    $disk = Storage::disk('craft-fs-disk-forwarding');
-    expect($disk->exists('nested/alpha.txt'))->toBeTrue()
-        ->and($disk->exists('nested/moved.txt'))->toBeTrue()
-        ->and($disk->exists('nested/docs/readme.txt'))->toBeTrue();
+    expect($disk->files())->toContain('alpha.txt')
+        ->and($disk->files())->toContain('moved.txt')
+        ->and($disk->directories())->toContain('docs')
+        ->and($disk->allFiles())->toContain('docs/readme.txt')
+        ->and($disk->size('alpha.txt'))->toBe(5)
+        ->and($disk->lastModified('alpha.txt'))->toBeInt();
 
-    expect($volume->delete('moved.txt'))->toBeTrue();
-    expect($disk->exists('nested/moved.txt'))->toBeFalse();
+    $storageDisk = Storage::disk('craft-fs-disk-forwarding');
+    expect($storageDisk->exists('nested/alpha.txt'))->toBeTrue()
+        ->and($storageDisk->exists('nested/moved.txt'))->toBeTrue()
+        ->and($storageDisk->exists('nested/docs/readme.txt'))->toBeTrue();
+
+    expect($disk->delete('moved.txt'))->toBeTrue();
+    expect($storageDisk->exists('nested/moved.txt'))->toBeFalse();
 });
 
 it('supports macro-backed legacy methods and property assignment', function () {

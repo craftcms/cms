@@ -28,8 +28,9 @@ final class VolumeMixin
     {
         return function(string $directory = '', bool $recursive = true): Generator {
             $targetDirectory = trim($directory, '/');
+            $disk = $this->sourceDisk();
 
-            foreach ($this->storageDisk()->listContents($targetDirectory, $recursive) as $item) {
+            foreach ($disk->listContents($targetDirectory, $recursive) as $item) {
                 if (!$item instanceof StorageAttributes) {
                     continue;
                 }
@@ -57,18 +58,18 @@ final class VolumeMixin
 
     public function getFileSize(): Closure
     {
-        return fn(string $uri): int => $this->size($uri);
+        return fn(string $uri): int => $this->sourceDisk()->size($uri);
     }
 
     public function getDateModified(): Closure
     {
-        return fn(string $uri): int => $this->lastModified($uri);
+        return fn(string $uri): int => $this->sourceDisk()->lastModified($uri);
     }
 
     public function write(): Closure
     {
         return function(string $path, string $contents, array $config = []): void {
-            if (!$this->put($path, $contents, $config)) {
+            if (!$this->sourceDisk()->put($path, $contents, $config)) {
                 throw new FsException("Unable to write file at path: $path");
             }
         };
@@ -78,7 +79,7 @@ final class VolumeMixin
     {
         return function(string $path): string {
             try {
-                $contents = $this->get($path);
+                $contents = $this->sourceDisk()->get($path);
             } catch (Throwable $e) {
                 throw new FsException($e->getMessage(), previous: $e);
             }
@@ -94,7 +95,7 @@ final class VolumeMixin
     public function writeFileFromStream(): Closure
     {
         return function(string $path, $stream, array $config = []): void {
-            if (!is_resource($stream) || !$this->writeStream($path, $stream, $config)) {
+            if (!is_resource($stream) || !$this->sourceDisk()->writeStream($path, $stream, $config)) {
                 throw new FsException("Unable to write stream to path: $path");
             }
         };
@@ -102,20 +103,20 @@ final class VolumeMixin
 
     public function fileExists(): Closure
     {
-        return fn(string $path): bool => $this->exists($path);
+        return fn(string $path): bool => $this->sourceDisk()->exists($path);
     }
 
     public function deleteFile(): Closure
     {
         return function(string $path): void {
-            $this->delete($path);
+            $this->sourceDisk()->delete($path);
         };
     }
 
     public function renameFile(): Closure
     {
         return function(string $path, string $newPath, array $config = []): void {
-            if (!$this->move($path, $newPath)) {
+            if (!$this->sourceDisk()->move($path, $newPath)) {
                 throw new FsException("Unable to move $path to $newPath");
             }
         };
@@ -124,7 +125,7 @@ final class VolumeMixin
     public function copyFile(): Closure
     {
         return function(string $path, string $newPath, array $config = []): void {
-            if (!$this->copy($path, $newPath)) {
+            if (!$this->sourceDisk()->copy($path, $newPath)) {
                 throw new FsException("Unable to copy $path to $newPath");
             }
         };
@@ -133,7 +134,7 @@ final class VolumeMixin
     public function getFileStream(): Closure
     {
         return function(string $uriPath) {
-            $stream = $this->readStream($uriPath);
+            $stream = $this->sourceDisk()->readStream($uriPath);
 
             if (!is_resource($stream)) {
                 throw new FsObjectNotFoundException("Unable to open $uriPath.");
@@ -145,15 +146,28 @@ final class VolumeMixin
 
     public function directoryExists(): Closure
     {
-        return fn(string $path): bool => $this->storageDisk()->directoryExists(trim($path, '/'));
+        return fn(string $path): bool => $this->sourceDisk()->directoryExists(trim($path, '/'));
     }
 
     public function createDirectory(): Closure
     {
         return function(string $path, array $config = []): void {
-            if (!$this->makeDirectory($path)) {
+            if (!$this->sourceDisk()->makeDirectory($path)) {
                 throw new FsException("Unable to create directory at path: $path");
             }
+        };
+    }
+
+    public function deleteDirectory(): Closure
+    {
+        return function(string $path = ''): bool {
+            $directory = trim($path, '/');
+
+            if ($directory === '' && $this->getSubpath(false) === '') {
+                return false;
+            }
+
+            return $this->sourceDisk()->deleteDirectory($directory);
         };
     }
 
@@ -161,7 +175,9 @@ final class VolumeMixin
     {
         return function(string $path, string $newName): void {
             $sourcePath = trim($path, '/');
-            if ($sourcePath === '' || !$this->storageDisk()->directoryExists($sourcePath)) {
+            $disk = $this->sourceDisk();
+
+            if ($sourcePath === '' || !$disk->directoryExists($sourcePath)) {
                 throw new FsObjectNotFoundException("No folder exists at path: $path");
             }
 
@@ -180,8 +196,6 @@ final class VolumeMixin
                 return;
             }
 
-            $disk = $this->storageDisk();
-
             if (!$disk->makeDirectory($targetPath)) {
                 throw new FsException("Unable to create directory at path: $targetPath");
             }
@@ -190,14 +204,26 @@ final class VolumeMixin
             usort($directories, fn(string $a, string $b) => substr_count($a, '/') <=> substr_count($b, '/'));
 
             foreach ($directories as $directory) {
-                $targetDirectory = $this->swapDirectoryPrefix($directory, $sourcePath, $targetPath);
+                $targetDirectory = preg_replace(
+                    '/^' . preg_quote($sourcePath, '/') . '(?=\/|$)/',
+                    $targetPath,
+                    trim($directory, '/'),
+                    1,
+                ) ?? trim($directory, '/');
+
                 if (!$disk->makeDirectory($targetDirectory)) {
                     throw new FsException("Unable to create directory at path: $targetDirectory");
                 }
             }
 
             foreach ($disk->allFiles($sourcePath) as $file) {
-                $targetFile = $this->swapDirectoryPrefix($file, $sourcePath, $targetPath);
+                $targetFile = preg_replace(
+                    '/^' . preg_quote($sourcePath, '/') . '(?=\/|$)/',
+                    $targetPath,
+                    trim($file, '/'),
+                    1,
+                ) ?? trim($file, '/');
+
                 if (!$disk->move($file, $targetFile)) {
                     throw new FsException("Unable to move $file to $targetFile");
                 }

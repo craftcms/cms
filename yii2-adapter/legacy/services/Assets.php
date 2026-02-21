@@ -45,11 +45,13 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
+use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\db\Expression;
@@ -245,7 +247,9 @@ class Assets extends Component
         $volume = $parent->getVolume();
         $path = rtrim($folder->path, '/');
 
-        $volume->createDirectory($path);
+        if (!$volume->sourceDisk()->makeDirectory($path)) {
+            throw new FsException("Unable to create directory at path: $path");
+        }
 
         $this->storeFolderRecord($folder);
     }
@@ -291,7 +295,7 @@ class Assets extends Component
 
         $volume = $folder->getVolume();
 
-        $volume->renameDirectory(rtrim($folder->path, '/'), $newName);
+        $this->renameDirectoryOnDisk($volume, rtrim($folder->path, '/'), rtrim($newFolderPath, '/'));
         $descendantFolders = $this->getAllDescendantFolders($folder);
 
         foreach ($descendantFolders as $descendantFolder) {
@@ -332,8 +336,8 @@ class Assets extends Component
             if ($folder->path && $deleteDir) {
                 $volume = $folder->getVolume();
                 try {
-                    $volume->deleteDirectory($folder->path);
-                } catch (VolumeException $exception) {
+                    $volume->sourceDisk()->deleteDirectory(trim($folder->path, '/'));
+                } catch (Throwable $exception) {
                     Craft::$app->getErrorHandler()->logException($exception);
                     // Carry on.
                 }
@@ -816,7 +820,7 @@ class Assets extends Component
         }
 
         // Check whether a filename we'd want to use does not exist
-        $canUse = static fn($filenameToTest) => !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
+        $canUse = static fn($filenameToTest) => !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->sourceDisk()->exists($folder->path . $filenameToTest);
 
         if ($canUse($originalFilename)) {
             return $originalFilename;
@@ -900,7 +904,9 @@ class Assets extends Component
 
                 // Ensure a physical folder exists, if needed.
                 if (!$justRecord) {
-                    $volume->createDirectory($path);
+                    if (!$volume->sourceDisk()->makeDirectory($path)) {
+                        throw new FsException("Unable to create directory at path: $path");
+                    }
                 }
 
                 // Set the variables for next iteration.
@@ -973,6 +979,42 @@ class Assets extends Component
                 'name' => $handle,
                 'handle' => "disk:$handle",
             ]);
+        }
+
+        throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
+    }
+
+    /**
+     * Get the Laravel disk that should be used for temporary uploads.
+     *
+     * @throws InvalidConfigException
+     */
+    public function getTempAssetUploadDisk(): FilesystemAdapter
+    {
+        $handle = Env::parse(Cms::config()->tempAssetUploadFs);
+        if (!$handle) {
+            return Storage::build([
+                'driver' => 'local',
+                'root' => Craft::$app->getPath()->getTempAssetUploadsPath(),
+            ]);
+        }
+
+        if (str_starts_with($handle, 'disk:')) {
+            $diskName = substr($handle, strlen('disk:'));
+            if ($diskName !== '' && $this->diskExists($diskName)) {
+                return Storage::disk($diskName);
+            }
+
+            throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
+        }
+
+        $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
+        if ($fs) {
+            return Storage::disk(Craft::$app->getFs()->toDiskName($handle));
+        }
+
+        if ($this->diskExists($handle)) {
+            return Storage::disk($handle);
         }
 
         throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
@@ -1053,15 +1095,13 @@ class Assets extends Component
             $this->storeFolderRecord($folder);
         }
 
-        $fs = $this->getTempAssetUploadFs();
+        $disk = $this->getTempAssetUploadDisk();
 
         try {
-            if ($fs instanceof Temp) {
-                FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
-            } elseif (!$fs->directoryExists($folderName)) {
-                $fs->createDirectory($folderName);
+            if (!$disk->directoryExists($folderName) && !$disk->makeDirectory($folderName)) {
+                throw new VolumeException('Unable to create directory for temporary uploads.');
             }
-        } catch (Exception) {
+        } catch (Throwable) {
             throw new VolumeException('Unable to create directory for temporary uploads.');
         }
 
@@ -1096,6 +1136,67 @@ class Assets extends Component
             Asset::KIND_HTML, Asset::KIND_JAVASCRIPT, Asset::KIND_JSON, Asset::KIND_PHP, Asset::KIND_TEXT, Asset::KIND_XML => new Text($asset),
             default => null,
         };
+    }
+
+    /**
+     * Renames a directory by creating/moving/deleting when a direct directory rename is unavailable.
+     *
+     * @throws FsException
+     * @throws FsObjectNotFoundException
+     */
+    private function renameDirectoryOnDisk(Volume $volume, string $sourcePath, string $targetPath): void
+    {
+        $sourcePath = trim($sourcePath, '/');
+        $targetPath = trim($targetPath, '/');
+
+        $disk = $volume->sourceDisk();
+
+        if ($sourcePath === '' || !$disk->directoryExists($sourcePath)) {
+            throw new FsObjectNotFoundException("No folder exists at path: $sourcePath");
+        }
+
+        if ($targetPath === '') {
+            throw new FsException('New directory name cannot be empty.');
+        }
+
+        if ($targetPath === $sourcePath) {
+            return;
+        }
+
+        if (!$disk->makeDirectory($targetPath)) {
+            throw new FsException("Unable to create directory at path: $targetPath");
+        }
+
+        $directories = $disk->allDirectories($sourcePath);
+        usort($directories, fn(string $a, string $b) => substr_count($a, '/') <=> substr_count($b, '/'));
+
+        foreach ($directories as $directory) {
+            $targetDirectory = preg_replace(
+                '/^' . preg_quote($sourcePath, '/') . '(?=\/|$)/',
+                $targetPath,
+                trim($directory, '/'),
+                1,
+            ) ?? trim($directory, '/');
+
+            if (!$disk->makeDirectory($targetDirectory)) {
+                throw new FsException("Unable to create directory at path: $targetDirectory");
+            }
+        }
+
+        foreach ($disk->allFiles($sourcePath) as $file) {
+            $targetFile = preg_replace(
+                '/^' . preg_quote($sourcePath, '/') . '(?=\/|$)/',
+                $targetPath,
+                trim($file, '/'),
+                1,
+            ) ?? trim($file, '/');
+
+            if (!$disk->move($file, $targetFile)) {
+                throw new FsException("Unable to move $file to $targetFile");
+            }
+        }
+
+        $disk->deleteDirectory($sourcePath);
     }
 
     /**

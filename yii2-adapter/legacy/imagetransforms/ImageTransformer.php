@@ -78,6 +78,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
         $fs = $asset->getVolume()->getTransformFs();
+        $disk = $asset->getVolume()->transformDisk();
         $mimeType = $asset->getMimeType();
         $generalConfig = Cms::config();
 
@@ -98,14 +99,14 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         // If it's a local filesystem, make sure `fileExists` is accurate
         if ($fs instanceof LocalFsInterface) {
-            $fileExists = $fs->fileExists($uri);
+            $fileExists = $disk->exists($uri);
 
             // if the file exists on disk, make sure it's not stale
             if (
                 $fileExists &&
                 !$index->fileExists &&
                 $imageTransform->parameterChangeTime &&
-                $fs->getDateModified($uri) < $imageTransform->parameterChangeTime->getTimestamp()
+                $disk->lastModified($uri) < $imageTransform->parameterChangeTime->getTimestamp()
             ) {
                 $fileExists = false;
             }
@@ -183,7 +184,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             }
         }
 
-        $url = sprintf('%s/%s', rtrim($fs->getRootUrl() ?? '', '/'), $uri);
+        $url = $disk->url($uri);
 
         if (Cms::config()->revAssetUrls) {
             return AssetsHelper::revUrl($url, $asset, $index->dateUpdated);
@@ -225,7 +226,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         }
 
         try {
-            $asset->getVolume()->getTransformFs()->deleteFile($path);
+            $asset->getVolume()->transformDisk()->delete($path);
         } catch (InvalidConfigException|NotSupportedException) {
             // NBD
         }
@@ -383,11 +384,11 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         }
 
         $volume = $asset->getVolume();
-        $transformFs = $volume->getTransformFs();
+        $transformDisk = $volume->transformDisk();
         $transformPath = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $index);
 
-        if ($transformFs->fileExists($transformPath)) {
-            $dateModified = $transformFs->getDateModified($transformPath);
+        if ($transformDisk->exists($transformPath)) {
+            $dateModified = $transformDisk->lastModified($transformPath);
             $parameterChangeTime = $index->getTransform()->parameterChangeTime;
 
             if (!$parameterChangeTime || $parameterChangeTime->getTimestamp() <= $dateModified) {
@@ -396,7 +397,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             }
 
             try {
-                $volume->deleteFile($transformPath);
+                $transformDisk->delete($transformPath);
             } catch (Throwable) {
                 // Unlikely, but if it got deleted while we were comparing timestamps, don't freak out.
             }
@@ -422,8 +423,10 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $stream = fopen($tempPath, 'rb');
 
         try {
-            $transformFs->writeFileFromStream($transformPath, $stream);
-        } catch (FsException $e) {
+            if (!is_resource($stream) || !$transformDisk->writeStream($transformPath, $stream)) {
+                throw new FsException("Unable to write stream to path: $transformPath");
+            }
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
         }
 
@@ -471,7 +474,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $index->filename = $transformFilename;
 
         $matchFound = $this->getSimilarTransformIndex($asset, $index);
-        $fs = $volume->getTransformFs();
+        $disk = $volume->transformDisk();
 
         $target = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $index);
         // If we have a match, copy the file.
@@ -480,19 +483,21 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
             // Sanity check
             try {
-                if ($fs->fileExists($target)) {
+                if ($disk->exists($target)) {
                     return;
                 }
 
-                $fs->copyFile($from, $target);
-            } catch (FsException $exception) {
+                if (!$disk->copy($from, $target)) {
+                    throw new FsException("Unable to copy $from to $target");
+                }
+            } catch (Throwable $exception) {
                 throw new ImageTransformException('There was a problem re-using an existing transform.', 0, $exception);
             }
         } else {
             $this->generateTransformedImage($asset, $index);
         }
 
-        if (!$fs->fileExists($target)) {
+        if (!$disk->exists($target)) {
             throw new ImageTransformException('There was a problem generating the image transform.');
         }
     }

@@ -2347,7 +2347,7 @@ JS, [
     {
         $tempFilename = FileHelper::uniqueName($this->_filename);
         $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
-        Assets::downloadFile($this->getVolume(), $this->getPath(), $tempPath);
+        Assets::downloadFile($this->getVolume()->sourceDisk(), $this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -2362,7 +2362,13 @@ JS, [
      */
     public function getStream()
     {
-        return $this->getVolume()->getFileStream($this->getPath());
+        $stream = $this->getVolume()->sourceDisk()->readStream($this->getPath());
+
+        if (! is_resource($stream)) {
+            throw new FsException("Unable to open {$this->getPath()}.");
+        }
+
+        return $stream;
     }
 
     /**
@@ -3049,7 +3055,7 @@ JS;
     {
         if (! $this->keepFileOnDelete) {
             try {
-                $this->getVolume()->deleteFile($this->getPath());
+                $this->getVolume()->sourceDisk()->delete($this->getPath());
             } catch (InvalidConfigException|NotSupportedException) {
                 // NBD
             }
@@ -3225,7 +3231,9 @@ JS;
 
         // Is this just a simple move/rename within the same volume?
         if (! isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
-            $oldVolume->renameFile($oldPath, $newPath);
+            if (! $oldVolume->sourceDisk()->move($oldPath, $newPath)) {
+                throw new FsException("Unable to move $oldPath to $newPath");
+            }
         } else {
             // Get the temp path
             if (isset($this->tempFilePath)) {
@@ -3242,7 +3250,7 @@ JS;
 
                 $tempFilename = FileHelper::uniqueName($filename);
                 $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
-                Assets::downloadFile($oldVolume, $oldPath, $tempPath);
+                Assets::downloadFile($oldVolume->sourceDisk(), $oldPath, $tempPath);
             }
 
             // Try to open a file stream
@@ -3255,9 +3263,11 @@ JS;
 
             // Upload the file to the new location
             try {
-                $newVolume->writeFileFromStream($newPath, $stream, [
+                if (! $newVolume->sourceDisk()->writeStream($newPath, $stream, [
                     Fs::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
-                ]);
+                ])) {
+                    throw new FsException("Unable to write stream to path: $newPath");
+                }
             } catch (FsException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
                 throw $exception;
@@ -3274,7 +3284,7 @@ JS;
                 ($oldFolder->id !== $newFolder->id || $oldPath !== $newPath)
             ) {
                 // Delete the old file
-                $oldVolume->deleteFile($oldPath);
+                $oldVolume->sourceDisk()->delete($oldPath);
             }
         }
 

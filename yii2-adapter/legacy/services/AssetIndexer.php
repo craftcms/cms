@@ -40,6 +40,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use League\Flysystem\StorageAttributes;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
@@ -69,26 +70,56 @@ class AssetIndexer extends Component
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
     {
         try {
-            $fileList = $volume->getFileList($directory);
+            $fileList = $volume->sourceDisk()->listContents(trim($directory, '/'), true);
         } catch (InvalidConfigException|FsException $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+            return;
+        } catch (Throwable $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             return;
         }
 
         $fsSubpath = $volume->getSubpath();
-        foreach ($fileList as $listing) {
-            $path = $listing->getAdjustedUri($fsSubpath);
-            $segments = preg_split('/\\\\|\//', $path);
-            $lastSegmentIndex = count($segments) - 1;
 
-            foreach ($segments as $i => $segment) {
-                // Ignore if contained in or is a directory beginning with _
-                if (str_starts_with($segment, '_') && ($listing->getIsDir() || $i < $lastSegmentIndex)) {
-                    continue 2;
+        try {
+            foreach ($fileList as $listing) {
+                if (!$listing instanceof StorageAttributes) {
+                    continue;
                 }
-            }
 
-            yield $listing;
+                $uri = trim($listing->path(), '/');
+                if ($uri === '') {
+                    continue;
+                }
+
+                $dirname = pathinfo($uri, PATHINFO_DIRNAME);
+                if ($dirname === '.') {
+                    $dirname = '';
+                }
+
+                $listing = new FsListing([
+                    'dirname' => $dirname,
+                    'basename' => pathinfo($uri, PATHINFO_BASENAME),
+                    'type' => $listing->isDir() ? 'dir' : 'file',
+                    'dateModified' => $listing->lastModified(),
+                    'fileSize' => !$listing->isDir() && method_exists($listing, 'fileSize') ? $listing->fileSize() : null,
+                ]);
+
+                $path = $listing->getAdjustedUri($fsSubpath);
+                $segments = preg_split('/\\\\|\//', $path);
+                $lastSegmentIndex = count($segments) - 1;
+
+                foreach ($segments as $i => $segment) {
+                    // Ignore if contained in or is a directory beginning with _
+                    if (str_starts_with($segment, '_') && ($listing->getIsDir() || $i < $lastSegmentIndex)) {
+                        continue 2;
+                    }
+                }
+
+                yield $listing;
+            }
+        } catch (Throwable $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
         }
     }
 
@@ -625,8 +656,8 @@ class AssetIndexer extends Component
             'dirname' => $dirname,
             'basename' => pathinfo($path, PATHINFO_BASENAME),
             'type' => 'file',
-            'dateModified' => $volume->getDateModified($path),
-            'fileSize' => $volume->getFileSize($path),
+            'dateModified' => $volume->sourceDisk()->lastModified($path),
+            'fileSize' => $volume->sourceDisk()->size($path),
         ]);
 
         return $this->indexFileByListing($volume, $listing, $sessionId, $cacheImages, $createIfMissing);
@@ -867,7 +898,7 @@ class AssetIndexer extends Component
                     // if $dimensions is not an array by now, either smart-guessing failed or the user wants to cache this.
                     if (!is_array($dimensions)) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
-                        AssetsHelper::downloadFile($volume, $indexEntry->uri, $tempPath);
+                        AssetsHelper::downloadFile($volume->sourceDisk(), $indexEntry->uri, $tempPath);
                         $dimensions = Image::imageSize($tempPath);
 
                         // Store the MIME type on the asset so long as we have it downloaded

@@ -30,8 +30,10 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
+use Throwable;
 use Twig\Error\RuntimeError;
 use yii\base\Event;
 use yii\base\Exception;
@@ -106,8 +108,7 @@ class Assets
         $volume = $asset->getVolume();
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
-        $rootUrl = $volume->getRootUrl() ?? '';
-        $url = $rootUrl . $path;
+        $url = $volume->sourceDisk()->url($path);
 
         if (Cms::config()->revAssetUrls) {
             return self::revUrl($url, $asset, $dateUpdated);
@@ -158,26 +159,46 @@ class Assets
     {
         if ($fsOnly) {
             $volume = $asset->getVolume();
-            $fs = $volume->getFs();
-            $fss = [$fs];
-            $transformFs = $volume->getTransformFs();
-            if ($transformFs !== $fs) {
-                $fss[] = $transformFs;
+            $baseUrls = Collection::make();
+
+            if ($volume->getFs()->hasUrls) {
+                $baseUrls->push(self::diskBaseUrl($volume->sourceDisk()));
             }
-            $matchingFs = Collection::make($fss)->contains(function(FsInterface $fs) use ($url): bool {
-                if (!$fs->hasUrls) {
-                    return false;
-                }
-                $baseUrl = $fs->getRootUrl();
-                return $baseUrl !== null && str_starts_with($url, Str::finish($baseUrl, '/'));
-            });
-            if (!$matchingFs) {
+
+            if ($volume->getTransformFs()->hasUrls) {
+                $baseUrls->push(self::diskBaseUrl($volume->transformDisk()));
+            }
+
+            $baseUrls = $baseUrls
+                ->filter()
+                ->unique();
+
+            if (!$baseUrls->contains(fn(string $baseUrl): bool => str_starts_with($url, $baseUrl))) {
                 return $url;
             }
         }
 
         $revParams = static::revParams($asset, $dateUpdated);
         return UrlHelper::urlWithParams($url, $revParams);
+    }
+
+    private static function diskBaseUrl(FilesystemAdapter $disk): ?string
+    {
+        $probePath = '__craft_url_probe__';
+
+        try {
+            $probeUrl = $disk->url($probePath);
+        } catch (Throwable) {
+            return null;
+        }
+
+        foreach ([$probePath, rawurlencode($probePath)] as $suffix) {
+            if (str_ends_with($probeUrl, $suffix)) {
+                return Str::finish(substr($probeUrl, 0, -strlen($suffix)), '/');
+            }
+        }
+
+        return Str::finish($probeUrl, '/');
     }
 
     /**
@@ -872,14 +893,14 @@ class Assets
     /**
      * Save a file from a filesystem locally.
      *
-     * @param LaravelFilesystem|Volume $fs
+     * @param LaravelFilesystem $fs
      * @param string $uriPath
      * @param string $localPath
      * @return int
      * @throws FsException
      * @since 4.0.0
      */
-    public static function downloadFile(LaravelFilesystem|Volume $fs, string $uriPath, string $localPath): int
+    public static function downloadFile(LaravelFilesystem $fs, string $uriPath, string $localPath): int
     {
         $stream = $fs->readStream($uriPath);
         if (!is_resource($stream)) {
