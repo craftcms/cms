@@ -438,9 +438,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     private function diskExists(string $diskName): bool
     {
-        $diskConfigs = config('filesystems.disks', []);
-
-        return is_array($diskConfigs) && array_key_exists($diskName, $diskConfigs);
+        return app(\CraftCms\Cms\Filesystem\Filesystems::class)->diskExists($diskName);
     }
 
     private function isInternalDiskReference(string $value): bool

@@ -41,7 +41,6 @@ use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
@@ -928,33 +927,8 @@ class Assets extends Component
             return new Temp();
         }
 
-        if (str_starts_with($handle, 'disk:')) {
-            $diskName = substr($handle, strlen('disk:'));
-            if ($diskName !== '' && $this->diskExists($diskName)) {
-                return new DiskFileSystem([
-                    'disk' => $diskName,
-                    'name' => $diskName,
-                    'handle' => "disk:$diskName",
-                ]);
-            }
-
-            throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
-        }
-
-        $fs = Filesystems::getFilesystemByHandle($handle);
-        if ($fs) {
-            return $fs;
-        }
-
-        if ($this->diskExists($handle)) {
-            return new DiskFileSystem([
-                'disk' => $handle,
-                'name' => $handle,
-                'handle' => "disk:$handle",
-            ]);
-        }
-
-        throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
+        return Filesystems::resolve($handle)
+            ?? throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
     }
 
     /**
@@ -972,32 +946,10 @@ class Assets extends Component
             ]);
         }
 
-        if (str_starts_with($handle, 'disk:')) {
-            $diskName = substr($handle, strlen('disk:'));
-            if ($diskName !== '' && $this->diskExists($diskName)) {
-                return Storage::disk($diskName);
-            }
-
-            throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
-        }
-
-        $fs = Filesystems::getFilesystemByHandle($handle);
-        if ($fs) {
-            return Storage::disk(Filesystems::toDiskName($handle));
-        }
-
-        if ($this->diskExists($handle)) {
-            return Storage::disk($handle);
-        }
-
-        throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
-    }
-
-    private function diskExists(string $diskName): bool
-    {
-        $diskConfigs = config('filesystems.disks', []);
-
-        return is_array($diskConfigs) && array_key_exists($diskName, $diskConfigs);
+        return Storage::disk(
+            Filesystems::resolveDiskName($handle)
+                ?? throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle")
+        );
     }
 
     /**

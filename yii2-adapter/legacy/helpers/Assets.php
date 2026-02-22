@@ -1003,26 +1003,7 @@ class Assets
             return null;
         }
 
-        if (str_starts_with($handle, 'disk:')) {
-            $diskName = substr($handle, strlen('disk:'));
-
-            return $diskName !== '' && self::diskExists($diskName)
-                ? "disk:$diskName"
-                : null;
-        }
-
-        if (Filesystems::getFilesystemByHandle($handle)) {
-            return $handle;
-        }
-
-        return self::diskExists($handle) ? "disk:$handle" : null;
-    }
-
-    private static function diskExists(string $diskName): bool
-    {
-        $diskConfigs = config('filesystems.disks', []);
-
-        return is_array($diskConfigs) && array_key_exists($diskName, $diskConfigs);
+        return Filesystems::resolve($handle)?->handle;
     }
 
     /**

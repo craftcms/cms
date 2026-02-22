@@ -19,6 +19,9 @@ use Override;
  * @method static bool removeFilesystem(\CraftCms\Cms\Filesystem\Contracts\FsInterface $fs)
  * @method static void handleChangedFilesystem(?\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event = null)
  * @method static void handleDeletedFilesystem(?\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event = null)
+ * @method static bool diskExists(string $diskName)
+ * @method static \CraftCms\Cms\Filesystem\Contracts\FsInterface|null resolve(string $handle)
+ * @method static string|null resolveDiskName(string $handle)
  *
  * @see \CraftCms\Cms\Filesystem\Filesystems
  */

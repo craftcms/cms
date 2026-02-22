@@ -10,6 +10,7 @@ use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
 use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
+use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -219,6 +220,63 @@ final class Filesystems
     public function handleDeletedFilesystem(): void
     {
         $this->reset();
+    }
+
+    public function diskExists(string $diskName): bool
+    {
+        $diskConfigs = config('filesystems.disks', []);
+
+        return is_array($diskConfigs) && array_key_exists($diskName, $diskConfigs);
+    }
+
+    /**
+     * Resolves a handle to a filesystem instance.
+     *
+     * Supports: `disk:diskName`, Craft filesystem handles, plain Laravel disk names.
+     */
+    public function resolve(string $handle): ?FsInterface
+    {
+        if (str_starts_with($handle, 'disk:')) {
+            $diskName = substr($handle, strlen('disk:'));
+            if ($diskName !== '' && $this->diskExists($diskName)) {
+                return new DiskFilesystem(['disk' => $diskName]);
+            }
+
+            return null;
+        }
+
+        $fs = $this->getFilesystemByHandle($handle);
+        if ($fs) {
+            return $fs;
+        }
+
+        if ($this->diskExists($handle)) {
+            return new DiskFilesystem(['disk' => $handle]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Resolves a handle to a Laravel disk name for use with Storage::disk().
+     */
+    public function resolveDiskName(string $handle): ?string
+    {
+        if (str_starts_with($handle, 'disk:')) {
+            $diskName = substr($handle, strlen('disk:'));
+
+            return ($diskName !== '' && $this->diskExists($diskName)) ? $diskName : null;
+        }
+
+        if ($this->getFilesystemByHandle($handle)) {
+            return $this->toDiskName($handle);
+        }
+
+        if ($this->diskExists($handle)) {
+            return $handle;
+        }
+
+        return null;
     }
 
     private function reset(): void
