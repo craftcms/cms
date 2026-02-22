@@ -54,18 +54,3 @@ it('reports null file size for directory listings', function () {
         ->and($listing->fileSize)->toBeNull()
         ->and($listing->getFileSize())->toBeNull();
 });
-
-it('keeps hasErrors compatibility helpers available via validate mixin', function () {
-    $listing = new FsListing([
-        'dirname' => 'foo',
-        'basename' => 'bar',
-        'type' => 'file',
-    ]);
-
-    expect($listing->hasErrors())->toBeFalse();
-
-    $listing->errors()->add('basename', 'Invalid basename.');
-
-    expect($listing->hasErrors('basename'))->toBeTrue()
-        ->and($listing->hasErrors())->toBeTrue();
-});

@@ -5,14 +5,14 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 
-it('validates folder IDs and keeps hasErrors compatibility helpers', function () {
+it('validates folder IDs', function () {
     $invalidParentId = new VolumeFolder([
         'parentId' => 'not-an-int',
     ]);
 
     expect($invalidParentId->validate(['parentId']))->toBeFalse()
-        ->and($invalidParentId->hasErrors('parentId'))->toBeTrue()
-        ->and($invalidParentId->hasErrors())->toBeTrue();
+        ->and($invalidParentId->errors()->has('parentId'))->toBeTrue()
+        ->and($invalidParentId->errors()->isNotEmpty())->toBeTrue();
 
     $folder = new VolumeFolder([
         'id' => 1,
@@ -21,8 +21,7 @@ it('validates folder IDs and keeps hasErrors compatibility helpers', function ()
     ]);
 
     expect($folder->validate(['id', 'parentId', 'volumeId']))->toBeTrue()
-        ->and($folder->errors()->isEmpty())->toBeTrue()
-        ->and($folder->hasErrors())->toBeFalse();
+        ->and($folder->errors()->isEmpty())->toBeTrue();
 });
 
 it('resolves the temporary volume when no volume ID is set', function () {

@@ -81,6 +81,7 @@ use craft\web\twig\variables\Cp as CpVariable;
 use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Data\FolderCriteria as AssetFolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume as AssetVolume;
 use CraftCms\Cms\Asset\Data\VolumeFolder as AssetVolumeFolder;
 use CraftCms\Cms\Cms;
@@ -363,6 +364,7 @@ class Yii2ServiceProvider extends ServiceProvider
         FilesystemComponent::mixin(new ValidateMixin());
         ElementQuery::mixin(new ElementQueryMixin());
         User::mixin(new UserMixin());
+        AssetFolderCriteria::mixin(new ValidateMixin());
         AssetVolume::mixin(new ValidateMixin());
         AssetVolume::mixin(new VolumeMixin());
         AssetVolumeFolder::mixin(new ValidateMixin());
