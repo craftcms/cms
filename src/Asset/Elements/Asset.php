@@ -66,7 +66,6 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\Contracts\LocalFsInterface;
 use CraftCms\Cms\Filesystem\Filesystem;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
@@ -81,6 +80,7 @@ use CraftCms\Cms\Validation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
@@ -2328,10 +2328,9 @@ JS, [
     public function getImageTransformSourcePath(): string
     {
         $volume = $this->getVolume();
-        $fs = $volume->getFs();
 
-        if ($fs instanceof LocalFsInterface) {
-            return FileHelper::normalizePath($fs->getRootPath().DIRECTORY_SEPARATOR.$volume->getSubpath().$this->getPath());
+        if ($volume->sourceDisk() instanceof LocalFilesystemAdapter) {
+            return FileHelper::normalizePath($volume->sourceDisk()->path($this->getPath()));
         }
 
         return Craft::$app->getPath()->getAssetSourcesPath().DIRECTORY_SEPARATOR.$this->id.'.'.$this->getExtension();

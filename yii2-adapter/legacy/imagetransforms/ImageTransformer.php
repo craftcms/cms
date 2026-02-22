@@ -28,13 +28,13 @@ use craft\models\ImageTransformIndex;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Filesystem\Contracts\LocalFsInterface;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -78,7 +78,6 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
-        $fs = $asset->getVolume()->getTransformFs();
         $disk = $asset->getVolume()->transformDisk();
         $mimeType = $asset->getMimeType();
         $generalConfig = Cms::config();
@@ -99,7 +98,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)) . $this->getTransformUri($asset, $index);
 
         // If it's a local filesystem, make sure `fileExists` is accurate
-        if ($fs instanceof LocalFsInterface) {
+        if ($disk instanceof LocalFilesystemAdapter) {
             $fileExists = $disk->exists($uri);
 
             // if the file exists on disk, make sure it's not stale

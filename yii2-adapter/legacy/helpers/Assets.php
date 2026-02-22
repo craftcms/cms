@@ -22,7 +22,6 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\Contracts\LocalFsInterface;
 use CraftCms\Cms\Filesystem\Temp;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
@@ -33,6 +32,7 @@ use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use Throwable;
@@ -788,8 +788,9 @@ class Assets
 
         // For remote files, check if maxCachedImageSizes setting would work for us.
         $maxCachedSize = Cms::config()->maxCachedCloudImageSize;
+        $isLocalFs = $volume->sourceDisk() instanceof LocalFilesystemAdapter;
 
-        if (!$volume->getFs() instanceof LocalFsInterface && $maxCachedSize > $size) {
+        if (!$isLocalFs && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
             $localSource = TransformHelper::getLocalImageSource($asset);
             Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);

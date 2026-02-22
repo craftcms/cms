@@ -21,7 +21,6 @@ it('can get project config routes', function () {
     $this->routes->saveRoute(new Route(
         uriParts: ['foo'],
         template: 'foo',
-        siteUid: null,
     ));
 
     expect($this->routes->getProjectConfigRoutes())->not()->toBeEmpty();
@@ -107,7 +106,6 @@ it('can delete a route by uid', function () {
     $uid = $this->routes->saveRoute(new Route(
         uriParts: ['foo'],
         template: 'foo',
-        siteUid: null,
     ));
 
     expect($this->routes->getProjectConfigRoutes())->not()->toBeEmpty();

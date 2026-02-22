@@ -14,7 +14,6 @@ use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use CraftCms\Cms\Filesystem\Contracts\BaseFsInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface as NewFsInterface;
-use CraftCms\Cms\Filesystem\Contracts\LocalFsInterface as NewLocalFsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Local;
@@ -82,11 +81,10 @@ it('keeps legacy filesystem interfaces aliased while decoupling fs and operation
     $localInterfaces = class_implements(Local::class);
 
     expect(is_a(FsInterface::class, NewFsInterface::class, true))->toBeTrue()
-        ->and(is_a(LocalFsInterface::class, NewLocalFsInterface::class, true))->toBeTrue()
         ->and(interface_exists(BaseFsInterface::class))->toBeFalse()
+        ->and(interface_exists(\CraftCms\Cms\Filesystem\Contracts\LocalFsInterface::class))->toBeFalse()
         ->and(is_a(NewFsInterface::class, LegacyBaseFsInterface::class, true))->toBeFalse()
         ->and(is_a(Fs::class, LegacyBaseFsInterface::class, true))->toBeTrue()
-        ->and($localInterfaces)->toHaveKey(NewLocalFsInterface::class)
         ->and($localInterfaces)->not()->toHaveKey(FsInterface::class)
         ->and($localInterfaces)->not()->toHaveKey(LocalFsInterface::class)
         ->and(is_a(\craft\fs\Local::class, Local::class, true))->toBeTrue();

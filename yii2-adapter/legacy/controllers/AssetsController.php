@@ -36,7 +36,6 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Filesystem\Contracts\LocalFsInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -44,6 +43,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Crypt;
 use Throwable;
 use Twig\Error\LoaderError;
@@ -1348,11 +1348,10 @@ class AssetsController extends Controller
         $useOriginal = $transformString === 'original';
         if ($useOriginal) {
             $volume = $asset->getVolume();
-            $fs = $volume->getFs();
-            if ($fs instanceof LocalFsInterface) {
+            if ($volume->sourceDisk() instanceof LocalFilesystemAdapter) {
                 $path = sprintf(
                     '%s/%s/%s',
-                    rtrim($fs->getRootPath(), '/'),
+                    rtrim($volume->sourceDisk()->path(''), '/'),
                     rtrim($volume->getSubpath(), '/'),
                     $asset->getPath()
                 );

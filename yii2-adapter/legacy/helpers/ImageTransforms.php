@@ -21,10 +21,10 @@ use craft\image\Raster;
 use craft\models\ImageTransform;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Filesystem\Contracts\LocalFsInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Imagine\Image\Format;
@@ -147,7 +147,9 @@ class ImageTransforms
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
         try {
-            if (!$volume->getFs() instanceof LocalFsInterface) {
+            $isLocalFs = $volume->sourceDisk() instanceof LocalFilesystemAdapter;
+
+            if (!$isLocalFs) {
                 // This is a non-local fs
                 if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
                     if (is_file($imageSourcePath)) {

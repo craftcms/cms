@@ -7,14 +7,13 @@ namespace CraftCms\Cms\Filesystem;
 use Closure;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Filesystem\Contracts\LocalFsInterface;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-class Local extends Filesystem implements LocalFsInterface
+class Local extends Filesystem
 {
     public const VISIBILITY_FILE = 'file';
 
@@ -143,7 +142,6 @@ class Local extends Filesystem implements LocalFsInterface
         parent::afterSave($isNew);
     }
 
-    #[\Override]
     public function getRootPath(): string
     {
         $path = FileHelper::normalizePath(Env::parse($this->path) ?? '');

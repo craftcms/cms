@@ -31,7 +31,6 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Filesystem\Contracts\LocalFsInterface;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -39,6 +38,7 @@ use DateTime;
 use Generator;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -812,7 +812,7 @@ class AssetIndexer extends Component
             $volume = $folder->getVolume();
         }
 
-        $fs = $volume->getFs();
+        $isLocalFs = $volume->sourceDisk() instanceof LocalFilesystemAdapter;
 
         $folderId = $folder->id;
 
@@ -842,7 +842,7 @@ class AssetIndexer extends Component
         $asset->setScenario(Asset::SCENARIO_INDEX);
 
         try {
-            if ($fs instanceof LocalFsInterface) {
+            if ($isLocalFs) {
                 // Have the asset store its MIME type, since it will be able to get it from its file info
                 $asset->setMimeType($asset->getMimeType());
             }
@@ -853,7 +853,7 @@ class AssetIndexer extends Component
                 $tempPath = null;
 
                 // For local images it's easy - the image is right there, nothing to cache and the asset ID means nothing.
-                if ($fs instanceof LocalFsInterface) {
+                if ($isLocalFs) {
                     $transformSourcePath = $asset->getImageTransformSourcePath();
                     $dimensions = Image::imageSize($transformSourcePath);
                 } else {
@@ -892,7 +892,7 @@ class AssetIndexer extends Component
                 Craft::$app->getElements()->saveElement($asset);
 
                 // Now we definitely have an asset ID, so let's cover one last base.
-                $shouldCache = !$fs instanceof LocalFsInterface && $cacheImages && Cms::config()->maxCachedCloudImageSize > 0;
+                $shouldCache = !$isLocalFs && $cacheImages && Cms::config()->maxCachedCloudImageSize > 0;
 
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();
