@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Data;
 
-use BadMethodCallException;
+use Closure;
 use Craft;
-use craft\base\Model;
 use craft\helpers\UrlHelper;
-use craft\records\Volume as VolumeRecord;
-use craft\validators\HandleValidator;
-use craft\validators\UniqueValidator;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Exceptions\InvalidCallException as ComponentInvalidCallException;
+use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
@@ -24,16 +24,17 @@ use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\MissingFs;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Traits\Macroable;
+use Illuminate\Validation\Rule;
 use Override;
-use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
-use yii\base\UnknownPropertyException;
 
 use function CraftCms\Cms\t;
 
@@ -43,7 +44,7 @@ use function CraftCms\Cms\t;
  * @property string $subpath
  * @property string $transformSubpath
  */
-class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
+class Volume extends Component implements CpEditable, FieldLayoutProviderInterface
 {
     use HasFieldLayout;
     use Macroable {
@@ -77,6 +78,34 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
 
     public ?string $uid = null;
 
+    public ?string $fsHandle {
+        get => $this->getFsHandle();
+        set {
+            $this->setFsHandle($value);
+        }
+    }
+
+    public ?string $transformFsHandle {
+        get => $this->getTransformFsHandle();
+        set {
+            $this->setTransformFsHandle($value);
+        }
+    }
+
+    public ?string $subpath {
+        get => $this->getSubpath();
+        set {
+            $this->setSubpath($value);
+        }
+    }
+
+    public ?string $transformSubpath {
+        get => $this->getTransformSubpath();
+        set {
+            $this->setTransformSubpath($value);
+        }
+    }
+
     private string $_subpath = '';
 
     private string $_transformSubpath = '';
@@ -89,8 +118,12 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
 
     private ?string $_transformFsHandle = null;
 
-    public function __construct($config = [])
+    public function __construct(array|object $config = [])
     {
+        if (is_object($config)) {
+            $config = (array) $config;
+        }
+
         if (isset($config['fs']) && is_string($config['fs'])) {
             $config['fsHandle'] = Arr::pull($config, 'fs');
         }
@@ -107,7 +140,7 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
     {
         try {
             return parent::__get($name);
-        } catch (InvalidCallException|UnknownPropertyException $e) {
+        } catch (ComponentInvalidCallException|UnknownPropertyException $e) {
             $normalizedName = ucfirst((string) $name);
             $getter = 'get'.$normalizedName;
             if (static::hasMacro($getter)) {
@@ -115,7 +148,15 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
             }
 
             if (static::hasMacro('set'.$normalizedName)) {
-                throw new InvalidCallException('Getting write-only property: '.static::class.'::'.$name);
+                throw new ComponentInvalidCallException('Getting write-only property: '.static::class.'::'.$name);
+            }
+
+            if (method_exists($this, $getter)) {
+                return $this->$getter();
+            }
+
+            if (method_exists($this, 'set'.$normalizedName)) {
+                throw new ComponentInvalidCallException('Getting write-only property: '.static::class.'::'.$name);
             }
 
             throw $e;
@@ -127,7 +168,7 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
     {
         try {
             parent::__set($name, $value);
-        } catch (InvalidCallException|UnknownPropertyException $e) {
+        } catch (ComponentInvalidCallException|UnknownPropertyException $e) {
             $normalizedName = ucfirst((string) $name);
             $setter = 'set'.$normalizedName;
             if (static::hasMacro($setter)) {
@@ -137,37 +178,58 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
             }
 
             if (static::hasMacro('get'.$normalizedName)) {
-                throw new InvalidCallException('Setting read-only property: '.static::class.'::'.$name);
+                throw new ComponentInvalidCallException('Setting read-only property: '.static::class.'::'.$name);
+            }
+
+            if (method_exists($this, $setter)) {
+                $this->$setter($value);
+
+                return;
+            }
+
+            if (method_exists($this, 'get'.$normalizedName)) {
+                throw new ComponentInvalidCallException('Setting read-only property: '.static::class.'::'.$name);
             }
 
             throw $e;
         }
     }
 
-    #[Override]
     public function __call($name, $params)
     {
-        try {
-            return $this->macroCall($name, $params);
-        } catch (BadMethodCallException) {
-            return parent::__call($name, $params);
-        }
+        return $this->macroCall($name, $params);
     }
 
-    #[Override]
     public function canGetProperty($name, $checkVars = true, $checkBehaviors = true): bool
     {
-        if (parent::canGetProperty($name, $checkVars, $checkBehaviors)) {
+        if ($checkVars && property_exists($this, (string) $name)) {
+            return true;
+        }
+        if (method_exists($this, 'get'.$name)) {
+            return true;
+        }
+        if (method_exists($this, 'get'.ucfirst((string) $name))) {
+            return true;
+        }
+        if (static::hasMacro('get'.$name)) {
             return true;
         }
 
         return static::hasMacro('get'.ucfirst((string) $name));
     }
 
-    #[Override]
     public function canSetProperty($name, $checkVars = true, $checkBehaviors = true): bool
     {
-        if (parent::canSetProperty($name, $checkVars, $checkBehaviors)) {
+        if ($checkVars && property_exists($this, (string) $name)) {
+            return true;
+        }
+        if (method_exists($this, 'set'.$name)) {
+            return true;
+        }
+        if (method_exists($this, 'set'.ucfirst((string) $name))) {
+            return true;
+        }
+        if (static::hasMacro('set'.$name)) {
             return true;
         }
 
@@ -177,11 +239,34 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
     #[Override]
     public function attributes(): array
     {
-        $attributes = parent::attributes();
-        $attributes[] = 'subpath';
-        $attributes[] = 'transformSubpath';
+        return array_values(array_unique(array_merge(parent::attributes(), [
+            'fieldLayout',
+            'fsHandle',
+            'subpath',
+            'transformFsHandle',
+            'transformSubpath',
+        ])));
+    }
 
-        return $attributes;
+    #[Override]
+    public function getAttributes(): array
+    {
+        $this->name = is_string($this->name) ? trim($this->name) : $this->name;
+        $this->handle = is_string($this->handle) ? trim($this->handle) : $this->handle;
+
+        try {
+            $fieldLayout = $this->getFieldLayout();
+        } catch (\RuntimeException) {
+            $fieldLayout = null;
+        }
+
+        return array_merge(parent::getAttributes(), [
+            'fieldLayout' => $fieldLayout,
+            'fsHandle' => $this->getFsHandle(false),
+            'subpath' => $this->getSubpath(ensureTrailing: false, parse: false),
+            'transformFsHandle' => $this->getTransformFsHandle(false),
+            'transformSubpath' => $this->getTransformSubpath(ensureTrailing: false, parse: false),
+        ]);
     }
 
     #[Override]
@@ -198,71 +283,103 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         ];
     }
 
-    #[Override]
-    protected function defineRules(): array
+    public function getAttributeLabel(string $attribute): string
     {
-        $rules = parent::defineRules();
-        $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
-        $rules[] = [['name', 'handle'], 'trim'];
-        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class];
-        $rules[] = [['name', 'handle'], 'required'];
-        $rules[] = [
-            ['handle'],
-            HandleValidator::class,
-            'reservedWords' => [
-                'dateCreated',
-                'dateUpdated',
-                'edit',
-                'id',
-                'temp',
-                'title',
-                'uid',
+        return $this->attributeLabels()[$attribute] ?? $attribute;
+    }
+
+    #[Override]
+    public function getRules(): array
+    {
+        $rules = [
+            'id' => ['nullable', 'integer'],
+            'fieldLayoutId' => ['nullable', 'integer'],
+            'name' => [
+                'required',
+                Rule::unique(Table::VOLUMES, 'name')->ignore($this->id)->withoutTrashed('dateDeleted'),
+            ],
+            'handle' => [
+                'required',
+                new HandleRule(reservedWords: [
+                    'dateCreated',
+                    'dateUpdated',
+                    'edit',
+                    'id',
+                    'temp',
+                    'title',
+                    'uid',
+                ]),
+                Rule::unique(Table::VOLUMES, 'handle')->ignore($this->id)->withoutTrashed('dateDeleted'),
+            ],
+            'fieldLayout' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFieldLayout()],
+            'fsHandle' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
+            'transformFsHandle' => ['nullable', fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
+            'subpath' => [
+                Rule::requiredIf(fn () => $this->subpathRequired()),
+                fn (string $attribute, mixed $value, Closure $fail) => $this->validateUniqueSubpath($attribute, $fail),
             ],
         ];
-        $rules[] = [['fieldLayout'], 'validateFieldLayout'];
-        $rules[] = [['fsHandle'], $this->validateFilesystemHandle(...)];
-        $rules[] = [['transformFsHandle'], $this->validateFilesystemHandle(...), 'skipOnEmpty' => true];
-        $rules[] = [['subpath'], $this->validateUniqueSubpath(...), 'skipOnEmpty' => false];
 
         $tempAssetUploadTarget = $this->resolveStorageTargetKey(Cms::config()->tempAssetUploadFs);
         if ($tempAssetUploadTarget !== null) {
-            $rules[] = [
-                ['fsHandle'],
-                fn (string $attribute) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget),
-            ];
-            $rules[] = [
-                ['transformFsHandle'],
-                fn (string $attribute) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget),
-            ];
+            $rules['fsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
+            $rules['transformFsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
         }
 
         return $rules;
     }
 
-    private function validateUniqueSubpath(string $attribute): void
+    #[Override]
+    public function getMessages(): array
     {
-        $storageTarget = $this->resolveStorageTargetKey($this->_fsHandle);
-        if ($storageTarget === null) {
+        return [
+            'subpath.required' => t('A subpath is required for this filesystem.'),
+        ];
+    }
+
+    private function validateUniqueSubpath(string $attribute, ?Closure $fail = null): void
+    {
+        $records = $this->volumesSharingStorageTarget();
+        if ($records->isEmpty()) {
             return;
         }
 
-        $records = VolumeModel::query()
-            ->when($this->id !== null, fn (Builder $query) => $query->whereNot('id', $this->id))
-            ->get()
-            ->filter(fn (VolumeModel $record): bool => $this->resolveStorageTargetKey($record->fs) === $storageTarget);
+        $subpath = $this->getSubpath(ensureTrailing: false, parse: false);
 
-        if ($records->isNotEmpty() && empty($this->$attribute)) {
-            $this->addError($attribute, t('A subpath is required for this filesystem.'));
+        if ($records->isNotEmpty() && $subpath === '') {
+            return;
         }
 
         foreach ($records as $record) {
-            if (strcmp(explode('/', (string) $record->$attribute)[0], explode('/', (string) $this->$attribute)[0]) === 0) {
-                $this->addError($attribute, t('The subpath cannot overlap with any other volumes sharing the same filesystem.'));
+            if (strcmp(explode('/', (string) $record->$attribute)[0], explode('/', $subpath)[0]) === 0) {
+                $this->pushValidationError($attribute, t('The subpath cannot overlap with any other volumes sharing the same filesystem.'), $fail);
             }
         }
     }
 
-    private function validateFilesystemHandle(string $attribute): void
+    private function subpathRequired(): bool
+    {
+        return $this->volumesSharingStorageTarget()->isNotEmpty();
+    }
+
+    /**
+     * @return Collection<int, VolumeModel>
+     */
+    private function volumesSharingStorageTarget(): Collection
+    {
+        $storageTarget = $this->resolveStorageTargetKey($this->_fsHandle);
+        if ($storageTarget === null) {
+            return collect();
+        }
+
+        return VolumeModel::query()
+            ->when($this->id !== null, fn (Builder $query) => $query->whereNot('id', $this->id))
+            ->get()
+            ->filter(fn (VolumeModel $record): bool => $this->resolveStorageTargetKey($record->fs) === $storageTarget)
+            ->values();
+    }
+
+    private function validateFilesystemHandle(string $attribute, ?Closure $fail = null): void
     {
         $handle = match ($attribute) {
             'fsHandle' => $this->_fsHandle,
@@ -272,9 +389,9 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
 
         if ($handle === null || $handle === '') {
             if ($attribute === 'fsHandle') {
-                $this->addError($attribute, t('{attribute} cannot be blank.', [
+                $this->pushValidationError($attribute, t('{attribute} cannot be blank.', [
                     'attribute' => $this->getAttributeLabel($attribute),
-                ]));
+                ]), $fail);
             }
 
             return;
@@ -285,17 +402,17 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         }
 
         if ($this->isInternalDiskReference($handle)) {
-            $this->addError($attribute, t('This disk is reserved for internal use.'));
+            $this->pushValidationError($attribute, t('This disk is reserved for internal use.'), $fail);
 
             return;
         }
 
         if ($this->resolveStorageTargetKey($handle) === null) {
-            $this->addError($attribute, t('This filesystem reference is invalid.'));
+            $this->pushValidationError($attribute, t('This filesystem reference is invalid.'), $fail);
         }
     }
 
-    private function validateReservedTempUploadFilesystem(string $attribute, string $tempUploadTarget): void
+    private function validateReservedTempUploadFilesystem(string $attribute, string $tempUploadTarget, ?Closure $fail = null): void
     {
         $handle = match ($attribute) {
             'fsHandle' => $this->_fsHandle,
@@ -309,11 +426,23 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
 
         $target = $this->resolveStorageTargetKey($handle);
         if ($target !== null && $target === $tempUploadTarget) {
-            $this->addError(
+            $this->pushValidationError(
                 $attribute,
                 t('This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
+                $fail,
             );
         }
+    }
+
+    private function pushValidationError(string $attribute, string $message, ?Closure $fail = null): void
+    {
+        if ($fail !== null) {
+            $fail($message);
+
+            return;
+        }
+
+        $this->errors()->add($attribute, $message);
     }
 
     private function resolveStorageTargetKey(?string $value, bool $parse = true): ?string
@@ -477,7 +606,11 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         ];
 
         if (! $fieldLayout->validate()) {
-            $this->addModelErrors($fieldLayout, 'fieldLayout');
+            foreach ($fieldLayout->errors()->getMessages() as $attribute => $errors) {
+                foreach ($errors as $error) {
+                    $this->errors()->add("fieldLayout.$attribute", $error);
+                }
+            }
         }
     }
 
@@ -527,7 +660,7 @@ class Volume extends Model implements CpEditable, FieldLayoutProviderInterface
         return null;
     }
 
-    public function setFsHandle(string $handle): void
+    public function setFsHandle(?string $handle): void
     {
         $this->_fsHandle = $this->normalizeStorageHandle($handle);
         $this->_fs = null;

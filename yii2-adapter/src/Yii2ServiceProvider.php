@@ -361,6 +361,7 @@ class Yii2ServiceProvider extends ServiceProvider
         FilesystemComponent::mixin(new ValidateMixin());
         ElementQuery::mixin(new ElementQueryMixin());
         User::mixin(new UserMixin());
+        AssetVolume::mixin(new ValidateMixin());
         AssetVolume::mixin(new VolumeMixin());
         Widget::mixin(new ValidateMixin());
     }
