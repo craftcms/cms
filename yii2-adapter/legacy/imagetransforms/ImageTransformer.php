@@ -14,7 +14,6 @@ use craft\base\Component;
 use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageEditorTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
-use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\events\ImageTransformerOperationEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -28,6 +27,7 @@ use craft\models\ImageTransformIndex;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -406,7 +406,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
 
         try {
             if (!is_resource($stream) || !$transformDisk->writeStream($transformPath, $stream)) {
-                throw new FsException("Unable to write stream to path: $transformPath");
+                throw new FilesystemException("Unable to write stream to path: $transformPath");
             }
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
@@ -472,7 +472,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
                 }
 
                 if (!$disk->copy($from, $target)) {
-                    throw new FsException("Unable to copy $from to $target");
+                    throw new FilesystemException("Unable to copy $from to $target");
                 }
             } catch (Throwable $exception) {
                 throw new ImageTransformException('There was a problem re-using an existing transform.', 0, $exception);

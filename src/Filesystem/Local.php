@@ -9,15 +9,16 @@ use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
+use Override;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
 class Local extends Filesystem
 {
-    public const VISIBILITY_FILE = 'file';
+    public const string VISIBILITY_FILE = 'file';
 
-    public const VISIBILITY_DIR = 'dir';
+    public const string VISIBILITY_DIR = 'dir';
 
     /**
      * @var int[][] Visibility map
@@ -47,7 +48,7 @@ class Local extends Filesystem
         }
     }
 
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Local Folder');
@@ -84,7 +85,7 @@ class Local extends Filesystem
         }
     }
 
-    #[\Override]
+    #[Override]
     public function attributeLabels(): array
     {
         return array_merge(parent::attributeLabels(), [
@@ -92,7 +93,7 @@ class Local extends Filesystem
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -108,13 +109,13 @@ class Local extends Filesystem
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): ?string
     {
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): ?string
     {
         return $this->settingsHtml(true);
@@ -128,7 +129,7 @@ class Local extends Filesystem
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function afterSave(bool $isNew): void
     {
         // If the folder doesn't exist yet, create it with a .gitignore file
@@ -150,7 +151,7 @@ class Local extends Filesystem
         return realpath($path) ?: $path;
     }
 
-    #[\Override]
+    #[Override]
     public function getDiskConfig(): array
     {
         $config = [

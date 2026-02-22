@@ -12,6 +12,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -59,11 +60,6 @@ abstract class Filesystem extends Component implements FsInterface
         }
     }
 
-    public function __construct(array|object $config = [])
-    {
-        parent::__construct($config);
-    }
-
     public function getRootUrl(): ?string
     {
         if (! $this->hasUrls) {
@@ -84,7 +80,7 @@ abstract class Filesystem extends Component implements FsInterface
 
     abstract public function getDiskConfig(): array;
 
-    #[\Override]
+    #[Override]
     public function attributeLabels(): array
     {
         return [
@@ -104,7 +100,7 @@ abstract class Filesystem extends Component implements FsInterface
         return static::$showUrlSetting;
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return [

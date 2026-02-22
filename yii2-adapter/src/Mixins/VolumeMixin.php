@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
-use craft\errors\FsException;
 use craft\errors\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Data\FsListing;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystem as FilesystemComponent;
 use CraftCms\Cms\Support\Str;
 use Generator;
@@ -113,7 +113,7 @@ final class VolumeMixin
             try {
                 return $this->sourceDisk()->size($uri);
             } catch (Throwable $e) {
-                throw new FsException($e->getMessage(), previous: $e);
+                throw new FilesystemException($e->getMessage(), previous: $e);
             }
         };
     }
@@ -124,7 +124,7 @@ final class VolumeMixin
             try {
                 return $this->sourceDisk()->lastModified($uri);
             } catch (Throwable $e) {
-                throw new FsException($e->getMessage(), previous: $e);
+                throw new FilesystemException($e->getMessage(), previous: $e);
             }
         };
     }
@@ -135,7 +135,7 @@ final class VolumeMixin
 
         return function(string $path, string $contents, array $config = []) use ($mixin): void {
             if (!$this->sourceDisk()->put($path, $contents, $mixin->legacyConfigForDisk($config))) {
-                throw new FsException("Unable to write file at path: $path");
+                throw new FilesystemException("Unable to write file at path: $path");
             }
         };
     }
@@ -167,15 +167,15 @@ final class VolumeMixin
 
         return function(string $path, $stream, array $config = []): void {
             if (!is_resource($stream)) {
-                throw new FsException("Unable to write stream to path: $path");
+                throw new FilesystemException("Unable to write stream to path: $path");
             }
 
             try {
                 if (!$this->sourceDisk()->writeStream($path, $stream, $mixin->legacyConfigForDisk($config))) {
-                    throw new FsException("Unable to write stream to path: $path");
+                    throw new FilesystemException("Unable to write stream to path: $path");
                 }
             } catch (Throwable $e) {
-                throw new FsException($e->getMessage(), previous: $e);
+                throw new FilesystemException($e->getMessage(), previous: $e);
             }
         };
     }
@@ -196,7 +196,7 @@ final class VolumeMixin
     {
         return function(string $path, string $newPath, array $config = []): void {
             if (!$this->sourceDisk()->move($path, $newPath)) {
-                throw new FsException("Unable to move $path to $newPath");
+                throw new FilesystemException("Unable to move $path to $newPath");
             }
         };
     }
@@ -205,7 +205,7 @@ final class VolumeMixin
     {
         return function(string $path, string $newPath, array $config = []): void {
             if (!$this->sourceDisk()->copy($path, $newPath)) {
-                throw new FsException("Unable to copy $path to $newPath");
+                throw new FilesystemException("Unable to copy $path to $newPath");
             }
         };
     }
@@ -247,7 +247,7 @@ final class VolumeMixin
             }
 
             if (!$this->sourceDisk()->makeDirectory($path, $mixin->legacyConfigForDisk($config))) {
-                throw new FsException("Unable to create directory at path: $path");
+                throw new FilesystemException("Unable to create directory at path: $path");
             }
         };
     }
@@ -279,7 +279,7 @@ final class VolumeMixin
 
             $newName = trim($newName, '/');
             if ($newName === '') {
-                throw new FsException('New directory name cannot be empty.');
+                throw new FilesystemException('New directory name cannot be empty.');
             }
 
             $parentPath = pathinfo($sourcePath, PATHINFO_DIRNAME);
@@ -296,7 +296,7 @@ final class VolumeMixin
             }
 
             if (!$disk->makeDirectory($targetPath)) {
-                throw new FsException("Unable to create directory at path: $targetPath");
+                throw new FilesystemException("Unable to create directory at path: $targetPath");
             }
 
             $directories = $disk->allDirectories($sourcePath);
@@ -306,7 +306,7 @@ final class VolumeMixin
                 $targetDirectory = $mixin->swapPathPrefix($directory, $sourcePath, $targetPath);
 
                 if (!$disk->makeDirectory($targetDirectory)) {
-                    throw new FsException("Unable to create directory at path: $targetDirectory");
+                    throw new FilesystemException("Unable to create directory at path: $targetDirectory");
                 }
             }
 
@@ -314,7 +314,7 @@ final class VolumeMixin
                 $targetFile = $mixin->swapPathPrefix($file, $sourcePath, $targetPath);
 
                 if (!$disk->move($file, $targetFile)) {
-                    throw new FsException("Unable to move $file to $targetFile");
+                    throw new FilesystemException("Unable to move $file to $targetFile");
                 }
             }
 
@@ -341,7 +341,7 @@ final class VolumeMixin
         return $config;
     }
 
-    private function readException(Filesystem $disk, string $path, Throwable $exception): FsException
+    private function readException(Filesystem $disk, string $path, Throwable $exception): FilesystemException
     {
         try {
             if (!$disk->exists($path)) {
@@ -351,7 +351,7 @@ final class VolumeMixin
             // Fall through to a generic filesystem exception.
         }
 
-        return new FsException($exception->getMessage(), previous: $exception);
+        return new FilesystemException($exception->getMessage(), previous: $exception);
     }
 
     private function swapPathPrefix(string $path, string $sourcePath, string $targetPath): string

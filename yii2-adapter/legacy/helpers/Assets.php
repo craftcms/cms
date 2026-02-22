@@ -11,7 +11,6 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\errors\FsException;
 use craft\errors\InvalidSubpathException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
@@ -22,6 +21,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Temp;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
@@ -884,7 +884,7 @@ class Assets
     /**
      * Save a file from a filesystem locally.
      *
-     * @throws FsException
+     * @throws FilesystemException
      *
      * @since 4.0.0
      */
@@ -892,7 +892,7 @@ class Assets
     {
         $stream = $fs->readStream($uriPath);
         if (!is_resource($stream)) {
-            throw new FsException("Unable to open $uriPath.");
+            throw new FilesystemException("Unable to open $uriPath.");
         }
         $outputStream = fopen($localPath, 'wb');
 

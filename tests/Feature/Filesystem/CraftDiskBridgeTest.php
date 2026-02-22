@@ -6,6 +6,7 @@ use craft\base\BaseFsInterface as LegacyBaseFsInterface;
 use craft\base\Fs;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
+use craft\errors\FsObjectNotFoundException;
 use craft\events\FsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
@@ -14,6 +15,7 @@ use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use CraftCms\Cms\Filesystem\Contracts\BaseFsInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface as NewFsInterface;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Local;
@@ -276,12 +278,12 @@ class BridgeFallbackLocalFs extends Local implements LegacyBaseFsInterface
     public function writeFileFromStream(string $path, $stream, array $config = []): void
     {
         if (! is_resource($stream)) {
-            throw new FsException('Invalid stream.');
+            throw new FilesystemException('Invalid stream.');
         }
 
         $contents = stream_get_contents($stream);
         if (! is_string($contents)) {
-            throw new FsException('Invalid stream contents.');
+            throw new FilesystemException('Invalid stream contents.');
         }
 
         $this->write($path, $contents, $config);
@@ -315,7 +317,7 @@ class BridgeFallbackLocalFs extends Local implements LegacyBaseFsInterface
         $contents = $this->read($uriPath);
         $stream = fopen('php://temp', 'rb+');
         if (! is_resource($stream)) {
-            throw new FsException('Unable to open stream.');
+            throw new FilesystemException('Unable to open stream.');
         }
 
         fwrite($stream, $contents);
@@ -436,12 +438,12 @@ class BridgePluginFs extends Fs implements LegacyBaseFsInterface
     public function writeFileFromStream(string $path, $stream, array $config = []): void
     {
         if (! is_resource($stream)) {
-            throw new FsException('Invalid stream.');
+            throw new FilesystemException('Invalid stream.');
         }
 
         $contents = stream_get_contents($stream);
         if (! is_string($contents)) {
-            throw new FsException('Invalid stream contents.');
+            throw new FilesystemException('Invalid stream contents.');
         }
 
         $this->write($path, $contents, $config);
@@ -485,7 +487,7 @@ class BridgePluginFs extends Fs implements LegacyBaseFsInterface
         $contents = $this->read($uriPath);
         $stream = fopen('php://temp', 'rb+');
         if (! is_resource($stream)) {
-            throw new FsException('Unable to open stream.');
+            throw new FilesystemException('Unable to open stream.');
         }
 
         fwrite($stream, $contents);

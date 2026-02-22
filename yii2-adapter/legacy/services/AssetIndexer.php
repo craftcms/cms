@@ -13,7 +13,6 @@ use Craft;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
 use craft\errors\AssetNotIndexableException;
-use craft\errors\FsException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
 use craft\errors\MutexException;
@@ -32,6 +31,7 @@ use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Data\FsListing;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -73,7 +73,7 @@ class AssetIndexer extends Component
     {
         try {
             $fileList = $volume->sourceDisk()->listContents(trim($directory, '/'), true);
-        } catch (InvalidConfigException|FsException $exception) {
+        } catch (InvalidConfigException|FilesystemException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
 
             return;

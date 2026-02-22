@@ -14,7 +14,6 @@ use craft\assetpreviews\Image as ImagePreview;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
 use craft\errors\ElementNotFoundException;
-use craft\errors\FsException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\helpers\Assets;
@@ -36,6 +35,7 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -543,7 +543,7 @@ class AssetsController extends Controller
      * @throws BadRequestHttpException if the folder cannot be found
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
-     * @throws FsException
+     * @throws FilesystemException
      * @throws Throwable
      */
     public function actionDeleteFolder(): Response

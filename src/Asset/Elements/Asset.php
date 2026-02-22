@@ -25,7 +25,6 @@ use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\AssetException;
 use craft\errors\FileException;
-use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
@@ -66,6 +65,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystem;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
@@ -2357,14 +2357,14 @@ JS, [
      * @return resource
      *
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
-     * @throws FsException if a stream cannot be created
+     * @throws FilesystemException if a stream cannot be created
      */
     public function getStream()
     {
         $stream = $this->getVolume()->sourceDisk()->readStream($this->getPath());
 
         if (! is_resource($stream)) {
-            throw new FsException("Unable to open {$this->getPath()}.");
+            throw new FilesystemException("Unable to open {$this->getPath()}.");
         }
 
         return $stream;
@@ -3231,7 +3231,7 @@ JS;
         // Is this just a simple move/rename within the same volume?
         if (! isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
             if (! $oldVolume->sourceDisk()->move($oldPath, $newPath)) {
-                throw new FsException("Unable to move $oldPath to $newPath");
+                throw new FilesystemException("Unable to move $oldPath to $newPath");
             }
         } else {
             // Get the temp path
@@ -3265,9 +3265,9 @@ JS;
                 if (! $newVolume->sourceDisk()->writeStream($newPath, $stream, [
                     Filesystem::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
                 ])) {
-                    throw new FsException("Unable to write stream to path: $newPath");
+                    throw new FilesystemException("Unable to write stream to path: $newPath");
                 }
-            } catch (FsException $exception) {
+            } catch (FilesystemException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
                 throw $exception;
             } finally {

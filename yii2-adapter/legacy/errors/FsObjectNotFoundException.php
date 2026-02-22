@@ -7,13 +7,15 @@
 
 namespace craft\errors;
 
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+
 /**
  * Class FsObjectNotFoundException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class FsObjectNotFoundException extends FsException
+class FsObjectNotFoundException extends FilesystemException
 {
     /**
      * @inheritdoc

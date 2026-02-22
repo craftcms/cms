@@ -13,7 +13,6 @@ use Craft;
 use craft\base\Image as BaseImage;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
-use craft\errors\FsException;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\ImageException;
 use craft\errors\ImageTransformException;
@@ -21,6 +20,7 @@ use craft\image\Raster;
 use craft\models\ImageTransform;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
@@ -183,7 +183,7 @@ class ImageTransforms
                         if (is_file($tempFilePath) && !FileHelper::unlink($tempFilePath)) {
                             Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                         }
-                        throw new FsException(t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
+                        throw new FilesystemException(t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
                             'file' => $asset->getFilename(),
                         ]));
                     }

@@ -20,7 +20,6 @@ use craft\db\Table;
 use craft\elements\db\AssetQuery;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
-use craft\errors\FsException;
 use craft\errors\FsObjectExistsException;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\VolumeException;
@@ -41,6 +40,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Temp;
 use CraftCms\Cms\Support\Env;
@@ -221,7 +221,7 @@ class Assets extends Component
      * Save a volume folder.
      *
      * @throws FsObjectExistsException if a folder already exists with such a name
-     * @throws FsException if unable to create the directory on volume
+     * @throws FilesystemException if unable to create the directory on volume
      * @throws AssetException if invalid folder provided
      */
     public function createFolder(VolumeFolder $folder): void
@@ -248,7 +248,7 @@ class Assets extends Component
         $path = rtrim($folder->path, '/');
 
         if (!$volume->sourceDisk()->makeDirectory($path)) {
-            throw new FsException("Unable to create directory at path: $path");
+            throw new FilesystemException("Unable to create directory at path: $path");
         }
 
         $this->storeFolderRecord($folder);
@@ -881,7 +881,7 @@ class Assets extends Component
                 // Ensure a physical folder exists, if needed.
                 if (!$justRecord) {
                     if (!$volume->sourceDisk()->makeDirectory($path)) {
-                        throw new FsException("Unable to create directory at path: $path");
+                        throw new FilesystemException("Unable to create directory at path: $path");
                     }
                 }
 
@@ -1111,7 +1111,7 @@ class Assets extends Component
     /**
      * Renames a directory by creating/moving/deleting when a direct directory rename is unavailable.
      *
-     * @throws FsException
+     * @throws FilesystemException
      * @throws FsObjectNotFoundException
      */
     private function renameDirectoryOnDisk(Volume $volume, string $sourcePath, string $targetPath): void
@@ -1126,7 +1126,7 @@ class Assets extends Component
         }
 
         if ($targetPath === '') {
-            throw new FsException('New directory name cannot be empty.');
+            throw new FilesystemException('New directory name cannot be empty.');
         }
 
         if ($targetPath === $sourcePath) {
@@ -1134,7 +1134,7 @@ class Assets extends Component
         }
 
         if (!$disk->makeDirectory($targetPath)) {
-            throw new FsException("Unable to create directory at path: $targetPath");
+            throw new FilesystemException("Unable to create directory at path: $targetPath");
         }
 
         $directories = $disk->allDirectories($sourcePath);
@@ -1149,7 +1149,7 @@ class Assets extends Component
             ) ?? trim($directory, '/');
 
             if (!$disk->makeDirectory($targetDirectory)) {
-                throw new FsException("Unable to create directory at path: $targetDirectory");
+                throw new FilesystemException("Unable to create directory at path: $targetDirectory");
             }
         }
 
@@ -1162,7 +1162,7 @@ class Assets extends Component
             ) ?? trim($file, '/');
 
             if (!$disk->move($file, $targetFile)) {
-                throw new FsException("Unable to move $file to $targetFile");
+                throw new FilesystemException("Unable to move $file to $targetFile");
             }
         }
 
