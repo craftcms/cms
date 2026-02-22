@@ -28,6 +28,12 @@ use yii\base\Event as YiiEvent;
 
 uses(TestCase::class);
 
+beforeEach(function() {
+    // Clear static state from test doubles to prevent leaks between tests
+    BridgePluginFs::resetContents();
+    BridgeFallbackLocalFs::resetContents();
+});
+
 test('keeps legacy filesystem interfaces aliased while decoupling fs and operation contracts', function() {
     $localInterfaces = class_implements(Local::class);
 
@@ -151,6 +157,11 @@ class BridgeFallbackLocalFs extends Local implements LegacyBaseFsInterface
      * @var array<string,string>
      */
     private static array $contents = [];
+
+    public static function resetContents(): void
+    {
+        self::$contents = [];
+    }
 
     #[Override]
     public function getDiskConfig(): array
@@ -328,6 +339,11 @@ class BridgePluginFs extends Fs implements LegacyBaseFsInterface
      * @var array<string,string>
      */
     private static array $contents = [];
+
+    public static function resetContents(): void
+    {
+        self::$contents = [];
+    }
 
     public function write(string $path, string $contents, array $config = []): void
     {

@@ -117,7 +117,7 @@ final class Filesystems
     public function saveFilesystem(FsInterface $fs, bool $runValidation = true): bool
     {
         $configPath = sprintf('%s.%s', ProjectConfig::PATH_FS, $fs->handle);
-        $isNewFs = $this->projectConfig->get($configPath) !== null;
+        $isNewFs = $this->projectConfig->get($configPath) === null;
 
         if (! $fs->beforeSave($isNewFs)) {
             return false;
@@ -219,7 +219,7 @@ final class Filesystems
 
         $handle = $event?->tokenMatches[0] ?? null;
         if (is_string($handle) && $handle !== '') {
-            $this->diskRegistry->registerDisk($handle, is_array($event->newValue) ? $event->newValue : null);
+            $this->diskRegistry->registerDisk($handle, is_array($event?->newValue) ? $event->newValue : null);
         } else {
             $this->diskRegistry->sync();
         }

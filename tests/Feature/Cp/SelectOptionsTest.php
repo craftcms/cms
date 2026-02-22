@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\helpers\Assets;
 use CraftCms\Cms\Cp\SelectOptions;

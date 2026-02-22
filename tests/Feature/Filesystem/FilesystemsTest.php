@@ -140,6 +140,153 @@ it('applies configured default visibility modes during construction', function (
     }
 });
 
+it('resolves a disk: prefixed handle to a DiskFilesystem', function () {
+    config()->set('filesystems.disks.resolve-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/fs-service/resolve-disk'),
+    ]);
+
+    $fs = $this->service->resolve('disk:resolve-disk');
+
+    expect($fs)->toBeInstanceOf(\CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem::class)
+        ->and($fs->disk)->toBe('resolve-disk');
+});
+
+it('returns null for a disk: prefix with an empty disk name', function () {
+    expect($this->service->resolve('disk:'))->toBeNull();
+});
+
+it('returns null for a disk: prefix with a non-existent disk', function () {
+    expect($this->service->resolve('disk:does-not-exist'))->toBeNull();
+});
+
+it('resolves a Craft filesystem handle through resolve()', function () {
+    createServiceLocalFilesystem($this->service, 'resolve-craft-handle');
+
+    $fs = $this->service->resolve('resolve-craft-handle');
+
+    expect($fs)->toBeInstanceOf(FsInterface::class)
+        ->and($fs)->not->toBeInstanceOf(\CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem::class)
+        ->and($fs->handle)->toBe('resolve-craft-handle');
+});
+
+it('falls back to a plain Laravel disk name when no Craft filesystem matches', function () {
+    config()->set('filesystems.disks.plain-laravel-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/fs-service/plain-laravel-disk'),
+    ]);
+
+    $fs = $this->service->resolve('plain-laravel-disk');
+
+    expect($fs)->toBeInstanceOf(\CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem::class)
+        ->and($fs->disk)->toBe('plain-laravel-disk');
+});
+
+it('returns null when nothing matches in resolve()', function () {
+    expect($this->service->resolve('completely-unknown'))->toBeNull();
+});
+
+it('resolves disk: prefix to the raw disk name', function () {
+    config()->set('filesystems.disks.rdisk-name', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/fs-service/rdisk-name'),
+    ]);
+
+    expect($this->service->resolveDiskName('disk:rdisk-name'))->toBe('rdisk-name');
+});
+
+it('returns null for disk: prefix with empty or missing disk', function () {
+    expect($this->service->resolveDiskName('disk:'))->toBeNull()
+        ->and($this->service->resolveDiskName('disk:nonexistent'))->toBeNull();
+});
+
+it('resolves a Craft filesystem handle to its craft-fs- prefixed disk name', function () {
+    createServiceLocalFilesystem($this->service, 'resolve-disk-name-craft');
+
+    expect($this->service->resolveDiskName('resolve-disk-name-craft'))->toBe('craft-fs-resolve-disk-name-craft');
+});
+
+it('falls back to plain disk name when no Craft filesystem matches in resolveDiskName', function () {
+    config()->set('filesystems.disks.plain-disk-fallback', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/fs-service/plain-disk-fallback'),
+    ]);
+
+    expect($this->service->resolveDiskName('plain-disk-fallback'))->toBe('plain-disk-fallback');
+});
+
+it('returns null when nothing matches in resolveDiskName()', function () {
+    expect($this->service->resolveDiskName('totally-unknown'))->toBeNull();
+});
+
+it('registers a single disk when handleChangedFilesystem receives a specific handle', function () {
+    $event = new \CraftCms\Cms\ProjectConfig\Events\ItemUpdated(
+        path: 'fs.single-register',
+        newValue: [
+            'name' => 'Single Register',
+            'type' => \CraftCms\Cms\Filesystem\Filesystems\Local::class,
+            'hasUrls' => true,
+            'url' => 'https://cdn.example.test/single/',
+        ],
+        tokenMatches: ['single-register'],
+    );
+
+    $this->service->handleChangedFilesystem($event);
+
+    $diskConfig = config('filesystems.disks.craft-fs-single-register');
+
+    expect($diskConfig)->not->toBeNull()
+        ->and($diskConfig['driver'])->toBe(DiskRegistry::BRIDGE_DRIVER)
+        ->and($diskConfig['fsHandle'])->toBe('single-register')
+        ->and($diskConfig['url'])->toBe('https://cdn.example.test/single');
+});
+
+it('propagates URL from filesystem config during registerDisk', function () {
+    $registry = app(DiskRegistry::class);
+
+    $registry->registerDisk('url-prop', [
+        'name' => 'URL Prop',
+        'type' => \CraftCms\Cms\Filesystem\Filesystems\Local::class,
+        'hasUrls' => true,
+        'url' => 'https://cdn.example.test/url-prop/',
+    ]);
+
+    $diskConfig = config('filesystems.disks.craft-fs-url-prop');
+
+    expect($diskConfig)->not->toBeNull()
+        ->and($diskConfig['url'])->toBe('https://cdn.example.test/url-prop');
+});
+
+it('omits URL when filesystem config has no hasUrls flag', function () {
+    $registry = app(DiskRegistry::class);
+
+    $registry->registerDisk('no-url', [
+        'name' => 'No URL',
+        'type' => \CraftCms\Cms\Filesystem\Filesystems\Local::class,
+    ]);
+
+    $diskConfig = config('filesystems.disks.craft-fs-no-url');
+
+    expect($diskConfig)->not->toBeNull()
+        ->and($diskConfig)->not->toHaveKey('url');
+});
+
+it('omits URL when hasUrls is true but url is empty', function () {
+    $registry = app(DiskRegistry::class);
+
+    $registry->registerDisk('empty-url', [
+        'name' => 'Empty URL',
+        'type' => \CraftCms\Cms\Filesystem\Filesystems\Local::class,
+        'hasUrls' => true,
+        'url' => '',
+    ]);
+
+    $diskConfig = config('filesystems.disks.craft-fs-empty-url');
+
+    expect($diskConfig)->not->toBeNull()
+        ->and($diskConfig)->not->toHaveKey('url');
+});
+
 it('syncs stale craft disk registrations when handling delete config changes', function () {
     config()->set('filesystems.disks', [
         'manual-disk' => [

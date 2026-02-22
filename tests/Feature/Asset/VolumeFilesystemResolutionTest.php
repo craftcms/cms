@@ -273,6 +273,151 @@ it('supports macro-backed legacy methods and property assignment', function () {
         ->and($volume->getTransformSubpath())->toBe('transforms/');
 });
 
+it('returns a working transformDisk() for Craft filesystem backed volumes', function () {
+    config()->set('filesystems.disks.transform-disk-target', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/volume-disks/transform-disk-target'),
+    ]);
+
+    createVolumeLocalFilesystem('transform-disk-target');
+
+    $volume = new Volume([
+        'name' => 'Transform',
+        'handle' => 'transformVolume',
+        'fsHandle' => 'transform-disk-target',
+        'subpath' => 'source',
+        'transformFsHandle' => 'transform-disk-target',
+        'transformSubpath' => 'transforms',
+    ]);
+
+    $transformDisk = $volume->transformDisk();
+
+    expect($transformDisk->put('thumb.jpg', 'image-data'))->toBeTrue()
+        ->and($transformDisk->exists('thumb.jpg'))->toBeTrue()
+        ->and($transformDisk->get('thumb.jpg'))->toBe('image-data');
+
+    // Verify the transform file is scoped under the transform subpath
+    $rawDisk = Storage::disk('craft-fs-transform-disk-target');
+    expect($rawDisk->exists('transforms/thumb.jpg'))->toBeTrue();
+});
+
+it('falls back to source filesystem when no transform fs handle is set', function () {
+    config()->set('filesystems.disks.fallback-source', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/volume-disks/fallback-source'),
+    ]);
+
+    createVolumeLocalFilesystem('fallback-source');
+
+    $volume = new Volume([
+        'name' => 'Fallback',
+        'handle' => 'fallbackVolume',
+        'fsHandle' => 'fallback-source',
+        'subpath' => 'assets',
+    ]);
+
+    $transformDisk = $volume->transformDisk();
+
+    expect($transformDisk->put('transform.jpg', 'transform-data'))->toBeTrue()
+        ->and($transformDisk->exists('transform.jpg'))->toBeTrue();
+
+    // No transformSubpath is set, so the transformDisk prefix is null (root of disk)
+    $rawDisk = Storage::disk('craft-fs-fallback-source');
+    expect($rawDisk->exists('transform.jpg'))->toBeTrue();
+});
+
+it('returns a working transformDisk() for plain Laravel disk targets', function () {
+    config()->set('filesystems.disks.transform-plain', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/volume-disks/transform-plain'),
+    ]);
+
+    $volume = new Volume([
+        'name' => 'Transform Plain',
+        'handle' => 'transformPlain',
+        'fsHandle' => 'disk:transform-plain',
+        'subpath' => 'src',
+        'transformFsHandle' => 'disk:transform-plain',
+        'transformSubpath' => 'xforms',
+    ]);
+
+    $transformDisk = $volume->transformDisk();
+
+    expect($transformDisk->put('test.webp', 'webp-data'))->toBeTrue();
+
+    $rawDisk = Storage::disk('transform-plain');
+    expect($rawDisk->exists('xforms/test.webp'))->toBeTrue();
+});
+
+it('throws when getFs() is called without a filesystem handle', function () {
+    $volume = new Volume([
+        'name' => 'No Handle',
+        'handle' => 'noHandle',
+    ]);
+
+    $volume->getFs();
+})->throws(\yii\base\InvalidConfigException::class, 'Volume is missing its filesystem handle.');
+
+it('returns MissingFs when the filesystem handle cannot be resolved', function () {
+    $volume = new Volume([
+        'name' => 'Bad Handle',
+        'handle' => 'badHandle',
+        'fsHandle' => 'nonexistent-fs-or-disk',
+    ]);
+
+    $fs = $volume->getFs();
+
+    expect($fs)->toBeInstanceOf(\CraftCms\Cms\Filesystem\Filesystems\MissingFs::class);
+});
+
+it('serializes volume config correctly via getConfig()', function () {
+    createVolumeLocalFilesystem('config-fs');
+
+    $volume = new Volume([
+        'name' => 'Config Volume',
+        'handle' => 'configVolume',
+        'fsHandle' => 'config-fs',
+        'subpath' => 'uploads',
+        'transformFsHandle' => 'config-fs',
+        'transformSubpath' => 'transforms',
+        'titleTranslationMethod' => 'site',
+        'altTranslationMethod' => 'none',
+        'sortOrder' => 3,
+    ]);
+
+    $config = $volume->getConfig();
+
+    expect($config['name'])->toBe('Config Volume')
+        ->and($config['handle'])->toBe('configVolume')
+        ->and($config['fs'])->toBe('config-fs')
+        ->and($config['subpath'])->toBe('uploads')
+        ->and($config['transformFs'])->toBe('config-fs')
+        ->and($config['transformSubpath'])->toBe('transforms')
+        ->and($config['titleTranslationMethod'])->toBe('site')
+        ->and($config['altTranslationMethod'])->toBe('none')
+        ->and($config['sortOrder'])->toBe(3);
+});
+
+it('serializes disk-prefixed fs handles in getConfig()', function () {
+    config()->set('filesystems.disks.config-disk', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/volume-disks/config-disk'),
+    ]);
+
+    $volume = new Volume([
+        'name' => 'Disk Config',
+        'handle' => 'diskConfig',
+        'fsHandle' => 'config-disk',
+        'transformFsHandle' => 'disk:config-disk',
+    ]);
+
+    $config = $volume->getConfig();
+
+    // Plain disk names get normalized to disk: prefix
+    expect($config['fs'])->toBe('disk:config-disk')
+        ->and($config['transformFs'])->toBe('disk:config-disk');
+});
+
 function createVolumeLocalFilesystem(string $handle): FsInterface
 {
     $filesystem = Filesystems::createFilesystem([

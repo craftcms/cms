@@ -43,7 +43,7 @@ use function CraftCms\Cms\t;
  * @property string $subpath
  * @property string $transformSubpath
  */
-class Volume extends Component implements CpEditable, FieldLayoutProviderInterface
+final class Volume extends Component implements CpEditable, FieldLayoutProviderInterface
 {
     use HasFieldLayout;
     use Macroable;
@@ -147,8 +147,13 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
     #[Override]
     public function getAttributes(): array
     {
-        $this->name = is_string($this->name) ? trim($this->name) : $this->name;
-        $this->handle = is_string($this->handle) ? trim($this->handle) : $this->handle;
+        if (is_string($this->name)) {
+            $this->name = trim($this->name);
+        }
+
+        if (is_string($this->handle)) {
+            $this->handle = trim($this->handle);
+        }
 
         try {
             $fieldLayout = $this->getFieldLayout();
@@ -563,7 +568,9 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             $target = $this->resolveStorageTargetKey($this->_transformFsHandle);
             $fs = $target !== null ? $this->filesystemFromTargetKey($target) : null;
             if (! $fs) {
-                throw new InvalidConfigException("Invalid filesystem handle: $this->_transformFsHandle");
+                Log::error("Invalid transform filesystem handle: $this->_transformFsHandle for the $this->name volume.");
+
+                return new MissingFs(['handle' => $this->_transformFsHandle]);
             }
 
             $this->_transformFs = $fs;
@@ -672,9 +679,11 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     public function transformDisk(): FilesystemAdapter
     {
+        $hasTransformFs = (bool) $this->getTransformFsHandle(false);
+
         return $this->storageDiskFor(
-            $this->diskNameForOperations($this->getTransformFsHandle(false) ?: $this->getFsHandle(false)),
-            $this->diskPrefix($this->_transformSubpath),
+            $this->diskNameForOperations($hasTransformFs ? $this->_transformFsHandle : $this->_fsHandle),
+            $this->diskPrefix($hasTransformFs ? $this->_transformSubpath : null),
         );
     }
 

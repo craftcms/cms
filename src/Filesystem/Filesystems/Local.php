@@ -80,7 +80,7 @@ class Local extends Filesystem
             $this->visibilityMap[self::VISIBILITY_FILE][self::VISIBILITY_DEFAULT] = $generalConfig->defaultFileMode;
         }
 
-        if ($generalConfig->defaultFileMode) {
+        if ($generalConfig->defaultDirMode) {
             $this->visibilityMap[self::VISIBILITY_DIR][self::VISIBILITY_DEFAULT] = $generalConfig->defaultDirMode;
         }
     }
@@ -124,7 +124,7 @@ class Local extends Filesystem
     private function settingsHtml(bool $readOnly): string
     {
         return template('_components/fs/Local/settings', [
-            'volume' => $this,
+            'filesystem' => $this,
             'readOnly' => $readOnly,
         ]);
     }

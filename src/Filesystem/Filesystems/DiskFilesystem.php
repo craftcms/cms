@@ -68,7 +68,7 @@ final class DiskFilesystem extends Filesystem
         return $diskConfig;
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), ['disk' => ['required', 'string']]);
