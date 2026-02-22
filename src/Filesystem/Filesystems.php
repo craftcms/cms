@@ -13,6 +13,7 @@ use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Illuminate\Container\Attributes\Singleton;
@@ -212,14 +213,28 @@ final class Filesystems
         return true;
     }
 
-    public function handleChangedFilesystem(): void
+    public function handleChangedFilesystem(?ConfigEvent $event = null): void
     {
-        $this->reset();
+        $this->filesystems = null;
+
+        $handle = $event?->tokenMatches[0] ?? null;
+        if (is_string($handle) && $handle !== '') {
+            $this->diskRegistry->registerDisk($handle, is_array($event->newValue) ? $event->newValue : null);
+        } else {
+            $this->diskRegistry->sync();
+        }
     }
 
-    public function handleDeletedFilesystem(): void
+    public function handleDeletedFilesystem(?ConfigEvent $event = null): void
     {
-        $this->reset();
+        $this->filesystems = null;
+
+        $handle = $event?->tokenMatches[0] ?? null;
+        if (is_string($handle) && $handle !== '') {
+            $this->diskRegistry->purge($handle);
+        } else {
+            $this->diskRegistry->sync();
+        }
     }
 
     public function diskExists(string $diskName): bool

@@ -45,7 +45,9 @@ final class VolumeFolder extends Component implements Stringable
      */
     public array $children {
         get => $this->getChildren();
-        set => $this->setChildren($value);
+        set {
+            $this->setChildren($value);
+        }
     }
 
     private ?FsInterface $_fs = null;

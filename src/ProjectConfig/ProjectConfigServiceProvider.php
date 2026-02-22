@@ -83,9 +83,9 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             ->onUpdate(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleChangedField($event))
             ->onRemove(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleDeletedField($event))
             // Filesystems
-            ->onAdd(ProjectConfig::PATH_FS, fn (ConfigEvent $event) => app(Filesystems::class)->handleChangedFilesystem($event))
-            ->onUpdate(ProjectConfig::PATH_FS, fn (ConfigEvent $event) => app(Filesystems::class)->handleChangedFilesystem($event))
-            ->onRemove(ProjectConfig::PATH_FS, fn (ConfigEvent $event) => app(Filesystems::class)->handleDeletedFilesystem($event))
+            ->onAdd(ProjectConfig::PATH_FS.'.{uid}', fn (ConfigEvent $event) => app(Filesystems::class)->handleChangedFilesystem($event))
+            ->onUpdate(ProjectConfig::PATH_FS.'.{uid}', fn (ConfigEvent $event) => app(Filesystems::class)->handleChangedFilesystem($event))
+            ->onRemove(ProjectConfig::PATH_FS.'.{uid}', fn (ConfigEvent $event) => app(Filesystems::class)->handleDeletedFilesystem($event))
             // Volumes
             ->onAdd(ProjectConfig::PATH_VOLUMES.'.{uid}', $this->proxy('volumes', 'handleChangedVolume'))
             ->onUpdate(ProjectConfig::PATH_VOLUMES.'.{uid}', $this->proxy('volumes', 'handleChangedVolume'))

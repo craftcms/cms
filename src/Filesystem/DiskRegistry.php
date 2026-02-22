@@ -53,6 +53,30 @@ final readonly class DiskRegistry
         ]);
     }
 
+    /**
+     * Registers a single Craft filesystem as a Laravel disk.
+     */
+    public function registerDisk(string $handle, ?array $filesystemConfig = null): void
+    {
+        $diskName = $this->toDiskName($handle);
+        $diskConfig = [
+            'driver' => self::BRIDGE_DRIVER,
+            'fsHandle' => $handle,
+        ];
+
+        if (is_array($filesystemConfig)) {
+            $url = $this->filesystemUrl($filesystemConfig);
+            if ($url !== null) {
+                $diskConfig['url'] = $url;
+            }
+        }
+
+        $diskConfigs = $this->currentDiskConfigs();
+        $diskConfigs[$diskName] = $diskConfig;
+        $this->config->set('filesystems.disks', $diskConfigs);
+        $this->filesystems->forgetDisk($diskName);
+    }
+
     public function purge(string $handle): void
     {
         $diskName = $this->toDiskName($handle);
