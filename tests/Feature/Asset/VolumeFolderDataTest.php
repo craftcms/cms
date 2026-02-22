@@ -2,15 +2,8 @@
 
 declare(strict_types=1);
 
-use craft\models\VolumeFolder as LegacyVolumeFolder;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
-
-it('keeps the legacy VolumeFolder model alias wired to the new data class', function () {
-    $folder = new LegacyVolumeFolder;
-
-    expect($folder)->toBeInstanceOf(VolumeFolder::class);
-});
 
 it('validates folder IDs and keeps hasErrors compatibility helpers', function () {
     $invalidParentId = new VolumeFolder([

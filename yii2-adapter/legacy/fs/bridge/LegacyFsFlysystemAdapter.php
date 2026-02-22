@@ -8,7 +8,7 @@
 namespace craft\fs\bridge;
 
 use craft\base\BaseFsInterface;
-use craft\models\FsListing;
+use CraftCms\Cms\Filesystem\Data\FsListing;
 use League\Flysystem\Config;
 use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;

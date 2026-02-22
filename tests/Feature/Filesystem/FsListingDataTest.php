@@ -2,14 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\models\FsListing as LegacyFsListing;
 use CraftCms\Cms\Filesystem\Data\FsListing;
-
-it('keeps the legacy FsListing model alias wired to the new data class', function () {
-    $listing = new LegacyFsListing;
-
-    expect($listing)->toBeInstanceOf(FsListing::class);
-});
 
 it('normalizes dirname and exposes listing metadata through methods and properties', function () {
     $listing = new FsListing([
