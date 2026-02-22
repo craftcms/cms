@@ -9,7 +9,7 @@ namespace craft\base;
 
 use Closure;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
-use CraftCms\Cms\Filesystem\Filesystem;
+use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Yii2Adapter\ModelWrapper;
 use ReflectionFunction;

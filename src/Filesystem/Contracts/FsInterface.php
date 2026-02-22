@@ -18,7 +18,7 @@ use CraftCms\Cms\Validation\Contracts\Validatable;
  * @property string|null $url
  * @property string|null $uid
  *
- * @phpstan-require-extends \CraftCms\Cms\Filesystem\Filesystem
+ * @phpstan-require-extends \CraftCms\Cms\Filesystem\Filesystems\Filesystem
  */
 interface FsInterface extends ConfigurableComponentInterface, SavableComponentInterface, Validatable
 {

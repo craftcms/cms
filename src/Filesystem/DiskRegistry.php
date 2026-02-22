@@ -10,6 +10,10 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Filesystem\FilesystemManager;
 
+/**
+ * Registers Craft filesystem handles as Laravel disk configs
+ * and keeps them synchronized with the Project Config.
+ */
 #[Singleton]
 final readonly class DiskRegistry
 {

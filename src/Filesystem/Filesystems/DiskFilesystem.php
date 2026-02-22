@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Filesystem\Filesystems;
 
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Filesystem\Filesystem;
 use CraftCms\Cms\Support\Str;
 use Override;
 

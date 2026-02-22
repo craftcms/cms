@@ -20,11 +20,11 @@ if (false) {
      * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
      *
      * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Local} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems\Local} instead.
      */
     class Local
     {
     }
 }
 
-class_alias(\CraftCms\Cms\Filesystem\Local::class, Local::class);
+class_alias(\CraftCms\Cms\Filesystem\Filesystems\Local::class, Local::class);

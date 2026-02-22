@@ -8,7 +8,7 @@ use Closure;
 use craft\errors\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Filesystem\Filesystem as FilesystemComponent;
+use CraftCms\Cms\Filesystem\Filesystems\Filesystem as FilesystemComponent;
 use CraftCms\Cms\Support\Str;
 use Generator;
 use Illuminate\Contracts\Filesystem\Filesystem;

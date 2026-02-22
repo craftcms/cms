@@ -14,11 +14,11 @@ if (false) {
     /**
      * @property class-string<\CraftCms\Cms\Filesystem\Contracts\FsInterface> $expectedType
      *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\MissingFs} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems\MissingFs} instead.
      */
     class MissingFs
     {
     }
 }
 
-class_alias(\CraftCms\Cms\Filesystem\MissingFs::class, MissingFs::class);
+class_alias(\CraftCms\Cms\Filesystem\Filesystems\MissingFs::class, MissingFs::class);

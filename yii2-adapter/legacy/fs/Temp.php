@@ -17,11 +17,11 @@ if (false) {
      * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
      *
      * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Temp} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems\Temp} instead.
      */
     class Temp
     {
     }
 }
 
-class_alias(\CraftCms\Cms\Filesystem\Temp::class, Temp::class);
+class_alias(\CraftCms\Cms\Filesystem\Filesystems\Temp::class, Temp::class);

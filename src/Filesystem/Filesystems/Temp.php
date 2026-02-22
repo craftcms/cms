@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Filesystem;
+namespace CraftCms\Cms\Filesystem\Filesystems;
 
 use Craft;
 

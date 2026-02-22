@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Filesystem;
+namespace CraftCms\Cms\Filesystem\Filesystems;
 
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
