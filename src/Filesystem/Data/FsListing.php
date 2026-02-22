@@ -106,7 +106,9 @@ final class FsListing extends Component
                 $uri = substr($uri, strlen($string));
             }
         } else {
-            $uri = ($string !== '' ? Str::finish($string, '/') : '').$uri;
+            if ($string !== '') {
+                $uri = Str::finish($string, '/').$uri;
+            }
         }
 
         return $uri;

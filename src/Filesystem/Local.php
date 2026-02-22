@@ -187,9 +187,11 @@ class Local extends Filesystem implements LocalFsInterface
             return $this->visibilityMap[$type][self::VISIBILITY_DEFAULT];
         }
 
-        return $visibility === 'private'
-            ? $this->visibilityMap[$type][self::VISIBILITY_HIDDEN]
-            : $this->visibilityMap[$type][self::VISIBILITY_PUBLIC];
+        if ($visibility === 'private') {
+            return $this->visibilityMap[$type][self::VISIBILITY_HIDDEN];
+        }
+
+        return $this->visibilityMap[$type][self::VISIBILITY_PUBLIC];
     }
 
     private function defaultDiskVisibility(string $type): string

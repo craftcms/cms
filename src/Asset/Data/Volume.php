@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
 use Override;
+use RuntimeException;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -45,9 +46,7 @@ use function CraftCms\Cms\t;
 class Volume extends Component implements CpEditable, FieldLayoutProviderInterface
 {
     use HasFieldLayout;
-    use Macroable {
-        __call as macroCall;
-    }
+    use Macroable;
 
     private const string STORAGE_FS_PREFIX = 'fs:';
 
@@ -133,11 +132,6 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         parent::__construct($config);
     }
 
-    public function __call($name, $params)
-    {
-        return $this->macroCall($name, $params);
-    }
-
     #[Override]
     public function attributes(): array
     {
@@ -158,7 +152,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
         try {
             $fieldLayout = $this->getFieldLayout();
-        } catch (\RuntimeException) {
+        } catch (RuntimeException) {
             $fieldLayout = null;
         }
 
@@ -247,13 +241,13 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         }
 
         $subpath = $this->getSubpath(ensureTrailing: false, parse: false);
-
-        if ($records->isNotEmpty() && $subpath === '') {
+        if ($subpath === '') {
             return;
         }
 
+        $subpathRoot = $this->firstPathSegment($subpath);
         foreach ($records as $record) {
-            if (strcmp(explode('/', (string) $record->$attribute)[0], explode('/', $subpath)[0]) === 0) {
+            if (strcmp($this->firstPathSegment((string) $record->$attribute), $subpathRoot) === 0) {
                 $this->pushValidationError($attribute, t('The subpath cannot overlap with any other volumes sharing the same filesystem.'), $fail);
             }
         }
@@ -283,11 +277,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     private function validateFilesystemHandle(string $attribute, ?Closure $fail = null): void
     {
-        $handle = match ($attribute) {
-            'fsHandle' => $this->_fsHandle,
-            'transformFsHandle' => $this->_transformFsHandle,
-            default => null,
-        };
+        $handle = $this->storageHandleForAttribute($attribute);
 
         if ($handle === null || $handle === '') {
             if ($attribute === 'fsHandle') {
@@ -316,11 +306,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     private function validateReservedTempUploadFilesystem(string $attribute, string $tempUploadTarget, ?Closure $fail = null): void
     {
-        $handle = match ($attribute) {
-            'fsHandle' => $this->_fsHandle,
-            'transformFsHandle' => $this->_transformFsHandle,
-            default => null,
-        };
+        $handle = $this->storageHandleForAttribute($attribute);
 
         if ($handle === null || $handle === '') {
             return;
@@ -426,7 +412,11 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
     private function diskFilesystem(string $diskName): DiskFilesystem
     {
         $url = config("filesystems.disks.$diskName.url");
-        $url = is_string($url) && $url !== '' ? rtrim($url, '/') : null;
+        if (is_string($url) && $url !== '') {
+            $url = rtrim($url, '/');
+        } else {
+            $url = null;
+        }
 
         return new DiskFilesystem([
             'disk' => $diskName,
@@ -455,9 +445,10 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     private function isInternalDiskReference(string $value): bool
     {
-        $diskName = str_starts_with($value, self::STORAGE_DISK_PREFIX)
-            ? substr($value, strlen(self::STORAGE_DISK_PREFIX))
-            : $value;
+        $diskName = $value;
+        if (str_starts_with($value, self::STORAGE_DISK_PREFIX)) {
+            $diskName = substr($value, strlen(self::STORAGE_DISK_PREFIX));
+        }
 
         return $diskName !== '' && $this->diskExists($diskName) && $this->isInternalDiskName($diskName);
     }
@@ -555,11 +546,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     public function getFsHandle(bool $parse = true): ?string
     {
-        if ($this->_fsHandle) {
-            return $parse ? Env::parse($this->_fsHandle) : $this->_fsHandle;
-        }
-
-        return null;
+        return $this->parseStorageHandle($this->_fsHandle, $parse);
     }
 
     public function setFsHandle(?string $handle): void
@@ -599,11 +586,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     public function getTransformFsHandle(bool $parse = true): ?string
     {
-        if ($this->_transformFsHandle) {
-            return $parse ? Env::parse($this->_transformFsHandle) : $this->_transformFsHandle;
-        }
-
-        return null;
+        return $this->parseStorageHandle($this->_transformFsHandle, $parse);
     }
 
     public function setTransformFsHandle(?string $handle): void
@@ -707,6 +690,29 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         }
 
         return $subpath;
+    }
+
+    private function storageHandleForAttribute(string $attribute): ?string
+    {
+        return match ($attribute) {
+            'fsHandle' => $this->_fsHandle,
+            'transformFsHandle' => $this->_transformFsHandle,
+            default => null,
+        };
+    }
+
+    private function parseStorageHandle(?string $handle, bool $parse): ?string
+    {
+        if (! $handle) {
+            return null;
+        }
+
+        return $parse ? Env::parse($handle) : $handle;
+    }
+
+    private function firstPathSegment(string $path): string
+    {
+        return explode('/', $path)[0];
     }
 
     private function diskNameForOperations(?string $handle = null): string

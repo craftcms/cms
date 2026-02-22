@@ -75,7 +75,11 @@ abstract class Filesystem extends Component implements FsInterface
             $url = rtrim($url, '/');
         }
 
-        return $url ? "$url/" : null;
+        if ($url) {
+            return "$url/";
+        }
+
+        return null;
     }
 
     abstract public function getDiskConfig(): array;

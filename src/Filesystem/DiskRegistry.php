@@ -70,7 +70,11 @@ final readonly class DiskRegistry
     {
         $diskConfigs = $this->config->get('filesystems.disks', []);
 
-        return is_array($diskConfigs) ? $diskConfigs : [];
+        if (! is_array($diskConfigs)) {
+            return [];
+        }
+
+        return $diskConfigs;
     }
 
     /**

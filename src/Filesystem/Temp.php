@@ -24,12 +24,8 @@ final class Temp extends Local
     public function __construct($config = [])
     {
         // Config normalization
-        if (! isset($config['path'])) {
-            $config['path'] = Craft::$app->getPath()->getTempAssetUploadsPath();
-        }
-        if (! isset($config['name'])) {
-            $config['name'] = t('Temporary Uploads');
-        }
+        $config['path'] ??= Craft::$app->getPath()->getTempAssetUploadsPath();
+        $config['name'] ??= t('Temporary Uploads');
 
         parent::__construct($config);
     }

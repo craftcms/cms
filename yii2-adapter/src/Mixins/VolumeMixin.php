@@ -11,6 +11,7 @@ use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Filesystem\Filesystem as FilesystemComponent;
 use CraftCms\Cms\Support\Str;
 use Generator;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use League\Flysystem\StorageAttributes;
 use Throwable;
 
@@ -66,8 +67,11 @@ final class VolumeMixin
     {
         return function(): ?string {
             $rootUrl = $this->getFs()->getRootUrl() ?? '';
+            if ($rootUrl !== '') {
+                $rootUrl = Str::finish($rootUrl, '/');
+            }
 
-            return ($rootUrl !== '' ? Str::finish($rootUrl, '/') : '') . $this->getSubpath();
+            return $rootUrl . $this->getSubpath();
         };
     }
 
@@ -129,7 +133,7 @@ final class VolumeMixin
     {
         $mixin = $this;
 
-        return function(string $path, string $contents, array $config = []): void {
+        return function(string $path, string $contents, array $config = []) use ($mixin): void {
             if (!$this->sourceDisk()->put($path, $contents, $mixin->legacyConfigForDisk($config))) {
                 throw new FsException("Unable to write file at path: $path");
             }
@@ -140,7 +144,7 @@ final class VolumeMixin
     {
         $mixin = $this;
 
-        return function(string $path): string {
+        return function(string $path) use ($mixin): string {
             $disk = $this->sourceDisk();
 
             try {
@@ -263,7 +267,9 @@ final class VolumeMixin
 
     public function renameDirectory(): Closure
     {
-        return function(string $path, string $newName): void {
+        $mixin = $this;
+
+        return function(string $path, string $newName) use ($mixin): void {
             $sourcePath = trim($path, '/');
             $disk = $this->sourceDisk();
 
@@ -281,7 +287,10 @@ final class VolumeMixin
                 $parentPath = '';
             }
 
-            $targetPath = ($parentPath !== '' ? "$parentPath/" : '') . $newName;
+            $targetPath = $newName;
+            if ($parentPath !== '') {
+                $targetPath = "$parentPath/$newName";
+            }
             if ($targetPath === $sourcePath) {
                 return;
             }
@@ -294,12 +303,7 @@ final class VolumeMixin
             usort($directories, fn(string $a, string $b) => substr_count($a, '/') <=> substr_count($b, '/'));
 
             foreach ($directories as $directory) {
-                $targetDirectory = preg_replace(
-                    '/^' . preg_quote($sourcePath, '/') . '(?=\/|$)/',
-                    $targetPath,
-                    trim($directory, '/'),
-                    1,
-                ) ?? trim($directory, '/');
+                $targetDirectory = $mixin->swapPathPrefix($directory, $sourcePath, $targetPath);
 
                 if (!$disk->makeDirectory($targetDirectory)) {
                     throw new FsException("Unable to create directory at path: $targetDirectory");
@@ -307,12 +311,7 @@ final class VolumeMixin
             }
 
             foreach ($disk->allFiles($sourcePath) as $file) {
-                $targetFile = preg_replace(
-                    '/^' . preg_quote($sourcePath, '/') . '(?=\/|$)/',
-                    $targetPath,
-                    trim($file, '/'),
-                    1,
-                ) ?? trim($file, '/');
+                $targetFile = $mixin->swapPathPrefix($file, $sourcePath, $targetPath);
 
                 if (!$disk->move($file, $targetFile)) {
                     throw new FsException("Unable to move $file to $targetFile");
@@ -333,15 +332,16 @@ final class VolumeMixin
             return $config;
         }
 
-        $config['visibility'] = $config[FilesystemComponent::CONFIG_VISIBILITY] === FilesystemComponent::VISIBILITY_HIDDEN
-            ? 'private'
-            : 'public';
+        $config['visibility'] = 'public';
+        if ($config[FilesystemComponent::CONFIG_VISIBILITY] === FilesystemComponent::VISIBILITY_HIDDEN) {
+            $config['visibility'] = 'private';
+        }
         unset($config[FilesystemComponent::CONFIG_VISIBILITY]);
 
         return $config;
     }
 
-    private function readException(\Illuminate\Contracts\Filesystem\Filesystem $disk, string $path, Throwable $exception): FsException
+    private function readException(Filesystem $disk, string $path, Throwable $exception): FsException
     {
         try {
             if (!$disk->exists($path)) {
@@ -352,5 +352,15 @@ final class VolumeMixin
         }
 
         return new FsException($exception->getMessage(), previous: $exception);
+    }
+
+    private function swapPathPrefix(string $path, string $sourcePath, string $targetPath): string
+    {
+        return preg_replace(
+            '/^' . preg_quote($sourcePath, '/') . '(?=\/|$)/',
+            $targetPath,
+            trim($path, '/'),
+            1,
+        ) ?? trim($path, '/');
     }
 }

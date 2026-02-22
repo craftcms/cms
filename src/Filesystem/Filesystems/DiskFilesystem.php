@@ -137,12 +137,13 @@ class DiskFilesystem extends Fs
                 $dirname = '';
             }
 
+            $isDir = $item->isDir();
             yield new FsListing([
                 'dirname' => $dirname,
                 'basename' => pathinfo($uri, PATHINFO_BASENAME),
-                'type' => $item->isDir() ? 'dir' : 'file',
+                'type' => $isDir ? 'dir' : 'file',
                 'dateModified' => $item->lastModified(),
-                'fileSize' => ! $item->isDir() && method_exists($item, 'fileSize') ? $item->fileSize() : null,
+                'fileSize' => ! $isDir && method_exists($item, 'fileSize') ? $item->fileSize() : null,
             ]);
         }
     }
@@ -332,7 +333,10 @@ class DiskFilesystem extends Fs
             $parentPath = '';
         }
 
-        $newPath = ($parentPath !== '' ? "$parentPath/" : '').$newName;
+        $newPath = $newName;
+        if ($parentPath !== '') {
+            $newPath = "$parentPath/$newName";
+        }
         if ($newPath === $path) {
             return;
         }
@@ -389,7 +393,10 @@ class DiskFilesystem extends Fs
 
     private function logLegacyOperationDeprecation(string $method): void
     {
-        $methodName = str_contains($method, '::') ? explode('::', $method)[1] : $method;
+        $methodName = $method;
+        if (str_contains($method, '::')) {
+            [, $methodName] = explode('::', $method, 2);
+        }
 
         Deprecator::log(
             sprintf('filesystem-legacy-operation:%s::%s', static::class, $methodName),

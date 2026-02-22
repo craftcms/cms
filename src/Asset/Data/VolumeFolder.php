@@ -95,7 +95,12 @@ final class VolumeFolder extends Component implements Stringable
 
     public function __toString(): string
     {
-        return (string) $this->name ?: self::class;
+        $name = (string) $this->name;
+        if ($name) {
+            return $name;
+        }
+
+        return self::class;
     }
 
     /**
@@ -137,9 +142,10 @@ final class VolumeFolder extends Component implements Stringable
         $canCreate = Gate::check("createFolders:$volume->uid");
         $canDelete = Gate::check("deletePeerAssets:$volume->uid");
         $canMove = $canDelete && Gate::check("savePeerAssets:$volume->uid");
+        $path = $this->path ? sprintf('/%s', trim($this->path, '/')) : '';
 
         $info = [
-            'uri' => sprintf('assets/%s%s', $volume->handle, $this->path ? sprintf('/%s', trim($this->path, '/')) : ''),
+            'uri' => sprintf('assets/%s%s', $volume->handle, $path),
             'folderId' => (int) $this->id,
             'hasChildren' => $this->getHasChildren(),
             'canView' => $canView,

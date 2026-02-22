@@ -190,8 +190,7 @@ final class Filesystems
 
         $fs->afterSave($isNewFs);
 
-        $this->_filesystems = null;
-        $this->syncDiskRegistrations();
+        $this->reset();
 
         return true;
     }
@@ -235,8 +234,7 @@ final class Filesystems
 
         app(ProjectConfig::class)->remove(sprintf('%s.%s', ProjectConfig::PATH_FS, $fs->handle), "Remove the “{$fs->handle}” filesystem");
 
-        $this->_filesystems = null;
-        $this->syncDiskRegistrations();
+        $this->reset();
 
         $fs->afterDelete();
 
@@ -248,8 +246,7 @@ final class Filesystems
      */
     public function handleChangedFilesystem(): void
     {
-        $this->_filesystems = null;
-        $this->syncDiskRegistrations();
+        $this->reset();
     }
 
     /**
@@ -257,12 +254,17 @@ final class Filesystems
      */
     public function handleDeletedFilesystem(): void
     {
-        $this->_filesystems = null;
-        $this->syncDiskRegistrations();
+        $this->reset();
     }
 
     private function syncDiskRegistrations(): void
     {
         app(DiskRegistry::class)->sync();
+    }
+
+    private function reset(): void
+    {
+        $this->_filesystems = null;
+        $this->syncDiskRegistrations();
     }
 }
