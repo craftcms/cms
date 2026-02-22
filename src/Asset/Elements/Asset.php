@@ -72,6 +72,7 @@ use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -349,9 +350,9 @@ class Asset extends Element
         $sources = [];
 
         if ($context === ElementSources::CONTEXT_INDEX) {
-            $volumeIds = Craft::$app->getVolumes()->getViewableVolumeIds();
+            $volumeIds = Volumes::getViewableVolumeIds();
         } else {
-            $volumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
+            $volumeIds = Volumes::getAllVolumeIds();
         }
 
         $assetsService = Craft::$app->getAssets();
@@ -431,10 +432,10 @@ class Asset extends Element
     {
         if ($source !== null && preg_match('/^volume:(.+)$/', $source, $matches)) {
             $volumes = array_filter([
-                Craft::$app->getVolumes()->getVolumeByUid($matches[1]),
+                Volumes::getVolumeByUid($matches[1]),
             ]);
         } else {
-            $volumes = Craft::$app->getVolumes()->getAllVolumes();
+            $volumes = Volumes::getAllVolumes()->all();
         }
 
         return array_map(fn (Volume $volume) => $volume->getFieldLayout(), $volumes);
@@ -446,7 +447,7 @@ class Asset extends Element
         $actions = [];
 
         if (preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches)) {
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]);
+            $volume = Volumes::getVolumeByUid($matches[1]);
         } elseif (preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches)) {
             $folder = Craft::$app->getAssets()->getFolderByUid($matches[1]);
             $volume = $folder?->getVolume();
@@ -1283,7 +1284,7 @@ class Asset extends Element
         // Is the volume’s source enabled?
         $elementSourcesService = app(\CraftCms\Cms\Element\ElementSources::class);
         if ($elementSourcesService->sourceExists(Asset::class, "volume:$volume->uid")) {
-            $volumes = Collection::make(Craft::$app->getVolumes()->getViewableVolumes());
+            $volumes = Volumes::getViewableVolumes();
 
             // Filter out any volumes that don’t have an enabled source
             $sources = $elementSourcesService->getSources(Asset::class);
@@ -1860,13 +1861,11 @@ JS, [
             return $this->_volume;
         }
 
-        $volumesService = Craft::$app->getVolumes();
-
         if (! isset($this->_volumeId)) {
-            return $volumesService->getTemporaryVolume();
+            return Volumes::getTemporaryVolume();
         }
 
-        if (($volume = $volumesService->getVolumeById($this->_volumeId)) === null) {
+        if (($volume = Volumes::getVolumeById($this->_volumeId)) === null) {
             throw new InvalidConfigException('Invalid volume ID: '.$this->_volumeId);
         }
 

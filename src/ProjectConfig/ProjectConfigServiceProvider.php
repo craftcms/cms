@@ -26,6 +26,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Support\Facades\Event;
@@ -87,9 +88,9 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             ->onUpdate(ProjectConfig::PATH_FS.'.{uid}', fn (ConfigEvent $event) => app(Filesystems::class)->handleChangedFilesystem($event))
             ->onRemove(ProjectConfig::PATH_FS.'.{uid}', fn (ConfigEvent $event) => app(Filesystems::class)->handleDeletedFilesystem($event))
             // Volumes
-            ->onAdd(ProjectConfig::PATH_VOLUMES.'.{uid}', $this->proxy('volumes', 'handleChangedVolume'))
-            ->onUpdate(ProjectConfig::PATH_VOLUMES.'.{uid}', $this->proxy('volumes', 'handleChangedVolume'))
-            ->onRemove(ProjectConfig::PATH_VOLUMES.'.{uid}', $this->proxy('volumes', 'handleDeletedVolume'))
+            ->onAdd(ProjectConfig::PATH_VOLUMES.'.{uid}', fn (ConfigEvent $event) => Volumes::handleChangedVolume($event))
+            ->onUpdate(ProjectConfig::PATH_VOLUMES.'.{uid}', fn (ConfigEvent $event) => Volumes::handleChangedVolume($event))
+            ->onRemove(ProjectConfig::PATH_VOLUMES.'.{uid}', fn (ConfigEvent $event) => Volumes::handleDeletedVolume($event))
             // Transforms
             ->onAdd(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', $this->proxy('imageTransforms', 'handleChangedTransform'))
             ->onUpdate(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', $this->proxy('imageTransforms', 'handleChangedTransform'))

@@ -12,6 +12,7 @@ use craft\events\FormActionsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
@@ -262,7 +263,7 @@ class Cp extends Component
             }
         }
 
-        if (Craft::$app->getVolumes()->getTotalViewableVolumes()) {
+        if (app(Volumes::class)->getTotalViewableVolumes()) {
             $navItems[] = [
                 'label' => t('Assets'),
                 'url' => 'assets',

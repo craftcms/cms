@@ -9,6 +9,7 @@ use craft\helpers\App;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Events\ListVolumes;
@@ -48,7 +49,7 @@ final class AssetIndexes extends Utility
      */
     public static function volumes(): array
     {
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+        $volumes = Volumes::getAllVolumes()->all();
 
         event($event = new ListVolumes($volumes));
 

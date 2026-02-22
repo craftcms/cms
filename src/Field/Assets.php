@@ -36,6 +36,7 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -602,9 +603,8 @@ final class Assets extends BaseRelationField
             return null;
         }
 
-        $volumesService = Craft::$app->getVolumes();
-        $volumeIds = array_filter(array_map(function (string $uid) use ($volumesService) {
-            $volume = $volumesService->getVolumeByUid($uid);
+        $volumeIds = array_filter(array_map(function (string $uid) {
+            $volume = Volumes::getVolumeByUid($uid);
 
             return $volume->id ?? null;
         }, $volumeUids));
@@ -656,10 +656,8 @@ final class Assets extends BaseRelationField
 
         // Now enforce the showUnpermittedVolumes setting
         if (! $this->showUnpermittedVolumes && ! empty($sources)) {
-            $volumesService = Craft::$app->getVolumes();
-
             return Collection::make($sources)
-                ->filter(function (string $source) use ($volumesService) {
+                ->filter(function (string $source) {
                     // If it’s not a volume folder, let it through
                     if (! str_starts_with($source, 'volume:')) {
                         return true;
@@ -671,7 +669,7 @@ final class Assets extends BaseRelationField
                         return true;
                     }
 
-                    $volume = $volumesService->getVolumeByUid($volumeUid);
+                    $volume = Volumes::getVolumeByUid($volumeUid);
 
                     return $volume?->getFs() instanceof Temp;
                 })
@@ -961,7 +959,7 @@ final class Assets extends BaseRelationField
             return null;
         }
 
-        return Craft::$app->getVolumes()->getVolumeByUid($parts[1]);
+        return Volumes::getVolumeByUid($parts[1]);
     }
 
     /**

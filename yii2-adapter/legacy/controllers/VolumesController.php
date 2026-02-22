@@ -13,6 +13,7 @@ use craft\helpers\FileHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Field\Field;
@@ -68,7 +69,7 @@ class VolumesController extends Controller
     public function actionVolumeIndex(): Response
     {
         $variables = [];
-        $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
+        $variables['volumes'] = app(Volumes::class)->getAllVolumes();
         $variables['readOnly'] = $this->readOnly;
 
         return $this->rendertemplate('settings/assets/volumes/_index', $variables);
@@ -89,7 +90,7 @@ class VolumesController extends Controller
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
         }
 
-        $volumesServices = Craft::$app->getVolumes();
+        $volumesServices = app(Volumes::class);
 
         if ($volume === null) {
             if ($volumeId !== null) {
@@ -189,7 +190,7 @@ class VolumesController extends Controller
     {
         $this->requirePostRequest();
 
-        $volumesService = Craft::$app->getVolumes();
+        $volumesService = app(Volumes::class);
         $volumeId = $this->request->getBodyParam('volumeId') ?: null;
 
         if ($volumeId) {
@@ -243,7 +244,7 @@ class VolumesController extends Controller
         $this->requireAcceptsJson();
 
         $volumeIds = Json::decode($this->request->getRequiredBodyParam('ids'));
-        Craft::$app->getVolumes()->reorderVolumes($volumeIds);
+        app(Volumes::class)->reorderVolumes($volumeIds);
 
         return $this->asSuccess();
     }
@@ -260,7 +261,7 @@ class VolumesController extends Controller
 
         $volumeId = $this->request->getRequiredBodyParam('id');
 
-        Craft::$app->getVolumes()->deleteVolumeById($volumeId);
+        app(Volumes::class)->deleteVolumeById($volumeId);
 
         return $this->asSuccess();
     }

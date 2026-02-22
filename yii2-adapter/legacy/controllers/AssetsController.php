@@ -28,6 +28,7 @@ use craft\web\UploadedFile;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
@@ -104,7 +105,7 @@ class AssetsController extends Controller
 
         if ($defaultSource) {
             $defaultSourcePath = Arr::whereNotEmpty(explode('/', $defaultSource));
-            $volumesService = Craft::$app->getVolumes();
+            $volumesService = app(Volumes::class);
             $volume = $volumesService->getVolumeByHandle(array_shift($defaultSourcePath));
 
             if ($volume) {

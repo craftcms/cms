@@ -57,6 +57,7 @@ use craft\helpers\Db as DbHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -1746,9 +1747,9 @@ class Gql extends Component
         $queryComponents = [];
         $mutationComponents = [];
 
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+        $volumes = app(Volumes::class)->getAllVolumes();
 
-        if (!empty($volumes)) {
+        if ($volumes->isNotEmpty()) {
             foreach ($volumes as $volume) {
                 $name = t($volume->name, category: 'site');
                 $prefix = "volumes.$volume->uid";

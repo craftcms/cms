@@ -12,6 +12,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
@@ -67,7 +68,7 @@ class PhotoField extends BaseNativeField
             return null;
         }
 
-        $volume = Craft::$app->getVolumes()->getVolumeByUid($volumeUid);
+        $volume = Volumes::getVolumeByUid($volumeUid);
         if (! $volume) {
             return null;
         }

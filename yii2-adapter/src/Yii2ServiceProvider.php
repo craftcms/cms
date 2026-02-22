@@ -72,6 +72,7 @@ use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Users;
 use craft\services\Utilities;
+use craft\services\Volumes;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
@@ -657,6 +658,7 @@ class Yii2ServiceProvider extends ServiceProvider
         UserPermissions::registerEvents();
         Users::registerEvents();
         View::registerEvents();
+        Volumes::registerEvents();
 
         /**
          * Controllers

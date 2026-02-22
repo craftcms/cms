@@ -38,6 +38,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
@@ -555,7 +556,7 @@ class Assets extends Component
     public function getRootFolderByVolumeId(int $volumeId): ?VolumeFolder
     {
         if (!array_key_exists($volumeId, $this->_rootFolders)) {
-            $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
+            $volume = app(Volumes::class)->getVolumeById($volumeId);
             if (!$volume) {
                 // todo: throw an InvalidArgumentException
                 return $this->_rootFolders[$volumeId] = null;

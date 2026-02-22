@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Asset\Data;
 use Craft;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Traits\Macroable;
@@ -113,10 +114,10 @@ final class VolumeFolder extends Component implements Stringable
     public function getVolume(): Volume
     {
         if ($this->volumeId === null) {
-            return Craft::$app->getVolumes()->getTemporaryVolume();
+            return Volumes::getTemporaryVolume();
         }
 
-        if (($volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId)) === null) {
+        if (($volume = Volumes::getVolumeById($this->volumeId)) === null) {
             throw new RuntimeException('Invalid volume ID: '.$this->volumeId);
         }
 

@@ -18,6 +18,7 @@ use craft\gql\types\elements\Asset;
 use craft\helpers\Gql as GqlHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Asset\Volumes;
 
 /**
  * Class AssetType
@@ -32,7 +33,7 @@ class AssetType extends Generator implements GeneratorInterface, SingleGenerator
      */
     public static function generateTypes(mixed $context = null): array
     {
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+        $volumes = app(Volumes::class)->getAllVolumes();
         $gqlTypes = [];
 
         foreach ($volumes as $volume) {

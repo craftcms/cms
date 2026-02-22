@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Conditions;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Volumes;
 
 use function CraftCms\Cms\t;
 
@@ -29,17 +28,13 @@ final class VolumeConditionRule extends BaseMultiSelectConditionRule implements 
 
     protected function options(): array
     {
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
-
-        return Arr::pluck($volumes, 'name', 'uid');
+        return Volumes::getAllVolumes()->pluck('name', 'uid')->all();
     }
 
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var AssetQuery $query */
-        $volumes = Craft::$app->getVolumes();
-
-        $query->volumeId($this->paramValue(fn ($uid) => $volumes->getVolumeByUid($uid)->id ?? null));
+        $query->volumeId($this->paramValue(fn ($uid) => Volumes::getVolumeByUid($uid)->id ?? null));
     }
 
     public function matchElement(ElementInterface $element): bool

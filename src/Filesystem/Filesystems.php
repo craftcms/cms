@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Filesystem;
 
-use Craft;
 use craft\helpers\Component as ComponentHelper;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Support\Collection;
@@ -138,8 +138,7 @@ final class Filesystems
                 $this->removeFilesystem($existingFilesystem);
 
                 // Update volumes that were pointing to the old handle if they were hard-coded.
-                $volumesService = Craft::$app->getVolumes();
-                $volumes = $volumesService->getAllVolumes();
+                $volumes = Volumes::getAllVolumes();
                 foreach ($volumes as $volume) {
                     $changed = false;
                     if ($volume->getFsHandle(false) === $fs->oldHandle) {
@@ -153,7 +152,7 @@ final class Filesystems
                     }
 
                     if ($changed) {
-                        $volumesService->saveVolume($volume);
+                        Volumes::saveVolume($volume);
                     }
                 }
 

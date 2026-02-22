@@ -10,6 +10,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -157,7 +158,7 @@ trait QueriesAssetLocation
     {
         if (Query::normalizeParam($value, function ($item) {
             if (is_string($item)) {
-                $item = Craft::$app->getVolumes()->getVolumeByHandle($item);
+                $item = Volumes::getVolumeByHandle($item);
             }
 
             if (is_numeric($item)) {

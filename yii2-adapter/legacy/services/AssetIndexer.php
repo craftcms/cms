@@ -28,6 +28,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Data\FsListing;
@@ -192,10 +193,10 @@ class AssetIndexer extends Component
         bool $listEmptyFolders = false,
     ): AssetIndexingSession {
         $volumeList = [];
-        $volumeService = Craft::$app->getVolumes();
+        $volumeService = app(Volumes::class);
 
         if ($volumes[0] == '*') {
-            $volumeList = $volumeService->getAllVolumes();
+            $volumeList = $volumeService->getAllVolumes()->all();
         } else {
             foreach ($volumes as $volumeId) {
                 if ($volume = $volumeService->getVolumeById((int) $volumeId)) {
@@ -436,7 +437,7 @@ class AssetIndexer extends Component
             ->get();
 
         $skipped = [];
-        $volumes = Craft::$app->getVolumes();
+        $volumes = app(Volumes::class);
 
         foreach ($skippedItems as $skippedItem) {
             $skipped[] = $volumes->getVolumeById((int) $skippedItem->volumeId)->name . '/' . $skippedItem->uri;
@@ -806,7 +807,7 @@ class AssetIndexer extends Component
 
         if (!$folder) {
             /** @var Volume $volume */
-            $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
+            $volume = app(Volumes::class)->getVolumeById($indexEntry->volumeId);
             $folder = $assets->ensureFolderByFullPathAndVolume($path, $volume);
         } else {
             $volume = $folder->getVolume();
@@ -939,7 +940,7 @@ class AssetIndexer extends Component
         ]);
 
         /** @var Volume $volume */
-        $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
+        $volume = app(Volumes::class)->getVolumeById($indexEntry->volumeId);
 
         if (!$folder && !$createIfMissing) {
             throw new MissingVolumeFolderException($indexEntry, $volume, $indexEntry->uri);

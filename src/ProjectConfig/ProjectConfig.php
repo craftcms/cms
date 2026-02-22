@@ -44,6 +44,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -1816,7 +1817,7 @@ final class ProjectConfig
      */
     private function _getVolumeData(): array
     {
-        return collect(Craft::$app->getVolumes()->getAllVolumes())
+        return Volumes::getAllVolumes()
             ->mapWithKeys(fn (Volume $volume) => [$volume->uid => $volume->getConfig()])
             ->all();
     }
