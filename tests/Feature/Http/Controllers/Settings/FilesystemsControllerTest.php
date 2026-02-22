@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Http\Controllers\FilesystemsController;
+use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
