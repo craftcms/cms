@@ -82,6 +82,7 @@ use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume as AssetVolume;
+use CraftCms\Cms\Asset\Data\VolumeFolder as AssetVolumeFolder;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
@@ -363,6 +364,7 @@ class Yii2ServiceProvider extends ServiceProvider
         User::mixin(new UserMixin());
         AssetVolume::mixin(new ValidateMixin());
         AssetVolume::mixin(new VolumeMixin());
+        AssetVolumeFolder::mixin(new ValidateMixin());
         Widget::mixin(new ValidateMixin());
     }
 
