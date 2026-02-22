@@ -3,6 +3,7 @@
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\helpers\Assets;
 use CraftCms\Cms\Cp\SelectOptions;
+use CraftCms\Cms\Support\Facades\Filesystems;
 
 describe('getEnvSuggestions', function () {
     it('returns environment variable suggestions without aliases', function () {
@@ -272,7 +273,7 @@ describe('getFsOptions', function () {
         $options = SelectOptions::getFsOptions();
 
         foreach ($options as $option) {
-            $fs = Craft::$app->getFs()->getFilesystemByHandle($option['value']);
+            $fs = Filesystems::getFilesystemByHandle($option['value']);
             if ($fs) {
                 expect(Assets::isTempUploadFs($fs))->toBeFalse();
             }

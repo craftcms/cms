@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use craft\base\Fs;
+use craft\fs\Local;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\DiskRegistry;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
@@ -26,7 +29,7 @@ it('is a singleton and is available via the facade', function () {
 });
 
 it('keeps the legacy base Fs class as a subclass of the new filesystem base', function () {
-    expect(is_subclass_of(\craft\base\Fs::class, Filesystem::class))->toBeTrue();
+    expect(is_subclass_of(Fs::class, Filesystem::class))->toBeTrue();
 });
 
 it('can register extra filesystem types through an event', function () {
@@ -82,12 +85,12 @@ it('dispatches a filesystem renamed event when renaming', function () {
 
     expect($this->service->saveFilesystem($filesystem, false))->toBeTrue();
 
-    Event::assertDispatched(fn (\CraftCms\Cms\Filesystem\Events\FilesystemRenamed $event) => $event->filesystem->handle === 'service-rename-new');
+    Event::assertDispatched(fn (FilesystemRenamed $event) => $event->filesystem->handle === 'service-rename-new');
 });
 
 it('validates local filesystems with laravel path requirements', function () {
-    $filesystem = \Craft::$app->getFs()->createFilesystem([
-        'type' => \craft\fs\Local::class,
+    $filesystem = FilesystemsFacade::createFilesystem([
+        'type' => Local::class,
         'name' => 'Missing Path',
         'handle' => 'missingPath',
     ]);
@@ -97,8 +100,8 @@ it('validates local filesystems with laravel path requirements', function () {
 });
 
 it('rejects local filesystems inside system directories', function () {
-    $filesystem = \Craft::$app->getFs()->createFilesystem([
-        'type' => \craft\fs\Local::class,
+    $filesystem = FilesystemsFacade::createFilesystem([
+        'type' => Local::class,
         'name' => 'System Path',
         'handle' => 'systemPath',
         'settings' => [
@@ -111,14 +114,14 @@ it('rejects local filesystems inside system directories', function () {
 });
 
 it('applies configured default visibility modes during construction', function () {
-    $generalConfig = \CraftCms\Cms\Cms::config();
+    $generalConfig = Cms::config();
     $previousFileMode = $generalConfig->defaultFileMode;
     $previousDirMode = $generalConfig->defaultDirMode;
     $generalConfig->defaultFileMode = 0600;
     $generalConfig->defaultDirMode = 0700;
 
     try {
-        $filesystem = new \craft\fs\Local([
+        $filesystem = new Local([
             'name' => 'Visibility Modes',
             'handle' => 'visibilityModes',
             'path' => sys_get_temp_dir().'/visibility-modes-fs',

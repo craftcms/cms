@@ -34,6 +34,7 @@ use yii\base\Component;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 4.0.0
+ * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Filesystem\Filesystems} instead.
  */
 class Fs extends Component
 {

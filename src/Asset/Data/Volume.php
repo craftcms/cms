@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Data;
 
 use Closure;
-use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
@@ -22,6 +21,7 @@ use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\MissingFs;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -353,7 +353,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             return self::STORAGE_DISK_PREFIX.$diskName;
         }
 
-        if (Craft::$app->getFs()->getFilesystemByHandle($value)) {
+        if (Filesystems::getFilesystemByHandle($value)) {
             return self::STORAGE_FS_PREFIX.$value;
         }
 
@@ -378,7 +378,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             return $value;
         }
 
-        if (Craft::$app->getFs()->getFilesystemByHandle($value)) {
+        if (Filesystems::getFilesystemByHandle($value)) {
             return $value;
         }
 
@@ -394,7 +394,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         if (str_starts_with($target, self::STORAGE_FS_PREFIX)) {
             $handle = substr($target, strlen(self::STORAGE_FS_PREFIX));
 
-            return Craft::$app->getFs()->getFilesystemByHandle($handle);
+            return Filesystems::getFilesystemByHandle($handle);
         }
 
         if (str_starts_with($target, self::STORAGE_DISK_PREFIX)) {
@@ -732,7 +732,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
                 throw new InvalidConfigException('Volume has an invalid filesystem handle.');
             }
 
-            return Craft::$app->getFs()->toDiskName($handle);
+            return Filesystems::toDiskName($handle);
         }
 
         throw new InvalidConfigException('Volume has an invalid filesystem handle.');

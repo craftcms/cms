@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\FilesystemsController;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -92,8 +93,7 @@ test('edit returns 200 for non-existent filesystem handle and shows create form'
 
 test('edit loads existing filesystem by handle', function () {
     // Create a test filesystem
-    $fsService = Craft::$app->getFs();
-    $fs = $fsService->createFilesystem([
+    $fs = Filesystems::createFilesystem([
         'type' => 'craft\fs\Local',
         'name' => 'Test Filesystem',
         'handle' => 'testFilesystem',
@@ -102,22 +102,21 @@ test('edit loads existing filesystem by handle', function () {
         ],
     ]);
 
-    $fsService->saveFilesystem($fs);
+    Filesystems::saveFilesystem($fs);
 
     $response = get(action([FilesystemsController::class, 'edit'], ['testFilesystem']));
 
     $response->assertOk();
 
     // Verify filesystem exists after save
-    $savedFs = $fsService->getFilesystemByHandle('testFilesystem');
+    $savedFs = Filesystems::getFilesystemByHandle('testFilesystem');
     expect($savedFs)->not()->toBeNull();
     expect($savedFs->name)->toBe('Test Filesystem');
 });
 
 test('edit loads filesystem and shows actions when not in read-only mode', function () {
     // Create a test filesystem first
-    $fsService = Craft::$app->getFs();
-    $fs = $fsService->createFilesystem([
+    $fs = Filesystems::createFilesystem([
         'type' => 'craft\fs\Local',
         'name' => 'Test Filesystem For Actions',
         'handle' => 'testFilesystemActions',
@@ -126,7 +125,7 @@ test('edit loads filesystem and shows actions when not in read-only mode', funct
         ],
     ]);
 
-    $fsService->saveFilesystem($fs);
+    Filesystems::saveFilesystem($fs);
 
     $response = get(action([FilesystemsController::class, 'edit'], ['testFilesystemActions']));
 
@@ -148,15 +147,14 @@ test('save creates filesystem with valid data', function () {
     $response->assertOk();
 
     // Verify filesystem was created
-    $fs = Craft::$app->getFs()->getFilesystemByHandle('newTestFilesystem');
+    $fs = Filesystems::getFilesystemByHandle('newTestFilesystem');
     expect($fs)->not()->toBeNull();
     expect($fs->name)->toBe('New Test Filesystem');
 });
 
 test('save updates existing filesystem with oldHandle', function () {
     // Create a filesystem first
-    $fsService = Craft::$app->getFs();
-    $fs = $fsService->createFilesystem([
+    $fs = Filesystems::createFilesystem([
         'type' => 'craft\fs\Local',
         'name' => 'Original Name',
         'handle' => 'originalHandle',
@@ -165,7 +163,7 @@ test('save updates existing filesystem with oldHandle', function () {
         ],
     ]);
 
-    $fsService->saveFilesystem($fs);
+    Filesystems::saveFilesystem($fs);
 
     // Update it
     $response = postJson(action([FilesystemsController::class, 'save']), [
@@ -183,11 +181,11 @@ test('save updates existing filesystem with oldHandle', function () {
     $response->assertOk();
 
     // Verify old handle doesn't exist
-    $oldFs = $fsService->getFilesystemByHandle('originalHandle');
+    $oldFs = Filesystems::getFilesystemByHandle('originalHandle');
     expect($oldFs)->toBeNull();
 
     // Verify new handle exists
-    $newFs = $fsService->getFilesystemByHandle('updatedHandle');
+    $newFs = Filesystems::getFilesystemByHandle('updatedHandle');
     expect($newFs)->not()->toBeNull();
     expect($newFs->name)->toBe('Updated Name');
 });
@@ -212,8 +210,7 @@ test('delete validates required id field', function () {
 
 test('delete removes filesystem successfully', function () {
     // Create a filesystem to delete
-    $fsService = Craft::$app->getFs();
-    $fs = $fsService->createFilesystem([
+    $fs = Filesystems::createFilesystem([
         'type' => 'craft\fs\Local',
         'name' => 'To Delete',
         'handle' => 'toDelete',
@@ -222,7 +219,7 @@ test('delete removes filesystem successfully', function () {
         ],
     ]);
 
-    $fsService->saveFilesystem($fs);
+    Filesystems::saveFilesystem($fs);
 
     // Delete it
     $response = postJson(action([FilesystemsController::class, 'delete']), [
@@ -232,7 +229,7 @@ test('delete removes filesystem successfully', function () {
     $response->assertOk();
 
     // Verify it's deleted
-    $deletedFs = $fsService->getFilesystemByHandle('toDelete');
+    $deletedFs = Filesystems::getFilesystemByHandle('toDelete');
     expect($deletedFs)->toBeNull();
 });
 

@@ -980,6 +980,7 @@ trait ApplicationTrait
      * @return Fs The filesystems service
      *
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems} instead.
      */
     public function getFs(): Fs
     {

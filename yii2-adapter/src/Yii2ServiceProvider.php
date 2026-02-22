@@ -112,6 +112,7 @@ use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -190,7 +191,7 @@ class Yii2ServiceProvider extends ServiceProvider
                 $app->make('Craft');
             }
 
-            $filesystem = Craft::$app->getFs()->getFilesystemByHandle($handle);
+            $filesystem = Filesystems::getFilesystemByHandle($handle);
             if (!$filesystem instanceof FsInterface) {
                 throw new InvalidArgumentException("Craft filesystem [$handle] is not registered.");
             }

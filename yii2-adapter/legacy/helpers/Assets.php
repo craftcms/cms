@@ -26,6 +26,7 @@ use CraftCms\Cms\Filesystem\Temp;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
@@ -1011,7 +1012,7 @@ class Assets
                 : null;
         }
 
-        if (Craft::$app->getFs()->getFilesystemByHandle($handle)) {
+        if (Filesystems::getFilesystemByHandle($handle)) {
             return $handle;
         }
 

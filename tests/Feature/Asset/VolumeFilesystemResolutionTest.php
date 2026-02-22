@@ -8,6 +8,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -274,7 +275,7 @@ it('supports macro-backed legacy methods and property assignment', function () {
 
 function createVolumeLocalFilesystem(string $handle): FsInterface
 {
-    $filesystem = Craft::$app->getFs()->createFilesystem([
+    $filesystem = Filesystems::createFilesystem([
         'type' => 'craft\\fs\\Local',
         'name' => $handle,
         'handle' => $handle,
@@ -283,7 +284,7 @@ function createVolumeLocalFilesystem(string $handle): FsInterface
         ],
     ]);
 
-    expect(Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
+    expect(Filesystems::saveFilesystem($filesystem, false))->toBeTrue();
 
     return $filesystem;
 }

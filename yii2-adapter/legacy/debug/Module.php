@@ -10,10 +10,11 @@
 namespace craft\debug;
 
 use Craft;
-use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use craft\web\View;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use yii\base\InvalidConfigException;
@@ -126,8 +127,8 @@ class Module extends \yii\debug\Module
             return Storage::disk($handle);
         }
 
-        if (Craft::$app->getFs()->getFilesystemByHandle($handle)) {
-            return Storage::disk(Craft::$app->getFs()->toDiskName($handle));
+        if (Filesystems::getFilesystemByHandle($handle)) {
+            return Filesystems::disk($handle);
         }
 
         throw new InvalidConfigException("Invalid debug filesystem handle: $handle");

@@ -20,6 +20,7 @@ use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Local;
 use CraftCms\Cms\Filesystem\Temp;
+use CraftCms\Cms\Support\Facades\Filesystems as FilesystemsFacade;
 use Illuminate\Support\Facades\Storage;
 use yii\base\Event as YiiEvent;
 
@@ -28,9 +29,9 @@ it('registers Craft filesystems as Laravel disks and exposes helper accessors', 
 
     expect(config('filesystems.disks.craft-fs-bridge-helper.driver'))->toBe(LegacyFsFlysystemAdapter::DISK_DRIVER)
         ->and(config('filesystems.disks.craft-fs-bridge-helper.fsHandle'))->toBe('bridge-helper')
-        ->and(Craft::$app->getFs()->toDiskName('bridge-helper'))->toBe('craft-fs-bridge-helper');
+        ->and(FilesystemsFacade::toDiskName('bridge-helper'))->toBe('craft-fs-bridge-helper');
 
-    $disk = Craft::$app->getFs()->disk('bridge-helper');
+    $disk = FilesystemsFacade::disk('bridge-helper');
     expect($disk->put('helper.txt', 'helper'))->toBeTrue();
 
     expect(Storage::disk('craft-fs-bridge-helper')->get('helper.txt'))->toBe('helper');
@@ -45,21 +46,21 @@ it('syncs and purges Craft disk registrations when filesystems are renamed or de
     $filesystem->handle = 'bridge-new';
     $filesystem->name = 'Bridge New';
 
-    expect(Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
+    expect(FilesystemsFacade::saveFilesystem($filesystem, false))->toBeTrue();
 
     expect(config('filesystems.disks.craft-fs-bridge-old'))->toBeNull()
         ->and(config('filesystems.disks.craft-fs-bridge-new.fsHandle'))->toBe('bridge-new');
 
     expect(fn () => Storage::disk('craft-fs-bridge-old'))->toThrow(InvalidArgumentException::class);
 
-    expect(Craft::$app->getFs()->removeFilesystem($filesystem))->toBeTrue();
+    expect(FilesystemsFacade::removeFilesystem($filesystem))->toBeTrue();
     expect(config('filesystems.disks.craft-fs-bridge-new'))->toBeNull();
     expect(fn () => Storage::disk('craft-fs-bridge-new'))->toThrow(InvalidArgumentException::class);
 });
 
 it('bridges disk operations through Craft handle disks', function () {
     createBridgeLocalFilesystem('bridge-ops');
-    $disk = Craft::$app->getFs()->disk('bridge-ops');
+    $disk = FilesystemsFacade::disk('bridge-ops');
     $bridgeDisk = Storage::disk('craft-fs-bridge-ops');
 
     $disk->put('from-disk.txt', 'from disk');
@@ -101,7 +102,7 @@ it('provides Laravel disk configuration for built-in filesystem classes', functi
         ->toHaveKey('root', $localFilesystem->getRootPath());
 
     $laravelDiskFs = new DiskFilesystem([
-        'disk' => Craft::$app->getFs()->toDiskName('bridge-config-local'),
+        'disk' => FilesystemsFacade::toDiskName('bridge-config-local'),
     ]);
 
     expect($laravelDiskFs->getDiskConfig())
@@ -110,7 +111,7 @@ it('provides Laravel disk configuration for built-in filesystem classes', functi
 });
 
 it('provides a default bridge disk config for plugin-style legacy filesystems', function () {
-    $filesystem = Craft::$app->getFs()->createFilesystem([
+    $filesystem = FilesystemsFacade::createFilesystem([
         'type' => BridgePluginFs::class,
         'name' => 'Bridge Plugin',
         'handle' => 'bridge-plugin',
@@ -120,7 +121,7 @@ it('provides a default bridge disk config for plugin-style legacy filesystems', 
         ->toHaveKey('driver', LegacyFsFlysystemAdapter::DISK_DRIVER)
         ->toHaveKey('fsHandle', 'bridge-plugin');
 
-    expect(Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
+    expect(FilesystemsFacade::saveFilesystem($filesystem, false))->toBeTrue();
 
     $disk = Storage::disk('craft-fs-bridge-plugin');
     expect($disk->put('plugin.txt', 'plugin'))->toBeTrue()
@@ -131,7 +132,7 @@ it('falls back to the legacy bridge adapter and records a deprecation when disk 
     Deprecator::$logTarget = 'db';
     DeprecationError::query()->delete();
 
-    $filesystem = Craft::$app->getFs()->createFilesystem([
+    $filesystem = FilesystemsFacade::createFilesystem([
         'type' => BridgeFallbackLocalFs::class,
         'name' => 'Bridge Fallback',
         'handle' => 'bridge-fallback',
@@ -140,7 +141,7 @@ it('falls back to the legacy bridge adapter and records a deprecation when disk 
         ],
     ]);
 
-    expect(Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
+    expect(FilesystemsFacade::saveFilesystem($filesystem, false))->toBeTrue();
 
     $disk = Storage::disk('craft-fs-bridge-fallback');
     expect($disk->put('fallback.txt', 'fallback'))->toBeTrue()
@@ -186,7 +187,7 @@ it('bridges register filesystem types and rename events to legacy listeners', fu
 
 function createBridgeLocalFilesystem(string $handle): NewFsInterface
 {
-    $filesystem = Craft::$app->getFs()->createFilesystem([
+    $filesystem = FilesystemsFacade::createFilesystem([
         'type' => 'craft\\fs\\Local',
         'name' => $handle,
         'handle' => $handle,
@@ -195,7 +196,7 @@ function createBridgeLocalFilesystem(string $handle): NewFsInterface
         ],
     ]);
 
-    expect(Craft::$app->getFs()->saveFilesystem($filesystem, false))->toBeTrue();
+    expect(FilesystemsFacade::saveFilesystem($filesystem, false))->toBeTrue();
 
     return $filesystem;
 }

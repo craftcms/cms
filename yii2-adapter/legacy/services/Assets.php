@@ -44,6 +44,7 @@ use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Temp;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -941,7 +942,7 @@ class Assets extends Component
             throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
         }
 
-        $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
+        $fs = Filesystems::getFilesystemByHandle($handle);
         if ($fs) {
             return $fs;
         }
@@ -981,9 +982,9 @@ class Assets extends Component
             throw new InvalidConfigException("The tempAssetUploadFs config setting is set to an invalid filesystem value: $handle");
         }
 
-        $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
+        $fs = Filesystems::getFilesystemByHandle($handle);
         if ($fs) {
-            return Storage::disk(Craft::$app->getFs()->toDiskName($handle));
+            return Storage::disk(Filesystems::toDiskName($handle));
         }
 
         if ($this->diskExists($handle)) {
