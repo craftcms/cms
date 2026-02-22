@@ -720,7 +720,7 @@ class Asset extends Element
                 foreach ($folders as $folder) {
                     $sourcePath = [$baseSourcePathStep];
                     $path = rtrim($baseFolder->path ?? '', '/');
-                    $pathSegs = Arr::whereNotEmpty(explode('/', Str::chopStart($folder['path'], $baseFolder->path ?? '')));
+                    $pathSegs = Arr::whereNotEmpty(explode('/', Str::chopStart($folder->path, $baseFolder->path ?? '')));
                     foreach ($pathSegs as $i => $seg) {
                         $path .= ($path !== '' ? '/' : '').$seg;
                         if (isset($foldersByPath[$path])) {

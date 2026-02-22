@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Filesystem;
 
 use Craft;
-use craft\base\MemoizableArray;
 use craft\helpers\Component as ComponentHelper;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
@@ -26,9 +25,9 @@ use yii\base\InvalidConfigException;
 final class Filesystems
 {
     /**
-     * @var MemoizableArray<FsInterface>|null
+     * @var Collection<string,FsInterface>|null
      */
-    private ?MemoizableArray $_filesystems = null;
+    private ?Collection $filesystems = null;
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
@@ -71,29 +70,23 @@ final class Filesystems
     }
 
     /**
-     * Returns a memoizable array of all filesystems.
-     *
-     * @return MemoizableArray<FsInterface>
+     * @return Collection<string,FsInterface>
      */
-    private function _filesystems(): MemoizableArray
+    private function filesystems(): Collection
     {
-        if (isset($this->_filesystems)) {
-            return $this->_filesystems;
+        if (isset($this->filesystems)) {
+            return $this->filesystems;
         }
 
-        $configs = collect($this->projectConfig->get(ProjectConfig::PATH_FS) ?? [])
-            ->map(function (array $config, string $handle) {
+        $filesystems = collect($this->projectConfig->get(ProjectConfig::PATH_FS) ?? [])
+            ->mapWithKeys(function (array $config, string $handle): array {
                 $config['handle'] = $handle;
                 $config['settings'] = ProjectConfigHelper::unpackAssociativeArrays($config['settings'] ?? []);
 
-                return $config;
-            })
-            ->all();
+                return [$handle => $this->createFilesystem($config)];
+            });
 
-        /** @var MemoizableArray<FsInterface> $filesystems */
-        $filesystems = new MemoizableArray($configs, fn (array $config): FsInterface => $this->createFilesystem($config));
-
-        return $this->_filesystems = $filesystems;
+        return $this->filesystems = $filesystems;
     }
 
     /**
@@ -101,12 +94,12 @@ final class Filesystems
      */
     public function getAllFilesystems(): Collection
     {
-        return Collection::make($this->_filesystems()->all())->values();
+        return $this->filesystems()->values();
     }
 
     public function getFilesystemByHandle(string $handle): ?FsInterface
     {
-        return $this->_filesystems()->firstWhere('handle', $handle, true);
+        return $this->filesystems()->get($handle);
     }
 
     public function toDiskName(string $handle): string
@@ -230,7 +223,7 @@ final class Filesystems
 
     private function reset(): void
     {
-        $this->_filesystems = null;
+        $this->filesystems = null;
         $this->diskRegistry->sync();
     }
 }
