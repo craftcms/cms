@@ -458,7 +458,7 @@ final class Volume extends Component implements CpEditable, FieldLayoutProviderI
 
     private function isInternalDiskName(string $diskName): bool
     {
-        return in_array($diskName, ['craft-tmp', 'rebrand'], true) ||
+        return in_array($diskName, DiskRegistry::INTERNAL_DISK_NAMES, true) ||
             str_starts_with($diskName, DiskRegistry::PREFIX);
     }
 

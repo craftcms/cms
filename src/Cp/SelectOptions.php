@@ -287,7 +287,7 @@ class SelectOptions
                     return false;
                 }
 
-                if (in_array($diskName, ['craft-tmp', 'rebrand'], true)) {
+                if (in_array($diskName, DiskRegistry::INTERNAL_DISK_NAMES, true)) {
                     return false;
                 }
 

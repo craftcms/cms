@@ -21,6 +21,11 @@ final readonly class DiskRegistry
 
     public const string BRIDGE_DRIVER = 'craft-fs-bridge';
 
+    /**
+     * Internal disk names reserved by Craft that should not be exposed as user-selectable filesystems.
+     */
+    public const array INTERNAL_DISK_NAMES = ['craft-tmp', 'rebrand'];
+
     public function __construct(
         private ConfigRepository $config,
         private FilesystemManager $filesystems,
