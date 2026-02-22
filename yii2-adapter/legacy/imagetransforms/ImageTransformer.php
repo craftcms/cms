@@ -82,7 +82,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
         $mimeType = $asset->getMimeType();
         $generalConfig = Cms::config();
 
-        if (!$fs->hasUrls) {
+        if (!$asset->getVolume()->getFs()->hasUrls) {
             throw new NotSupportedException('The asset’s volume’s transform filesystem doesn’t have URLs.');
         }
 

@@ -700,7 +700,7 @@ class Asset extends Element
             $folderQuery = self::_createFolderQueryForIndex($elementQuery, $queryFolder);
             $totalFolders = $folderQuery->count();
 
-            if ($totalFolders > $elementQuery->offset) {
+            if ((int) $totalFolders > (int) $elementQuery->offset) {
                 $source = ElementHelper::findSource(self::class, $sourceKey);
                 if (isset($source['criteria']['folderId'])) {
                     $baseFolder = $assetsService->getFolderById($source['criteria']['folderId']);
@@ -769,7 +769,7 @@ class Asset extends Element
         // return the folders directly
         if (
             self::isFolderIndex() ||
-            count($assets) === (int) $originalLimit
+            count($assets) === $originalLimit
         ) {
             return $assets;
         }
