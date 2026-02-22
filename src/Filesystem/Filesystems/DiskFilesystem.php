@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Filesystem\Filesystems;
 use craft\base\Fs;
 use craft\errors\FsException;
 use craft\errors\FsObjectNotFoundException;
-use craft\models\FsListing;
+use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
 use Generator;

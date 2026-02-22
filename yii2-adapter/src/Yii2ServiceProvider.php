@@ -99,6 +99,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Data\FsListing as FilesystemFsListing;
 use CraftCms\Cms\Filesystem\Filesystem as FilesystemComponent;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
@@ -365,6 +366,7 @@ class Yii2ServiceProvider extends ServiceProvider
         AssetVolume::mixin(new ValidateMixin());
         AssetVolume::mixin(new VolumeMixin());
         AssetVolumeFolder::mixin(new ValidateMixin());
+        FilesystemFsListing::mixin(new ValidateMixin());
         Widget::mixin(new ValidateMixin());
     }
 
