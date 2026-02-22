@@ -131,6 +131,7 @@
     "build": "@php vendor/bin/testbench workbench:build --ansi",
     "serve": [
       "Composer\\Config::disableProcessTimeout",
+      "@php vendor/bin/testbench package:sync-skeleton --ansi",
       "@build",
       "@php vendor/bin/testbench serve --ansi"
     ]
