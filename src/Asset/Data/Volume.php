@@ -12,8 +12,6 @@ use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\CpEditable;
-use CraftCms\Cms\Component\Exceptions\InvalidCallException as ComponentInvalidCallException;
-use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
@@ -135,105 +133,9 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         parent::__construct($config);
     }
 
-    #[Override]
-    public function __get($name)
-    {
-        try {
-            return parent::__get($name);
-        } catch (ComponentInvalidCallException|UnknownPropertyException $e) {
-            $normalizedName = ucfirst((string) $name);
-            $getter = 'get'.$normalizedName;
-            if (static::hasMacro($getter)) {
-                return $this->$getter();
-            }
-
-            if (static::hasMacro('set'.$normalizedName)) {
-                throw new ComponentInvalidCallException('Getting write-only property: '.static::class.'::'.$name);
-            }
-
-            if (method_exists($this, $getter)) {
-                return $this->$getter();
-            }
-
-            if (method_exists($this, 'set'.$normalizedName)) {
-                throw new ComponentInvalidCallException('Getting write-only property: '.static::class.'::'.$name);
-            }
-
-            throw $e;
-        }
-    }
-
-    #[Override]
-    public function __set($name, $value): void
-    {
-        try {
-            parent::__set($name, $value);
-        } catch (ComponentInvalidCallException|UnknownPropertyException $e) {
-            $normalizedName = ucfirst((string) $name);
-            $setter = 'set'.$normalizedName;
-            if (static::hasMacro($setter)) {
-                $this->$setter($value);
-
-                return;
-            }
-
-            if (static::hasMacro('get'.$normalizedName)) {
-                throw new ComponentInvalidCallException('Setting read-only property: '.static::class.'::'.$name);
-            }
-
-            if (method_exists($this, $setter)) {
-                $this->$setter($value);
-
-                return;
-            }
-
-            if (method_exists($this, 'get'.$normalizedName)) {
-                throw new ComponentInvalidCallException('Setting read-only property: '.static::class.'::'.$name);
-            }
-
-            throw $e;
-        }
-    }
-
     public function __call($name, $params)
     {
         return $this->macroCall($name, $params);
-    }
-
-    public function canGetProperty($name, $checkVars = true, $checkBehaviors = true): bool
-    {
-        if ($checkVars && property_exists($this, (string) $name)) {
-            return true;
-        }
-        if (method_exists($this, 'get'.$name)) {
-            return true;
-        }
-        if (method_exists($this, 'get'.ucfirst((string) $name))) {
-            return true;
-        }
-        if (static::hasMacro('get'.$name)) {
-            return true;
-        }
-
-        return static::hasMacro('get'.ucfirst((string) $name));
-    }
-
-    public function canSetProperty($name, $checkVars = true, $checkBehaviors = true): bool
-    {
-        if ($checkVars && property_exists($this, (string) $name)) {
-            return true;
-        }
-        if (method_exists($this, 'set'.$name)) {
-            return true;
-        }
-        if (method_exists($this, 'set'.ucfirst((string) $name))) {
-            return true;
-        }
-        if (static::hasMacro('set'.$name)) {
-            return true;
-        }
-
-        return static::hasMacro('set'.ucfirst((string) $name));
     }
 
     #[Override]

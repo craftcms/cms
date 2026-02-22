@@ -16,6 +16,52 @@ use Throwable;
 
 final class VolumeMixin
 {
+    public function canGetProperty(): Closure
+    {
+        return function($name, $checkVars = true, $checkBehaviors = true): bool {
+            if ($checkVars && property_exists($this, (string) $name)) {
+                return true;
+            }
+
+            if (method_exists($this, 'get' . $name)) {
+                return true;
+            }
+
+            if (method_exists($this, 'get' . ucfirst((string) $name))) {
+                return true;
+            }
+
+            if ($this::hasMacro('get' . $name)) {
+                return true;
+            }
+
+            return $this::hasMacro('get' . ucfirst((string) $name));
+        };
+    }
+
+    public function canSetProperty(): Closure
+    {
+        return function($name, $checkVars = true, $checkBehaviors = true): bool {
+            if ($checkVars && property_exists($this, (string) $name)) {
+                return true;
+            }
+
+            if (method_exists($this, 'set' . $name)) {
+                return true;
+            }
+
+            if (method_exists($this, 'set' . ucfirst((string) $name))) {
+                return true;
+            }
+
+            if ($this::hasMacro('set' . $name)) {
+                return true;
+            }
+
+            return $this::hasMacro('set' . ucfirst((string) $name));
+        };
+    }
+
     public function getRootUrl(): Closure
     {
         return function(): ?string {
