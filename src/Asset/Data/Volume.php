@@ -683,7 +683,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
         return $this->storageDiskFor(
             $this->diskNameForOperations($hasTransformFs ? $this->_transformFsHandle : $this->_fsHandle),
-            $this->diskPrefix($hasTransformFs ? $this->_transformSubpath : null),
+            $this->diskPrefix($this->_transformSubpath),
         );
     }
 

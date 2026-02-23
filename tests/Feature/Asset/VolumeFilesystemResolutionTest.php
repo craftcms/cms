@@ -8,15 +8,12 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
+use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use yii\base\InvalidConfigException;
-
-beforeEach(function () {
-    Storage::fake();
-});
 
 it('resolves explicit disk targets to Laravel disk wrappers', function () {
     config()->set('filesystems.disks.explicit-disk', [
@@ -324,6 +321,10 @@ it('falls back to source filesystem when no transform fs handle is set', functio
 
     $transformDisk = $volume->transformDisk();
 
+    // Ensure with start with clean disks
+    $transformDisk->delete('transform.jpg');
+    Storage::disk('craft-fs-fallback-source')->delete('transform.jpg');
+
     expect($transformDisk->put('transform.jpg', 'transform-data'))->toBeTrue()
         ->and($transformDisk->exists('transform.jpg'))->toBeTrue();
 
@@ -427,7 +428,7 @@ it('serializes disk-prefixed fs handles in getConfig()', function () {
 function createVolumeLocalFilesystem(string $handle): FsInterface
 {
     $filesystem = Filesystems::createFilesystem([
-        'type' => 'craft\\fs\\Local',
+        'type' => Local::class,
         'name' => $handle,
         'handle' => $handle,
         'settings' => [
