@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
-use craft\errors\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem as FilesystemComponent;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
