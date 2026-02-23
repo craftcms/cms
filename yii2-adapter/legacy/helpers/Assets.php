@@ -159,6 +159,7 @@ class Assets
     {
         if ($fsOnly) {
             $volume = $asset->getVolume();
+            /** @var Collection<int, string> $baseUrls */
             $baseUrls = Collection::make();
 
             if ($volume->getFs()->hasUrls) {

@@ -128,7 +128,7 @@ class Module extends \yii\debug\Module
         }
 
         if (Filesystems::getFilesystemByHandle($handle)) {
-            return Filesystems::disk($handle);
+            return Filesystems::disk($handle); // @phpstan-ignore return.type
         }
 
         throw new InvalidConfigException("Invalid debug filesystem handle: $handle");

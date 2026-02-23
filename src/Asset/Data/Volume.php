@@ -43,7 +43,7 @@ use function CraftCms\Cms\t;
  * @property string $subpath
  * @property string $transformSubpath
  */
-final class Volume extends Component implements CpEditable, FieldLayoutProviderInterface
+class Volume extends Component implements CpEditable, FieldLayoutProviderInterface
 {
     use HasFieldLayout;
     use Macroable;

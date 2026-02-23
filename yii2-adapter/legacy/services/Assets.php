@@ -941,7 +941,7 @@ class Assets extends Component
     {
         $handle = Env::parse(Cms::config()->tempAssetUploadFs);
         if (!$handle) {
-            return Storage::build([
+            return Storage::build([ // @phpstan-ignore return.type
                 'driver' => 'local',
                 'root' => Craft::$app->getPath()->getTempAssetUploadsPath(),
             ]);

@@ -9,6 +9,7 @@ use craft\errors\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem as FilesystemComponent;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Generator;
 use Illuminate\Contracts\Filesystem\Filesystem;
@@ -32,6 +33,11 @@ final class VolumeMixin
                 return true;
             }
 
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             *
+             * @phpstan-ignore-next-line
+             */
             if ($this::hasMacro('get' . $name)) {
                 return true;
             }
@@ -55,6 +61,11 @@ final class VolumeMixin
                 return true;
             }
 
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             *
+             * @phpstan-ignore-next-line
+             */
             if ($this::hasMacro('set' . $name)) {
                 return true;
             }
@@ -65,7 +76,12 @@ final class VolumeMixin
 
     public function getRootUrl(): Closure
     {
-        return function(): ?string {
+        return function(): string {
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             *
+             * @phpstan-ignore-next-line
+             */
             $rootUrl = $this->getFs()->getRootUrl() ?? '';
             if ($rootUrl !== '') {
                 $rootUrl = Str::finish($rootUrl, '/');
@@ -79,6 +95,11 @@ final class VolumeMixin
     {
         return function(string $directory = '', bool $recursive = true): Generator {
             $targetDirectory = trim($directory, '/');
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             *
+             * @phpstan-ignore-next-line
+             */
             $disk = $this->sourceDisk();
 
             foreach ($disk->listContents($targetDirectory, $recursive) as $item) {
@@ -111,6 +132,11 @@ final class VolumeMixin
     {
         return function(string $uri): int {
             try {
+                /**
+                 * @var \CraftCms\Cms\Asset\Data\Volume $this
+                 *
+                 * @phpstan-ignore-next-line
+                 */
                 return $this->sourceDisk()->size($uri);
             } catch (Throwable $e) {
                 throw new FilesystemException($e->getMessage(), previous: $e);
@@ -122,6 +148,11 @@ final class VolumeMixin
     {
         return function(string $uri): int {
             try {
+                /**
+                 * @var \CraftCms\Cms\Asset\Data\Volume $this
+                 *
+                 * @phpstan-ignore-next-line
+                 */
                 return $this->sourceDisk()->lastModified($uri);
             } catch (Throwable $e) {
                 throw new FilesystemException($e->getMessage(), previous: $e);
@@ -134,6 +165,11 @@ final class VolumeMixin
         $mixin = $this;
 
         return function(string $path, string $contents, array $config = []) use ($mixin): void {
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             *
+             * @phpstan-ignore-next-line
+             */
             if (!$this->sourceDisk()->put($path, $contents, $mixin->legacyConfigForDisk($config))) {
                 throw new FilesystemException("Unable to write file at path: $path");
             }
@@ -145,6 +181,11 @@ final class VolumeMixin
         $mixin = $this;
 
         return function(string $path) use ($mixin): string {
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             *
+             * @phpstan-ignore-next-line
+             */
             $disk = $this->sourceDisk();
 
             try {
@@ -165,12 +206,17 @@ final class VolumeMixin
     {
         $mixin = $this;
 
-        return function(string $path, $stream, array $config = []): void {
+        return function(string $path, $stream, array $config = []) use ($mixin): void {
             if (!is_resource($stream)) {
                 throw new FilesystemException("Unable to write stream to path: $path");
             }
 
             try {
+                /**
+                 * @var \CraftCms\Cms\Asset\Data\Volume $this
+                 *
+                 * @phpstan-ignore-next-line
+                 */
                 if (!$this->sourceDisk()->writeStream($path, $stream, $mixin->legacyConfigForDisk($config))) {
                     throw new FilesystemException("Unable to write stream to path: $path");
                 }
@@ -182,12 +228,24 @@ final class VolumeMixin
 
     public function fileExists(): Closure
     {
-        return fn(string $path): bool => $this->sourceDisk()->exists($path);
+        return function(string $path) {
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             *
+             * @phpstan-ignore-next-line
+             */
+            return $this->sourceDisk()->exists($path);
+        };
     }
 
     public function deleteFile(): Closure
     {
         return function(string $path): void {
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             *
+             * @phpstan-ignore-next-line
+             */
             $this->sourceDisk()->delete($path);
         };
     }
@@ -195,6 +253,11 @@ final class VolumeMixin
     public function renameFile(): Closure
     {
         return function(string $path, string $newPath, array $config = []): void {
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             *
+             * @phpstan-ignore-next-line
+             */
             if (!$this->sourceDisk()->move($path, $newPath)) {
                 throw new FilesystemException("Unable to move $path to $newPath");
             }
@@ -204,6 +267,11 @@ final class VolumeMixin
     public function copyFile(): Closure
     {
         return function(string $path, string $newPath, array $config = []): void {
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             *
+             * @phpstan-ignore-next-line
+             */
             if (!$this->sourceDisk()->copy($path, $newPath)) {
                 throw new FilesystemException("Unable to copy $path to $newPath");
             }
@@ -214,7 +282,12 @@ final class VolumeMixin
     {
         $mixin = $this;
 
-        return function(string $uriPath) {
+        return function(string $uriPath) use ($mixin) {
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             *
+             * @phpstan-ignore-next-line
+             */
             $disk = $this->sourceDisk();
 
             try {
@@ -233,19 +306,29 @@ final class VolumeMixin
 
     public function directoryExists(): Closure
     {
-        return fn(string $path): bool => $this->sourceDisk()->directoryExists(trim($path, '/'));
+        return function(string $path): bool {
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @phpstan-ignore-next-line
+             */
+            return $this->sourceDisk()->directoryExists(trim($path, '/'));
+        };
     }
 
     public function createDirectory(): Closure
     {
         $mixin = $this;
 
-        return function(string $path, array $config = []): void {
+        return function(string $path, array $config = []) use ($mixin): void {
             $path = trim($path, '/');
             if ($path === '') {
                 return;
             }
 
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @phpstan-ignore-next-line
+             */
             if (!$this->sourceDisk()->makeDirectory($path, $mixin->legacyConfigForDisk($config))) {
                 throw new FilesystemException("Unable to create directory at path: $path");
             }
@@ -257,6 +340,10 @@ final class VolumeMixin
         return function(string $path = ''): bool {
             $directory = trim($path, '/');
 
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @phpstan-ignore-next-line
+             */
             if ($directory === '' && $this->getSubpath(false) === '') {
                 return false;
             }
@@ -271,6 +358,11 @@ final class VolumeMixin
 
         return function(string $path, string $newName) use ($mixin): void {
             $sourcePath = trim($path, '/');
+
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @phpstan-ignore-next-line
+             */
             $disk = $this->sourceDisk();
 
             if ($sourcePath === '' || !$disk->directoryExists($sourcePath)) {
@@ -332,11 +424,11 @@ final class VolumeMixin
             return $config;
         }
 
-        $config['visibility'] = 'public';
-        if ($config[FilesystemComponent::CONFIG_VISIBILITY] === FilesystemComponent::VISIBILITY_HIDDEN) {
+        $visibility = Arr::pull($config, FilesystemComponent::CONFIG_VISIBILITY);
+
+        if ($visibility === FilesystemComponent::VISIBILITY_HIDDEN) {
             $config['visibility'] = 'private';
         }
-        unset($config[FilesystemComponent::CONFIG_VISIBILITY]);
 
         return $config;
     }
