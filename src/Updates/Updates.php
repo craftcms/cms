@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Updates;
 
+use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Exceptions\MigrateException;
 use CraftCms\Cms\Database\Migrator;
@@ -216,7 +217,7 @@ final class Updates
 
         // Delete all compiled templates
         try {
-            File::cleanDirectory(\Craft::$app->getPath()->getCompiledTemplatesPath(false));
+            File::cleanDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
         } catch (Throwable $e) {
             Log::error('Could not delete compiled templates: '.$e->getMessage());
 

@@ -17,11 +17,12 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use PDO;
 use PDOException;
 use yii\base\ErrorException;
-use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception;
 use function CraftCms\Cms\normalizeVersion;
@@ -148,7 +149,7 @@ class Schema extends \yii\db\mysql\Schema
         } catch (Exception $e) {
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
-                Craft::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
+                Log::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), [__METHOD__]);
             } else {
                 throw $e;
             }
@@ -168,7 +169,7 @@ class Schema extends \yii\db\mysql\Schema
         } catch (Exception $e) {
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
-                Craft::warning('Tried to roll back a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
+                Log::warning('Tried to roll back a savepoint, but it does not exist: ' . $e->getMessage(), [__METHOD__]);
             } else {
                 throw $e;
             }
@@ -492,5 +493,37 @@ SQL;
         FileHelper::writeToFile($this->tempMyCnfPath, $contents, ['append']);
 
         return $this->tempMyCnfPath;
+    }
+
+    /**
+     * Returns the row format for the given table, if known.
+     *
+     * @param string $table
+     * @return string|null
+     * @throws Exception
+     * @since 5.9.6
+     */
+    public function getRowFormat(string $table): ?string
+    {
+        $sql = sprintf('SHOW CREATE TABLE %s', $this->quoteTableName($table));
+        $result = $this->db->createCommand($sql)->queryOne();
+        if (!preg_match('/\bROW_FORMAT=(\w+)\b/i', $result['Create Table'], $match)) {
+            return null;
+        }
+        return strtoupper($match[1]);
+    }
+
+    /**
+     * Sets the row format for the given table.
+     *
+     * @param string $table
+     * @param string $rowFormat
+     * @throws Exception
+     * @since 5.9.6
+     */
+    public function setRowFormat(string $table, string $rowFormat): void
+    {
+        $sql = sprintf('ALTER TABLE %s ROW_FORMAT = %s', $this->quoteTableName($table), $rowFormat);
+        $this->db->createCommand($sql)->execute();
     }
 }

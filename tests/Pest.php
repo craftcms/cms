@@ -3,16 +3,18 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Database\Queries\AssetQuery;
-use CraftCms\Cms\Database\Queries\EntryQuery;
-use CraftCms\Cms\Database\Queries\UserQuery;
+use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin;
+use CraftCms\Cms\Tests\UnitTestCase;
 
-uses(TestCase::class)->in(__DIR__);
+uses(TestCase::class)->in('Feature');
+uses(UnitTestCase::class)->in('Unit');
 
 beforeEach(function () {
     app()->forgetInstance(GeneralConfig::class);

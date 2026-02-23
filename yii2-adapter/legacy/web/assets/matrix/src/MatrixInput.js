@@ -198,7 +198,7 @@
         }
 
         for (const e of elementInfo) {
-          if (e.type !== 'craft\\elements\\Entry') {
+          if (e.type !== 'CraftCms\\Cms\\Entry\\Elements\\Entry') {
             return false;
           }
         }
@@ -613,6 +613,7 @@
     actionDisclosure: null,
     formObserver: null,
     visibleLayoutElements: null,
+    staticLayoutElements: null,
     cancelToken: null,
     ignoreFailedRequest: false,
 
@@ -722,6 +723,9 @@
 
       this.visibleLayoutElements = this.$container.data(
         'visible-layout-elements'
+      );
+      this.staticLayoutElements = this.$container.data(
+        'static-layout-elements'
       );
       this.formObserver = new Craft.FormObserver(this.$container, (data) => {
         this.updateFieldLayout(data);
@@ -1053,7 +1057,7 @@
               let entry = $(selectedItems[i]).data('entry');
 
               elementInfo.push({
-                type: 'craft\\elements\\Entry',
+                type: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
                 id:
                   entry.matrix.elementEditor?.getDraftElementId(entry.id) ||
                   entry.id,
@@ -1067,7 +1071,7 @@
           } else {
             elementInfo = [
               {
-                type: 'craft\\elements\\Entry',
+                type: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
                 id:
                   this.matrix.elementEditor?.getDraftElementId(this.id) ||
                   this.id,
@@ -1092,7 +1096,9 @@
                   'app',
                   'Are you sure you want to delete the selected {type}?',
                   {
-                    type: Craft.elementTypeNames['craft\\elements\\Entry'][3],
+                    type: Craft.elementTypeNames[
+                      'CraftCms\\Cms\\Entry\\Elements\\Entry'
+                    ][3],
                   }
                 )
               )
@@ -1149,7 +1155,8 @@
         const param = (n) => Craft.namespaceInputName(n, baseInputName);
         const extraData = {
           [param('visibleLayoutElements')]: this.visibleLayoutElements,
-          [param('elementType')]: 'craft\\elements\\Entry',
+          [param('staticLayoutElements')]: this.staticLayoutElements,
+          [param('elementType')]: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
           [param('ownerId')]: this.matrix.settings.ownerId,
           [param('fieldId')]: this.matrix.settings.fieldId,
           [param('sortOrder')]: this.$container.index() + 1,
@@ -1213,6 +1220,7 @@
       // Update the visible elements
       let $allTabContainers = $();
       const visibleLayoutElements = {};
+      const staticLayoutElements = {};
       let changedElements = false;
 
       for (const tabInfo of response.data.missingElements) {
@@ -1241,6 +1249,13 @@
               visibleLayoutElements[tabInfo.uid] = [];
             }
             visibleLayoutElements[tabInfo.uid].push(elementInfo.uid);
+
+            if (elementInfo.static) {
+              if (!staticLayoutElements[tabInfo.uid]) {
+                staticLayoutElements[tabInfo.uid] = [];
+              }
+              staticLayoutElements[tabInfo.uid].push(elementInfo.uid);
+            }
 
             if (typeof elementInfo.html === 'string') {
               const $oldElement = $tabContainer.children(
@@ -1298,6 +1313,7 @@
       }
 
       this.visibleLayoutElements = visibleLayoutElements;
+      this.staticLayoutElements = staticLayoutElements;
 
       // Update the tabs
       if (this.tabManager) {

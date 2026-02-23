@@ -9,7 +9,6 @@ namespace craft\gql\resolvers\mutations;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Asset as AssetElement;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\events\ReplaceAssetEvent;
 use craft\gql\base\ElementMutationResolver;
@@ -18,6 +17,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Volume;
 use craft\services\Assets;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Database\Table;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
@@ -27,9 +27,10 @@ use GuzzleHttp\TransferStats;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * Class Asset
@@ -101,7 +102,7 @@ class Asset extends ElementMutationResolver
 
         if (empty($newFolderId)) {
             if (!$canIdentify) {
-                /** @var \craft\elements\Asset $asset */
+                /** @var \CraftCms\Cms\Asset\Elements\Asset $asset */
                 $asset->newFolderId = $assetService->getRootFolderByVolumeId($volume->id)->id;
             }
         } else {
@@ -240,7 +241,9 @@ class Asset extends ElementMutationResolver
                 }
 
                 if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
-                    throw new AssetDisallowedExtensionException(Craft::t('app', "“{$extension}” is not an allowed file extension."));
+                    throw new AssetDisallowedExtensionException(t('“{extension}” is not an allowed file extension.', [
+                        'extension' => $extension,
+                    ]));
                 }
 
                 $tempPath = AssetsHelper::tempFilePath($extension);
@@ -263,7 +266,9 @@ class Asset extends ElementMutationResolver
 
             $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
             if (is_array($allowedExtensions) && !in_array($extension, $allowedExtensions, true)) {
-                throw new AssetDisallowedExtensionException(Craft::t('app', "“{$extension}” is not an allowed file extension."));
+                throw new AssetDisallowedExtensionException(t('“{extension}” is not an allowed file extension.', [
+                    'extension' => $extension,
+                ]));
             }
 
             // Download the file

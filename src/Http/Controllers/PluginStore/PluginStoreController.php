@@ -7,15 +7,17 @@ namespace CraftCms\Cms\Http\Controllers\PluginStore;
 use Craft;
 use craft\web\Application;
 use craft\web\assets\pluginstore\PluginStoreAsset;
-use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Container\Attributes\Give;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,10 +31,10 @@ final readonly class PluginStoreController
         #[Give('Craft')] private Application $craft,
     ) {}
 
-    public function index(License $license, Composer $composer, GeneralConfig $generalConfig): Response
+    public function index(License $license, Composer $composer, GeneralConfig $generalConfig): View
     {
         $view = $this->craft->getView();
-        $view->registerJsFile('https://js.stripe.com/v2/');
+        AssetRegistry::jsFile('https://js.stripe.com/v2/');
 
         $variables = [
             'craftIdEndpoint' => Api::craftIdEndpoint(),
@@ -48,15 +50,15 @@ final readonly class PluginStoreController
             'composerPhpVersion' => $composer->getConfig()['config']['platform']['php'] ?? null,
         ];
 
-        $view->registerJsWithVars(
+        AssetRegistry::jsWithVars(
             fn ($variables) => "Object.assign(window, $variables)",
             [$variables],
-            View::POS_BEGIN,
+            Position::Head,
         );
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 
-        return response($view->renderPageTemplate('plugin-store/_index.twig'));
+        return view('plugin-store/_index');
     }
 
     public function craftData(Request $request): Response

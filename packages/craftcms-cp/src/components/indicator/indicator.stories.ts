@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 import {html} from 'lit';
 
 import './indicator.js';
-import {Variant} from '@/types';
+import {Variant} from '@src/types';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
@@ -13,12 +13,11 @@ const meta = {
   render: function () {
     return html`
       <div class="stack">
-        ${Object.keys(Variant).map(
+        ${Object.values(Variant).map(
           (variant) =>
-            html`<craft-indicator
-              variant="${Variant[variant]}"
-            ></craft-indicator>`
+            html`<craft-indicator variant="${variant}"></craft-indicator>`
         )}
+        <craft-indicator variant="empty"></craft-indicator>
       </div>
     `;
   },

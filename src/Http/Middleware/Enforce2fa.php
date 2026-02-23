@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use Craft;
 use craft\web\assets\authmethodsetup\AuthMethodSetupAsset;
-use craft\web\View;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 
 final readonly class Enforce2fa
@@ -32,10 +32,10 @@ final readonly class Enforce2fa
         /** @var \CraftCms\Cms\User\Elements\User $user */
         if ($this->auth->is2faRequired($user) && ! $this->auth->hasActiveMethod($user)) {
             Craft::$app->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
-            Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
+            TemplateMode::set(TemplateMode::Cp);
 
             return response()
-                ->view('craftcms::_special/setup-2fa')
+                ->view('_special/setup-2fa')
                 ->setNoCacheHeaders();
         }
 

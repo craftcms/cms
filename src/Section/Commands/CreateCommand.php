@@ -4,24 +4,25 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Commands;
 
-use craft\elements\Entry;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Console\View\TaskResult;
 use Illuminate\Validation\Rule;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 use function Laravel\Prompts\confirm;
@@ -34,6 +35,7 @@ final class CreateCommand extends Command
     use ConfirmableTrait;
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:sections:create
         {--name= : The section name.}
         {--handle= : The section handle.}
@@ -44,8 +46,10 @@ final class CreateCommand extends Command
         {--template= : The template to load when an entry’s URL is requested.}
     ';
 
+    #[\Override]
     protected $description = 'Create a new section';
 
+    #[\Override]
     protected $aliases = ['sections/create'];
 
     public function handle(ProjectConfig $projectConfig, EntryTypes $entryTypesService): void
@@ -55,7 +59,7 @@ final class CreateCommand extends Command
             callback: fn () => $projectConfig->readOnly,
         );
 
-        $rules = Section::rules();
+        $rules = new Section()->getRules();
 
         $entryTypes = collect($this->option('entryTypes'))
             ->flatMap(fn (string $entryType) => explode(',', $entryType))
@@ -63,7 +67,7 @@ final class CreateCommand extends Command
                 $entryType = $entryTypesService->getEntryTypeByHandle($entryTypeHandle);
 
                 if (! $entryType) {
-                    throw new \RuntimeException("Invalid entry type handle: {$entryTypeHandle}");
+                    throw new RuntimeException("Invalid entry type handle: {$entryTypeHandle}");
                 }
 
                 return $entryType->handle;
@@ -145,20 +149,20 @@ final class CreateCommand extends Command
             )
             ->submit();
 
-        $section = new Section(
-            name: $responses['name'],
-            handle: $responses['handle'],
-            type: SectionType::from($responses['type']),
-            enableVersioning: $responses['enableVersioning'],
-        );
+        $section = new Section([
+            'name' => $responses['name'],
+            'handle' => $responses['handle'],
+            'type' => SectionType::from($responses['type']),
+            'enableVersioning' => $responses['enableVersioning'],
+        ]);
 
         $section->setSiteSettings(Sites::getAllSites(true)->map(
-            fn (Site $site) => new SectionSiteSettings(
-                siteId: $site->id,
-                hasUrls: $this->option('uriFormat') !== null,
-                uriFormat: $this->option('uriFormat'),
-                template: $this->option('template'),
-            )
+            fn (Site $site) => new SectionSiteSettings([
+                'siteId' => $site->id,
+                'hasUrls' => $this->option('uriFormat') !== null,
+                'uriFormat' => $this->option('uriFormat'),
+                'template' => $this->option('template'),
+            ])
         )->all());
 
         $hasUrls = collect($section->getSiteSettings())->contains(

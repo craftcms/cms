@@ -40,7 +40,7 @@ ul {
   list-style: none;
 }
 
-code {
+.code {
   font-size: 0.9em;
   display: inline-flex;
   padding: 0 var(--c-spacing-sm);

@@ -7,35 +7,15 @@
 
 namespace craft\base;
 
-use craft\web\twig\AllowedInSandbox;
-
-/**
- * Statusable defines the common interface to be implemented by components that
- * can have statuses within the control panel.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
- */
-interface Statusable
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Returns all the possible statuses that components may have.
-     *
-     * It should return an array whose keys are the status values, and values are the human-facing status labels, or an array
-     * with the following keys:
-     *
-     * - **`label`** – The human-facing status label.
-     * - **`color`** – The status color. See {@see \CraftCms\Cms\Shared\Enums\Color} for possible values.
-     *
-     * @return array
+     * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Component\Contracts\Statusable} instead.
      */
-    public static function statuses(): array;
-
-    /**
-     * Returns the component’s status.
-     *
-     * @return string|null
-     */
-    #[AllowedInSandbox]
-    public function getStatus(): ?string;
+    interface Statusable
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Component\Contracts\Statusable::class, Statusable::class);

@@ -7,8 +7,8 @@
 
 namespace craft\elements\actions;
 
-use Craft;
 use craft\base\ElementAction;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use function CraftCms\Cms\t;
 
 /**
@@ -32,7 +32,7 @@ class RenameFile extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        Craft::$app->getView()->registerJsWithVars(
+        AssetRegistry::jsWithVars(
             fn($type, $prompt) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({

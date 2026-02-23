@@ -1,23 +1,25 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\queue\jobs;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\queue\BaseJob;
 use CraftCms\Cms\Support\Facades\I18N;
-use yii\base\InvalidConfigException;
 
 /**
  * UpdateSearchIndex job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.2.0
+ * @deprecated in Craft 6.0.0. Use {@see \CraftCms\Cms\Search\Jobs\UpdateSearchIndex} instead.
  */
 class UpdateSearchIndex extends BaseJob
 {
@@ -38,48 +40,34 @@ class UpdateSearchIndex extends BaseJob
 
     /**
      * @var string[]|null The field handles that should be indexed
+     *
      * @since 3.4.0
      */
     public ?array $fieldHandles = null;
 
     /**
      * @var bool Whether to check if the element’s search indexes are queued to be updated before proceeding.
+     *
      * @since 5.7.0
      */
     public bool $queued = false;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function execute($queue): void
     {
-        $searchService = Craft::$app->getSearch();
-
-        if ($this->queued) {
-            if (!is_int($this->elementId) || !is_int($this->siteId)) {
-                throw new InvalidConfigException('`elementId` and `siteId` must be an integer when `queued` is true.');
-            }
-            $searchService->indexElementIfQueued($this->elementId, $this->siteId, $this->elementType);
-            return;
-        }
-
-        $elements = $this->elementType::find()
-            ->drafts(null)
-            ->provisionalDrafts(null)
-            ->id($this->elementId)
-            ->siteId($this->siteId)
-            ->status(null)
-            ->all();
-        $total = count($elements);
-
-        foreach ($elements as $i => $element) {
-            $this->setProgress($queue, ($i + 1) / $total);
-            $searchService->indexElementAttributes($element, $this->fieldHandles);
-        }
+        new \CraftCms\Cms\Search\Jobs\UpdateSearchIndex(
+            elementType: $this->elementType,
+            elementId: $this->elementId,
+            siteId: $this->siteId,
+            fieldHandles: $this->fieldHandles,
+            queued: $this->queued,
+        )->handle();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defaultDescription(): ?string
     {

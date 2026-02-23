@@ -7,8 +7,8 @@
 
 namespace craft\controllers;
 
-use craft\elements\conditions\StatusConditionRule;
 use craft\helpers\Cp;
+use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use Illuminate\Support\Collection;
 use yii\web\Response;
 

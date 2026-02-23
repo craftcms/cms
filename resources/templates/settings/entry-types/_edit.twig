@@ -141,6 +141,13 @@
 }) }}
 
 {{ forms.lightswitchField({
+  label: 'Allow line breaks in titles'|t('app'),
+  name: 'allowLineBreaksInTitles',
+  on: entryType.allowLineBreaksInTitles,
+  disabled: readOnly,
+}) }}
+
+{{ forms.lightswitchField({
     label: "Show the Slug field"|t('app'),
     name: 'showSlugField',
     toggle: 'slug-container',

@@ -7,14 +7,13 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\Cp;
 use craft\test\TestCase;
-use craft\web\twig\TemplateLoaderException;
+use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\User\Elements\User;
 use crafttests\fixtures\SitesFixture;
+use InvalidArgumentException;
 use UnitTester;
-use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the CP Helper class.
@@ -72,11 +71,11 @@ class CpHelperTest extends TestCase
 
         // errors
         self::assertStringNotContainsString('error', $indexHtml);
-        $user->addError('foo', 'bad error');
+        $user->errors()->add('foo', 'bad error');
         self::assertStringContainsString('error', Cp::elementChipHtml($user, [
             'context' => 'field',
         ]));
-        $user->clearErrors();
+        $user->errors()->forget('foo');
 
         // trashed
         self::assertStringNotContainsString('data-trashed', $indexHtml);
@@ -116,9 +115,9 @@ class CpHelperTest extends TestCase
 
         // errors
         self::assertStringNotContainsString('error', $indexHtml);
-        $user->addError('foo', 'bad error');
+        $user->errors()->add('foo', 'bad error');
         self::assertStringContainsString('error', Cp::elementHtml($user, 'field'));
-        $user->clearErrors();
+        $user->errors()->forget('foo');
 
         // trashed
         self::assertStringNotContainsString('data-trashed', $indexHtml);

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\RouteToken;
 
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\RouteToken\Model\RouteToken;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -17,12 +17,19 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 
 #[Singleton]
 final class RouteTokens
 {
     private bool $deletedExpiredTokens = false;
+
+    /**
+     * @var array<string,int|null>
+     *
+     * @see getRemainingTokenUsages()
+     */
+    private array $remainingTokenUsages = [];
 
     /**
      * Creates a new token and returns it.
@@ -60,7 +67,7 @@ final class RouteTokens
         }
 
         $tokenModel = new RouteToken;
-        $tokenModel->token = $token ?? Craft::$app->getSecurity()->generateRandomString();
+        $tokenModel->token = $token ?? Str::random(32, extendedChars: true);
         $tokenModel->route = $route;
         $tokenModel->expiryDate = Date::parse($expiryDate ?? now()->addSeconds(Cms::config()->defaultTokenDuration));
 
@@ -103,8 +110,7 @@ final class RouteTokens
                 $result = RouteToken::where('token', $token)->first();
 
                 if (! $result) {
-                    // Remove it from the request so it doesn’t get added to generated URLs
-                    Craft::$app->getRequest()->setToken(null);
+                    $this->remainingTokenUsages[$token] = 0;
 
                     return false;
                 }
@@ -112,15 +118,20 @@ final class RouteTokens
                 // Usage limit enforcement (for future requests)
                 if ($result->usageLimit) {
                     // Does it have any more life after this?
-                    if ($result->usageCount < $result->usageLimit - 1) {
+                    $newUsageCount = $result->usageCount + 1;
+                    if ($newUsageCount < $result->usageLimit) {
                         // Increment its count
                         $this->incrementTokenUsageCountById($result->id);
+                        $this->remainingTokenUsages[$token] = $result->usageLimit - $newUsageCount;
                     } else {
                         // Just delete it
                         $this->deleteTokenById($result->id);
+                        $this->remainingTokenUsages[$token] = 0;
 
                         Context::forgetHidden(HandleTokenRequest::TOKEN_KEY);
                     }
+                } else {
+                    $this->remainingTokenUsages[$token] = null;
                 }
 
                 return (array) Json::decodeIfJson($result->route);
@@ -128,6 +139,31 @@ final class RouteTokens
         } catch (LockTimeoutException) {
             return false;
         }
+    }
+
+    /**
+     * Returns the remaining usage count for a given token, if it has a limit.
+     */
+    public function getRemainingTokenUsages(string $token): ?int
+    {
+        if (! array_key_exists($token, $this->remainingTokenUsages)) {
+            $result = DB::table(Table::ROUTETOKENS)
+                ->select('usageLimit', 'usageCount')
+                ->where('token', $token)
+                ->first();
+
+            if ($result) {
+                if ($result->usageLimit) {
+                    $this->remainingTokenUsages[$token] = $result->usageLimit - $result->usageCount;
+                } else {
+                    $this->remainingTokenUsages[$token] = null;
+                }
+            } else {
+                $this->remainingTokenUsages[$token] = 0;
+            }
+        }
+
+        return $this->remainingTokenUsages[$token];
     }
 
     public function incrementTokenUsageCountById(int $tokenId): bool

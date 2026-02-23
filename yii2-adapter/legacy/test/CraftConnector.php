@@ -14,7 +14,6 @@ use Codeception\Lib\Connector\Yii2;
 use Codeception\Util\Debug;
 use Craft;
 use craft\helpers\Db;
-use craft\helpers\Session;
 use craft\web\View;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
@@ -24,6 +23,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB as DbFacade;
+use Illuminate\Support\Facades\Session;
 use Symfony\Component\BrowserKit\Response;
 use yii\base\ExitException;
 use yii\base\Module;
@@ -111,7 +111,7 @@ class CraftConnector extends Yii2
         Db::reset();
         DbFacade::disconnect();
         DbFacade::disconnect('db2');
-        Session::reset();
+        Session::invalidate();
         unset($_SERVER['CRAFT_SITE'], $_SERVER['CRAFT_SITE_UPPER']);
         Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
     }

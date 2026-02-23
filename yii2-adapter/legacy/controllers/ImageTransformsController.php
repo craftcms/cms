@@ -13,7 +13,7 @@ use craft\models\ImageTransform;
 use craft\web\assets\edittransform\EditTransformAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Shared\Rules\ColorRule;
+use CraftCms\Cms\Validation\Rules\ColorRule;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -64,10 +64,11 @@ class ImageTransformsController extends Controller
         $variables = [];
 
         $variables['transforms'] = Craft::$app->getImageTransforms()->getAllTransforms();
+        usort($variables['transforms'], fn(ImageTransform $a, ImageTransform $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name));
         $variables['modes'] = ImageTransform::modes();
         $variables['readOnly'] = $this->readOnly;
 
-        return $this->renderTemplate('settings/assets/transforms/_index.twig', $variables);
+        return $this->rendertemplate('settings/assets/transforms/_index', $variables);
     }
 
     /**
@@ -127,7 +128,7 @@ class ImageTransformsController extends Controller
             $qualityPickerValue = 0;
         }
 
-        return $this->renderTemplate('settings/assets/transforms/_settings.twig', [
+        return $this->rendertemplate('settings/assets/transforms/_settings', [
             'handle' => $transformHandle,
             'transform' => $transform,
             'title' => $title,

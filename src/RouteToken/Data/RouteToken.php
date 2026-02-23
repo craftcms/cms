@@ -4,25 +4,46 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\RouteToken\Data;
 
-use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
-use Spatie\LaravelData\Dto;
+use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Database\Table;
+use Illuminate\Validation\Rule;
 
-final class RouteToken extends Dto
+final class RouteToken extends Component
 {
-    public function __construct(
-        /** @var class-string<\craft\base\ElementInterface> */
-        public string $elementType,
-        public int $siteId,
-        #[RequiredWithout('sourceId')]
-        public ?int $canonicalId,
-        #[RequiredWithout('canonicalId')]
-        public ?int $sourceId,
-        public ?int $draftId = null,
-        public ?int $revisionId = null,
-        public ?int $userId = null,
-        public ?string $previewToken = null,
-        public ?string $redirect = null,
-    ) {}
+    /** @var class-string<\craft\base\ElementInterface> */
+    public string $elementType;
+
+    public int $siteId;
+
+    public ?int $canonicalId = null;
+
+    public ?int $sourceId = null;
+
+    public ?int $draftId = null;
+
+    public ?int $revisionId = null;
+
+    public ?int $userId = null;
+
+    public ?string $previewToken = null;
+
+    public ?string $redirect = null;
+
+    #[\Override]
+    public function getRules(): array
+    {
+        return [
+            'elementType' => ['required', 'string'],
+            'siteId' => ['required', 'integer', Rule::exists(Table::SITES, 'id')],
+            'canonicalId' => ['nullable', 'required_without:sourceId'],
+            'sourceId' => ['nullable', 'required_without:canonicalId'],
+            'draftId' => ['nullable', 'integer'],
+            'revisionId' => ['nullable', 'integer'],
+            'userId' => ['nullable', 'integer', Rule::exists(Table::USERS, 'id')],
+            'previewToken' => ['nullable', 'string'],
+            'redirect' => ['nullable', 'string'],
+        ];
+    }
 
     public function getCanonicalId(): int
     {

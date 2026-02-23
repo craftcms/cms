@@ -12,10 +12,13 @@ final class DeleteFieldsCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:fields:delete {handles* : The field handles to delete}';
 
+    #[\Override]
     protected $description = 'Deletes custom fields.';
 
+    #[\Override]
     protected $aliases = ['fields/delete'];
 
     public function handle(Fields $fieldsService): int

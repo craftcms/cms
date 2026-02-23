@@ -12,10 +12,13 @@ final class CloudCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:setup:cloud';
 
+    #[\Override]
     protected $description = 'Prepares the Craft install to be deployed to Craft Cloud.';
 
+    #[\Override]
     protected $aliases = ['setup/cloud'];
 
     public function handle(Composer $composer): int

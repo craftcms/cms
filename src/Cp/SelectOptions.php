@@ -12,6 +12,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use DateTimeZone;
@@ -31,16 +32,11 @@ class SelectOptions
      *
      * @phpstan-param callable(scalar):bool|null $filter
      *
-     * @return array[]
-     *
-     * @phpstan-return array{label:string,data:array}[]
-     *
-     * @since 6.0.0
+     * @phpstan-return array{0: array{type: 'optgroup', label: string, options: array}, 1?: array{type: 'optgroup', label: string, options: array}}
      */
-    public static function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null): array
+    public static function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null)
     {
         $suggestions = [];
-        $security = Craft::$app->getSecurity();
 
         $envSuggestions = [];
         foreach (array_keys($_SERVER) as $var) {
@@ -51,14 +47,19 @@ class SelectOptions
                 (! $filter || $filter($env))
             ) {
                 $envSuggestions[] = [
-                    'name' => '$'.$var,
-                    'hint' => $security->redactIfSensitive($var, Aliases::get((string) $env, false)),
+                    'label' => '$'.$var,
+                    'value' => '$'.$var,
+                    'data' => [
+                        'hint' => Security::redactIfSensitive($var, Aliases::get((string) $env, false)),
+                    ],
                 ];
             }
         }
+
         $suggestions[] = [
+            'type' => 'optgroup',
             'label' => t('Environment Variables'),
-            'data' => array_values(Arr::sort($envSuggestions, 'name')),
+            'options' => array_values(Arr::sort($envSuggestions, 'name')),
         ];
 
         if ($includeAliases) {
@@ -71,26 +72,20 @@ class SelectOptions
                 if (str_starts_with($alias, '@web/')) {
                     continue;
                 }
-                if (is_array($path)) {
-                    if (
-                        isset($path[$alias]) &&
-                        (! $filter || $filter($path[$alias]))
-                    ) {
-                        $aliasSuggestions[] = [
-                            'name' => $alias,
-                            'hint' => $path[$alias],
-                        ];
-                    }
-                } elseif (! $filter || $filter($path)) {
+                if (! $filter || $filter($path)) {
                     $aliasSuggestions[] = [
-                        'name' => $alias,
-                        'hint' => $path,
+                        'label' => $alias,
+                        'value' => $alias,
+                        'data' => [
+                            'hint' => $path,
+                        ],
                     ];
                 }
             }
             $suggestions[] = [
+                'type' => 'optgroup',
                 'label' => t('Aliases'),
-                'data' => array_values(Arr::sort($aliasSuggestions, 'name')),
+                'options' => array_values(Arr::sort($aliasSuggestions, 'name')),
             ];
         }
 
@@ -99,8 +94,6 @@ class SelectOptions
 
     /**
      * Returns environment variable options for a select input.
-     *
-     * @since 6.0.0
      */
     public static function getEnvOptions(?array $allowedValues = null): array
     {
@@ -113,7 +106,6 @@ class SelectOptions
         }
 
         $options = [];
-        $security = Craft::$app->getSecurity();
 
         foreach (array_keys($_SERVER) as $var) {
             if (
@@ -124,7 +116,7 @@ class SelectOptions
             ) {
                 $data = [];
                 if ($value !== '') {
-                    $data['hint'] = $security->redactIfSensitive($var, Aliases::get($value, false));
+                    $data['hint'] = Security::redactIfSensitive($var, Aliases::get($value, false));
                 }
 
                 $options[] = array_filter([
@@ -140,8 +132,6 @@ class SelectOptions
 
     /**
      * Returns environment variable options for a boolean menu.
-     *
-     * @since 6.0.0
      */
     public static function getBooleanEnvOptions(): array
     {
@@ -170,15 +160,19 @@ class SelectOptions
             }
         }
 
-        return self::formatEnvOptions($options);
+        return [
+            [
+                'type' => 'optgroup',
+                'label' => t('Environment Variables'),
+                'options' => collect($options)->sortBy('value')->values(),
+            ],
+        ];
     }
 
     /**
      * Returns environment variable options for a language menu.
      *
      * @param  bool  $appOnly  Whether to limit the env options to those that match available app locales
-     *
-     * @since 6.0.0
      */
     public static function getLanguageEnvOptions(bool $appOnly = false): array
     {
@@ -202,7 +196,7 @@ class SelectOptions
             }
 
             $languageValue = null;
-            if ($allLanguages->contains($value)) {
+            if ($allLanguages->containsStrict($value)) {
                 $languageValue = $value;
             }
 
@@ -226,8 +220,6 @@ class SelectOptions
      * @param  bool  $showLocaleIds  Whether to show the hint as locale id; e.g. en, en-GB
      * @param  bool  $showLocalizedNames  Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
      * @param  bool  $appLocales  Whether to limit the returned locales to just app locales (cp translation options) or show them all
-     *
-     * @since 6.0.0
      */
     public static function getLanguageOptions(
         bool $showLocaleIds = false,
@@ -252,9 +244,7 @@ class SelectOptions
                 'label' => $locale->getDisplayName(app()->getLocale()),
                 'value' => $locale->id,
                 'data' => [
-                    'data' => [
-                        'keywords' => $name,
-                    ],
+                    'keywords' => $name,
                 ],
             ];
 
@@ -264,10 +254,10 @@ class SelectOptions
             }
             if ($showLocalizedNames) {
                 $hints[] = $name;
-                $option['data']['data']['hintLang'] = $locale->id;
+                $option['data']['hintLang'] = $locale->id;
             }
             if (! empty($hints)) {
-                $option['data']['data']['hint'] = implode(', ', $hints);
+                $option['data']['hint'] = implode(', ', $hints);
             }
 
             $options[] = $option;
@@ -278,8 +268,6 @@ class SelectOptions
 
     /**
      * Returns all options for a filesystem input.
-     *
-     * @since 6.0.0
      */
     public static function getFsOptions(): array
     {
@@ -295,8 +283,6 @@ class SelectOptions
 
     /**
      * Returns all options for a volume input.
-     *
-     * @since 6.0.0
      */
     public static function getVolumeOptions(): array
     {
@@ -363,11 +349,12 @@ class SelectOptions
 
     public static function formatEnvOptions(array $options): array
     {
-        return Collection::make($options)
-            ->sortBy('value')
-            ->prepend([
-                'optgroup' => t('Environment Variables'),
-            ])
-            ->all();
+        return [
+            [
+                'type' => 'optgroup',
+                'label' => t('Environment Variables'),
+                'options' => Collection::make($options)->sortBy('value')->values()->all(),
+            ],
+        ];
     }
 }

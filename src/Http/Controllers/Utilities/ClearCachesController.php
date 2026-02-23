@@ -12,8 +12,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
-use yii\base\InvalidArgumentException;
 
 final readonly class ClearCachesController
 {

@@ -11,7 +11,8 @@ use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -29,6 +30,12 @@ class Duplicate extends ElementAction
      * @var bool Whether to also duplicate the selected elements’ descendants
      */
     public bool $deep = false;
+
+    /**
+     * @var bool Whether to duplicate the selected elements as drafts
+     * @since 5.9.0
+     */
+    public bool $asDrafts = false;
 
     /**
      * @var string|null The message that should be shown after the elements get deleted
@@ -52,13 +59,13 @@ class Duplicate extends ElementAction
     public function getTriggerHtml(): ?string
     {
         // Only enable for duplicatable elements, per canDuplicate()
-        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+        AssetRegistry::jsWithVars(fn($type, $attr) => <<<JS
 (() => {
   new Craft.ElementActionTrigger({
     type: $type,
     validateSelection: (selectedItems, elementIndex) => {
       for (let i = 0; i < selectedItems.length; i++) {
-        if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-duplicatable')) {
+        if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), $attr)) {
           return false;
         }
       }
@@ -73,7 +80,10 @@ class Duplicate extends ElementAction
     },
   });
 })();
-JS, [static::class]);
+JS, [
+            static::class,
+            $this->asDrafts ? 'data-duplicatable-as-draft' : 'data-duplicatable',
+        ]);
 
         return null;
     }
@@ -122,7 +132,11 @@ JS, [static::class]);
         $user = Auth::user();
 
         foreach ($elements as $element) {
-            if (!$elementsService->canDuplicate($element, $user)) {
+            $allowed = $this->asDrafts
+                ? $elementsService->canDuplicateAsDraft($element, $user)
+                : $elementsService->canDuplicate($element, $user);
+
+            if (!$allowed) {
                 continue;
             }
 
@@ -133,7 +147,10 @@ JS, [static::class]);
                 continue;
             }
 
-            $attributes = [];
+            $attributes = [
+                'isProvisionalDraft' => false,
+                'draftId' => null,
+            ];
 
             // If the element was loaded for a non-primary owner, set its primary owner to it
             if ($element instanceof NestedElementInterface) {
@@ -142,7 +159,11 @@ JS, [static::class]);
             }
 
             try {
-                $duplicate = $elementsService->duplicateElement($element, $attributes);
+                $duplicate = $elementsService->duplicateElement(
+                    $element,
+                    $attributes,
+                    asUnpublishedDraft: $this->asDrafts,
+                );
             } catch (Throwable) {
                 // Validation error
                 $failCount++;

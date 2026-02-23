@@ -22,10 +22,13 @@ final class DeleteCommand extends Command implements PromptsForMissingInput
     use ConfirmableTrait;
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:sections:delete {sectionHandle : The section handle}';
 
+    #[\Override]
     protected $description = 'Delete a section';
 
+    #[\Override]
     protected $aliases = ['sections/delete'];
 
     public function handle(ProjectConfig $projectConfig, Sections $sections): int
@@ -63,6 +66,8 @@ final class DeleteCommand extends Command implements PromptsForMissingInput
         return self::SUCCESS;
     }
 
+    /** @return array<string, \Closure(): mixed> */
+    #[\Override]
     protected function promptForMissingArgumentsUsing(): array
     {
         return [

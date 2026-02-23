@@ -16,10 +16,13 @@ final class ActivationUrlCommand extends Command implements PromptsForMissingInp
     use CraftCommand;
     use PromptsForMissingUser;
 
+    #[\Override]
     protected $signature = 'craft:users:activation-url {user}';
 
+    #[\Override]
     protected $description = 'Creates a new user.';
 
+    #[\Override]
     protected $aliases = ['users/activation-url', 'users:activationUrl', 'users/activationUrl'];
 
     public function handle(Users $users): int

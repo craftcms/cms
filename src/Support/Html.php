@@ -5,25 +5,33 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use Craft;
-use craft\elements\Asset;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\image\SvgAllowedAttributes;
-use craft\web\View;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\Security;
+use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
 use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use Stringable;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
 use yii\base\InvalidConfigException;
 use Yiisoft\Html\Html as YiiHtml;
 use Yiisoft\Html\NoEncode;
+use Yiisoft\Html\Tag\Button;
+use Yiisoft\Html\Tag\Input;
+
+use function CraftCms\Cms\template;
 
 /**
  * @mixin YiiHtml
@@ -118,11 +126,11 @@ final class Html
     {
         if (is_callable($html)) {
             // Call it to get the HTML, but disregard the JS
-            Craft::$app->getView()->startJsBuffer();
+            AssetRegistry::startJsBuffer();
             try {
                 $html = $html();
             } finally {
-                Craft::$app->getView()->clearJsBuffer();
+                AssetRegistry::clearJsBuffer();
             }
         }
 
@@ -178,12 +186,11 @@ final class Html
         }
 
         Craft::$app->getView()->registerHtml(
-            Craft::$app->getView()->renderTemplate(
+            template(
                 '_special/async-csrf-input',
                 [
                     'url' => UrlHelper::actionUrl('users/session-info'),
-                ],
-                View::TEMPLATE_MODE_CP,
+                ], templateMode: TemplateMode::Cp,
             )
         );
 
@@ -229,7 +236,7 @@ final class Html
      */
     public static function redirectInput(string $url, array $options = []): string
     {
-        return self::hiddenInput('redirect', Craft::$app->getSecurity()->hashData($url), $options)->render();
+        return self::hiddenInput('redirect', Crypt::encrypt($url), $options)->render();
     }
 
     /**
@@ -247,7 +254,7 @@ final class Html
      */
     public static function failMessageInput(string $message, array $options = []): string
     {
-        return self::hiddenInput('failMessage', Craft::$app->getSecurity()->hashData($message), $options)->render();
+        return self::hiddenInput('failMessage', Crypt::encrypt($message), $options)->render();
     }
 
     /**
@@ -265,14 +272,31 @@ final class Html
      */
     public static function successMessageInput(string $message, array $options = []): string
     {
-        return self::hiddenInput('successMessage', Craft::$app->getSecurity()->hashData($message), $options)->render();
+        return self::hiddenInput('successMessage', Crypt::encrypt($message), $options)->render();
     }
 
-    public static function tag($name, $content = '', $options = []): string
+    public static function hiddenInput(
+        ?string $name = null,
+        bool|float|int|string|Stringable|null $value = null,
+        array $attributes = [],
+    ): Input {
+        $tag = Input::hidden($name, $value);
+
+        return $attributes === [] ? $tag : $tag->addAttributes(self::normalizeTagAttributes($attributes));
+    }
+
+    public static function button(string $content = 'Button', array $attributes = []): Button
+    {
+        $tag = YiiHtml::button($content);
+
+        return $attributes === [] ? $tag : $tag->addAttributes(self::normalizeTagAttributes($attributes));
+    }
+
+    public static function tag($name, $content = '', $attributes = []): string
     {
         return YiiHtml::tag($name)
             ->content(NoEncode::string((string) $content))
-            ->attributes(self::normalizeTagAttributes($options))
+            ->attributes(self::normalizeTagAttributes($attributes))
             ->render();
     }
 
@@ -401,7 +425,7 @@ final class Html
      * @param  array  $attributes  The attributes to be added to the tag.
      * @return string The modified HTML tag.
      *
-     * @throws \yii\base\InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
+     * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
      */
     public static function modifyTagAttributes(string $tag, array $attributes): string
     {
@@ -1094,7 +1118,7 @@ final class Html
             throw new InvalidArgumentException(sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));
         }
 
-        if (Craft::$app->getSecurity()->isSystemDir(dirname($file))) {
+        if (Security::isSystemDir(dirname($file))) {
             throw new InvalidArgumentException(sprintf('%s cannot be passed a path within or above system directories.', __METHOD__));
         }
 

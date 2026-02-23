@@ -12,10 +12,13 @@ final class LogoutAllCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:users:logout-all';
 
+    #[\Override]
     protected $description = 'Logs all users out of the system.';
 
+    #[\Override]
     protected $aliases = ['users/logout-all', 'users/logoutAll', 'users:logoutAll'];
 
     public function handle(SessionManager $sessionManager): void

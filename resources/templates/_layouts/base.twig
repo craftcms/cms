@@ -51,6 +51,7 @@
         // Fix for Firefox autofocus CSS bug
         // See: http://stackoverflow.com/questions/18943276/html-5-autofocus-messes-up-css-loading/18945951#18945951
     </script>
+      <script>window.bootedCallbacks = [];</script>
     {% endblock %}
 </head>
 <body {{ attr(bodyAttributes) }}>
@@ -59,8 +60,7 @@
     {% block body %}{% endblock %}
     {% include '_layouts/components/notifications' %}
     {% block foot %}{% endblock %}
-    {{ endBody() }}
-
     {{ vite(['resources/css/cp.css', 'resources/js/legacy.ts']) }}
+    {{ endBody() }}
 </body>
 </html>

@@ -17,10 +17,13 @@ final class RepairSectionStructureCommand extends RepairCommand implements Promp
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:utils:repair:section-structure {handle} {--dry-run}';
 
+    #[\Override]
     protected $description = 'Repairs structure data for a section.';
 
+    #[\Override]
     protected $aliases = ['utils/repair/section-structure', 'repair:section-structure', 'repair/section-structure'];
 
     public function handle(Sections $sections): int
@@ -42,6 +45,8 @@ final class RepairSectionStructureCommand extends RepairCommand implements Promp
         return $this->repairStructure($section->structureId, Entry::find()->section($section));
     }
 
+    /** @return array<string, \Closure(): mixed> */
+    #[\Override]
     protected function promptForMissingArgumentsUsing(): array
     {
         return [

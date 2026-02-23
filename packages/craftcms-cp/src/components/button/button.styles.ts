@@ -11,7 +11,7 @@ export default css`
     align-items: center;
     border-radius: var(--c-button-radius, var(--c-radius-sm));
     color: var(--c-button-fg, inherit);
-    padding-inline: var(--c-button-spacing-inline, var(--c-spacing-lg));
+    padding-inline: var(--c-button-spacing-inline, var(--c-spacing-md));
     padding-block: 0;
     width: auto;
     min-height: var(--c-button-height, var(--c-size-control-md));
@@ -46,10 +46,7 @@ export default css`
     padding-inline: var(--c-spacing-sm);
     min-width: var(--c-size-control-sm);
     min-height: var(--c-size-control-sm);
-
-    craft-icon {
-      font-size: 0.8em;
-    }
+    font-size: 0.9em;
   }
 
   :host([size~='large']) {
@@ -139,8 +136,25 @@ export default css`
 
   .button-content {
     display: flex;
+    align-items: center;
     gap: 0.25em;
     width: 100%;
+  }
+
+  .prefix,
+  .suffix {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .button-content--start {
+    justify-content: start;
+  }
+
+  .button-content--end {
+    justify-content: end;
   }
 
   craft-button-group craft-button {

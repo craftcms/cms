@@ -12,7 +12,6 @@ use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\MemoizableArray;
 use craft\db\Connection;
-use craft\elements\Asset;
 use craft\errors\ImageTransformException;
 use craft\events\AssetEvent;
 use craft\events\ImageTransformEvent;
@@ -23,6 +22,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -31,9 +31,10 @@ use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Component;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\di\Instance;
@@ -211,7 +212,7 @@ class ImageTransforms extends Component
         }
 
         if ($runValidation && !$transform->validate()) {
-            Craft::info('Asset transform not saved due to validation error.', __METHOD__);
+            Log::info('Asset transform not saved due to validation error.', [__METHOD__]);
             return false;
         }
 
@@ -521,13 +522,13 @@ class ImageTransforms extends Component
                 $files = glob($dir . '/[0-9]*/' . $asset->id . '.[a-z]*');
 
                 if (!is_array($files)) {
-                    Craft::warning('Could not list files in ' . $dir . ' when deleting resized asset versions.');
+                    Log::info('Could not list files in ' . $dir . ' when deleting resized asset versions.');
                     continue;
                 }
 
                 foreach ($files as $path) {
                     if (!FileHelper::unlink($path)) {
-                        Craft::warning("Unable to delete the asset thumbnail \"$path\".", __METHOD__);
+                        Log::warning("Unable to delete the asset thumbnail \"$path\".", [__METHOD__]);
                     }
                 }
             }

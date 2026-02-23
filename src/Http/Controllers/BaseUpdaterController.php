@@ -11,13 +11,18 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Exceptions\MigrateException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Container\Attributes\Give;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -59,10 +64,10 @@ abstract class BaseUpdaterController
             return;
         }
 
-        if (! is_null($data = $this->request->input('data'))) {
-            $data = Craft::$app->getSecurity()->validateData($this->request->input('data', ''));
-
-            if ($data === false) {
+        if (! is_null($this->request->input('data'))) {
+            try {
+                $data = Crypt::decrypt($this->request->input('data', ''));
+            } catch (DecryptException) {
                 throw ValidationException::withMessages([
                     'data' => t('Invalid data.'),
                 ]);
@@ -72,7 +77,7 @@ abstract class BaseUpdaterController
         }
     }
 
-    public function index(#[Give('Craft')] Application $craft): Response
+    public function index(#[Give('Craft')] Application $craft): View
     {
         // Load the updater JS
         $view = $craft->getView();
@@ -85,11 +90,11 @@ abstract class BaseUpdaterController
         $segments = $this->request->actionSegments();
         $idJs = Json::encode(implode('/', $segments));
         $stateJs = Json::encode($state);
-        $view->registerJs("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
+        AssetRegistry::js("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
 
-        return response($view->renderPageTemplate('_special/updater.twig', [
+        return view('_special/updater', [
             'title' => $this->pageTitle(),
-        ]));
+        ]);
     }
 
     public function precheck(): Response
@@ -503,7 +508,7 @@ abstract class BaseUpdaterController
      */
     private function hashedData(): string
     {
-        return Craft::$app->getSecurity()->hashData(Json::encode($this->data));
+        return Crypt::encrypt(Json::encode($this->data));
     }
 
     /**

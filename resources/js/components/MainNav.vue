@@ -10,7 +10,7 @@
       v-for="item in nav"
       :key="item.url"
       :icon="item.icon"
-      :url="item.url"
+      :href="item.url"
       :active="item.sel"
       :indicator="!!item.badgeCount"
     >
@@ -21,11 +21,16 @@
           <craft-nav-item
             v-for="subnavItem in item.subnav"
             :key="subnavItem.url"
-            :icon="subnavItem.icon"
             :active="subnavItem.sel"
-            :url="subnavItem.url"
-            :indicator="subnavItem.badgeCount"
+            :href="subnavItem.url"
+            :indicator="!!subnavItem.badgeCount"
           >
+            <craft-icon
+              :name="subnavItem.icon"
+              v-if="subnavItem.icon"
+              slot="icon"
+            ></craft-icon>
+            <span v-else class="nav-indicator" slot="icon"></span>
             {{ subnavItem.label }}
           </craft-nav-item>
         </craft-nav-list>
@@ -34,4 +39,17 @@
   </craft-nav-list>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  .nav-indicator {
+    --nav-item-indicator-size: calc(4rem / 16);
+    display: inline-flex;
+    width: var(--nav-item-indicator-size);
+    border-radius: var(--c-radius-full);
+    aspect-ratio: 1;
+    background-color: currentcolor;
+  }
+
+  .nav-indicator[active] {
+    --nav-item-indicator-size: calc(6rem / 16);
+  }
+</style>

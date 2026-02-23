@@ -18,6 +18,7 @@ final class StructureElement extends BaseModel
     use HasUid;
     use StructureNode;
 
+    #[\Override]
     protected $table = Table::STRUCTUREELEMENTS;
 
     /**

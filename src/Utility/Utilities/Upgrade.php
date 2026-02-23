@@ -8,19 +8,19 @@ use Craft;
 use craft\web\assets\upgrade\UpgradeAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Upgrade utility
  */
 final class Upgrade extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Craft {version} Upgrade', [
@@ -28,28 +28,19 @@ final class Upgrade extends Utility
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'upgrade';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'square-arrow-up';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();
@@ -69,12 +60,12 @@ final class Upgrade extends Utility
         }
 
         $version = (int) Cms::VERSION + 1;
-        $view->registerJsWithVars(fn ($args) => <<<JS
+        AssetRegistry::jsWithVars(fn ($args) => <<<JS
 window.upgardeUtility = new Craft.UpgradeUtility(...$args)
 JS, [
             [$version, $allPlugins],
         ]);
 
-        return $view->renderTemplate('_components/utilities/Upgrade.twig');
+        return template('_components/utilities/Upgrade');
     }
 }

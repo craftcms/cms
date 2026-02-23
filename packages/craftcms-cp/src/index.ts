@@ -1,4 +1,5 @@
 import '@github/relative-time-element';
+import {configureIcons} from './utilities/icons';
 
 export {default as CraftDisclosure} from './components/disclosure/disclosure.js';
 export {default as CraftSpinner} from './components/spinner/spinner.js';
@@ -9,8 +10,9 @@ export {default as CraftButton} from './components/button/button.js';
 export {default as CraftAvatar} from './components/avatar/avatar.js';
 export {default as CraftInput} from './components/input/input.js';
 export {default as CraftInputFile} from './components/input-file/input-file.js';
-export {default as CraftSelectedFileList} from './components/input-file/selected-file-list.js';
+export {default as CraftInputHandle} from './components/input-handle/input-handle.js';
 export {default as CraftInputPassword} from './components/input-password/input-password.js';
+export {default as CraftSelectedFileList} from './components/input-file/selected-file-list.js';
 export {default as CraftChip} from './components/chip/chip.js';
 export {default as CraftStatus} from './components/status/status.js';
 export {default as CraftTextarea} from './components/textarea/textarea.js';
@@ -39,6 +41,9 @@ export {default as CraftActionMenu} from './components/action-menu/action-menu.j
 export {default as CraftCombobox} from './components/combobox/combobox.js';
 export {default as CraftIndicator} from './components/indicator/indicator.js';
 export {default as CraftShortcut} from './components/shortcut/shortcut.js';
+export {default as CraftProgress} from './components/progress/progress.js';
+export {default as CraftRadioGroup} from './components/radio-group/radio-group.js';
+export {default as CraftRadio} from './components/radio/radio.js';
 /* plop:component */
 
 export * from './utilities/cookies.js';
@@ -46,3 +51,13 @@ export {t, formatMessage} from './utilities/translate.js';
 export {formatNumber} from './utilities/format.js';
 export * from './utilities/api/actionClient.js';
 export * from './utilities/api/apiClient.js';
+export * from './utilities/string.js';
+
+// Services
+export {QueueService} from './services/Queue.js';
+export {ConfigService} from './services/Config.js';
+
+// Types
+export * from './types/index.js';
+
+configureIcons();

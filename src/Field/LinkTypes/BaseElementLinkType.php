@@ -6,16 +6,18 @@ namespace CraftCms\Cms\Field\LinkTypes;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
@@ -127,8 +129,7 @@ abstract class BaseElementLinkType extends BaseLinkType
     {
         $id = sprintf('elementselect%s', mt_rand());
 
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(fn ($id, $refHandle) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id, $refHandle) => <<<JS
 (() => {
   const container = $('#' + $id);
   const field = container.closest('[data-link-field]').parent().data('linkField');
@@ -148,7 +149,7 @@ abstract class BaseElementLinkType extends BaseLinkType
   });
 })();
 JS, [
-            'id' => $view->namespaceInputId($id),
+            'id' => InputNamespace::namespaceId($id),
             'refHandle' => static::elementType()::refHandle(),
         ]);
 
@@ -210,17 +211,11 @@ JS, [
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function validateValue(string $value, ?string &$error = null): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function isValueEmpty(string $value): bool
     {
@@ -251,9 +246,6 @@ JS, [
             ->exists();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function normalizeValue(ElementInterface|int|string $value): string
     {

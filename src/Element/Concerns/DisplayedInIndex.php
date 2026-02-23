@@ -1,0 +1,787 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Element\Concerns;
+
+use craft\base\ElementInterface;
+use craft\base\NestedElementInterface;
+use craft\db\ExcludeDescendantIdsExpression;
+use craft\helpers\ElementHelper;
+use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Events\PrepQueryForTableAttribute;
+use CraftCms\Cms\Element\Events\RegisterCardAttributes;
+use CraftCms\Cms\Element\Events\RegisterDefaultCardAttributes;
+use CraftCms\Cms\Element\Events\RegisterDefaultTableAttributes;
+use CraftCms\Cms\Element\Events\RegisterSearchableAttributes;
+use CraftCms\Cms\Element\Events\RegisterSortOptions;
+use CraftCms\Cms\Element\Events\RegisterTableAttributes;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Structures;
+use DateInterval;
+use DateTime;
+use Illuminate\Contracts\Database\Query\Expression as ExpressionInterface;
+use Illuminate\Support\Facades\DB;
+use Stringable;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
+use yii\db\Expression;
+
+use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
+
+/**
+ * DisplayedInIndex provides element index display functionality.
+ *
+ * This trait contains methods for defining how elements are displayed in the control panel
+ * index view, including table attributes, sort options, card attributes, and searchable attributes.
+ *
+ * @internal
+ */
+trait DisplayedInIndex
+{
+    /**
+     * @var string|null The view mode used to show this element (e.g. `structure`, `table`, `thumbs`, `cards`).
+     *
+     * @since 5.6.0
+     */
+    public ?string $viewMode = null;
+
+    /**
+     * Returns the attributes that should be searchable for this element type.
+     *
+     * @return string[] The searchable attributes
+     */
+    public static function searchableAttributes(): array
+    {
+        event($event = new RegisterSearchableAttributes(
+            elementType: static::class,
+            attributes: static::defineSearchableAttributes(),
+        ));
+
+        return $event->attributes;
+    }
+
+    /**
+     * Defines which element attributes should be searchable.
+     *
+     * @return string[] The element attributes that should be searchable
+     *
+     * @see searchableAttributes()
+     */
+    protected static function defineSearchableAttributes(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns the attributes that should not be duplicated when bulk duplicating elements.
+     *
+     * @return array The attribute names (as keys) and their replacement values
+     */
+    public static function baseBulkDuplicateAttributes(): array
+    {
+        $attributes = [
+            'structureId' => null,
+            'root' => null,
+            'lft' => null,
+            'rgt' => null,
+            'level' => null,
+        ];
+
+        if (is_subclass_of(static::class, NestedElementInterface::class)) {
+            $attributes += [
+                'fieldId' => null,
+                'ownerId' => null,
+                'primaryOwnerId' => null,
+                'sortOrder' => null,
+            ];
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Returns the HTML for the element index view.
+     *
+     * @param  ElementQueryInterface  $elementQuery  The element query
+     * @param  int[]|null  $disabledElementIds  The disabled element IDs
+     * @param  array  $viewState  The view state
+     * @param  string|null  $sourceKey  The source key
+     * @param  string|null  $context  The context
+     * @param  bool  $includeContainer  Whether to include the container
+     * @param  bool  $selectable  Whether the elements are selectable
+     * @param  bool  $sortable  Whether the elements are sortable
+     * @return string|Stringable The HTML
+     */
+    public static function indexHtml(
+        ElementQueryInterface $elementQuery,
+        ?array $disabledElementIds,
+        array $viewState,
+        ?string $sourceKey,
+        ?string $context,
+        bool $includeContainer,
+        bool $selectable,
+        bool $sortable,
+    ): string|Stringable {
+        $static = $viewState['static'] ?? false;
+        $variables = [
+            'viewMode' => $viewState['mode'],
+            'context' => $context,
+            'disabledElementIds' => $disabledElementIds,
+            'collapsedElementIds' => request()->input('collapsedElementIds'),
+            'selectable' => ! $static && $selectable,
+            'sortable' => ! $static && $sortable,
+            'showHeaderColumn' => $viewState['showHeaderColumn'] ?? false,
+            'inlineEditing' => $viewState['inlineEditing'] ?? false,
+            'nestedInputNamespace' => $viewState['nestedInputNamespace'] ?? null,
+            'tableName' => static::pluralDisplayName(),
+            'elementQuery' => self::elementQueryWithAllDescendants($elementQuery),
+        ];
+
+        if (! empty($viewState['order'])) {
+            // Special case for sorting by structure
+            if ($viewState['order'] === 'structure') {
+                $source = ElementHelper::findSource(static::class, $sourceKey, $context);
+
+                if (isset($source['structureId'])) {
+                    $elementQuery
+                        ->structureId($source['structureId'])
+                        ->orderBy('lft');
+                    $variables['structure'] = Structures::getStructureById($source['structureId']);
+
+                    // Are they allowed to make changes to this structure?
+                    if (in_array($context, ['index', 'embedded-index']) && $variables['structure'] && ! empty($source['structureEditable'])) {
+                        $variables['structureEditable'] = true;
+
+                        // Let StructuresController know that this user can make changes to the structure
+                        SessionAuth::authorize('editStructure:'.$variables['structure']->id);
+                    }
+                } else {
+                    unset($viewState['order']);
+                }
+            } elseif ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
+                if ($orderBy instanceof ExpressionInterface) {
+                    $elementQuery->orderByRaw($orderBy->getValue(DB::getQueryGrammar()));
+                } else {
+                    $elementQuery->orderBy($orderBy);
+                }
+
+                if ((! is_array($orderBy) || ! isset($orderBy['score'])) && ! empty($viewState['orderHistory'])) {
+                    foreach ($viewState['orderHistory'] as $order) {
+                        if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1])) {
+                            if ($orderBy[0] instanceof ExpressionInterface) {
+                                $elementQuery->orderByRaw($orderBy[0]->getValue(DB::getQueryGrammar()));
+                            } else {
+                                $elementQuery->orderBy($orderBy[0]);
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($viewState['mode'] === 'table') {
+            // Get the table columns
+            $variables['attributes'] = app(ElementSources::class)->getTableAttributes(
+                static::class,
+                $sourceKey,
+                $viewState['tableColumns'] ?? null,
+            );
+
+            // Prepare the element query for each of the table attributes
+            foreach ($variables['attributes'] as $attribute) {
+                event($event = new PrepQueryForTableAttribute(
+                    elementType: static::class,
+                    query: $elementQuery,
+                    attribute: $attribute[0],
+                ));
+
+                if ($event->handled) {
+                    continue;
+                }
+
+                static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
+            }
+
+            if (! $variables['showHeaderColumn'] && count($variables['attributes']) <= 1) {
+                $variables['showHeaderColumn'] = true;
+            }
+        }
+
+        // Only cache if there's no search term or relation param
+        if (! $elementQuery->search) {
+            $elementQuery->cache();
+        }
+
+        $elements = static::indexElements($elementQuery, $sourceKey);
+
+        if (empty($elements) && ! $includeContainer) {
+            // load-more request
+            return '';
+        }
+
+        // See if there are any provisional changes we should show
+        ElementHelper::loadProvisionalChanges($elements);
+
+        if (request()->boolean('prevalidate')) {
+            foreach ($elements as $element) {
+                if ($element->enabled && $element->getEnabledForSite()) {
+                    $element->setScenario(Element::SCENARIO_LIVE);
+                }
+                $element->validate();
+            }
+        }
+
+        foreach ($elements as $element) {
+            $element->viewMode = $viewState['mode'];
+        }
+
+        $variables['elements'] = $elements;
+        $template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
+
+        return template($template, $variables);
+    }
+
+    /**
+     * Returns an element query without descendant ID exclusions.
+     *
+     * @param  ElementQueryInterface|ElementQuery  $elementQuery  The element query
+     * @return ElementQueryInterface|ElementQuery The modified element query
+     */
+    private static function elementQueryWithAllDescendants(ElementQueryInterface $elementQuery): ElementQueryInterface|ElementQuery
+    {
+        $wheres = $elementQuery->getSubQuery()->wheres;
+
+        if ($wheres instanceof ExcludeDescendantIdsExpression) {
+            $elementQuery = clone $elementQuery;
+            $elementQuery->getSubQuery()->wheres = [];
+
+            return $elementQuery;
+        }
+
+        if (! is_array($wheres)) {
+            return $elementQuery;
+        }
+
+        foreach ($wheres as $key => $condition) {
+            if (! $condition instanceof ExcludeDescendantIdsExpression) {
+                continue;
+            }
+
+            $elementQuery = clone $elementQuery;
+            unset($wheres[$key]);
+            $elementQuery->getSubQuery()->wheres = $wheres;
+
+            return $elementQuery;
+        }
+
+        return $elementQuery;
+    }
+
+    /**
+     * Prepares an element query for an element index that includes a given table attribute.
+     *
+     * @param  ElementQueryInterface  $elementQuery  The element query
+     * @param  string  $attribute  The attribute name
+     */
+    protected static function prepElementQueryForTableAttribute(
+        ElementQueryInterface $elementQuery,
+        string $attribute,
+    ): void {
+        match ($attribute) {
+            'ancestors' => $elementQuery->andWith(['ancestors', ['status' => null]]),
+            'parent' => $elementQuery->andWith(['parent', ['status' => null]]),
+            'revisionNotes' => $elementQuery->andWith('currentRevision'),
+            'revisionCreator' => $elementQuery->andWith('currentRevision.revisionCreator'),
+            'drafts' => $elementQuery->andWith(['drafts', ['status' => null, 'orderBy' => ['dateUpdated' => SORT_DESC]]]),
+            default => self::prepCustomFieldQuery($elementQuery, $attribute),
+        };
+    }
+
+    /**
+     * Prepares custom field queries for element indexes.
+     *
+     * @param  ElementQueryInterface  $elementQuery  The element query
+     * @param  string  $attribute  The attribute name
+     */
+    private static function prepCustomFieldQuery(ElementQueryInterface $elementQuery, string $attribute): void
+    {
+        if (preg_match('/^field:(.+)/', $attribute, $matches)) {
+            Fields::getFieldByUid($matches[1])?->modifyElementIndexQuery($elementQuery);
+        }
+    }
+
+    /**
+     * Returns the resulting elements for an element index.
+     *
+     * @param  ElementQueryInterface  $elementQuery  The element query
+     * @param  string|null  $sourceKey  The source key
+     * @return ElementInterface[] The elements
+     *
+     * @since 4.4.0
+     */
+    protected static function indexElements(ElementQueryInterface $elementQuery, ?string $sourceKey): array
+    {
+        return $elementQuery->all();
+    }
+
+    /**
+     * Returns the total number of elements for an element index.
+     *
+     * @param  ElementQueryInterface  $elementQuery  The element query
+     * @param  string|null  $sourceKey  The source key
+     * @return int The element count
+     */
+    public static function indexElementCount(ElementQueryInterface $elementQuery, ?string $sourceKey): int
+    {
+        if ($elementQuery instanceof ElementQuery) {
+            return $elementQuery
+                ->select(DB::raw('1'))
+                ->count();
+        }
+
+        return (int) $elementQuery
+            ->select(new Expression('1'))
+            ->count();
+    }
+
+    /**
+     * Returns the available view modes for the element index.
+     *
+     * @return array The view modes
+     */
+    public static function indexViewModes(): array
+    {
+        $viewModes = [
+            [
+                'mode' => 'structure',
+                'title' => t('Display in a structured table'),
+                'icon' => I18N::getLocale()->getOrientation() === 'rtl' ? 'structurertl' : 'structure',
+                'structuresOnly' => true,
+            ],
+            [
+                'mode' => 'table',
+                'title' => t('Display in a table'),
+                'icon' => 'list',
+                'availableOnMobile' => false,
+            ],
+        ];
+
+        if (static::hasThumbs()) {
+            $viewModes[] = [
+                'mode' => 'thumbs',
+                'title' => t('Display as thumbnails'),
+                'icon' => 'grid',
+            ];
+        }
+
+        $viewModes[] = [
+            'mode' => 'cards',
+            'title' => t('Display as cards'),
+            'icon' => 'element-cards',
+        ];
+
+        return $viewModes;
+    }
+
+    /**
+     * Returns the sort options for the element type.
+     *
+     * @return array The sort options
+     */
+    public static function sortOptions(): array
+    {
+        $sortOptions = static::defineSortOptions();
+
+        // Make sure ID is listed first
+        $sortOptions = [
+            'id' => t('ID'),
+            ...Arr::except($sortOptions, 'id'),
+        ];
+
+        event($event = new RegisterSortOptions(
+            elementType: static::class,
+            sortOptions: $sortOptions,
+        ));
+
+        return $event->sortOptions;
+    }
+
+    /**
+     * Returns the sort options for the element type.
+     *
+     * @return array The attributes that elements can be sorted by
+     *
+     * @see sortOptions()
+     */
+    protected static function defineSortOptions(): array
+    {
+        // Default to the available table attributes
+        $tableAttributes = app(ElementSources::class)->getAvailableTableAttributes(static::class);
+        $sortOptions = [];
+
+        foreach ($tableAttributes as $key => $labelInfo) {
+            $sortOptions[$key] = $labelInfo['label'];
+        }
+
+        return $sortOptions;
+    }
+
+    /**
+     * Returns the table attributes for the element type.
+     *
+     * @return array The table attributes
+     */
+    public static function tableAttributes(): array
+    {
+        event($event = new RegisterTableAttributes(
+            elementType: static::class,
+            tableAttributes: static::defineTableAttributes(),
+        ));
+
+        return $event->tableAttributes;
+    }
+
+    /**
+     * Defines all of the available columns that can be shown in table views.
+     *
+     * @return array The table attributes.
+     *
+     * @see tableAttributes()
+     */
+    protected static function defineTableAttributes(): array
+    {
+        $attributes = [
+            'dateCreated' => ['label' => t('Date Created')],
+            'dateUpdated' => ['label' => t('Date Updated')],
+            'id' => ['label' => t('ID')],
+            'uid' => ['label' => t('UID')],
+        ];
+
+        if (static::hasStatuses()) {
+            $attributes['status'] = ['label' => t('Status')];
+        }
+
+        if (static::hasUris()) {
+            return array_merge($attributes, [
+                'link' => ['label' => t('Link'), 'icon' => 'world'],
+                'slug' => ['label' => t('Slug')],
+                'uri' => ['label' => t('URI')],
+            ]);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Returns the default table attributes for a source.
+     *
+     * @param  string  $source  The source key
+     * @return string[] The default table attribute keys
+     */
+    public static function defaultTableAttributes(string $source): array
+    {
+        event($event = new RegisterDefaultTableAttributes(
+            elementType: static::class,
+            source: $source,
+            tableAttributes: static::defineDefaultTableAttributes($source),
+        ));
+
+        return $event->tableAttributes;
+    }
+
+    /**
+     * Returns the list of table attribute keys that should be shown by default.
+     *
+     * @param  string  $source  The selected source's key
+     * @return string[] The table attributes.
+     *
+     * @see defaultTableAttributes()
+     * @see tableAttributes()
+     */
+    protected static function defineDefaultTableAttributes(string $source): array
+    {
+        // Return all of them by default
+        $availableTableAttributes = static::tableAttributes();
+
+        return array_keys($availableTableAttributes);
+    }
+
+    /**
+     * Returns the card attributes for the element type.
+     *
+     * @param  \CraftCms\Cms\FieldLayout\FieldLayout|null  $fieldLayout  The field layout
+     * @return array The card attributes
+     *
+     * @since 5.5.0
+     */
+    public static function cardAttributes(?FieldLayout $fieldLayout = null): array
+    {
+        event($event = new RegisterCardAttributes(
+            elementType: static::class,
+            cardAttributes: static::defineCardAttributes(),
+            fieldLayout: $fieldLayout,
+        ));
+
+        return $event->cardAttributes;
+    }
+
+    /**
+     * Defines all the available attributes that can be shown in card views along with their default placeholder values.
+     *
+     * @return array The card attributes.
+     *
+     * @see cardAttributes()
+     * @since 5.5.0
+     */
+    protected static function defineCardAttributes(): array
+    {
+        // we're intentionally not including statuses as those already show in cards
+        $attributes = [
+            'dateCreated' => [
+                'label' => t('Date Created'),
+                'placeholder' => fn () => new DateTime()->sub(new DateInterval('P16D')),
+            ],
+            'dateUpdated' => [
+                'label' => t('Date Updated'),
+                'placeholder' => fn () => new DateTime()->sub(new DateInterval('P15D')),
+            ],
+            'id' => [
+                'label' => t('ID'),
+                'placeholder' => fn () => 4321,
+            ],
+            'uid' => [
+                'label' => t('UID'),
+                'placeholder' => fn () => 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+            ],
+        ];
+
+        if (static::hasUris()) {
+            return array_merge($attributes, [
+                'link' => [
+                    'label' => t('Link'),
+                    'placeholder' => fn () => ElementHelper::linkAttributeHtml('#'),
+                ],
+                'slug' => [
+                    'label' => t('Slug'),
+                    'placeholder' => fn () => t('Slug'),
+                ],
+                'uri' => [
+                    'label' => t('URI'),
+                    'placeholder' => fn () => ElementHelper::uriAttributeHtml(t('link/to/something'), '#'),
+                ],
+            ]);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Returns the preview HTML for a card attribute.
+     *
+     * @param  array  $attribute  The attribute configuration
+     * @return mixed The preview HTML
+     *
+     * @since 5.5.0
+     */
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'link', 'uri' => $attribute['placeholder'],
+            default => ElementHelper::attributeHtml(is_callable($attribute['placeholder'] ?? null)
+                ? $attribute['placeholder']()
+                : $attribute['placeholder'] ?? $attribute['label'],
+            ),
+        };
+    }
+
+    /**
+     * Returns the default card attributes.
+     *
+     * @return string[] The default card attribute keys
+     *
+     * @since 5.5.0
+     */
+    public static function defaultCardAttributes(): array
+    {
+        event($event = new RegisterDefaultCardAttributes(
+            elementType: static::class,
+            cardAttributes: static::defineDefaultCardAttributes(),
+        ));
+
+        return $event->cardAttributes;
+    }
+
+    /**
+     * Returns the list of card attribute keys that should be shown by default.
+     *
+     * @return string[] The card attributes.
+     *
+     * @see defaultCardAttributes()
+     * @see cardAttributes()
+     * @since 5.5.0
+     */
+    protected static function defineDefaultCardAttributes(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns the orderBy value for element indexes.
+     *
+     * @param  string  $sourceKey  The source key
+     * @param  string  $attribute  The attribute to sort by
+     * @param  string  $dir  The sort direction ('asc' or 'desc')
+     * @return ExpressionInterface|array|false The order by clause
+     */
+    private static function _indexOrderBy(
+        string $sourceKey,
+        string $attribute,
+        string $dir,
+    ): ExpressionInterface|array|false {
+        $sortDirection = strcasecmp($dir, 'desc') === 0 ? SORT_DESC : SORT_ASC;
+        $columns = self::_indexOrderByColumns($sourceKey, $attribute, $sortDirection);
+
+        if ($columns === false || $columns instanceof ExpressionInterface) {
+            return $columns;
+        }
+
+        $columns = is_string($columns)
+            ? preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY)
+            : $columns;
+
+        return self::normalizeOrderByColumns($columns, $sortDirection);
+    }
+
+    /**
+     * Normalizes order by columns with their sort directions.
+     *
+     * @param  array  $columns  The columns to normalize
+     * @param  int  $defaultDirection  The default sort direction
+     * @return array The normalized columns with directions
+     */
+    private static function normalizeOrderByColumns(array $columns, int $defaultDirection): array
+    {
+        $result = [];
+
+        foreach ($columns as $i => $column) {
+            if ($i === 0) {
+                // The first column's sort direction is always user-defined
+                $result[$column] = $defaultDirection;
+
+                continue;
+            }
+
+            if (preg_match('/^(.*?)\s+(asc|desc)$/i', (string) $column, $matches)) {
+                $result[$matches[1]] = strcasecmp($matches[2], 'desc') === 0 ? SORT_DESC : SORT_ASC;
+
+                continue;
+            }
+
+            $result[$column] = SORT_ASC;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Returns the columns for element index ordering.
+     *
+     * @param  string  $sourceKey  The source key
+     * @param  string  $attribute  The attribute to sort by
+     * @param  int  $dir  The sort direction (SORT_ASC or SORT_DESC)
+     * @return ExpressionInterface|bool|array|string The columns
+     */
+    private static function _indexOrderByColumns(
+        string $sourceKey,
+        string $attribute,
+        int $dir,
+    ): ExpressionInterface|bool|array|string {
+        if (! $attribute) {
+            return false;
+        }
+
+        if ($attribute === 'score') {
+            return 'score';
+        }
+
+        // Check element's own sort options
+        if ($orderBy = self::resolveSortOption($attribute, $dir)) {
+            return $orderBy;
+        }
+
+        // Check source-specific sort options
+        return self::resolveSourceSortOption($sourceKey, $attribute, $dir);
+    }
+
+    /**
+     * Resolves the orderBy value from the element's sort options.
+     *
+     * @param  string  $attribute  The attribute to sort by
+     * @param  int  $dir  The sort direction
+     * @return ExpressionInterface|array|string|false The orderBy value
+     */
+    private static function resolveSortOption(string $attribute, int $dir): ExpressionInterface|array|string|false
+    {
+        foreach (static::sortOptions() as $key => $sortOption) {
+            if (! is_array($sortOption) && $key === $attribute) {
+                return $key;
+            }
+
+            if (is_array($sortOption)) {
+                $optionAttribute = $sortOption['attribute'] ?? $sortOption['orderBy'];
+                if ($optionAttribute === $attribute) {
+                    return is_callable($sortOption['orderBy'])
+                        ? $sortOption['orderBy']($dir)
+                        : $sortOption['orderBy'];
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Resolves the orderBy value from source-specific sort options.
+     *
+     * @param  string  $sourceKey  The source key
+     * @param  string  $attribute  The attribute to sort by
+     * @param  int  $dir  The sort direction
+     * @return \Illuminate\Contracts\Database\Query\Expression|bool The orderBy value
+     */
+    private static function resolveSourceSortOption(string $sourceKey, string $attribute, int $dir): ExpressionInterface|bool
+    {
+        $sourceSortOptions = app(ElementSources::class)->getSourceSortOptions(static::class, $sourceKey);
+
+        foreach ($sourceSortOptions as $sortOption) {
+            if ($sortOption['attribute'] !== $attribute) {
+                continue;
+            }
+
+            $orderBy = $sortOption['orderBy'];
+
+            if ($orderBy instanceof Coalesce) {
+                $sql = $orderBy->getValue(DB::connection()->getQueryGrammar());
+            } elseif (is_string($orderBy)) {
+                $sql = $orderBy;
+            } else {
+                return $orderBy;
+            }
+
+            $direction = $dir === SORT_ASC ? 'ASC' : 'DESC';
+
+            return DB::raw("$sql $direction");
+        }
+
+        return false;
+    }
+}

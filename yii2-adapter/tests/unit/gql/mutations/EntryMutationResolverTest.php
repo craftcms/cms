@@ -9,13 +9,13 @@ namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
 use Craft;
-use craft\base\Element;
-use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\services\Elements;
 use craft\test\TestCase;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Entry\Elements\Entry;
 use GraphQL\Type\Definition\ResolveInfo;
 use Throwable;
 
@@ -32,6 +32,7 @@ class EntryMutationResolverTest extends TestCase
     public function testSavingDraftOrEntrySetsRelevantScenario(array $arguments, string $scenario): void
     {
         $entry = $this->make(Entry::class, [
+            'title' => 'Test title',
             'getType' => new EntryType(),
         ]);
 
@@ -62,6 +63,7 @@ class EntryMutationResolverTest extends TestCase
     public function testSavingNewEntryDoesNotSearchForIt(array $arguments, bool $identifyCalled): void
     {
         $entry = $this->make(Entry::class, [
+            'title' => 'Test title',
             'getType' => new EntryType(),
         ]);
 

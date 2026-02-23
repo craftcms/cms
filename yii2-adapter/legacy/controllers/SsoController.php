@@ -18,10 +18,12 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Throwable;
 use yii\web\HttpException;
 use yii\web\Response;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -136,12 +138,9 @@ class SsoController extends Controller
         }
 
         return $this->redirect(
-            $returnUrl ?
-                Craft::$app->getView()->renderObjectTemplate(
-                    $returnUrl,
-                    Auth::user(),
-                ) :
-                $this->request->getPathInfo()
+            $returnUrl
+                ? renderObjectTemplate($returnUrl, Auth::user())
+                : $this->request->getPathInfo()
         );
     }
 
@@ -164,16 +163,16 @@ class SsoController extends Controller
         }
 
         // Log some context around the error
-        $user?->hasErrors() ? Craft::error(
+        $user?->errors()->isNotEmpty() ? Log::error(
             sprintf(
                 "%s. Errors: %s.",
                 $message,
-                Json::encode($user->getErrors())
+                Json::encode($user->errors()->getMessages())
             ),
-            "auth"
-        ) : Craft::error(
+            ["auth"]
+        ) : Log::error(
             $message,
-            "auth"
+            ["auth"]
         );
 
         throw new HttpException(500, $message, 0, $exception);

@@ -11,6 +11,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Exception;
@@ -28,6 +29,7 @@ use ZipArchive;
 
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final readonly class CraftSupportController
 {
@@ -39,7 +41,7 @@ final readonly class CraftSupportController
 
     public function __invoke(Request $request, #[Give('Craft')] Application $craft): string
     {
-        $view = $craft->getView();
+        $craft->getView();
 
         $request->validate([
             'widgetId' => ['required', 'integer'],
@@ -62,7 +64,7 @@ final readonly class CraftSupportController
         ]);
 
         if ($validator->fails()) {
-            return $view->renderTemplate('_components/widgets/CraftSupport/response.twig', [
+            return template('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => $validator->errors()->toArray(),
@@ -122,7 +124,7 @@ final readonly class CraftSupportController
                 RequestOptions::MULTIPART => $parts,
             ]);
 
-            return $view->renderTemplate('_components/widgets/CraftSupport/response.twig', [
+            return template('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
                 'success' => true,
                 'errors' => [],
@@ -131,7 +133,7 @@ final readonly class CraftSupportController
             Log::error("Unable to send support request: {$requestException->getMessage()}", [__METHOD__]);
             report($requestException);
 
-            return $view->renderTemplate('_components/widgets/CraftSupport/response.twig', [
+            return template('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => [
@@ -226,7 +228,7 @@ final readonly class CraftSupportController
 
         // project.yaml
         $projectConfig = app(ProjectConfig::class)->get();
-        $projectConfig = Craft::$app->getSecurity()->redactIfSensitive('', $projectConfig);
+        $projectConfig = Security::redactIfSensitive('', $projectConfig);
         $zip->addFromString('project.yaml', Yaml::dump($projectConfig, 20, 2));
 
         // project.yaml backups

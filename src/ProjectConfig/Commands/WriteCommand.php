@@ -12,10 +12,13 @@ final class WriteCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:project-config:write';
 
+    #[\Override]
     protected $description = 'Writes out the currently-loaded project config as YAML files to the `config/project/` folder, discarding any pending YAML changes.';
 
+    #[\Override]
     protected $aliases = ['project-config/write', 'pc:write', 'pc/write'];
 
     public function handle(ProjectConfig $projectConfig): void

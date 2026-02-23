@@ -20,8 +20,8 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use InvalidArgumentException;
 use yii\base\Action;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\web\BadRequestHttpException;
@@ -30,6 +30,7 @@ use yii\web\JsonResponseFormatter;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response as YiiResponse;
 use yii\web\UnauthorizedHttpException;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -405,7 +406,7 @@ abstract class Controller extends \yii\web\Controller
         $data += [
             'modelName' => $modelName,
             $modelName => $model->toArray(),
-            'errors' => $model->getErrors(),
+            'errors' => $model->errors()->getMessages(),
         ];
 
         return $this->asFailure(
@@ -573,7 +574,8 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireToken(): void
     {
-        if (!$this->request->getHadToken()) {
+        $tokenRoute = $this->request->getTokenRoute()[0] ?? null;
+        if ($tokenRoute !== $this->getRoute()) {
             throw new BadRequestHttpException('Valid token required');
         }
     }
@@ -651,7 +653,7 @@ abstract class Controller extends \yii\web\Controller
         $url = $this->request->getValidatedBodyParam('redirect');
 
         if ($url && $object) {
-            $url = $this->getView()->renderObjectTemplate($url, $object);
+            $url = renderObjectTemplate($url, $object);
         }
 
         return $url;

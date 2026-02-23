@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
+use Craft;
+
 final class DeleteOrphanedSearchIndexes extends GarbageCollectionAction
 {
     public function __invoke(): void
@@ -11,7 +13,7 @@ final class DeleteOrphanedSearchIndexes extends GarbageCollectionAction
         $this->components->task(
             'deleting orphaned search indexes',
             function () {
-                \Craft::$app->getSearch()->deleteOrphanedIndexes();
+                Craft::$app->getSearch()->deleteOrphanedIndexes();
             },
         );
     }

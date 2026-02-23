@@ -16,6 +16,7 @@ use function Laravel\Prompts\search;
 
 trait PromptsForMissingUser
 {
+    /** @return array<string, \Closure(): mixed> */
     protected function promptForMissingArgumentsUsing(): array
     {
         return [

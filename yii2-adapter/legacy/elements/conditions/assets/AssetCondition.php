@@ -2,33 +2,20 @@
 
 namespace craft\elements\conditions\assets;
 
-use craft\elements\conditions\ElementCondition;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 
-/**
- * Asset query condition.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class AssetCondition extends ElementCondition
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Asset query condition.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Conditions\AssetCondition} instead.
      */
-    protected function selectableConditionRules(): array
+    class AssetCondition extends ElementCondition
     {
-        return array_merge(parent::selectableConditionRules(), [
-            DateModifiedConditionRule::class,
-            FileSizeConditionRule::class,
-            FileTypeConditionRule::class,
-            FilenameConditionRule::class,
-            HasAltConditionRule::class,
-            HeightConditionRule::class,
-            SavableConditionRule::class,
-            UploaderConditionRule::class,
-            ViewableConditionRule::class,
-            VolumeConditionRule::class,
-            WidthConditionRule::class,
-        ]);
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\Conditions\AssetCondition::class, AssetCondition::class);

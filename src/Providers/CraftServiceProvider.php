@@ -12,9 +12,11 @@ use CraftCms\Cms\Database\DatabaseServiceProvider;
 use CraftCms\Cms\Deprecator\DeprecatorServiceProvider;
 use CraftCms\Cms\Entry\EntryServiceProvider;
 use CraftCms\Cms\Field\FieldsServiceProvider;
+use CraftCms\Cms\FieldLayout\FieldLayoutServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
 use CraftCms\Cms\ProjectConfig\ProjectConfigServiceProvider;
+use CraftCms\Cms\Queue\QueueServiceProvider;
 use CraftCms\Cms\Route\RouteServiceProvider;
 use CraftCms\Cms\Section\SectionServiceProvider;
 use CraftCms\Cms\Structure\StructureServiceProvider;
@@ -22,10 +24,12 @@ use CraftCms\Cms\Translation\TranslationServiceProvider;
 use CraftCms\Cms\Twig\TwigServiceProvider;
 use CraftCms\Cms\Updates\UpdatesServiceProvider;
 use CraftCms\Cms\User\UserServiceProvider;
+use CraftCms\Cms\View\ViewServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
 
 final class CraftServiceProvider extends AggregateServiceProvider
 {
+    #[\Override]
     protected $providers = [
         ConfigServiceProvider::class,
         AuthServiceProvider::class,
@@ -46,8 +50,10 @@ final class CraftServiceProvider extends AggregateServiceProvider
         UpdatesServiceProvider::class,
         UserServiceProvider::class,
         FieldsServiceProvider::class,
+        FieldLayoutServiceProvider::class,
         SectionServiceProvider::class,
         EntryServiceProvider::class,
         StructureServiceProvider::class,
+        QueueServiceProvider::class,
     ];
 }

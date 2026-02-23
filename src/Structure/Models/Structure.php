@@ -17,8 +17,10 @@ final class Structure extends BaseModel
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected $table = Table::STRUCTURES;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

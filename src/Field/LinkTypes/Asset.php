@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use Craft;
-use craft\elements\Asset as AssetElement;
 use craft\fs\Temp;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\models\Volume;
+use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Field\Link;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -54,7 +55,7 @@ final class Asset extends BaseElementLinkType
         return AssetElement::class;
     }
 
-    #[\Override]
+    #[Override]
     public function getSettingsHtml(): string
     {
         return
@@ -85,7 +86,7 @@ final class Asset extends BaseElementLinkType
             ]);
     }
 
-    #[\Override]
+    #[Override]
     protected function availableSourceKeys(): array
     {
         $volumes = Collection::make(Craft::$app->getVolumes()->getAllVolumes())
@@ -100,7 +101,7 @@ final class Asset extends BaseElementLinkType
             ->all();
     }
 
-    #[\Override]
+    #[Override]
     protected function selectionCriteria(): array
     {
         // Ignore the parent value since asset URLs don't get saved to the element
@@ -115,7 +116,7 @@ final class Asset extends BaseElementLinkType
         return $criteria;
     }
 
-    #[\Override]
+    #[Override]
     protected function elementSelectConfig(): array
     {
         $config = array_merge(parent::elementSelectConfig(), [

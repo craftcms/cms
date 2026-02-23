@@ -13,10 +13,13 @@ final class DisableCommand extends Command
     use CraftCommand;
     use PromptsForMissingHandle;
 
+    #[\Override]
     protected $signature = 'craft:plugin:disable {handle?} {--all}';
 
+    #[\Override]
     protected $description = 'Disables a plugin.';
 
+    #[\Override]
     protected $aliases = ['plugin/disable'];
 
     private Plugins $plugins;

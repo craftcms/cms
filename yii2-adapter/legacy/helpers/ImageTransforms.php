@@ -10,7 +10,6 @@ namespace craft\helpers;
 use Craft;
 use craft\base\Image as BaseImage;
 use craft\base\LocalFsInterface;
-use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
 use craft\errors\FsException;
@@ -19,13 +18,15 @@ use craft\errors\ImageException;
 use craft\errors\ImageTransformException;
 use craft\image\Raster;
 use craft\models\ImageTransform;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Shared\Rules\ColorRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Validation\Rules\ColorRule;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Imagine\Image\Format;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use function CraftCms\Cms\t;
 
 /**
@@ -73,7 +74,7 @@ class ImageTransforms
             'width' => $matches['width'] ?? null,
             'height' => $matches['height'] ?? null,
             'mode' => $matches['mode'],
-            'position' => $matches['position'],
+            'position' => $matches['position'] ?? 'center-center',
             'quality' => $matches['quality'] ?? null,
             'interlace' => $matches['interlace'] ?? 'none',
             'fill' => $fill ?? null,
@@ -185,7 +186,7 @@ class ImageTransforms
 
                     if (!is_file($tempFilePath) || filesize($tempFilePath) === 0) {
                         if (is_file($tempFilePath) && !FileHelper::unlink($tempFilePath)) {
-                            Craft::warning("Unable to delete the file \"$tempFilePath\".", __METHOD__);
+                            Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                         }
                         throw new FsException(t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
                             'file' => $asset->getFilename(),
@@ -201,7 +202,7 @@ class ImageTransforms
                     }
 
                     if (!FileHelper::unlink($tempFilePath)) {
-                        Craft::warning("Unable to delete the file \"$tempFilePath\".", __METHOD__);
+                        Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                     }
                 }
             }
@@ -230,9 +231,13 @@ class ImageTransforms
             return '_' . $transform->handle;
         }
 
+        $position = preg_match('/^(top|center|bottom)-(left|center|right)$/', $transform->position)
+            ? $transform->position
+            : 'center-center';
+
         return '_' . ($transform->width ?: 'AUTO') . 'x' . ($transform->height ?: 'AUTO') .
             '_' . $transform->mode .
-            '_' . $transform->position .
+            "_$position" .
             ($transform->quality ? '_' . $transform->quality : '') .
             '_' . $transform->interlace .
             ($transform->fill ? '_' . ltrim($transform->fill, '#') : '') .
@@ -288,12 +293,12 @@ class ImageTransforms
 
         if (is_array($transform)) {
             if (!empty($transform['width']) && !is_numeric($transform['width'])) {
-                Craft::warning("Invalid transform width: {$transform['width']}", __METHOD__);
+                Log::warning("Invalid transform width: {$transform['width']}", [__METHOD__]);
                 $transform['width'] = null;
             }
 
             if (!empty($transform['height']) && !is_numeric($transform['height'])) {
-                Craft::warning("Invalid transform height: {$transform['height']}", __METHOD__);
+                Log::warning("Invalid transform height: {$transform['height']}", [__METHOD__]);
                 $transform['height'] = null;
             }
 
@@ -307,7 +312,7 @@ class ImageTransforms
                 if ($colorValidator->passes()) {
                     $transform['fill'] = $normalizedValue;
                 } else {
-                    Craft::warning("Invalid transform fill: {$transform['fill']}", __METHOD__);
+                    Log::warning("Invalid transform fill: {$transform['fill']}", [__METHOD__]);
                     $transform['fill'] = null;
                 }
             }
@@ -423,10 +428,10 @@ class ImageTransforms
 
         if ($asset->getHasFocalPoint() && $transform->mode === 'crop') {
             $position = $asset->getFocalPoint();
-        } elseif (!preg_match('/^(top|center|bottom)-(left|center|right)$/', $transform->position)) {
-            $position = 'center-center';
-        } else {
+        } elseif (preg_match('/^(top|center|bottom)-(left|center|right)$/', $transform->position)) {
             $position = $transform->position;
+        } else {
+            $position = 'center-center';
         }
 
         $scaleIfSmaller = $transform->upscale ?? Cms::config()->upscaleImages;
@@ -442,7 +447,7 @@ class ImageTransforms
                         $scaleIfSmaller
                     );
                 } else {
-                    Craft::warning("Cannot add fill to non-raster images");
+                    Log::info("Cannot add fill to non-raster images");
                     $image->scaleToFit($transform->width, $transform->height, $scaleIfSmaller);
                 }
                 break;

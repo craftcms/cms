@@ -12,6 +12,7 @@ use craft\console\Request as ConsoleRequest;
 use craft\web\Request as WebRequest;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
@@ -298,9 +299,7 @@ class UrlHelper
 
         $path = trim($path, '/');
 
-        $request = Craft::$app->getRequest();
-
-        if ($request->getIsCpRequest()) {
+        if (request()->isCpRequest()) {
             $path = static::prependCpTrigger($path);
             $cpUrl = true;
         } else {
@@ -308,7 +307,7 @@ class UrlHelper
         }
 
         // Stick with SSL if the current request is over SSL and a scheme wasn't defined
-        if ($scheme === null && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
+        if ($scheme === null && !app()->runningInConsole() && request()->secure()) {
             $scheme = 'https';
         }
 
@@ -685,9 +684,15 @@ class UrlHelper
                 $params[$generalConfig->siteToken] = $siteToken;
             }
             if ($request->getIsSiteRequest()) {
-                if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+                if (
+                    $addToken &&
+                    !isset($params[$generalConfig->tokenParam]) &&
+                    ($token = $request->getToken()) !== null &&
+                    app(RouteTokens::class)->getRemainingTokenUsages($token) !== 0
+                ) {
                     $params[$generalConfig->tokenParam] = $token;
                 }
+
                 if (
                     !isset($params['x-craft-preview']) &&
                     !isset($params['x-craft-live-preview']) &&

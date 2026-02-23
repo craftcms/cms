@@ -8,10 +8,10 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\elements\GlobalSet;
 use craft\helpers\Cp;
 use craft\web\Controller;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
@@ -181,7 +181,7 @@ class GlobalsController extends Controller
         ]);
 
         // Render the template!
-        return $this->renderTemplate('yii2-adapter/globals/_edit.twig', [
+        return $this->rendertemplate('yii2-adapter/globals/_edit', [
             'bodyClass' => 'edit-global-set',
             'editableGlobalSets' => $editableGlobalSets,
             'globalSet' => $globalSet,

@@ -153,7 +153,7 @@ trait ControllerTrait
      */
     protected function checkRootUser(): bool
     {
-        if (windows_os() || !function_exists('exec') || Env::get('CRAFT_ALLOW_SUPERUSER')) {
+        if (windows_os() || !function_exists('exec') || Env::normalizeBooleanValue(Env::get('CRAFT_ALLOW_SUPERUSER'))) {
             return true;
         }
 
@@ -207,7 +207,7 @@ trait ControllerTrait
             $model->$attribute = $input;
 
             if (!$model->validate([$attribute])) {
-                $error = $model->getFirstError($attribute);
+                $error = $model->errors()->first($attribute);
 
                 return false;
             }

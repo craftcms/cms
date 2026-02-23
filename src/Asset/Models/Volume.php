@@ -19,8 +19,10 @@ final class Volume extends BaseModel
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected $table = Table::VOLUMES;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

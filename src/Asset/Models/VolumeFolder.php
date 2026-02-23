@@ -16,6 +16,7 @@ final class VolumeFolder extends BaseModel
     use HasFactory;
     use HasUid;
 
+    #[\Override]
     protected $table = Table::VOLUMEFOLDERS;
 
     /**

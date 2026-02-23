@@ -149,7 +149,6 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
 
     public function bootPlugin(): void {}
 
-    /** {@inheritdoc} */
     #[Override]
     public function getBasePath(): string
     {
@@ -160,7 +159,6 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
         });
     }
 
-    /** {@inheritdoc} */
     #[Override]
     public static function create(array $config): PluginInterface
     {

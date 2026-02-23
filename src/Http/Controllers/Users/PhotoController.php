@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\elements\Asset;
 use craft\helpers\Assets;
-use craft\web\View;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,6 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final readonly class PhotoController
 {
@@ -106,22 +108,20 @@ final readonly class PhotoController
 
     private function renderPhotoTemplate(Request $request, User $user): JsonResponse
     {
-        $view = Craft::$app->getView();
-
-        $templateMode = $view->getTemplateMode();
-        if ($templateMode === View::TEMPLATE_MODE_SITE && ! $view->doesTemplateExist('users/_photo.twig')) {
-            $templateMode = View::TEMPLATE_MODE_CP;
+        $templateMode = TemplateMode::get();
+        if (TemplateMode::is(TemplateMode::Site) && ! app(TemplateResolver::class)->exists('users/_photo.twig')) {
+            $templateMode = TemplateMode::Cp;
         }
 
         $data = [
-            'html' => $view->renderTemplate('users/_photo.twig', [
+            'html' => template('users/_photo', [
                 'user' => $user,
-            ], $templateMode),
+            ], templateMode: $templateMode),
             'photoId' => $user->photoId,
         ];
 
         if ($user->getIsCurrent() && $request->isCpRequest()) {
-            $data['headerPhotoHtml'] = $view->renderTemplate('_layouts/components/header-photo.twig');
+            $data['headerPhotoHtml'] = template('_layouts/components/header-photo');
         }
 
         return new JsonResponse($data);

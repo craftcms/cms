@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\models\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
  * Field layout Event class.

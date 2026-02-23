@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
 use Craft;
-use craft\base\Element;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
@@ -77,7 +77,7 @@ final readonly class StoreEntryController
         try {
             $success = Craft::$app->getElements()->saveElement($entry);
         } catch (UnsupportedSiteException $e) {
-            $entry->addError('siteId', $e->getMessage());
+            $entry->errors()->add('siteId', $e->getMessage());
             $success = false;
         } finally {
             if ($isNotNew) {
@@ -199,7 +199,7 @@ final readonly class StoreEntryController
             }
 
             // Send the original entry back to the template, with any validation errors on the clone
-            $entry->addErrors($clone->getErrors());
+            $entry->errors()->merge($clone->errors());
 
             return $this->asModelFailure(
                 model: $entry,

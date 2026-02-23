@@ -17,16 +17,21 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder as SchemaBuilder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 final class DatabaseServiceProvider extends ServiceProvider
 {
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         $this->app
             ->when(Migrator::class)
             ->needs(MigrationRepositoryInterface::class)
             ->give(fn () => $this->app->make(MigrationRepository::class, ['table' => Table::MIGRATIONS]));
+
+        Connection::macro('isMysql', fn (bool $strict = false) => $strict ? $this->getDriverName() === 'mysql' : in_array($this->getDriverName(), ['mysql', 'mariadb']));
+        Connection::macro('isMaria', fn () => $this->getDriverName() === 'mariadb');
+        Connection::macro('isPgsql', fn () => $this->getDriverName() === 'pgsql');
 
         $this->registerQueryBuilderMacros();
         $this->registerSchemaBuilderMacros();

@@ -27,10 +27,12 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use DateTimeZone;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
@@ -145,7 +147,7 @@ class GraphqlController extends Controller
             // Must be valid JSON
             try {
                 $variables = Json::decode($qVariables);
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 throw new BadRequestHttpException('The variables param must be valid JSON', 0, $e);
             }
         }
@@ -185,9 +187,10 @@ class GraphqlController extends Controller
 
         // Check for the cache-bust header
         $cacheHeader = $this->request->getHeaders()->get('x-craft-gql-cache');
-        if ($cacheHeader === 'no-cache') {
+        $cache = $cacheHeader ? ($cacheHeader === 'cache') : null;
+        if ($cache !== null) {
             $cacheSetting = $generalConfig->enableGraphqlCaching;
-            $generalConfig->enableGraphqlCaching = false;
+            $generalConfig->enableGraphqlCaching = $cache;
         }
 
         $result = [];
@@ -233,11 +236,8 @@ class GraphqlController extends Controller
         $this->response->format = Response::FORMAT_GQL;
         $this->response->data = $singleQuery ? reset($result) : $result;
 
-        // send cache headers
-        $cache = isset($cacheHeader) ? $cacheHeader === 'cache' : !$hasMutations;
-        if ($cache) {
-            $this->response->setCacheHeaders();
-        } else {
+        // send no-cache headers?
+        if (!($cache ?? !$hasMutations)) {
             $this->response->setNoCacheHeaders();
         }
 
@@ -326,7 +326,7 @@ class GraphqlController extends Controller
         try {
             $token = $gqlService->getPublicToken();
         } catch (Throwable $e) {
-            Craft::warning('Could not obtain the public token: ' . $e->getMessage());
+            Log::info('Could not obtain the public token: ' . $e->getMessage());
             Craft::$app->getErrorHandler()->logException($e);
             return null;
         }
@@ -414,7 +414,7 @@ class GraphqlController extends Controller
             ];
         }
 
-        return $this->renderTemplate('graphql/graphiql.twig', [
+        return $this->rendertemplate('graphql/graphiql', [
             'url' => UrlHelper::actionUrl('graphql/api'),
             'schemas' => $schemas,
             'selectedSchema' => $selectedSchema,
@@ -457,7 +457,7 @@ class GraphqlController extends Controller
         // Ensure the public schema is created.
         Craft::$app->getGql()->getPublicSchema();
 
-        return $this->renderTemplate('graphql/schemas/_index.twig');
+        return $this->rendertemplate('graphql/schemas/_index');
     }
 
     /**
@@ -514,7 +514,7 @@ class GraphqlController extends Controller
             ]);
         }
 
-        return $this->renderTemplate('graphql/tokens/_edit.twig', compact(
+        return $this->rendertemplate('graphql/tokens/_edit', compact(
             'token',
             'title',
             'accessToken',
@@ -598,7 +598,7 @@ class GraphqlController extends Controller
     public function actionViewTokens(): YiiResponse
     {
         $this->requireAdmin(false);
-        return $this->renderTemplate('graphql/tokens/_index.twig');
+        return $this->rendertemplate('graphql/tokens/_index');
     }
 
     /**
@@ -630,7 +630,7 @@ class GraphqlController extends Controller
             $title = trim($schema->name) ?: t('Create a new GraphQL Schema');
         }
 
-        return $this->renderTemplate('graphql/schemas/_edit.twig', compact(
+        return $this->rendertemplate('graphql/schemas/_edit', compact(
             'schema',
             'title'
         ));
@@ -656,7 +656,7 @@ class GraphqlController extends Controller
         $token = $gqlService->getPublicToken();
         $title = t('Edit the public GraphQL schema');
 
-        return $this->renderTemplate('graphql/schemas/_edit.twig', compact(
+        return $this->rendertemplate('graphql/schemas/_edit', compact(
             'schema',
             'token',
             'title'
@@ -814,6 +814,6 @@ class GraphqlController extends Controller
      */
     private function _generateToken(): string
     {
-        return Craft::$app->getSecurity()->generateRandomString(32);
+        return Str::random(32, extendedChars: true);
     }
 }

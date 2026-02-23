@@ -17,10 +17,12 @@ use CraftCms\Cms\Plugin\Concerns\Installable;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Yii2Adapter\Database\MigrationWrapper;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use ReflectionMethod;
 use yii\base\Event;
 use yii\base\Module;
@@ -166,7 +168,7 @@ class Plugin extends Module implements PluginInterface
     public function setSettings(array $settings): void
     {
         if (($model = $this->getSettings()) === null) {
-            Craft::warning('Attempting to set settings on a plugin that doesn\'t have settings: ' . $this->id);
+            Log::warning('Attempting to set settings on a plugin that doesn\'t have settings: ' . $this->id);
             return;
         }
 
@@ -191,8 +193,7 @@ class Plugin extends Module implements PluginInterface
 
     private function settingsResponse(bool $readOnly): Response
     {
-        $view = Craft::$app->getView();
-        $settingsHtml = $view->namespaceInputs(function() use ($readOnly) {
+        $settingsHtml = InputNamespace::namespaceInputs(function() use ($readOnly) {
             if ($readOnly) {
                 // Just return the settings HTML with disabled inputs by default
                 return (string)Html::disableInputs(fn() => $this->settingsHtml());
@@ -204,7 +205,7 @@ class Plugin extends Module implements PluginInterface
         /** @var Controller $controller */
         $controller = Craft::$app->controller;
 
-        return $controller->renderTemplate('settings/plugins/_settings.twig', [
+        return $controller->rendertemplate('settings/plugins/_settings', [
             'plugin' => $this,
             'settingsHtml' => $settingsHtml,
             'readOnly' => $readOnly,

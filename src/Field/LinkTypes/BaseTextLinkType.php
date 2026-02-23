@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use Craft;
 use craft\helpers\Cp;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 
@@ -71,8 +71,7 @@ abstract class BaseTextLinkType extends BaseLinkType
             ],
         ], $this->inputAttributes());
 
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(fn ($id, $settings) => <<<JS
+        AssetRegistry::jsWithVars(fn ($id, $settings) => <<<JS
 (() => {
   new Craft.LinkInput('#' + $id, $settings)
 })();

@@ -8,14 +8,15 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\elements\Asset;
 use craft\models\ImageTransform;
+use CraftCms\Cms\Asset\Elements\Asset;
 
 /**
  * Define asset URL event class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Events\BeforeDefineAssetUrl} or {@see \CraftCms\Cms\Asset\Events\DefineAssetUrl} instead.
  */
 class DefineAssetUrlEvent extends DefineUrlEvent
 {

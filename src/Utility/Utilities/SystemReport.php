@@ -15,48 +15,38 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\DB;
 use OutOfBoundsException;
+use Override;
 use RequirementsChecker;
 use yii\base\Module;
 
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * SystemReport represents a SystemReport dashboard widget.
  */
 final class SystemReport extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('System Report');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'system-report';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'list-check';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $modules = collect(Craft::$app->getModules())
@@ -85,15 +75,19 @@ final class SystemReport extends Utility
         foreach (Aliases::getAll() as $alias => $value) {
             if (is_array($value)) {
                 foreach ($value as $a => $v) {
-                    $aliases[$a] = $v;
+                    if (! str_starts_with((string) $a, '@appicons/')) {
+                        $aliases[$a] = $v;
+                    }
                 }
             } else {
-                $aliases[$alias] = $value;
+                if (! str_starts_with((string) $alias, '@appicons/')) {
+                    $aliases[$alias] = $value;
+                }
             }
         }
         ksort($aliases);
 
-        return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport.twig', [
+        return template('_components/utilities/SystemReport', [
             'appInfo' => self::appInfo(),
             'plugins' => app(Plugins::class)->getAllPlugins(),
             'modules' => $modules,

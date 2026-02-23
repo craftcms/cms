@@ -7,66 +7,49 @@ namespace CraftCms\Cms\Auth\Methods;
 use Craft;
 use craft\web\assets\recoverycodes\RecoveryCodesAsset;
 use CraftCms\Cms\Auth\Models\RecoveryCodes as RecoveryCodesModel;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use InvalidArgumentException;
+use Override;
 use PragmaRX\Recovery\Recovery;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class RecoveryCodes extends BaseAuthMethod
 {
-    /**
-     * {@inheritdoc}
-     */
     public static function displayName(): string
     {
         return t('Recovery Codes');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function description(): string
     {
         return t('Generate recovery codes that can be used as a backup.');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isActive(): bool
     {
         return RecoveryCodesModel::where('userId', $this->user->id)->exists();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSetupHtml(string $containerId): string
     {
-        $view = Craft::$app->getView();
-
-        $view->registerJsWithVars(fn ($containerId) => <<<JS
+        AssetRegistry::jsWithVars(fn ($containerId) => <<<JS
 new Craft.RecoveryCodesSetup($containerId)
 JS, [$containerId]);
 
-        return $view->renderTemplate('_components/auth/methods/RecoveryCodes/setup.twig');
+        return template('_components/auth/methods/RecoveryCodes/setup');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAuthFormHtml(): string
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(RecoveryCodesAsset::class);
 
-        return $view->renderTemplate('_components/auth/methods/RecoveryCodes/form.twig');
+        return template('_components/auth/methods/RecoveryCodes/form');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getActionMenuItems(): array
     {
         return [
@@ -79,9 +62,6 @@ JS, [$containerId]);
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function verify(mixed ...$args): bool
     {
         [$code] = $args;
@@ -109,9 +89,6 @@ JS, [$containerId]);
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function remove(): void
     {
         RecoveryCodesModel::where('userId', $this->user->id)->delete();

@@ -10,6 +10,7 @@ namespace craft\log;
 use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -25,6 +26,7 @@ use yii\web\Session;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0
  */
 class ContextProcessor implements ProcessorInterface
 {
@@ -78,7 +80,7 @@ class ContextProcessor implements ProcessorInterface
             try {
                 $decoded = Json::decode($body);
                 if (is_array($decoded)) {
-                    $decoded = Craft::$app->getSecurity()->redactIfSensitive('', $decoded);
+                    $decoded = Security::redactIfSensitive('', $decoded);
                 }
                 $body = Json::encode($decoded);
             } catch (InvalidArgumentException) {
@@ -123,7 +125,7 @@ class ContextProcessor implements ProcessorInterface
         // https://github.com/yiisoft/yii-core/issues/49
         // https://github.com/yiisoft/yii2/issues/15847
         if (Craft::$app) {
-            $filtered = Craft::$app->getSecurity()->redactIfSensitive('', $filtered);
+            $filtered = Security::redactIfSensitive('', $filtered);
         }
 
         return $filtered;

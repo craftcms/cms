@@ -12,8 +12,10 @@ final class AssetIndexingSession extends BaseModel
 {
     use HasUid;
 
+    #[\Override]
     protected $table = Table::ASSETINDEXINGSESSIONS;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

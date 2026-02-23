@@ -8,20 +8,25 @@ use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
-use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Traits\Conditionable;
 use Stringable;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\pageTemplate;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class CpScreenResponse implements Responsable
 {
@@ -531,7 +536,7 @@ final class CpScreenResponse implements Responsable
     public function toolbarTemplate(string $template, array $variables = []): self
     {
         return $this->toolbarHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -577,7 +582,7 @@ final class CpScreenResponse implements Responsable
     public function additionalButtonsTemplate(string $template, array $variables = []): self
     {
         return $this->additionalButtonsHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -597,7 +602,7 @@ final class CpScreenResponse implements Responsable
     public function contentTemplate(string $template, array $variables = []): self
     {
         return $this->contentHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -617,7 +622,7 @@ final class CpScreenResponse implements Responsable
     public function metaSidebarTemplate(string $template, array $variables = []): self
     {
         return $this->metaSidebarHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -637,7 +642,7 @@ final class CpScreenResponse implements Responsable
     public function pageSidebarTemplate(string $template, array $variables = []): self
     {
         return $this->pageSidebarHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -657,7 +662,7 @@ final class CpScreenResponse implements Responsable
     public function noticeTemplate(string $template, array $variables = []): self
     {
         return $this->noticeHtml(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
@@ -677,11 +682,10 @@ final class CpScreenResponse implements Responsable
     public function errorSummaryTemplate(string $template, array $variables = []): self
     {
         return $this->errorSummary(
-            fn () => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP),
+            fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
     }
 
-    /** {@inheritdoc} */
     public function toResponse($request): Response
     {
         if ($request->wantsJson()) {
@@ -701,19 +705,19 @@ final class CpScreenResponse implements Responsable
 
             abort_unless((bool) $containerId, 400, 'Request missing the X-Craft-Container-Id header.');
 
-            $view->setNamespace($namespace);
+            InputNamespace::set($namespace);
             call_user_func($this->prepareScreen, $this, $containerId);
-            $view->setNamespace(null);
+            InputNamespace::set(null);
         }
 
         $extraToolbarItems = is_callable($this->toolbarHtml) ? call_user_func($this->toolbarHtml) : $this->toolbarHtml;
-        $notice = $this->noticeHtml ? $view->namespaceInputs($this->noticeHtml, $namespace) : null;
+        $notice = $this->noticeHtml ? InputNamespace::namespaceInputs($this->noticeHtml, $namespace) : null;
 
-        $tabs = count($this->tabs) > 1 ? $view->namespaceInputs(fn () => $view->renderTemplate('_includes/tabs.twig', [
+        $tabs = count($this->tabs) > 1 ? InputNamespace::namespaceInputs(fn () => template('_includes/tabs', [
             'tabs' => $this->tabs,
-        ], View::TEMPLATE_MODE_CP), $namespace) : null;
+        ], templateMode: TemplateMode::Cp), $namespace) : null;
 
-        $content = $view->namespaceInputs(function () {
+        $content = InputNamespace::namespaceInputs(function () {
             $components = [];
 
             if ($this->contentHtml) {
@@ -729,8 +733,8 @@ final class CpScreenResponse implements Responsable
             return implode("\n", $components);
         }, $namespace);
 
-        $sidebar = $this->metaSidebarHtml ? $view->namespaceInputs($this->metaSidebarHtml, $namespace) : null;
-        $errorSummary = $this->errorSummary ? $view->namespaceInputs($this->errorSummary, $namespace) : null;
+        $sidebar = $this->metaSidebarHtml ? InputNamespace::namespaceInputs($this->metaSidebarHtml, $namespace) : null;
+        $errorSummary = $this->errorSummary ? InputNamespace::namespaceInputs($this->errorSummary, $namespace) : null;
 
         return new JsonResponse([
             'editUrl' => $this->editUrl ? UrlHelper::cpUrl($this->editUrl) : null,
@@ -751,8 +755,8 @@ final class CpScreenResponse implements Responsable
             'errorSummary' => $errorSummary,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
-            'deltaNames' => $view->getDeltaNames(),
-            'initialDeltaValues' => $view->getInitialDeltaValues(),
+            'deltaNames' => DeltaRegistry::getNames(),
+            'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ]);
     }
 
@@ -801,7 +805,6 @@ final class CpScreenResponse implements Responsable
             }
         }
 
-        $security = Craft::$app->getSecurity();
         $view = Craft::$app->getView();
 
         // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
@@ -813,7 +816,7 @@ final class CpScreenResponse implements Responsable
         }
 
         // Render and return the template
-        return response($view->renderPageTemplate(
+        return response(pageTemplate(
             '_layouts/cp',
             [
                 'docTitle' => $docTitle,
@@ -842,9 +845,9 @@ final class CpScreenResponse implements Responsable
                 'fullPageForm' => $isForm,
                 'mainAttributes' => $this->mainAttributes,
                 'mainFormAttributes' => $this->formAttributes,
-                'formActions' => array_map(function (array $action) use ($security): array {
+                'formActions' => array_map(function (array $action): array {
                     if (isset($action['redirect'])) {
-                        $action['redirect'] = $security->hashData($action['redirect']);
+                        $action['redirect'] = Crypt::encrypt($action['redirect']);
                     }
 
                     return $action;
@@ -856,7 +859,7 @@ final class CpScreenResponse implements Responsable
                 'sidebar' => $pageSidebar,
                 'errorSummary' => $errorSummary,
             ],
-            View::TEMPLATE_MODE_CP
+            TemplateMode::Cp
         ));
     }
 
@@ -907,7 +910,7 @@ final class CpScreenResponse implements Responsable
         };
 
         if ($namespace) {
-            return Craft::$app->getView()->namespaceInputs($render, $namespace);
+            return InputNamespace::namespaceInputs($render, $namespace);
         }
 
         return $render();

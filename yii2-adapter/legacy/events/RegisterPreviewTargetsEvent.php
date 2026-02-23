@@ -14,6 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Element\Events\RegisterPreviewTargets} instead.
  */
 class RegisterPreviewTargetsEvent extends Event
 {

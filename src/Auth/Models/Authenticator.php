@@ -11,8 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class Authenticator extends BaseModel
 {
+    #[\Override]
     protected $table = Table::AUTHENTICATOR;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

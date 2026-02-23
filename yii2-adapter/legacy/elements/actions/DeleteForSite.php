@@ -8,10 +8,10 @@
 namespace craft\elements\actions;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
 
@@ -42,7 +42,7 @@ class DeleteForSite extends ElementAction
     public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per canDelete()
-        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+        AssetRegistry::jsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,

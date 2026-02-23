@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\base\Element;
-use craft\elements\Entry;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
@@ -23,7 +23,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Event;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,7 +42,7 @@ final readonly class UsersController
 
         Edition::require(Edition::Team);
 
-        return view('craftcms::users._index', [
+        return view('users._index', [
             'title' => t('Users'),
             'buttonLabel' => mb_ucfirst(t('New {type}', [
                 'type' => User::lowerDisplayName(),
@@ -206,11 +205,8 @@ final readonly class UsersController
             ]);
         })->filter();
 
-        if (Event::hasListeners(DefineUserContentSummary::class)) {
-            Event::dispatch($event = new DefineUserContentSummary($userId, $summary));
-            $summary = $event->contentSummary;
-        }
+        event($event = new DefineUserContentSummary($userId, $summary));
 
-        return new JsonResponse($summary->all());
+        return new JsonResponse($event->contentSummary->all());
     }
 }

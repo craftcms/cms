@@ -8,61 +8,48 @@ use Craft;
 use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * DeprecationErrors represents a DeprecationErrors dashboard widget.
  */
 final class DeprecationErrors extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Deprecation Warnings');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'deprecation-errors';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'bug';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function badgeCount(): int
     {
         return Deprecator::getTotalLogs();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(DeprecationErrorsAsset::class);
 
-        return $view->renderTemplate('_components/utilities/DeprecationErrors/index.twig', [
+        return template('_components/utilities/DeprecationErrors/index', [
             'logs' => Deprecator::getLogs(),
         ]);
     }

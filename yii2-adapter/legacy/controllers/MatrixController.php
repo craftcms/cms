@@ -8,16 +8,17 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\elements\db\EntryQuery;
-use craft\elements\ElementCollection;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Element\Drafts;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Throwable;
@@ -26,6 +27,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Class MatrixController
@@ -180,7 +182,7 @@ class MatrixController extends Controller
         $view = $this->getView();
         /** @var Entry[] $entries */
         $entries = $value->all();
-        $html = $view->namespaceInputs(fn() => $view->renderTemplate('_components/fieldtypes/Matrix/block.twig', [
+        $html = InputNamespace::namespaceInputs(fn() => template('_components/fieldtypes/Matrix/block', [
             'name' => $field->handle,
             'entryTypes' => $field->getEntryTypesForField($entries, $owner),
             'entry' => $entry,
@@ -236,7 +238,7 @@ class MatrixController extends Controller
                     throw new ForbiddenHttpException('User not authorized to view this element.');
                 }
 
-                $html .= $view->namespaceInputs(fn() => $view->renderTemplate('_components/fieldtypes/Matrix/block.twig', [
+                $html .= InputNamespace::namespaceInputs(fn() => template('_components/fieldtypes/Matrix/block', [
                     'name' => $field->handle,
                     'entryTypes' => $entryTypes,
                     'entry' => $entry,

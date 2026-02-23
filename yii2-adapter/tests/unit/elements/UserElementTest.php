@@ -21,7 +21,6 @@ use DateTime;
 use DateTimeZone;
 use UnitTester;
 use yii\base\Exception;
-use yii\validators\InlineValidator;
 
 /**
  * Unit tests for the User Element
@@ -52,36 +51,6 @@ class UserElementTest extends TestCase
      */
     protected User $inactiveUser;
 
-    /**
-     *
-     */
-    public function testValidateUnverifiedEmail(): void
-    {
-        $validator = new InlineValidator();
-
-        $this->activeUser->unverifiedEmail = 'unverifemail@email.com';
-
-        $this->activeUser->validateUnverifiedEmail('unverifiedEmail', [], $validator);
-        self::assertSame([], $this->activeUser->getErrors());
-
-        $user = new User([
-            'active' => true,
-            'email' => 'unverifemail@email.com',
-            'username' => 'unverifusername',
-            'unverifiedEmail' => 'unverifemail@email.com',
-        ]);
-
-        $this->tester->saveElement($user);
-
-        $this->activeUser->validateUnverifiedEmail('unverifiedEmail', [], $validator);
-        self::assertSame(
-            ['unverifiedEmail' => ['Email "unverifemail@email.com" has already been taken.']],
-            $this->activeUser->getErrors()
-        );
-
-        $this->tester->deleteElement($user);
-    }
-
     public function testActivationValidation(): void
     {
         $user = new User([
@@ -105,9 +74,9 @@ class UserElementTest extends TestCase
         }
 
         self::assertNotNull($e);
-        self::assertFalse($user->hasErrors('fullName'));
-        self::assertTrue($user->hasErrors('username'));
-        self::assertTrue($user->hasErrors('email'));
+        self::assertFalse($user->errors()->has('fullName'));
+        self::assertTrue($user->errors()->has('username'));
+        self::assertTrue($user->errors()->has('email'));
 
         $e = null;
         try {

@@ -1,14 +1,36 @@
 <script setup lang="ts">
   import SystemInfo from '@/components/SystemInfo.vue';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {computed, reactive, watch} from 'vue';
+  import {computed, reactive, ref, watch, useTemplateRef} from 'vue';
   import CpSidebar from '@/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
-  import {Head} from '@inertiajs/vue3';
+  import {Head, usePage} from '@inertiajs/vue3';
+  import VarDump from '@/components/VarDump.vue';
+  import Breadcrumbs from '@/components/Breadcrumbs.vue';
 
-  defineProps<{
-    title: string;
+  withDefaults(
+    defineProps<{
+      title?: string;
+      debug?: any;
+      fullWidth?: boolean;
+    }>(),
+    {fullWidth: false, crumbs: () => []}
+  );
+
+  const page = usePage<{
+    flash: {
+      success: string | null;
+      error: string | null;
+    };
+    crumbs?: Array<{
+      url?: string;
+      label: string;
+    }> | null;
   }>();
+  const errorFlash = computed(() => page.props.flash?.error);
+  const successFlash = computed(() => page.props.flash?.success);
+  const crumbs = computed(() => page.props.crumbs ?? null);
+  const sidebarToggle = useTemplateRef('sidebarToggle');
 
   const state = reactive<{
     sidebar: {
@@ -23,6 +45,7 @@
   });
 
   const isLargeScreen = useMediaQuery('(min-width: 1024px)');
+  const debugOpen = ref(false);
 
   watch(
     isLargeScreen,
@@ -44,6 +67,11 @@
     } else {
       state.sidebar.visibility = 'visible';
     }
+  }
+
+  function closeSidebar() {
+    state.sidebar.visibility = 'hidden';
+    (sidebarToggle.value as HTMLButtonElement).focus();
   }
 
   const sidebarIcon = computed(() => {
@@ -71,8 +99,12 @@
           appearance="plain"
           @click="toggleSidebar"
           v-if="!isLargeScreen"
+          ref="sidebarToggle"
         >
-          <craft-icon :name="sidebarIcon" :label="t('Toggle menu')"></craft-icon>
+          <craft-icon
+            :name="sidebarIcon"
+            :label="t('Toggle menu')"
+          ></craft-icon>
         </craft-button>
         <SystemInfo v-if="isLargeScreen" />
 
@@ -81,38 +113,94 @@
           <craft-icon name="search" :label="t('Search')"></craft-icon>
         </craft-button>
       </div>
+      <!-- TODO: this is just temporary placement -->
+      <template v-if="errorFlash">
+        <craft-callout variant="danger" rounded="none">{{
+          errorFlash
+        }}</craft-callout>
+      </template>
+      <template v-if="successFlash">
+        <craft-callout variant="success" rounded="none">{{
+          successFlash
+        }}</craft-callout>
+      </template>
     </div>
     <div class="cp__sidebar">
       <CpSidebar
         :mode="state.sidebar.mode"
         :visibility="state.sidebar.visibility"
-        @close="state.sidebar.visibility = 'hidden'"
+        @close="closeSidebar"
       />
     </div>
     <div class="cp__main">
       <slot name="main">
         <main>
+          <slot name="breadcrumbs">
+            <div
+              class="px-4 py-2 border-b border-b-border-subtle"
+              v-if="crumbs"
+            >
+              <Breadcrumbs :items="crumbs" />
+            </div>
+          </slot>
           <slot name="header">
-            <div class="pb-2 pt-4 px-4 flex justify-between items-center">
-              <slot name="title">
-                <h1 class="text-xl">{{ title }}</h1>
-              </slot>
+            <div :class="{container: true, 'container--full': fullWidth}">
+              <div class="flex justify-between pt-4 pb-2 items-center gap-2">
+                <slot name="title">
+                  <h1 class="text-xl">{{ title }}</h1>
+                </slot>
+                <slot name="title-badge"></slot>
 
-              <div class="flex gap-2 items-center">
-                <slot name="actions"></slot>
+                <div class="flex-1"></div>
+
+                <div class="flex gap-2 items-center">
+                  <slot name="actions"></slot>
+                </div>
               </div>
             </div>
           </slot>
-          <slot></slot>
+          <div :class="{container: true, 'container--full': fullWidth}">
+            <slot></slot>
+          </div>
         </main>
       </slot>
     </div>
     <div class="cp__footer">
       <footer>
-        <slot name="footer"></slot>
+        <div :class="{container: true, 'container--full': fullWidth}">
+          <slot name="footer"></slot>
+        </div>
       </footer>
     </div>
   </div>
+
+  <template v-if="debug">
+    <div class="fixed bottom-2 right-2 max-w-[600px]">
+      <div class="absolute top-2 right-2" v-if="debugOpen">
+        <craft-button
+          icon
+          size="small"
+          type="button"
+          @click="debugOpen = false"
+        >
+          <craft-icon :label="t('Close Debug panel')" name="x"></craft-icon>
+        </craft-button>
+      </div>
+      <div v-else>
+        <craft-button type="button" @click="debugOpen = true" icon>
+          <craft-icon
+            name="code"
+            :label="t('Show debug variables')"
+          ></craft-icon>
+        </craft-button>
+      </div>
+      <VarDump
+        :data="debug"
+        class="max-h-[50vh] overflow-scroll"
+        v-if="debugOpen"
+      />
+    </div>
+  </template>
 </template>
 
 <style scoped lang="css">
@@ -120,9 +208,23 @@
     display: grid;
   }
 
+  .cp__main {
+    container-type: size;
+  }
+
   .cp__header {
     color: var(--color-slate-200);
     background-color: var(--color-slate-950);
+  }
+
+  .container {
+    max-width: var(--global-content-width);
+    margin: 0 auto;
+    padding-inline: var(--c-spacing-lg);
+  }
+
+  .container--full {
+    max-width: none;
   }
 
   @media screen and (min-width: 1024px) {

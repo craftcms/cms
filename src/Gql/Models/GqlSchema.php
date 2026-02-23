@@ -13,8 +13,10 @@ final class GqlSchema extends BaseModel
 {
     use HasUid;
 
+    #[\Override]
     protected $table = Table::GQLSCHEMAS;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -15,7 +15,6 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Password as PasswordFacade;
 use Illuminate\Validation\Rules\Password;
 use RuntimeException;
@@ -84,21 +83,20 @@ final readonly class SetPasswordController extends AuthenticationController
             $status = 'password.save_failed';
         }
 
-        if (Event::hasListeners(SettingPassword::class)) {
-            Event::dispatch($event = new SettingPassword($user, $request->input('code'), $request->input('newPassword'), $status));
-            $status = $event->status;
-        }
+        event($event = new SettingPassword($user, $request->input('code'), $request->input('newPassword'), $status));
+
+        $status = $event->status;
 
         if ($status === 'password.save_failed') {
             if ($request->wantsJson()) {
                 return $this->asFailure(
                     t('Couldn’t update password.'),
-                    $user->getErrors('newPassword'),
+                    $user->errors()->get('newPassword'),
                 );
             }
 
             return $this->renderViewWithFallback('set-password', [
-                'errors' => $user->getErrors('newPassword'),
+                'errors' => $user->errors()->get('newPassword'),
                 'code' => $request->input('code'),
                 'id' => $request->input('id'),
                 'newUser' => ! $user->password,

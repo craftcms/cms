@@ -8,43 +8,27 @@ use Craft;
 use craft\helpers\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
-use CraftCms\Cms\Component\Concerns\ValidatableComponent;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\Typecast;
+use Illuminate\Support\Traits\Macroable;
+use Override;
 use RuntimeException;
 
 /**
  * Provides a base implementation for dashboard widgets.
  */
-abstract class Widget implements WidgetInterface
+abstract class Widget extends \CraftCms\Cms\Component\Component implements WidgetInterface
 {
     use ConfigurableComponent;
+    use Macroable;
     use SavableComponent;
-    use ValidatableComponent;
 
     public ?int $colspan = null;
 
-    public function __construct(array $config = [])
-    {
-        Typecast::properties(static::class, $config);
-
-        foreach ($config as $name => $value) {
-            if (! property_exists($this, $name)) {
-                continue;
-            }
-
-            $this->$name = $value;
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function isSelectable(): bool
     {
         if (static::allowMultipleInstances()) {
@@ -72,7 +56,7 @@ abstract class Widget implements WidgetInterface
      *
      * System icons can be found in `src/icons/solid/`.
      */
-    #[\Override]
+    #[Override]
     public static function icon(): ?string
     {
         return null;
@@ -83,7 +67,7 @@ abstract class Widget implements WidgetInterface
      *
      * @return int|null The widget’s maximum colspan, if it has one
      */
-    #[\Override]
+    #[Override]
     public static function maxColspan(): ?int
     {
         return null;
@@ -94,7 +78,7 @@ abstract class Widget implements WidgetInterface
      *
      * @return string The display name of this class.
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         $classNameParts = explode('\\', static::class);
@@ -107,7 +91,7 @@ abstract class Widget implements WidgetInterface
      *
      * @return string|null The widget’s title.
      */
-    #[\Override]
+    #[Override]
     public function getTitle(): ?string
     {
         // Default to the widget's display name
@@ -119,7 +103,7 @@ abstract class Widget implements WidgetInterface
      *
      * @return string|null The widget’s subtitle
      */
-    #[\Override]
+    #[Override]
     public function getSubtitle(): ?string
     {
         return null;
@@ -132,7 +116,7 @@ abstract class Widget implements WidgetInterface
      *                     should not be visible. (If you don’t want the widget to be selectable in
      *                     the first place, use [[isSelectable()]].)
      */
-    #[\Override]
+    #[Override]
     public function getBodyHtml(): ?string
     {
         $url = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/prg.jpg');
@@ -144,10 +128,16 @@ abstract class Widget implements WidgetInterface
 EOD;
     }
 
-    #[\Override]
+    #[Override]
     public function getAttributes(): array
     {
         return $this->getSettings();
+    }
+
+    #[\Override]
+    public function attributes(): array
+    {
+        return array_keys($this->getSettings());
     }
 
     public static function fromConfig(array|WidgetModel $config): WidgetInterface

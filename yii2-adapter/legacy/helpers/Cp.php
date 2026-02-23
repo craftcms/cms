@@ -9,26 +9,15 @@ namespace craft\helpers;
 
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use craft\base\Indicative;
 use craft\base\NestedElementInterface;
-use craft\base\Statusable;
-use craft\base\Thumbable;
-use craft\elements\Address;
-use craft\errors\FieldNotFoundException;
 use craft\events\DefineElementHtmlEvent;
 use craft\events\DefineElementInnerHtmlEvent;
 use craft\events\RegisterCpAlertsEvent;
-use craft\fieldlayoutelements\BaseField;
-use craft\fieldlayoutelements\CustomField;
-use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
-use craft\web\twig\TemplateLoaderException;
-use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
@@ -37,12 +26,21 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Component\Contracts\Statusable;
+use CraftCms\Cms\Component\Contracts\Thumbable;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Field\ContentBlock;
+use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -51,25 +49,31 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utilities\Updates;
+use CraftCms\Cms\View\TemplateMode;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\Event;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\validators\RequiredValidator;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Class Cp
@@ -136,12 +140,13 @@ class Cp
      *
      * @param string $template
      * @param array $variables
+     *
      * @return string
-     * @throws TemplateLoaderException if `$template` is an invalid template path
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException if `$template` is an invalid template path
      */
     public static function renderTemplate(string $template, array $variables = []): string
     {
-        return Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP);
+        return template('' . $template, $variables, templateMode: TemplateMode::Cp);
     }
 
     /**
@@ -314,7 +319,7 @@ class Cp
 
         $childTagHtml = array_map(fn(array $childTagInfo): string => self::alertTagHtml($childTagInfo), $tagInfo['children'] ?? []);
 
-        return trim(static::renderTemplate('_layouts/components/tag.twig', [
+        return trim(static::renderTemplate('_layouts/components/tag', [
             'type' => $tagInfo['type'],
             'attributes' => $tagInfo['attributes'] ?? [],
             'style' => $style,
@@ -403,7 +408,7 @@ class Cp
                 'id' => $component->getId(),
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
-                    'id' => Craft::$app->getView()->namespaceInputId($config['id']),
+                    'id' => InputNamespace::namespaceId($config['id']),
                     'hyperlink' => $config['hyperlink'],
                     'showLabel' => $config['showLabel'],
                     'showHandle' => $config['showHandle'],
@@ -678,8 +683,7 @@ class Cp
 
         if ($showEditButton) {
             $editId = sprintf('action-edit-%s', mt_rand());
-            $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn($id, $elementType, $settings, $cpEditUrl) => <<<JS
+            AssetRegistry::jsWithVars(fn($id, $elementType, $settings, $cpEditUrl) => <<<JS
 $('#' + $id).on('activate', (ev) => {
   if ($cpEditUrl && Garnish.isCtrlKeyPressed(ev.originalEvent)) {
     window.open($cpEditUrl)
@@ -697,7 +701,7 @@ $('#' + $id).on('activate', (ev) => {
   }
 });
 JS, [
-                $view->namespaceInputId($editId),
+                InputNamespace::namespaceId($editId),
                 $element::class,
                 [
                     'elementId' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
@@ -718,7 +722,7 @@ JS, [
         $color = $element instanceof Colorable ? $element->getColor() : null;
 
         $classes = ['card'];
-        if ($element->hasErrors()) {
+        if ($element->errors()->isNotEmpty()) {
             $classes[] = 'error';
         }
 
@@ -748,7 +752,7 @@ JS, [
                         'hyperlink' => $config['hyperlink'],
                         'selectable' => $config['selectable'],
                         'context' => $config['context'],
-                        'id' => Craft::$app->getView()->namespaceInputId($config['id']),
+                        'id' => InputNamespace::namespaceId($config['id']),
                         'ui' => 'card',
                     ] : false,
                 ]),
@@ -1074,7 +1078,7 @@ JS, [
                 'class' => array_filter([
                     'element',
                     $config['context'] === 'field' ? 'removable' : null,
-                    ($config['context'] === 'field' && $element->hasErrors()) ? 'error' : null,
+                    ($config['context'] === 'field' && $element->errors()->isNotEmpty()) ? 'error' : null,
                 ]),
                 'data' => array_filter([
                     'type' => get_class($element),
@@ -1088,7 +1092,7 @@ JS, [
                     'site-id' => $element->siteId,
                     'is-unpublished-draft' => $element->getIsUnpublishedDraft(),
                     'status' => $element->getStatus(),
-                    'label' => (string)$element,
+                    'label' => $element->getUiLabel(),
                     'url' => $element->getUrl(),
                     'cp-url' => $editable ? $element->getCpEditUrl() : null,
                     'level' => $element->level,
@@ -1096,6 +1100,7 @@ JS, [
                     'editable' => $editable,
                     'savable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canSave($element, $user),
                     'duplicatable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDuplicate($element, $user),
+                    'duplicatable-as-draft' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDuplicateAsDraft($element, $user),
                     'copyable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canCopy($element, $user),
                     'deletable' => $editable && self::contextIsAdministrative($config['context']) && $elementsService->canDelete($element, $user),
                     'deletable-for-site' => (
@@ -1135,7 +1140,7 @@ JS, [
 
     private static function componentCheckboxHtml(string $labelId): string
     {
-        return Html::tag('div', options: [
+        return Html::tag('div', attributes: [
             'class' => 'checkbox',
             'title' => t('Select'),
             'role' => 'checkbox',
@@ -1180,7 +1185,7 @@ JS, [
             }
         }
 
-        if ($config['context'] === 'field' && $element->hasErrors()) {
+        if ($config['context'] === 'field' && $element->errors()->isNotEmpty()) {
             $content .= Html::tag('span', '', [
                 'data' => ['icon' => 'triangle-exclamation'],
                 'aria' => ['label' => t('Error')],
@@ -1200,7 +1205,7 @@ JS, [
 
     private static function componentActionMenu(Actionable $component, bool $withEdit = true): string
     {
-        return Craft::$app->getView()->namespaceInputs(
+        return InputNamespace::namespaceInputs(
             function() use ($component, $withEdit): string {
                 $actionMenuItems = array_filter(
                     $component->getActionMenuItems(),
@@ -1564,15 +1569,15 @@ JS, [
         $view = Craft::$app->getView();
 
         if ($config['registerJs']) {
-            $view->registerJsWithVars(fn($elementType, $id, $settings) => <<<JS
+            AssetRegistry::jsWithVars(fn($elementType, $id, $settings) => <<<JS
 Craft.createElementIndex($elementType, $('#' + $id), $settings)
 JS, [
                 $elementType,
-                $view->namespaceInputId($config['id']),
+                InputNamespace::namespaceId($config['id']),
                 array_merge(
                     [
                         'context' => $config['context'],
-                        'namespace' => $view->getNamespace(),
+                        'namespace' => InputNamespace::get(),
                         'prevalidate' => $config['prevalidate'] ?? false,
                     ],
                     $config['jsSettings']
@@ -1595,17 +1600,17 @@ JS, [
                     (!$showSidebar ? 'hidden' : null),
                 ]),
             ]) .
-            Html::tag('nav', $view->renderTemplate('_elements/sources', [
+            Html::tag('nav', template('_elements/sources', [
                 'elementType' => $elementType,
                 'sources' => $sources,
                 $sortOptionsKey => $sortOptions,
                 'tableColumns' => $tableColumns,
                 'defaultTableColumns' => $config['defaultTableColumns'],
-            ], View::TEMPLATE_MODE_CP)) .
+            ], templateMode: TemplateMode::Cp)) .
             Html::endTag('div') .
             Html::beginTag('div', ['class' => 'main']) .
             Html::beginTag('div', ['class' => ['toolbar', 'flex']]) .
-            $view->renderTemplate('_elements/toolbar', [
+            template('_elements/toolbar', [
                 'elementType' => $elementType,
                 'context' => $config['context'],
                 'showStatusMenu' => $config['showStatusMenu'],
@@ -1613,16 +1618,16 @@ JS, [
                 'showSiteMenu' => $config['showSiteMenu'],
                 'siteIds' => $siteIds,
                 'canHaveDrafts' => $elementType::hasDrafts(),
-            ], View::TEMPLATE_MODE_CP) .
+            ], templateMode: TemplateMode::Cp) .
             Html::endTag('div') . // .toolbar
-            Html::tag('div', options: ['class' => 'elements']) .
+            Html::tag('div', attributes: ['class' => 'elements']) .
             Html::endTag('div'); // .main
 
         if (self::contextIsAdministrative($config['context'])) {
             $html .= Html::beginTag('div', [
                     'class' => ['footer', 'flex', 'flex-justify'],
                 ]) .
-                $view->renderTemplate('_elements/footer', templateMode: View::TEMPLATE_MODE_CP) .
+                template('_elements/footer', templateMode: TemplateMode::Cp) .
                 Html::endTag('div'); // .footer
         }
 
@@ -1640,8 +1645,9 @@ JS, [
      *
      * @param string|callable $input The input HTML or template path. If passing a template path, it must begin with `template:`.
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 3.5.8
      */
@@ -1823,7 +1829,7 @@ JS, [
                                 'class' => ['action-btn', 'small', 'prevent-autofocus'],
                             ],
                         ]) : '') .
-                        ($showAttribute ? static::renderTemplate('_includes/forms/copytextbtn.twig', [
+                        ($showAttribute ? static::renderTemplate('_includes/forms/copytextbtn', [
                             'id' => "$id-attribute",
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
@@ -1850,7 +1856,7 @@ JS, [
             self::_noticeHtml($tipId, 'notice', t('Tip:'), $tip) .
             self::_noticeHtml($warningId, 'warning', t('Warning:'), $warning) .
             ($errors
-                ? static::renderTemplate('_includes/forms/errorList.twig', [
+                ? static::renderTemplate('_includes/forms/errorList', [
                     'id' => $errorsId,
                     'errors' => $errors,
                 ])
@@ -1901,7 +1907,7 @@ JS, [
      */
     public static function buttonHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/button.twig', $config);
+        return static::renderTemplate('_includes/forms/button', $config);
     }
 
     /**
@@ -1913,7 +1919,7 @@ JS, [
      */
     public static function buttonGroupHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/buttonGroup.twig', $config);
+        return static::renderTemplate('_includes/forms/buttonGroup', $config);
     }
 
     /**
@@ -1928,7 +1934,7 @@ JS, [
     {
         $config['id'] ??= 'buttongroup' . mt_rand();
         $config['fieldset'] = true;
-        return static::fieldHtml('template:_includes/forms/buttonGroup.twig', $config);
+        return static::fieldHtml('template:_includes/forms/buttonGroup', $config);
     }
 
     /**
@@ -1953,7 +1959,7 @@ JS, [
         // Don't pass along `label` since it's ambiguous
         unset($config['label']);
 
-        return static::fieldHtml('template:_includes/forms/checkbox.twig', $config);
+        return static::fieldHtml('template:_includes/forms/checkbox', $config);
     }
 
     /**
@@ -1968,7 +1974,7 @@ JS, [
     {
         $config['id'] ??= 'checkboxselect' . mt_rand();
         $config['fieldset'] = true;
-        return static::fieldHtml('template:_includes/forms/checkboxSelect.twig', $config);
+        return static::fieldHtml('template:_includes/forms/checkboxSelect', $config);
     }
 
     /**
@@ -1980,7 +1986,7 @@ JS, [
      */
     public static function checkboxGroupHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/checkboxGroup.twig', $config);
+        return static::renderTemplate('_includes/forms/checkboxGroup', $config);
     }
 
     /**
@@ -1993,20 +1999,21 @@ JS, [
     public static function checkboxGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxgroup' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/checkboxGroup.twig', $config);
+        return static::fieldHtml('template:_includes/forms/checkboxGroup', $config);
     }
 
     /**
      * Renders a color input’s HTML.
      *
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      * @since 5.6.0
      */
     public static function colorHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/color.twig', $config);
+        return static::renderTemplate('_includes/forms/color', $config);
     }
 
     /**
@@ -2021,7 +2028,7 @@ JS, [
     {
         $config['id'] ??= 'color' . mt_rand();
         $config['fieldset'] = true;
-        return static::fieldHtml('template:_includes/forms/color.twig', $config);
+        return static::fieldHtml('template:_includes/forms/color', $config);
     }
 
     /**
@@ -2034,7 +2041,7 @@ JS, [
     public static function colorSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'colorselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/colorSelect.twig', $config);
+        return static::fieldHtml('template:_includes/forms/colorSelect', $config);
     }
 
     /**
@@ -2046,7 +2053,7 @@ JS, [
      */
     public static function iconPickerHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/iconPicker.twig', $config);
+        return static::renderTemplate('_includes/forms/iconPicker', $config);
     }
 
     /**
@@ -2059,7 +2066,7 @@ JS, [
     public static function iconPickerFieldHtml(array $config): string
     {
         $config['id'] ??= 'iconpicker' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/iconPicker.twig', $config);
+        return static::fieldHtml('template:_includes/forms/iconPicker', $config);
     }
 
     /**
@@ -2072,7 +2079,7 @@ JS, [
      */
     public static function editableTableHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/editableTable.twig', $config);
+        return static::renderTemplate('_includes/forms/editableTable', $config);
     }
 
     /**
@@ -2086,20 +2093,21 @@ JS, [
     public static function editableTableFieldHtml(array $config): string
     {
         $config['id'] ??= 'editabletable' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/editableTable.twig', $config);
+        return static::fieldHtml('template:_includes/forms/editableTable', $config);
     }
 
     /**
      * Renders a lightswitch input’s HTML.
      *
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      * @since 4.0.0
      */
     public static function lightswitchHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/lightswitch.twig', $config);
+        return static::renderTemplate('_includes/forms/lightswitch', $config);
     }
 
     /**
@@ -2121,7 +2129,7 @@ JS, [
         $config['fieldLabel'] ??= $config['label'] ?? null;
         unset($config['label']);
 
-        return static::fieldHtml('template:_includes/forms/lightswitch.twig', $config);
+        return static::fieldHtml('template:_includes/forms/lightswitch', $config);
     }
 
     /**
@@ -2134,7 +2142,7 @@ JS, [
      */
     public static function rangeHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/range.twig', $config);
+        return static::renderTemplate('_includes/forms/range', $config);
     }
 
     /**
@@ -2148,7 +2156,7 @@ JS, [
     public static function rangeFieldHtml(array $config): string
     {
         $config['id'] ??= 'range' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/range.twig', $config);
+        return static::fieldHtml('template:_includes/forms/range', $config);
     }
 
     /**
@@ -2161,21 +2169,22 @@ JS, [
      */
     public static function moneyInputHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/money.twig', $config);
+        return static::renderTemplate('_includes/forms/money', $config);
     }
 
     /**
      * Renders a money field’s HTML.
      *
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      * @since 5.0.0
      */
     public static function moneyFieldHtml(array $config): string
     {
         $config['id'] ??= 'money' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/money.twig', $config);
+        return static::fieldHtml('template:_includes/forms/money', $config);
     }
 
     /**
@@ -2187,7 +2196,7 @@ JS, [
      */
     public static function selectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/select.twig', $config);
+        return static::renderTemplate('_includes/forms/select', $config);
     }
 
     /**
@@ -2201,7 +2210,7 @@ JS, [
     public static function selectFieldHtml(array $config): string
     {
         $config['id'] ??= 'select' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/select.twig', $config);
+        return static::fieldHtml('template:_includes/forms/select', $config);
     }
 
     /**
@@ -2213,7 +2222,7 @@ JS, [
      */
     public static function customSelectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/customSelect.twig', $config);
+        return static::renderTemplate('_includes/forms/customSelect', $config);
     }
 
     /**
@@ -2226,7 +2235,7 @@ JS, [
     public static function customSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'customselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/customSelect.twig', $config);
+        return static::fieldHtml('template:_includes/forms/customSelect', $config);
     }
 
     /**
@@ -2238,7 +2247,7 @@ JS, [
      */
     public static function selectizeHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/selectize.twig', $config);
+        return static::renderTemplate('_includes/forms/selectize', $config);
     }
 
     /**
@@ -2252,7 +2261,7 @@ JS, [
     public static function selectizeFieldHtml(array $config): string
     {
         $config['id'] ??= 'selectize' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/selectize.twig', $config);
+        return static::fieldHtml('template:_includes/forms/selectize', $config);
     }
 
     /**
@@ -2264,7 +2273,7 @@ JS, [
      */
     public static function multiSelectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/multiselect.twig', $config);
+        return static::renderTemplate('_includes/forms/multiselect', $config);
     }
 
     /**
@@ -2278,7 +2287,7 @@ JS, [
     public static function multiSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'multiselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/multiselect.twig', $config);
+        return static::fieldHtml('template:_includes/forms/multiselect', $config);
     }
 
     /**
@@ -2291,7 +2300,7 @@ JS, [
      */
     public static function textHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/text.twig', $config);
+        return static::renderTemplate('_includes/forms/text', $config);
     }
 
     /**
@@ -2305,20 +2314,21 @@ JS, [
     public static function textFieldHtml(array $config): string
     {
         $config['id'] ??= 'text' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/text.twig', $config);
+        return static::fieldHtml('template:_includes/forms/text', $config);
     }
 
     /**
      * Renders a textarea input’s HTML.
      *
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      * @since 4.0.0
      */
     public static function textareaHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/textarea.twig', $config);
+        return static::renderTemplate('_includes/forms/textarea', $config);
     }
 
     /**
@@ -2332,20 +2342,21 @@ JS, [
     public static function textareaFieldHtml(array $config): string
     {
         $config['id'] ??= 'textarea' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/textarea.twig', $config);
+        return static::fieldHtml('template:_includes/forms/textarea', $config);
     }
 
     /**
      * Returns a date input’s HTML.
      *
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      * @since 4.0.0
      */
     public static function dateHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/date.twig', $config);
+        return static::renderTemplate('_includes/forms/date', $config);
     }
 
     /**
@@ -2359,7 +2370,7 @@ JS, [
     public static function dateFieldHtml(array $config): string
     {
         $config['id'] ??= 'date' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/date.twig', $config);
+        return static::fieldHtml('template:_includes/forms/date', $config);
     }
 
     /**
@@ -2372,7 +2383,7 @@ JS, [
      */
     public static function timeHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/time.twig', $config);
+        return static::renderTemplate('_includes/forms/time', $config);
     }
 
     /**
@@ -2386,7 +2397,7 @@ JS, [
     public static function timeFieldHtml(array $config): string
     {
         $config['id'] ??= 'time' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/time.twig', $config);
+        return static::fieldHtml('template:_includes/forms/time', $config);
     }
 
     /**
@@ -2403,20 +2414,21 @@ JS, [
             'id' => 'datetime' . mt_rand(),
             'fieldset' => true,
         ];
-        return static::fieldHtml('template:_includes/forms/datetime.twig', $config);
+        return static::fieldHtml('template:_includes/forms/datetime', $config);
     }
 
     /**
      * Renders an element select input’s HTML
      *
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      * @since 4.0.0
      */
     public static function elementSelectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/elementSelect.twig', $config);
+        return static::renderTemplate('_includes/forms/elementSelect', $config);
     }
 
     /**
@@ -2430,7 +2442,7 @@ JS, [
     public static function elementSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'elementselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/elementSelect.twig', $config);
+        return static::fieldHtml('template:_includes/forms/elementSelect', $config);
     }
 
     /**
@@ -2442,7 +2454,7 @@ JS, [
      */
     public static function entryTypeSelectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/entryTypeSelect.twig', $config);
+        return static::renderTemplate('_includes/forms/entryTypeSelect', $config);
     }
 
     /**
@@ -2455,7 +2467,7 @@ JS, [
     public static function entryTypeSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'entrytypeselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/entryTypeSelect.twig', $config);
+        return static::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
     }
 
     /**
@@ -2491,7 +2503,7 @@ JS, [
             }
         }
 
-        return static::fieldHtml('template:_includes/forms/autosuggest.twig', $config);
+        return static::fieldHtml('template:_includes/forms/autosuggest', $config);
     }
 
     /**
@@ -2538,7 +2550,7 @@ JS, [
                 'value' => $address->addressLine1,
                 'autocomplete' => $belongsToCurrentUser ? 'address-line1' : 'off',
                 'required' => isset($requiredFields['addressLine1']),
-                'errors' => !$static ? $address->getErrors('addressLine1') : [],
+                'errors' => !$static ? $address->errors()->get('addressLine1') : [],
                 'data' => [
                     'error-key' => 'addressLine1',
                 ],
@@ -2552,7 +2564,7 @@ JS, [
                 'value' => $address->addressLine2,
                 'autocomplete' => $belongsToCurrentUser ? 'address-line2' : 'off',
                 'required' => isset($requiredFields['addressLine2']),
-                'errors' => !$static ? $address->getErrors('addressLine2') : [],
+                'errors' => !$static ? $address->errors()->get('addressLine2') : [],
                 'data' => [
                     'error-key' => 'addressLine2',
                 ],
@@ -2566,7 +2578,7 @@ JS, [
                 'value' => $address->addressLine3,
                 'autocomplete' => $belongsToCurrentUser ? 'address-line3' : 'off',
                 'required' => isset($requiredFields['addressLine3']),
-                'errors' => !$static ? $address->getErrors('addressLine3') : [],
+                'errors' => !$static ? $address->errors()->get('addressLine3') : [],
                 'data' => [
                     'error-key' => 'addressLine3',
                 ],
@@ -2614,7 +2626,7 @@ JS, [
                 'value' => $address->postalCode,
                 'autocomplete' => $belongsToCurrentUser ? 'postal-code' : 'off',
                 'required' => isset($requiredFields['postalCode']),
-                'errors' => !$static ? $address->getErrors('postalCode') : [],
+                'errors' => !$static ? $address->errors()->get('postalCode') : [],
                 'data' => [
                     'error-key' => 'postalCode',
                 ],
@@ -2631,7 +2643,7 @@ JS, [
                 'name' => 'sortingCode',
                 'value' => $address->sortingCode,
                 'required' => isset($requiredFields['sortingCode']),
-                'errors' => !$static ? $address->getErrors('sortingCode') : [],
+                'errors' => !$static ? $address->errors()->get('sortingCode') : [],
                 'data' => [
                     'error-key' => 'sortingCode',
                 ],
@@ -2702,7 +2714,7 @@ JS, [
             }
 
             if ($spinner) {
-                $errors = !$static ? $address->getErrors($name) : [];
+                $errors = !$static ? $address->errors()->get($name) : [];
                 $input =
                     Html::beginTag('div', [
                         'class' => ['flex', 'flex-nowrap'],
@@ -2744,7 +2756,7 @@ JS, [
                 'value' => $value,
                 'options' => $options,
                 'required' => $required,
-                'errors' => $address->getErrors($name),
+                'errors' => $address->errors()->get($name),
                 'autocomplete' => $autocomplete,
                 'data' => [
                     'error-key' => $name,
@@ -2763,7 +2775,7 @@ JS, [
             'name' => $name,
             'value' => $value,
             'required' => $required,
-            'errors' => !$static ? $address->getErrors($name) : [],
+            'errors' => !$static ? $address->errors()->get($name) : [],
             'data' => [
                 'error-key' => $name,
             ],
@@ -2774,8 +2786,9 @@ JS, [
     /**
      * Renders a card view designer.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      * @param array $config
+     *
      * @return string
      * @since 5.5.0
      */
@@ -2810,7 +2823,8 @@ JS, [
         ]);
 
         // js is initiated via Craft.FieldLayoutDesigner
-        $previewHtml = self::cardPreviewHtml($fieldLayout, showThumb: $fieldLayout->getThumbField() !== null);
+        $showThumb = $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
+        $previewHtml = self::cardPreviewHtml($fieldLayout, showThumb: $showThumb);
 
         return
             Html::beginTag('div', [
@@ -2841,7 +2855,8 @@ JS, [
     /**
      * Returns an array of available card preview options for the given field layout.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
+     *
      * @return array{label:string,value:string}[]
      * @since 5.9.0
      */
@@ -2910,12 +2925,66 @@ JS, [
     }
 
     /**
+     * Returns an array of available card thumbnail options for the given field layout.
+     *
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
+     *
+     * @return array{label:string,value:string}[]
+     * @since 5.9.6
+     */
+    public static function cardThumbOptions(FieldLayout $fieldLayout): array
+    {
+        return self::cardThumbOptionsInternal($fieldLayout, '', '');
+    }
+
+    private static function cardThumbOptionsInternal(
+        FieldLayout $fieldLayout,
+        string $keyPrefix,
+        string $labelPrefix,
+    ): array {
+        $allOptions = [];
+
+        foreach ($fieldLayout->getAllElements() as $layoutElement) {
+            if ($layoutElement instanceof CustomField) {
+                try {
+                    $field = $layoutElement->getField();
+                } catch (FieldNotFoundException) {
+                    continue;
+                }
+                if ($field instanceof ContentBlock) {
+                    $allOptions += self::cardThumbOptionsInternal(
+                        $field->getFieldLayout(),
+                        "{$keyPrefix}contentBlock:$layoutElement->uid.",
+                        sprintf('%s%s → ', $labelPrefix, $layoutElement->label()),
+                    );
+                    continue;
+                }
+            }
+
+            if ($layoutElement instanceof BaseField && $layoutElement->thumbable()) {
+                $allOptions[$keyPrefix . $layoutElement->key()] = [
+                    'label' => sprintf('%s%s', $labelPrefix, $layoutElement->label()),
+                ];
+            }
+        }
+
+        foreach ($allOptions as $key => &$option) {
+            if (!isset($option['value'])) {
+                $option['value'] = $key;
+            }
+        }
+
+        return $allOptions;
+    }
+
+    /**
      * Return HTML for managing thumbnail provider and position.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      * @param array $config
+     *
      * @return string
-     * @throws TemplateLoaderException
+     * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      */
     private static function _thumbManagementHtml(FieldLayout $fieldLayout, array $config): string
     {
@@ -2933,20 +3002,11 @@ JS, [
             ];
         }
 
+        $thumbOptions = array_values(self::cardThumbOptions($fieldLayout));
+        usort($thumbOptions, fn(array $a, array $b) => $a['label'] <=> $b['label']);
+        array_push($options, ...$thumbOptions);
+
         $thumbnailAlignment = $fieldLayout->getCardThumbAlignment();
-
-        /** @var BaseField[] $thumbableElements */
-        $thumbableElements = array_filter(
-            $fieldLayout->getAllElements(),
-            fn($element) => $element instanceof BaseField && $element->thumbable()
-        );
-
-        foreach ($thumbableElements as $thumbableElement) {
-            $options[] = [
-                'label' => $thumbableElement->label(),
-                'value' => $thumbableElement->key(),
-            ];
-        }
 
         $thumbHtml = Html::beginTag('div', ['class' => 'thumb-management']) .
             Html::tag('h2', t('Manage element thumbnails'), ['class' => 'visually-hidden']) .
@@ -2963,10 +3023,11 @@ JS, [
 
         // radio button switch that lets you choose whether the thumb alignment should be start or end
         $orientation = I18N::getLocale()->getOrientation();
+        $showThumb = $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
         $thumbHtml .= self::buttonGroupFieldHtml([
             'label' => t('Thumbnail Alignment'),
             'id' => 'thumb-alignment',
-            'fieldClass' => $fieldLayout->getThumbField() === null ? 'hidden' : false,
+            'fieldClass' => $showThumb ? false : 'hidden',
             'options' => [
                 [
                     'icon' => $orientation == 'ltr' ? 'slideout-left' : 'slideout-right',
@@ -3003,15 +3064,16 @@ JS, [
     /**
      * Returns HTML for the card preview based on selected fields and attributes.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      * @param array $cardElements (deprecated)
      * @param bool|null $showThumb
+     *
      * @return string
      * @throws Throwable
      */
     public static function cardPreviewHtml(FieldLayout $fieldLayout, array $cardElements = [], ?bool $showThumb = null): string
     {
-        $showThumb ??= $fieldLayout->getThumbField() !== null || $fieldLayout->type::hasThumbs();
+        $showThumb ??= $fieldLayout->type::hasThumbs() || $fieldLayout->hasThumbField();
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
 
         // get heading
@@ -3039,7 +3101,7 @@ JS, [
             ]);
 
         $previewHtml .=
-            Html::tag('div', options: ['class' => 'card-titlebar']) .
+            Html::tag('div', attributes: ['class' => 'card-titlebar']) .
             Html::beginTag('div', ['class' => 'card-main']) .
             Html::beginTag('div', ['class' => 'card-content']) .
             Html::tag('div', $heading, ['class' => 'card-heading']) .
@@ -3049,7 +3111,7 @@ JS, [
         $cardElements = $fieldLayout->getCardBodyElements();
 
         foreach ($cardElements as $cardElement) {
-            $previewHtml .= Html::tag('div', $cardElement['html'], [
+            $previewHtml .= Html::tag('div', $cardElement, [
                 'class' => 'card-attribute-preview',
             ]);
         }
@@ -3086,8 +3148,9 @@ JS, [
     /**
      * Renders a field layout designer.
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      * @param array $config
+     *
      * @return string
      * @since 4.0.0
      */
@@ -3129,9 +3192,26 @@ JS, [
                 $tab->uid = Str::uuid()->toString();
             }
 
+            $layoutElements = [];
+
             foreach ($tab->getElements() as $layoutElement) {
-                $layoutElement->uid ??= Str::uuid()->toString();
+                // If this is a custom field, make sure the field still exists
+                if ($layoutElement instanceof CustomField) {
+                    try {
+                        $layoutElement->getField();
+                    } catch (FieldNotFoundException) {
+                        continue;
+                    }
+                }
+
+                if (!isset($layoutElement->uid)) {
+                    $layoutElement->uid = Str::uuid()->toString();
+                }
+
+                $layoutElements[] = $layoutElement;
             }
+
+            $tab->setElements($layoutElements);
         }
 
         $view = Craft::$app->getView();
@@ -3143,12 +3223,12 @@ JS, [
             'alwaysShowThumbAlignmentBtns' => $fieldLayout->type::hasThumbs(),
             'readOnly' => $config['disabled'],
         ]);
-        $namespacedId = $view->namespaceInputId($config['id']);
+        $namespacedId = InputNamespace::namespaceId($config['id']);
 
         $js = <<<JS
 new Craft.FieldLayoutDesigner("#$namespacedId", $jsSettings)
 JS;
-        $view->registerJs($js);
+        AssetRegistry::js($js);
 
         $availableCustomFields = $fieldLayout->getAvailableCustomFields();
         $availableNativeFields = $fieldLayout->getAvailableNativeFields();
@@ -3266,7 +3346,7 @@ JS;
 
     /**
      * @param FieldLayoutElement[] $elements
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      */
     private static function _setLayoutOnElements(array $elements, FieldLayout $fieldLayout): void
     {
@@ -3368,7 +3448,8 @@ JS;
     /**
      * @param string $groupName
      * @param BaseField[] $groupFields
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
+     *
      * @return string
      */
     private static function _fldFieldSelectorsHtml(string $groupName, array $groupFields, FieldLayout $fieldLayout): string
@@ -3421,8 +3502,9 @@ JS;
     /**
      * Renders a Generated Fields table for a field layout
      *
-     * @param FieldLayout $fieldLayout
+     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      * @param array $config
+     *
      * @return string
      */
     public static function generatedFieldsTableHtml(FieldLayout $fieldLayout, array $config = []): string
@@ -3469,14 +3551,13 @@ JS;
             'static' => $config['disabled'],
         ];
 
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(fn($id, $name, $cols, $settings) => <<<JS
+        AssetRegistry::jsWithVars(fn($id, $name, $cols, $settings) => <<<JS
 (() => {
   new Craft.GeneratedFieldsTable($id, $name, $cols, $settings)
 })();
 JS, [
-            $view->namespaceInputId($config['id']),
-            $view->namespaceInputName($name),
+            InputNamespace::namespaceId($config['id']),
+            InputNamespace::namespaceInputName($name),
             $cols,
             $settings,
         ]);
@@ -3605,7 +3686,7 @@ JS, [
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/disclosuremenu.twig', $config, View::TEMPLATE_MODE_CP);
+        return template('_includes/disclosuremenu', $config, templateMode: TemplateMode::Cp);
     }
 
     /**
@@ -3643,10 +3724,10 @@ JS, [
      */
     public static function menuItem(array $config, string $menuId): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/menuitem.twig', [
+        return template('_includes/menuitem', [
             'item' => $config,
             'menuId' => $menuId,
-        ], View::TEMPLATE_MODE_CP);
+        ], templateMode: TemplateMode::Cp);
     }
 
     /**
@@ -3656,8 +3737,12 @@ JS, [
      * @return array
      * @since 5.0.0
      */
-    public static function normalizeMenuItems(array $items): array
+    public static function normalizeMenuItems(array|Collection $items): array
     {
+        if ($items instanceof Collection) {
+            $items = $items->all();
+        }
+
         return array_map(function(array $item) {
             if (!isset($item['type'])) {
                 if (isset($item['url'])) {
@@ -3889,8 +3974,8 @@ JS, [
             } else {
                 $svg = Html::svg($icon, true, throwException: true);
             }
-        } catch (InvalidArgumentException|\InvalidArgumentException $e) {
-            Craft::warning("Could not load icon: {$e->getMessage()}", __METHOD__);
+        } catch (InvalidArgumentException|InvalidArgumentException $e) {
+            Log::warning("Could not load icon: {$e->getMessage()}", [__METHOD__]);
             if (!$fallbackLabel) {
                 return '';
             }
@@ -3913,7 +3998,7 @@ JS, [
         // Add attributes for accessibility
         try {
             $svg = Html::modifyTagAttributes($svg, $attributes);
-        } catch (\InvalidArgumentException) {
+        } catch (InvalidArgumentException) {
         }
 
         return $svg;
@@ -3928,7 +4013,7 @@ JS, [
      */
     public static function fallbackIconSvg(string $label): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/fallback-icon.svg.twig', [
+        return template('_includes/fallback-icon-svg', [
             'label' => $label,
         ]);
     }

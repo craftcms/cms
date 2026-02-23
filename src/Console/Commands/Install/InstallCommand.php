@@ -29,6 +29,7 @@ final class InstallCommand extends Command
     use CraftCommand;
     use SiteDefaults;
 
+    #[\Override]
     protected $signature = 'craft:install
         {--email= : The default email address for the first user to create during install.}
         {--username= : The default username for the first user to create during install.}
@@ -38,8 +39,10 @@ final class InstallCommand extends Command
         {--language= : The default language for the first site to create during install.}
     ';
 
+    #[\Override]
     protected $description = 'Craft CMS CLI installer.';
 
+    #[\Override]
     protected $aliases = ['install:craft', 'install/craft'];
 
     public function handle(
@@ -137,13 +140,13 @@ final class InstallCommand extends Command
             $username = $email;
         }
 
-        $site = new Site(
-            name: $siteName,
-            handle: 'default',
-            language: $language,
-            baseUrl: $siteUrl,
-            hasUrls: true,
-        );
+        $site = new Site([
+            'name' => $siteName,
+            'handle' => 'default',
+            'language' => $language,
+            'baseUrl' => $siteUrl,
+            'hasUrls' => true,
+        ]);
 
         // Try to save the site URL to a APP_URL environment variable
         // if it’s not already set to an alias or environment variable

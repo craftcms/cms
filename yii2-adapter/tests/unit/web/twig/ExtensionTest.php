@@ -9,15 +9,15 @@ namespace crafttests\unit\web\twig;
 
 use ArrayObject;
 use Craft;
-use craft\elements\Address;
-use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Models\Element;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
@@ -25,6 +25,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Yii2Adapter\IdentityWrapper;
 use crafttests\fixtures\FieldLayoutFixture;
 use crafttests\fixtures\GlobalSetFixture;
@@ -33,6 +34,7 @@ use DateTime;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Throwable;
@@ -45,6 +47,7 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\renderString;
 use function CraftCms\Cms\t;
 
 /**
@@ -112,7 +115,7 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             implode(',', [Edition::Solo->value, Edition::Team->value, Edition::Pro->value]),
             '{{ [CraftSolo, CraftTeam, CraftPro]|join(",") }}',
-            templateMode: View::TEMPLATE_MODE_CP,
+            templateMode: TemplateMode::Cp,
         );
     }
 
@@ -242,7 +245,7 @@ class ExtensionTest extends TestCase
 
         $this->expectException(InvalidConfigException::class);
         t('Source message', category: 'invalidCategory');
-        $this->view->renderString('{{ "Source message"|t("invalidCategory") }}');
+        renderString('{{ "Source message"|t("invalidCategory") }}');
     }
 
     public function test_truncate_filter(): void
@@ -620,7 +623,7 @@ class ExtensionTest extends TestCase
 
     public function test_encenc_filter(): void
     {
-        $enc = $this->view->renderString('{{ "foo"|encenc }}');
+        $enc = renderString('{{ "foo"|encenc }}');
         self::assertStringStartsWith('base64:', $enc);
     }
 
@@ -651,7 +654,7 @@ class ExtensionTest extends TestCase
 
         // invalid value
         self::expectException(RuntimeError::class);
-        $this->view->renderString('{% do "foo"|group("bar") %}');
+        renderString('{% do "foo"|group("bar") %}');
     }
 
     /**
@@ -659,10 +662,9 @@ class ExtensionTest extends TestCase
      */
     public function testHashFilter(): void
     {
-        $this->testRenderResult(
-            Craft::$app->getSecurity()->hashData('test'),
-            '{{ "test"|hash }}'
-        );
+        $result = renderString('{{ "test"|hash }}');
+
+        self::assertEquals(Crypt::decrypt($result), 'test');
 
         $this->testRenderResult(
             '098f6bcd4621d373cade4e832627b4f6',
@@ -973,20 +975,20 @@ class ExtensionTest extends TestCase
         $path = dirname(__DIR__, 3) . '/_data/assets/files/craft-logo.svg';
         $contents = file_get_contents($path);
 
-        $svg = $this->view->renderString('{{ svg(path) }}', compact('path'));
+        $svg = renderString('{{ svg(path) }}', compact('path'));
         self::assertStringStartsWith('<svg', $svg);
         self::assertStringContainsString('id="Symbols"', $svg);
 
-        $svg = $this->view->renderString('{{ svg(contents) }}', compact('contents'));
+        $svg = renderString('{{ svg(contents) }}', compact('contents'));
         self::assertStringStartsWith('<svg', $svg);
         self::assertRegExp('/id="\w+\-Symbols"/', $svg);
 
-        $svg = $this->view->renderString('{{ svg(contents, namespace=false) }}', compact('contents'));
+        $svg = renderString('{{ svg(contents, namespace=false) }}', compact('contents'));
         self::assertStringStartsWith('<svg', $svg);
         self::assertStringContainsString('id="Symbols"', $svg);
 
         // deprecated
-        $svg = $this->view->renderString('{{ svg(contents, class="foobar") }}', compact('contents'));
+        $svg = renderString('{{ svg(contents, class="foobar") }}', compact('contents'));
         self::assertStringContainsString('class="foobar"', $svg);
     }
 
@@ -1027,25 +1029,6 @@ class ExtensionTest extends TestCase
         $this->testRenderResult(
             '<input type="hidden" name="HACKER_POOF" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
             '{{ csrfInput() }}'
-        );
-    }
-
-    /**
-     * @throws LoaderError
-     * @throws SyntaxError
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
-    public function test_redirect_input_function(): void
-    {
-        $this->testRenderResult(
-            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL') . '">',
-            '{{ redirectInput("A URL") }}'
-        );
-
-        $this->testRenderResult(
-            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^*()😋') . '">',
-            '{{ redirectInput("A URL WITH CHARS !@#$%^*()😋") }}'
         );
     }
 
@@ -1132,6 +1115,40 @@ class ExtensionTest extends TestCase
         ];
     }
 
+    public function testSwitchTag(): void
+    {
+        $vars = [
+            'foo' => 'foo',
+            'bar' => 'bar or baz',
+            'baz' => 'bar or baz',
+            'qux' => 'qux or quux or corge',
+            'quux' => 'qux or quux or corge',
+            'corge' => 'qux or quux or corge',
+            'xyz' => 'default',
+        ];
+
+        $template = <<<EOL
+{%- switch var -%}
+  {%- case 'foo' -%}
+    foo
+  {%- case 'bar' or 'baz' -%}
+    bar or baz
+  {%- case 'qux' or 'quux' or 'corge' -%}
+    qux or quux or corge
+  {%- default -%}
+    default
+{%- endswitch -%}
+EOL;
+
+        foreach ($vars as $var => $expected) {
+            $this->testRenderResult(
+                $expected,
+                $template,
+                ['var' => $var],
+            );
+        }
+    }
+
     /**
      * @throws LoaderError
      * @throws SyntaxError
@@ -1140,9 +1157,9 @@ class ExtensionTest extends TestCase
         string $expectedString,
         string $renderString,
         array $variables = [],
-        string $templateMode = View::TEMPLATE_MODE_SITE,
+        TemplateMode $templateMode = TemplateMode::Site,
     ) {
-        $result = $this->view->renderString($renderString, $variables, $templateMode);
+        $result = renderString($renderString, $variables, $templateMode);
         self::assertSame(
             $expectedString,
             $result

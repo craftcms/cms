@@ -4,69 +4,53 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * RadioButtons represents a Radio Buttons field.
  */
 final class RadioButtons extends BaseOptionsField implements SortableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $allowCustomOptions = true;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $optionIcons = true;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $optionColors = true;
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Radio Buttons');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'circle-dot';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var SingleOptionFieldData $value */
         if (! $value->valid && ! $this->customOptions) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+            DeltaRegistry::setInitialValue($this->handle, null);
         }
 
         $options = $this->translatedOptions(true, $value, $element);
@@ -79,7 +63,7 @@ final class RadioButtons extends BaseOptionsField implements SortableFieldInterf
             ];
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/radioGroup.twig', [
+        return template('_includes/forms/radioGroup', [
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $this->encodeValue($value),
@@ -87,10 +71,7 @@ final class RadioButtons extends BaseOptionsField implements SortableFieldInterf
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function optionsSettingLabel(): string
     {
         return t('Radio Button Options');

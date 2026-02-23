@@ -9,18 +9,19 @@ namespace craft\events;
 
 use craft\base\ElementInterface;
 use craft\base\Event;
-use craft\models\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
  * DefineShowFieldLayoutComponentInFormEvent event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\Events\DefineShowInForm} instead.
  */
 class DefineShowFieldLayoutComponentInFormEvent extends Event
 {
     /**
-     * @var FieldLayout The field layout being rendered.
+     * @var \CraftCms\Cms\FieldLayout\FieldLayout The field layout being rendered.
      */
     public FieldLayout $fieldLayout;
 

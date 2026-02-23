@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use craft\elements\conditions\ElementCondition;
-use craft\elements\db\AssetQuery;
-use craft\elements\db\ElementQueryInterface;
-use craft\elements\ElementCollection;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
@@ -31,14 +28,21 @@ use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -58,53 +62,35 @@ final class Assets extends BaseRelationField
      */
     public const string EVENT_LOCATE_UPLOADED_FILES = 'locateUploadedFiles';
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Assets');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
         return 'image';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function elementType(): string
     {
         return Asset::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected static function canShowSiteMenu(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function defaultSelectionLabel(): string
     {
         return t('Add an asset');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
@@ -181,24 +167,16 @@ final class Assets extends BaseRelationField
      */
     public string $previewMode = self::PREVIEW_MODE_FULL;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected bool $allowLargeThumbsView = true;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected string $settingsTemplate = '_components/fieldtypes/Assets/settings.twig';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected string $inputTemplate = '_components/fieldtypes/Assets/input.twig';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected ?string $inputJsClass = 'Craft.AssetSelectInput';
 
     /**
@@ -206,9 +184,6 @@ final class Assets extends BaseRelationField
      */
     private ?array $_uploadedDataFiles = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct(array $config = [])
     {
         // Rename old settings
@@ -232,7 +207,7 @@ final class Assets extends BaseRelationField
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'restrictFiles' => 'boolean',
@@ -241,9 +216,6 @@ final class Assets extends BaseRelationField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSourceOptions(): array
     {
@@ -275,9 +247,6 @@ final class Assets extends BaseRelationField
         return $fileKindOptions;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
@@ -296,15 +265,12 @@ final class Assets extends BaseRelationField
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
-    public function getElementValidationRules(): array
+    public function getElementRules(ElementInterface $element): array
     {
-        $rules = parent::getElementValidationRules();
-        $rules[] = 'validateFileType';
-        $rules[] = 'validateFileSize';
+        $rules = parent::getElementRules($element);
+        $rules[] = fn ($attribute, ElementQuery $value, Closure $fail, Validator $validator) => $this->validateFileType($element, $value, $attribute, $validator);
+        $rules[] = fn ($attribute, ElementQuery $value, Closure $fail, Validator $validator) => $this->validateFileSize($element, $attribute, $validator);
 
         return $rules;
     }
@@ -312,7 +278,7 @@ final class Assets extends BaseRelationField
     /**
      * Validates the files to make sure they are one of the allowed file kinds.
      */
-    public function validateFileType(ElementInterface $element): void
+    public function validateFileType(ElementInterface $element, ElementQuery $value, string $attribute, Validator $validator): void
     {
         // Make sure the field restricts file types
         if (! $this->restrictFiles) {
@@ -322,8 +288,6 @@ final class Assets extends BaseRelationField
         $filenames = [];
 
         // Get all the value's assets' filenames
-        /** @var AssetQuery $value */
-        $value = $element->getFieldValue($this->handle);
         foreach ($value->all() as $asset) {
             /** @var Asset $asset */
             $filenames[] = $asset->getFilename();
@@ -339,7 +303,7 @@ final class Assets extends BaseRelationField
         $allowedExtensions = $this->_getAllowedExtensions();
         foreach ($filenames as $filename) {
             if (! in_array(mb_strtolower(pathinfo((string) $filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
-                $element->addError($this->handle, t('“{filename}” is not allowed in this field.', [
+                $validator->errors()->add($attribute, t('“{filename}” is not allowed in this field.', [
                     'filename' => $filename,
                 ]));
             }
@@ -349,7 +313,7 @@ final class Assets extends BaseRelationField
     /**
      * Validates the files to make sure they are under the allowed max file size.
      */
-    public function validateFileSize(ElementInterface $element): void
+    public function validateFileSize(ElementInterface $element, string $attribute, Validator $validator): void
     {
         $maxSize = Cms::config()->maxUploadFileSize;
 
@@ -374,15 +338,12 @@ final class Assets extends BaseRelationField
         }
 
         foreach ($filenames as $filename) {
-            $element->addError($this->handle, t('“{filename}” is too large.', [
+            $validator->errors()->add($attribute, t('“{filename}” is too large.', [
                 'filename' => $filename,
             ]));
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
@@ -419,9 +380,6 @@ final class Assets extends BaseRelationField
         return parent::normalizeValue($value, $element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
@@ -436,18 +394,12 @@ final class Assets extends BaseRelationField
         return $this->_uploadFolder($element)->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryAssets($schema);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): array
     {
@@ -460,9 +412,6 @@ final class Assets extends BaseRelationField
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function previewHtml(ElementCollection $elements): string
     {
@@ -472,9 +421,6 @@ final class Assets extends BaseRelationField
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
@@ -497,9 +443,6 @@ final class Assets extends BaseRelationField
     // Events
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
@@ -554,7 +497,7 @@ final class Assets extends BaseRelationField
                         if (Craft::$app->getElements()->saveElement($asset)) {
                             $assetIds[] = $asset->id;
                         } else {
-                            Craft::warning('Couldn’t save uploaded asset due to validation errors: '.implode(', ', $asset->getFirstErrors()), __METHOD__);
+                            Log::warning('Couldn’t save uploaded asset due to validation errors: '.implode(', ', $asset->getFirstErrors()), [__METHOD__]);
                         }
                     }
 
@@ -580,9 +523,6 @@ final class Assets extends BaseRelationField
         return parent::beforeElementSave($element, $isNew);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function afterElementSave(ElementInterface $element, bool $isNew): void
     {
@@ -644,7 +584,7 @@ final class Assets extends BaseRelationField
                                 $assetsService->moveAsset($asset, $uploadFolder);
                             } catch (FsObjectNotFoundException $e) {
                                 // Don't freak out about that.
-                                Craft::warning('Couldn’t move asset because the file doesn’t exist: '.$e->getMessage());
+                                Log::warning('Couldn’t move asset because the file doesn’t exist: '.$e->getMessage());
                                 Craft::$app->getErrorHandler()->logException($e);
                             }
                         }
@@ -656,9 +596,6 @@ final class Assets extends BaseRelationField
         parent::afterElementSave($element, $isNew);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
@@ -681,9 +618,6 @@ final class Assets extends BaseRelationField
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getInputSources(?ElementInterface $element = null): array
     {
@@ -752,9 +686,6 @@ final class Assets extends BaseRelationField
         return $sources;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputTemplateVariables(array|ElementQueryInterface|null $value = null, ?ElementInterface $element = null): array
     {
@@ -795,9 +726,6 @@ final class Assets extends BaseRelationField
         return $variables;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getInputSelectionCriteria(): array
     {
@@ -811,9 +739,6 @@ final class Assets extends BaseRelationField
         return $criteria;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function createSelectionCondition(): ElementCondition
     {
         $condition = Asset::createCondition();
@@ -822,9 +747,6 @@ final class Assets extends BaseRelationField
         return $condition;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function showSearchInput(?ElementInterface $element): bool
     {
@@ -898,20 +820,15 @@ final class Assets extends BaseRelationField
             }
         }
 
-        // Fire a 'locateUploadedFiles' event
-        if ($this->hasComponentListeners(self::EVENT_LOCATE_UPLOADED_FILES)) {
-            $event = new LocateUploadedFiles(
-                field: $this,
-                element: $element,
-                files: $files,
-            );
+        $event = new LocateUploadedFiles(
+            field: $this,
+            element: $element,
+            files: $files,
+        );
 
-            $this->dispatchComponentEvent(self::EVENT_LOCATE_UPLOADED_FILES, $event);
+        $this->dispatchComponentEvent(self::EVENT_LOCATE_UPLOADED_FILES, $event);
 
-            return $event->files;
-        }
-
-        return $files;
+        return $event->files;
     }
 
     /**

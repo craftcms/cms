@@ -15,7 +15,6 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Foundation\Console\DownCommand;
 use Illuminate\Foundation\Console\UpCommand;
-use Illuminate\Support\Facades\Event;
 use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Themes\Default\Concerns\DrawsBoxes;
 use Throwable;
@@ -30,6 +29,7 @@ final class MigrateCommand extends Command implements Isolatable
     use CraftCommand;
     use DrawsBoxes;
 
+    #[\Override]
     protected $signature = 'craft:migrate:all
         {--force : Force the operation to run when in production}
         {--pretend : Dump the SQL queries that would be run}
@@ -41,8 +41,10 @@ final class MigrateCommand extends Command implements Isolatable
         {--track= : The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)}
         {--graceful : Return a successful exit code even if an error occurs}';
 
+    #[\Override]
     protected $description = 'Run the database migrations';
 
+    #[\Override]
     protected $aliases = ['migrate/all', 'migrate:up', 'migrate/up'];
 
     private Updates $updates;
@@ -199,31 +201,29 @@ final class MigrateCommand extends Command implements Isolatable
             }
         }
 
-        if (Event::hasListeners(RegisterMigrators::class)) {
-            Event::dispatch($event = new RegisterMigrators([]));
+        event($event = new RegisterMigrators);
 
-            foreach ($event->migrators as $migrator) {
-                if (! $migrator instanceof Migrator) {
-                    $this->components->warn($migrator::class.' is not an instance of '.Migrator::class);
+        foreach ($event->migrators as $migrator) {
+            if (! $migrator instanceof Migrator) {
+                $this->components->warn($migrator::class.' is not an instance of '.Migrator::class);
 
-                    continue;
-                }
+                continue;
+            }
 
-                if (! $track = $migrator->getTrack()) {
-                    $this->components->warn('A migrator was registered without a track.');
+            if (! $track = $migrator->getTrack()) {
+                $this->components->warn('A migrator was registered without a track.');
 
-                    continue;
-                }
+                continue;
+            }
 
-                if ($this->option('track') && $this->option('track') !== $track) {
-                    continue;
-                }
+            if ($this->option('track') && $this->option('track') !== $track) {
+                continue;
+            }
 
-                $this->migrators[$track] = $migrator;
+            $this->migrators[$track] = $migrator;
 
-                if (! empty($migrations = $migrator->getPendingMigrations())) {
-                    $migrationsByTrack[$track] = $migrations;
-                }
+            if (! empty($migrations = $migrator->getPendingMigrations())) {
+                $migrationsByTrack[$track] = $migrations;
             }
         }
     }

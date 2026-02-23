@@ -6,10 +6,13 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
 use craft\web\assets\updateswidget\UpdatesWidgetAsset;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Updates\Updates as UpdatesService;
 use Illuminate\Support\Facades\Auth;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class Updates extends Widget
 {
@@ -20,47 +23,32 @@ final class Updates extends Widget
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Updates');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function isSelectable(): bool
     {
         // Gotta have update permission to get this widget
         return parent::isSelectable() && Auth::user()->can('performUpdates');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected static function allowMultipleInstances(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'certificate';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getBodyHtml(): ?string
     {
         // Make sure the user actually has permission to perform updates
@@ -73,11 +61,11 @@ final class Updates extends Widget
 
         if (! $cached || ! $this->updates->totalAvailableUpdates()) {
             $view->registerAssetBundle(UpdatesWidgetAsset::class);
-            $view->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
+            AssetRegistry::js('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
         }
 
         if ($cached) {
-            return $view->renderTemplate('_components/widgets/Updates/body.twig',
+            return template('_components/widgets/Updates/body',
                 [
                     'total' => $this->updates->totalAvailableUpdates(),
                 ]);

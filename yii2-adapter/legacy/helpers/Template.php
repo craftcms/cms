@@ -11,10 +11,12 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
-use craft\web\View;
 use CraftCms\Cms\Shared\BaseModel;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Entries;
-use CraftCms\Cms\Twig\TwigMapper;
+use CraftCms\Cms\Support\Facades\Twig;
+use CraftCms\Cms\Twig\TwigExceptionMapper;
+use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Support\Facades\Auth;
 use Stringable;
 use Twig\Environment;
@@ -346,10 +348,10 @@ class Template
     {
         // Is this a JS file?
         if (preg_match('/^[^\r\n]+\.js(\.gz)?$/i', $js) || UrlHelper::isAbsoluteUrl($js)) {
-            Craft::$app->getView()->registerJsFile($js, $options, $key);
+            AssetRegistry::jsFile($js, $options, $key);
         } else {
-            $position = $options['position'] ?? View::POS_READY;
-            Craft::$app->getView()->registerJs($js, $position, $key);
+            $position = Position::tryFrom($options['position']) ?? Position::BodyEnd;
+            AssetRegistry::js($js, $position, $key);
         }
     }
 
@@ -358,14 +360,15 @@ class Template
      *
      * @param string $path The compiled template path
      * @param int|null $line The line number from the compiled template
+     *
      * @return array|false The resolved template path and line number, or `false` if the path couldn’t be determined.
      * If a template path could be determined but not the template line number, the line number will be null.
      * @since 4.1.5
-     * @deprecated 6.0.0 use {@see TwigMapper::resolveTemplatePathAndLine()} instead.
+     * @deprecated 6.0.0 use {@see TwigExceptionMapper::resolveTemplatePathAndLine()} instead.
      */
     public static function resolveTemplatePathAndLine(string $path, ?int $line)
     {
-        return app(TwigMapper::class)->resolveTemplatePathAndLine($path, $line);
+        return app(TwigExceptionMapper::class)->resolveTemplatePathAndLine($path, $line);
     }
 
     /**
@@ -392,7 +395,7 @@ class Template
     public static function preloadSingles(array $handles): void
     {
         // Ignore handles that are defined Twig globals
-        $globals = Craft::$app->view->getTwig()->getGlobals();
+        $globals = Twig::get()->getGlobals();
         $handles = array_diff($handles, array_keys($globals));
 
         if (!empty($handles)) {

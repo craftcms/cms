@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\gql\GqlEntityRegistry;
@@ -17,20 +18,24 @@ use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
-use CraftCms\Cms\Shared\Rules\ColorRule;
-use CraftCms\Cms\Shared\Rules\HandleRule;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Validation\Rules\ColorRule;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Table represents a Table field.
@@ -39,28 +44,19 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 {
     private static array $typeOptions;
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Table');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'table';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return 'array|null';
@@ -91,10 +87,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return self::$typeOptions;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function dbType(): string
     {
         return Schema::TYPE_JSON;
@@ -136,9 +129,6 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
      */
     public ?array $defaults = [[]];
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct($config = [])
     {
         // Config normalization
@@ -206,8 +196,8 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         }
     }
 
-    #[\Override]
-    public static function getRules(): array
+    #[Override]
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'minRows' => ['nullable', Rule::when(fn ($input) => $input->maxRows > 0, ['lte:maxRows']), 'integer', 'min:0'],
@@ -215,7 +205,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         ]);
     }
 
-    public function afterValidate(Validator $validator): void
+    public function afterValidate(?Validator $validator = null): void
     {
         $typeOptions = self::typeOptions();
 
@@ -246,7 +236,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                     'hasErrors' => true,
                 ];
 
-                $validator->errors()->add('columns', $error);
+                $validator?->errors()->add('columns', $error);
             }
         }
     }
@@ -267,17 +257,12 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return (bool) $this->maxRows;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -357,9 +342,9 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 
         $view->registerAssetBundle(TimepickerAsset::class);
         $view->registerAssetBundle(TableSettingsAsset::class);
-        $view->registerJs('new Craft.TableFieldSettings('.
-            Json::encode($view->namespaceInputName('columns')).', '.
-            Json::encode($view->namespaceInputName('defaults')).', '.
+        AssetRegistry::js('new Craft.TableFieldSettings('.
+            Json::encode(InputNamespace::namespaceInputName('columns')).', '.
+            Json::encode(InputNamespace::namespaceInputName('defaults')).', '.
             Json::encode($columns).', '.
             Json::encode($this->defaults ?? []).', '.
             Json::encode($columnSettings).', '.
@@ -368,10 +353,10 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             Json::encode($this->staticRows).', '.
             ');');
 
-        $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable.twig', [
+        $columnsField = template('_components/fieldtypes/Table/columntable', [
             'cols' => $columnSettings,
             'rows' => $this->columns,
-            'errors' => $this->getErrors('columns'),
+            'errors' => $this->errors()->get('columns'),
             'readOnly' => $readOnly,
         ]);
 
@@ -384,13 +369,18 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             'allowReorder' => true,
             'allowDelete' => true,
             'cols' => $columns,
-            'rows' => $this->defaults,
+            'rows' => array_map(function (array $row) {
+                // make sure the row has a UUID
+                $row['rowId'] ??= Str::uuid()->toString();
+
+                return $row;
+            }, $this->defaults ?? []),
             'initJs' => false,
             'static' => $readOnly,
             'includeRowId' => true,
         ]);
 
-        return $view->renderTemplate('_components/fieldtypes/Table/settings.twig', [
+        return template('_components/fieldtypes/Table/settings', [
             'field' => $this,
             'columnsField' => $columnsField,
             'defaultsField' => $defaultsField,
@@ -398,10 +388,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function beforeSave(bool $isNew): bool
     {
         if (! parent::beforeSave($isNew)) {
@@ -418,19 +405,13 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
@@ -438,51 +419,52 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return $this->_getInputHtml($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
-    public function getElementValidationRules(): array
+    #[Override]
+    public function getElementRules(ElementInterface $element): array
     {
-        return ['validateTableData'];
+        return [
+            fn (
+                string $attribute,
+                mixed $value,
+                Closure $fail,
+            ) => $this->validateTableData($value, $fail),
+        ];
     }
 
     /**
      * Validates the table data.
      */
-    public function validateTableData(ElementInterface $element): void
+    public function validateTableData(mixed $value, Closure $fail): void
     {
-        $value = $element->getFieldValue($this->handle);
+        if (empty($value)) {
+            return;
+        }
 
-        if (! empty($value) && ! empty($this->columns)) {
-            foreach ($value as &$row) {
-                foreach ($this->columns as $colId => $col) {
-                    if (is_string($row[$colId])) {
-                        // Trim the value before validating
-                        $row[$colId] = trim($row[$colId]);
-                    }
+        if (empty($this->columns)) {
+            return;
+        }
 
-                    if (! $this->_validateCellValue($col['type'], $row[$colId], $error)) {
-                        $element->addError($this->handle, $error);
-                    }
+        foreach ($value as &$row) {
+            foreach ($this->columns as $colId => $col) {
+                if (is_string($row[$colId])) {
+                    // Trim the value before validating
+                    $row[$colId] = trim($row[$colId]);
+                }
+
+                if (! $this->_validateCellValue($col['type'], $row[$colId], $error)) {
+                    $fail($error);
                 }
             }
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
@@ -520,7 +502,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 
         if ($this->staticRows) {
             // get the order of the default rows
-            $order = ArrayHelper::getColumn($this->defaults, 'rowId');
+            $order = ArrayHelper::getColumn($this->defaults ?? [], 'rowId');
             $missingValueRowIds = null;
 
             if (! empty($order)) {
@@ -587,7 +569,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                     $cellValue = $defaults[$rowIndex][$colId] ?? '';
                 } elseif (array_key_exists($colId, $row)) {
                     $cellValue = $row[$colId];
-                } elseif ($col['handle'] && array_key_exists($col['handle'], $row)) {
+                } elseif ($col['handle'] && array_key_exists((string) $col['handle'], $row)) {
                     $cellValue = $row[$col['handle']];
                 } else {
                     $cellValue = null;
@@ -603,10 +585,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (! is_array($value) || empty($this->columns)) {
@@ -640,10 +619,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return $serialized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         if (! is_array($value) || empty($this->columns)) {
@@ -688,10 +664,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return $serialized;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         if (! is_array($value) || empty($this->columns)) {
@@ -711,19 +684,13 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return implode(' ', $keywords);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_getInputHtml($value, $element, true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): Type
     {
         $type = TableRowType::generateType($this);
@@ -731,10 +698,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         return Type::listOf($type);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function getContentGqlMutationArgumentType(): Type
     {
         $typeName = $this->handle.'_TableRowInput';
@@ -785,7 +749,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                         $value = Str::unescapeShortcodes(Str::shortcodesToEmoji($value));
                     }
 
-                    return trim((string) preg_replace('/\R/u', "\n", (string) $value));
+                    return trim(Str::convertLineBreaks($value));
                 }
                 // no break
             case 'date':
@@ -871,7 +835,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         }
 
         // Explicitly set each cell value to an array with a 'value' key
-        $checkForErrors = $element && $element->hasErrors($this->handle);
+        $checkForErrors = $element && $element->errors()->has($this->handle);
         foreach ($value as &$row) {
             foreach ($this->columns as $colId => $col) {
                 if (isset($row[$colId])) {
@@ -895,7 +859,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable.twig', [
+        return template('_includes/forms/editableTable', [
             'id' => $this->getInputId(),
             'name' => $this->handle,
             'cols' => $this->columns,

@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Route\Data;
 
 use CraftCms\Cms\Support\Html;
-use Spatie\LaravelData\Dto;
 
-final class Route extends Dto
+final class Route
 {
     public function __construct(
         /**
@@ -27,7 +26,7 @@ final class Route extends Dto
         /**
          * @var string|null The site UID the route should be limited to, if any
          */
-        public ?string $siteUid,
+        public ?string $siteUid = null,
 
         /**
          * @var string $uid The route UID.

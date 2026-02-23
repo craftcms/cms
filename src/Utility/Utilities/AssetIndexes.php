@@ -13,37 +13,29 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Events\ListVolumes;
 use CraftCms\Cms\Utility\Utility;
-use Illuminate\Support\Facades\Event;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
  */
 final class AssetIndexes extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Asset Indexes');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'asset-indexes';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'image';
@@ -58,20 +50,12 @@ final class AssetIndexes extends Utility
     {
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
 
-        if (Event::hasListeners(ListVolumes::class)) {
-            $event = new ListVolumes($volumes);
-            Event::dispatch($event);
+        event($event = new ListVolumes($volumes));
 
-            return $event->volumes;
-        }
-
-        return $volumes;
+        return $event->volumes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         $volumeOptions = [];
@@ -84,7 +68,7 @@ final class AssetIndexes extends Utility
         }
 
         $view = Craft::$app->getView();
-        $checkboxSelectHtml = $view->renderTemplate('_includes/forms/checkboxSelect.twig', [
+        $checkboxSelectHtml = template('_includes/forms/checkboxSelect', [
             'class' => 'first',
             'name' => 'volumes',
             'options' => $volumeOptions,
@@ -97,7 +81,7 @@ final class AssetIndexes extends Utility
 
         $existingIndexingSessions = Craft::$app->getAssetIndexer()->getExistingIndexingSessions();
 
-        return $view->renderTemplate('_components/utilities/AssetIndexes.twig', [
+        return template('_components/utilities/AssetIndexes', [
             'existingSessions' => $existingIndexingSessions,
             'checkboxSelectHtml' => $checkboxSelectHtml,
             'dateFormat' => $dateFormat,

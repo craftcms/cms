@@ -8,15 +8,15 @@
 namespace craft\elements;
 
 use Craft;
-use craft\base\Element;
-use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\tags\TagCondition;
 use craft\elements\db\TagQuery;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\helpers\Db;
-use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
@@ -212,7 +212,7 @@ class Tag extends Element
         $rules[] = [
             ['title'],
             'validateTitle',
-            'when' => fn(): bool => !$this->hasErrors('groupId') && !$this->hasErrors('title'),
+            'when' => fn(): bool => !$this->errors()->has('groupId') && !$this->errors()->has('title'),
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
         ];
         return $rules;

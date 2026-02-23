@@ -17,6 +17,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use IntlDateFormatter;
 use IntlException;
 use Throwable;
@@ -112,7 +113,7 @@ class Application extends \yii\console\Application
             try {
                 new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
             } catch (IntlException) {
-                Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
+                Log::info("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
         }
@@ -189,7 +190,7 @@ class Application extends \yii\console\Application
 
     private function _requireInfoTable(string $route, array &$params): bool
     {
-        $skipCheck = Env::get('CRAFT_NO_DB') ?? false;
+        $skipCheck = Env::normalizeBooleanValue(Env::get('CRAFT_NO_DB')) ?? false;
 
         if ($skipCheck || isset($params['help'])) {
             return false;

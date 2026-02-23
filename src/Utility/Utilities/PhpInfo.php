@@ -4,59 +4,46 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
+use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Utility\Utility;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * PhpInfo represents a PhpInfo dashboard widget.
  */
 final class PhpInfo extends Utility
 {
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('PHP Info');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function id(): string
     {
         return 'php-info';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function isSelectable(): bool
     {
         return function_exists('phpinfo');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'circle-info';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/utilities/PhpInfo.twig', [
+        return template('_components/utilities/PhpInfo', [
             'phpInfo' => self::phpInfo(),
         ]);
     }
@@ -122,7 +109,6 @@ final class PhpInfo extends Utility
         unset($sections[0]);
 
         $phpInfo = [];
-        $security = Craft::$app->getSecurity();
 
         foreach ($sections as $section) {
             $heading = substr($section, 0, strpos($section, '</h2>'));
@@ -138,7 +124,7 @@ final class PhpInfo extends Utility
 
                 [, $name, $value] = $row;
 
-                $phpInfo[$heading][$name] = $security->redactIfSensitive($name, $value);
+                $phpInfo[$heading][$name] = Security::redactIfSensitive($name, $value);
             }
         }
 

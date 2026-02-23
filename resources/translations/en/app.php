@@ -801,6 +801,7 @@ return [
     'HTML Email Template' => 'HTML Email Template',
     'Handle' => 'Handle',
     'Has Descendants' => 'Has Descendants',
+    'Has Notifications' => 'Has Notifications',
     'Has URL' => 'Has URL',
     'Has alternative text' => 'Has alternative text',
     'Heading' => 'Heading',

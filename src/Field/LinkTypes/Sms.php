@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
+use Override;
+
 /**
  * Phone number link type.
  */
@@ -14,7 +16,7 @@ final class Sms extends BaseTextLinkType
         return 'sms';
     }
 
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return 'SMS';
@@ -25,7 +27,7 @@ final class Sms extends BaseTextLinkType
         return 'sms:';
     }
 
-    #[\Override]
+    #[Override]
     public function normalizeValue(string $value): string
     {
         preg_match('/^([^?&]*)(?:[?&]+(.*))?$/', $value, $matches);
@@ -37,13 +39,13 @@ final class Sms extends BaseTextLinkType
         return parent::normalizeValue($value);
     }
 
-    #[\Override]
+    #[Override]
     public function renderValue(string $value): string
     {
         return str_replace(' ', '-', $value);
     }
 
-    #[\Override]
+    #[Override]
     protected function inputAttributes(): array
     {
         return [
@@ -52,7 +54,7 @@ final class Sms extends BaseTextLinkType
         ];
     }
 
-    #[\Override]
+    #[Override]
     protected function pattern(): string
     {
         return "^sms:[\d\+\(\)\-,; ]+([\?&].*)?$";

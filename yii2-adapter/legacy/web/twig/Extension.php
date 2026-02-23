@@ -9,20 +9,14 @@ namespace craft\web\twig;
 
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutProviderInterface;
 use craft\base\MissingComponentInterface;
-use craft\elements\Address;
-use craft\elements\Asset;
-use craft\elements\ElementCollection;
 use craft\errors\AssetException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\HtmlPurifier;
-use craft\helpers\Sequence;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\web\twig\nodes\expressions\binaries\HasEveryBinary;
@@ -55,14 +49,19 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Queries\AddressQuery;
-use CraftCms\Cms\Database\Queries\AssetQuery;
-use CraftCms\Cms\Database\Queries\ContentBlockQuery;
-use CraftCms\Cms\Database\Queries\ElementQuery;
-use CraftCms\Cms\Database\Queries\EntryQuery;
-use CraftCms\Cms\Database\Queries\UserQuery;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\Queries\AddressQuery;
+use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\ContentBlockQuery;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
@@ -70,12 +69,15 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
+use CraftCms\Cms\Support\Sequence;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\User\Elements\User;
 use DateInterval;
@@ -85,9 +87,12 @@ use DateTimeZone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Stringable;
 use Illuminate\Support\ViewErrorBag;
+use InvalidArgumentException;
 use IteratorAggregate;
 use Money\Money;
 use Throwable;
@@ -103,12 +108,12 @@ use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
 use yii\base\BaseObject;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\db\Expression;
 use yii\db\QueryInterface;
 use yii\helpers\Markdown;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -137,26 +142,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return CoreExtension::arrayEvery($env, $array, $arrow);
     }
 
-    /**
-     * @var View|null
-     */
-    protected ?View $view = null;
-
-    /**
-     * @var TwigEnvironment|null
-     */
-    protected ?TwigEnvironment $environment = null;
-
-    /**
-     * Constructor
-     *
-     * @param View $view
-     * @param TwigEnvironment $environment
-     */
-    public function __construct(View $view, TwigEnvironment $environment)
-    {
-        $this->view = $view;
-        $this->environment = $environment;
+    public function __construct(
+        protected PageLifecycle $pageLifecycle,
+        protected ?TwigEnvironment $environment = null,
+    ) {
     }
 
     /**
@@ -168,7 +157,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new Profiler(),
             new GetAttrAdjuster(),
             new EventTagFinder(),
-            new EventTagAdder($this->view),
+            new EventTagAdder($this->pageLifecycle),
         ];
     }
 
@@ -225,8 +214,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getFilters(): array
     {
-        $security = Craft::$app->getSecurity();
-
         return [
             new TwigFilter('address', [$this, 'addressFilter'], ['is_safe' => ['html']]),
             new TwigFilter('append', [$this, 'appendFilter'], ['is_safe' => ['html']]),
@@ -273,11 +260,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('merge', [$this, 'mergeFilter']),
             new TwigFilter('money', [$this, 'moneyFilter']),
             new TwigFilter('multisort', [$this, 'multisortFilter']),
-            new TwigFilter('namespace', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
+            new TwigFilter('namespace', [InputNamespace::class, 'namespaceInputs'], ['is_safe' => ['html']]),
             new TwigFilter('namespaceAttributes', [Html::class, 'namespaceAttributes'], ['is_safe' => ['html']]),
-            new TwigFilter('ns', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
-            new TwigFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
-            new TwigFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
+            new TwigFilter('ns', [InputNamespace::class, 'namespaceInputs'], ['is_safe' => ['html']]),
+            new TwigFilter('namespaceInputName', [InputNamespace::class, 'namespaceInputName']),
+            new TwigFilter('namespaceId', [InputNamespace::class, 'namespaceId']),
+            new TwigFilter('namespaceInputId', [InputNamespace::class, 'namespaceId']),
             new TwigFilter('number', [$this, 'numberFilter']),
             new TwigFilter('parseAttr', [$this, 'parseAttrFilter']),
             new TwigFilter('parseRefs', [$this, 'parseRefsFilter'], ['is_safe' => ['html']]),
@@ -780,8 +768,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::parseTagAttributes($tag, 0, $start, $end, true);
-        } catch (\InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+        } catch (InvalidArgumentException $e) {
+            Log::warning($e->getMessage(), [__METHOD__]);
             return [];
         }
     }
@@ -813,8 +801,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::prependToTag($tag, $html, $ifExists);
-        } catch (\InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+        } catch (InvalidArgumentException $e) {
+            Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
     }
@@ -839,12 +827,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 DIRECTORY_SEPARATOR . $config . '.json';
             $config = null;
             if (!is_file($path)) {
-                Craft::warning("No HTML Purifier config found at $path.");
+                Log::info("No HTML Purifier config found at $path.");
             } else {
                 try {
                     $config = Json::decode(file_get_contents($path));
                 } catch (InvalidArgumentException) {
-                    Craft::warning("Invalid HTML Purifier config at $path.");
+                    Log::info("Invalid HTML Purifier config at $path.");
                 }
             }
         }
@@ -901,8 +889,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $newTag = Html::modifyTagAttributes($newTag, ['class' => $newClasses]);
             }
             return $newTag;
-        } catch (\InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+        } catch (InvalidArgumentException $e) {
+            Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
     }
@@ -1019,8 +1007,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::appendToTag($tag, $html, $ifExists);
-        } catch (\InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+        } catch (InvalidArgumentException $e) {
+            Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
     }
@@ -1050,8 +1038,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::modifyTagAttributes($tag, $attributes);
-        } catch (\InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+        } catch (InvalidArgumentException $e) {
+            Log::warning($e->getMessage(), [__METHOD__]);
             return $tag;
         }
     }
@@ -1187,9 +1175,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         if (is_string($arrow)) {
             $template = '{' . $arrow . '}';
-            $view = Craft::$app->getView();
             foreach ($arr as $item) {
-                $groupKey = $view->renderObjectTemplate($template, $item);
+                $groupKey = renderObjectTemplate($template, $item);
                 $groups[$groupKey][] = $item;
             }
         } else {
@@ -1213,7 +1200,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function hashFilter(string $data, ?string $algo = null): string
     {
         if ($algo === null) {
-            return Craft::$app->getSecurity()->hashData($data);
+            return Crypt::encrypt($data);
         }
 
         return hash($algo, $data);
@@ -1455,9 +1442,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('ul', [Html::class, 'ul'], ['is_safe' => ['html']]),
 
             // DOM event functions
-            new TwigFunction('head', [$this->view, 'head']),
-            new TwigFunction('beginBody', [$this->view, 'beginBody']),
-            new TwigFunction('endBody', [$this->view, 'endBody']),
+            new TwigFunction('head', [$this->pageLifecycle, 'head']),
+            new TwigFunction('beginBody', [$this->pageLifecycle, 'beginBody']),
+            new TwigFunction('endBody', [$this->pageLifecycle, 'endBody']),
         ];
     }
 
@@ -1507,7 +1494,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Creates a new object.
      *
-     * @template T of BaseObject
+     * @template T of object
      * @param class-string<T>|array{class:class-string<T>}|array{__class:class-string<T>} $type
      * @param array $params
      * @return T
@@ -1516,7 +1503,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function createFunction(string|array $type, array $params = []): object
     {
         $class = is_string($type) ? $type : ($type['__class'] ?? $type['class'] ?? null);
-        if (!is_subclass_of($class, BaseObject::class) && !str_starts_with($class, '\\CraftCms\\Cms\\')) {
+        if (
+            !is_subclass_of($class, BaseObject::class) &&
+            !str_starts_with($class, 'craft\\helpers\\') &&
+            !str_starts_with($class, '\\CraftCms\\Cms\\')
+        ) {
             throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', BaseObject::class));
         }
 
@@ -1541,8 +1532,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
 
             return Html::dataUrl(Aliases::get($file), $mimeType);
-        } catch (\InvalidArgumentException $e) {
-            Craft::warning($e->getMessage(), __METHOD__);
+        } catch (InvalidArgumentException $e) {
+            Log::warning($e->getMessage(), [__METHOD__]);
             return '';
         }
     }
@@ -1696,6 +1687,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         if ($next) {
             return Sequence::next($name, $length);
         }
+
         return Sequence::current($name, $length);
     }
 
@@ -1706,7 +1698,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function renderObjectTemplate(string $template, mixed $object): string
     {
-        return Craft::$app->getView()->renderObjectTemplate($template, $object);
+        return renderObjectTemplate($template, $object);
     }
 
     /**
@@ -1767,8 +1759,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $svg = Html::modifyTagAttributes($svg, [
                     'class' => $class,
                 ]);
-            } catch (\InvalidArgumentException $e) {
-                Craft::warning('Unable to add a class to the SVG: ' . $e->getMessage(), __METHOD__);
+            } catch (InvalidArgumentException $e) {
+                Log::warning('Unable to add a class to the SVG: ' . $e->getMessage(), [__METHOD__]);
             }
         }
 
@@ -1833,7 +1825,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,
-            'view' => $this->view,
+            'view' => Craft::$app->getView(),
 
             'devMode' => app()->hasDebugModeEnabled(),
             'SORT_ASC' => SORT_ASC,

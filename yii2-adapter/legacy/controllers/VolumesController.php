@@ -9,12 +9,12 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\FsInterface;
-use craft\elements\Asset;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\models\Volume;
 use craft\web\Controller;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -72,7 +72,7 @@ class VolumesController extends Controller
         $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
         $variables['readOnly'] = $this->readOnly;
 
-        return $this->renderTemplate('settings/assets/volumes/_index.twig', $variables);
+        return $this->rendertemplate('settings/assets/volumes/_index', $variables);
     }
 
     /**

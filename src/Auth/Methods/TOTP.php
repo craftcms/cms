@@ -10,16 +10,19 @@ use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Craft;
 use craft\web\assets\totp\TotpAsset;
-use craft\web\View;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Models\Authenticator;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Session\SessionManager;
 use PragmaRX\Google2FA\Exceptions\Google2FAException;
 use PragmaRX\Google2FA\Google2FA;
 use Throwable;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /*
  * Time-based one-time password authentication method.
@@ -28,17 +31,11 @@ final class TOTP extends BaseAuthMethod
 {
     use ConfirmsPasswords;
 
-    /**
-     * {@inheritdoc}
-     */
     public static function displayName(): string
     {
         return t('Authenticator App');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function description(): string
     {
         return t('Use an authenticator app to verify your identity.');
@@ -66,17 +63,11 @@ final class TOTP extends BaseAuthMethod
         return $this->secretParam;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isActive(): bool
     {
         return self::secretFromDb($this->user->id) !== null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSetupHtml(string $containerId): string
     {
         $secret = $this->secret();
@@ -84,38 +75,32 @@ final class TOTP extends BaseAuthMethod
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(TotpAsset::class);
-        $view->registerJsWithVars(fn ($totpFormId, $containerId) => <<<JS
+        AssetRegistry::jsWithVars(fn ($totpFormId, $containerId) => <<<JS
 Craft.createAuthFormHandler(Craft.TotpForm.METHOD, $('#' + $totpFormId), () => {
   Craft.Slideout.instances[$containerId].showSuccess();
   Craft.authMethodSetup.refresh();
 });
 JS, [
-            $view->namespaceInputId($totpFormId),
+            InputNamespace::namespaceId($totpFormId),
             $containerId,
         ]);
 
-        return $view->renderTemplate('_components/auth/methods/TOTP/setup.twig', [
+        return template('_components/auth/methods/TOTP/setup', [
             'secret' => rtrim(chunk_split($secret, 4, ' ')),
             'user' => $this->user,
             'qrCode' => $this->generateQrCode($secret),
             'totpFormId' => $totpFormId,
-        ], View::TEMPLATE_MODE_CP);
+        ], templateMode: TemplateMode::Cp);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAuthFormHtml(): string
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(TotpAsset::class);
 
-        return $view->renderTemplate('_components/auth/methods/TOTP/form.twig');
+        return template('_components/auth/methods/TOTP/form');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function verify(mixed ...$args): bool
     {
         [$code] = $args;
@@ -154,9 +139,6 @@ JS, [
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function remove(): void
     {
         Authenticator::where('userId', $this->user->id)->delete();

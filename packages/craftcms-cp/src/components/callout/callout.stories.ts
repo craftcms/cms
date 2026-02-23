@@ -3,7 +3,7 @@ import type {Meta, StoryObj} from '@storybook/web-components-vite';
 import {html} from 'lit';
 
 import './callout.js';
-import {Variant, Appearance} from '@/types';
+import {Appearance, Variant} from '@src/types';
 
 const variants = Object.values(Variant);
 const appearances = Object.values(Appearance);

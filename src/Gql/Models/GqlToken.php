@@ -13,8 +13,10 @@ final class GqlToken extends BaseModel
 {
     use HasUid;
 
+    #[\Override]
     protected $table = Table::GQLTOKENS;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

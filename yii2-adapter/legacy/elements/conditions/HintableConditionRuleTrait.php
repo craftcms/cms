@@ -1,27 +1,20 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\elements\conditions;
 
-use Illuminate\Support\Facades\Auth;
-
-/**
- * HintableConditionRuleTrait
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.9.0
- */
-trait HintableConditionRuleTrait
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * HintableConditionRuleTrait
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 5.9.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait} instead.
+     * @phpstan-ignore trait.unused
      */
-    public function showLabelHint(): bool
+    trait HintableConditionRuleTrait
     {
-        return Auth::user()?->getPreference('showFieldHandles') ?? false;
     }
 }
+
+class_alias(\CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait::class, HintableConditionRuleTrait::class);

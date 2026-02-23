@@ -4,76 +4,58 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Data\OptionData;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use Illuminate\Support\Collection;
+use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Checkboxes represents a Checkboxes field.
  */
 final class Checkboxes extends BaseOptionsField
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $multi = true;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $allowCustomOptions = true;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $optionIcons = true;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $optionColors = true;
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Checkboxes');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'square-check';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     public function useFieldset(): bool
     {
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if (! $this->customOptions && Collection::make($value)->contains(fn (OptionData $option) => ! $option->valid)) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+            DeltaRegistry::setInitialValue($this->handle, null);
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxGroup.twig', [
+        return template('_includes/forms/checkboxGroup', [
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'values' => $this->encodeValue($value),
@@ -82,10 +64,7 @@ final class Checkboxes extends BaseOptionsField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    #[\Override]
+    #[Override]
     protected function optionsSettingLabel(): string
     {
         return t('Checkbox Options');

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\base\Element;
-use craft\elements\Address;
+use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Html;

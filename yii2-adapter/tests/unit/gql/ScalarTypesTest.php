@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\gql;
 
-use craft\elements\Entry;
 use craft\errors\GqlException;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
@@ -17,6 +16,7 @@ use craft\gql\types\Number;
 use craft\gql\types\QueryArgument;
 use craft\test\TestCase;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Date;
 use DateTimeZone;
 use Exception;

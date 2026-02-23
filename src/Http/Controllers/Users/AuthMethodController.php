@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\web\View;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final readonly class AuthMethodController
 {
@@ -37,20 +39,15 @@ final readonly class AuthMethodController
         $displayName = $method::displayName();
 
         $view = Craft::$app->getView();
-        $templateMode = $view->getTemplateMode();
-        $view->setTemplateMode(View::TEMPLATE_MODE_CP);
-
-        try {
-            $html = Html::tag('h1', t('{name} Setup', [
+        $html = TemplateMode::with(
+            TemplateMode::Cp,
+            fn () => Html::tag('h1', t('{name} Setup', [
                 'name' => $displayName,
-            ])).
-                $view->namespaceInputs(
-                    fn () => $method->getSetupHtml($containerId),
-                    $containerId,
-                );
-        } finally {
-            $view->setTemplateMode($templateMode);
-        }
+            ])).InputNamespace::namespaceInputs(
+                fn () => $method->getSetupHtml($containerId),
+                $containerId,
+            )
+        );
 
         return new JsonResponse([
             'containerId' => $containerId,
@@ -64,7 +61,7 @@ final readonly class AuthMethodController
     public function listingHtml(): JsonResponse
     {
         $view = Craft::$app->getView();
-        $html = $view->renderTemplate('users/_auth-methods.twig', templateMode: View::TEMPLATE_MODE_CP);
+        $html = template('users/_auth-methods', templateMode: TemplateMode::Cp);
 
         return new JsonResponse([
             'html' => $html,

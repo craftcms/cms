@@ -12,7 +12,6 @@ use craft\base\BaseFsInterface;
 use craft\base\ElementInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
-use craft\elements\Asset;
 use craft\errors\FsException;
 use craft\errors\InvalidSubpathException;
 use craft\events\RegisterAssetFileKindsEvent;
@@ -22,6 +21,7 @@ use craft\helpers\ImageTransforms as TransformHelper;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
@@ -31,11 +31,12 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Twig\Error\RuntimeError;
 use yii\base\Event;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
@@ -1019,7 +1020,7 @@ class Assets
                 if ($element?->duplicateOf) {
                     $element = $element->duplicateOf->getCanonical();
                 }
-                $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
+                $renderedSubpath = renderObjectTemplate($subpath, $element);
             } catch (InvalidConfigException|RuntimeError $e) {
                 throw new InvalidSubpathException($subpath, null, 0, $e);
             }

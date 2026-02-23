@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\AuthError;
@@ -17,10 +16,10 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\VerifyingEmail;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
@@ -58,7 +57,7 @@ abstract readonly class AuthenticationController
     {
         [$authError, $message] = $this->auth->getLoginFailureInfo($authError, $user);
 
-        Event::dispatch(new Failed(
+        event(new Failed(
             guard: 'craft',
             user: $user,
             credentials: $request->only('loginName', 'password'),
@@ -73,9 +72,9 @@ abstract readonly class AuthenticationController
             return view(request()->path(), $data);
         }
 
-        Craft::$app->getView()->setTemplateMode(\craft\web\View::TEMPLATE_MODE_CP);
+        TemplateMode::set(TemplateMode::Cp);
 
-        return view(Str::start($cpTemplate, 'craftcms::'), $data);
+        return view(Str::start($cpTemplate, ''), $data);
     }
 
     protected function processTokenRequest(Request $request): Response|array
@@ -101,9 +100,7 @@ abstract readonly class AuthenticationController
             auth('craft')->logout();
         }
 
-        if (Event::hasListeners(VerifyingEmail::class)) {
-            Event::dispatch(new VerifyingEmail($user));
-        }
+        event(new VerifyingEmail($user));
 
         /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
         $broker = Password::broker('craft');
@@ -111,16 +108,14 @@ abstract readonly class AuthenticationController
             return $this->processInvalidToken($request, $user);
         }
 
-        if (Event::hasListeners(EmailVerified::class)) {
-            Event::dispatch(new EmailVerified($user));
-        }
+        event(new EmailVerified($user));
 
         return [$user, $request->input('id'), $request->input('code')];
     }
 
     protected function processInvalidToken(Request $request, ?User $user = null): Response
     {
-        Event::dispatch(new InvalidUserToken($user));
+        event(new InvalidUserToken($user));
 
         if ($request->wantsJson()) {
             return $this->asFailure('InvalidVerificationCode');

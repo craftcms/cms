@@ -14,6 +14,9 @@ use craft\test\TestCase;
 use craft\test\TestSetup;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\RouteToken\RouteTokens;
+use Illuminate\Support\Facades\Request;
+use Mockery;
 use UnitTester;
 use yii\base\Exception;
 
@@ -101,10 +104,15 @@ class UrlHelperTest extends TestCase
      */
     public function testCpUrlCreation(string $expected, string $path, array $params, string $scheme = 'https'): void
     {
+        Aliases::set('@web', 'http://localhost');
+
         $this->tester->mockCraftMethods('request', [
             'getIsSecureConnection' => false,
             'getIsCpRequest' => true,
         ]);
+        Request::macro('isCpRequest', function() {
+            return true;
+        });
 
         $expected = $this->_prepExpectedUrl($expected, $scheme);
 
@@ -197,6 +205,10 @@ class UrlHelperTest extends TestCase
      */
     public function testUrlFunction(string $expected, string $path = '', ?array $params = null, ?string $scheme = null, ?bool $showScriptName = null): void
     {
+        Request::macro('isCpRequest', function() {
+            return false;
+        });
+
         $scheme ??= 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
         self::assertSame($expected, UrlHelper::url($path, $params, $scheme, $showScriptName));
@@ -250,6 +262,19 @@ class UrlHelperTest extends TestCase
         $this->tester->mockCraftMethods('request', [
             'getToken' => 't0k3n',
         ]);
+
+        app()->bind(RouteTokens::class, function() {
+            $mock = Mockery::mock(RouteTokens::class);
+            $mock->makePartial()
+            ->shouldReceive('getRemainingTokenUsages')
+            ->andReturn(1);
+
+            return $mock;
+        });
+
+        Request::macro('isCpRequest', function() {
+            return false;
+        });
 
         $expected = TestSetup::SITE_URL . 'endpoint?token=t0k3n';
         self::assertSame($expected, UrlHelper::url('endpoint'));

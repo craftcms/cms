@@ -1,5 +1,5 @@
 import {LionInput} from '@lion/ui/input.js';
-import {inputStyles} from '@/styles/form.styles';
+import {inputStyles} from '@src/styles/form.styles';
 import styles from './input.styles.js';
 import {property} from 'lit/decorators.js';
 

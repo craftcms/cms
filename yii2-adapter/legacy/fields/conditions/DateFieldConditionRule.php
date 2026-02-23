@@ -2,55 +2,18 @@
 
 namespace craft\fields\conditions;
 
-use craft\base\conditions\BaseDateRangeConditionRule;
-use CraftCms\Cms\Field\Date;
-use DateTime;
-use yii\base\InvalidConfigException;
-
-/**
- * Date field condition rule.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class DateFieldConditionRule extends BaseDateRangeConditionRule implements FieldConditionRuleInterface
-{
-    use FieldConditionRuleTrait;
-
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Date field condition rule.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Conditions\DateFieldConditionRule} instead.
      */
-    protected function inputHtml(): string
+    class DateFieldConditionRule
     {
-        if (!$this->field() instanceof Date) {
-            throw new InvalidConfigException();
-        }
-
-        return parent::inputHtml();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function elementQueryParam(): array|string|null
-    {
-        if (!$this->field() instanceof Date) {
-            return null;
-        }
-
-        return $this->queryParamValue();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function matchFieldValue($value): bool
-    {
-        if (!$this->field() instanceof Date) {
-            return true;
-        }
-
-        /** @var DateTime|null $value */
-        return $this->matchValue($value);
     }
 }
+
+class_alias(\CraftCms\Cms\Field\Conditions\DateFieldConditionRule::class, DateFieldConditionRule::class);

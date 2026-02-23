@@ -8,16 +8,19 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\UrlHelper;
 use craft\web\UrlRule as CraftUrlRule;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Twig\TemplateResolver;
+use Illuminate\Support\Facades\Log;
 use yii\web\UrlRule as YiiUrlRule;
 use function CraftCms\Cms\backTraceAsString;
 
@@ -147,8 +150,7 @@ class UrlManager extends \yii\web\UrlManager
     public function createUrl($params): string
     {
         if (!Craft::$app->getIsInitialized()) {
-            Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
-                "Stack trace:\n" . backTraceAsString(), __METHOD__);
+            Log::warning(__METHOD__ . "() was called before the application was fully initialized.\n" . "Stack trace:\n" . backTraceAsString(), [__METHOD__]);
         }
 
         $params = (array)$params;
@@ -166,8 +168,7 @@ class UrlManager extends \yii\web\UrlManager
     public function createAbsoluteUrl($params, $scheme = null): string
     {
         if (!Craft::$app->getIsInitialized()) {
-            Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
-                "Stack trace:\n" . backTraceAsString(), __METHOD__);
+            Log::warning(__METHOD__ . "() was called before the application was fully initialized.\n" . "Stack trace:\n" . backTraceAsString(), [__METHOD__]);
         }
 
         $params = (array)$params;
@@ -230,8 +231,7 @@ class UrlManager extends \yii\web\UrlManager
     public function getMatchedElement(): ElementInterface|false
     {
         if (!Craft::$app->getIsInitialized()) {
-            Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
-                "Stack trace:\n" . backTraceAsString(), __METHOD__);
+            Log::warning(__METHOD__ . "() was called before the application was fully initialized.\n" . "Stack trace:\n" . backTraceAsString(), [__METHOD__]);
         }
 
         if (isset($this->_matchedElement)) {
@@ -411,11 +411,11 @@ class UrlManager extends \yii\web\UrlManager
         $this->setMatchedElement($element ?: false);
 
         if (app()->hasDebugModeEnabled()) {
-            Craft::debug([
+            Log::debug(Json::encode([
                 'rule' => 'Element URI: ' . $path,
                 'match' => $this->_matchedElement instanceof ElementInterface,
                 'parent' => null,
-            ], __METHOD__);
+            ]), [__METHOD__]);
         }
 
         return $this->_matchedElementRoute;
@@ -435,11 +435,11 @@ class UrlManager extends \yii\web\UrlManager
             $route = $rule->parseRequest($this, $request);
 
             if (app()->hasDebugModeEnabled()) {
-                Craft::debug([
+                Log::debug(Json::encode([
                     'rule' => 'URL Rule: ' . (method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
                     'match' => $route !== false,
                     'parent' => null,
-                ], __METHOD__);
+                ]), [__METHOD__]);
             }
 
             if ($route !== false) {
@@ -467,7 +467,7 @@ class UrlManager extends \yii\web\UrlManager
             return false;
         }
 
-        return Craft::$app->getView()->doesTemplateExist($request->getPathInfo(), publicOnly: true);
+        return app(TemplateResolver::class)->exists($request->getPathInfo(), publicOnly: true);
     }
 
     /**
@@ -486,11 +486,11 @@ class UrlManager extends \yii\web\UrlManager
         $path = $request->getPathInfo();
 
         if (app()->hasDebugModeEnabled()) {
-            Craft::debug([
+            Log::debug(Json::encode([
                 'rule' => 'Template: ' . $path,
                 'match' => $matches,
                 'parent' => null,
-            ], __METHOD__);
+            ]), [__METHOD__]);
         }
 
         if (!$matches) {
@@ -515,11 +515,11 @@ class UrlManager extends \yii\web\UrlManager
         $token = $request->getToken();
 
         if (app()->hasDebugModeEnabled()) {
-            Craft::debug([
+            Log::debug(Json::encode([
                 'rule' => 'Token' . ($token !== null ? ': ' . $token : ''),
                 'match' => $token !== null,
                 'parent' => null,
-            ], __METHOD__);
+            ]), [__METHOD__]);
         }
 
         if ($token === null) {

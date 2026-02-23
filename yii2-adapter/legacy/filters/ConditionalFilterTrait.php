@@ -12,6 +12,7 @@ namespace craft\filters;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
+ * @deprecated 6.0.0
  */
 trait ConditionalFilterTrait
 {

@@ -10,7 +10,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
@@ -18,21 +17,24 @@ use craft\base\ElementInterface;
 use craft\db\ExcludeDescendantIdsExpression;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
-use craft\elements\conditions\ElementConditionInterface;
-use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
 use craft\helpers\Component;
 use craft\helpers\ElementHelper;
-use craft\models\FieldLayout;
-use CraftCms\Cms\Database\Queries\ElementQuery;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
@@ -40,6 +42,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
@@ -69,12 +72,12 @@ class ElementIndexesController extends BaseElementsController
 
     protected ?array $viewState = null;
 
-    protected ElementQueryInterface|ElementQuery|null $elementQuery = null;
+    protected ElementQueryInterface|null $elementQuery = null;
 
     /**
      * @since 5.0.0
      */
-    protected ElementQueryInterface|ElementQuery|null $unfilteredElementQuery = null;
+    protected ElementQueryInterface|null $unfilteredElementQuery = null;
 
     /**
      * @var ElementActionInterface[]|null
@@ -160,28 +163,34 @@ class ElementIndexesController extends BaseElementsController
     {
         $elementSources = app(ElementSources::class);
 
-        $sortOptions = $elementSources->getSourceSortOptions($this->elementType, $this->sourceKey)
-            ->map(fn(array $option) => [
-                'label' => $option['label'],
-                'attr' => $option['attribute'] ?? $option['orderBy'],
-                'defaultDir' => $option['defaultDir'] ?? 'asc',
-            ])
-            ->values()
-            ->all();
+        if ($this->sourceKey) {
+            $sortOptions = $elementSources->getSourceSortOptions($this->elementType, $this->sourceKey)
+                ->map(fn(array $option) => [
+                    'label' => $option['label'],
+                    'attr' => $option['attribute'] ?? $option['orderBy'],
+                    'defaultDir' => $option['defaultDir'] ?? 'asc',
+                ])
+                ->values()
+                ->all();
 
-        $tableColumns = $elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey)
-            ->map(fn(array $attribute, string $key) => [
-                ...$attribute,
-                'attr' => $key,
-            ])
-            ->values()
-            ->all();
+            $tableColumns = $elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey)
+                ->map(fn(array $attribute, string $key) => [
+                    ...$attribute,
+                    'attr' => $key,
+                ])
+                ->values()
+                ->all();
 
-        $defaultTableColumns = $elementSources->getTableAttributes($this->elementType, $this->sourceKey)
-            ->map(fn(array $attribute) => $attribute[0])
-            ->filter(fn(string $attribute) => $attribute !== 'title')
-            ->values()
-            ->all();
+            $defaultTableColumns = $elementSources->getTableAttributes($this->elementType, $this->sourceKey)
+                ->map(fn(array $attribute) => $attribute[0])
+                ->filter(fn(string $attribute) => $attribute !== 'title')
+                ->values()
+                ->all();
+        } else {
+            $sortOptions = [];
+            $tableColumns = [];
+            $defaultTableColumns = [];
+        }
 
         return $this->asJson(compact(
             'sortOptions',
@@ -348,7 +357,7 @@ class ElementIndexesController extends BaseElementsController
         $sources = app(ElementSources::class)->getSources($this->elementType, $this->context);
 
         return $this->asJson([
-            'html' => $this->getView()->renderTemplate('_elements/sources.twig', [
+            'html' => template('_elements/sources', [
                 'elementType' => $this->elementType,
                 'sources' => $sources->all(),
             ]),
@@ -451,18 +460,16 @@ class ElementIndexesController extends BaseElementsController
         $serialized = $this->request->getBodyParam('serialized');
         $fieldLayouts = $this->request->getBodyParam('fieldLayouts');
 
-        $conditionsService = Craft::$app->getConditions();
+        if (!$conditionConfig && $serialized) {
+            parse_str($serialized, $conditionConfig);
+            $conditionConfig = $conditionConfig['condition'];
+        }
 
         if ($conditionConfig) {
             $conditionConfig = Component::cleanseConfig($conditionConfig);
             /** @var ElementConditionInterface $condition */
-            $condition = $conditionsService->createCondition($conditionConfig);
-        } elseif ($serialized) {
-            parse_str($serialized, $conditionConfig);
-            /** @var ElementConditionInterface $condition */
-            $condition = $conditionsService->createCondition($conditionConfig['condition']);
+            $condition = Conditions::createCondition($conditionConfig);
         } else {
-            /** @var ElementConditionInterface $condition */
             $condition = $this->elementType()::createCondition();
         }
 
@@ -480,7 +487,7 @@ class ElementIndexesController extends BaseElementsController
             $condition->sourceKey = $this->sourceKey;
         } else {
             /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = $conditionsService->createCondition($this->source['condition']);
+            $sourceCondition = Conditions::createCondition($this->source['condition']);
             $condition->queryParams = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
                 /** @var ElementConditionRuleInterface $rule */
@@ -564,7 +571,7 @@ class ElementIndexesController extends BaseElementsController
             if (!empty($attributes)) {
                 $scenario = $element->getScenario();
                 $element->setScenario(Element::SCENARIO_LIVE);
-                $element->setAttributes($attributes);
+                $element->setAttributesFromRequest($attributes);
                 $element->setScenario($scenario);
             }
 
@@ -582,7 +589,7 @@ class ElementIndexesController extends BaseElementsController
             );
 
             if (!$element->validate($names)) {
-                $errors[$element->getCanonicalId()] = $element->getErrors();
+                $errors[$element->getCanonicalId()] = $element->errors()->getMessages();
             }
         }
 
@@ -598,7 +605,7 @@ class ElementIndexesController extends BaseElementsController
         try {
             foreach ($elements as $element) {
                 if (!$elementsService->saveElement($element)) {
-                    Craft::error("Couldn’t save element $element->id: " . implode(', ', $element->getFirstErrors()));
+                    Log::error("Couldn’t save element $element->id: " . implode(', ', $element->getFirstErrors()));
                     throw new ServerErrorHttpException("Couldn’t save element $element->id");
                 }
             }
@@ -669,10 +676,9 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the element query based on the current params.
      */
-    protected function elementQuery(): ElementQueryInterface|ElementQuery
+    protected function elementQuery(): ElementQueryInterface
     {
         $query = $this->elementType::find();
-        $conditionsService = Craft::$app->getConditions();
 
         if (!$this->source) {
             $query->id(false);
@@ -683,7 +689,7 @@ class ElementIndexesController extends BaseElementsController
         // Does the source specify any criteria attributes?
         if ($this->source['type'] === ElementSources::TYPE_CUSTOM) {
             /** @var ElementConditionInterface $sourceCondition */
-            $sourceCondition = $conditionsService->createCondition($this->source['condition']);
+            $sourceCondition = Conditions::createCondition($this->source['condition']);
             $sourceCondition->modifyQuery($query);
         }
 
@@ -707,20 +713,7 @@ class ElementIndexesController extends BaseElementsController
             }
 
             // Remove unsupported criteria attributes
-            unset(
-                $criteria['where'],
-                $criteria['orderBy'],
-                $criteria['indexBy'],
-                $criteria['select'],
-                $criteria['selectOption'],
-                $criteria['from'],
-                $criteria['groupBy'],
-                $criteria['join'],
-                $criteria['having'],
-                $criteria['union'],
-                $criteria['withQueries'],
-                $criteria['params'],
-            );
+            $criteria = ElementHelper::cleanseQueryCriteria($criteria);
 
             Craft::configure($query, Component::cleanseConfig($criteria));
 
@@ -754,7 +747,7 @@ class ElementIndexesController extends BaseElementsController
         }
         if ($filterConditionConfig) {
             /** @var ElementConditionInterface $filterCondition */
-            $filterCondition = $conditionsService->createCondition(Component::cleanseConfig($filterConditionConfig));
+            $filterCondition = Conditions::createCondition(Component::cleanseConfig($filterConditionConfig));
             $filterCondition->modifyQuery($query);
             $hasFilters = true;
         }
@@ -763,10 +756,11 @@ class ElementIndexesController extends BaseElementsController
         $collapsedElementIds = $this->request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
+            /** @var ElementQuery $query */
             $descendantQuery = (clone $query)
                 ->offset(null)
                 ->limit(null)
-                ->orderBy([])
+                ->reorder()
                 ->positionedAfter(null)
                 ->positionedBefore(null)
                 ->status(null);
@@ -774,7 +768,7 @@ class ElementIndexesController extends BaseElementsController
             // Get the actual elements
             $collapsedElements = (clone $descendantQuery)
                 ->id($collapsedElementIds)
-                ->orderBy(['lft' => SORT_ASC])
+                ->orderBy('lft')
                 ->all();
 
             if (!empty($collapsedElements)) {
@@ -794,8 +788,12 @@ class ElementIndexesController extends BaseElementsController
                 }
 
                 if (!empty($descendantIds)) {
-                    /** @phpstan-ignore-next-line */
-                    $query->andWhere(new ExcludeDescendantIdsExpression($descendantIds));
+                    if ($query instanceof ElementQuery) {
+                        $query->whereNotIn('elements.id', $descendantIds);
+                    } else {
+                        $query->andWhere(new ExcludeDescendantIdsExpression($descendantIds));
+                    }
+
                     $hasFilters = true;
                 }
             }

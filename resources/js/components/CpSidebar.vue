@@ -3,42 +3,62 @@
   import MainNav from '@/components/MainNav.vue';
   import EditionInfo from '@/components/EditionInfo.vue';
   import DevModeIndicator from '@/components/DevModeIndicator.vue';
+  import {watch, computed, nextTick} from 'vue';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
 
   const emit = defineEmits<{
     (e: 'close'): void;
     (e: 'dock'): void;
   }>();
-  withDefaults(
-    defineProps<{
-      mode: 'docked' | 'floating' | 'collapsed';
-      visibility: 'hidden' | 'visible';
-    }>(),
-    {
-      mode: 'floating',
-      visibility: 'hidden',
+
+  const {mode = 'floating', visibility = 'hidden'} = defineProps<{
+    mode: 'docked' | 'floating' | 'collapsed';
+    visibility: 'hidden' | 'visible';
+  }>();
+
+  const shouldManageFocus = computed(() => {
+    return mode === 'floating';
+  });
+
+  watch(
+    () => visibility,
+    async (newVal) => {
+      if (shouldManageFocus.value && newVal === 'visible') {
+        await nextTick();
+        const sidebar = document.querySelector('.cp-sidebar') as HTMLElement;
+        const firstFocusable = sidebar.querySelector(
+          'button, [href], [tabindex]:not([tabindex="-1"])'
+        ) as HTMLElement;
+        firstFocusable?.focus();
+      }
     }
   );
 </script>
 
 <template>
   <nav class="cp-sidebar" :data-visibility="visibility" :data-mode="mode">
-    <div class="cp-sidebar__header">
-      <div class="sidebar-header" v-if="mode !== 'docked'">
-        <SystemInfo />
-        <div class="ml-auto"></div>
-        <craft-button size="small" icon @click="emit('close')" type="button">
-          <craft-icon name="x" style="font-size: 0.7em" :label="t('Close')"></craft-icon>
-        </craft-button>
+    <template v-if="visibility === 'visible'">
+      <div class="cp-sidebar__header">
+        <div class="sidebar-header" v-if="mode !== 'docked'">
+          <SystemInfo />
+          <div class="ml-auto"></div>
+          <craft-button size="small" icon @click="emit('close')" type="button">
+            <craft-icon
+              name="x"
+              style="font-size: 0.7em"
+              :label="t('Close')"
+            ></craft-icon>
+          </craft-button>
+        </div>
       </div>
-    </div>
-    <div class="cp-sidebar__body">
-      <MainNav />
-    </div>
-    <div class="cp-sidebar__footer">
-      <EditionInfo />
-      <DevModeIndicator />
-    </div>
+      <div class="cp-sidebar__body">
+        <MainNav />
+      </div>
+      <div class="cp-sidebar__footer">
+        <EditionInfo />
+        <DevModeIndicator />
+      </div>
+    </template>
   </nav>
 </template>
 
@@ -93,12 +113,12 @@
       /* Shadow Cover TOP */
       linear-gradient(white 30%, rgba(255, 255, 255, 0)) center top,
       /* Shadow Cover BOTTOM */
-        linear-gradient(rgba(255, 255, 255, 0), white 70%) center bottom,
+      linear-gradient(rgba(255, 255, 255, 0), white 70%) center bottom,
       /* Shadow TOP */
-        linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
         top,
       /* Shadow BOTTOM */
-        linear-gradient(to top, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
+      linear-gradient(to top, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)) center
         bottom;
     background-repeat: no-repeat;
     background-size:

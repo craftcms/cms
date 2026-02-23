@@ -21,14 +21,17 @@ final class EntryType extends BaseModel
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected $table = Table::ENTRYTYPES;
 
+    #[\Override]
     protected function casts(): array
     {
         return [
             'hasTitleField' => 'bool',
             'showSlugField' => 'bool',
             'showStatusField' => 'bool',
+            'allowLineBreaksInTitles' => 'bool',
         ];
     }
 

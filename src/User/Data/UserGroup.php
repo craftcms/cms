@@ -4,30 +4,28 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Data;
 
-use Craft;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Shared\Rules\HandleRule;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
+use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
-use Spatie\LaravelData\Attributes\MapInputName;
-use Spatie\LaravelData\Dto;
-use Spatie\LaravelData\Support\Validation\ValidationContext;
 use Stringable;
 
 use function CraftCms\Cms\t;
 
-final class UserGroup extends Dto implements Actionable, Chippable, CpEditable, Describable, Grippable, Stringable
+final class UserGroup extends Component implements Actionable, Chippable, CpEditable, Describable, Grippable, Stringable
 {
-    #[MapInputName('groupId')]
     #[AllowedInSandbox]
     public ?int $id = null;
 
@@ -42,49 +40,31 @@ final class UserGroup extends Dto implements Actionable, Chippable, CpEditable, 
 
     public ?string $uid = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public static function get(int|string $id): ?self
     {
         return UserGroups::getGroupById($id);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUiLabel(): string
     {
         return t($this->name, category: 'site');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getHandle(): ?string
     {
         return $this->handle;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getDescription(): ?string
     {
         return $this->description;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getCpEditUrl(): ?string
     {
         if (! $this->id || ! Auth::user()?->isAdmin()) {
@@ -94,9 +74,6 @@ final class UserGroup extends Dto implements Actionable, Chippable, CpEditable, 
         return "settings/users/groups/$this->id";
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getActionMenuItems(): array
     {
         $items = [];
@@ -113,15 +90,14 @@ final class UserGroup extends Dto implements Actionable, Chippable, CpEditable, 
                 'label' => t('User group settings'),
             ];
 
-            $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn ($id, $params) => <<<JS
+            AssetRegistry::jsWithVars(fn ($id, $params) => <<<JS
 $('#' + $id).on('click', () => {
   new Craft.CpScreenSlideout('user-settings/edit-group', {
     params: $params,
   })
 });
 JS, [
-                $view->namespaceInputId($editId),
+                InputNamespace::namespaceId($editId),
                 ['groupId' => $this->id],
             ]);
         }
@@ -129,11 +105,12 @@ JS, [
         return $items;
     }
 
-    public static function rules(?ValidationContext $context = null): array
+    #[\Override]
+    public function getRules(): array
     {
         return [
             'id' => ['nullable', 'integer'],
-            'name' => ['required', 'string', 'max:255', Rule::unique(Table::USERGROUPS, 'name')->ignore($context?->payload['id'] ?? $context?->payload['groupId'] ?? null)],
+            'name' => ['required', 'string', 'max:255', Rule::unique(Table::USERGROUPS, 'name')->ignore($this->id)],
             'handle' => ['required', 'string', 'max:255', new HandleRule(reservedWords: [
                 'admins',
                 'all',
@@ -145,7 +122,7 @@ JS, [
                 'new',
                 'title',
                 'uid',
-            ]), Rule::unique(Table::USERGROUPS, 'handle')->ignore($context?->payload['id'] ?? $context?->payload['groupId'] ?? null)],
+            ]), Rule::unique(Table::USERGROUPS, 'handle')->ignore($this->id)],
         ];
     }
 

@@ -46,7 +46,7 @@ class Rebrand
      */
     public function isLogoUploaded(): bool
     {
-        return app(\CraftCms\Cms\Cp\Rebrand::class)->getImage('logo') !== null;
+        return app(RebrandService::class)->getImage('logo') !== null;
     }
 
     /**
@@ -56,7 +56,7 @@ class Rebrand
      */
     public function isIconUploaded(): bool
     {
-        return app(\CraftCms\Cms\Cp\Rebrand::class)->getImage('icon') !== null;
+        return app(RebrandService::class)->getImage('icon') !== null;
     }
 
     /**

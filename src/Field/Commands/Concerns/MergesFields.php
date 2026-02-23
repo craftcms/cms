@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Commands\Concerns;
 
-use craft\models\FieldLayout;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

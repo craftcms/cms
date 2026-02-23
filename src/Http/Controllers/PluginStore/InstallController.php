@@ -89,18 +89,12 @@ final class InstallController extends BaseUpdaterController
         return $this->runMigrations([$this->data['handle']]) ?? $this->sendFinished();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function pageTitle(): string
     {
         return t('Plugin Installer');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function initialData(): array
     {
@@ -137,9 +131,6 @@ final class InstallController extends BaseUpdaterController
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function actionStatus(string $action): string
     {
@@ -151,9 +142,6 @@ final class InstallController extends BaseUpdaterController
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function initialState(bool $force = false): array
     {
@@ -165,9 +153,6 @@ final class InstallController extends BaseUpdaterController
         return $this->actionState(self::ACTION_COMPOSER_INSTALL);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function postComposerInstallState(): array
     {
@@ -191,9 +176,6 @@ final class InstallController extends BaseUpdaterController
         return $this->actionState(self::ACTION_CRAFT_INSTALL);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function sendFinished(array $state = []): Response
     {
@@ -210,9 +192,6 @@ final class InstallController extends BaseUpdaterController
         return parent::sendFinished($state);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function returnUrl(): string
     {

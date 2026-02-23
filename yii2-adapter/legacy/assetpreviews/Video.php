@@ -7,9 +7,9 @@
 
 namespace craft\assetpreviews;
 
-use Craft;
 use craft\base\AssetPreviewHandler;
 use yii\base\NotSupportedException;
+use function CraftCms\Cms\template;
 
 /**
  * Provides functionality to preview videos
@@ -30,7 +30,7 @@ class Video extends AssetPreviewHandler
             throw new NotSupportedException('Preview not supported.');
         }
 
-        return Craft::$app->getView()->renderTemplate('assets/_previews/video.twig',
+        return template('assets/_previews/video',
             array_merge([
                 'asset' => $this->asset,
                 'url' => $url,

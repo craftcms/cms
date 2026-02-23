@@ -63,6 +63,9 @@ export default class CraftButton extends LionButtonSubmit {
   /** Show a spinner instead of the label */
   @property({reflect: true, type: Boolean}) loading: boolean = false;
 
+  /** Set align-items for the content */
+  @property() align: 'start' | 'end' | 'center' = 'center';
+
   @state()
   private _hasAccessibilityError: boolean = false;
 
@@ -71,6 +74,8 @@ export default class CraftButton extends LionButtonSubmit {
       <div
         class="${classMap({
           'button-content': true,
+          'button-content--start': this.align === 'start',
+          'button-content--end': this.align === 'end',
           'a11y-error': this._hasAccessibilityError,
         })}"
         part="content"

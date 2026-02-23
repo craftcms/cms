@@ -9,22 +9,28 @@ namespace crafttests\unit\web;
 
 use Codeception\Stub;
 use Craft;
-use craft\events\RegisterTemplateRootsEvent;
 use craft\test\Craft as CraftTest;
 use craft\test\mockclasses\arrayable\ExampleArrayable;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
+use CraftCms\Cms\View\TemplateMode;
 use crafttests\fixtures\SitesFixture;
+use Illuminate\Support\Facades\Event as LaravelEvent;
+use Illuminate\Support\Once;
 use ReflectionException;
 use Throwable;
 use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use UnitTester;
+use ValueError;
 use yii\base\Event;
 use yii\base\Exception;
 
@@ -121,47 +127,30 @@ class ViewTest extends TestCase
         ?array $defaultTemplateExtensions = null,
         ?array $indexTemplateFilenames = null,
     ) {
-        // If the data wants to set something custom? Set it as a prop.
-        if ($defaultTemplateExtensions !== null) {
-            $this->setInaccessibleProperty($this->view, '_defaultTemplateExtensions', $defaultTemplateExtensions);
+        $originalExtensions = Cms::config()->defaultTemplateExtensions;
+        $originalFilenames = Cms::config()->indexTemplateFilenames;
+
+        try {
+            // If the data wants to set something custom? Set it on the config.
+            if ($defaultTemplateExtensions !== null) {
+                Cms::config()->defaultTemplateExtensions = $defaultTemplateExtensions;
+            }
+
+            // Same with index names
+            if ($indexTemplateFilenames !== null) {
+                Cms::config()->indexTemplateFilenames = $indexTemplateFilenames;
+            }
+
+            // Lets test stuff.
+            if ($expected !== null) {
+                $expected = CraftTest::normalizePathSeparators(Aliases::get($expected));
+            }
+
+            self::assertSame($expected, $this->_resolveTemplate(Aliases::get($basePath), $name));
+        } finally {
+            Cms::config()->defaultTemplateExtensions = $originalExtensions;
+            Cms::config()->indexTemplateFilenames = $originalFilenames;
         }
-
-        // Same with index names
-        if ($indexTemplateFilenames !== null) {
-            $this->setInaccessibleProperty($this->view, '_indexTemplateFilenames', $indexTemplateFilenames);
-        }
-
-        // Lets test stuff.
-        if ($expected !== null) {
-            $expected = CraftTest::normalizePathSeparators(Aliases::get($expected));
-        }
-
-        self::assertSame($expected, $this->_resolveTemplate(Aliases::get($basePath), $name));
-    }
-
-    /**
-     * Test that Craft::$app->getView()->renderTemplates(); Seems to work correctly with twig. Doesnt impact global props
-     * and respects passed in variables.
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     * @throws ReflectionException
-     */
-    public function testRenderTemplate(): void
-    {
-        // Assert that the _renderingTemplate prop goes in and comes out as null.
-        self::assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
-
-        $result = $this->view->renderTemplate('withvar.twig', ['name' => 'Giel Tettelaar']);
-
-        self::assertSame($result, 'Hello iam Giel Tettelaar');
-        self::assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
-
-        // Test that templates can work without variables.
-        $result = $this->view->renderTemplate('novar.twig');
-
-        self::assertSame($result, 'I have no vars');
     }
 
     /**
@@ -194,19 +183,19 @@ class ViewTest extends TestCase
      */
     public function testSetSiteTemplateMode(): void
     {
-        $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $this->view->setTemplateMode(TemplateMode::Site->value);
         self::assertSame(
             Aliases::get('@crafttestsfolder/templates'),
             CraftTest::normalizePathSeparators($this->view->templatesPath)
         );
         self::assertSame(
             ['twig', 'html'],
-            $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
+            TemplateMode::get()->defaultTemplateExtensions()
         );
 
         self::assertSame(
             ['index'],
-            $this->getInaccessibleProperty($this->view, '_indexTemplateFilenames')
+            TemplateMode::get()->indexTemplateFilenames()
         );
     }
 
@@ -216,7 +205,7 @@ class ViewTest extends TestCase
      */
     public function testSetCpTemplateMode(): void
     {
-        $this->view->setTemplateMode(View::TEMPLATE_MODE_CP);
+        $this->view->setTemplateMode(TemplateMode::Cp->value);
         self::assertSame(
             Craft::$app->getPath()->getCpTemplatesPath(),
             $this->view->templatesPath
@@ -224,12 +213,12 @@ class ViewTest extends TestCase
 
         self::assertSame(
             ['twig', 'html'],
-            $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
+            TemplateMode::get()->defaultTemplateExtensions()
         );
 
         self::assertSame(
             ['index'],
-            $this->getInaccessibleProperty($this->view, '_indexTemplateFilenames')
+            TemplateMode::get()->indexTemplateFilenames()
         );
     }
 
@@ -238,7 +227,7 @@ class ViewTest extends TestCase
      */
     public function testTemplateModeException(): void
     {
-        $this->tester->expectThrowable(Exception::class, function() {
+        $this->tester->expectThrowable(ValueError::class, function() {
             $this->view->setTemplateMode('i dont exist');
         });
     }
@@ -263,12 +252,8 @@ class ViewTest extends TestCase
      */
     public function testHookInvocation(): void
     {
-        $this->setInaccessibleProperty($this->view, '_hooks', [
-            'demoHook' => [
-                fn() => '22',
-                fn($val) => $val[0],
-            ],
-        ]);
+        $this->view->hook('demoHook', fn() => '22');
+        $this->view->hook('demoHook', fn($val) => $val[0]);
 
         $var = ['333'];
         self::assertSame('22333', $this->view->invokeHook('demoHook', $var));
@@ -318,11 +303,13 @@ class ViewTest extends TestCase
      */
     public function testGetTemplateRoots(array $expected, string $which, array $roots): void
     {
-        Event::on(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $event) use ($roots) {
+        Once::flush();
+
+        LaravelEvent::listen(RegisterSiteTemplateRoots::class, function(RegisterSiteTemplateRoots $event) use ($roots) {
             $event->roots = $roots;
         });
 
-        self::assertSame($expected, $this->_getTemplateRoots($which));
+        self::assertSame($expected, TemplateMode::Site->templateRoots());
     }
 
     /**
@@ -330,12 +317,25 @@ class ViewTest extends TestCase
      */
     public function testGetTemplateRootsEvents(): void
     {
-        $this->tester->expectEvent(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function() {
-            $this->_getTemplateRoots('cp');
+        Once::flush();
+
+        $cpEventTriggered = false;
+        Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function() use (&$cpEventTriggered) {
+            $cpEventTriggered = true;
         });
-        $this->tester->expectEvent(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function() {
-            $this->_getTemplateRoots('doesnt-matter-what-this-is');
+
+        TemplateMode::Cp->templateRoots();
+        self::assertTrue($cpEventTriggered, 'Asserting that the CP template roots Yii event is triggered.');
+
+        Once::flush();
+
+        $siteEventTriggered = false;
+        Event::on(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function() use (&$siteEventTriggered) {
+            $siteEventTriggered = true;
         });
+
+        TemplateMode::Site->templateRoots();
+        self::assertTrue($siteEventTriggered, 'Asserting that the site template roots Yii event is triggered.');
     }
 
     /**
@@ -361,19 +361,19 @@ class ViewTest extends TestCase
         $view->registerJs('var foo = true;', View::POS_END);
         $view->registerJs('var bar = true', View::POS_BEGIN);
         self::assertSame([
-            View::POS_END => "<script type=\"text/javascript\">var foo = true;</script>",
             View::POS_BEGIN => "<script type=\"text/javascript\">var bar = true;</script>",
+            View::POS_END => "<script type=\"text/javascript\">var foo = true;</script>",
         ], $view->clearJsBuffer(true, false));
 
         $view->startJsBuffer();
         $view->registerJs('var foo = true;', View::POS_END, 'foo');
         $view->registerJs('var bar = true', View::POS_BEGIN, 'bar');
         self::assertSame([
-            View::POS_END => [
-                'foo' => 'var foo = true;',
-            ],
             View::POS_BEGIN => [
                 'bar' => 'var bar = true;',
+            ],
+            View::POS_END => [
+                'foo' => 'var foo = true;',
             ],
         ], $view->clearJsBuffer(false, false));
     }
@@ -437,6 +437,55 @@ TWIG;
         Craft::$app->set('view', $view);
     }
 
+    public function testRenderPageTemplateTriggersBeginAndEndPageEvents(): void
+    {
+        $beginTriggered = false;
+        $endTriggered = false;
+
+        $beginHandler = function() use (&$beginTriggered) {
+            $beginTriggered = true;
+        };
+        $endHandler = function() use (&$endTriggered) {
+            $endTriggered = true;
+        };
+
+        Event::on(View::class, View::EVENT_BEGIN_PAGE, $beginHandler);
+        Event::on(View::class, View::EVENT_END_PAGE, $endHandler);
+
+        try {
+            $this->view->renderPageTemplate('novar.twig');
+        } finally {
+            Event::off(View::class, View::EVENT_BEGIN_PAGE, $beginHandler);
+            Event::off(View::class, View::EVENT_END_PAGE, $endHandler);
+        }
+
+        self::assertTrue($beginTriggered);
+        self::assertTrue($endTriggered);
+    }
+
+    public function testRenderPageTemplateBeforeAndAfterEvents(): void
+    {
+        $beforeHandler = function($event) {
+            $event->template = 'withvar.twig';
+            $event->variables = ['name' => 'Template Event'];
+        };
+        $afterHandler = function($event) {
+            $event->output .= ' [after]';
+        };
+
+        Event::on(View::class, View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $beforeHandler);
+        Event::on(View::class, View::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $afterHandler);
+
+        try {
+            $output = $this->view->renderPageTemplate('novar.twig');
+        } finally {
+            Event::off(View::class, View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $beforeHandler);
+            Event::off(View::class, View::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $afterHandler);
+        }
+
+        self::assertSame('Hello iam Template Event [after]', $output);
+    }
+
     /**
      * @return array
      */
@@ -480,9 +529,9 @@ TWIG;
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
 
             // Cp Paths
-            ['@craftcms/resources/templates/index.twig', '', View::TEMPLATE_MODE_CP],
-            ['@craftcms/resources/templates/index.twig', 'index', View::TEMPLATE_MODE_CP],
-            ['@craftcms/resources/templates/entries/index.twig', 'entries', View::TEMPLATE_MODE_CP],
+            ['@craftcms/resources/templates/index.twig', '', TemplateMode::Cp->value],
+            ['@craftcms/resources/templates/index.twig', 'index', TemplateMode::Cp->value],
+            ['@craftcms/resources/templates/entries/index.twig', 'entries', TemplateMode::Cp->value],
         ];
     }
 
@@ -623,10 +672,13 @@ TWIG;
     {
         parent::_before();
 
+        // Clear the asset registry to prevent state leaking between tests
+        app(AssetRegistry::class)->clear();
+
         $this->view = Craft::createObject(View::class);
 
         // By default we want to be in site mode.
-        $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+        $this->view->setTemplateMode(TemplateMode::Site->value);
     }
 
     /**
@@ -685,7 +737,7 @@ TWIG;
      */
     private function _resolveTemplate(string $basePath, string $name, bool $publicOnly = false): ?string
     {
-        $path = $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name, $publicOnly]);
+        $path = $this->invokeMethod(new TemplateResolver(), 'resolveFromPath', [$basePath, $name, $publicOnly]);
         if ($path !== null) {
             $path = CraftTest::normalizePathSeparators($path);
         }

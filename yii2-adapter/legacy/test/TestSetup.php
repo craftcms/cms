@@ -11,13 +11,14 @@ namespace craft\test;
 
 use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Craft;
+use craft\behaviors\CustomFieldBehavior;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\i18n\Locale;
 use craft\mail\Mailer;
-use craft\queue\Queue;
+use craft\queue\QueueComponent;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Categories;
@@ -63,17 +64,20 @@ use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Yii2Adapter\Container;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use Illuminate\Support\Facades\Event as LaravelEvent;
+use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionClass;
+use Yii;
 use yii\base\ErrorException;
 use yii\base\Event;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
+use yii\BaseYii;
 use yii\db\Exception;
 use yii\mutex\Mutex;
 
@@ -142,6 +146,24 @@ class TestSetup
         Craft::setLogger(null);
 
         Craft::$app = null;
+
+        // Reset Yii2 container to prevent singleton accumulation
+        Yii::$container = new Container();
+
+        // Reset BaseYii statics that accumulate across tests
+        BaseYii::$classMap = [];
+        BaseYii::$aliases = ['@yii' => dirname((new ReflectionClass(BaseYii::class))->getFileName())];
+
+        // Reset Yii alias paths cache (private static)
+        $ref = new ReflectionClass(Yii::class);
+        $aliasPaths = $ref->getProperty('_aliasPaths');
+        $aliasPaths->setValue(null, []);
+        $aliasesChanged = $ref->getProperty('_aliasesChanged');
+        $aliasesChanged->setValue(null, false);
+
+        // Reset CustomFieldBehavior static handles
+        CustomFieldBehavior::$fieldHandles = [];
+        CustomFieldBehavior::$generatedFieldHandles = [];
     }
 
     /**
@@ -420,7 +442,7 @@ class TestSetup
             }
         }
 
-        $site = new Site(...$siteConfig);
+        $site = new Site($siteConfig);
 
         LaravelEvent::listen(PostCreateTables::class, function() {
             Artisan::call('craft:add-categories-support', [
@@ -540,7 +562,7 @@ class TestSetup
             [Path::class, ['getPath', 'path']],
             [Plugins::class, ['getPlugins', 'plugins']],
             [\craft\services\ProjectConfig::class, ['getProjectConfig', 'projectConfig']],
-            [Queue::class, ['getQueue', 'queue']],
+            [QueueComponent::class, ['getQueue', 'queue']],
             [Relations::class, ['getRelations', 'relations']],
             [Routes::class, ['getRoutes', 'routes']],
             [Search::class, ['getSearch', 'search']],

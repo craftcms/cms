@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
-use craft\elements\Entry;
-use craft\fields\conditions\MoneyFieldConditionRule;
 use craft\gql\types\Money as MoneyType;
 use craft\helpers\Cp;
-use craft\validators\MoneyValidator;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Money as MoneyHelper;
+use CraftCms\Cms\Validation\Rules\MoneyRule;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Contracts\Database\Query\Builder;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Exception\ParserException;
@@ -27,6 +27,7 @@ use Override;
 use yii\db\Schema;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * Money field type
@@ -39,18 +40,12 @@ use function CraftCms\Cms\t;
  */
 final class Money extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
         return t('Money');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -72,9 +67,6 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         };
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function phpType(): string
     {
@@ -137,7 +129,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
     }
 
     #[Override]
-    public static function getRules(): array
+    public function getRules(): array
     {
         return array_merge(parent::getRules(), [
             'defaultValue' => ['nullable', 'numeric'],
@@ -148,26 +140,18 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getIcon(): string
     {
         return self::currencyIcon($this->currency);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -182,7 +166,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Money/settings.twig', [
+        return template('_components/fieldtypes/Money/settings', [
             'field' => $this,
             'currencies' => $this->_isoCurrencies,
             'subUnits' => $this->subunits(),
@@ -190,18 +174,12 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function dbType(): string
     {
         return Schema::TYPE_DECIMAL;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
@@ -210,9 +188,6 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $query->whereMoneyParam($valueSql, $instances[0]->currency, $value);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): MoneyLibrary|null|false
     {
@@ -306,17 +281,12 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $money->getAmount();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        $view = Craft::$app->getView();
-
         if ($value === null) {
             // Override the initial value being set to null by _includes/forms/field
-            $view->setInitialDeltaValue($this->handle, [
+            DeltaRegistry::setInitialValue($this->handle, [
                 'locale' => I18N::getFormattingLocale()->id,
                 'value' => '',
             ]);
@@ -366,37 +336,36 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $this->_isoCurrencies->subunitFor($currency);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
-    public function getElementValidationRules(): array
+    public function prepareForElementValidation(mixed $value): mixed
+    {
+        if (! $value instanceof MoneyLibrary) {
+            $currency = ! $value['currency'] instanceof Currency ? new Currency($value['currency']) : $value['currency'];
+            $value = new MoneyLibrary($value['value'], $currency);
+        }
+
+        return $value;
+    }
+
+    #[Override]
+    public function getElementRules(ElementInterface $element): array
     {
         return [
-            [MoneyValidator::class, 'min' => $this->min, 'max' => $this->max],
+            new MoneyRule($element, $this->min, $this->max),
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getElementConditionRuleType(): string
     {
         return MoneyFieldConditionRule::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         return MoneyHelper::toString($value) ?: '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
@@ -407,18 +376,12 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $this->getPreviewHtml($value, $element ?? new Entry);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlType(): Type
     {
         return MoneyType::getType();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getContentGqlMutationArgumentType(): array
     {

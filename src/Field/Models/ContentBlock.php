@@ -11,9 +11,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class ContentBlock extends BaseModel
 {
+    #[\Override]
     protected $table = Table::CONTENTBLOCKS;
 
+    #[\Override]
     public $incrementing = false;
+
+    #[\Override]
+    public $timestamps = false;
 
     /**
      * @return BelongsTo<Element, $this>

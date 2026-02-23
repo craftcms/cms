@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use Craft;
 use craft\helpers\Cp;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
@@ -12,6 +11,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use CraftCms\Cms\User\UserGroups;
@@ -43,7 +43,7 @@ final readonly class UserGroupsController
             return redirect()->action([self::class, 'edit'], $this->userGroups->getTeamGroup()->id);
         }
 
-        return view('craftcms::settings/users/groups/_index');
+        return view('settings/users/groups/_index');
     }
 
     public function create(): CpScreenResponse
@@ -75,7 +75,7 @@ final readonly class UserGroupsController
         if (Edition::get() === Edition::Team) {
             $group = $this->userGroups->getTeamGroup();
 
-            return view('craftcms::settings/users/groups/_team', [
+            return view('settings/users/groups/_team', [
                 'group' => $group,
                 'readOnly' => $this->readOnly,
             ]);
@@ -105,7 +105,7 @@ final readonly class UserGroupsController
                 'readOnly' => $this->readOnly,
             ])
             ->prepareScreen(function (CpScreenResponse $response, string $containerId) {
-                Craft::$app->getView()->registerJsWithVars(
+                AssetRegistry::jsWithVars(
                     fn ($containerId) => <<<JS
                         new Craft.ElevatedSessionForm('#' + $containerId, [
                             '.user-permissions input[type="checkbox"]:not(:checked)'
@@ -119,8 +119,17 @@ final readonly class UserGroupsController
             });
     }
 
-    public function store(Request $request, UserPermissions $userPermissions, UserGroup $userGroupData): Response
+    public function store(Request $request, UserPermissions $userPermissions): Response
     {
+        $userGroupData = new UserGroup;
+        $userGroupData->id = $request->integer('id', $request->input('groupId'));
+        $userGroupData->name = $request->input('name');
+        $userGroupData->handle = $request->input('handle');
+        $userGroupData->description = $request->input('description');
+        $userGroupData->uid = $request->input('uid');
+
+        $userGroupData->validate(throw: true);
+
         if (Edition::get() === Edition::Team) {
             $group = $this->userGroups->getTeamGroup();
             $userGroupData->name = $group->name;

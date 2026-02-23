@@ -24,8 +24,8 @@ use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use InvalidArgumentException;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 use yii\db\Query;
@@ -42,6 +42,7 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Roman Zhuravlev <zhuravljov@gmail.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class Queue extends \yii\queue\cli\Queue implements QueueInterface
 {

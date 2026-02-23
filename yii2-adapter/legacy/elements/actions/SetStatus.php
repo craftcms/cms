@@ -8,13 +8,15 @@
 namespace craft\elements\actions;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 /**
  * SetStatus represents a Set Status element action.
@@ -59,7 +61,7 @@ class SetStatus extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+        AssetRegistry::jsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
@@ -72,11 +74,11 @@ class SetStatus extends ElementAction
             }
             return true;
         },
-    });
+    })
 })();
 JS, [static::class]);
 
-        return Craft::$app->getView()->renderTemplate('_components/elementactions/SetStatus/trigger.twig');
+        return template('_components/elementactions/SetStatus/trigger');
     }
 
     /**

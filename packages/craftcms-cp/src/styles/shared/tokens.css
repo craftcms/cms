@@ -3,6 +3,7 @@
   --c-text-lg: calc(16rem / 16);
   --c-text-base: calc(14rem / 16);
   --c-text-sm: calc(11rem / 16);
+  --c-text-xs: calc(9rem / 16);
 
   --c-leading-normal: 1.42;
 
@@ -28,7 +29,7 @@
   --c-color-neutral-bg-normal: var(--color-slate-100);
   --c-color-neutral-bg-subtle: var(--color-slate-50);
   --c-color-neutral-border-emphasis: var(--color-slate-800);
-  --c-color-neutral-border-normal: var(--color-slate-600);
+  --c-color-neutral-border-normal: var(--color-slate-400);
   --c-color-neutral-border-subtle: var(--color-slate-300);
   --c-color-neutral-on-emphasis: var(--color-slate-50);
   --c-color-neutral-on-normal: var(--color-slate-700);
@@ -134,7 +135,7 @@
   --c-size-icon-lg: calc(22rem / 16);
   --c-size-icon-xl: calc(30rem / 16);
 
-  --c-size-control-sm: calc(20rem / 16);
+  --c-size-control-sm: calc(24rem / 16);
   --c-size-control-md: calc(34rem / 16);
   --c-size-control-lg: calc(44rem / 16);
 

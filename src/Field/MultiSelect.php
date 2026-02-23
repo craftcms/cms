@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
@@ -17,53 +17,36 @@ use function CraftCms\Cms\t;
  */
 final class MultiSelect extends BaseOptionsField
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $multi = true;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $optgroups = true;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $optionIcons = true;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected static bool $optionColors = true;
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function displayName(): string
     {
         return t('Multi-select');
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public static function icon(): string
     {
         return 'list-check';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var MultiOptionsFieldData $value */
         if (Collection::make($value)->contains('valid', '===', false)) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+            DeltaRegistry::setInitialValue($this->handle, null);
         }
 
         return Cp::selectizeHtml([
@@ -77,9 +60,6 @@ final class MultiSelect extends BaseOptionsField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
     {
@@ -95,9 +75,6 @@ final class MultiSelect extends BaseOptionsField
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     protected function optionsSettingLabel(): string
     {

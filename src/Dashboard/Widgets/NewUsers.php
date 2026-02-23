@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use Craft;
 use craft\web\assets\newusers\NewUsersAsset;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Json;
@@ -14,12 +15,10 @@ use CraftCms\Cms\User\Elements\User;
 use Override;
 
 use function CraftCms\Cms\t;
+use function CraftCms\Cms\template;
 
 final class NewUsers extends Widget
 {
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function displayName(): string
     {
@@ -28,9 +27,6 @@ final class NewUsers extends Widget
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function isSelectable(): bool
     {
@@ -38,9 +34,6 @@ final class NewUsers extends Widget
         return Edition::get()->value >= Edition::Pro->value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public static function icon(): string
     {
@@ -57,9 +50,6 @@ final class NewUsers extends Widget
      */
     public ?string $dateRange = null;
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getTitle(): ?string
     {
@@ -78,9 +68,6 @@ final class NewUsers extends Widget
         return parent::getTitle();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getBodyHtml(): ?string
     {
@@ -93,18 +80,15 @@ final class NewUsers extends Widget
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(NewUsersAsset::class);
-        $view->registerJs('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
+        AssetRegistry::js('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
 
         return '';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[Override]
     public function getSettingsHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/NewUsers/settings.twig',
+        return template('_components/widgets/NewUsers/settings',
             [
                 'widget' => $this,
             ]);
