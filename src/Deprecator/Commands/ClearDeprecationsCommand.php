@@ -12,8 +12,10 @@ final class ClearDeprecationsCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:clear-deprecations';
 
+    #[\Override]
     protected $description = 'Clears all deprecation warnings.';
 
     public function handle(Deprecator $deprecator): void

@@ -15,6 +15,7 @@ use yii\base\InvalidConfigException;
  */
 abstract class BaseTextConditionRule extends BaseConditionRule
 {
+    #[\Override]
     public string $operator = self::OPERATOR_EQ;
 
     /**
@@ -22,6 +23,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      */
     public string $value = '';
 
+    #[\Override]
     protected bool $reloadOnOperatorChange = true;
 
     #[Override]

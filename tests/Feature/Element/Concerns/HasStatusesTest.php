@@ -9,10 +9,13 @@ class TestStatusElement extends Element
 {
     public bool $customIsDraft = false;
 
+    #[\Override]
     public bool $isProvisionalDraft = false;
 
+    #[\Override]
     public bool $archived = false;
 
+    #[\Override]
     public bool $enabled = true;
 
     #[Override]

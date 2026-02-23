@@ -20,12 +20,16 @@ use function CraftCms\Cms\t;
 
 class EmailField extends TextField
 {
+    #[\Override]
     public bool $mandatory = true;
 
+    #[\Override]
     public string $attribute = 'email';
 
+    #[\Override]
     public ?int $maxlength = 255;
 
+    #[\Override]
     public bool $autofocus = true;
 
     public function __construct($config = [])

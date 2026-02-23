@@ -22,8 +22,10 @@ use function CraftCms\Cms\template;
 
 class PhotoField extends BaseNativeField
 {
+    #[\Override]
     public bool $mandatory = true;
 
+    #[\Override]
     public string $attribute = 'photo';
 
     public function __construct($config = [])

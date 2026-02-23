@@ -15,12 +15,16 @@ final class JobProgress extends BaseModel
 {
     use HasUid;
 
+    #[\Override]
     protected $primaryKey = 'uid';
 
+    #[\Override]
     public $incrementing = false;
 
+    #[\Override]
     protected $table = Table::JOBPROGRESS;
 
+    #[\Override]
     protected $casts = [
         'status' => JobStatus::class,
     ];

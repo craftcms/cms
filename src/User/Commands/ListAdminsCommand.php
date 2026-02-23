@@ -18,10 +18,13 @@ final class ListAdminsCommand extends Command
     use Colors;
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:users:list-admins';
 
+    #[\Override]
     protected $description = 'Lists admin users.';
 
+    #[\Override]
     protected $aliases = ['users/list-admins'];
 
     public function handle(GeneralConfig $generalConfig): void

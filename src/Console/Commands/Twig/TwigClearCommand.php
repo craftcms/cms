@@ -14,8 +14,10 @@ final class TwigClearCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:twig:clear';
 
+    #[\Override]
     protected $description = "Clear all the application's compiled Twig templates";
 
     public function handle(Twig $twig): void

@@ -24,10 +24,13 @@ final class FieldsMergeCommand extends Command
     use CraftCommand;
     use MergesFields;
 
+    #[\Override]
     protected $signature = 'craft:fields:merge {handles* : The field handles to merge.}';
 
+    #[\Override]
     protected $description = 'Merges custom fields together.';
 
+    #[\Override]
     protected $aliases = ['fields/merge'];
 
     public function handle(Fields $fieldsService): int

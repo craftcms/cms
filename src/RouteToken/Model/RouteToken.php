@@ -12,8 +12,10 @@ final class RouteToken extends BaseModel
 {
     use HasUid;
 
+    #[\Override]
     protected $table = Table::ROUTETOKENS;
 
+    #[\Override]
     protected $casts = [
         'usageLimit' => 'int',
         'usageCount' => 'int',

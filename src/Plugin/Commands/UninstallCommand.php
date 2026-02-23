@@ -13,10 +13,13 @@ final class UninstallCommand extends Command
     use CraftCommand;
     use PromptsForMissingHandle;
 
+    #[\Override]
     protected $signature = 'craft:plugin:uninstall {handle?} {--all} {--force}';
 
+    #[\Override]
     protected $description = 'Uninstalls a plugin.';
 
+    #[\Override]
     protected $aliases = ['plugin/uninstall'];
 
     private Plugins $plugins;

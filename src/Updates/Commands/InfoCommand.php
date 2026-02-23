@@ -23,10 +23,13 @@ final class InfoCommand extends Command
     use DrawsBoxes;
     use FetchesUpdates;
 
+    #[\Override]
     protected $signature = 'craft:update:info';
 
+    #[\Override]
     protected $description = 'Displays info about available updates.';
 
+    #[\Override]
     protected $aliases = ['update/info'];
 
     public function handle(Plugins $plugins): int

@@ -26,8 +26,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
 
     public const string OPERATOR_RELATED_TO = 'relatedTo';
 
+    #[\Override]
     public string $operator = self::OPERATOR_RELATED_TO;
 
+    #[\Override]
     protected bool $reloadOnOperatorChange = true;
 
     protected function elementType(): string

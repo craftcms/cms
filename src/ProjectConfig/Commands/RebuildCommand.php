@@ -12,10 +12,13 @@ final class RebuildCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:project-config:rebuild';
 
+    #[\Override]
     protected $description = 'Rebuilds the project config.';
 
+    #[\Override]
     protected $aliases = ['project-config/rebuild', 'pc:rebuild', 'pc/rebuild'];
 
     public function handle(ProjectConfig $projectConfig): void

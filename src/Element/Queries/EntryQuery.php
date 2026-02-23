@@ -42,6 +42,7 @@ final class EntryQuery extends ElementQuery
     use QueriesRef;
     use QueriesSections;
 
+    #[\Override]
     protected array $defaultOrderBy = [
         'entries.postDate' => SORT_DESC,
         'elements.id' => SORT_DESC,

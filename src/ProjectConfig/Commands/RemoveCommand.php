@@ -26,6 +26,7 @@ final class RemoveCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:project-config:remove
         {path}
         {--message= : A message describing the changes.}
@@ -33,8 +34,10 @@ final class RemoveCommand extends Command implements PromptsForMissingInput
         {--force : Whether every entry change should be force-applied.}
     ';
 
+    #[\Override]
     protected $description = 'Removes a project config value.';
 
+    #[\Override]
     protected $aliases = ['project-config/remove', 'pc:remove', 'pc/remove'];
 
     public function handle(): int

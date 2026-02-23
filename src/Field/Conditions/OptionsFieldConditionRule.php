@@ -17,6 +17,7 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
 {
     use FieldConditionRuleTrait;
 
+    #[\Override]
     protected bool $includeEmptyOperators = true;
 
     protected function options(): array

@@ -31,10 +31,13 @@ final class MergeEntryTypesCommand extends Command implements PromptsForMissingI
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:entry-types:merge {handleA} {handleB}';
 
+    #[\Override]
     protected $description = 'Merges two entry types.';
 
+    #[\Override]
     protected $aliases = ['entry-types/merge'];
 
     public function handle(EntryTypes $entryTypes, Fields $fields, Migrator $migrator): int

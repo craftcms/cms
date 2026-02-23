@@ -23,6 +23,7 @@ use yii\base\InvalidConfigException;
 
 class ElementCondition extends BaseCondition implements ElementConditionInterface
 {
+    #[\Override]
     public bool $sortable = false;
 
     /**

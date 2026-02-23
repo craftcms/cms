@@ -16,6 +16,7 @@ final class UserPermission extends BaseModel
     use HasFactory;
     use HasUid;
 
+    #[\Override]
     protected $table = Table::USERPERMISSIONS;
 
     /** @return BelongsToMany<User, $this, Pivot> */

@@ -29,6 +29,7 @@ final class InstallCommand extends Command
     use CraftCommand;
     use SiteDefaults;
 
+    #[\Override]
     protected $signature = 'craft:install
         {--email= : The default email address for the first user to create during install.}
         {--username= : The default username for the first user to create during install.}
@@ -38,8 +39,10 @@ final class InstallCommand extends Command
         {--language= : The default language for the first site to create during install.}
     ';
 
+    #[\Override]
     protected $description = 'Craft CMS CLI installer.';
 
+    #[\Override]
     protected $aliases = ['install:craft', 'install/craft'];
 
     public function handle(

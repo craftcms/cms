@@ -29,14 +29,17 @@ final class ExportCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:project-config:export
         {path?}
         {--external : Whether to pull values from the project config YAML files instead of the loaded config.}
         {--overwrite : Whether to overwrite an existing export file, if a specific file path is given.}
     ';
 
+    #[\Override]
     protected $description = 'Exports the entire project config to a single file.';
 
+    #[\Override]
     protected $aliases = ['project-config/export', 'pc:export', 'pc/export'];
 
     public function handle(ProjectConfig $projectConfig): int

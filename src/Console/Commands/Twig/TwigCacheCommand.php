@@ -19,8 +19,10 @@ final class TwigCacheCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:twig:cache';
 
+    #[\Override]
     protected $description = "Compile all of the application's Twig templates";
 
     public function handle(Twig $twig): void
