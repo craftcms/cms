@@ -9,7 +9,9 @@
 </script>
 
 <template>
-  <div
+  <craft-callout
+    :variant="variant"
+    :appearance="appearance"
     :class="{
       callout: true,
       'callout--danger': variant === 'danger',
@@ -23,7 +25,7 @@
     }"
   >
     <slot></slot>
-  </div>
+  </craft-callout>
 </template>
 
 <style scoped lang="scss">

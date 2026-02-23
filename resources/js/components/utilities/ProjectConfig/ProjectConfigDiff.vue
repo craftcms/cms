@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {computed, ref, watch} from 'vue';
   import {t} from '@craftcms/cp';
-  import Pane from '@/components/Pane.vue';
+  import Pane from '@/components/common/Pane/Pane.vue';
   import ProjectConfigController from '@actions/Utilities/ProjectConfigController';
   import {useFetch} from '@/composables/useFetch';
 

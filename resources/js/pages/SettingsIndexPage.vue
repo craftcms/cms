@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import AppLayout from '@/layout/AppLayout.vue';
-  import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
+  import CalloutReadOnly from '@/components/common/CalloutReadOnly/CalloutReadOnly.vue';
 
   interface SettingItem {
     icon?: string;

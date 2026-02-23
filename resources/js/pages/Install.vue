@@ -12,8 +12,8 @@
   import DbFields from '@/components/install/DbFields.vue';
   import axios from 'axios';
   import InstallingScreen from '@/components/install/InstallingScreen.vue';
-  import Pane from '@/components/Pane.vue';
-  import Modal from '@/components/Modal.vue';
+  import Pane from '@/components/common/Pane/Pane.vue';
+  import Modal from '@/components/common/Modal/Modal.vue';
   import StepScreen from '@/components/install/StepScreen.vue';
 
   const backgroundImageUrl = computed(() => `url(${backgroundUrl})`);

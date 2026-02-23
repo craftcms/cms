@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import {computed, defineEmits, defineProps} from 'vue';
-  import Callout from '@/components/Callout.vue';
+  import Callout from '@/components/common/Callout/Callout.vue';
   import {useFocusField} from '@/composables/useFocusField';
 
   const emit = defineEmits<{

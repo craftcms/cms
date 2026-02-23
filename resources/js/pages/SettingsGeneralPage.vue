@@ -9,12 +9,12 @@
   } from '@/types/settings';
   import {useForm} from '@inertiajs/vue3';
   import useCraftData from '@/composables/useCraftData';
-  import TransitionFade from '@/components/TransitionFade.vue';
+  import TransitionFade from '@/components/common/TransitionFade/TransitionFade.vue';
   import {computed} from 'vue';
   import {useEventListener} from '@vueuse/core';
   import type {SelectOption, SuggestionGroup} from '@/types';
-  import FileUpload from '@/components/FileUpload.vue';
-  import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
+  import FileUpload from '@/components/form/FileUpload/FileUpload.vue';
+  import CalloutReadOnly from '@/components/common/CalloutReadOnly/CalloutReadOnly.vue';
 
   const props = defineProps<{
     readOnly?: boolean;

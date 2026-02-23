@@ -4,7 +4,7 @@
   import {computed, useTemplateRef, watch} from 'vue';
   import type {SelectItem, SelectOption, Site} from '@/types';
   import type {CraftInput} from '@craftcms/cp';
-  import InputCombobox from '@/components/InputCombobox.vue';
+  import InputCombobox from '@/components/form/InputCombobox/InputCombobox.vue';
 
   const props = withDefaults(
     defineProps<{

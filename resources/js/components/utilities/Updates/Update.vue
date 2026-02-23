@@ -2,7 +2,7 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import Release from '@/components/utilities/Updates/Release.vue';
   import {computed, ref} from 'vue';
-  import CpLink from '@/components/CpLink.vue';
+  import CpLink from '@/components/cp/CpLink/CpLink.vue';
   import UpdaterController from '@actions/Updates/UpdaterController';
   import {Form, router} from '@inertiajs/vue3';
 

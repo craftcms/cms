@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
-  import AdminTable from '@/components/AdminTable/AdminTable.vue';
+  import CalloutReadOnly from '@/components/common/CalloutReadOnly/CalloutReadOnly.vue';
+  import AdminTable from '@/components/common/AdminTable/AdminTable.vue';
   import {
     createColumnHelper,
     getCoreRowModel,
@@ -9,15 +9,15 @@
   } from '@tanstack/vue-table';
   import {computed, h, nextTick, ref, watch} from 'vue';
   import type {SelectItem, Site, SiteGroup} from '@/types';
-  import ModalForm from '@/components/ModalForm.vue';
+  import ModalForm from '@/components/common/ModalForm/ModalForm.vue';
   import {Deferred, router, useForm} from '@inertiajs/vue3';
   import {destroy, store} from '@actions/Settings/SiteGroupsController.js';
   import {create, edit, reorder} from '@actions/Settings/SitesController';
   import DeleteSiteButton from '@/components/sites/DeleteSiteButton.vue';
-  import CpLink from '@/components/CpLink.vue';
-  import Badge from '@/components/Badge.vue';
+  import CpLink from '@/components/cp/CpLink/CpLink.vue';
+  import Badge from '@/components/common/Badge/Badge.vue';
   import {index} from '@routes/cp/settings/sites';
-  import InputCombobox from '@/components/InputCombobox.vue';
+  import InputCombobox from '@/components/form/InputCombobox/InputCombobox.vue';
   import IndexLayout from '@/layout/IndexLayout.vue';
 
   const props = defineProps<{

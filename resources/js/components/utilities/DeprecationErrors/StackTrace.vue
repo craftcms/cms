@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {useActionClient} from '@/composables/useFetch';
   import {onMounted} from 'vue';
-  import Pane from '@/components/Pane.vue';
+  import Pane from '@/components/common/Pane/Pane.vue';
 
   const props = defineProps<{
     logId: number;

@@ -7,8 +7,8 @@
     useVueTable,
   } from '@tanstack/vue-table';
   import {computed, ref} from 'vue';
-  import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import Empty from '@/components/Empty.vue';
+  import AdminTable from '@/components/common/AdminTable/AdminTable.vue';
+  import Empty from '@/components/common/Empty/Empty.vue';
   import {Form} from '@inertiajs/vue3';
 
   interface Migration {

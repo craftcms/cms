@@ -52,7 +52,8 @@
   "peerDependencies": {
     "@awesome.me/webawesome": "^3.0.0",
     "@lion/ui": "0.x",
-    "lit": "3.x"
+    "lit": "3.x",
+    "storybook": "^9 || ^10"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
@@ -81,7 +82,6 @@
     "plop": "^4.0.1",
     "recursive-copy": "^2.0.14",
     "rimraf": "^6.0.1",
-    "storybook": "^9.1.5",
     "tsdown": "^0.16.6",
     "typescript": "^5.8.3",
     "unplugin-dts": "^1.0.0-beta.0",

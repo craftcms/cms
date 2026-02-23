@@ -1,11 +1,11 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import CheckboxGroup from '@/components/form/CheckboxGroup.vue';
+  import CheckboxGroup from '@/components/form/CheckboxGroup/CheckboxGroup.vue';
   import type {CheckboxOption} from '@/types';
   import IndexingSessions from '@/components/utilities/AssetIndexes/IndexingSessions.vue';
   import {reactive} from 'vue';
   import {useAssetIndexer} from '@/composables/useAssetIndexer';
-  import Pane from '@/components/Pane.vue';
+  import Pane from '@/components/common/Pane/Pane.vue';
   import type {IndexingSession} from '@craftcms/cp/src/services/AssetIndexer.js';
 
   const props = withDefaults(

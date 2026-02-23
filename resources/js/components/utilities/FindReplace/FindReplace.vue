@@ -2,8 +2,8 @@
   import {t} from '@craftcms/cp/utilities/translate.ts';
   import findAndReplaceController from '@actions/Utilities/FindAndReplaceController.ts';
   import {useForm} from '@inertiajs/vue3';
-  import TransitionFade from '@/components/TransitionFade.vue';
-  import Input from '@/components/form/Input.vue';
+  import TransitionFade from '@/components/common/TransitionFade/TransitionFade.vue';
+  import Input from '@/components/form/Input/Input.vue';
 
   const form = useForm({
     find: '',

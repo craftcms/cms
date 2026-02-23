@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import IndexLayout from '@/layout/IndexLayout.vue';
-  import DynamicHtmlRenderer from '@/components/DynamicHtmlRenderer.vue';
-  import CpLink from '@/components/CpLink.vue';
+  import DynamicHtmlRenderer from '@/components/common/DynamicHtmlRenderer/DynamicHtmlRenderer.vue';
+  import CpLink from '@/components/cp/CpLink/CpLink.vue';
 
   interface UtilityItem {
     id: string;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import CpLink from '@/components/CpLink.vue';
+  import CpLink from '@/components/cp/CpLink/CpLink.vue';
 
   withDefaults(
     defineProps<{

@@ -2,15 +2,15 @@
   import AppLayout from '@/layout/AppLayout.vue';
   import {useForm} from '@inertiajs/vue3';
   import type {Site} from '@/types';
-  import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
+  import CalloutReadOnly from '@/components/common/CalloutReadOnly/CalloutReadOnly.vue';
   import {t} from '@craftcms/cp';
-  import TransitionFade from '@/components/TransitionFade.vue';
+  import TransitionFade from '@/components/common/TransitionFade/TransitionFade.vue';
   import {store} from '@actions/Settings/SitesController';
   import {useEventListener} from '@vueuse/core';
   import SiteFields from '@/components/sites/SiteFields.vue';
   import DeleteSiteModal from '@/components/sites/DeleteSiteModal.vue';
   import {ref} from 'vue';
-  import Badge from '@/components/Badge.vue';
+  import Badge from '@/components/common/Badge/Badge.vue';
 
   const props = defineProps<{
     title: string;

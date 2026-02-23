@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {useAnnouncer} from '@/composables/useAnnouncer';
-  import TransitionFade from '@/components/TransitionFade.vue';
+  import TransitionFade from '@/components/common/TransitionFade/TransitionFade.vue';
 
   const {announcement} = useAnnouncer();
 </script>

@@ -1,20 +1,20 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import Pane from '@/components/Pane.vue';
+  import AdminTable from '@/components/common/AdminTable/AdminTable.vue';
+  import Pane from '@/components/common/Pane/Pane.vue';
   import {h, ref} from 'vue';
   import {
     createColumnHelper,
     getCoreRowModel,
     useVueTable,
   } from '@tanstack/vue-table';
-  import CpLink from '@/components/CpLink.vue';
-  import Badge from '@/components/Badge.vue';
+  import CpLink from '@/components/cp/CpLink/CpLink.vue';
+  import Badge from '@/components/common/Badge/Badge.vue';
   import {type JobInfo, JobStatus} from '@craftcms/cp/src/types/index.js';
   import RetryJobButton from '@/components/utilities/QueueManager/RetryJobButton.vue';
   import ReleaseJobButton from '@/components/utilities/QueueManager/ReleaseJobButton.vue';
   import {show} from '@routes/cp/utilities';
-  import Empty from '@/components/Empty.vue';
+  import Empty from '@/components/common/Empty/Empty.vue';
 
   const props = withDefaults(
     defineProps<{

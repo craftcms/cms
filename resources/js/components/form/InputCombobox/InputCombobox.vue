@@ -8,7 +8,7 @@
     TransitionRoot,
   } from '@headlessui/vue';
   import type {SelectItem, SelectOption} from '@/types';
-  import InputComboboxOption from '@/components/InputComboboxOption.vue';
+  import InputComboboxOption from '@/components/form/InputComboboxOption/InputComboboxOption.vue';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void;

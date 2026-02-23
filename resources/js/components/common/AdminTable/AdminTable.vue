@@ -3,10 +3,10 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue';
   import {useTableDragAndDrop} from '@/composables/useTableDragAndDrop';
-  import ReorderButton from '@/components/ReorderButton.vue';
-  import DropIndicator from '@/components/DropIndicator.vue';
-  import Select from '@/components/form/Select.vue';
-  import Text from '@/components/Text.vue';
+  import ReorderButton from '@/components/common/ReorderButton/ReorderButton.vue';
+  import DropIndicator from '@/components/common/DropIndicator/DropIndicator.vue';
+  import Select from '@/components/form/Select/Select.vue';
+  import Text from '@/components/common/Text/Text.vue';
 
   const props = withDefaults(
     defineProps<{

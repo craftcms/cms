@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {CraftCombobox} from '../../../packages/craftcms-cp/src';
+  import {CraftCombobox} from '@craftcms/cp/components/combobox/combobox.ts';
   import type {SelectOption, SuggestionGroup} from '@/types';
   import {computed} from 'vue';
 

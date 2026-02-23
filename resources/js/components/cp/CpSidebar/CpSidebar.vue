@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import SystemInfo from '@/components/SystemInfo.vue';
-  import MainNav from '@/components/MainNav.vue';
-  import EditionInfo from '@/components/EditionInfo.vue';
-  import DevModeIndicator from '@/components/DevModeIndicator.vue';
+  import SystemInfo from '@/components/cp/SystemInfo/SystemInfo.vue';
+  import MainNav from '@/components/cp/MainNav/MainNav.vue';
+  import EditionInfo from '@/components/cp/EditionInfo/EditionInfo.vue';
+  import DevModeIndicator from '@/components/cp/DevModeIndicator/DevModeIndicator.vue';
 
   const emit = defineEmits<{
     (e: 'close'): void;

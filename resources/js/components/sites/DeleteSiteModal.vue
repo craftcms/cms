@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {Deferred, useForm, usePage} from '@inertiajs/vue3';
-  import ModalForm from '@/components/ModalForm.vue';
+  import ModalForm from '@/components/common/ModalForm/ModalForm.vue';
   import {computed} from 'vue';
   import {destroy} from '@actions/Settings/SitesController';
   import type {Site} from '@/types';

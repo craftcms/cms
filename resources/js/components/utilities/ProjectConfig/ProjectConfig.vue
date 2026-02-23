@@ -3,11 +3,11 @@
   import {t} from '@craftcms/cp';
   import ProjectConfigDiff from './ProjectConfigDiff.vue';
   import {useProjectConfig} from '@/composables/useProjectConfig';
-  import Pane from '@/components/Pane.vue';
+  import Pane from '@/components/common/Pane/Pane.vue';
   import {Form} from '@inertiajs/vue3';
   import {discard, rebuild} from '@actions/Utilities/ProjectConfigController';
   import SyncConfigButton from '@/components/utilities/ProjectConfig/SyncConfigButton.vue';
-  import TransitionFade from '@/components/TransitionFade.vue';
+  import TransitionFade from '@/components/common/TransitionFade/TransitionFade.vue';
 
   const props = defineProps<{
     readOnly: boolean;

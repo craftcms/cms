@@ -1,14 +1,14 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import SystemInfo from '@/components/SystemInfo.vue';
+  import SystemInfo from '@/components/cp/SystemInfo/SystemInfo.vue';
   import {computed, reactive, ref, watch} from 'vue';
-  import CpSidebar from '@/components/CpSidebar.vue';
+  import CpSidebar from '@/components/cp/CpSidebar/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
   import {Head, usePage} from '@inertiajs/vue3';
-  import VarDump from '@/components/VarDump.vue';
-  import Breadcrumbs from '@/components/Breadcrumbs.vue';
+  import VarDump from '@/components/common/VarDump/VarDump.vue';
+  import Breadcrumbs from '@/components/common/Breadcrumbs/Breadcrumbs.vue';
   import {useAnnouncer} from '@/composables/useAnnouncer';
-  import LiveRegion from '@/components/LiveRegion.vue';
+  import LiveRegion from '@/components/common/LiveRegion/LiveRegion.vue';
 
   withDefaults(
     defineProps<{

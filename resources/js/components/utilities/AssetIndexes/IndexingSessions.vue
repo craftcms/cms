@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import AdminTable from '@/components/AdminTable/AdminTable.vue';
+  import AdminTable from '@/components/common/AdminTable/AdminTable.vue';
   import {
     createColumnHelper,
     getCoreRowModel,
@@ -7,15 +7,15 @@
   } from '@tanstack/vue-table';
   import {h, ref} from 'vue';
   import {t} from '@craftcms/cp';
-  import Badge from '@/components/Badge.vue';
+  import Badge from '@/components/common/Badge/Badge.vue';
   import SessionProgress from '@/components/utilities/AssetIndexes/SessionProgress.vue';
   import SessionActions from '@/components/utilities/AssetIndexes/SessionActions.vue';
   import {useAssetIndexer} from '@/composables/useAssetIndexer';
   import {type IndexingSession} from '@craftcms/cp/src/services/AssetIndexer.js';
   import ReviewSessionModal from '@/components/utilities/AssetIndexes/ReviewSessionModal.vue';
   import SessionVolumes from '@/components/utilities/AssetIndexes/SessionVolumes.vue';
-  import Date from '@/components/Date.vue';
-  import Pane from '@/components/Pane.vue';
+  import Date from '@/components/common/Date/Date.vue';
+  import Pane from '@/components/common/Pane/Pane.vue';
 
   const {
     sessionsArray,

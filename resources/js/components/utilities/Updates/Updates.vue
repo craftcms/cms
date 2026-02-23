@@ -2,7 +2,7 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed, ref} from 'vue';
   import {useApiClient} from '@/composables/useFetch';
-  import Empty from '@/components/Empty.vue';
+  import Empty from '@/components/common/Empty/Empty.vue';
   import Update from '@/components/utilities/Updates/Update.vue';
   import {router} from '@inertiajs/vue3';
   import UpdaterController from '@actions/Updates/UpdaterController';

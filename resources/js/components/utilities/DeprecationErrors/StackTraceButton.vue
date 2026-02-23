@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
-  import Modal from '@/components/Modal.vue';
+  import Modal from '@/components/common/Modal/Modal.vue';
   import {ref} from 'vue';
   import StackTrace from '@/components/utilities/DeprecationErrors/StackTrace.vue';
 

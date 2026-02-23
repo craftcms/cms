@@ -6,7 +6,7 @@
     useVueTable,
   } from '@tanstack/vue-table';
   import {h, ref} from 'vue';
-  import AdminTable from '@/components/AdminTable/AdminTable.vue';
+  import AdminTable from '@/components/common/AdminTable/AdminTable.vue';
   import DeleteLogButton from '@/components/utilities/DeprecationErrors/DeleteLogButton.vue';
   import StackTraceButton from '@/components/utilities/DeprecationErrors/StackTraceButton.vue';
 

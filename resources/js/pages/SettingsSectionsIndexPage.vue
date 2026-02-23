@@ -6,14 +6,14 @@
     type SortingState,
     useVueTable,
   } from '@tanstack/vue-table';
-  import AdminTable from '@/components/AdminTable/AdminTable.vue';
+  import AdminTable from '@/components/common/AdminTable/AdminTable.vue';
   import {computed, h, ref} from 'vue';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import DeleteSectionButton from '@/components/sections/DeleteSectionButton.vue';
   import {create, edit, index} from '@actions/Settings/SectionsController';
   import {Form, router} from '@inertiajs/vue3';
   import AppLayout from '@/layout/AppLayout.vue';
-  import Pane from '@/components/Pane.vue';
+  import Pane from '@/components/common/Pane/Pane.vue';
 
   export interface SectionModel {
     id: number;

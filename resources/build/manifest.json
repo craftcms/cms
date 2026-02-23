@@ -147,6 +147,7 @@
       "resources/js/pages/Install.vue",
       "resources/js/pages/SettingsGeneralPage.vue",
       "resources/js/pages/SettingsIndexPage.vue",
+      "resources/js/pages/SettingsSectionsIndexPage.vue",
       "resources/js/pages/SettingsSitesEdit.vue",
       "resources/js/pages/SettingsSitesIndex.vue",
       "resources/js/pages/Updater.vue",
@@ -796,19 +797,19 @@
     "file": "assets/site.png",
     "src": "resources/images/install/site.png"
   },
-  "resources/js/components/CpGlobalSidebar.ts": {
+  "resources/js/components/cp/CpGlobalSidebar/CpGlobalSidebar.ts": {
     "file": "CpGlobalSidebar.js",
     "name": "CpGlobalSidebar",
-    "src": "resources/js/components/CpGlobalSidebar.ts",
+    "src": "resources/js/components/cp/CpGlobalSidebar/CpGlobalSidebar.ts",
     "isDynamicEntry": true,
     "imports": [
       "_cp3.js"
     ]
   },
-  "resources/js/components/CpQueueIndicator.ts": {
+  "resources/js/components/cp/CpQueueIndicator/CpQueueIndicator.ts": {
     "file": "CpQueueIndicator.js",
     "name": "CpQueueIndicator",
-    "src": "resources/js/components/CpQueueIndicator.ts",
+    "src": "resources/js/components/cp/CpQueueIndicator/CpQueueIndicator.ts",
     "isDynamicEntry": true,
     "imports": [
       "_cp3.js"
@@ -821,8 +822,8 @@
     "isEntry": true,
     "imports": [
       "_cp3.js",
-      "resources/js/components/CpGlobalSidebar.ts",
-      "resources/js/components/CpQueueIndicator.ts"
+      "resources/js/components/cp/CpGlobalSidebar/CpGlobalSidebar.ts",
+      "resources/js/components/cp/CpQueueIndicator/CpQueueIndicator.ts"
     ]
   },
   "resources/js/legacy.ts": {
@@ -834,8 +835,8 @@
       "_cp3.js"
     ],
     "dynamicImports": [
-      "resources/js/components/CpGlobalSidebar.ts",
-      "resources/js/components/CpQueueIndicator.ts"
+      "resources/js/components/cp/CpGlobalSidebar/CpGlobalSidebar.ts",
+      "resources/js/components/cp/CpQueueIndicator/CpQueueIndicator.ts"
     ]
   },
   "resources/js/pages/Install.vue": {
@@ -882,6 +883,16 @@
     ],
     "css": [
       "assets/SettingsIndexPage.css"
+    ]
+  },
+  "resources/js/pages/SettingsSectionsIndexPage.vue": {
+    "file": "SettingsSectionsIndexPage.js",
+    "name": "SettingsSectionsIndexPage",
+    "src": "resources/js/pages/SettingsSectionsIndexPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_cp3.js",
+      "_AppLayout.js"
     ]
   },
   "resources/js/pages/SettingsSitesEdit.vue": {

@@ -4,11 +4,11 @@
   import {computed, inject, ref, watch} from 'vue';
   import {Axios, Queue} from '@/types/keys';
   import {useFlashMessages} from '@/composables/useFlashMessages';
-  import TransitionFade from '@/components/TransitionFade.vue';
+  import TransitionFade from '@/components/common/TransitionFade/TransitionFade.vue';
   import {useActionClient} from '@/composables/useFetch';
   import {router} from '@inertiajs/vue3';
   import {show} from '@routes/cp/utilities';
-  import CpLink from '@/components/CpLink.vue';
+  import CpLink from '@/components/cp/CpLink/CpLink.vue';
   import RetryJobButton from '@/components/utilities/QueueManager/RetryJobButton.vue';
   import ReleaseJobButton from '@/components/utilities/QueueManager/ReleaseJobButton.vue';
 

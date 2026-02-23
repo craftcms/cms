@@ -17,7 +17,9 @@
     "build:cp": "cd ./packages/craftcms-cp && npm run build",
     "test:cp": "cd ./packages/craftcms-cp && npm run test",
     "storybook:cp": "cd ./packages/craftcms-cp && npm run storybook",
-    "build:all": "npm run build:bundles && npm run build:cp && npm run build"
+    "build:all": "npm run build:bundles && npm run build:cp && npm run build",
+    "storybook": "storybook dev -p 6007",
+    "build-storybook": "storybook build"
   },
   "workspaces": [
     "packages/*"
@@ -45,7 +47,17 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-tsconfig-paths": "^6.0.5",
-    "vue-tsc": "^3.2.4"
+    "vue-tsc": "^3.2.4",
+    "storybook": "^10.2.10",
+    "@storybook/vue3-vite": "^10.2.10",
+    "@chromatic-com/storybook": "^5.0.1",
+    "@storybook/addon-vitest": "^10.2.10",
+    "@storybook/addon-a11y": "^10.2.10",
+    "@storybook/addon-docs": "^10.2.10",
+    "vitest": "^4.0.18",
+    "playwright": "^1.58.2",
+    "@vitest/browser-playwright": "^4.0.18",
+    "@vitest/coverage-v8": "^4.0.18"
   },
   "optionalDependencies": {
     "@awesome.me/kit-ddaed3f5c5": "^1.0.74"

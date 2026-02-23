@@ -13,5 +13,5 @@ console.log('window.Cp defined', window.Cp);
  */
 import('@craftcms/cp/components/nav-list/nav-list.ts.mjs');
 import('@craftcms/cp/components/nav-item/nav-item.ts.mjs');
-import('./components/CpGlobalSidebar.js');
-import('./components/CpQueueIndicator.js');
+import('./components/cp/CpGlobalSidebar/CpGlobalSidebar.js');
+import('./components/cp/CpQueueIndicator/CpQueueIndicator.js');

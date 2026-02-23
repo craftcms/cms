@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {type JobInfo} from '@craftcms/cp/src/types/index.js';
-  import VarDump from '@/components/VarDump.vue';
-  import Badge from '@/components/Badge.vue';
+  import VarDump from '@/components/common/VarDump/VarDump.vue';
+  import Badge from '@/components/common/Badge/Badge.vue';
 
   defineProps<{
     job: JobInfo;
