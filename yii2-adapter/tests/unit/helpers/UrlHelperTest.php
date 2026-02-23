@@ -14,7 +14,9 @@ use craft\test\TestCase;
 use craft\test\TestSetup;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\RouteToken\RouteTokens;
 use Illuminate\Support\Facades\Request;
+use Mockery;
 use UnitTester;
 use yii\base\Exception;
 
@@ -260,6 +262,16 @@ class UrlHelperTest extends TestCase
         $this->tester->mockCraftMethods('request', [
             'getToken' => 't0k3n',
         ]);
+
+        app()->bind(RouteTokens::class, function() {
+            $mock = Mockery::mock(RouteTokens::class);
+            $mock->makePartial()
+            ->shouldReceive('getRemainingTokenUsages')
+            ->andReturn(1);
+
+            return $mock;
+        });
+
         Request::macro('isCpRequest', function() {
             return false;
         });

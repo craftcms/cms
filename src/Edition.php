@@ -107,7 +107,7 @@ enum Edition: int implements Arrayable
     /** @internal */
     public static function canTest(): bool
     {
-        if (Env::get('CRAFT_NO_TRIALS')) {
+        if (Env::normalizeBooleanValue(Env::get('CRAFT_NO_TRIALS'))) {
             return false;
         }
 

@@ -404,6 +404,14 @@ class AssetsController extends Controller
 
         $sourceAssetId = $this->request->getBodyParam('sourceAssetId');
         $targetFilename = $this->request->getBodyParam('targetFilename');
+
+        if (
+            $targetFilename &&
+            (str_contains($targetFilename, '/') || str_contains($targetFilename, '\\'))
+        ) {
+            throw new BadRequestHttpException('Invalid filename: $targetFilename');
+        }
+
         $uploadedFile = UploadedFile::getInstanceByName('replaceFile');
 
         $assets = Craft::$app->getAssets();

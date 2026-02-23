@@ -190,7 +190,7 @@ class Application extends \yii\console\Application
 
     private function _requireInfoTable(string $route, array &$params): bool
     {
-        $skipCheck = Env::get('CRAFT_NO_DB') ?? false;
+        $skipCheck = Env::normalizeBooleanValue(Env::get('CRAFT_NO_DB')) ?? false;
 
         if ($skipCheck || isset($params['help'])) {
             return false;

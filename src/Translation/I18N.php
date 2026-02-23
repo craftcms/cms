@@ -134,10 +134,10 @@ final class I18N
 
         $allLocaleIds = array_flip($allLocaleIds);
 
-        // `nb` wasn’t added until ICU 69
-        if (! isset($allLocaleIds['nb']) && isset($allLocaleIds['no'])) {
-            $this->localeAliases['nb'] ??= [
-                'aliasOf' => 'no',
+        // `no` wasn’t added until ICU 69
+        if (! isset($allLocaleIds['no']) && isset($allLocaleIds['nb'])) {
+            $this->localeAliases['no'] ??= [
+                'aliasOf' => 'nb',
                 'displayName' => 'Norwegian',
             ];
         }
