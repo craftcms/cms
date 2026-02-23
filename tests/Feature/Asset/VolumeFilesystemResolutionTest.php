@@ -8,9 +8,15 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
+use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use yii\base\InvalidConfigException;
+
+beforeEach(function () {
+    Storage::fake();
+});
 
 it('resolves explicit disk targets to Laravel disk wrappers', function () {
     config()->set('filesystems.disks.explicit-disk', [
@@ -356,7 +362,7 @@ it('throws when getFs() is called without a filesystem handle', function () {
     ]);
 
     $volume->getFs();
-})->throws(\yii\base\InvalidConfigException::class, 'Volume is missing its filesystem handle.');
+})->throws(InvalidConfigException::class, 'Volume is missing its filesystem handle.');
 
 it('returns MissingFs when the filesystem handle cannot be resolved', function () {
     $volume = new Volume([
@@ -367,7 +373,7 @@ it('returns MissingFs when the filesystem handle cannot be resolved', function (
 
     $fs = $volume->getFs();
 
-    expect($fs)->toBeInstanceOf(\CraftCms\Cms\Filesystem\Filesystems\MissingFs::class);
+    expect($fs)->toBeInstanceOf(MissingFs::class);
 });
 
 it('serializes volume config correctly via getConfig()', function () {
