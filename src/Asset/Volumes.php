@@ -349,4 +349,9 @@ final class Volumes
             ->where('uid', $uid)
             ->firstOrNew();
     }
+
+    public function reset(): void
+    {
+        $this->volumes = null;
+    }
 }
