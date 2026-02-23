@@ -15,6 +15,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Data\FsListing;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -126,8 +127,8 @@ trait IndexesAssets
 
             $this->components->task(
                 'Deleting the'.($totalMissingFolders > 1 ? ' '.$totalMissingFolders : '').' missing and empty '.Str::plural('folder', $totalMissingFolders),
-                function () use ($missingFolders, $craft) {
-                    $craft->getAssets()->deleteFoldersByIds(array_keys($missingFolders));
+                function () use ($missingFolders) {
+                    Folders::deleteFoldersByIds(array_keys($missingFolders));
                 }
             );
         }

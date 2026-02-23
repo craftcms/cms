@@ -8,6 +8,7 @@ use Craft;
 use craft\models\AssetIndexingSession;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
@@ -201,7 +202,7 @@ final readonly class AssetIndexesController
 
         if (! empty($deleteFolders)) {
             // if listEmptyFolders was set to true, delete the directories too, so that they don't pop back up on next indexing
-            Craft::$app->getAssets()->deleteFoldersByIds($deleteFolders, $session->listEmptyFolders ?? false);
+            Folders::deleteFoldersByIds($deleteFolders, $session->listEmptyFolders ?? false);
         }
 
         if (! empty($deleteFiles)) {

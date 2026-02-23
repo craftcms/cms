@@ -36,6 +36,8 @@ use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Assets as AssetsService;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
@@ -455,8 +457,6 @@ final class Assets extends BaseRelationField
                 // Figure out what we're working with and set up some initial variables.
                 $isCanonical = $rootElement->getIsCanonical();
                 $query = $element->getFieldValue($this->handle);
-                $assetsService = Craft::$app->getAssets();
-
                 $getUploadFolderId = function () use ($element, $isCanonical, &$_targetFolderId): int {
                     return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
                 };
@@ -484,7 +484,7 @@ final class Assets extends BaseRelationField
                                 break;
                         }
 
-                        $uploadFolder = $assetsService->getFolderById($uploadFolderId);
+                        $uploadFolder = Folders::getFolderById($uploadFolderId);
                         $asset = new Asset;
                         $asset->tempFilePath = $tempPath;
                         $asset->setFilename($file['filename']);
@@ -533,7 +533,6 @@ final class Assets extends BaseRelationField
             // Figure out what we're working with and set up some initial variables.
             $isCanonical = $rootElement->getIsCanonical();
             $query = $element->getFieldValue($this->handle);
-            $assetsService = Craft::$app->getAssets();
 
             $getUploadFolderId = function () use ($element, $isCanonical, &$_targetFolderId): int {
                 return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
@@ -554,14 +553,14 @@ final class Assets extends BaseRelationField
                             $rootRestrictedFolderId = $this->_uploadFolder($element, true, false)->id;
                         }
 
-                        $assetsToMove = array_filter($assets, function (Asset $asset) use ($rootRestrictedFolderId, $assetsService) {
+                        $assetsToMove = array_filter($assets, function (Asset $asset) use ($rootRestrictedFolderId) {
                             if ($asset->folderId === $rootRestrictedFolderId) {
                                 return false;
                             }
                             if (! $this->allowSubfolders) {
                                 return true;
                             }
-                            $rootRestrictedFolder = $assetsService->getFolderById($rootRestrictedFolderId);
+                            $rootRestrictedFolder = Folders::getFolderById($rootRestrictedFolderId);
 
                             return
                                 $asset->volumeId !== $rootRestrictedFolder->volumeId ||
@@ -570,19 +569,19 @@ final class Assets extends BaseRelationField
                     } else {
                         // Find the files with temp sources and just move those.
                         /** @var Asset[] $assetsToMove */
-                        $assetsToMove = $assetsService->createTempAssetQuery()
+                        $assetsToMove = AssetsService::createTempAssetQuery()
                             ->id(array_map(fn (Asset $asset) => $asset->id, $assets))
                             ->all();
                     }
 
                     if (! empty($assetsToMove)) {
-                        $uploadFolder = $assetsService->getFolderById($getUploadFolderId());
+                        $uploadFolder = Folders::getFolderById($getUploadFolderId());
 
                         // Resolve all conflicts by keeping both
                         foreach ($assetsToMove as $asset) {
                             $asset->avoidFilenameConflicts = true;
                             try {
-                                $assetsService->moveAsset($asset, $uploadFolder);
+                                AssetsService::moveAsset($asset, $uploadFolder);
                             } catch (FsObjectNotFoundException $e) {
                                 // Don't freak out about that.
                                 Log::warning('Couldn’t move asset because the file doesn’t exist: '.$e->getMessage());
@@ -638,7 +637,7 @@ final class Assets extends BaseRelationField
             $sources = [$this->_sourceKeyByFolder($folder)];
 
             if ($this->allowSubfolders) {
-                $userFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
+                $userFolder = AssetsService::getUserTemporaryUploadFolder();
                 if ($userFolder->id !== $folder->id) {
                     $sources[] = $this->_sourceKeyByFolder($userFolder);
                 }
@@ -853,7 +852,7 @@ final class Assets extends BaseRelationField
                 throw new InvalidSubpathException($subpath);
             }
 
-            $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
+            $folder = Folders::ensureFolderByFullPathAndVolume($subpath, $volume);
         }
 
         return $folder;
@@ -913,8 +912,6 @@ final class Assets extends BaseRelationField
             $settingName = fn () => t('Default Upload Location');
         }
 
-        $assetsService = Craft::$app->getAssets();
-
         try {
             if (! $uploadVolume) {
                 throw new InvalidFsException;
@@ -936,7 +933,7 @@ final class Assets extends BaseRelationField
                 ! $createDynamicFolders ||
                 ElementHelper::isDraft($element)
             ) {
-                return $assetsService->getUserTemporaryUploadFolder();
+                return AssetsService::getUserTemporaryUploadFolder();
             }
 
             // Existing element, so this is just a bad subpath
