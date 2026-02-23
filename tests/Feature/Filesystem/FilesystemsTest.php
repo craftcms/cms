@@ -6,7 +6,6 @@ use craft\base\Fs;
 use craft\fs\Local;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\DiskRegistry;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
 use CraftCms\Cms\Filesystem\Events\RegisterFilesystemTypes;
 use CraftCms\Cms\Filesystem\Filesystems;
@@ -70,7 +69,7 @@ it('can save and fetch filesystems by handle through the new service', function 
     expect($fetched)->toBeInstanceOf(FsInterface::class)
         ->and($fetched?->handle)->toBe('service-save')
         ->and($this->service->toDiskName('service-save'))->toBe('craft-fs-service-save')
-        ->and(config('filesystems.disks.craft-fs-service-save.fsHandle'))->toBe('service-save');
+        ->and(config('filesystems.disks.craft-fs-service-save.driver'))->toBe('local');
 
     expect($this->service->removeFilesystem($filesystem))->toBeTrue();
 });
@@ -220,14 +219,23 @@ it('returns null when nothing matches in resolveDiskName()', function () {
 });
 
 it('registers a single disk when handleChangedFilesystem receives a specific handle', function () {
+    $path = sys_get_temp_dir().'/craft-single-register';
+
+    $newValue = [
+        'name' => 'Single Register',
+        'type' => \CraftCms\Cms\Filesystem\Filesystems\Local::class,
+        'hasUrls' => true,
+        'url' => 'https://cdn.example.test/single/',
+        'settings' => [
+            'path' => $path,
+        ],
+    ];
+
+    app(ProjectConfig::class)->set('fs.single-register', $newValue);
+
     $event = new \CraftCms\Cms\ProjectConfig\Events\ItemUpdated(
         path: 'fs.single-register',
-        newValue: [
-            'name' => 'Single Register',
-            'type' => \CraftCms\Cms\Filesystem\Filesystems\Local::class,
-            'hasUrls' => true,
-            'url' => 'https://cdn.example.test/single/',
-        ],
+        newValue: $newValue,
         tokenMatches: ['single-register'],
     );
 
@@ -236,55 +244,56 @@ it('registers a single disk when handleChangedFilesystem receives a specific han
     $diskConfig = config('filesystems.disks.craft-fs-single-register');
 
     expect($diskConfig)->not->toBeNull()
-        ->and($diskConfig['driver'])->toBe(DiskRegistry::BRIDGE_DRIVER)
-        ->and($diskConfig['fsHandle'])->toBe('single-register')
+        ->and($diskConfig['driver'])->toBe('local')
         ->and($diskConfig['url'])->toBe('https://cdn.example.test/single');
 });
 
 it('propagates URL from filesystem config during registerDisk', function () {
-    $registry = app(DiskRegistry::class);
+    createServiceLocalFilesystem($this->service, 'url-prop', hasUrls: true, url: 'https://cdn.example.test/url-prop/');
 
-    $registry->registerDisk('url-prop', [
-        'name' => 'URL Prop',
-        'type' => \CraftCms\Cms\Filesystem\Filesystems\Local::class,
-        'hasUrls' => true,
-        'url' => 'https://cdn.example.test/url-prop/',
-    ]);
+    $this->service->registerDisk('url-prop');
 
     $diskConfig = config('filesystems.disks.craft-fs-url-prop');
 
     expect($diskConfig)->not->toBeNull()
+        ->and($diskConfig['driver'])->toBe('local')
         ->and($diskConfig['url'])->toBe('https://cdn.example.test/url-prop');
 });
 
 it('omits URL when filesystem config has no hasUrls flag', function () {
-    $registry = app(DiskRegistry::class);
+    createServiceLocalFilesystem($this->service, 'no-url');
 
-    $registry->registerDisk('no-url', [
-        'name' => 'No URL',
-        'type' => \CraftCms\Cms\Filesystem\Filesystems\Local::class,
-    ]);
+    $this->service->registerDisk('no-url');
 
     $diskConfig = config('filesystems.disks.craft-fs-no-url');
 
     expect($diskConfig)->not->toBeNull()
+        ->and($diskConfig['driver'])->toBe('local')
         ->and($diskConfig)->not->toHaveKey('url');
 });
 
 it('omits URL when hasUrls is true but url is empty', function () {
-    $registry = app(DiskRegistry::class);
+    createServiceLocalFilesystem($this->service, 'empty-url', hasUrls: true, url: '');
 
-    $registry->registerDisk('empty-url', [
-        'name' => 'Empty URL',
-        'type' => \CraftCms\Cms\Filesystem\Filesystems\Local::class,
-        'hasUrls' => true,
-        'url' => '',
-    ]);
+    $this->service->registerDisk('empty-url');
 
     $diskConfig = config('filesystems.disks.craft-fs-empty-url');
 
     expect($diskConfig)->not->toBeNull()
+        ->and($diskConfig['driver'])->toBe('local')
         ->and($diskConfig)->not->toHaveKey('url');
+});
+
+it('skips disk registration for missing filesystem types', function () {
+    app(ProjectConfig::class)->set('fs.missing-type', [
+        'name' => 'Missing Type',
+        'type' => 'some\\nonexistent\\FsClass',
+        'settings' => [],
+    ]);
+
+    $this->service->handleChangedFilesystem();
+
+    expect(config('filesystems.disks.craft-fs-missing-type'))->toBeNull();
 });
 
 it('syncs stale craft disk registrations when handling delete config changes', function () {
@@ -293,7 +302,7 @@ it('syncs stale craft disk registrations when handling delete config changes', f
             'driver' => 'local',
             'root' => storage_path('framework/testing/fs-service/manual-disk'),
         ],
-        DiskRegistry::PREFIX.'stale-handle' => [
+        Filesystems::DISK_PREFIX.'stale-handle' => [
             'driver' => 'craft-fs-bridge',
             'fsHandle' => 'stale-handle',
         ],
@@ -304,19 +313,33 @@ it('syncs stale craft disk registrations when handling delete config changes', f
     $this->service->handleDeletedFilesystem(new ItemRemoved(ProjectConfig::PATH_FS));
 
     expect(config('filesystems.disks.manual-disk'))->not()->toBeNull()
-        ->and(config('filesystems.disks.'.DiskRegistry::PREFIX.'stale-handle'))->toBeNull();
+        ->and(config('filesystems.disks.'.Filesystems::DISK_PREFIX.'stale-handle'))->toBeNull();
 });
 
-function createServiceLocalFilesystem(Filesystems $service, string $handle): FsInterface
-{
-    $filesystem = $service->createFilesystem([
+function createServiceLocalFilesystem(
+    Filesystems $service,
+    string $handle,
+    bool $hasUrls = false,
+    string $url = '',
+): FsInterface {
+    $config = [
         'type' => 'craft\\fs\\Local',
         'name' => $handle,
         'handle' => $handle,
         'settings' => [
             'path' => sys_get_temp_dir()."/filesystems-service/$handle",
         ],
-    ]);
+    ];
+
+    if ($hasUrls) {
+        $config['hasUrls'] = true;
+    }
+
+    if ($url !== '') {
+        $config['url'] = $url;
+    }
+
+    $filesystem = $service->createFilesystem($config);
 
     expect($service->saveFilesystem($filesystem, false))->toBeTrue();
 

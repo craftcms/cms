@@ -7,10 +7,9 @@
 
 namespace crafttests\fixtures;
 
-use Craft;
 use craft\records\VolumeFolder;
-use craft\services\Volumes;
 use craft\test\ActiveFixture;
+use CraftCms\Cms\Support\Facades\Volumes;
 
 /**
  * Class VolumeFolderFixture.
@@ -43,6 +42,6 @@ class VolumesFolderFixture extends ActiveFixture
     {
         parent::load();
 
-        Craft::$app->set('volumes', new Volumes());
+        Volumes::reset();
     }
 }

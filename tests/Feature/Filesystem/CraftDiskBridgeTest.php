@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\DiskRegistry;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\Local;
 use CraftCms\Cms\Support\Facades\Filesystems as FilesystemsFacade;
@@ -12,8 +11,8 @@ use Illuminate\Support\Facades\Storage;
 it('registers Craft filesystems as Laravel disks and exposes helper accessors', function () {
     createBridgeLocalFilesystem('bridge-helper');
 
-    expect(config('filesystems.disks.craft-fs-bridge-helper.driver'))->toBe(DiskRegistry::BRIDGE_DRIVER)
-        ->and(config('filesystems.disks.craft-fs-bridge-helper.fsHandle'))->toBe('bridge-helper')
+    expect(config('filesystems.disks.craft-fs-bridge-helper.driver'))->toBe('local')
+        ->and(config('filesystems.disks.craft-fs-bridge-helper'))->toHaveKey('root')
         ->and(FilesystemsFacade::toDiskName('bridge-helper'))->toBe('craft-fs-bridge-helper');
 
     $disk = FilesystemsFacade::disk('bridge-helper');
@@ -34,7 +33,7 @@ it('syncs and purges Craft disk registrations when filesystems are renamed or de
     expect(FilesystemsFacade::saveFilesystem($filesystem, false))->toBeTrue();
 
     expect(config('filesystems.disks.craft-fs-bridge-old'))->toBeNull()
-        ->and(config('filesystems.disks.craft-fs-bridge-new.fsHandle'))->toBe('bridge-new');
+        ->and(config('filesystems.disks.craft-fs-bridge-new.driver'))->toBe('local');
 
     expect(fn () => Storage::disk('craft-fs-bridge-old'))->toThrow(InvalidArgumentException::class);
 
@@ -78,8 +77,8 @@ it('provides Laravel disk configuration for built-in filesystem classes', functi
     ]);
 
     expect($laravelDiskFs->getDiskConfig())
-        ->toHaveKey('driver', DiskRegistry::BRIDGE_DRIVER)
-        ->toHaveKey('fsHandle', 'bridge-config-local');
+        ->toHaveKey('driver', 'local')
+        ->toHaveKey('root');
 });
 
 function createBridgeLocalFilesystem(string $handle): FsInterface

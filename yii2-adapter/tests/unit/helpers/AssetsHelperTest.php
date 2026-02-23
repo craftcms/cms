@@ -53,8 +53,7 @@ class AssetsHelperTest extends TestCase
             $assetQuery->$key = $value;
         }
 
-        /** @var Asset|null $asset */
-        $asset = $assetQuery->one();
+        $asset = $assetQuery->firstOrFail();
 
         self::assertSame($expected, Assets::generateUrl($asset));
     }

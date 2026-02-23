@@ -16,7 +16,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\DiskRegistry;
+use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Filesystem\Filesystems\DiskFilesystem;
 use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Support\Arr;
@@ -458,8 +458,8 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
 
     private function isInternalDiskName(string $diskName): bool
     {
-        return in_array($diskName, DiskRegistry::INTERNAL_DISK_NAMES, true) ||
-            str_starts_with($diskName, DiskRegistry::PREFIX);
+        return in_array($diskName, FilesystemsService::INTERNAL_DISK_NAMES, true) ||
+            str_starts_with($diskName, FilesystemsService::DISK_PREFIX);
     }
 
     private function isDynamicStorageHandle(string $value): bool

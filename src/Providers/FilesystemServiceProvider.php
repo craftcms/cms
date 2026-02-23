@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Providers;
 
 use craft\helpers\App;
-use CraftCms\Cms\Filesystem\DiskRegistry;
+use CraftCms\Cms\Filesystem\Filesystems;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,6 +20,6 @@ final class FilesystemServiceProvider extends ServiceProvider
             'root' => App::isEphemeral() ? '/tmp' : storage_path('app/temp'),
         ]);
 
-        $this->app->booted(fn () => app(DiskRegistry::class)->sync());
+        $this->app->booted(fn () => app(Filesystems::class)->syncDisks());
     }
 }

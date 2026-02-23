@@ -186,11 +186,6 @@ class Yii2ServiceProvider extends ServiceProvider
                 throw new InvalidArgumentException('Missing `fsHandle` configuration for craft-fs-bridge disk.');
             }
 
-            // Ensure the legacy Craft app is bootstrapped before resolving filesystem components.
-            if (!isset(Craft::$app)) {
-                $app->make('Craft');
-            }
-
             $filesystem = Filesystems::getFilesystemByHandle($handle);
             if (!$filesystem instanceof FsInterface) {
                 throw new InvalidArgumentException("Craft filesystem [$handle] is not registered.");

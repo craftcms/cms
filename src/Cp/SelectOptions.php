@@ -9,7 +9,7 @@ use craft\helpers\Assets;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
-use CraftCms\Cms\Filesystem\DiskRegistry;
+use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
@@ -287,11 +287,11 @@ class SelectOptions
                     return false;
                 }
 
-                if (in_array($diskName, DiskRegistry::INTERNAL_DISK_NAMES, true)) {
+                if (in_array($diskName, FilesystemsService::INTERNAL_DISK_NAMES, true)) {
                     return false;
                 }
 
-                return ! str_starts_with($diskName, DiskRegistry::PREFIX);
+                return ! str_starts_with($diskName, FilesystemsService::DISK_PREFIX);
             })
             ->map(fn (string $diskName) => [
                 'label' => $diskName,
