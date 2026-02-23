@@ -76,6 +76,7 @@ describe('Title validation', function () {
 
     test('title rejects 4-byte unicode (mb4) characters', function () {
         $this->markTestSkippedWhen(DB::getDriverName() === 'pgsql', 'PostgreSQL always supports 4-byte unicode characters');
+        $this->markTestSkippedWhen(DB::getDriverName() === 'sqlite', 'SQLite always supports 4-byte unicode characters');
 
         $entry = EntryModel::factory()->createElement();
         $entry->title = 'Test 𝕋𝕚𝕥𝕝𝕖'; // Contains 4-byte unicode characters

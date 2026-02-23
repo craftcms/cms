@@ -960,7 +960,7 @@ class Install extends Migration
             Schema::table(Table::SEARCHINDEX, function (Blueprint $table) {
                 $table->fullText('keywords');
             });
-        } else {
+        } elseif (DB::isPgsql()) {
             // Postgres is case-sensitive
             DB::statement('CREATE INDEX sites_uri_siteid_index ON '.DB::getTablePrefix().Table::ELEMENTS_SITES.' (lower(uri), "siteId")');
             DB::statement('CREATE INDEX users_email_index ON '.DB::getTablePrefix().Table::USERS.' (lower(email))');
@@ -972,6 +972,11 @@ class Install extends Migration
 
             DB::statement('CREATE INDEX keywords_gin ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING GIN(keywords_vector) WITH (FASTUPDATE=YES)');
             DB::statement('CREATE INDEX keywords_index ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING btree(keywords)');
+        } else {
+            // SQLite: basic indexes only, no full-text or tsvector
+            Schema::createIndex(Table::ELEMENTS_SITES, ['uri', 'siteId']);
+            Schema::createIndex(Table::USERS, ['email']);
+            Schema::createIndex(Table::USERS, ['username']);
         }
     }
 

@@ -130,6 +130,7 @@ final readonly class Query
         /** @var \Illuminate\Database\Connection $connection */
         $connection = $query->getConnection();
         $isMysql = $connection->isMysql();
+        $isPgsql = $connection->isPgsql();
 
         // Only PostgreSQL supports case-sensitive strings on non-JSON column values
         if ($isMysql && $columnType !== self::TYPE_JSON) {
@@ -140,7 +141,7 @@ final readonly class Query
             ? new Lower($column)
             : $column;
 
-        $query->where(function (Builder $query) use ($caseColumn, $isMysql, $parsedColumnType, $columnType, $defaultOperator, $parsed, $column, $caseInsensitive) {
+        $query->where(function (Builder $query) use ($caseColumn, $isMysql, $isPgsql, $parsedColumnType, $columnType, $defaultOperator, $parsed, $column, $caseInsensitive) {
             $boolean = match ($parsed->operator) {
                 QueryParam::AND, QueryParam::NOT => 'and',
                 default => 'or',
@@ -221,7 +222,7 @@ final readonly class Query
                     }
 
                     if ($like) {
-                        if ($caseInsensitive && ! $isMysql) {
+                        if ($caseInsensitive && $isPgsql) {
                             $operator = $operator === '=' ? 'ilike' : 'not ilike';
                         } else {
                             $operator = $operator === '=' ? 'like' : 'not like';
