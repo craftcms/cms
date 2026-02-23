@@ -479,7 +479,7 @@
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "891ce31441b3411800d85e2771135640b0669236"
+                "reference": "b1a257ab4691ff0670f2b60277f9cee596f1654b"
             },
             "require": {
                 "bacon/bacon-qr-code": "^2.0",
