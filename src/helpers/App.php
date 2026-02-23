@@ -34,6 +34,7 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
+use PDO;
 use ReflectionClass;
 use ReflectionProperty;
 use Symfony\Component\Process\PhpExecutableFinder;
@@ -924,7 +925,10 @@ class App
             'commandMap' => [
                 $driver => Command::class,
             ],
-            'attributes' => $dbConfig->attributes,
+            'attributes' => [
+                PDO::MYSQL_ATTR_MULTI_STATEMENTS => false,
+                ...$dbConfig->attributes,
+            ],
             'enableSchemaCache' => !static::devMode(),
         ];
 

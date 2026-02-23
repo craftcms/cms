@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is now set to `false` by default for database connections.
+
 ## 4.17.6 - 2026-02-18
 
 - Added `craft\services\Tokens::getRemainingTokenUsages()`.
