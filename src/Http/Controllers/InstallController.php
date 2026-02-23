@@ -97,16 +97,11 @@ final readonly class InstallController
     {
         $data = $this->validateDbData($request->input());
 
-        Config::set("database.connections.{$data['driver']}", array_merge(
-            Config::get("database.connections.{$data['driver']}"),
-            $data,
-        ));
-
         // Test the connection
         $errors = [];
 
         try {
-            DB::reconnect()->getPdo();
+            DB::build($data)->select('SELECT 1');
         } catch (PDOException $e) {
             $attr = match ($e->getCode()) {
                 1045 => 'user',

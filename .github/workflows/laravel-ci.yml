@@ -101,7 +101,7 @@ jobs:
       fail-fast: true
       matrix:
         php: [8.5]
-        db: [mysql, pgsql]
+        db: [mysql, pgsql, sqlite]
     services:
       # Install Postgres
       pgsql:
@@ -158,6 +158,7 @@ jobs:
         run: |
           cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
           sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
+          touch database/craft_tests.sqlite
 
       - name: Set version
         run: composer config version "6.x-dev"

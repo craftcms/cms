@@ -43,6 +43,18 @@ it('can validate the db', function () {
     postJson(action([InstallController::class, 'validateDb']), [
         'driver' => Config::get("database.connections.{$connection}.driver"),
         'host' => Config::get("database.connections.{$connection}.host"),
+        'database' => 'a non existing database',
+        'port' => Config::get("database.connections.{$connection}.port"),
+        'username' => Config::get("database.connections.{$connection}.username"),
+        'password' => Config::get("database.connections.{$connection}.password"),
+        'prefix' => Config::get("database.connections.{$connection}.prefix"),
+        'schema' => Config::get("database.connections.{$connection}.schema"),
+    ])->assertUnprocessable()
+        ->assertSee('PDO exception: ');
+
+    postJson(action([InstallController::class, 'validateDb']), [
+        'driver' => Config::get("database.connections.{$connection}.driver"),
+        'host' => Config::get("database.connections.{$connection}.host"),
         'database' => Config::get("database.connections.{$connection}.database"),
         'port' => Config::get("database.connections.{$connection}.port"),
         'username' => Config::get("database.connections.{$connection}.username"),
@@ -50,18 +62,6 @@ it('can validate the db', function () {
         'prefix' => Config::get("database.connections.{$connection}.prefix"),
         'schema' => Config::get("database.connections.{$connection}.schema"),
     ])->assertOk();
-
-    postJson(action([InstallController::class, 'validateDb']), [
-        'driver' => Config::get("database.connections.{$connection}.driver"),
-        'host' => Config::get("database.connections.{$connection}.host"),
-        'database' => 'a non existing database',
-        'port' => Config::get("database.connections.{$connection}.port"),
-        'username' => Config::get("database.connections.{$connection}.username"),
-        'password' => Config::get("database.connections.{$connection}.password"),
-        'prefix' => Config::get("database.connections.{$connection}.prefix"),
-        'schema' => Config::get("database.connections.{$connection}.schema"),
-    ])
-        ->assertSee('PDO exception: ');
 });
 
 it('can validate account', function (array $data, array $errors) {
