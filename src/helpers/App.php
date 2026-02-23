@@ -1263,15 +1263,12 @@ class App
             'enableCsrfValidation' => $generalConfig->enableCsrfProtection,
             'enableCsrfCookie' => $generalConfig->enableCsrfCookie,
             'csrfParam' => $generalConfig->csrfTokenName,
+            'trustedHosts' => $generalConfig->trustedHosts,
             'parsers' => [
                 'application/json' => JsonParser::class,
             ],
             'isCpRequest' => static::normalizeBooleanValue(static::env('CRAFT_CP')),
         ];
-
-        if ($generalConfig->trustedHosts !== null) {
-            $config['trustedHosts'] = $generalConfig->trustedHosts;
-        }
 
         if ($generalConfig->secureHeaders !== null) {
             $config['secureHeaders'] = $generalConfig->secureHeaders;
