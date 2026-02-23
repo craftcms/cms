@@ -14,6 +14,7 @@ final class Address extends BaseModel
 {
     use HasFactory;
 
+    #[\Override]
     protected $table = Table::ADDRESSES;
 
     /** @return BelongsTo<User, $this> */

@@ -55,14 +55,14 @@ class DatabaseSeeder extends Seeder
 
         Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 
-        $site = new Site(
-            name: 'Craft test site',
-            handle: 'defaultSite',
-            language: 'en-US',
-            baseUrl: config('app.url'),
-            primary: true,
-            hasUrls: true,
-        );
+        $site = new Site([
+            'name' => 'Craft test site',
+            'handle' => 'defaultSite',
+            'language' => 'en-US',
+            'baseUrl' => config('app.url'),
+            'primary' => true,
+            'hasUrls' => true,
+        ]);
 
         new Install(
             username: 'craftcms',
@@ -102,11 +102,11 @@ class DatabaseSeeder extends Seeder
 
         $pageType = null;
         $this->components->task('Page entry type', function () use ($fieldLayout, &$pageType) {
-            EntryTypes::saveEntryType($pageType = new EntryType(
-                fieldLayoutId: $fieldLayout->id,
-                name: 'Page',
-                handle: 'page',
-            ));
+            EntryTypes::saveEntryType($pageType = new EntryType([
+                'fieldLayoutId' => $fieldLayout->id,
+                'name' => 'Page',
+                'handle' => 'page',
+            ]));
         });
 
         $this->createSection($site, 'Home', SectionType::Single, '__HOME__', [$pageType]);

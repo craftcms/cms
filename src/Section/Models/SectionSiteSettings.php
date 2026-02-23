@@ -16,6 +16,7 @@ final class SectionSiteSettings extends BaseModel
     use HasFactory;
     use HasUid;
 
+    #[\Override]
     protected $table = Table::SECTIONS_SITES;
 
     #[\Override]

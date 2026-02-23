@@ -16,6 +16,7 @@ final class UserGroup extends BaseModel
     use HasFactory;
     use HasUid;
 
+    #[\Override]
     protected $table = Table::USERGROUPS;
 
     /** @return BelongsToMany<User, $this, Pivot> */

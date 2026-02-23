@@ -11,10 +11,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class Revision extends BaseModel
 {
+    #[\Override]
     protected $table = Table::REVISIONS;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $casts = [
         'num' => 'integer',
     ];

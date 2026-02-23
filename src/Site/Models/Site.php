@@ -21,6 +21,7 @@ final class Site extends BaseModel
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected $table = Table::SITES;
 
     #[\Override]

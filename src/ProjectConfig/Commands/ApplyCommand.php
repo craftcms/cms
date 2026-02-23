@@ -22,10 +22,13 @@ final class ApplyCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:project-config:apply {--force : Whether every entry change should be force-applied.}';
 
+    #[\Override]
     protected $description = 'Applies project config file changes.';
 
+    #[\Override]
     protected $aliases = ['project-config/apply', 'project-config:sync', 'project-config/sync', 'pc:apply', 'pc/apply', 'pc:sync', 'pc/sync'];
 
     /**

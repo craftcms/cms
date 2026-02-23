@@ -16,10 +16,13 @@ final class PasswordResetUrlCommand extends Command implements PromptsForMissing
     use CraftCommand;
     use PromptsForMissingUser;
 
+    #[\Override]
     protected $signature = 'craft:users:password-reset-url {user}';
 
+    #[\Override]
     protected $description = 'Generates a password reset URL for a user.';
 
+    #[\Override]
     protected $aliases = ['users/password-reset-url', 'users:passwordResetUrl', 'users/passwordResetUrl'];
 
     public function handle(Users $users): int

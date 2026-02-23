@@ -35,6 +35,7 @@ final class CreateCommand extends Command
     use ConfirmableTrait;
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:sections:create
         {--name= : The section name.}
         {--handle= : The section handle.}
@@ -45,8 +46,10 @@ final class CreateCommand extends Command
         {--template= : The template to load when an entry’s URL is requested.}
     ';
 
+    #[\Override]
     protected $description = 'Create a new section';
 
+    #[\Override]
     protected $aliases = ['sections/create'];
 
     public function handle(ProjectConfig $projectConfig, EntryTypes $entryTypesService): void

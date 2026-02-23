@@ -12,12 +12,15 @@ final class DiffCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:project-config:diff
         {--invert : Whether to treat the loaded project config as the source of truth, instead of the YAML files.}
     ';
 
+    #[\Override]
     protected $description = 'Outputs a diff of the pending project config YAML changes.';
 
+    #[\Override]
     protected $aliases = ['project-config/diff', 'pc:diff', 'pc/diff'];
 
     public function handle(): int

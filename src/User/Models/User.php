@@ -27,6 +27,7 @@ class User extends BaseModel
     use HasFactory;
     use MustVerifyEmail;
 
+    #[\Override]
     public $incrementing = false;
 
     /**
@@ -34,6 +35,7 @@ class User extends BaseModel
      *
      * @var list<string>
      */
+    #[\Override]
     protected $hidden = [
         'password',
         'rememberToken',
@@ -41,6 +43,7 @@ class User extends BaseModel
 
     private ?Collection $userGroupData = null;
 
+    #[\Override]
     protected $casts = [
         'active' => 'bool',
         'pending' => 'bool',

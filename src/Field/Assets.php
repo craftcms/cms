@@ -168,12 +168,16 @@ final class Assets extends BaseRelationField
      */
     public string $previewMode = self::PREVIEW_MODE_FULL;
 
+    #[\Override]
     protected bool $allowLargeThumbsView = true;
 
+    #[\Override]
     protected string $settingsTemplate = '_components/fieldtypes/Assets/settings.twig';
 
+    #[\Override]
     protected string $inputTemplate = '_components/fieldtypes/Assets/input.twig';
 
+    #[\Override]
     protected ?string $inputJsClass = 'Craft.AssetSelectInput';
 
     /**

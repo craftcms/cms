@@ -15,6 +15,7 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
 {
     use FieldConditionRuleTrait;
 
+    #[\Override]
     public string $operator = self::OPERATOR_NOT_EMPTY;
 
     #[\Override]

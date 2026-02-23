@@ -16,8 +16,10 @@ final class WebAuthn extends BaseModel
     use HasFactory;
     use HasUid;
 
+    #[\Override]
     protected $table = Table::WEBAUTHN;
 
+    #[\Override]
     protected $casts = [
         'dateLastUsed' => 'datetime',
     ];

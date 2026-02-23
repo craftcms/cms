@@ -24,6 +24,7 @@ final class CreateCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:users:create
         {--email= : The user’s email address.}
         {--username= : The user’s username.}
@@ -35,8 +36,10 @@ final class CreateCommand extends Command
         {--groupIds=* : The group IDs to assign the created user to.}
     ';
 
+    #[\Override]
     protected $description = 'Creates a new user.';
 
+    #[\Override]
     protected $aliases = ['users/create'];
 
     public function handle(GeneralConfig $generalConfig, Users $users): int

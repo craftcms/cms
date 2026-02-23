@@ -15,10 +15,13 @@ final class ComposerInstallCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:update:composer-install';
 
+    #[\Override]
     protected $description = 'Installs Composer';
 
+    #[\Override]
     protected $aliases = ['update/composer-install'];
 
     public function handle(Composer $composer): int

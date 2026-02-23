@@ -14,10 +14,13 @@ final class UpdateUsernamesCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:utils:update-usernames';
 
+    #[\Override]
     protected $description = 'Updates all users’ usernames to ensure they match their email address.';
 
+    #[\Override]
     protected $aliases = ['utils/update-usernames'];
 
     public function handle(GeneralConfig $generalConfig): int

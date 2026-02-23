@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BaseModel extends Model
 {
+    #[\Override]
     protected $guarded = [];
 
     public const ?string CREATED_AT = 'dateCreated';

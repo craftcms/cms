@@ -44,6 +44,7 @@ class GeneralConfig extends BaseConfig
 
     public const string SNAKE_CASE = 'snake';
 
+    #[\Override]
     protected static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',

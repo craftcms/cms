@@ -24,10 +24,13 @@ final class FieldsAutoMergeCommand extends Command
     use CraftCommand;
     use MergesFields;
 
+    #[\Override]
     protected $signature = 'craft:fields:auto-merge';
 
+    #[\Override]
     protected $description = 'Finds fields with identical settings and merges them together.';
 
+    #[\Override]
     protected $aliases = ['fields/auto-merge'];
 
     public function handle(Fields $fieldsService): int

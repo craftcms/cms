@@ -14,10 +14,13 @@ final class CleanupAssetIndexesCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:index-assets:cleanup';
 
+    #[\Override]
     protected $description = 'Removes all CLI indexing sessions.';
 
+    #[\Override]
     protected $aliases = ['index-assets/cleanup'];
 
     public function handle(#[Give('Craft')] Application $craft): void

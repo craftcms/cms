@@ -20,8 +20,10 @@ final class Entry extends BaseModel
 {
     use HasFactory;
 
+    #[\Override]
     protected $table = Table::ENTRIES;
 
+    #[\Override]
     public $incrementing = false;
 
     #[\Override]

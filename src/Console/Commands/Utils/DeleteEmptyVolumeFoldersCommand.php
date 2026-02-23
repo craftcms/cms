@@ -16,10 +16,13 @@ final class DeleteEmptyVolumeFoldersCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:utils:delete-empty-volume-folders {volume?*}';
 
+    #[\Override]
     protected $description = 'Deletes empty volume folders.';
 
+    #[\Override]
     protected $aliases = ['utils/delete-empty-volume-folders'];
 
     public function handle(): int

@@ -18,8 +18,10 @@ final class Asset extends BaseModel
 {
     use HasFactory;
 
+    #[\Override]
     protected $table = Table::ASSETS;
 
+    #[\Override]
     public $incrementing = false;
 
     #[\Override]

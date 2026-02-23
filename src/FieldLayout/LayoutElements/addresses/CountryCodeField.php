@@ -20,10 +20,13 @@ use function CraftCms\Cms\t;
 
 class CountryCodeField extends BaseNativeField
 {
+    #[\Override]
     public bool $mandatory = true;
 
+    #[\Override]
     public string $attribute = 'countryCode';
 
+    #[\Override]
     public bool $required = true;
 
     public function __construct($config = [])
