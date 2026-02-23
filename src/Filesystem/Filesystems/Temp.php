@@ -10,6 +10,7 @@ use function CraftCms\Cms\t;
 
 final class Temp extends Local
 {
+    #[\Override]
     public bool $hasUrls = false;
 
     #[\Override]
