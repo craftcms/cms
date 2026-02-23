@@ -13,3 +13,7 @@ FROM_EMAIL_NAME="Craft CMS"
 FROM_EMAIL_ADDRESS=info@craftcms.com
 
 AUTH_MODEL=\CraftCms\Cms\User\Models\User
+
+# Base URL for Pest browser tests (e.g. a DDEV instance)
+#BROWSER_TEST_URL=https://craft6-dev.ddev.site
+#DDEV_PROJECT_DIR=/path/to/your/ddev/project

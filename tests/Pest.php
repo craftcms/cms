@@ -9,12 +9,14 @@ use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Tests\BrowserTestCase;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin;
 use CraftCms\Cms\Tests\UnitTestCase;
 
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
+uses(BrowserTestCase::class)->in('Browser');
 
 beforeEach(function () {
     app()->forgetInstance(GeneralConfig::class);
