@@ -9,6 +9,7 @@ namespace crafttests\fixtures;
 
 use craft\records\VolumeFolder;
 use craft\test\ActiveFixture;
+use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Support\Facades\Volumes;
 
 /**
@@ -43,5 +44,6 @@ class VolumesFolderFixture extends ActiveFixture
         parent::load();
 
         Volumes::reset();
+        app(Filesystems::class)->syncDisks();
     }
 }

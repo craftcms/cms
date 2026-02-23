@@ -150,11 +150,18 @@ final class Filesystems
 
     /**
      * Registers a single Craft filesystem as a Laravel disk.
+     *
+     * @param  array<string, mixed>|null  $filesystemConfig  Optional filesystem config to use directly,
+     *                                                       bypassing the ProjectConfig lookup. This is needed when
+     *                                                       registering a disk during a ProjectConfig change event,
+     *                                                       since the config value hasn't been committed yet.
      */
-    public function registerDisk(string $handle): void
+    public function registerDisk(string $handle, ?array $filesystemConfig = null): void
     {
         $diskName = $this->toDiskName($handle);
-        $diskConfig = $this->resolveDiskConfig($handle);
+        $diskConfig = $filesystemConfig !== null
+            ? $this->resolveDiskConfigFromArray($handle, $filesystemConfig)
+            : $this->resolveDiskConfig($handle);
 
         if ($diskConfig === null) {
             return;
@@ -290,7 +297,8 @@ final class Filesystems
 
         $handle = $event?->tokenMatches[0] ?? null;
         if (is_string($handle) && $handle !== '') {
-            $this->registerDisk($handle);
+            $filesystemConfig = is_array($event?->newValue) ? $event->newValue : null;
+            $this->registerDisk($handle, $filesystemConfig);
         } else {
             $this->syncDisks();
         }
@@ -440,6 +448,27 @@ final class Filesystems
 
         try {
             return $filesystem->getDiskConfig();
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Resolves the Laravel disk configuration from a raw filesystem config array.
+     *
+     * Used when the filesystem config is available from a ProjectConfig event
+     * but hasn't been committed to ProjectConfig storage yet.
+     *
+     * @param  array<string, mixed>  $filesystemConfig
+     * @return array<string,mixed>|null
+     */
+    private function resolveDiskConfigFromArray(string $handle, array $filesystemConfig): ?array
+    {
+        $filesystemConfig['handle'] = $handle;
+        $filesystemConfig['settings'] = ProjectConfigHelper::unpackAssociativeArrays($filesystemConfig['settings'] ?? []);
+
+        try {
+            return $this->createFilesystem($filesystemConfig)->getDiskConfig();
         } catch (Throwable) {
             return null;
         }

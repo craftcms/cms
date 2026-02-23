@@ -10,8 +10,8 @@ namespace craft\test\fixtures\elements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\FileHelper;
-use craft\records\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Volumes;
 
 /**
@@ -58,11 +58,11 @@ abstract class AssetFixture extends BaseElementFixture
 
         foreach (app(Volumes::class)->getAllVolumes() as $volume) {
             $this->volumeIds[$volume->handle] = $volume->id;
-            $this->folderIds[$volume->handle] = VolumeFolder::findOne([
-                'parentId' => null,
-                'name' => $volume->name,
-                'volumeId' => $volume->id,
-            ])->id;
+            $this->folderIds[$volume->handle] = VolumeFolderModel::query()
+                ->whereNull('parentId')
+                ->where('name', $volume->name)
+                ->where('volumeId', $volume->id)
+                ->first()->id;
         }
 
         $this->sourceAssetPath = Craft::$app->getPath()->getTestsPath() . '/_craft/assets/';
