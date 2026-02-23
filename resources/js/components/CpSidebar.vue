@@ -10,7 +10,7 @@
     (e: 'dock'): void;
   }>();
 
-  const { mode = 'floating', visibility = 'hidden' } = defineProps<{
+  const {mode = 'floating', visibility = 'hidden'} = defineProps<{
     mode: 'docked' | 'floating' | 'collapsed';
     visibility: 'hidden' | 'visible';
   }>();
@@ -19,14 +19,19 @@
     return mode === 'floating';
   });
 
-  watch(() => visibility, async (newVal) => {
-    if (shouldManageFocus.value && newVal === 'visible') {
-      await nextTick();
-      const sidebar = document.querySelector('.cp-sidebar') as HTMLElement;
-      const firstFocusable = sidebar.querySelector('button, [href], [tabindex]:not([tabindex="-1"])') as HTMLElement;
-      firstFocusable?.focus();
+  watch(
+    () => visibility,
+    async (newVal) => {
+      if (shouldManageFocus.value && newVal === 'visible') {
+        await nextTick();
+        const sidebar = document.querySelector('.cp-sidebar') as HTMLElement;
+        const firstFocusable = sidebar.querySelector(
+          'button, [href], [tabindex]:not([tabindex="-1"])'
+        ) as HTMLElement;
+        firstFocusable?.focus();
+      }
     }
-  });
+  );
 </script>
 
 <template>

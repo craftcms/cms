@@ -16,19 +16,19 @@ const meta = {
   argTypes: {
     badgeCount: {
       control: {
-        type: 'number'
-      }
+        type: 'number',
+      },
     },
     variant: {
       options: ['primary', 'secondary', 'inverse'],
       control: {
-        type: 'radio'
+        type: 'radio',
       },
     },
     altText: {
       control: {
-        type: 'text'
-      }
+        type: 'text',
+      },
     },
   },
   render: (args) => html`
@@ -36,7 +36,8 @@ const meta = {
       .badgeCount="${args.badgeCount}"
       .badgeCountSuffix="${args.badgeCountSuffix}"
       .altText="${args.altText}"
-      .variant="${args.variant}"></craft-badge-indicator>
+      .variant="${args.variant}"
+    ></craft-badge-indicator>
   `,
 } satisfies Meta<any>;
 
@@ -48,28 +49,28 @@ type Story = StoryObj<any>;
 export const Dot: Story = {
   name: 'Dot',
   parameters: {
-    controls: { exclude: ['badgeCount', 'badgeCountSuffix'] },
+    controls: {exclude: ['badgeCount', 'badgeCountSuffix']},
   },
-}
+};
 
 export const Numbered: Story = {
   name: 'Numbered',
   args: {
     altText: null,
     badgeCount: 5,
-    badgeCountSuffix: 'updates'
+    badgeCountSuffix: 'updates',
   },
   parameters: {
-    controls: { exclude: ['altText'] },
+    controls: {exclude: ['altText']},
   },
-}
+};
 
 export const Primary: Story = {
   name: 'Primary',
   parameters: {
-    controls: { exclude: ['badgeCount', 'badgeCountSuffix'] },
+    controls: {exclude: ['badgeCount', 'badgeCountSuffix']},
   },
-}
+};
 
 export const Secondary: Story = {
   name: 'Secondary',
@@ -77,9 +78,9 @@ export const Secondary: Story = {
     variant: 'secondary',
   },
   parameters: {
-    controls: { exclude: ['badgeCount', 'badgeCountSuffix'] },
+    controls: {exclude: ['badgeCount', 'badgeCountSuffix']},
   },
-}
+};
 
 export const Inverse: Story = {
   name: 'Inverse',
@@ -87,6 +88,6 @@ export const Inverse: Story = {
     variant: 'inverse',
   },
   parameters: {
-    controls: { exclude: ['badgeCount', 'badgeCountSuffix'] },
+    controls: {exclude: ['badgeCount', 'badgeCountSuffix']},
   },
-}
+};

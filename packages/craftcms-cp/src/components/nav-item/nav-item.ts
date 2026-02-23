@@ -88,7 +88,11 @@ export default class CraftNavItem extends LitElement {
                 ></craft-icon>`
               : nothing}
           </slot>
-          ${this.indicator ? html`<craft-badge-indicator altText="${t('Has Notifications')}" />` : nothing}
+          ${this.indicator
+            ? html`<craft-badge-indicator
+                altText="${t('Has Notifications')}"
+              />`
+            : nothing}
         </slot>
       </span>
     `;
