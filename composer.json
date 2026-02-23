@@ -82,6 +82,7 @@
     "orchestra/testbench": "^10.3",
     "pestphp/pest": "^4.0",
     "pestphp/pest-plugin-arch": "^4.0",
+    "pestphp/pest-plugin-browser": "^4.3",
     "pestphp/pest-plugin-laravel": "^4.0",
     "phpstan/phpstan": "^2.1",
     "rector/rector": "^2.3"

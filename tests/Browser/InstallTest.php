@@ -3,16 +3,10 @@
 declare(strict_types=1);
 
 beforeEach(function () {
-    $projectDir = env('DDEV_PROJECT_DIR');
+    $result = $this->testDriver->artisan('db:wipe --force');
 
-    if ($projectDir === null) {
-        $this->fail('DDEV_PROJECT_DIR must be set in tests/.env');
-    }
-
-    exec("cd {$projectDir} && ddev exec php artisan db:wipe --force 2>&1", $output, $exitCode);
-
-    if ($exitCode !== 0) {
-        $this->fail('ddev db:wipe failed: '.implode("\n", $output));
+    if ($result['exitCode'] !== 0) {
+        $this->fail('db:wipe failed: '.implode("\n", $result['output']));
     }
 });
 
