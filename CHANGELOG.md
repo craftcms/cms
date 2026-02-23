@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is now set to `false` by default for database connections.
 - Fixed an unintended change in behavior where `craft\helpers\App::parseEnv()` was returning `null` instad of an empty string, when an environment variable name was passed in, which was set to an empty string.
 
 ## 5.9.12 - 2026-02-18
