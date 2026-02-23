@@ -167,7 +167,7 @@ return [
     'Are you sure you want to delete “{name}”?' => 'Sind Sie sicher, dass Sie „{name}“ wirklich löschen möchten?',
     'Are you sure you want to discard the pending project config YAML changes?' => 'Sind Sie sicher, dass Sie die ausstehenden Änderungen der YAML-Projektkonfiguration verwerfen möchten?',
     'Are you sure you want to discard your changes?' => 'Sind Sie sicher, dass Sie Ihre Änderungen verwerfen wollen?',
-    'Are you sure you want to move the selected items?' => 'Sind Sie sicher, dass Sie die ausgewählten Elemente verschieben möchten?',
+    'Are you sure you want to move the selected items?' => 'Sind Sie sicher, dass Sie die ausgewählten Elemente löschen möchten?',
     'Are you sure you want to permanently delete the selected {type}?' => 'Sind Sie sicher, dass Sie die ausgewählten {type} dauerhaft löschen wollen?',
     'Are you sure you want to release all jobs in the queue?' => 'Sind Sie sicher, dass Sie alle Aufgaben in der Warteschlange abbrechen möchten?',
     'Are you sure you want to release the job “{description}”?' => 'Sind Sie sicher, dass Sie die Aufgabe „{description}“ wirklich abbrechen möchten?',
