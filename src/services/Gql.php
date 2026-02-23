@@ -577,6 +577,8 @@ class Gql extends Component
                 'context' => $context,
                 'rootValue' => $rootValue,
                 'result' => $result,
+                'cacheTags' => $dep->tags ?? null,
+                'cacheDuration' => $duration ?? null,
             ]);
             $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
             $result = $event->result;

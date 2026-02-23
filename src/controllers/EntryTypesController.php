@@ -16,6 +16,7 @@ use craft\elements\Entry;
 use craft\enums\Color;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -384,6 +385,7 @@ class EntryTypesController extends Controller
         $settings = array_filter(ArrayHelper::getValue($postedSettings, $settingsNamespace, []));
 
         if (!empty($settings)) {
+            $settings = Component::cleanseConfig($settings);
             Craft::configure($entryType, $settings);
             $entryType->validateHandleUniqueness = false;
 

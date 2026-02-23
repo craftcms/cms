@@ -377,6 +377,7 @@ JS, [
                 }
             }, ARRAY_FILTER_USE_KEY);
 
+            $settings = Component::cleanseConfig($settings);
             Typecast::properties($type, $settings);
             Craft::configure($field, $settings);
         }

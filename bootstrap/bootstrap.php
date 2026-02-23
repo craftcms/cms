@@ -146,7 +146,7 @@ if (!App::isStreamLog()) {
 }
 
 // Log errors to storage/logs/phperrors.log or php://stderr
-if (App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS') !== false) {
+if (App::normalizeBooleanValue(App::env('CRAFT_LOG_PHP_ERRORS')) !== false) {
     ini_set('log_errors', '1');
 
     if (App::isStreamLog()) {
@@ -162,7 +162,7 @@ error_reporting($errorLevel);
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
 
-$devMode = App::env('CRAFT_DEV_MODE') ?? $generalConfig->devMode;
+$devMode = App::normalizeBooleanValue(App::env('CRAFT_DEV_MODE')) ?? $generalConfig->devMode;
 
 if ($devMode) {
     ini_set('display_errors', '1');
@@ -286,7 +286,7 @@ $localConfig = ArrayHelper::merge(
     $configService->getConfigFromFile("app.{$appType}")
 );
 
-$safeMode = App::env('CRAFT_SAFE_MODE') ?? $generalConfig->safeMode;
+$safeMode = App::normalizeBooleanValue(App::env('CRAFT_SAFE_MODE')) ?? $generalConfig->safeMode;
 
 if ($safeMode) {
     ArrayHelper::remove($localConfig, 'bootstrap');

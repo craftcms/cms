@@ -42,6 +42,7 @@ class AppHelperTest extends TestCase
             'TEST_2' => 'foo-${TEST_1}-bar',
             'TEST_3' => 'true',
             'TEST_4' => 'false',
+            'TEST_EMPTY' => '',
         ];
 
         foreach ($variables as $name => $value) {
@@ -52,6 +53,8 @@ class AppHelperTest extends TestCase
         self::assertSame('foo-testing1-bar', App::env('TEST_2'));
         self::assertTrue(App::env('TEST_3'));
         self::assertFalse(App::env('TEST_4'));
+        // todo: this should be assertNull() in v6
+        self::assertSame('', App::env('TEST_EMPTY'));
 
         foreach (array_keys($variables) as $name) {
             putenv($name);
@@ -100,6 +103,7 @@ class AppHelperTest extends TestCase
             'TEST_1' => 'testing1',
             'TEST_2' => 'foo${TEST_1}bar',
             'TEST_DEFAULT_SITE_API_KEY' => 'abcdef',
+            'TEST_EMPTY' => '',
         ];
 
         foreach ($variables as $name => $value) {
@@ -120,6 +124,8 @@ class AppHelperTest extends TestCase
         self::assertSame(CRAFT_TESTS_PATH . '/foo/bar', App::parseEnv('$CRAFT_TESTS_PATH/foo/bar'));
         self::assertSame('CRAFT_TESTS_PATH', App::parseEnv('CRAFT_TESTS_PATH'));
         self::assertSame(Craft::getAlias('@vendor/foo/bar'), App::parseEnv('@vendor/foo/bar'));
+        // todo: this should be assertNull() in v6
+        self::assertSame('', App::parseEnv('$TEST_EMPTY'));
         self::assertNull(App::parseEnv('$TEST_MISSING'));
         self::assertNull(App::parseEnv(null));
 
@@ -140,6 +146,16 @@ class AppHelperTest extends TestCase
         }
 
         self::assertSame($expected, App::parseBooleanEnv($value));
+    }
+
+    /**
+     * @dataProvider normalizeBooleanValueDataProvider
+     * @param bool|null $expected
+     * @param mixed $value
+     */
+    public function testNormalizeBooleanEnv(?bool $expected, mixed $value): void
+    {
+        self::assertSame($expected, App::normalizeBooleanValue($value));
     }
 
     /**
@@ -460,12 +476,17 @@ class AppHelperTest extends TestCase
             [true, true],
             [false, false],
             [true, 'yes'],
+            [true, 'YES'],
             [false, 'no'],
+            [true, 'ON'],
             [true, 'on'],
+            [false, 'OFF'],
             [false, 'off'],
+            [true, 'TRUE'],
             [true, '1'],
             [false, '0'],
             [true, 'true'],
+            [false, 'FALSE'],
             [false, 'false'],
             [null, ''],
             [null, 'whatever'],
@@ -479,10 +500,51 @@ class AppHelperTest extends TestCase
                 ['TEST_FALSE' => 'false'],
             ],
             [
+                false,
+                '$TEST_FALSE',
+                ['TEST_FALSE' => 'FALSE'],
+            ],
+            [
                 true,
                 '$TEST_TRUE',
                 ['TEST_TRUE' => 'true'],
             ],
+            [
+                true,
+                '$TEST_TRUE',
+                ['TEST_TRUE' => 'TRUE'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function normalizeBooleanValueDataProvider(): array
+    {
+        return [
+            [true, true],
+            [false, false],
+            [true, 'yes'],
+            [true, 'YES'],
+            [false, 'no'],
+            [false, 'no'],
+            [true, 'ON'],
+            [true, 'on'],
+            [false, 'off'],
+            [false, 'OFF'],
+            [true, '1'],
+            [false, '0'],
+            [true, 'true'],
+            [true, 'TRUE'],
+            [false, 'false'],
+            [false, 'FALSE'],
+            [null, ''],
+            [null, 'whatever'],
+            [true, 1],
+            [false, 0],
+            [null, 2],
+            [null, null],
         ];
     }
 
