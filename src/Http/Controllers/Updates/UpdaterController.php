@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Updates;
 use Composer\Semver\Comparator;
 use Craft;
 use craft\helpers\UrlHelper;
+use craft\web\Application;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
@@ -15,6 +16,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Updates\Updates;
+use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
@@ -62,7 +64,7 @@ final class UpdaterController extends BaseUpdaterController
      * Renders the Updater page via Inertia.
      */
     #[Override]
-    public function index(\craft\web\Application $craft): Response
+    public function index(#[Give('Craft')] Application $craft): Response
     {
         $this->data = $this->initialData();
         $state = $this->realInitialState();
