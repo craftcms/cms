@@ -15,10 +15,13 @@ final class SetPasswordCommand extends Command implements PromptsForMissingInput
     use CraftCommand;
     use PromptsForMissingUser;
 
+    #[\Override]
     protected $signature = 'craft:users:set-password {user} {password}';
 
+    #[\Override]
     protected $description = 'Changes a user’s password.';
 
+    #[\Override]
     protected $aliases = ['users/set-password', 'users/setPassword', 'users:setPassword'];
 
     public function handle(): int

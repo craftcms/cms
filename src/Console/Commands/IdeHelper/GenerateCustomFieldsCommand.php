@@ -12,8 +12,10 @@ use function CraftCms\Cms\t;
 
 final class GenerateCustomFieldsCommand extends Command
 {
+    #[\Override]
     protected $signature = 'craft:ide-helper:custom-fields';
 
+    #[\Override]
     protected $description = 'Generate IDE helper file for custom fields';
 
     public function handle(CustomFieldIdeHelperGenerator $generator): int

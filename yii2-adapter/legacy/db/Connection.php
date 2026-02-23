@@ -178,7 +178,7 @@ class Connection extends DatabaseConnection
      */
     public function open(): void
     {
-        if (Env::get('CRAFT_NO_DB')) {
+        if (Env::normalizeBooleanValue(Env::get('CRAFT_NO_DB'))) {
             throw new DbConnectException('Craft CMS can’t connect to the database.');
         }
 

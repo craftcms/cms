@@ -14,10 +14,13 @@ final class Draft extends BaseModel
 {
     use HasFactory;
 
+    #[\Override]
     protected $table = Table::DRAFTS;
 
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $casts = [
         'provisional' => 'bool',
         'trackChanges' => 'bool',

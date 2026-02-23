@@ -31,6 +31,7 @@ final class UserQuery extends ElementQuery
 
     public const string STATUS_CREDENTIALED = 'credentialed';
 
+    #[\Override]
     protected array $defaultOrderBy = [
         'users.username' => SORT_ASC,
         'users.active' => SORT_DESC,

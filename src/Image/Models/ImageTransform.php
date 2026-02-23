@@ -12,6 +12,7 @@ final class ImageTransform extends BaseModel
 {
     use HasUid;
 
+    #[\Override]
     protected $table = Table::IMAGETRANSFORMS;
 
     #[\Override]

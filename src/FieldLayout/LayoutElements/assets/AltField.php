@@ -18,8 +18,10 @@ use function CraftCms\Cms\t;
 
 class AltField extends TextareaField
 {
+    #[\Override]
     public string $attribute = 'alt';
 
+    #[\Override]
     public bool $requirable = true;
 
     public function __construct($config = [])

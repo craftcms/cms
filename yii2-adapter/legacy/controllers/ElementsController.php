@@ -919,7 +919,7 @@ JS, [
                             ? Template::raw(t('Saved <time title="{timestampWithDate}">{timestamp}</time> by {creator}', [
                                 'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
-                                'creator' => $creator->name,
+                                'creator' => Html::encode($creator->name),
                             ]))
                             : Template::raw(t('Last saved <time title="{timestampWithDate}">{timestamp}</time>', [
                                 'timestampWithDate' => $timestampWithDate,
@@ -950,7 +950,7 @@ JS, [
                             ? Template::raw(t('Saved <time title="{timestampWithDate}">{timestamp}</time> by {creator}', [
                                 'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
-                                'creator' => $creator->name,
+                                'creator' => Html::encode($creator->name),
                             ]))
                             : Template::raw(t('Saved <time title="{timestampWithDate}">{timestamp}</time>', [
                                 'timestampWithDate' => $timestampWithDate,

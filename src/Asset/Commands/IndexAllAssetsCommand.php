@@ -17,14 +17,17 @@ final class IndexAllAssetsCommand extends Command
     use CraftCommand;
     use IndexesAssets;
 
+    #[\Override]
     protected $signature = 'craft:index-assets:all
         {--createMissingAssets=true : Auto-create new asset records when missing.}
         {--deleteMissingAssets=false : Delete all the asset records that have their files missing.}
         {--deleteEmptyFolders=false : Delete empty folders.}
     ';
 
+    #[\Override]
     protected $description = 'Re-indexes assets across all volumes.';
 
+    #[\Override]
     protected $aliases = ['index-assets/all'];
 
     public function __construct()

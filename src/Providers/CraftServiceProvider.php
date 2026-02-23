@@ -29,6 +29,7 @@ use Illuminate\Support\AggregateServiceProvider;
 
 final class CraftServiceProvider extends AggregateServiceProvider
 {
+    #[\Override]
     protected $providers = [
         ConfigServiceProvider::class,
         AuthServiceProvider::class,

@@ -21,10 +21,13 @@ final class AsciiFilenamesCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:utils:ascii-filenames';
 
+    #[\Override]
     protected $description = 'Converts all non-ASCII asset filenames to ASCII.';
 
+    #[\Override]
     protected $aliases = ['utils/ascii-filenames'];
 
     public function handle(GeneralConfig $generalConfig): int

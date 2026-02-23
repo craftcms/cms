@@ -19,10 +19,13 @@ final class Remove2faCommand extends Command implements PromptsForMissingInput
     use CraftCommand;
     use PromptsForMissingUser;
 
+    #[\Override]
     protected $signature = 'craft:users:remove-2fa {user}';
 
+    #[\Override]
     protected $description = 'Removes user\'s two-step verification method(s)';
 
+    #[\Override]
     protected $aliases = ['users/remove-2fa'];
 
     public function handle(Auth $auth): int

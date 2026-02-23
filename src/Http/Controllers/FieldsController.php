@@ -53,7 +53,7 @@ final class FieldsController
 
     public function __construct(
         GeneralConfig $generalConfig,
-        private Fields $fieldsService,
+        private readonly Fields $fieldsService,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -121,6 +121,7 @@ final class FieldsController
                 }
             }, ARRAY_FILTER_USE_KEY);
 
+            $settings = Component::cleanseConfig($settings);
             Typecast::properties($type, $settings);
             Craft::configure($field, $settings);
         }

@@ -18,8 +18,10 @@ use function CraftCms\Cms\t;
 
 class LatLongField extends BaseNativeField
 {
+    #[\Override]
     public string $attribute = 'latLong';
 
+    #[\Override]
     public bool $requirable = true;
 
     public function __construct($config = [])

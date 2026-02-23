@@ -83,7 +83,7 @@ class Dispatcher extends \yii\log\Dispatcher
             static::TARGET_CONSOLE,
             static::TARGET_QUEUE,
         ])->mapWithKeys(function($name) use ($isConsoleRequest) {
-            $allowLineBreaks = (bool) (Env::get('CRAFT_LOG_ALLOW_LINE_BREAKS') ?? app()->hasDebugModeEnabled());
+            $allowLineBreaks = Env::normalizeBooleanValue(Env::get('CRAFT_LOG_ALLOW_LINE_BREAKS') ?? app()->hasDebugModeEnabled());
             $config = $this->monologTargetConfig + [
                 'class' => MonologTarget::class,
                 'name' => $name,

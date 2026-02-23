@@ -27,6 +27,7 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
 {
     use HintableConditionRuleTrait;
 
+    #[\Override]
     protected bool $reloadOnOperatorChange = true;
 
     public function getLabel(): string

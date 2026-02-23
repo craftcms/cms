@@ -11,8 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class ElementSiteSettings extends BasePivot
 {
+    #[\Override]
     protected $table = Table::ELEMENTS_SITES;
 
+    #[\Override]
     protected $casts = [
         'enabled' => 'bool',
         'content' => 'json',

@@ -21,8 +21,10 @@ final class UpCommand extends Command implements Isolatable
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:up {--noBackup : Skip backing up the database.}';
 
+    #[\Override]
     protected $description = 'Runs pending migrations and applies pending project config changes.';
 
     public function handle(Updates $updates, License $license, ProjectConfig $projectConfig): int

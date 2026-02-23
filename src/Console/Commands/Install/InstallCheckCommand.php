@@ -9,10 +9,13 @@ use Illuminate\Console\Command;
 
 final class InstallCheckCommand extends Command
 {
+    #[\Override]
     protected $signature = 'craft:install:check';
 
+    #[\Override]
     protected $description = 'Checks whether Craft is already installed.';
 
+    #[\Override]
     protected $aliases = ['install/check'];
 
     public function handle(): int

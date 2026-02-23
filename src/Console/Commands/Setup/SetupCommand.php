@@ -15,8 +15,10 @@ final class SetupCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:setup';
 
+    #[\Override]
     protected $description = 'Sets up all the things. This is an interactive wrapper for the `setup/db-creds`, and `install` commands, each of which support being run non-interactively.';
 
     public function handle(): int

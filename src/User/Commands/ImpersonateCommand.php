@@ -18,10 +18,13 @@ final class ImpersonateCommand extends Command implements PromptsForMissingInput
     use CraftCommand;
     use PromptsForMissingUser;
 
+    #[\Override]
     protected $signature = 'craft:users:impersonate {user}';
 
+    #[\Override]
     protected $description = 'Generates a URL to impersonate a user.';
 
+    #[\Override]
     protected $aliases = ['users/impersonate'];
 
     public function handle(GetImpersonationUrlAction $getImpersonationUrlAction): int

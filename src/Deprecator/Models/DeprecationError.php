@@ -13,6 +13,7 @@ final class DeprecationError extends BaseModel
 {
     use HasUid;
 
+    #[\Override]
     protected $table = Table::DEPRECATIONERRORS;
 
     #[\Override]

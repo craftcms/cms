@@ -14,10 +14,13 @@ final class WelcomeCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:setup:welcome';
 
+    #[\Override]
     protected $description = 'Called from the `post-create-project-cmd` Composer hook.';
 
+    #[\Override]
     protected $aliases = ['setup/welcome'];
 
     public function handle(): void

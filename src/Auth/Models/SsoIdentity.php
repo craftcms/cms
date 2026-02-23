@@ -11,8 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class SsoIdentity extends BaseModel
 {
+    #[\Override]
     protected $table = Table::SSO_IDENTITIES;
 
+    #[\Override]
     public $incrementing = false;
 
     /**

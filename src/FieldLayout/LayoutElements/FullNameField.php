@@ -16,8 +16,10 @@ use function CraftCms\Cms\t;
 
 class FullNameField extends TextField
 {
+    #[\Override]
     public string $attribute = 'fullName';
 
+    #[\Override]
     public bool $requirable = true;
 
     public function __construct($config = [])
