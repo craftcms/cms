@@ -63,8 +63,8 @@ test('index can be loaded', function () {
 });
 
 test('index can be sorted', function () {
-    Section::factory()->create(['name' => 'ZZZ Last Section']);
-    Section::factory()->create(['name' => 'AAA First Section']);
+    Section::factory()->create(['name' => 'zzz Last Section']);
+    Section::factory()->create(['name' => 'aaa First Section']);
 
     get(action([SectionsController::class, 'index'], [
         'sort' => [
@@ -74,8 +74,8 @@ test('index can be sorted', function () {
         ->assertOk()
         ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
             ->has('data', 3)
-            ->where('data.0.name', 'AAA First Section')
-            ->where('data.2.name', 'ZZZ Last Section')
+            ->where('data.0.name', 'aaa First Section')
+            ->where('data.2.name', 'zzz Last Section')
         );
 });
 
