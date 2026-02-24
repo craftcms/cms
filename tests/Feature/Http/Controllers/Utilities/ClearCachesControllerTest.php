@@ -27,7 +27,7 @@ test('can clear specific caches', function () {
     postJson(action([ClearCachesController::class, 'clearCaches']), [
         'caches' => 'all',
     ])
-        ->assertOk();
+        ->assertRedirectBack();
 });
 
 test('requires caches parameter', function () {
@@ -39,5 +39,5 @@ test('can invalidate cache tags', function () {
     postJson(action([ClearCachesController::class, 'invalidateTags']), [
         'tags' => ['test-tag-1', 'test-tag-2'],
     ])
-        ->assertOk();
+        ->assertRedirectBack();
 });
