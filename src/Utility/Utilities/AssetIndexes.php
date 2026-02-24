@@ -57,7 +57,6 @@ final class AssetIndexes extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        $assetIndexer = app(AssetIndexer::class);
         $volumeOptions = [];
 
         foreach (self::volumes() as $volume) {
@@ -68,7 +67,7 @@ final class AssetIndexes extends Utility
         }
 
         $dateFormat = I18N::getLocale()->getDateTimeFormat('short', Locale::FORMAT_PHP);
-        $existingIndexingSessions = $assetIndexer->getExistingIndexingSessions();
+        $existingIndexingSessions = AssetIndexer::getExistingIndexingSessions();
 
         return Html::tag('AssetIndexes', attributes: [
             ':existingSessions' => $existingIndexingSessions,
