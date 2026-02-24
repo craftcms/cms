@@ -4,18 +4,25 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
+use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use DateTimeInterface;
+use DateTimeZone;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use Money\Money;
+use Serializable;
 use Tpetry\QueryExpressions\Function\String\Lower;
 
 final readonly class Query
 {
+    const string SIMPLE_TYPE_NUMERIC = 'numeric';
+
+    const string SIMPLE_TYPE_TEXTUAL = 'textual';
+
     const string TYPE_CHAR = 'char';
 
     const string TYPE_ENUM = 'enum';
@@ -59,6 +66,8 @@ final readonly class Query
     const string TYPE_MONEY = 'money';
 
     const string TYPE_JSON = 'json';
+
+    const string TYPE_JSONB = 'jsonb';
 
     private const array NUMERIC_COLUMN_TYPES = [
         self::TYPE_TINYINT,
@@ -481,6 +490,62 @@ final readonly class Query
     }
 
     /**
+     * Parses a column type definition and returns just the column length/size.
+     */
+    public static function parseColumnLength(string $columnType): ?int
+    {
+        if (! preg_match('/^\w+\((\d+)\)/', $columnType, $matches)) {
+            return null;
+        }
+
+        return (int) $matches[1];
+    }
+
+    /**
+     * Parses a decimal column type definition and returns just the column precision and scale.
+     *
+     * @return array{0:int,1:int}|null
+     */
+    public static function parseColumnPrecisionAndScale(string $columnType): ?array
+    {
+        if (! preg_match('/^\w+\((\d+),\s*(\d+)\)/', $columnType, $matches)) {
+            return null;
+        }
+
+        return [(int) $matches[1], (int) $matches[2]];
+    }
+
+    /**
+     * Returns a simplified version of a given column type.
+     */
+    public static function getSimplifiedColumnType(string $columnType): string
+    {
+        if (($shortColumnType = self::parseColumnType($columnType)) === null) {
+            return $columnType;
+        }
+
+        // Numeric?
+        if (in_array($shortColumnType, self::NUMERIC_COLUMN_TYPES, true)) {
+            return self::SIMPLE_TYPE_NUMERIC;
+        }
+
+        // Textual?
+        if (in_array($shortColumnType, self::TEXTUAL_COLUMN_TYPES, true)) {
+            return self::SIMPLE_TYPE_TEXTUAL;
+        }
+
+        return $shortColumnType;
+    }
+
+    /**
+     * Returns whether two column type definitions are relatively compatible with each other.
+     */
+    public static function areColumnTypesCompatible(string $typeA, string $typeB): bool
+    {
+        return self::getSimplifiedColumnType($typeA) === self::getSimplifiedColumnType($typeB);
+    }
+
+    /**
      * Normalizes a param value with a provided resolver function, unless the resolver function ever returns
      * an empty value.
      *
@@ -650,6 +715,24 @@ final readonly class Query
     }
 
     /**
+     * Unescapes commas, asterisks, and colons added to a string via [[escapeParam()]].
+     */
+    public static function unescapeParam(string $value): string
+    {
+        $value = preg_replace('/\\\([,*:])/', '$1', $value);
+
+        // If the value starts with an escaped operator, unescape that too.
+        foreach (self::OPERATORS as $operator) {
+            if (stripos((string) $value, "\\$operator") === 0) {
+                $value = ltrim((string) $value, '\\');
+                break;
+            }
+        }
+
+        return $value;
+    }
+
+    /**
      * Escapes underscores within a value for a `LIKE` condition.
      */
     public static function escapeForLike(string $value): string
@@ -663,5 +746,80 @@ final readonly class Query
     public static function escapeCommas(string $value): string
     {
         return preg_replace('/(?<!\\\),/', '\\\$0', $value);
+    }
+
+    /**
+     * Prepares an array or object’s values to be sent to the database.
+     */
+    public static function prepareValuesForDb(mixed $values): array
+    {
+        // Normalize to an array
+        $values = Arr::toArray($values, [], false);
+
+        foreach ($values as $key => $value) {
+            $values[$key] = self::prepareValueForDb($value);
+        }
+
+        return $values;
+    }
+
+    /**
+     * Prepares a value to be sent to the database.
+     *
+     * @param  mixed  $value  The value to be prepared
+     * @param  string|null  $columnType  The type of column the value will be stored in
+     * @return mixed The prepped value
+     */
+    public static function prepareValueForDb(mixed $value, ?string $columnType = null): mixed
+    {
+        // Leave expressions alone
+        if ($value instanceof Expression) {
+            return $value;
+        }
+
+        // If the object explicitly defines its savable value, use that
+        if ($value instanceof Serializable) {
+            return $value->serialize();
+        }
+
+        // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
+        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
+            return self::prepareDateForDb($value);
+        }
+
+        // If this isn’t a JSON column and the value is an object or array, JSON-encode it
+        if (is_object($value) || is_array($value)) {
+            if (in_array($columnType, [self::TYPE_JSON, self::TYPE_JSONB])) {
+                return Arr::toArray($value);
+            }
+
+            return Json::encode($value);
+        }
+
+        if ($columnType && self::isNumericColumnType($columnType) && is_bool($value)) {
+            return (int) $value;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Prepares a date to be sent to the database.
+     *
+     * @param  mixed  $date  The date to be prepared
+     * @return string|null The prepped date, or `null` if it could not be prepared
+     */
+    public static function prepareDateForDb(mixed $date): ?string
+    {
+        $date = DateTimeHelper::toDateTime($date);
+
+        if ($date === false) {
+            return null;
+        }
+
+        $date = clone $date;
+        $date->setTimezone(new DateTimeZone('UTC'));
+
+        return $date->format('Y-m-d H:i:s');
     }
 }

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 
-use craft\helpers\Db as DbHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -97,7 +97,7 @@ trait QueriesSections
             }
         } elseif ($value === '*') {
             $this->sectionId = Sections::getAllSectionIds()->values()->all();
-        } elseif (DbHelper::normalizeParam($value, function ($item) {
+        } elseif (Query::normalizeParam($value, function ($item) {
             if (is_string($item)) {
                 $item = Sections::getSectionByHandle($item);
             }

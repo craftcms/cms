@@ -509,7 +509,7 @@ class Assets extends Component
             ]);
 
         if ($parentFolder->path !== null) {
-            $query->andWhere(['like', 'path', Db::escapeForLike($parentFolder->path) . '%', false]);
+            $query->andWhere(['like', 'path', \CraftCms\Cms\Support\Query::escapeForLike($parentFolder->path) . '%', false]);
         }
 
         if ($orderBy) {
