@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;

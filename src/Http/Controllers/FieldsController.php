@@ -54,7 +54,6 @@ final class FieldsController
     public function __construct(
         GeneralConfig $generalConfig,
         private AssetRegistry $assetRegistry,
-        private Fields $fieldsService,
         private readonly Fields $fieldsService,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
