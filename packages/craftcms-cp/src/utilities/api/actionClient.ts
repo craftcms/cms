@@ -1,5 +1,5 @@
 import axios, {type RawAxiosRequestHeaders} from 'axios';
-import {Csrf} from '../../services/Csrf.js';
+import {Csrf} from '@src/services/Csrf';
 
 /**
  * @TODO
@@ -13,15 +13,16 @@ export function getActionUrl(action: string = '') {
  */
 export function actionHeaders(): RawAxiosRequestHeaders {
   let headers: Record<string, string> = {
-    'X-Registered-Asset-Bundles': [
-      ...new Set(Craft.registeredAssetBundles),
-    ].join(','),
-    'X-Registered-Js-Files': [...new Set(Craft.registeredJsFiles)].join(','),
+    'X-Registered-Asset-Bundles': [...new Set(Cp.registeredAssetBundles)].join(
+      ','
+    ),
+    'X-Registered-Js-Files': [...new Set(Cp.registeredJsFiles)].join(','),
   };
 
-  if (Craft.csrfTokenValue) {
-    headers['X-CSRF-Token'] = Craft.csrfTokenValue;
-  }
+  // @TODO Make sure we really don't need this anymore
+  // if (Cp.csrfTokenValue) {
+  //   headers['X-CSRF-Token'] = Cp.csrfTokenValue;
+  // }
 
   return headers;
 }
@@ -42,17 +43,18 @@ actionClient.interceptors.request.use(async (config) => {
     config.headers.set(key, value);
   });
 
-  if (
-    ['post', 'put', 'patch', 'delete'].includes(
-      config.method?.toLowerCase() || ''
-    ) &&
-    !config.url?.includes('users/session-info')
-  ) {
-    const tokenValue = await csrf.getToken();
-    if (tokenValue) {
-      config.headers.set('X-CSRF-Token', tokenValue);
-    }
-  }
+  // @TODO Make sure we really don't need this anymore
+  // if (
+  //   ['post', 'put', 'patch', 'delete'].includes(
+  //     config.method?.toLowerCase() || ''
+  //   ) &&
+  //   !config.url?.includes('users/session-info')
+  // ) {
+  //   const tokenValue = await csrf.getToken();
+  //   if (tokenValue) {
+  //     config.headers.set('X-CSRF-Token', tokenValue);
+  //   }
+  // }
 
   return config;
 });

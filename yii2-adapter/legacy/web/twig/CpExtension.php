@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -24,12 +26,13 @@ use Twig\TwigFunction;
  * Control panel Twig extension
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.7.8
  */
 class CpExtension extends AbstractExtension implements GlobalsInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getGlobals(): array
     {
@@ -44,7 +47,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFunctions(): array
     {
@@ -80,12 +83,13 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
                     'message' => $e->getMessage(),
                 ]);
             }
+
             return '';
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFilters(): array
     {
@@ -105,6 +109,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
                 if ($item['selected']) {
                     return $item;
                 }
+
                 continue;
             }
 

@@ -8,6 +8,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
+use Override;
 use ReflectionProperty;
 use RuntimeException;
 
@@ -36,7 +37,7 @@ final class Env extends \Illuminate\Support\Env
         $filesystem->put($pathToFile, implode(PHP_EOL, $lines));
     }
 
-    #[\Override]
+    #[Override]
     public static function get($key, $default = null): mixed
     {
         $value = parent::get($key, $default);
@@ -121,6 +122,20 @@ final class Env extends \Illuminate\Support\Env
      */
     public static function parseBoolean(mixed $value): ?bool
     {
+        if (is_string($value)) {
+            $value = self::parse($value);
+        }
+
+        return self::normalizeBooleanValue($value);
+    }
+
+    /**
+     * Normalizes a boolean environment variable/constant name/CLI command option.
+     *
+     * Truthy/falsy values include `on`/`off`, `yes`/`no`, `1`/`0`, and `true`/`false` (case-insensitive).
+     */
+    public static function normalizeBooleanValue(mixed $value): ?bool
+    {
         if (is_bool($value)) {
             return $value;
         }
@@ -130,12 +145,6 @@ final class Env extends \Illuminate\Support\Env
         }
 
         if (! is_string($value) || $value === '') {
-            return null;
-        }
-
-        $value = self::parse($value);
-
-        if ($value === null) {
             return null;
         }
 

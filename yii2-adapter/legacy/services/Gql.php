@@ -53,7 +53,6 @@ use craft\gql\types\Number;
 use craft\gql\types\Query;
 use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db as DbHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
@@ -586,6 +585,8 @@ class Gql extends Component
                 'context' => $context,
                 'rootValue' => $rootValue,
                 'result' => $result,
+                'cacheTags' => $dep->tags ?? null,
+                'cacheDuration' => $duration ?? null,
             ]);
             $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
             $result = $event->result;
@@ -1893,8 +1894,8 @@ class Gql extends Component
 
         $tokenModel->name = $token->name;
         $tokenModel->enabled = $token->enabled;
-        $tokenModel->expiryDate = DbHelper::prepareDateForDb($token->expiryDate);
-        $tokenModel->lastUsed = DbHelper::prepareDateForDb($token->lastUsed);
+        $tokenModel->expiryDate = \CraftCms\Cms\Support\Query::prepareDateForDb($token->expiryDate);
+        $tokenModel->lastUsed = \CraftCms\Cms\Support\Query::prepareDateForDb($token->lastUsed);
         $tokenModel->schemaId = $token->schemaId;
 
         if ($token->accessToken) {

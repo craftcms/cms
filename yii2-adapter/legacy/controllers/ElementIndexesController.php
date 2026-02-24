@@ -460,16 +460,16 @@ class ElementIndexesController extends BaseElementsController
         $serialized = $this->request->getBodyParam('serialized');
         $fieldLayouts = $this->request->getBodyParam('fieldLayouts');
 
+        if (!$conditionConfig && $serialized) {
+            parse_str($serialized, $conditionConfig);
+            $conditionConfig = $conditionConfig['condition'];
+        }
+
         if ($conditionConfig) {
             $conditionConfig = Component::cleanseConfig($conditionConfig);
             /** @var ElementConditionInterface $condition */
             $condition = Conditions::createCondition($conditionConfig);
-        } elseif ($serialized) {
-            parse_str($serialized, $conditionConfig);
-            /** @var ElementConditionInterface $condition */
-            $condition = Conditions::createCondition($conditionConfig['condition']);
         } else {
-            /** @var ElementConditionInterface $condition */
             $condition = $this->elementType()::createCondition();
         }
 

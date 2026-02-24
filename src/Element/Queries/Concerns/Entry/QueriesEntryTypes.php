@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 
-use craft\helpers\Db as DbHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -93,7 +93,7 @@ trait QueriesEntryTypes
      */
     public function type(mixed $value): static
     {
-        if (DbHelper::normalizeParam($value, function ($item) {
+        if (Query::normalizeParam($value, function ($item) {
             if (is_string($item)) {
                 $item = EntryTypes::getEntryTypeByHandle($item);
             }

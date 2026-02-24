@@ -18,4 +18,10 @@ export const Appearance = {
 
 export type AppearanceKey = (typeof Appearance)[keyof typeof Appearance];
 
+export interface DateObject {
+  date: string;
+  timezone_type: string;
+  timezone: string;
+}
+
 export * from './queue.js';

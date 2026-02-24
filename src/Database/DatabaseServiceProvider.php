@@ -11,13 +11,16 @@ use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Connection;
+use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression as QueryExpression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder as SchemaBuilder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Override;
+use ReflectionProperty;
 
 final class DatabaseServiceProvider extends ServiceProvider
 {
@@ -32,6 +35,10 @@ final class DatabaseServiceProvider extends ServiceProvider
         Connection::macro('isMysql', fn (bool $strict = false) => $strict ? $this->getDriverName() === 'mysql' : in_array($this->getDriverName(), ['mysql', 'mariadb']));
         Connection::macro('isMaria', fn () => $this->getDriverName() === 'mariadb');
         Connection::macro('isPgsql', fn () => $this->getDriverName() === 'pgsql');
+        Connection::macro('isSqlite', fn () => $this->getDriverName() === 'sqlite');
+
+        Builder::macro('whereBool', fn ($column, bool $value) => $this->where($column, new QueryExpression(var_export($value, true))));
+        Builder::macro('orWhereBool', fn ($column, bool $value) => $this->orWhere($column, new QueryExpression(var_export($value, true))));
 
         $this->registerQueryBuilderMacros();
         $this->registerSchemaBuilderMacros();
@@ -45,6 +52,33 @@ final class DatabaseServiceProvider extends ServiceProvider
             MigrateCommand::class,
         ]);
 
+        if ($db->getDriverName() === 'sqlite') {
+            $this->bootSqlite($config, $db, $cache);
+        } else {
+            $this->bootDefault($config, $db, $cache);
+        }
+    }
+
+    private function bootSqlite(Repository $config, Connection $db, \Illuminate\Cache\Repository $cache): void
+    {
+        /**
+         * For SQLite db2 must be the same connection as the default.
+         */
+        $config->set('database.connections.db2', $db->getConfig());
+        $appDb = app(ConnectionResolverInterface::class);
+
+        $connections = new ReflectionProperty($appDb, 'connections');
+        $current = $connections->getValue($appDb);
+        $current['db2'] = $db;
+        $connections->setValue($appDb, $current);
+
+        if ($cache->getStore() instanceof DatabaseStore) {
+            $cache->getStore()->setConnection($db);
+        }
+    }
+
+    private function bootDefault(Repository $config, Connection $db, \Illuminate\Cache\Repository $cache): void
+    {
         /**
          * Register a second database connection to use during
          * bulk ops or when inside transactions.

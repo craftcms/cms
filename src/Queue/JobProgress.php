@@ -64,9 +64,20 @@ final readonly class JobProgress
      */
     public function getJobInfo(?int $limit = null): Collection
     {
+        return self::jobsQuery()
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Builder<JobProgressModel>
+     */
+    public function jobsQuery(): \Illuminate\Database\Eloquent\Builder
+    {
         $delay = match (DB::connection()->getDriverName()) {
             'mysql' => 'GREATEST(?, UNIX_TIMESTAMP(dateCreated) + delay)',
             'pgsql' => 'GREATEST(?, EXTRACT(EPOCH FROM "dateCreated") + delay)',
+            'sqlite' => 'MAX(?, CAST(strftime(\'%s\', dateCreated) AS INTEGER) + delay)',
             default => throw new RuntimeException('Unsupported database driver: '.DB::connection()->getDriverName()),
         };
 
@@ -74,15 +85,13 @@ final readonly class JobProgress
             // Failed jobs go last
             ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END DESC', [JobStatus::Failed->value])
             // Reserved jobs go first
-            ->orderByRaw('CASE WHEN status= ? THEN 1 ELSE 0 END DESC', [JobStatus::Reserved])
+            ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END DESC', [JobStatus::Reserved->value])
             // Pending jobs go second
-            ->orderByRaw('CASE WHEN status= ? THEN 1 ELSE 0 END DESC', [JobStatus::Pending])
+            ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END DESC', [JobStatus::Pending->value])
             // Then by now or dateCreated + delay
             ->orderByRaw($delay, [now()->getTimestamp()])
             // Lastly by dateCreated
-            ->orderBy('dateCreated')
-            ->limit($limit)
-            ->get();
+            ->orderBy('dateCreated');
     }
 
     /**
@@ -95,6 +104,22 @@ final readonly class JobProgress
         return JobProgressModel::query()
             ->orderBy('dateCreated')
             ->get();
+    }
+
+    /**
+     * Gets the job to be displayed in the sidebar
+     */
+    public function getDisplayedJob(): ?JobProgressModel
+    {
+        return JobProgressModel::query()
+            ->orderBy('dateCreated')
+            ->whereIn('status', [
+                JobStatus::Reserved,
+                JobStatus::Failed,
+                JobStatus::Pending,
+            ])
+            ->whereNull('delay')
+            ->first();
     }
 
     /**
@@ -111,7 +136,6 @@ final readonly class JobProgress
                 JobStatus::Reserved,
                 JobStatus::Failed,
             ])
-            ->orderBy('dateCreated')
             ->get();
     }
 
@@ -124,7 +148,6 @@ final readonly class JobProgress
     {
         return JobProgressModel::query()
             ->where('status', $status->value)
-            ->orderBy('dateCreated')
             ->get();
     }
 

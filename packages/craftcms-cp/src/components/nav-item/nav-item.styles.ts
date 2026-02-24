@@ -1,20 +1,25 @@
 import {css} from 'lit';
 
 export default css`
+  :host {
+    --_padding-inline: var(--c-spacing-md);
+    --_padding-block: var(--c-spacing-sm);
+  }
+
   .nav-item {
     display: grid;
     gap: var(--c-spacing-md);
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
     text-decoration: none;
     color: inherit;
-    padding-inline: var(--c-spacing-md);
-    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--_padding-inline);
+    padding-block: var(--_padding-block);
     border-radius: var(--c-radius-md);
     position: relative;
   }
   
-  craft-badge-indicator::part(badge) {
+  craft-badge-indicator {
       position: absolute;
       inset-inline-end: 0;
       inset-block-end: 0;
@@ -24,6 +29,10 @@ export default css`
   .nav-item--prefixed {
     padding-inline: var(--c-spacing-sm);
     grid-template-columns: calc(24rem / 16) 1fr auto;
+  }
+
+  .nav-item--flush {
+    margin-inline-start: calc(var(--_padding-inline) * -1);
   }
 
   :host([active]) .nav-item {

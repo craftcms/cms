@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use craft\web\Application;
 use craft\web\assets\updater\UpdaterAsset;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -22,7 +21,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -77,7 +75,7 @@ abstract class BaseUpdaterController
         }
     }
 
-    public function index(#[Give('Craft')] Application $craft): View
+    public function index(#[Give('Craft')] Application $craft): Response|View
     {
         // Load the updater JS
         $view = $craft->getView();
@@ -200,7 +198,7 @@ abstract class BaseUpdaterController
     public function finish(): Response
     {
         // Disable maintenance mode
-        Craft::$app->disableMaintenanceMode();
+        app()->maintenanceMode()->deactivate();
 
         return $this->send([
             'finished' => true,

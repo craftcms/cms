@@ -21,7 +21,7 @@ interface CookieOptions {
  * @example
  * import Cookies from "@src/utilities/cookies";
  *
- * const cookies = new Cookies(Craft.defaultCookieOptions)
+ * const cookies = new Cookies(Cp.defaultCookieOptions)
  * cookies.set("foo", "bar");
  * cookies.get("foo"); // "bar"
  * cookies.remove("foo");

@@ -23,13 +23,9 @@ use craft\elements\actions\ShowInFolder;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\AssetException;
-use craft\errors\FileException;
-use craft\errors\ImageTransformException;
-use craft\errors\VolumeException;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
@@ -37,9 +33,6 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
-use craft\search\SearchQuery;
-use craft\search\SearchQueryTerm;
-use craft\search\SearchQueryTermGroup;
 use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\web\twig\AllowedInSandbox;
@@ -51,6 +44,9 @@ use CraftCms\Cms\Asset\Events\BeforeDefineAssetUrl;
 use CraftCms\Cms\Asset\Events\BeforeGenerateTransform;
 use CraftCms\Cms\Asset\Events\BeforeHandleFile;
 use CraftCms\Cms\Asset\Events\DefineAssetUrl;
+use CraftCms\Cms\Asset\Exceptions\FileException;
+use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
+use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
@@ -66,12 +62,16 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Cms\Search\SearchQuery;
+use CraftCms\Cms\Search\SearchQueryTerm;
+use CraftCms\Cms\Search\SearchQueryTermGroup;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
@@ -822,7 +822,7 @@ class Asset extends Element
         }
 
         if ($assetQuery->search) {
-            $assetQuery->search = $searchQuery = Craft::$app->getSearch()->normalizeSearchQuery($assetQuery->search);
+            $assetQuery->search = $searchQuery = Search::normalizeSearchQuery($assetQuery->search);
             $tokens = $searchQuery->getTokens();
             if (count($tokens) !== 1 || ! self::_validateSearchTermForIndex(reset($tokens))) {
                 return false;
@@ -2993,7 +2993,7 @@ JS;
             $model->size = (int) $this->size ?: null;
             $model->width = (int) $this->_width ?: $fallbackWidth;
             $model->height = (int) $this->_height ?: $fallbackHeight;
-            $model->dateModified = Db::prepareDateForDb($this->dateModified);
+            $model->dateModified = \CraftCms\Cms\Support\Query::prepareDateForDb($this->dateModified);
 
             if (isset($this->_mimeType)) {
                 $model->mimeType = $this->_mimeType;

@@ -8,9 +8,11 @@
         backupStaticProperties="false"
 >
     <testsuites>
-        <testsuite name="Tests">
-            <directory>./tests</directory>
-            <exclude>./tests/ArchTest.php</exclude>
+        <testsuite name="Feature">
+            <directory>./tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Unit">
+            <directory>./tests/Unit</directory>
         </testsuite>
         <testsuite name="Arch">
             <file>./tests/ArchTest.php</file>

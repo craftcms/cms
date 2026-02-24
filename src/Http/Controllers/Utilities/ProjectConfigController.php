@@ -34,11 +34,15 @@ final readonly class ProjectConfigController
         return ProjectConfigHelper::diff($request->boolean('invert'));
     }
 
-    public function rebuild(ProjectConfig $projectConfig): Response
+    public function rebuild(ProjectConfig $projectConfig, Request $request): Response
     {
         abort_if($projectConfig->readOnly, 403, 'Rebuilding the project config is not allowed while it’s in read-only mode.');
 
         $projectConfig->rebuild();
+
+        if ($request->inertia()) {
+            return back()->with('success', t('Project config rebuilt successfully.'));
+        }
 
         return $this->asSuccess(t('Project config rebuilt successfully.'));
     }

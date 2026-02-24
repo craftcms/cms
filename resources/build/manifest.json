@@ -1,138 +1,159 @@
 {
-  "_Badge.css": {
-    "file": "assets/Badge.css",
-    "src": "_Badge.css"
+  "_AppLayout.css": {
+    "file": "assets/AppLayout.css",
+    "src": "_AppLayout.css"
   },
-  "_Badge.vue_vue_type_script_setup_true_lang.js": {
-    "file": "Badge.vue_vue_type_script_setup_true_lang.js",
-    "name": "Badge.vue_vue_type_script_setup_true_lang",
+  "_AppLayout.js": {
+    "file": "AppLayout.js",
+    "name": "AppLayout",
     "imports": [
-      "resources/js/cp.ts",
-      "__plugin-vue_export-helper.js",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_nav-item.ts.js",
-      "_progress-CWLKFiZ5.js",
-      "_Modal.js",
-      "_index.js"
+      "_cp3.js"
     ],
     "css": [
-      "assets/Badge.css"
+      "assets/AppLayout.css"
     ]
-  },
-  "_CalloutReadOnly.css": {
-    "file": "assets/CalloutReadOnly.css",
-    "src": "_CalloutReadOnly.css"
   },
   "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js": {
     "file": "CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
     "name": "CalloutReadOnly.vue_vue_type_script_setup_true_lang",
     "imports": [
-      "resources/js/cp.ts",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_nav-item.ts.js",
-      "_progress-CWLKFiZ5.js",
-      "__plugin-vue_export-helper.js"
+      "_cp3.js"
+    ]
+  },
+  "_DeleteSiteModal.css": {
+    "file": "assets/DeleteSiteModal.css",
+    "src": "_DeleteSiteModal.css"
+  },
+  "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js": {
+    "file": "DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
+    "name": "DeleteSiteModal.vue_vue_type_script_setup_true_lang",
+    "imports": [
+      "_cp3.js"
     ],
     "css": [
-      "assets/CalloutReadOnly.css"
+      "assets/DeleteSiteModal.css"
     ]
   },
-  "_CpGlobalSidebar.js": {
-    "file": "CpGlobalSidebar.js",
-    "name": "CpGlobalSidebar",
-    "isDynamicEntry": true,
-    "imports": [
-      "_lit-element.js",
-      "_custom-element.js",
-      "_property.js"
-    ]
+  "_IndexLayout.css": {
+    "file": "assets/IndexLayout.css",
+    "src": "_IndexLayout.css"
   },
-  "_Modal.css": {
-    "file": "assets/Modal.css",
-    "src": "_Modal.css"
-  },
-  "_Modal.js": {
-    "file": "Modal.js",
-    "name": "Modal",
+  "_IndexLayout.js": {
+    "file": "IndexLayout.js",
+    "name": "IndexLayout",
     "imports": [
-      "resources/js/cp.ts",
-      "__plugin-vue_export-helper.js"
+      "_cp3.js",
+      "_AppLayout.js"
     ],
     "css": [
-      "assets/Modal.css"
+      "assets/IndexLayout.css"
     ]
   },
-  "_TransitionFade.css": {
-    "file": "assets/TransitionFade.css",
-    "src": "_TransitionFade.css"
+  "_cp2.css": {
+    "file": "assets/cp2.css",
+    "src": "_cp2.css"
   },
-  "_TransitionFade.js": {
-    "file": "TransitionFade.js",
-    "name": "TransitionFade",
-    "imports": [
-      "resources/js/cp.ts",
-      "__plugin-vue_export-helper.js"
+  "_cp3.js": {
+    "file": "cp3.js",
+    "name": "cp",
+    "dynamicImports": [
+      "node_modules/@lion/ui/components/form-core/translations/bg-BG.js",
+      "node_modules/@lion/ui/components/form-core/translations/bg.js",
+      "node_modules/@lion/ui/components/form-core/translations/cs-CZ.js",
+      "node_modules/@lion/ui/components/form-core/translations/cs.js",
+      "node_modules/@lion/ui/components/form-core/translations/de-DE.js",
+      "node_modules/@lion/ui/components/form-core/translations/de.js",
+      "node_modules/@lion/ui/components/form-core/translations/en-AU.js",
+      "node_modules/@lion/ui/components/form-core/translations/en-GB.js",
+      "node_modules/@lion/ui/components/form-core/translations/en-US.js",
+      "node_modules/@lion/ui/components/form-core/translations/en.js",
+      "node_modules/@lion/ui/components/form-core/translations/es-ES.js",
+      "node_modules/@lion/ui/components/form-core/translations/es.js",
+      "node_modules/@lion/ui/components/form-core/translations/fr-FR.js",
+      "node_modules/@lion/ui/components/form-core/translations/fr-BE.js",
+      "node_modules/@lion/ui/components/form-core/translations/fr.js",
+      "node_modules/@lion/ui/components/form-core/translations/hu-HU.js",
+      "node_modules/@lion/ui/components/form-core/translations/hu.js",
+      "node_modules/@lion/ui/components/form-core/translations/it-IT.js",
+      "node_modules/@lion/ui/components/form-core/translations/it.js",
+      "node_modules/@lion/ui/components/form-core/translations/nl-BE.js",
+      "node_modules/@lion/ui/components/form-core/translations/nl-NL.js",
+      "node_modules/@lion/ui/components/form-core/translations/nl.js",
+      "node_modules/@lion/ui/components/form-core/translations/pl-PL.js",
+      "node_modules/@lion/ui/components/form-core/translations/pl.js",
+      "node_modules/@lion/ui/components/form-core/translations/ro-RO.js",
+      "node_modules/@lion/ui/components/form-core/translations/ro.js",
+      "node_modules/@lion/ui/components/form-core/translations/ru-RU.js",
+      "node_modules/@lion/ui/components/form-core/translations/ru.js",
+      "node_modules/@lion/ui/components/form-core/translations/sk-SK.js",
+      "node_modules/@lion/ui/components/form-core/translations/sk.js",
+      "node_modules/@lion/ui/components/form-core/translations/tr-TR.js",
+      "node_modules/@lion/ui/components/form-core/translations/tr.js",
+      "node_modules/@lion/ui/components/form-core/translations/uk-UA.js",
+      "node_modules/@lion/ui/components/form-core/translations/uk.js",
+      "node_modules/@lion/ui/components/form-core/translations/zh.js",
+      "node_modules/@lion/ui/components/form-core/translations/en.js",
+      "node_modules/@lion/ui/components/input-file/translations/bg-BG.js",
+      "node_modules/@lion/ui/components/input-file/translations/bg.js",
+      "node_modules/@lion/ui/components/input-file/translations/cs-CZ.js",
+      "node_modules/@lion/ui/components/input-file/translations/cs.js",
+      "node_modules/@lion/ui/components/input-file/translations/de-DE.js",
+      "node_modules/@lion/ui/components/input-file/translations/de.js",
+      "node_modules/@lion/ui/components/input-file/translations/en-AU.js",
+      "node_modules/@lion/ui/components/input-file/translations/en-GB.js",
+      "node_modules/@lion/ui/components/input-file/translations/en-US.js",
+      "node_modules/@lion/ui/components/input-file/translations/en.js",
+      "node_modules/@lion/ui/components/input-file/translations/es-ES.js",
+      "node_modules/@lion/ui/components/input-file/translations/es.js",
+      "node_modules/@lion/ui/components/input-file/translations/fr-FR.js",
+      "node_modules/@lion/ui/components/input-file/translations/fr-BE.js",
+      "node_modules/@lion/ui/components/input-file/translations/fr.js",
+      "node_modules/@lion/ui/components/input-file/translations/hu-HU.js",
+      "node_modules/@lion/ui/components/input-file/translations/hu.js",
+      "node_modules/@lion/ui/components/input-file/translations/it-IT.js",
+      "node_modules/@lion/ui/components/input-file/translations/it.js",
+      "node_modules/@lion/ui/components/input-file/translations/nl-BE.js",
+      "node_modules/@lion/ui/components/input-file/translations/nl-NL.js",
+      "node_modules/@lion/ui/components/input-file/translations/nl.js",
+      "node_modules/@lion/ui/components/input-file/translations/pl-PL.js",
+      "node_modules/@lion/ui/components/input-file/translations/pl.js",
+      "node_modules/@lion/ui/components/input-file/translations/ro-RO.js",
+      "node_modules/@lion/ui/components/input-file/translations/ro.js",
+      "node_modules/@lion/ui/components/input-file/translations/ru-RU.js",
+      "node_modules/@lion/ui/components/input-file/translations/ru.js",
+      "node_modules/@lion/ui/components/input-file/translations/sk-SK.js",
+      "node_modules/@lion/ui/components/input-file/translations/sk.js",
+      "node_modules/@lion/ui/components/input-file/translations/uk-UA.js",
+      "node_modules/@lion/ui/components/input-file/translations/uk.js",
+      "node_modules/@lion/ui/components/input-file/translations/zh.js",
+      "node_modules/@lion/ui/components/input-file/translations/en.js",
+      "node_modules/@popperjs/core/dist/esm/popper.js",
+      "node_modules/@lion/ui/components/combobox/translations/bg.js",
+      "node_modules/@lion/ui/components/combobox/translations/cs.js",
+      "node_modules/@lion/ui/components/combobox/translations/de.js",
+      "node_modules/@lion/ui/components/combobox/translations/en.js",
+      "node_modules/@lion/ui/components/combobox/translations/es.js",
+      "node_modules/@lion/ui/components/combobox/translations/fr.js",
+      "node_modules/@lion/ui/components/combobox/translations/hu.js",
+      "node_modules/@lion/ui/components/combobox/translations/it.js",
+      "node_modules/@lion/ui/components/combobox/translations/nl.js",
+      "node_modules/@lion/ui/components/combobox/translations/pl.js",
+      "node_modules/@lion/ui/components/combobox/translations/ro.js",
+      "node_modules/@lion/ui/components/combobox/translations/ru.js",
+      "node_modules/@lion/ui/components/combobox/translations/sk.js",
+      "node_modules/@lion/ui/components/combobox/translations/uk.js",
+      "node_modules/@lion/ui/components/combobox/translations/zh.js",
+      "node_modules/@lion/ui/components/combobox/translations/en.js",
+      "resources/js/pages/Install.vue",
+      "resources/js/pages/SettingsGeneralPage.vue",
+      "resources/js/pages/SettingsIndexPage.vue",
+      "resources/js/pages/SettingsSitesEdit.vue",
+      "resources/js/pages/SettingsSitesIndex.vue",
+      "resources/js/pages/Updater.vue",
+      "resources/js/pages/UtilitiesShowPage.vue"
     ],
     "css": [
-      "assets/TransitionFade.css"
-    ]
-  },
-  "__plugin-vue_export-helper.js": {
-    "file": "_plugin-vue_export-helper.js",
-    "name": "_plugin-vue_export-helper",
-    "imports": [
-      "resources/js/cp.ts"
-    ]
-  },
-  "_custom-element.js": {
-    "file": "custom-element.js",
-    "name": "custom-element"
-  },
-  "_index.js": {
-    "file": "index.js",
-    "name": "index"
-  },
-  "_index2.js": {
-    "file": "index2.js",
-    "name": "index"
-  },
-  "_lit-element.js": {
-    "file": "lit-element.js",
-    "name": "lit-element"
-  },
-  "_nav-item.ts.js": {
-    "file": "nav-item.ts.js",
-    "name": "nav-item.ts",
-    "isDynamicEntry": true,
-    "imports": [
-      "_state.js",
-      "_lit-element.js",
-      "_property.js"
-    ]
-  },
-  "_progress-CWLKFiZ5.js": {
-    "file": "progress-CWLKFiZ5.js",
-    "name": "progress-CWLKFiZ5",
-    "imports": [
-      "_state.js",
-      "_lit-element.js",
-      "_property.js"
-    ]
-  },
-  "_property.js": {
-    "file": "property.js",
-    "name": "property",
-    "imports": [
-      "_lit-element.js"
-    ]
-  },
-  "_state.js": {
-    "file": "state.js",
-    "name": "state",
-    "imports": [
-      "_property.js"
+      "assets/cp2.css"
     ]
   },
   "node_modules/@lion/ui/components/combobox/translations/bg.js": {
@@ -750,15 +771,6 @@
     "src": "node_modules/@popperjs/core/dist/esm/popper.js",
     "isDynamicEntry": true
   },
-  "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs": {
-    "file": "nav-list.ts.js",
-    "name": "nav-list.ts",
-    "src": "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-    "isDynamicEntry": true,
-    "imports": [
-      "_lit-element.js"
-    ]
-  },
   "resources/css/cp.css": {
     "file": "assets/cp.css",
     "src": "resources/css/cp.css",
@@ -784,130 +796,33 @@
     "file": "assets/site.png",
     "src": "resources/images/install/site.png"
   },
+  "resources/js/components/CpGlobalSidebar.ts": {
+    "file": "CpGlobalSidebar.js",
+    "name": "CpGlobalSidebar",
+    "src": "resources/js/components/CpGlobalSidebar.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_cp3.js"
+    ]
+  },
   "resources/js/components/CpQueueIndicator.ts": {
     "file": "CpQueueIndicator.js",
     "name": "CpQueueIndicator",
     "src": "resources/js/components/CpQueueIndicator.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_lit-element.js",
-      "_custom-element.js",
-      "_state.js",
-      "resources/js/legacy.ts",
-      "_progress-CWLKFiZ5.js",
-      "_property.js",
-      "_index2.js"
+      "_cp3.js"
     ]
   },
   "resources/js/cp.ts": {
-    "file": "cp2.js",
+    "file": "cp.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
-      "_index2.js",
-      "_state.js",
-      "_lit-element.js",
-      "_property.js",
-      "_CpGlobalSidebar.js",
-      "_nav-item.ts.js",
-      "_custom-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_progress-CWLKFiZ5.js"
-    ],
-    "dynamicImports": [
-      "node_modules/@lion/ui/components/form-core/translations/bg-BG.js",
-      "node_modules/@lion/ui/components/form-core/translations/bg.js",
-      "node_modules/@lion/ui/components/form-core/translations/cs-CZ.js",
-      "node_modules/@lion/ui/components/form-core/translations/cs.js",
-      "node_modules/@lion/ui/components/form-core/translations/de-DE.js",
-      "node_modules/@lion/ui/components/form-core/translations/de.js",
-      "node_modules/@lion/ui/components/form-core/translations/en-AU.js",
-      "node_modules/@lion/ui/components/form-core/translations/en-GB.js",
-      "node_modules/@lion/ui/components/form-core/translations/en-US.js",
-      "node_modules/@lion/ui/components/form-core/translations/en.js",
-      "node_modules/@lion/ui/components/form-core/translations/es-ES.js",
-      "node_modules/@lion/ui/components/form-core/translations/es.js",
-      "node_modules/@lion/ui/components/form-core/translations/fr-FR.js",
-      "node_modules/@lion/ui/components/form-core/translations/fr-BE.js",
-      "node_modules/@lion/ui/components/form-core/translations/fr.js",
-      "node_modules/@lion/ui/components/form-core/translations/hu-HU.js",
-      "node_modules/@lion/ui/components/form-core/translations/hu.js",
-      "node_modules/@lion/ui/components/form-core/translations/it-IT.js",
-      "node_modules/@lion/ui/components/form-core/translations/it.js",
-      "node_modules/@lion/ui/components/form-core/translations/nl-BE.js",
-      "node_modules/@lion/ui/components/form-core/translations/nl-NL.js",
-      "node_modules/@lion/ui/components/form-core/translations/nl.js",
-      "node_modules/@lion/ui/components/form-core/translations/pl-PL.js",
-      "node_modules/@lion/ui/components/form-core/translations/pl.js",
-      "node_modules/@lion/ui/components/form-core/translations/ro-RO.js",
-      "node_modules/@lion/ui/components/form-core/translations/ro.js",
-      "node_modules/@lion/ui/components/form-core/translations/ru-RU.js",
-      "node_modules/@lion/ui/components/form-core/translations/ru.js",
-      "node_modules/@lion/ui/components/form-core/translations/sk-SK.js",
-      "node_modules/@lion/ui/components/form-core/translations/sk.js",
-      "node_modules/@lion/ui/components/form-core/translations/tr-TR.js",
-      "node_modules/@lion/ui/components/form-core/translations/tr.js",
-      "node_modules/@lion/ui/components/form-core/translations/uk-UA.js",
-      "node_modules/@lion/ui/components/form-core/translations/uk.js",
-      "node_modules/@lion/ui/components/form-core/translations/zh.js",
-      "node_modules/@lion/ui/components/form-core/translations/en.js",
-      "node_modules/@lion/ui/components/input-file/translations/bg-BG.js",
-      "node_modules/@lion/ui/components/input-file/translations/bg.js",
-      "node_modules/@lion/ui/components/input-file/translations/cs-CZ.js",
-      "node_modules/@lion/ui/components/input-file/translations/cs.js",
-      "node_modules/@lion/ui/components/input-file/translations/de-DE.js",
-      "node_modules/@lion/ui/components/input-file/translations/de.js",
-      "node_modules/@lion/ui/components/input-file/translations/en-AU.js",
-      "node_modules/@lion/ui/components/input-file/translations/en-GB.js",
-      "node_modules/@lion/ui/components/input-file/translations/en-US.js",
-      "node_modules/@lion/ui/components/input-file/translations/en.js",
-      "node_modules/@lion/ui/components/input-file/translations/es-ES.js",
-      "node_modules/@lion/ui/components/input-file/translations/es.js",
-      "node_modules/@lion/ui/components/input-file/translations/fr-FR.js",
-      "node_modules/@lion/ui/components/input-file/translations/fr-BE.js",
-      "node_modules/@lion/ui/components/input-file/translations/fr.js",
-      "node_modules/@lion/ui/components/input-file/translations/hu-HU.js",
-      "node_modules/@lion/ui/components/input-file/translations/hu.js",
-      "node_modules/@lion/ui/components/input-file/translations/it-IT.js",
-      "node_modules/@lion/ui/components/input-file/translations/it.js",
-      "node_modules/@lion/ui/components/input-file/translations/nl-BE.js",
-      "node_modules/@lion/ui/components/input-file/translations/nl-NL.js",
-      "node_modules/@lion/ui/components/input-file/translations/nl.js",
-      "node_modules/@lion/ui/components/input-file/translations/pl-PL.js",
-      "node_modules/@lion/ui/components/input-file/translations/pl.js",
-      "node_modules/@lion/ui/components/input-file/translations/ro-RO.js",
-      "node_modules/@lion/ui/components/input-file/translations/ro.js",
-      "node_modules/@lion/ui/components/input-file/translations/ru-RU.js",
-      "node_modules/@lion/ui/components/input-file/translations/ru.js",
-      "node_modules/@lion/ui/components/input-file/translations/sk-SK.js",
-      "node_modules/@lion/ui/components/input-file/translations/sk.js",
-      "node_modules/@lion/ui/components/input-file/translations/uk-UA.js",
-      "node_modules/@lion/ui/components/input-file/translations/uk.js",
-      "node_modules/@lion/ui/components/input-file/translations/zh.js",
-      "node_modules/@lion/ui/components/input-file/translations/en.js",
-      "node_modules/@popperjs/core/dist/esm/popper.js",
-      "node_modules/@lion/ui/components/combobox/translations/bg.js",
-      "node_modules/@lion/ui/components/combobox/translations/cs.js",
-      "node_modules/@lion/ui/components/combobox/translations/de.js",
-      "node_modules/@lion/ui/components/combobox/translations/en.js",
-      "node_modules/@lion/ui/components/combobox/translations/es.js",
-      "node_modules/@lion/ui/components/combobox/translations/fr.js",
-      "node_modules/@lion/ui/components/combobox/translations/hu.js",
-      "node_modules/@lion/ui/components/combobox/translations/it.js",
-      "node_modules/@lion/ui/components/combobox/translations/nl.js",
-      "node_modules/@lion/ui/components/combobox/translations/pl.js",
-      "node_modules/@lion/ui/components/combobox/translations/ro.js",
-      "node_modules/@lion/ui/components/combobox/translations/ru.js",
-      "node_modules/@lion/ui/components/combobox/translations/sk.js",
-      "node_modules/@lion/ui/components/combobox/translations/uk.js",
-      "node_modules/@lion/ui/components/combobox/translations/zh.js",
-      "node_modules/@lion/ui/components/combobox/translations/en.js",
-      "resources/js/pages/Install.vue",
-      "resources/js/pages/SettingsGeneralPage.vue",
-      "resources/js/pages/SettingsIndexPage.vue",
-      "resources/js/pages/SettingsSitesEdit.vue",
-      "resources/js/pages/SettingsSitesIndex.vue"
+      "_cp3.js",
+      "resources/js/components/CpGlobalSidebar.ts",
+      "resources/js/components/CpQueueIndicator.ts"
     ]
   },
   "resources/js/legacy.ts": {
@@ -916,12 +831,10 @@
     "src": "resources/js/legacy.ts",
     "isEntry": true,
     "imports": [
-      "_index2.js"
+      "_cp3.js"
     ],
     "dynamicImports": [
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_nav-item.ts.js",
-      "_CpGlobalSidebar.js",
+      "resources/js/components/CpGlobalSidebar.ts",
       "resources/js/components/CpQueueIndicator.ts"
     ]
   },
@@ -931,18 +844,7 @@
     "src": "resources/js/pages/Install.vue",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/cp.ts",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_nav-item.ts.js",
-      "_progress-CWLKFiZ5.js",
-      "__plugin-vue_export-helper.js",
-      "_index2.js",
-      "_Modal.js",
-      "_state.js",
-      "_property.js",
-      "_CpGlobalSidebar.js",
-      "_custom-element.js"
+      "_cp3.js"
     ],
     "css": [
       "assets/Install.css"
@@ -960,20 +862,9 @@
     "src": "resources/js/pages/SettingsGeneralPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/cp.ts",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_nav-item.ts.js",
-      "_progress-CWLKFiZ5.js",
-      "__plugin-vue_export-helper.js",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "_index.js",
-      "_TransitionFade.js",
-      "_index2.js",
-      "_state.js",
-      "_property.js",
-      "_CpGlobalSidebar.js",
-      "_custom-element.js"
+      "_cp3.js",
+      "_AppLayout.js",
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js"
     ],
     "css": [
       "assets/SettingsGeneralPage.css"
@@ -985,18 +876,9 @@
     "src": "resources/js/pages/SettingsIndexPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/cp.ts",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_nav-item.ts.js",
-      "_progress-CWLKFiZ5.js",
-      "__plugin-vue_export-helper.js",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "_index2.js",
-      "_state.js",
-      "_property.js",
-      "_CpGlobalSidebar.js",
-      "_custom-element.js"
+      "_cp3.js",
+      "_AppLayout.js",
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js"
     ],
     "css": [
       "assets/SettingsIndexPage.css"
@@ -1008,22 +890,10 @@
     "src": "resources/js/pages/SettingsSitesEdit.vue",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/cp.ts",
+      "_cp3.js",
+      "_AppLayout.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_nav-item.ts.js",
-      "_progress-CWLKFiZ5.js",
-      "__plugin-vue_export-helper.js",
-      "_TransitionFade.js",
-      "_Badge.vue_vue_type_script_setup_true_lang.js",
-      "_index2.js",
-      "_state.js",
-      "_property.js",
-      "_CpGlobalSidebar.js",
-      "_custom-element.js",
-      "_Modal.js",
-      "_index.js"
+      "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js"
     ]
   },
   "resources/js/pages/SettingsSitesIndex.vue": {
@@ -1032,24 +902,37 @@
     "src": "resources/js/pages/SettingsSitesIndex.vue",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/cp.ts",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_nav-item.ts.js",
-      "_progress-CWLKFiZ5.js",
-      "__plugin-vue_export-helper.js",
+      "_cp3.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "_Badge.vue_vue_type_script_setup_true_lang.js",
-      "_index.js",
-      "_index2.js",
-      "_state.js",
-      "_property.js",
-      "_CpGlobalSidebar.js",
-      "_custom-element.js",
-      "_Modal.js"
+      "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
+      "_IndexLayout.js",
+      "_AppLayout.js"
     ],
     "css": [
       "assets/SettingsSitesIndex.css"
+    ]
+  },
+  "resources/js/pages/Updater.vue": {
+    "file": "Updater.js",
+    "name": "Updater",
+    "src": "resources/js/pages/Updater.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_cp3.js"
+    ],
+    "css": [
+      "assets/Updater.css"
+    ]
+  },
+  "resources/js/pages/UtilitiesShowPage.vue": {
+    "file": "UtilitiesShowPage.js",
+    "name": "UtilitiesShowPage",
+    "src": "resources/js/pages/UtilitiesShowPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_cp3.js",
+      "_IndexLayout.js",
+      "_AppLayout.js"
     ]
   }
 }

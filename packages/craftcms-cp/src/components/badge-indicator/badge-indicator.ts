@@ -85,7 +85,7 @@ export default class CraftBadgeIndicator extends LitElement {
           'badge-indicator': true,
           'badge-indicator--with-number': this.showCount(),
           'badge-indicator--secondary': this.variant === 'secondary',
-          'badge-indicator--inverse': this.variant === 'inverse'
+          'badge-indicator--inverse': this.variant === 'inverse',
         })}"
         role="${this.getBadgeRole()}"
         aria-labelledby="${this.altText ? this.getLabelId() : nothing}"

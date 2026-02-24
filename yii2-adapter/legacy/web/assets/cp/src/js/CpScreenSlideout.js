@@ -411,7 +411,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
           resolve();
           this.trigger('load');
-          this.settings.onLoad();
+          if (this.settings.onLoad) {
+            this.settings.onLoad();
+          }
         });
       });
     },
@@ -617,7 +619,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         data: (data.modelName && data[data.modelName]) || {},
       };
       this.trigger('submit', ev);
-      this.settings.onSubmit(ev);
+      if (this.settings.onSubmit) {
+        this.settings.onSubmit(ev);
+      }
       if (this.settings.closeOnSubmit) {
         this.close();
       }

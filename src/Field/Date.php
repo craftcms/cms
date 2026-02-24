@@ -19,6 +19,7 @@ use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use DateTimeZone;
@@ -393,7 +394,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         }
 
         $serialized = [
-            'date' => Db::prepareDateForDb($value),
+            'date' => Query::prepareDateForDb($value),
         ];
 
         if ($this->showTimeZone && $value->getTimezone()->getLocation()) {

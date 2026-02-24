@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
-use Craft;
+use CraftCms\Cms\Support\Facades\Search;
 
 final class DeleteOrphanedSearchIndexJobs extends GarbageCollectionAction
 {
@@ -13,7 +13,7 @@ final class DeleteOrphanedSearchIndexJobs extends GarbageCollectionAction
         $this->components->task(
             'deleting orphaned search index jobs',
             function () {
-                Craft::$app->getSearch()->deleteOrphanedIndexJobs();
+                Search::deleteOrphanedIndexJobs();
             },
         );
     }

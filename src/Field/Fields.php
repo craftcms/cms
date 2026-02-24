@@ -10,7 +10,6 @@ use craft\base\MemoizableArray;
 use craft\helpers\AdminTable;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
-use craft\helpers\Db as DbHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
@@ -49,6 +48,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig as ProjectConfigFacade;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
@@ -322,7 +322,7 @@ final class Fields
             return false;
         }
 
-        return DbHelper::areColumnTypesCompatible($dbTypeA, $dbTypeB);
+        return Query::areColumnTypesCompatible($dbTypeA, $dbTypeB);
     }
 
     /**

@@ -1,1 +1,0 @@
-import{c as a,o as r,w as t,r as o,T as n}from"./cp2.js";import{_ as s}from"./_plugin-vue_export-helper.js";const c={};function d(e,_){return r(),a(n,{name:"fade"},{default:t(()=>[o(e.$slots,"default",{},void 0,!0)]),_:3})}const l=s(c,[["render",d],["__scopeId","data-v-623c0700"]]);export{l as T};

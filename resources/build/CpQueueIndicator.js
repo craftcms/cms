@@ -1,19 +1,19 @@
-import{i as w,E as c,x as h,a as $}from"./lit-element.js";import{t as q}from"./custom-element.js";import{r as E}from"./state.js";import{J as v}from"./legacy.js";import"./progress-CWLKFiZ5.js";import"./property.js";import"./index2.js";var Q=Object.defineProperty,x=Object.getOwnPropertyDescriptor,_=e=>{throw TypeError(e)},y=(e,t,s,n)=>{for(var i=n>1?void 0:n?x(t,s):t,d=e.length-1,p;d>=0;d--)(p=e[d])&&(i=(n?p(t,s,i):p(i))||i);return n&&i&&Q(t,s,i),i},g=(e,t,s)=>t.has(e)||_("Cannot "+s),r=(e,t,s)=>(g(e,t,"read from private field"),s?s.call(e):t.get(e)),f=(e,t,s)=>t.has(e)?_("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,s),b=(e,t,s)=>(g(e,t,"access private method"),s),l,a,u,m,J,C;let o=class extends w{constructor(){super(...arguments),f(this,a),this.displayedJob=null,f(this,l,e=>{console.log("handling update"),this.displayedJob=e.detail.displayedJob,b(this,a,u).call(this)})}connectedCallback(){super.connectedCallback(),window.Craft?.$queue?.addEventListener("job-update",r(this,l)),b(this,a,u).call(this)}disconnectedCallback(){super.disconnectedCallback(),window.Craft?.$queue?.removeEventListener("job-update",r(this,l))}render(){if(!this.displayedJob)return c;const e=r(this,a,C);return h`
-      <craft-nav-item .url=${e}>
+import{e as k,n as y,f as M,Q as x,g as E,E as _,x as g,J as C,h as I}from"./cp3.js";var O=Object.defineProperty,S=Object.getOwnPropertyDescriptor,Q=e=>{throw TypeError(e)},u=(e,s,t,l)=>{for(var n=l>1?void 0:l?S(s,t):s,c=e.length-1,b;c>=0;c--)(b=e[c])&&(n=(l?b(s,t,n):b(n))||n);return l&&n&&O(s,t,n),n},W=(e,s,t)=>s.has(e)||Q("Cannot "+t),a=(e,s,t)=>(W(e,s,"read from private field"),t?t.call(e):s.get(e)),d=(e,s,t)=>s.has(e)?Q("Cannot add the same private member more than once"):s instanceof WeakSet?s.add(e):s.set(e,t),p=(e,s,t)=>(W(e,s,"access private method"),t),r,J,h,i,f,v,$,w,m;let o=class extends M{constructor(){super(...arguments),d(this,i),this.displayedJob=null,this.hasReservedJobs=!1,this.hasWaitingJobs=!1,d(this,r,x.getInstance()),d(this,J,E.getInstance()),d(this,h,e=>{this.displayedJob=e.detail.displayedJob})}connectedCallback(){super.connectedCallback(),this.displayedJob||(this.displayedJob=a(this,r).displayedJob),a(this,r).addEventListener("job-update",a(this,h)),p(this,i,v).call(this),p(this,i,f).call(this)}disconnectedCallback(){super.disconnectedCallback(),a(this,r).removeEventListener("job-update",a(this,h))}update(e){super.update(e),(e.has("hasReservedJobs")||e.has("hasWaitingJobs"))&&p(this,i,f).call(this),e.has("displayedJob")&&p(this,i,v).call(this)}render(){if(!this.displayedJob)return _;const e=a(this,i,m);return g`
+      <craft-nav-item .href=${e}>
         <craft-progress
           slot="prefix"
-          progress=${r(this,a,m)}
-          ?failed=${r(this,a,J)}
+          progress=${a(this,i,$)}
+          ?failed=${a(this,i,w)}
           label=${this.displayedJob.description||"Queue"}
         ></craft-progress>
         <div class="label">
           <span class="title">${this.displayedJob.description}</span>
-          ${this.displayedJob.progressLabel?h`<span class="progress-label"
+          ${this.displayedJob.progressLabel?g`<span class="progress-label"
                 >${this.displayedJob.progressLabel}</span
-              >`:c}
+              >`:_}
         </div>
       </craft-nav-item>
-    `}};l=new WeakMap;a=new WeakSet;u=function(){this.displayedJob?this.setAttribute("visible",""):this.removeAttribute("visible")};m=function(){return this.displayedJob?this.displayedJob.status===v.Failed?100:this.displayedJob.progress??0:0};J=function(){return this.displayedJob?.status===v.Failed};C=function(){return window.Craft?.$queue?.canAccessQueueManager?window.Craft?.getUrl?window.Craft.getUrl("utilities/queue-manager"):"/admin/utilities/queue-manager":null};o.styles=$`
+    `}};r=new WeakMap;J=new WeakMap;h=new WeakMap;i=new WeakSet;f=function(){this.hasReservedJobs?a(this,r).startTracking():this.hasWaitingJobs&&a(this,r).runQueue()};v=function(){this.displayedJob?this.setAttribute("visible",""):this.removeAttribute("visible")};$=function(){return this.displayedJob?this.displayedJob.status.value===C.Failed?100:this.displayedJob.progress??0:0};w=function(){return this.displayedJob?.status.value===C.Failed};m=function(){return a(this,r).canAccessQueueManager?null:a(this,J).getCpUrl("utilities/queue-manager")};o.styles=k`
     :host {
       display: contents;
     }
@@ -26,4 +26,4 @@ import{i as w,E as c,x as h,a as $}from"./lit-element.js";import{t as q}from"./c
       font-size: 0.85em;
       opacity: 0.7;
     }
-  `;y([E()],o.prototype,"displayedJob",2);o=y([q("cp-queue-indicator")],o);const F=o;export{F as default};
+  `;u([y({type:Object,attribute:"displayed-job"})],o.prototype,"displayedJob",2);u([y({type:Boolean,attribute:"has-reserved-jobs"})],o.prototype,"hasReservedJobs",2);u([y({type:Boolean,attribute:"has-waiting-jobs"})],o.prototype,"hasWaitingJobs",2);o=u([I("cp-queue-indicator")],o);const q=o;export{q as default};

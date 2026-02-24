@@ -6,8 +6,10 @@ use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Crypt;
+use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -55,15 +57,20 @@ test('all routes validate data', function (string $controller, string $action) {
     ]);
 })->with('routes');
 
-test('index', function () {
-    postJson(action([UpdaterController::class, 'index']), [
+test('index returns Inertia Updater page', function () {
+    post(action([UpdaterController::class, 'index']), [
         'install' => [
             'craft' => '100.0.0',
         ],
         'packageNames' => [
-            'craft' => 'Craft CMS',
+            'craft' => 'craftcms/cms',
         ],
     ])
-        ->assertSee('Craft.updater')
-        ->assertSee('Updater');
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Updater')
+            ->has('title')
+            ->has('initialState')
+            ->has('actionPrefix')
+            ->has('returnUrl')
+        );
 });

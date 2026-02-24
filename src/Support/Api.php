@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use Craft;
-use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
+use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use GuzzleHttp\Exception\GuzzleException;

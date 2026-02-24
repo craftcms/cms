@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
+use craft\helpers\UrlHelper;
+use craft\web\Application;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -12,8 +14,13 @@ use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Updates\Updates;
+use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Inertia\Inertia;
+use Override;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -43,6 +50,24 @@ final class ConfigSyncController extends BaseUpdaterController
         private readonly ProjectConfig $projectConfig,
     ) {
         parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
+    }
+
+    /**
+     * Renders the Config Sync page via Inertia.
+     */
+    #[Override]
+    public function index(#[Give('Craft')] Application $craft): Response
+    {
+        $this->data = $this->initialData();
+        $state = $this->realInitialState();
+        $state['data'] = Crypt::encrypt(Json::encode($this->data));
+
+        return Inertia::render('Updater', [
+            'title' => $this->pageTitle(),
+            'initialState' => $state,
+            'actionPrefix' => 'config-sync',
+            'returnUrl' => $this->returnUrl(),
+        ])->toResponse($this->request);
     }
 
     /**
@@ -228,7 +253,7 @@ final class ConfigSyncController extends BaseUpdaterController
     #[\Override]
     protected function returnUrl(): string
     {
-        return $this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect();
+        return UrlHelper::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
     }
 
     #[\Override]

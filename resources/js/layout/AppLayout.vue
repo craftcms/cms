@@ -1,12 +1,14 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import SystemInfo from '@/components/SystemInfo.vue';
-  import {computed, reactive, ref, watch} from 'vue';
+  import {computed, reactive, ref, watch, useTemplateRef} from 'vue';
   import CpSidebar from '@/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
   import {Head, usePage} from '@inertiajs/vue3';
   import VarDump from '@/components/VarDump.vue';
   import Breadcrumbs from '@/components/Breadcrumbs.vue';
+  import {useAnnouncer} from '@/composables/useAnnouncer';
+  import LiveRegion from '@/components/LiveRegion.vue';
 
   withDefaults(
     defineProps<{
@@ -30,6 +32,8 @@
   const errorFlash = computed(() => page.props.flash?.error);
   const successFlash = computed(() => page.props.flash?.success);
   const crumbs = computed(() => page.props.crumbs ?? null);
+  const sidebarToggle = useTemplateRef('sidebarToggle');
+  const {announcement} = useAnnouncer();
 
   const state = reactive<{
     sidebar: {
@@ -68,6 +72,11 @@
     }
   }
 
+  function closeSidebar() {
+    state.sidebar.visibility = 'hidden';
+    (sidebarToggle.value as HTMLButtonElement).focus();
+  }
+
   const sidebarIcon = computed(() => {
     return state.sidebar.visibility === 'visible' ? 'x' : 'bars';
   });
@@ -84,6 +93,7 @@
 
 <template>
   <Head :title="title" />
+  <LiveRegion :debug="true"></LiveRegion>
   <div class="cp">
     <div class="cp__header">
       <div class="flex gap-2 p-2">
@@ -93,6 +103,7 @@
           appearance="plain"
           @click="toggleSidebar"
           v-if="!isLargeScreen"
+          ref="sidebarToggle"
         >
           <craft-icon :name="sidebarIcon"></craft-icon>
         </craft-button>
@@ -119,7 +130,7 @@
       <CpSidebar
         :mode="state.sidebar.mode"
         :visibility="state.sidebar.visibility"
-        @close="state.sidebar.visibility = 'hidden'"
+        @close="closeSidebar"
       />
     </div>
     <div class="cp__main">
@@ -135,15 +146,15 @@
           </slot>
           <slot name="header">
             <div :class="{container: true, 'container--full': fullWidth}">
-              <div class="flex justify-between pt-4 pb-2 items-center gap-2">
-                <slot name="title">
-                  <h1 class="text-xl">{{ title }}</h1>
-                </slot>
-                <slot name="title-badge"></slot>
+              <div class="index-grid index-grid--header">
+                <div class="index-grid__aside">
+                  <slot name="title">
+                    <h1 class="text-xl">{{ title }}</h1>
+                  </slot>
+                  <slot name="title-badge"></slot>
+                </div>
 
-                <div class="flex-1"></div>
-
-                <div class="flex gap-2 items-center">
+                <div class="index-grid__main">
                   <slot name="actions"></slot>
                 </div>
               </div>
@@ -165,30 +176,31 @@
   </div>
 
   <template v-if="debug">
-    <div class="fixed bottom-2 right-2 max-w-[600px]">
-      <div class="absolute top-2 right-2" v-if="debugOpen">
-        <craft-button
-          icon
-          size="small"
-          type="button"
-          @click="debugOpen = false"
-        >
-          <craft-icon :label="t('Close Debug panel')" name="x"></craft-icon>
-        </craft-button>
+    <div class="fixed bottom-2 right-2 flex gap-2 justify-end items-center p-2">
+      <div class="bg-blue-50 border border-blue-500 py-1 px-4 rounded">
+        {{ announcement ?? 'No announcement' }}
       </div>
-      <div v-else>
-        <craft-button type="button" @click="debugOpen = true" icon>
-          <craft-icon
-            name="code"
-            :label="t('Show debug variables')"
-          ></craft-icon>
-        </craft-button>
+
+      <div>
+        <VarDump
+          :data="debug"
+          class="max-h-[50vh] max-w-[600px] overflow-scroll absolute transform -translate-full"
+          v-if="debugOpen"
+        />
+        <template v-if="debugOpen">
+          <craft-button icon type="button" @click="debugOpen = false">
+            <craft-icon :label="t('Close Debug panel')" name="x"></craft-icon>
+          </craft-button>
+        </template>
+        <template v-else>
+          <craft-button type="button" @click="debugOpen = true" icon>
+            <craft-icon
+              name="code"
+              :label="t('Show debug variables')"
+            ></craft-icon>
+          </craft-button>
+        </template>
       </div>
-      <VarDump
-        :data="debug"
-        class="max-h-[50vh] overflow-scroll"
-        v-if="debugOpen"
-      />
     </div>
   </template>
 </template>
@@ -200,6 +212,7 @@
 
   .cp__main {
     container-type: size;
+    padding-block-end: var(--c-spacing-2xl);
   }
 
   .cp__header {
@@ -223,6 +236,10 @@
       grid-template-areas: 'header header' 'sidebar main';
       grid-template-rows: auto 1fr;
       min-height: 100vh;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
     }
 
     .cp__header {
@@ -235,6 +252,7 @@
 
     .cp__main {
       grid-area: main;
+      overflow: auto;
     }
   }
 </style>

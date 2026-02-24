@@ -1,29 +1,41 @@
 <script setup lang="ts">
   import {onKeyStroke} from '@vueuse/core';
+  import {computed} from 'vue';
 
   export interface ModalProps {
     isActive?: boolean;
     overlay?: boolean;
+    width?: string;
   }
 
   const emit = defineEmits<{
     (e: 'close'): void;
   }>();
 
-  withDefaults(defineProps<ModalProps>(), {
+  const props = withDefaults(defineProps<ModalProps>(), {
     isActive: false,
     overlay: true,
+    size: 'md',
   });
 
   onKeyStroke('Escape', (e) => {
     emit('close');
+  });
+
+  const widthClass = computed(() => {
+    return `w-${props.width}`;
   });
 </script>
 
 <template>
   <Transition name="body">
     <div class="modal" v-if="isActive">
-      <div class="content">
+      <div
+        :class="{
+          content: true,
+          [widthClass]: true,
+        }"
+      >
         <slot></slot>
       </div>
     </div>
