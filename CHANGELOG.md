@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.13 - 2026-02-24
 
 - The control panel is now translated into Greek. ([#18458](https://github.com/craftcms/cms/pull/18458))
 - The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is now set to `false` by default for database connections.
