@@ -23,9 +23,9 @@ use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -181,7 +181,7 @@ final class EntryType extends Component implements Actionable, Chippable, Colora
             'label' => t('Entry type settings'),
         ]];
 
-        AssetRegistry::jsWithVars(fn ($id, $params) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
 $('#' + $id).on('click', () => {
 new Craft.CpScreenSlideout('entry-types/edit', {
 params: $params,

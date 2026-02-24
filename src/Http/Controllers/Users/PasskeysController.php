@@ -11,7 +11,7 @@ use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,14 +30,14 @@ final readonly class PasskeysController
         private Passkeys $passkeys
     ) {}
 
-    public function index(Request $request, AssetRegistry $assetRegistry): CpScreenResponse
+    public function index(Request $request, HtmlStack $HtmlStack): CpScreenResponse
     {
         $user = $request->user();
 
         $response = $this->asEditUserScreen($user, self::SCREEN_PASSKEYS);
 
         Craft::$app->getView()->registerAssetBundle(PasskeySetupAsset::class);
-        $assetRegistry->js(<<<'JS'
+        $HtmlStack->js(<<<'JS'
 new Craft.PasskeySetup();
 JS);
 

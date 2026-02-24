@@ -25,8 +25,8 @@ use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -606,7 +606,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
             'visibleLayoutElements' => $form->getVisibleElements(),
         ];
 
-        AssetRegistry::jsWithVars(fn ($id, $settings) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $settings) => <<<JS
 (() => {
   new Craft.ContentBlockEditor($('#' + $id), $settings)
 })();

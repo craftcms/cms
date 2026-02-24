@@ -34,7 +34,7 @@ use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -53,7 +53,7 @@ final class FieldsController
 
     public function __construct(
         GeneralConfig $generalConfig,
-        private AssetRegistry $assetRegistry,
+        private HtmlStack $HtmlStack,
         private readonly Fields $fieldsService,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
@@ -134,8 +134,8 @@ final class FieldsController
 
         return new JsonResponse([
             'settingsHtml' => $html,
-            'headHtml' => $this->assetRegistry->headHtml(),
-            'bodyHtml' => $this->assetRegistry->bodyHtml(),
+            'headHtml' => $this->HtmlStack->headHtml(),
+            'bodyHtml' => $this->HtmlStack->bodyHtml(),
         ]);
     }
 
@@ -230,8 +230,8 @@ final class FieldsController
         return new JsonResponse([
             'settingsHtml' => $html,
             'namespace' => $namespace,
-            'headHtml' => $this->assetRegistry->headHtml(),
-            'bodyHtml' => $this->assetRegistry->bodyHtml(),
+            'headHtml' => $this->HtmlStack->headHtml(),
+            'bodyHtml' => $this->HtmlStack->bodyHtml(),
         ]);
     }
 
@@ -506,7 +506,7 @@ final class FieldsController
         $response
             ->prepareScreen(function () {
                 Craft::$app->getView()->registerAssetBundle(FieldSettingsAsset::class);
-                $this->assetRegistry->jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
+                $this->HtmlStack->jsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
 new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
   wrapWithTypeClassDiv: true
 })

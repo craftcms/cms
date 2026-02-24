@@ -12,7 +12,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
@@ -126,11 +126,11 @@ final class Html
     {
         if (is_callable($html)) {
             // Call it to get the HTML, but disregard the JS
-            AssetRegistry::startJsBuffer();
+            HtmlStack::startJsBuffer();
             try {
                 $html = $html();
             } finally {
-                AssetRegistry::clearJsBuffer();
+                HtmlStack::clearJsBuffer();
             }
         }
 
@@ -185,7 +185,7 @@ final class Html
             return self::hiddenInput($request->csrfParam, csrf_token(), $options)->render();
         }
 
-        AssetRegistry::html(template('_special/async-csrf-input', [
+        HtmlStack::html(template('_special/async-csrf-input', [
             'url' => UrlHelper::actionUrl('users/session-info'),
         ], templateMode: TemplateMode::Cp));
 

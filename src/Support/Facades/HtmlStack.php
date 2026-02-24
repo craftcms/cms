@@ -45,12 +45,12 @@ use Illuminate\Support\Facades\Facade;
  * @method static void applyBuffer(array $buffer)
  * @method static void clear()
  *
- * @see \CraftCms\Cms\View\AssetRegistry
+ * @see \CraftCms\Cms\View\HtmlStack
  */
-final class AssetRegistry extends Facade
+final class HtmlStack extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return \CraftCms\Cms\View\AssetRegistry::class;
+        return \CraftCms\Cms\View\HtmlStack::class;
     }
 }

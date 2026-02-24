@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Twig;
 use CraftCms\Cms\Twig\Events\BeginPage;
 use CraftCms\Cms\Twig\Events\EndPage;
 use CraftCms\Cms\Twig\Exceptions\TemplateExitException;
-use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
@@ -27,7 +27,7 @@ final readonly class PageLifecycle
     public const string BODY_END_PLACEHOLDER = '<![CDATA[CRAFT-BLOCK-BODY-END]]>';
 
     public function __construct(
-        private AssetRegistry $assetRegistry,
+        private HtmlStack $HtmlStack,
     ) {}
 
     public function head(): void
@@ -67,9 +67,9 @@ final readonly class PageLifecycle
             event($event = new EndPage);
 
             return strtr((string) ob_get_clean(), [
-                self::HEAD_PLACEHOLDER => $event->headHtml ?? $this->assetRegistry->headHtml(),
-                self::BODY_BEGIN_PLACEHOLDER => $event->bodyBeginHtml ?? $this->assetRegistry->bodyBeginHtml(),
-                self::BODY_END_PLACEHOLDER => $event->bodyEndHtml ?? $this->assetRegistry->bodyEndHtml(),
+                self::HEAD_PLACEHOLDER => $event->headHtml ?? $this->HtmlStack->headHtml(),
+                self::BODY_BEGIN_PLACEHOLDER => $event->bodyBeginHtml ?? $this->HtmlStack->bodyBeginHtml(),
+                self::BODY_END_PLACEHOLDER => $event->bodyEndHtml ?? $this->HtmlStack->bodyEndHtml(),
             ]);
         } catch (TemplateExitException) {
             // {% exit %} without a status code: return whatever has been

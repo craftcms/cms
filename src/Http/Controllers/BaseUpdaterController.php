@@ -10,7 +10,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Exceptions\MigrateException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Updates\Updates;
@@ -89,7 +89,7 @@ abstract class BaseUpdaterController
         $segments = $this->request->actionSegments();
         $idJs = Json::encode(implode('/', $segments));
         $stateJs = Json::encode($state);
-        AssetRegistry::js("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
+        HtmlStack::js("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
 
         return view('_special/updater', [
             'title' => $this->pageTitle(),

@@ -10,7 +10,7 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,7 +25,7 @@ final readonly class AddressesController
         private Fields $fields,
     ) {}
 
-    public function fields(Request $request, AssetRegistry $assetRegistry): Response
+    public function fields(Request $request, HtmlStack $HtmlStack): Response
     {
         $request->validate([
             'namespace' => ['required', 'string'],
@@ -46,8 +46,8 @@ final readonly class AddressesController
 
         return new JsonResponse([
             'fieldsHtml' => $html,
-            'headHtml' => $assetRegistry->headHtml(),
-            'bodyHtml' => $assetRegistry->bodyHtml(),
+            'headHtml' => $HtmlStack->headHtml(),
+            'bodyHtml' => $HtmlStack->bodyHtml(),
         ]);
     }
 

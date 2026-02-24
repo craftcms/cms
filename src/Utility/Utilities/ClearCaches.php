@@ -11,7 +11,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
 use CraftCms\Cms\Utility\Events\RegisterTagOptions;
 use CraftCms\Cms\Utility\Utility;
@@ -72,7 +72,7 @@ final class ClearCaches extends Utility
         $cacheOptions = Arr::sort($cacheOptions, 'label');
 
         Craft::$app->getView()->registerAssetBundle(ClearCachesAsset::class);
-        AssetRegistry::js('new Craft.ClearCachesUtility(\'clear-caches\');');
+        HtmlStack::js('new Craft.ClearCachesUtility(\'clear-caches\');');
 
         return template('_components/utilities/ClearCaches', [
             'cacheOptions' => $cacheOptions,

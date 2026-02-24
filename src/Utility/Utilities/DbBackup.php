@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\web\assets\dbbackup\DbBackupAsset;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Utility\Utility;
 use Override;
 
@@ -41,7 +41,7 @@ final class DbBackup extends Utility
     {
         Craft::$app->getView()->registerAssetBundle(DbBackupAsset::class);
 
-        AssetRegistry::js('new Craft.DbBackupUtility(\'db-backup\');');
+        HtmlStack::js('new Craft.DbBackupUtility(\'db-backup\');');
 
         return template('_components/utilities/DbBackup');
     }

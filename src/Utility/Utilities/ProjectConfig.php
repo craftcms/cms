@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 use Craft;
 use craft\web\assets\prismjs\PrismJsAsset;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Utility\Utility;
 use Override;
 use Symfony\Component\Yaml\Yaml;
@@ -46,7 +46,7 @@ final class ProjectConfig extends Utility
 
         if ($areChangesPending) {
             Craft::$app->getView()->registerAssetBundle(PrismJsAsset::class);
-            AssetRegistry::translations([
+            HtmlStack::translations([
                 'Show all changes',
             ]);
             $invert = (

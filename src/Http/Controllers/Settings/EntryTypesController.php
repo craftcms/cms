@@ -28,7 +28,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -325,7 +325,7 @@ final class EntryTypesController
         ]));
     }
 
-    public function renderOverrideSettings(Request $request, AssetRegistry $assetRegistry): JsonResponse
+    public function renderOverrideSettings(Request $request, HtmlStack $HtmlStack): JsonResponse
     {
         $entryType = $this->entryTypeForSelectInput($request);
         $entryType->name = $request->input('name', $entryType->name);
@@ -344,8 +344,8 @@ final class EntryTypesController
         return new JsonResponse([
             'settingsHtml' => $html,
             'namespace' => $namespace,
-            'headHtml' => $assetRegistry->headHtml(),
-            'bodyHtml' => $assetRegistry->bodyHtml(),
+            'headHtml' => $HtmlStack->headHtml(),
+            'bodyHtml' => $HtmlStack->bodyHtml(),
         ]);
     }
 

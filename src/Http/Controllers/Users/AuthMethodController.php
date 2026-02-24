@@ -10,7 +10,7 @@ use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,7 +28,7 @@ final readonly class AuthMethodController
         private Auth $auth,
     ) {}
 
-    public function setupHtml(Request $request, AssetRegistry $assetRegistry): JsonResponse
+    public function setupHtml(Request $request, HtmlStack $HtmlStack): JsonResponse
     {
         $class = $request->validate([
             'method' => ['required', 'string'],
@@ -51,20 +51,20 @@ final readonly class AuthMethodController
         return new JsonResponse([
             'containerId' => $containerId,
             'html' => $html,
-            'headHtml' => $assetRegistry->headHtml(),
-            'bodyHtml' => $assetRegistry->bodyHtml(),
+            'headHtml' => $HtmlStack->headHtml(),
+            'bodyHtml' => $HtmlStack->bodyHtml(),
             'methodName' => $displayName,
         ]);
     }
 
-    public function listingHtml(AssetRegistry $assetRegistry): JsonResponse
+    public function listingHtml(HtmlStack $HtmlStack): JsonResponse
     {
         $html = template('users/_auth-methods', templateMode: TemplateMode::Cp);
 
         return new JsonResponse([
             'html' => $html,
-            'headHtml' => $assetRegistry->headHtml(),
-            'bodyHtml' => $assetRegistry->bodyHtml(),
+            'headHtml' => $HtmlStack->headHtml(),
+            'bodyHtml' => $HtmlStack->bodyHtml(),
         ]);
     }
 

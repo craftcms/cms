@@ -9,7 +9,7 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use InvalidArgumentException;
@@ -80,7 +80,7 @@ class AddressField extends BaseField
         }
 
         if (! $static) {
-            AssetRegistry::jsWithVars(fn ($namespace) => <<<JS
+            HtmlStack::jsWithVars(fn ($namespace) => <<<JS
     (() => {
         const initFields = (values) => {
             const fields = {};

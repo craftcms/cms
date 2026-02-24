@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Http\Responses;
 
 use Craft;
 use craft\web\assets\htmx\HtmxAsset;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -189,8 +189,8 @@ final class CpModalResponse implements Responsable
             'submitButtonLabel' => $this->submitButtonLabel,
             'content' => $content,
             'errorSummary' => $errorSummary,
-            'headHtml' => AssetRegistry::headHtml(),
-            'bodyHtml' => AssetRegistry::bodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
             'deltaNames' => DeltaRegistry::getNames(),
             'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ]);

@@ -30,7 +30,7 @@ use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
@@ -423,8 +423,8 @@ class AppController extends Controller
 
         return $this->asJson([
             'elements' => $elementHtml,
-            'headHtml' => AssetRegistry::headHtml(),
-            'bodyHtml' => AssetRegistry::bodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
         ]);
     }
 
@@ -487,8 +487,8 @@ class AppController extends Controller
 
         $data = [
             'components' => $componentHtml,
-            'headHtml' => AssetRegistry::headHtml(),
-            'bodyHtml' => AssetRegistry::bodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
         ];
 
         if ($withMenuItems) {

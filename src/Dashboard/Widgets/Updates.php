@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
 use craft\web\assets\updateswidget\UpdatesWidgetAsset;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Updates\Updates as UpdatesService;
 use Illuminate\Support\Facades\Auth;
 use Override;
@@ -60,7 +60,7 @@ final class Updates extends Widget
 
         if (! $cached || ! $this->updates->totalAvailableUpdates()) {
             Craft::$app->getView()->registerAssetBundle(UpdatesWidgetAsset::class);
-            AssetRegistry::js('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
+            HtmlStack::js('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
         }
 
         if ($cached) {

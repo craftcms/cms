@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\web\assets\updates\UpdatesAsset;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Updates\Updates as UpdatesService;
 use CraftCms\Cms\Utility\Utility;
 use Override;
@@ -48,7 +48,7 @@ final class Updates extends Utility
     {
         Craft::$app->getView()->registerAssetBundle(UpdatesAsset::class);
 
-        AssetRegistry::js('new Craft.UpdatesUtility();');
+        HtmlStack::js('new Craft.UpdatesUtility();');
 
         return template('_components/utilities/Updates');
     }

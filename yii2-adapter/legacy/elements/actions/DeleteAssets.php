@@ -7,7 +7,7 @@
 
 namespace craft\elements\actions;
 
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 
 /**
  * DeleteAssets represents a Delete element action, tuned for assets.
@@ -24,7 +24,7 @@ class DeleteAssets extends Delete
     public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per canDelete()
-        AssetRegistry::jsWithVars(fn($type) => <<<JS
+        HtmlStack::jsWithVars(fn($type) => <<<JS
 (() => {
   const trigger = new Craft.ElementActionTrigger({
     type: $type,

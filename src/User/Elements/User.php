@@ -40,7 +40,7 @@ use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -1611,7 +1611,7 @@ XML;
                         'label' => t('Copy impersonation URL…'),
                     ];
 
-                    AssetRegistry::jsWithVars(fn ($id, $userId, $message) => <<<JS
+                    HtmlStack::jsWithVars(fn ($id, $userId, $message) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.elevatedSessionManager.requireElevatedSession(() => {
       Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
@@ -1700,7 +1700,7 @@ JS, [
                         ])),
                     ];
 
-                    AssetRegistry::jsWithVars(fn ($id, $userId, $redirect) => <<<JS
+                    HtmlStack::jsWithVars(fn ($id, $userId, $redirect) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.sendActionRequest('POST', 'users/user-content-summary', {
     data: {userId: $userId}
@@ -1729,7 +1729,7 @@ JS,
     {
         $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
 
-        AssetRegistry::jsWithVars(fn ($id, $userId, $message) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $userId, $message) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.elevatedSessionManager.requireElevatedSession(() => {
     Craft.sendActionRequest('POST', 'users/get-password-reset-url', {

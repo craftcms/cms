@@ -26,7 +26,7 @@ use function CraftCms\Cms\t;
  * assets registered during a block of code without them appearing in the final output.
  */
 #[Scoped]
-final class AssetRegistry
+final class HtmlStack
 {
     /** @var array<int, array<string, string>> */
     private array $js = [];

@@ -11,8 +11,8 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\db\Paginator;
 use CraftCms\Cms\Shared\BaseModel;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Entries;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Twig\TwigExceptionMapper;
 use CraftCms\Cms\Twig\Variables\Paginate;
@@ -369,9 +369,9 @@ class Template
     {
         // Is this a CSS file?
         if (preg_match('/^[^\r\n]+\.css(\.gz)?$/i', $css) || UrlHelper::isAbsoluteUrl($css)) {
-            AssetRegistry::cssFile($css, $options, $key);
+            HtmlStack::cssFile($css, $options, $key);
         } else {
-            AssetRegistry::css($css, $options, $key);
+            HtmlStack::css($css, $options, $key);
         }
     }
 
@@ -381,7 +381,7 @@ class Template
             $position = Position::from($position);
         }
 
-        AssetRegistry::html($html, $position);
+        HtmlStack::html($html, $position);
     }
 
     /**
@@ -399,10 +399,10 @@ class Template
     {
         // Is this a JS file?
         if (preg_match('/^[^\r\n]+\.js(\.gz)?$/i', $js) || UrlHelper::isAbsoluteUrl($js)) {
-            AssetRegistry::jsFile($js, $options, $key);
+            HtmlStack::jsFile($js, $options, $key);
         } else {
             $position = Position::tryFrom($options['position']) ?? Position::BodyEnd;
-            AssetRegistry::js($js, $position, $key);
+            HtmlStack::js($js, $position, $key);
         }
     }
 
@@ -412,7 +412,7 @@ class Template
             $position = Position::from($position);
         }
 
-        AssetRegistry::script($script, $position);
+        HtmlStack::script($script, $position);
     }
 
     /**

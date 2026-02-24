@@ -46,8 +46,8 @@ use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -593,7 +593,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         ];
 
         if (! $readOnly) {
-            AssetRegistry::startJsBuffer();
+            HtmlStack::startJsBuffer();
             $namespace = InputNamespace::get();
             $entryTypeSelectHtml = InputNamespace::with(
                 namespace: null,
@@ -602,7 +602,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                     'id' => 'TEMP_ID',
                 ]), $namespace),
             );
-            $entryTypeSelectJs = AssetRegistry::clearJsBuffer();
+            $entryTypeSelectJs = HtmlStack::clearJsBuffer();
         }
 
         $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
@@ -802,7 +802,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                 'type' => Entry::pluralLowerDisplayName(),
             ])),
         ];
-        AssetRegistry::jsWithVars(fn ($expandAllId, $collapseAllId, $fieldId) => <<<JS
+        HtmlStack::jsWithVars(fn ($expandAllId, $collapseAllId, $fieldId) => <<<JS
 (() => {
   const field = $('#' + $fieldId);
   const expandBtn = $('#' + $expandAllId);
@@ -900,7 +900,7 @@ JS);
             'fieldId' => $this->id,
         ]);
 
-        AssetRegistry::jsWithVars(fn ($id, $fieldId, $entrySelector, $type) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $fieldId, $entrySelector, $type) => <<<JS
 (() => {
   const btn = $('#' + $id);
   const field = $('#' + $fieldId);
@@ -1003,7 +1003,7 @@ JS;
     {
         $id = sprintf('action-%s', mt_rand());
 
-        AssetRegistry::jsWithVars(fn ($id, $fieldId, $entrySelector) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $fieldId, $entrySelector) => <<<JS
 (() => {
   const btn = $('#' + $id);
   const field = $('#' + $fieldId);
@@ -1178,7 +1178,7 @@ JS."\n";
 JS;
         }
 
-        AssetRegistry::js("(() => {\n$js\n})();");
+        HtmlStack::js("(() => {\n$js\n})();");
 
         return template('_components/fieldtypes/Matrix/input', [
             'id' => $id,

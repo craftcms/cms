@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -19,7 +19,7 @@ final readonly class WidgetsController
     use InteractsWithWidgets;
 
     public function __construct(
-        private AssetRegistry $assetRegistry,
+        private HtmlStack $HtmlStack,
         private Dashboard $dashboard,
     ) {}
 
@@ -137,8 +137,8 @@ final readonly class WidgetsController
 
         return new JsonResponse([
             'info' => $info,
-            'headHtml' => $this->assetRegistry->headHtml(),
-            'bodyHtml' => $this->assetRegistry->bodyHtml(),
+            'headHtml' => $this->HtmlStack->headHtml(),
+            'bodyHtml' => $this->HtmlStack->bodyHtml(),
         ]);
     }
 }

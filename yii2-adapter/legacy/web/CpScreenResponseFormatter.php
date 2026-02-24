@@ -10,8 +10,8 @@ namespace craft\web;
 use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -116,8 +116,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'content' => $content,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
-            'headHtml' => AssetRegistry::headHtml(),
-            'bodyHtml' => AssetRegistry::bodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
             'deltaNames' => DeltaRegistry::getNames(),
             'initialDeltaValues' => DeltaRegistry::getInitialValues(),
             'data' => $response->data,

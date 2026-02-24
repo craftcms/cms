@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\View\AssetRegistry;
 use CraftCms\Cms\View\Enums\Position;
+use CraftCms\Cms\View\HtmlStack;
 
 beforeEach(function () {
-    $this->registry = app(AssetRegistry::class);
+    $this->registry = app(HtmlStack::class);
 });
 
 describe('scoped resolution', function () {
     it('is resolved as a scoped instance', function () {
-        $a = app(AssetRegistry::class);
-        $b = app(AssetRegistry::class);
+        $a = app(HtmlStack::class);
+        $b = app(HtmlStack::class);
 
         expect($a)->toBe($b);
     });

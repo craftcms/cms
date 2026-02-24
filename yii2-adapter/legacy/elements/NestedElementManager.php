@@ -30,7 +30,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -546,19 +546,19 @@ class NestedElementManager extends Component
                 ];
 
                 if (!$config['static'] && $config['sortable']) {
-                    AssetRegistry::startJsBuffer();
+                    HtmlStack::startJsBuffer();
                     $actionConfig = ElementHelper::actionConfig(new ChangeSortOrder($owner, $attribute));
-                    $actionConfig['bodyHtml'] = AssetRegistry::clearJsBuffer();
+                    $actionConfig['bodyHtml'] = HtmlStack::clearJsBuffer();
                     $settings['indexSettings']['actions'][] = $actionConfig;
 
-                    AssetRegistry::startJsBuffer();
+                    HtmlStack::startJsBuffer();
                     $actionConfig = ElementHelper::actionConfig(new MoveUp($owner, $attribute));
-                    $actionConfig['bodyHtml'] = AssetRegistry::clearJsBuffer();
+                    $actionConfig['bodyHtml'] = HtmlStack::clearJsBuffer();
                     $settings['indexSettings']['actions'][] = $actionConfig;
 
-                    AssetRegistry::startJsBuffer();
+                    HtmlStack::startJsBuffer();
                     $actionConfig = ElementHelper::actionConfig(new MoveDown($owner, $attribute));
-                    $actionConfig['bodyHtml'] = AssetRegistry::clearJsBuffer();
+                    $actionConfig['bodyHtml'] = HtmlStack::clearJsBuffer();
                     $settings['indexSettings']['actions'][] = $actionConfig;
                 }
 
@@ -665,7 +665,7 @@ class NestedElementManager extends Component
             // render the HTML, and give the render function a chance to modify the JS settings
             $html = $renderHtml($id, $config, $attribute, $settings);
 
-            AssetRegistry::jsWithVars(fn($id, $elementType, $settings) => <<<JS
+            HtmlStack::jsWithVars(fn($id, $elementType, $settings) => <<<JS
 (() => {
   new Craft.NestedElementManager('#' + $id, $elementType, $settings)
 })();

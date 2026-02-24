@@ -13,8 +13,8 @@ use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Condition\Events\RegisterConditionRules;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -246,7 +246,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
     public function getBuilderHtml(): string
     {
-        AssetRegistry::jsWithVars(fn ($id) => <<<JS
+        HtmlStack::jsWithVars(fn ($id) => <<<JS
 Craft.initUiElements('#' + $id);
 JS, [InputNamespace::namespaceId($this->id)]);
 
@@ -268,7 +268,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
             $ruleNum = 1;
 
             // Start rule js buffer
-            AssetRegistry::startJsBuffer();
+            HtmlStack::startJsBuffer();
 
             $html = Html::beginTag('div', [
                 'class' => ['condition-main'],
@@ -365,7 +365,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                 $ruleNum++;
             }
 
-            $rulesJs = AssetRegistry::clearJsBuffer(false);
+            $rulesJs = HtmlStack::clearJsBuffer(false);
 
             // Sortable rules div
             $html .= Html::tag('div', $allRulesHtml, [
@@ -405,25 +405,25 @@ JS, [InputNamespace::namespaceId($this->id)]);
                 if ($isHtmxRequest) {
                     $html .= html::tag('script', $rulesJs, ['type' => 'text/javascript']);
                 } else {
-                    AssetRegistry::js($rulesJs);
+                    HtmlStack::js($rulesJs);
                 }
             }
 
             // Add head and foot/body scripts to html returned so crafts htmx condition builder can insert them into the DOM
             // If this is not an htmx request, don't add scripts, since they will be in the page anyway.
             if ($isHtmxRequest) {
-                if ($bodyHtml = AssetRegistry::bodyHtml()) {
+                if ($bodyHtml = HtmlStack::bodyHtml()) {
                     $html .= html::tag('template', $bodyHtml, [
                         'class' => ['hx-body-html'],
                     ]);
                 }
-                if ($headHtml = AssetRegistry::headHtml()) {
+                if ($headHtml = HtmlStack::headHtml()) {
                     $html .= html::tag('template', $headHtml, [
                         'class' => ['hx-head-html'],
                     ]);
                 }
             } else {
-                AssetRegistry::jsWithVars(
+                HtmlStack::jsWithVars(
                     fn ($containerSelector) => <<<JS
 htmx.process(htmx.find($containerSelector))
 htmx.trigger(htmx.find($containerSelector), 'htmx:load')
@@ -536,7 +536,7 @@ JS,
         $menuId = "$this->id-type-menu";
         $inputId = "$this->id-type-input";
 
-        AssetRegistry::jsWithVars(
+        HtmlStack::jsWithVars(
             fn ($buttonId, $inputId) => <<<JS
 Garnish.requestAnimationFrame(() => {
   const \$button = $('#' + $buttonId);

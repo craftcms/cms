@@ -39,8 +39,8 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -553,7 +553,7 @@ class ElementsController extends Controller
         // Screen prep
         $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? ElementHelper::postEditUrl($element);
 
-        AssetRegistry::jsWithVars(fn(
+        HtmlStack::jsWithVars(fn(
             $elementType,
             $elementId,
             $draftId,
@@ -1147,13 +1147,13 @@ JS, [
         $settings = $jsSettingsFn($form);
 
         if ($this->_isSlideout()) {
-            AssetRegistry::jsWithVars(fn($settings) => <<<JS
+            HtmlStack::jsWithVars(fn($settings) => <<<JS
 $('#$containerId').data('elementEditorSettings', $settings)
 JS, [
                 $settings,
             ]);
         } else {
-            AssetRegistry::jsWithVars(fn($settings) => <<<JS
+            HtmlStack::jsWithVars(fn($settings) => <<<JS
 new Craft.ElementEditor($('#$containerId'), $settings)
 JS, [
                 $settings,
@@ -2458,8 +2458,8 @@ JS, [
         return [
             'tabs' => $tabHtml,
             'missingElements' => $missingElements,
-            'headHtml' => AssetRegistry::headHtml(),
-            'bodyHtml' => AssetRegistry::bodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
         ];
     }
 

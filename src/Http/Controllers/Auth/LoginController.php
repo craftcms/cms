@@ -9,7 +9,7 @@ use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
-use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -47,7 +47,7 @@ final readonly class LoginController extends AuthenticationController
         return redirect(URL::defaultReturnUrl());
     }
 
-    public function showLoginModal(Request $request, Impersonation $impersonation, AssetRegistry $assetRegistry): JsonResponse
+    public function showLoginModal(Request $request, Impersonation $impersonation, HtmlStack $HtmlStack): JsonResponse
     {
         $forElevatedSession = $request->boolean('forElevatedSession');
 
@@ -65,8 +65,8 @@ final readonly class LoginController extends AuthenticationController
 
         return new JsonResponse([
             'html' => $html,
-            'headHtml' => $assetRegistry->headHtml(),
-            'bodyHtml' => $assetRegistry->bodyHtml(),
+            'headHtml' => $HtmlStack->headHtml(),
+            'bodyHtml' => $HtmlStack->bodyHtml(),
         ]);
     }
 

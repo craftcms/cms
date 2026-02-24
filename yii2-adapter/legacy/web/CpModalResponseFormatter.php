@@ -9,8 +9,8 @@ namespace craft\web;
 
 use Craft;
 use craft\web\assets\htmx\HtmxAsset;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -89,8 +89,8 @@ class CpModalResponseFormatter extends Component implements ResponseFormatterInt
             'submitButtonLabel' => $behavior->submitButtonLabel,
             'content' => $content,
             'errorSummary' => $errorSummary,
-            'headHtml' => AssetRegistry::headHtml(),
-            'bodyHtml' => AssetRegistry::bodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
             'deltaNames' => DeltaRegistry::getNames(),
             'initialDeltaValues' => DeltaRegistry::getInitialValues(),
             'data' => $response->data,

@@ -8,7 +8,7 @@ use craft\helpers\Cp;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Foundation\ViteException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Vite;
@@ -63,7 +63,7 @@ final class CpExtension extends AbstractExtension implements GlobalsInterface
                 ->toHtml();
         } catch (ViteException $e) {
             if (Cms::config()->devMode) {
-                AssetRegistry::jsWithVars(fn ($message) => "console.error($message)", [
+                HtmlStack::jsWithVars(fn ($message) => "console.error($message)", [
                     'message' => $e->getMessage(),
                 ]);
             }

@@ -14,7 +14,7 @@ use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,7 +33,7 @@ final readonly class TwoFactorAuthenticationController
         private GeneralConfig $generalConfig,
     ) {}
 
-    public function showForm(Request $request, Auth $auth, Impersonation $impersonation, AssetRegistry $assetRegistry): Response|string
+    public function showForm(Request $request, Auth $auth, Impersonation $impersonation, HtmlStack $HtmlStack): Response|string
     {
         $user = $impersonation->getImpersonator()
             ?? User::find()->id($request->session()->get('user.id'))->first();
@@ -98,8 +98,8 @@ final readonly class TwoFactorAuthenticationController
         if ($request->wantsJson()) {
             return new JsonResponse([
                 ...$authFormData,
-                'headHtml' => $assetRegistry->headHtml(),
-                'bodyHtml' => $assetRegistry->bodyHtml(),
+                'headHtml' => $HtmlStack->headHtml(),
+                'bodyHtml' => $HtmlStack->bodyHtml(),
             ]);
         }
 

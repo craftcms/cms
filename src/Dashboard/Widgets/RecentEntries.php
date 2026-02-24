@@ -9,7 +9,7 @@ use craft\web\assets\recententries\RecentEntriesAsset;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
@@ -114,7 +114,7 @@ final class RecentEntries extends Widget
 
         Craft::$app->getView()->registerAssetBundle(RecentEntriesAsset::class);
         $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
-        AssetRegistry::js($js);
+        HtmlStack::js($js);
 
         $entries = $this->getEntries();
 

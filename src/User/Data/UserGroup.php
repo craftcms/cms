@@ -12,7 +12,7 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
@@ -90,7 +90,7 @@ final class UserGroup extends Component implements Actionable, Chippable, CpEdit
                 'label' => t('User group settings'),
             ];
 
-            AssetRegistry::jsWithVars(fn ($id, $params) => <<<JS
+            HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
 $('#' + $id).on('click', () => {
   new Craft.CpScreenSlideout('user-settings/edit-group', {
     params: $params,

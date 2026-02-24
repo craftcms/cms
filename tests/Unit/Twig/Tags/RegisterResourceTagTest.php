@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Twig\TemplateRenderer;
-use CraftCms\Cms\View\AssetRegistry;
+use CraftCms\Cms\View\HtmlStack;
 
 beforeEach(function () {
     app()->forgetScopedInstances();
     $this->renderer = app(TemplateRenderer::class);
-    $this->assets = app(AssetRegistry::class);
+    $this->assets = app(HtmlStack::class);
 });
 
 describe('css tag', function () {
