@@ -16,6 +16,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 
+// MySQL InnoDB fulltext indexes are not transactional — data inserted within
+// a transaction is invisible to MATCH...AGAINST queries. Since RefreshDatabase
+// wraps each test in a transaction, we disable fulltext and fall back to LIKE.
+beforeEach(function () {
+    if (DB::isMysql()) {
+        app(\CraftCms\Cms\Search\Search::class)->useFullText = false;
+    }
+});
+
 function createIndexedEntry(string $title, ?string $slug = null): EntryModel
 {
     $entryModel = EntryModel::factory()->create();
@@ -423,7 +432,7 @@ describe('deleteOrphanedIndexJobs', function () {
 });
 
 describe('shouldCallSearchElements', function () {
-    test('returns false', function () {
+    test('returns false by default', function () {
         expect(Search::shouldCallSearchElements(entryQuery()))->toBeFalse();
     });
 });

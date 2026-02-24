@@ -57,7 +57,7 @@ trait SearchesElements
 
         $scoreOrder = Arr::first($elementQuery->query->orders ?? [], fn ($order) => $order['column'] === 'score');
 
-        if ($scoreOrder || $searchService->shouldCallSearchElements()) {
+        if ($scoreOrder || $searchService->shouldCallSearchElements($elementQuery)) {
             // Get the scored results up front
             $searchResults = $searchService->searchElements($elementQuery);
 

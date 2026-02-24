@@ -31,7 +31,7 @@ use RuntimeException;
 use Throwable;
 
 #[Singleton]
-final class Search
+class Search
 {
     /**
      * @var bool Whether fulltext searches should be used ever. (MySQL only.)
@@ -294,7 +294,7 @@ final class Search
         return $job !== null && ! $job->reserved;
     }
 
-    public function shouldCallSearchElements(): bool
+    public function shouldCallSearchElements(ElementQueryInterface $elementQuery): bool
     {
         return false;
     }
