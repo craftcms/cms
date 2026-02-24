@@ -886,6 +886,10 @@ class Assets
      */
     public static function iconUrl(string $extension): string
     {
+        if (!preg_match('/^\w+$/', $extension)) {
+            throw new InvalidArgumentException("$extension isn’t a valid file extension.");
+        }
+
         return UrlHelper::actionUrl('assets/icon', [
             'extension' => $extension,
         ]);
@@ -901,6 +905,10 @@ class Assets
      */
     public static function iconPath(string $extension): string
     {
+        if (!preg_match('/^\w+$/', $extension)) {
+            throw new InvalidArgumentException("$extension isn’t a valid file extension.");
+        }
+
         $path = sprintf('%s%s%s.svg', Craft::$app->getPath()->getAssetsIconsPath(), DIRECTORY_SEPARATOR, strtolower($extension));
 
         if (file_exists($path)) {
