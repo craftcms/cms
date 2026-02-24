@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static void scriptWithVars(callable $fn, array $vars, \CraftCms\Cms\View\Enums\Position $position = 3, array $options = [], string|null $key = null)
  * @method static void html(string $html, \CraftCms\Cms\View\Enums\Position $position = 3, string|null $key = null)
  * @method static void jsImport(string $key, string $value)
- * @method static void translations(array $messages, string $category = 'app')
  * @method static void icons(array $icons)
  * @method static void metaTag(array $attributes, string|null $key = null)
  * @method static void linkTag(array $attributes, string|null $key = null)

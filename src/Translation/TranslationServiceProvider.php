@@ -16,32 +16,29 @@ final class TranslationServiceProvider extends ServiceProvider
     #[\Override]
     public function register(): void
     {
-        $this->app->singleton(function (): Translator {
-            $translator = new Translator(
-                locale: app()->getLocale(),
-                fallbackLocale: $this->app->make(ConfigRepository::class)->get('app.fallback_locale'),
-                defaultCategory: 'app',
-            );
+        $this->app->singleton(fn (): Translator => new Translator(
+            locale: app()->getLocale(),
+            fallbackLocale: $this->app->make(ConfigRepository::class)->get('app.fallback_locale'),
+            defaultCategory: 'app',
+        ));
+    }
 
-            $appMessageSource = new MessageSource(dirname(__DIR__, 2).'/resources/translations');
-            $formatter = new IntlMessageFormatter;
+    public function boot(): void
+    {
+        $this->callAfterResolving(I18N::class, function (I18N $i18n): void {
             $appCategory = new CategorySource(
                 name: 'app',
-                reader: $appMessageSource,
-                formatter: $formatter
+                reader: new MessageSource(dirname(__DIR__, 2).'/resources/translations'),
+                formatter: new IntlMessageFormatter,
             );
 
-            $siteMessageSource = new MessageSource(lang_path());
-            $formatter = new IntlMessageFormatter;
             $siteCategory = new CategorySource(
                 name: 'site',
-                reader: $siteMessageSource,
-                formatter: $formatter
+                reader: new MessageSource(lang_path()),
+                formatter: new IntlMessageFormatter,
             );
 
-            $translator->addCategorySources($appCategory, $siteCategory);
-
-            return $translator;
+            $i18n->addCategorySources($appCategory, $siteCategory);
         });
     }
 }

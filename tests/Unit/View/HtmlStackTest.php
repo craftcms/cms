@@ -672,25 +672,6 @@ describe('applyBuffer', function () {
     });
 });
 
-describe('translations', function () {
-    it('does not register JS when no messages have translations', function () {
-        // When the message equals its translation, nothing should be registered
-        $this->registry->translations(['untranslated-key-that-will-not-exist'], 'app');
-
-        expect($this->registry->headHtml())->toBe('')
-            ->and($this->registry->bodyEndHtml())->toBe('');
-    });
-
-    it('registers translation JS at body position', function () {
-        // Since translations use t() which may return the same string in test env,
-        // we verify the position is Body by checking the method doesn't pollute Head
-        $this->registry->translations(['some-message'], 'app');
-
-        // Whether or not translations were found, head should not have translation JS
-        expect($this->registry->headHtml())->not->toContain('Craft.translations');
-    });
-});
-
 describe('icons', function () {
     it('deduplicates icon registrations', function () {
         $this->registry->icons(['heart', 'star']);

@@ -115,6 +115,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -161,7 +162,6 @@ use yii\caching\TagDependency as YiiTagDependency;
 use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\IntlMessageFormatter;
 use Yiisoft\Translator\Message\Php\MessageSource;
-use Yiisoft\Translator\Translator;
 use function CraftCms\Cms\t;
 
 class Yii2ServiceProvider extends ServiceProvider
@@ -467,8 +467,7 @@ class Yii2ServiceProvider extends ServiceProvider
         if (is_dir(base_path('translations'))) {
             Deprecator::log('translations-path', 'Storing site translations in `/translations` is deprecated. Rename the folder to `lang` instead.');
 
-            $translator = app(Translator::class);
-            $translator->addCategorySources(new CategorySource(
+            I18N::addCategorySources(new CategorySource(
                 'site',
                 new MessageSource(base_path('translations')),
                 new IntlMessageFormatter(),
@@ -478,8 +477,7 @@ class Yii2ServiceProvider extends ServiceProvider
         /**
          * Load legacy translations
          */
-        $translator = app(Translator::class);
-        $translator->addCategorySources(new CategorySource(
+        I18N::addCategorySources(new CategorySource(
             'yii2-adapter',
             new MessageSource(dirname(__DIR__) . '/resources/translations'),
             new IntlMessageFormatter(),
