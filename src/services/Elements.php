@@ -1503,6 +1503,7 @@ class Elements extends Component
         $newAttributes += [
             'id' => $canonical->id,
             'uid' => $canonical->uid,
+            'canonicalId' => $canonical->getCanonicalId(),
             'root' => $canonical->root,
             'lft' => $canonical->lft,
             'rgt' => $canonical->rgt,
