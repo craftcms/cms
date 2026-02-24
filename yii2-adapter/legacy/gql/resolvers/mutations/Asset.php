@@ -9,7 +9,6 @@ namespace craft\gql\resolvers\mutations;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\errors\AssetDisallowedExtensionException;
 use craft\events\ReplaceAssetEvent;
 use craft\gql\base\ElementMutationResolver;
 use craft\helpers\Assets as AssetsHelper;
@@ -18,6 +17,7 @@ use craft\helpers\UrlHelper;
 use craft\services\Assets;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Database\Table;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;

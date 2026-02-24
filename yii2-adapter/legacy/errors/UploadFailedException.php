@@ -7,6 +7,7 @@
 
 namespace craft\errors;
 
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use Throwable;
 use function CraftCms\Cms\t;
 
@@ -16,7 +17,7 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class UploadFailedException extends FileException
+class UploadFailedException extends FilesystemException
 {
     /**
      * @var int Error code

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Commands;
 
-use craft\console\Application;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
-use Illuminate\Container\Attributes\Give;
 
 final class CleanupAssetIndexesCommand extends Command
 {
@@ -23,9 +22,9 @@ final class CleanupAssetIndexesCommand extends Command
     #[\Override]
     protected $aliases = ['index-assets/cleanup'];
 
-    public function handle(#[Give('Craft')] Application $craft): void
+    public function handle(): void
     {
-        $total = $craft->getAssetIndexer()->removeCliIndexingSessions();
+        $total = AssetIndexer::removeCliIndexingSessions();
 
         $this->components->success("Removed {$total} CLI indexing ".Str::plural('session', $total));
     }
