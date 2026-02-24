@@ -41,6 +41,7 @@ final class UpdateCommand extends Command
     use CraftCommand;
     use FetchesUpdates;
 
+    #[\Override]
     protected $signature = 'craft:update
         {handle?* : The update handle (`all`, `craft`, or a plugin handle). You can pass multiple handles separated by spaces, and you can update to a specific version using the syntax `handle:version`.}
         {--force : Force the operation to run when updates are disallowed.}
@@ -52,6 +53,7 @@ final class UpdateCommand extends Command
         {--except=* : Plugin handles to exclude}
     ';
 
+    #[\Override]
     protected $description = 'Updates Craft and/or plugins.';
 
     private Composer $composer;

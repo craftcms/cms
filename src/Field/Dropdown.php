@@ -21,10 +21,13 @@ use function CraftCms\Cms\t;
  */
 final class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface, SortableFieldInterface
 {
+    #[\Override]
     protected static bool $optgroups = true;
 
+    #[\Override]
     protected static bool $optionIcons = true;
 
+    #[\Override]
     protected static bool $optionColors = true;
 
     #[\Override]

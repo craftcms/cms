@@ -105,15 +105,23 @@ final class Typecast
 
         switch ($typeName) {
             case self::TYPE_BOOL:
+                if ($value === null || is_scalar($value)) {
+                    $value = Env::normalizeBooleanValue($value);
+
+                    if ($value === null && ! $allowsNull) {
+                        $value = false;
+                    }
+                }
+
+                return;
             case self::TYPE_FLOAT:
             case self::TYPE_INT:
             case self::TYPE_INT_FLOAT:
             case self::TYPE_INT_STRING:
             case self::TYPE_STRING:
                 if ($value === null || is_scalar($value)) {
-                    /** @phpstan-var self::TYPE_BOOL|self::TYPE_FLOAT|self::TYPE_INT|self::TYPE_INT_FLOAT|self::TYPE_INT_STRING|self::TYPE_STRING $typeName */
+                    /** @phpstan-var self::TYPE_FLOAT|self::TYPE_INT|self::TYPE_INT_FLOAT|self::TYPE_INT_STRING|self::TYPE_STRING $typeName */
                     $value = match ($typeName) {
-                        self::TYPE_BOOL => (bool) $value,
                         self::TYPE_FLOAT => (float) $value,
                         self::TYPE_INT => (int) $value,
                         self::TYPE_INT_FLOAT => self::toIntOrFloat($value ?? 0),

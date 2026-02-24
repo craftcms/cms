@@ -22,6 +22,7 @@ final class DatabaseCredentialsCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:setup:db-creds
         {--driver= : The database driver to use. Either `\'mysql\'` for MySQL, `\'mariadb\'` for MariaDB or `\'pgsql\'` for PostgreSQL.}
         {--host= : The database server name or IP address. Usually `\'localhost\'` or `\'127.0.0.1\'`.}
@@ -33,8 +34,10 @@ final class DatabaseCredentialsCommand extends Command
         {--prefix= : The table prefix to add to all database tables. This can be no more than 5 characters, and must be all lowercase.}
     ';
 
+    #[\Override]
     protected $description = 'Stores new DB connection settings to the `.env` file.';
 
+    #[\Override]
     protected $aliases = ['setup/db-creds', 'setup:db', 'setup/db'];
 
     private string $driver;

@@ -48,6 +48,7 @@
     "inertiajs/inertia-laravel": "^2.0",
     "laravel/framework": "^12.21.0",
     "laravel/wayfinder": "^0.1.12",
+    "league/flysystem-path-prefixing": "^3.31",
     "league/uri": "^7.0",
     "moneyphp/money": "^4.0",
     "phpdocumentor/reflection-docblock": "^5.3",
@@ -131,6 +132,7 @@
     "build": "@php vendor/bin/testbench workbench:build --ansi",
     "serve": [
       "Composer\\Config::disableProcessTimeout",
+      "@php vendor/bin/testbench package:sync-skeleton --ansi",
       "@build",
       "@php vendor/bin/testbench serve --ansi"
     ]

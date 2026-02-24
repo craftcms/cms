@@ -29,6 +29,7 @@ final class MigrateCommand extends Command implements Isolatable
     use CraftCommand;
     use DrawsBoxes;
 
+    #[\Override]
     protected $signature = 'craft:migrate:all
         {--force : Force the operation to run when in production}
         {--pretend : Dump the SQL queries that would be run}
@@ -40,8 +41,10 @@ final class MigrateCommand extends Command implements Isolatable
         {--track= : The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)}
         {--graceful : Return a successful exit code even if an error occurs}';
 
+    #[\Override]
     protected $description = 'Run the database migrations';
 
+    #[\Override]
     protected $aliases = ['migrate/all', 'migrate:up', 'migrate/up'];
 
     private Updates $updates;

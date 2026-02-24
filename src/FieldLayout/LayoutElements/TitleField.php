@@ -17,16 +17,22 @@ use function CraftCms\Cms\t;
 
 class TitleField extends TextField
 {
+    #[\Override]
     public bool $mandatory = true;
 
+    #[\Override]
     public string $attribute = 'title';
 
+    #[\Override]
     public bool $translatable = true;
 
+    #[\Override]
     public ?int $maxlength = 255;
 
+    #[\Override]
     public bool $required = true;
 
+    #[\Override]
     public bool $autofocus = true;
 
     public function __construct($config = [])

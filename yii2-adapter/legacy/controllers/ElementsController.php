@@ -11,12 +11,9 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\errors\InvalidTypeException;
-use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
 use craft\helpers\Component;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -33,6 +30,8 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
+use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\FieldLayout\FieldLayoutForm;
@@ -47,6 +46,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
@@ -714,7 +714,7 @@ JS, [
                     ->preferSites([$element->siteId])
                     ->unique()
                     ->status(null)
-                    ->where('elements.dateCreated', '!=', Db::prepareDateForDb($element->dateUpdated))
+                    ->where('elements.dateCreated', '!=', Query::prepareDateForDb($element->dateUpdated))
                     ->with(['revisionCreator']),
             ]);
     }
@@ -920,7 +920,7 @@ JS, [
                             ? Template::raw(t('Saved <time title="{timestampWithDate}">{timestamp}</time> by {creator}', [
                                 'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
-                                'creator' => $creator->name,
+                                'creator' => Html::encode($creator->name),
                             ]))
                             : Template::raw(t('Last saved <time title="{timestampWithDate}">{timestamp}</time>', [
                                 'timestampWithDate' => $timestampWithDate,
@@ -951,7 +951,7 @@ JS, [
                             ? Template::raw(t('Saved <time title="{timestampWithDate}">{timestamp}</time> by {creator}', [
                                 'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
-                                'creator' => $creator->name,
+                                'creator' => Html::encode($creator->name),
                             ]))
                             : Template::raw(t('Saved <time title="{timestampWithDate}">{timestamp}</time>', [
                                 'timestampWithDate' => $timestampWithDate,

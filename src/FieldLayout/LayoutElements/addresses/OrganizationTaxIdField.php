@@ -13,8 +13,10 @@ use function CraftCms\Cms\t;
 
 class OrganizationTaxIdField extends TextField
 {
+    #[\Override]
     public string $attribute = 'organizationTaxId';
 
+    #[\Override]
     public bool $requirable = true;
 
     public function __construct($config = [])

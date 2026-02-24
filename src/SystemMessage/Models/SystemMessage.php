@@ -12,6 +12,7 @@ final class SystemMessage extends BaseModel
 {
     use HasUid;
 
+    #[\Override]
     protected $table = Table::SYSTEMMESSAGES;
 
     #[\Override]

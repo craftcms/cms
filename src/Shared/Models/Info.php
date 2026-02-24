@@ -14,6 +14,7 @@ final class Info extends BaseModel
 {
     use HasUid;
 
+    #[\Override]
     protected $table = Table::INFO;
 
     /**
@@ -21,19 +22,11 @@ final class Info extends BaseModel
      *
      * @var array<string, mixed>
      */
+    #[\Override]
     protected $attributes = [
         'schemaVersion' => '0',
-        'maintenance' => false,
         'configVersion' => '000000000000',
     ];
-
-    #[\Override]
-    protected function casts(): array
-    {
-        return [
-            'maintenance' => 'bool',
-        ];
-    }
 
     #[\Override]
     protected static function booted(): void

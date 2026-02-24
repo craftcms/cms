@@ -2,11 +2,33 @@
 
 ## Unreleased
 
-- The `no` locale is now treated as a fallback for `nb` on environments where `nb` isn’t supported. ([#18431](https://github.com/craftcms/cms/pull/18431))
+- Fixed an unintended change in behavior where `craft\helpers\App::parseEnv()` was returning `null` instad of an empty string, when an environment variable name was passed in, which was set to an empty string.
+
+## 5.9.12 - 2026-02-18
+
+- Added `craft\services\Tokens::getRemainingTokenUsages()`.
+- Added `craft\web\Request::getTokenRoute()`.
+- Fixed a JavaScript error that could occur when opening or submitting a slideout.
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-cc7p-2j3x-x7xf)
+
+## 5.9.11 - 2026-02-17
+
+- The `nb` locale is now treated as a fallback for `no` on environments where `no` isn’t supported. ([#18431](https://github.com/craftcms/cms/pull/18431))
 - Element indexes now show “Paste” buttons alongside bulk element action buttons. ([#18427](https://github.com/craftcms/cms/issues/18427))
+- Boolean environment variables now universally support truthy/falsy values, including `on`/`off` and `yes`/`no`. ([#18441](https://github.com/craftcms/cms/pull/18441))
 - Impoved the performance of `craft\helpers\Typecast`. ([#18426](https://github.com/craftcms/cms/pull/18426))
+- Added `App::normalizeBooleanValue()`.
+- Added `craft\events\ExecuteGqlQueryEvent::$cacheDuration`. ([#18442](https://github.com/craftcms/cms/discussions/18442))
+- Added `craft\events\ExecuteGqlQueryEvent::$cacheTags`. ([#18442](https://github.com/craftcms/cms/discussions/18442))
+- Added `craft\web\Request::getWantsImage()`.
+- Added `craft\web\Request::getWantsJson()`.
+- Added `craft\web\Request::wants()`.
+- Fixed a bug where 404 responses could be set to an image based on the `brokenImagePath` config setting for Chrome. ([#18438](https://github.com/craftcms/cms/issues/18438))
 - Fixed a bug where some Matrix bulk action labels weren’t getting translated.
 - Fixed a bug where global nav items weren’t showing an icon if the icon was set to `0`.
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerabilities. (GHSA-4484-8v2f-5748, GHSA-qx2q-q59v-wf3j)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-3x4w-mxpf-fhqq)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-472v-j2g4-g9h2)
 
 ## 5.9.10 - 2026-02-12
 
@@ -370,7 +392,6 @@
 - Fixed a bug where custom selects could be positioned incorrectly after the window was resized. ([#18179](https://github.com/craftcms/cms/issues/18179))
 - Fixed an error that could occur when logging a deprecation warning, if the backtrace contained any non-UTF-8-encoded strings. ([#18218](https://github.com/craftcms/cms/issues/18218))
 - Fixed a bug where it wasn’t possible to view assets if they had exactly 50 subfolders alongside them. ([#18213](https://github.com/craftcms/cms/issues/18213))
-<<<<<<< HEAD
 - Fixed a bug where Matrix fields’ Entry Types settings were partially interactive when admin changes were disallowed. ([#18145](https://github.com/craftcms/cms/pull/18145))
 - Fixed a bug where users could be unable to sign in if an inactive user account existed with the same email address. ([#18148](https://github.com/craftcms/cms/issues/18148))
 - Fixed a bug where Content Block fields could appear to be missing their content when viewing a revision. ([#18149](https://github.com/craftcms/cms/issues/18149))

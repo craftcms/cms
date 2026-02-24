@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Rector\Caching\ValueObject\Storage\FileCacheStorage;
 use Rector\Config\RectorConfig;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 use RectorLaravel\Rector\ArrayDimFetch\EnvVariableToEnvHelperRector;
@@ -17,6 +18,12 @@ return RectorConfig::configure()
         __DIR__.'/src',
         __DIR__.'/tests',
     ])
+    ->withCache(
+        // ensure file system caching is used instead of in-memory
+        cacheDirectory: '/tmp/rector',
+        // specify a path that works locally as well as on CI job runners
+        cacheClass: FileCacheStorage::class
+    )
     ->withSkip([
         __DIR__.'/resources/icons/index.php',
         __DIR__.'/resources/icons/aliases.php',

@@ -19,6 +19,7 @@ final class DeleteCommand extends Command implements PromptsForMissingInput
     use CraftCommand;
     use PromptsForMissingUser;
 
+    #[\Override]
     protected $signature = 'craft:users:delete
         {user}
         {--inheritor= : The email, username or ID of the user to inherit content when deleting a user.}
@@ -26,8 +27,10 @@ final class DeleteCommand extends Command implements PromptsForMissingInput
         {--hard : Whether the user should be hard-deleted immediately, instead of soft-deleted.}
     ';
 
+    #[\Override]
     protected $description = 'Deletes a user.';
 
+    #[\Override]
     protected $aliases = ['users/delete'];
 
     public function handle(Users $users): int

@@ -6,9 +6,11 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\helpers\App;
-use craft\models\Volume;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Events\ListVolumes;
@@ -48,7 +50,7 @@ final class AssetIndexes extends Utility
      */
     public static function volumes(): array
     {
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+        $volumes = Volumes::getAllVolumes()->all();
 
         event($event = new ListVolumes($volumes));
 
@@ -78,7 +80,7 @@ final class AssetIndexes extends Utility
         Craft::$app->getView()->registerAssetBundle(AssetIndexesAsset::class);
         $dateFormat = I18N::getLocale()->getDateTimeFormat('short', Locale::FORMAT_PHP);
 
-        $existingIndexingSessions = Craft::$app->getAssetIndexer()->getExistingIndexingSessions();
+        $existingIndexingSessions = AssetIndexer::getExistingIndexingSessions();
 
         return template('_components/utilities/AssetIndexes', [
             'existingSessions' => $existingIndexingSessions,

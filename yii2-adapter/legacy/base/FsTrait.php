@@ -13,7 +13,7 @@ namespace craft\base;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-trait FsTrait
+trait FsTrait // @phpstan-ignore trait.unused
 {
     /**
      * @var bool Whether the “Files in this filesystem have public URLs” setting should be shown.

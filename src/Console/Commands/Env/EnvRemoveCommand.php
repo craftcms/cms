@@ -14,10 +14,13 @@ final class EnvRemoveCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:env:remove {name}';
 
+    #[\Override]
     protected $description = 'Removes an environment variable from the `.env` file.';
 
+    #[\Override]
     protected $aliases = ['env/remove'];
 
     public function handle(Application $app): void

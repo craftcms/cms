@@ -19,6 +19,7 @@ use function CraftCms\Cms\t;
 
 class AffiliatedSiteField extends BaseNativeField
 {
+    #[\Override]
     public string $attribute = 'affiliatedSiteId';
 
     public function __construct($config = [])

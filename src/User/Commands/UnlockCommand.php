@@ -14,10 +14,13 @@ final class UnlockCommand extends Command implements PromptsForMissingInput
     use CraftCommand;
     use PromptsForMissingUser;
 
+    #[\Override]
     protected $signature = 'craft:users:unlock {user}';
 
+    #[\Override]
     protected $description = 'Unlocks a user\'s account.';
 
+    #[\Override]
     protected $aliases = ['users/unlock'];
 
     public function handle(Users $users): int

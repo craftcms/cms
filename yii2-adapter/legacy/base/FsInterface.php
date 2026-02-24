@@ -7,37 +7,19 @@
 
 namespace craft\base;
 
-use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
-use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
-use CraftCms\Cms\Validation\Contracts\Validatable;
-
-/**
- * FsInterface defines the common interface to be implemented by filesystem classes.
- * A class implementing this interface should also use [[SavableComponentTrait]] and [[FsTrait]].
- *
- * @mixin Fs
- * @phpstan-require-extends Fs
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-interface FsInterface extends BaseFsInterface, Validatable, SavableComponentInterface, ConfigurableComponentInterface, ModelInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Returns whether the “Files in this filesystem have public URLs” setting should be shown.
+     * FsInterface defines the common interface to be implemented by filesystem classes.
      *
-     * @return bool
-     * @since 4.5.0
+     * @mixin Fs
+     * @phpstan-require-extends Fs
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Contracts\FsInterface} instead.
      */
-    public function getShowHasUrlSetting(): bool;
-
-    /**
-     * Returns whether the “Base URL” setting should be shown.
-     *
-     * If this returns `false`, and the filesystem has a base URL, [[getRootUrl()]] should be implemented directly,
-     * rather than storing the base URL on the [[\craft\base\Fs::$url]] property.
-     *
-     * @return bool
-     * @since 4.5.0
-     */
-    public function getShowUrlSetting(): bool;
+    interface FsInterface extends \CraftCms\Cms\Filesystem\Contracts\FsInterface
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Filesystem\Contracts\FsInterface::class, FsInterface::class);

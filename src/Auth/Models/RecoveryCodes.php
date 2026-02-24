@@ -11,8 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class RecoveryCodes extends BaseModel
 {
+    #[\Override]
     protected $table = Table::RECOVERYCODES;
 
+    #[\Override]
     protected $casts = [
         'recoveryCodes' => 'array',
     ];

@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\Condition\Contracts\ConditionInterface;
-use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static ConditionInterface createCondition(array|string $config)
- * @method static ConditionRuleInterface createConditionRule(array|string $config)
+ * @method static \CraftCms\Cms\Condition\Contracts\ConditionInterface createCondition(array|string $config)
+ * @method static \CraftCms\Cms\Condition\Contracts\ConditionRuleInterface createConditionRule(array|string $config)
  *
  * @see \CraftCms\Cms\Condition\Conditions
  */

@@ -31,6 +31,7 @@ final class SetCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:project-config:set
         {path} {value?}
         {--message= : A message describing the changes.}
@@ -38,8 +39,10 @@ final class SetCommand extends Command implements PromptsForMissingInput
         {--force : Whether every entry change should be force-applied.}
     ';
 
+    #[\Override]
     protected $description = 'Sets a project config value.';
 
+    #[\Override]
     protected $aliases = ['project-config/set', 'pc:set', 'pc/set'];
 
     public function handle(ProjectConfig $projectConfig): int

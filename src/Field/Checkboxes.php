@@ -18,12 +18,16 @@ use function CraftCms\Cms\template;
  */
 final class Checkboxes extends BaseOptionsField
 {
+    #[\Override]
     protected static bool $multi = true;
 
+    #[\Override]
     protected static bool $allowCustomOptions = true;
 
+    #[\Override]
     protected static bool $optionIcons = true;
 
+    #[\Override]
     protected static bool $optionColors = true;
 
     #[Override]

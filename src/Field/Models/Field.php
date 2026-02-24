@@ -16,6 +16,7 @@ final class Field extends BaseModel
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected $table = Table::FIELDS;
 
     private ?string $oldHandle = null;

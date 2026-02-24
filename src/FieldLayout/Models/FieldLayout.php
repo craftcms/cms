@@ -18,8 +18,10 @@ final class FieldLayout extends BaseModel
     use HasUid;
     use SoftDeletes;
 
+    #[\Override]
     protected $table = Table::FIELDLAYOUTS;
 
+    #[\Override]
     protected $casts = [
         'config' => 'json',
     ];

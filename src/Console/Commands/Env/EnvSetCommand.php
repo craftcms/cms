@@ -16,10 +16,13 @@ final class EnvSetCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:env:set {name} {value?}';
 
+    #[\Override]
     protected $description = 'Sets an environment variable in the `.env` file.';
 
+    #[\Override]
     protected $aliases = ['env/set'];
 
     public function handle(Application $app): void

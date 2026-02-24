@@ -12,10 +12,13 @@ final class ListCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:plugin:list';
 
+    #[\Override]
     protected $aliases = ['plugin', 'plugin/list'];
 
+    #[\Override]
     protected $description = 'Installs a plugin.';
 
     public function handle(Plugins $plugins): void

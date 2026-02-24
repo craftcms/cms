@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use Illuminate\Support\Facades\Facade;
 use Override;
 
@@ -14,7 +13,7 @@ use Override;
  * @method static array getRequestLogs()
  * @method static int getTotalLogs()
  * @method static array getLogs(int|null $limit = null)
- * @method static DeprecationError|null getLogById(int $logId)
+ * @method static \CraftCms\Cms\Deprecator\Models\DeprecationError|null getLogById(int $logId)
  * @method static bool deleteLogById(int $id)
  * @method static bool deleteAllLogs()
  *

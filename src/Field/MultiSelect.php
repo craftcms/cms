@@ -17,12 +17,16 @@ use function CraftCms\Cms\t;
  */
 final class MultiSelect extends BaseOptionsField
 {
+    #[\Override]
     protected static bool $multi = true;
 
+    #[\Override]
     protected static bool $optgroups = true;
 
+    #[\Override]
     protected static bool $optionIcons = true;
 
+    #[\Override]
     protected static bool $optionColors = true;
 
     #[\Override]

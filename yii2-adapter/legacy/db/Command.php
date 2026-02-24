@@ -8,6 +8,7 @@
 namespace craft\db;
 
 use craft\helpers\Db;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Facades\Log;
@@ -30,12 +31,12 @@ class Command extends \yii\db\Command
     public function insert($table, $columns): Command
     {
         if (!isset($columns['dateCreated']) && $this->db->columnExists($table, 'dateCreated')) {
-            $now = Db::prepareDateForDb(new DateTime());
+            $now = Query::prepareDateForDb(new DateTime());
             $columns['dateCreated'] = $now;
         }
 
         if (!isset($columns['dateUpdated']) && $this->db->columnExists($table, 'dateUpdated')) {
-            $columns['dateUpdated'] = $now ?? Db::prepareDateForDb(new DateTime());
+            $columns['dateUpdated'] = $now ?? Query::prepareDateForDb(new DateTime());
         }
 
         if (!isset($columns['uid']) && $this->db->columnExists($table, 'uid')) {
@@ -59,7 +60,7 @@ class Command extends \yii\db\Command
 
         if (!in_array('dateCreated', $columns) && $this->db->columnExists($table, 'dateCreated')) {
             $columns[] = 'dateCreated';
-            $now = Db::prepareDateForDb(new DateTime());
+            $now = Query::prepareDateForDb(new DateTime());
             foreach ($rows as &$row) {
                 $row[] = $now;
             }
@@ -67,7 +68,7 @@ class Command extends \yii\db\Command
 
         if (!in_array('dateUpdated', $columns) && $this->db->columnExists($table, 'dateUpdated')) {
             $columns[] = 'dateUpdated';
-            $now ??= Db::prepareDateForDb(new DateTime());
+            $now ??= Query::prepareDateForDb(new DateTime());
             foreach ($rows as &$row) {
                 $row[] = $now;
             }
@@ -103,12 +104,12 @@ class Command extends \yii\db\Command
     {
         if (is_array($insertColumns)) {
             if (!isset($insertColumns['dateCreated']) && $this->db->columnExists($table, 'dateCreated')) {
-                $now = Db::prepareDateForDb(new DateTime());
+                $now = Query::prepareDateForDb(new DateTime());
                 $insertColumns['dateCreated'] = $now;
             }
 
             if (!isset($insertColumns['dateUpdated']) && $this->db->columnExists($table, 'dateUpdated')) {
-                $now ??= Db::prepareDateForDb(new DateTime());
+                $now ??= Query::prepareDateForDb(new DateTime());
                 $insertColumns['dateUpdated'] = $now;
             }
 
@@ -126,7 +127,7 @@ class Command extends \yii\db\Command
                     unset($updateColumns['dateCreated'], $updateColumns['uid']);
                 }
 
-                $updateColumns['dateUpdated'] = $now ?? Db::prepareDateForDb(new DateTime());
+                $updateColumns['dateUpdated'] = $now ?? Query::prepareDateForDb(new DateTime());
             }
         }
 
@@ -146,7 +147,7 @@ class Command extends \yii\db\Command
     public function update($table, $columns, $condition = '', $params = [], bool $updateTimestamp = true): Command
     {
         if (!isset($columns['dateUpdated']) && $this->_updateTimestamp($updateTimestamp, $table)) {
-            $columns['dateUpdated'] = Db::prepareDateForDb(new DateTime());
+            $columns['dateUpdated'] = Query::prepareDateForDb(new DateTime());
         }
 
         return parent::update($table, $columns, $condition, $params);
@@ -248,7 +249,7 @@ class Command extends \yii\db\Command
     public function softDelete(string $table, array|string $condition = '', array $params = []): Command
     {
         return $this->update($table, [
-            'dateDeleted' => Db::prepareDateForDb(new DateTime()),
+            'dateDeleted' => Query::prepareDateForDb(new DateTime()),
         ], $condition, $params, false);
     }
 

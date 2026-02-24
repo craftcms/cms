@@ -16,6 +16,7 @@ use yii\base\InvalidConfigException;
  */
 abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 {
+    #[\Override]
     public string $operator = self::OPERATOR_IN;
 
     /**

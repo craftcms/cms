@@ -51,7 +51,7 @@ if (is_null($generalConfig)) {
 }
 
 // Log errors to storage/logs/phperrors.log or php://stderr
-if (Env::parseBoolean('$CRAFT_LOG_PHP_ERRORS') !== false) {
+if (Env::normalizeBooleanValue(Env::parse('$CRAFT_LOG_PHP_ERRORS')) !== false) {
     ini_set('log_errors', '1');
 
     if (App::isStreamLog()) {
@@ -120,7 +120,7 @@ $localConfig = Arr::merge(
     $app->get('config')->get("app.{$appType}", []),
 );
 
-$safeMode = Env::get('CRAFT_SAFE_MODE') ?? $generalConfig->safeMode;
+$safeMode = Env::normalizeBooleanValue(Env::get('CRAFT_SAFE_MODE')) ?? $generalConfig->safeMode;
 
 if ($safeMode) {
     Arr::forget($localConfig, 'bootstrap');

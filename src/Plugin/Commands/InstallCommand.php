@@ -19,10 +19,13 @@ final class InstallCommand extends Command
     use CraftCommand;
     use PromptsForMissingHandle;
 
+    #[\Override]
     protected $signature = 'craft:plugin:install {handle?} {edition?} {--all}';
 
+    #[\Override]
     protected $description = 'Installs a plugin.';
 
+    #[\Override]
     protected $aliases = ['plugin/install'];
 
     protected Plugins $plugins;

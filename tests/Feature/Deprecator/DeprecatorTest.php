@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 beforeEach(function () {
     /**
@@ -23,13 +23,18 @@ it('has a working facade', function () {
 it('can log deprecations to the log', function () {
     Deprecator::$logTarget = 'logs';
 
+    $logged = [];
+    Log::listen(function ($event) use (&$logged) {
+        $logged[] = $event->message;
+    });
+
     expect(DeprecationError::count())->toBe(0);
 
     $this->deprecator->log('foo', 'A deprecation message');
     $this->deprecator->storeLogs();
 
     expect(DeprecationError::count())->toBe(0);
-    expect(File::get(storage_path('logs/laravel.log')))->toContain('A deprecation message');
+    expect($logged)->toContain('A deprecation message');
 });
 
 it('can log deprecations to the database', function () {

@@ -16,6 +16,7 @@ use CraftCms\Cms\Element\Queries\Concerns\User\QueriesUserGroups;
 use CraftCms\Cms\Element\Queries\Concerns\User\QueriesUserProperties;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
+use Override;
 
 /**
  * @extends ElementQuery<User>
@@ -31,6 +32,7 @@ final class UserQuery extends ElementQuery
 
     public const string STATUS_CREDENTIALED = 'credentialed';
 
+    #[Override]
     protected array $defaultOrderBy = [
         'users.username' => SORT_ASC,
         'users.active' => SORT_DESC,
@@ -129,31 +131,31 @@ final class UserQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    #[\Override]
+    #[Override]
     public function status(array|string|null $value): static
     {
         /** @var static */
         return parent::status($value);
     }
 
-    #[\Override]
+    #[Override]
     protected function statusCondition(string $status): Closure
     {
         return match ($status) {
             User::STATUS_INACTIVE => fn (Builder $query) => $query
-                ->where('users.active', false)
-                ->where('users.pending', false),
+                ->whereBool('users.active', false)
+                ->whereBool('users.pending', false),
             User::STATUS_ACTIVE => fn (Builder $query) => $query
-                ->where('users.active', true)
-                ->where('users.suspended', false),
-            User::STATUS_PENDING => fn (Builder $query) => $query->where('users.pending', true),
+                ->whereBool('users.active', true)
+                ->whereBool('users.suspended', false),
+            User::STATUS_PENDING => fn (Builder $query) => $query->whereBool('users.pending', true),
             self::STATUS_CREDENTIALED => fn (Builder $query) => $query->where(function (Builder $query) {
                 $query
-                    ->where('users.active', true)
-                    ->orWhere('users.pending', true);
+                    ->whereBool('users.active', true)
+                    ->orWhereBool('users.pending', true);
             }),
-            User::STATUS_SUSPENDED => fn (Builder $query) => $query->where('users.suspended', true),
-            User::STATUS_LOCKED => fn (Builder $query) => $query->where('users.locked', true),
+            User::STATUS_SUSPENDED => fn (Builder $query) => $query->whereBool('users.suspended', true),
+            User::STATUS_LOCKED => fn (Builder $query) => $query->whereBool('users.locked', true),
             default => parent::statusCondition($status),
         };
     }

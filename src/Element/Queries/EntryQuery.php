@@ -24,6 +24,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Override;
 
 /**
  * @template T of Entry
@@ -42,6 +43,7 @@ final class EntryQuery extends ElementQuery
     use QueriesRef;
     use QueriesSections;
 
+    #[Override]
     protected array $defaultOrderBy = [
         'entries.postDate' => SORT_DESC,
         'elements.id' => SORT_DESC,
@@ -103,7 +105,7 @@ final class EntryQuery extends ElementQuery
         });
     }
 
-    #[\Override]
+    #[Override]
     protected function statusCondition(string $status): Closure
     {
         if (
@@ -111,8 +113,8 @@ final class EntryQuery extends ElementQuery
             in_array($status, [Entry::STATUS_LIVE, Entry::STATUS_PENDING, Entry::STATUS_EXPIRED])
         ) {
             return fn (Builder $query) => $query
-                ->where('elements.enabled', true)
-                ->where('elements_sites.enabled', true)
+                ->whereBool('elements.enabled', true)
+                ->whereBool('elements_sites.enabled', true)
                 ->where('entries.status', $status);
         }
 
@@ -123,20 +125,20 @@ final class EntryQuery extends ElementQuery
 
         return match ($status) {
             Entry::STATUS_LIVE => fn (Builder $query) => $query
-                ->where('elements.enabled', true)
-                ->where('elements_sites.enabled', true)
+                ->whereBool('elements.enabled', true)
+                ->whereBool('elements_sites.enabled', true)
                 ->where('entries.postDate', '<=', $currentTime)
                 ->where(function (Builder $query) use ($currentTime) {
                     $query->whereNull('entries.expiryDate')
                         ->orWhere('entries.expiryDate', '>', $currentTime);
                 }),
             Entry::STATUS_PENDING => fn (Builder $query) => $query
-                ->where('elements.enabled', true)
-                ->where('elements_sites.enabled', true)
+                ->whereBool('elements.enabled', true)
+                ->whereBool('elements_sites.enabled', true)
                 ->where('entries.postDate', '>', $currentTime),
             Entry::STATUS_EXPIRED => fn (Builder $query) => $query
-                ->where('elements.enabled', true)
-                ->where('elements_sites.enabled', true)
+                ->whereBool('elements.enabled', true)
+                ->whereBool('elements_sites.enabled', true)
                 ->whereNotNull('entries.expiryDate')
                 ->where('entries.expiryDate', '<=', $currentTime),
             default => parent::statusCondition($status),
@@ -202,7 +204,7 @@ final class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    #[\Override]
+    #[Override]
     public function status(array|string|null $value): static
     {
         /** @var static */
@@ -292,7 +294,7 @@ final class EntryQuery extends ElementQuery
         }, boolean: $value ? 'and' : 'and not');
     }
 
-    #[\Override]
+    #[Override]
     protected function cacheTags(): array
     {
         $tags = [];
@@ -313,7 +315,7 @@ final class EntryQuery extends ElementQuery
         return $tags;
     }
 
-    #[\Override]
+    #[Override]
     protected function fieldLayouts(): Collection
     {
         $this->normalizeTypeId($this);

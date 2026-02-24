@@ -14,13 +14,16 @@ final class RunCommand extends Command
 {
     use CraftCommand;
 
+    #[\Override]
     protected $signature = 'craft:gc:run
         {--deleteAllTrashed : Whether all soft-deleted items should be deleted, rather than just the ones that were deleted long enough ago to be ready for hard-deletion per the `softDeleteDuration` config setting.}
         {--silent : Whether to suppress all output.}
     ';
 
+    #[\Override]
     protected $description = 'Allows you to manage garbage collection.';
 
+    #[\Override]
     protected $aliases = ['gc/run', 'garbage-collection:run'];
 
     public function handle(GarbageCollection $garbageCollection): void

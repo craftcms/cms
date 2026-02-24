@@ -927,7 +927,7 @@ class Search extends Component
             // unless it's meant to search for *anything* (e.g. if they entered 'attribute:*').
             if ($keywords !== '' || $term->subLeft) {
                 // If we're on PostgreSQL and this is a phrase or exact match, we have to special case it.
-                $pgsqlPhrase = !$isMysql && $term->phrase;
+                $pgsqlPhrase = Craft::$app->getDb()->getIsPgsql() && $term->phrase;
                 if ($pgsqlPhrase && $term->exact) {
                     $sql = $this->_sqlPhraseExactMatch($keywords);
                 } elseif (!$pgsqlPhrase && $this->_doFullTextSearch($keywords, $term)) {
@@ -1069,6 +1069,21 @@ class Search extends Component
             return sprintf("MATCH(%s) AGAINST('%s'%s)", $db->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
         }
 
+        // SQLite doesn't support full-text search; fall back to LIKE on the keywords column
+        if (DB::isSqlite()) {
+            $likeGlue = $glue === ' AND ' ? ' AND ' : ' OR ';
+            $parts = [];
+            foreach ((array)$val as $word) {
+                // Strip trailing :* (prefix search marker) since LIKE handles it with %
+                $word = rtrim($word, ':*');
+                // Strip leading - (exclude marker) — exclusion handled elsewhere
+                $word = ltrim($word, '-+');
+                $col = $db->quoteColumnName('keywords');
+                $parts[] = "$col LIKE '% $word%'";
+            }
+            return implode($likeGlue, $parts);
+        }
+
         if ($glue === ' AND ') {
             $glue = ' & ';
         } else {
@@ -1147,8 +1162,14 @@ class Search extends Component
      */
     private function _sqlPhraseExactMatch(string $val): string
     {
-        $ftVal = implode(' & ', explode(' ', $val));
         $db = Craft::$app->getDb();
+
+        // SQLite doesn't support tsquery; use LIKE for an exact phrase match
+        if (DB::isSqlite()) {
+            return sprintf("%s LIKE ' %s '", $db->quoteColumnName('keywords'), $val);
+        }
+
+        $ftVal = implode(' & ', explode(' ', $val));
         return sprintf("%s @@ '%s'::tsquery AND %s LIKE ' %s '", $db->quoteColumnName('keywords_vector'), $ftVal, $db->quoteColumnName('keywords'), $val);
     }
 

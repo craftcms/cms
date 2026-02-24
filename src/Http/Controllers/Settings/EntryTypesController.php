@@ -363,6 +363,7 @@ final class EntryTypesController
         $settings = array_filter(Arr::get($postedSettings, $settingsNamespace, []));
 
         if (! empty($settings)) {
+            $settings = Component::cleanseConfig($settings);
             foreach ($settings as $key => $value) {
                 $entryType->{$key} = $value;
             }

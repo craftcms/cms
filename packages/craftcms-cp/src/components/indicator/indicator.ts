@@ -41,7 +41,9 @@ export default class CraftIndicator extends LitElement {
         'indicator--info': this.variant === Variant.Info,
         'indicator--empty': this.variant === 'empty',
       })}"
-    ></span>`;
+    >
+      <slot></slot>
+    </span>`;
   }
 }
 

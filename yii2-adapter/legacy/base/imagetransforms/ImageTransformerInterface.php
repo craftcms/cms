@@ -7,9 +7,9 @@
 
 namespace craft\base\imagetransforms;
 
-use craft\errors\ImageTransformException;
 use craft\models\ImageTransform;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use yii\base\NotSupportedException;
 
 /**

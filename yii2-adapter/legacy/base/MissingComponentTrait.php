@@ -22,7 +22,7 @@ use function CraftCms\Cms\template;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-trait MissingComponentTrait
+trait MissingComponentTrait // @phpstan-ignore trait.unused
 {
     /**
      * @var class-string<ComponentInterface> The expected component class name.

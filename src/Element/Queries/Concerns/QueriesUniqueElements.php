@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
@@ -65,16 +66,26 @@ trait QueriesUniqueElements
 
         $caseGroup = new CaseGroup($cases, new Value($preferSites->count()));
 
-        $subSelect = $elementQuery->subQuery->clone()
+        $subSelectSql = $elementQuery->subQuery->clone()
             ->select(['elements_sites.id'])
             ->from(Table::ELEMENTS, 'subElements')
-            ->whereColumn('subElements.id', 'elements.id')
+            ->whereColumn('subElements.id', 'tmpElements.id')
             ->orderBy($caseGroup)
             ->orderBy('elements_sites.id')
             ->offset(0)
-            ->limit(1);
+            ->limit(1)
+            ->toRawSql();
 
-        $elementQuery->subQuery->where('elements_sites.id', $subSelect);
+        $qElements = DB::getQueryGrammar()->wrapTable('elements');
+        $qSubElements = DB::getQueryGrammar()->wrapTable('subElements');
+        $qTmpElements = DB::getQueryGrammar()->wrapTable('tmpElements');
+        $q = $qElements[0];
+
+        $subSelectSql = str_replace("$qElements.", "$qSubElements.", $subSelectSql);
+        $subSelectSql = str_replace("{$q}{$qElements}", "{$q}{$qSubElements}", $subSelectSql);
+        $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
+
+        $elementQuery->subQuery->whereRaw('elements_sites.id = ('.$subSelectSql.')');
     }
 
     /**
