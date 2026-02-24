@@ -65,6 +65,7 @@ use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig as LegacyProjectConfig;
 use craft\services\Revisions;
 use craft\services\Routes;
+use craft\services\Search as LegacySearch;
 use craft\services\Sites;
 use craft\services\Structures;
 use craft\services\SystemMessages;
@@ -640,6 +641,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Fields::registerEvents();
         Fs::registerEvents();
         Gc::registerEvents();
+        LegacySearch::registerEvents();
         Utilities::registerEvents();
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();

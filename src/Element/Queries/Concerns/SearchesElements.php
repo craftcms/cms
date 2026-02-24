@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use Craft;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Database\Query\Builder;
 
@@ -53,7 +53,7 @@ trait SearchesElements
             return;
         }
 
-        $searchService = Craft::$app->getSearch();
+        $searchService = app(Search::class);
 
         $scoreOrder = Arr::first($elementQuery->query->orders ?? [], fn ($order) => $order['column'] === 'score');
 
@@ -111,7 +111,7 @@ trait SearchesElements
             throw new QueryAbortedException;
         }
 
-        $elementQuery->subQuery->whereIn('elements.id', $searchQuery->select('elementId')->all());
+        $elementQuery->subQuery->whereIn('elements.id', $searchQuery->pluck('elementId'));
     }
 
     /**

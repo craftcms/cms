@@ -63,6 +63,7 @@ use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
@@ -2854,10 +2855,9 @@ class Elements extends Component
                 $this->_cascadeDeleteDraftsAndRevisions($element->id, false);
 
                 // Restore its search indexes
-                $searchService = Craft::$app->getSearch();
-                $searchService->indexElementAttributes($element);
+                Search::indexElementAttributes($element);
                 foreach ($siteElements as $siteElement) {
-                    $searchService->indexElementAttributes($siteElement);
+                    Search::indexElementAttributes($siteElement);
                 }
 
                 // Invalidate caches
@@ -4404,9 +4404,9 @@ class Elements extends Component
         ?bool $updateForOwner = null,
     ): void {
         if ($element->updateSearchIndexImmediately ?? Craft::$app->getRequest()->getIsConsoleRequest()) {
-            Craft::$app->getSearch()->indexElementAttributes($element, $searchableDirtyFields);
+            Search::indexElementAttributes($element, $searchableDirtyFields);
         } else {
-            Craft::$app->getSearch()->queueIndexElement($element, $searchableDirtyFields);
+            Search::queueIndexElement($element, $searchableDirtyFields);
         }
 
         $updateForOwner = (
