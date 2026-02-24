@@ -23,16 +23,6 @@ workbench:
       to: workbench/storage
       reverse: true
   build:
-    - tinker:
-        --execute: >
-          try { DB::connection()->getPdo(); } catch (PDOException) {
-            $name = DB::getDatabaseName();
-            $driver = DB::getDriverName();
-            config()->set('database.connections.'.config('database.default').'.database', match($driver) { 'mysql', 'mariadb' => null, 'pgsql' => 'template1' });
-            DB::purge();
-            DB::unprepared(match($driver) { 'mysql', 'mariadb' => "CREATE DATABASE IF NOT EXISTS `$name`", 'pgsql' => "CREATE DATABASE \"$name\"" });
-            DB::purge();
-          }
     - migrate-fresh
   discovers:
     web: true

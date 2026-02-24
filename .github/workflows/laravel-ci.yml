@@ -156,7 +156,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        db: [mysql, pgsql]
+        php: [8.5]
+        db: [mysql, pgsql, sqlite]
     services:
       pgsql:
         image: ${{ (matrix.db == 'pgsql') && 'postgres:latest' || '' }}
@@ -185,6 +186,7 @@ jobs:
         run: |
           cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
           sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
+          touch database/craft_tests.sqlite
 
       - name: Run tests
         uses: ./.github/actions/run-tests

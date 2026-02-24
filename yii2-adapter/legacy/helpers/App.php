@@ -40,6 +40,7 @@ use CraftCms\Yii2Adapter\Cache;
 use InvalidArgumentException;
 use yii\base\Event;
 use yii\base\Exception;
+use yii\db\sqlite\Schema as SqliteSchema;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
@@ -632,16 +633,21 @@ class App
             $dbConfig = Craft::$app->getConfig()->getDb();
         }
 
-        $driver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
+        $driver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : config('database.default');
 
         if ($driver === Connection::DRIVER_MYSQL) {
             $schemaConfig = [
                 'class' => MysqlSchema::class,
             ];
-        } else {
+        } elseif ($driver === Connection::DRIVER_PGSQL) {
             $schemaConfig = [
                 'class' => PgsqlSchema::class,
                 'defaultSchema' => $dbConfig->schema,
+            ];
+        } else {
+            // SQLite or other: use Yii2's built-in schema support
+            $schemaConfig = [
+                'class' => SqliteSchema::class,
             ];
         }
 

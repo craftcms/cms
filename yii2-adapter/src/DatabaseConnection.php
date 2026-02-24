@@ -48,20 +48,25 @@ class DatabaseConnection extends Connection
 
     public function getLaravelConnection(): IlluminateConnection
     {
-        $this->dsn = implode('', [
-            $this->driverName,
-            ':host=',
-            Config::get("database.connections.{$this->driverName}.host"),
-            ';port=',
-            Config::get("database.connections.{$this->driverName}.port"),
-            ';dbname=',
-            Config::get("database.connections.{$this->driverName}.database"),
-            ';user=',
-            Config::get("database.connections.{$this->driverName}.username"),
-            ';password=',
-            Config::get("database.connections.{$this->driverName}.password"),
-        ]);
+        $driver = $this->_driverName ?? config('database.default');
+        $connection = DB::connection($driver);
 
-        return DB::connection($this->driverName);
+        if ($connection->getDriverName() !== 'sqlite') {
+            $this->dsn = implode('', [
+                $driver,
+                ':host=',
+                Config::get("database.connections.{$driver}.host"),
+                ';port=',
+                Config::get("database.connections.{$driver}.port"),
+                ';dbname=',
+                Config::get("database.connections.{$driver}.database"),
+                ';user=',
+                Config::get("database.connections.{$driver}.username"),
+                ';password=',
+                Config::get("database.connections.{$driver}.password"),
+            ]);
+        }
+
+        return $connection;
     }
 }
