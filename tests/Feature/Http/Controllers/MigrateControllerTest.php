@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\MigrateController;
+use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,10 +18,7 @@ beforeEach(function () {
 test('can be invoked without authentication for deployment hooks', function () {
     Auth::logout();
 
-    $response = post(action(MigrateController::class));
-
-    // Should work (returns 204 when nothing to do, or 503 if in maintenance mode)
-    expect($response->status())->toBeIn([204, 503]);
+    post(action(MigrateController::class))->assertNoContent();
 });
 
 test('returns no content when no migrations or config changes pending', function () {
@@ -29,14 +27,14 @@ test('returns no content when no migrations or config changes pending', function
     ]);
 
     // Should return 204 No Content when there's nothing to do
-    expect($response->status())->toBeIn([204, 503]);
+    expect($response->status())->toBe(204);
 });
 
 test('returns no content when migrations complete successfully', function () {
     $response = postJson(action(MigrateController::class));
 
     // Should complete without error
-    expect($response->status())->toBeIn([204, 503, 500]);
+    expect($response->status())->toBe(204);
 });
 
 test('handles applyProjectConfigChanges parameter', function () {
@@ -45,33 +43,34 @@ test('handles applyProjectConfigChanges parameter', function () {
     ]);
 
     // Should handle the parameter
-    expect($response->status())->toBeIn([204, 500, 503]);
+    expect($response->status())->toBe(204);
 });
 
 test('handles maintenance mode correctly', function () {
-    // Ensure maintenance mode is off initially
-    Craft::$app->disableMaintenanceMode();
+    postJson(action(MigrateController::class))->assertNoContent();
 
     // Enable maintenance mode
-    Craft::$app->enableMaintenanceMode();
+    app()->maintenanceMode()->activate([]);
 
-    $response = postJson(action(MigrateController::class));
+    // Nothing to migrate
+    postJson(action(MigrateController::class))->assertNoContent();
 
-    // Should either reject (503) or complete (204) depending on implementation details
-    expect($response->status())->toBeIn([204, 503]);
+    $this->mock(Updates::class)
+        ->shouldReceive('isCraftUpdatePending')->andReturn(true)
+        ->shouldReceive('isCraftSchemaVersionCompatible')->andReturn(true)
+        ->shouldReceive('pendingMigrationHandles')->andReturn(['foo']);
 
-    // Clean up - ensure maintenance mode is disabled
-    Craft::$app->disableMaintenanceMode();
+    postJson(action(MigrateController::class))->assertServiceUnavailable();
 });
 
 test('disables maintenance mode after completion', function () {
     // Ensure maintenance mode is off before test
-    Craft::$app->disableMaintenanceMode();
+    app()->maintenanceMode()->deactivate();
 
     postJson(action(MigrateController::class));
 
     // Verify maintenance mode is off after operation
-    expect(Craft::$app->getIsInMaintenanceMode())->toBeFalse();
+    expect(app()->isDownForMaintenance())->toBeFalse();
 });
 
 test('handles empty request body', function () {

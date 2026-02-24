@@ -25,17 +25,8 @@ final class Info extends BaseModel
     #[\Override]
     protected $attributes = [
         'schemaVersion' => '0',
-        'maintenance' => false,
         'configVersion' => '000000000000',
     ];
-
-    #[\Override]
-    protected function casts(): array
-    {
-        return [
-            'maintenance' => 'bool',
-        ];
-    }
 
     #[\Override]
     protected static function booted(): void

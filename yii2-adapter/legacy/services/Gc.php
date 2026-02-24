@@ -9,7 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\errors\FsException;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedNestedElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
@@ -139,7 +139,7 @@ class Gc extends Component
     /**
      * Find all temp upload folders with no assets in them and remove them.
      *
-     * @throws FsException
+     * @throws FilesystemException
      * @throws Exception
      * @throws InvalidConfigException
      * @since 4.0.0

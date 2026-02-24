@@ -67,6 +67,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -4018,15 +4019,15 @@ class Elements extends Component
                     $elementModel->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
                     $elementModel->enabled = (bool)$element->enabled;
                     $elementModel->archived = (bool)$element->archived;
-                    $elementModel->dateLastMerged = DbHelper::prepareDateForDb($element->dateLastMerged);
-                    $elementModel->dateDeleted = DbHelper::prepareDateForDb($element->dateDeleted);
+                    $elementModel->dateLastMerged = Query::prepareDateForDb($element->dateLastMerged);
+                    $elementModel->dateDeleted = Query::prepareDateForDb($element->dateDeleted);
 
                     if ($isNewElement) {
                         if (isset($element->dateCreated)) {
-                            $elementModel->dateCreated = DbHelper::prepareValueForDb($element->dateCreated);
+                            $elementModel->dateCreated = Query::prepareDateForDb($element->dateCreated);
                         }
                         if (isset($element->dateUpdated)) {
-                            $elementModel->dateUpdated = DbHelper::prepareValueForDb($element->dateUpdated);
+                            $elementModel->dateUpdated = Query::prepareDateForDb($element->dateUpdated);
                         }
                     } elseif (!$element->resaving || $forceTouch) {
                         // Force a new dateUpdated value

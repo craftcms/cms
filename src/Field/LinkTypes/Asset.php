@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use Craft;
-use craft\fs\Temp;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
-use CraftCms\Cms\Field\Link;
+use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Override;
@@ -89,7 +87,7 @@ final class Asset extends BaseElementLinkType
     #[Override]
     protected function availableSourceKeys(): array
     {
-        $volumes = Collection::make(Craft::$app->getVolumes()->getAllVolumes())
+        $volumes = Volumes::getAllVolumes()
             ->filter(fn (Volume $volume) => $volume->getFs()->hasUrls);
 
         if (! $this->showUnpermittedVolumes) {

@@ -10,11 +10,9 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\LocalFsInterface;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
 use craft\errors\AssetNotIndexableException;
-use craft\errors\FsException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
 use craft\errors\MutexException;
@@ -26,22 +24,26 @@ use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
 use craft\models\AssetIndexData;
 use craft\models\AssetIndexingSession;
-use craft\models\FsListing;
-use craft\models\Volume;
-use craft\models\VolumeFolder;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Filesystem\Data\FsListing;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Generator;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use League\Flysystem\StorageAttributes;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
@@ -71,27 +73,58 @@ class AssetIndexer extends Component
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
     {
         try {
-            $fileList = $volume->getFileList($directory);
-        } catch (InvalidConfigException|FsException $exception) {
+            $fileList = $volume->sourceDisk()->listContents(trim($directory, '/'), true);
+        } catch (InvalidConfigException|FilesystemException $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+
+            return;
+        } catch (Throwable $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
 
             return;
         }
 
         $fsSubpath = $volume->getSubpath();
-        foreach ($fileList as $listing) {
-            $path = $listing->getAdjustedUri($fsSubpath);
-            $segments = preg_split('/\\\\|\//', $path);
-            $lastSegmentIndex = count($segments) - 1;
 
-            foreach ($segments as $i => $segment) {
-                // Ignore if contained in or is a directory beginning with _
-                if (str_starts_with($segment, '_') && ($listing->getIsDir() || $i < $lastSegmentIndex)) {
-                    continue 2;
+        try {
+            foreach ($fileList as $listing) {
+                if (!$listing instanceof StorageAttributes) {
+                    continue;
                 }
-            }
 
-            yield $listing;
+                $uri = trim($listing->path(), '/');
+                if ($uri === '') {
+                    continue;
+                }
+
+                $dirname = pathinfo($uri, PATHINFO_DIRNAME);
+                if ($dirname === '.') {
+                    $dirname = '';
+                }
+
+                $listing = new FsListing([
+                    'dirname' => $dirname,
+                    'basename' => pathinfo($uri, PATHINFO_BASENAME),
+                    'type' => $listing->isDir() ? 'dir' : 'file',
+                    'dateModified' => $listing->lastModified(),
+                    'fileSize' => !$listing->isDir() && method_exists($listing, 'fileSize') ? $listing->fileSize() : null,
+                ]);
+
+                $path = $listing->getAdjustedUri($fsSubpath);
+                $segments = preg_split('/\\\\|\//', $path);
+                $lastSegmentIndex = count($segments) - 1;
+
+                foreach ($segments as $i => $segment) {
+                    // Ignore if contained in or is a directory beginning with _
+                    if (str_starts_with($segment, '_') && ($listing->getIsDir() || $i < $lastSegmentIndex)) {
+                        continue 2;
+                    }
+                }
+
+                yield $listing;
+            }
+        } catch (Throwable $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
         }
     }
 
@@ -160,7 +193,7 @@ class AssetIndexer extends Component
         bool $listEmptyFolders = false,
     ): AssetIndexingSession {
         $volumeList = [];
-        $volumeService = Craft::$app->getVolumes();
+        $volumeService = app(Volumes::class);
 
         foreach ($volumes as $volumeId) {
             if ($volume = $volumeService->getVolumeById((int) $volumeId)) {
@@ -400,7 +433,7 @@ class AssetIndexer extends Component
             ->get();
 
         $skipped = [];
-        $volumes = Craft::$app->getVolumes();
+        $volumes = app(Volumes::class);
 
         foreach ($skippedItems as $skippedItem) {
             $skipped[] = $volumes->getVolumeById((int) $skippedItem->volumeId)->name . '/' . $skippedItem->uri;
@@ -609,8 +642,8 @@ class AssetIndexer extends Component
             'dirname' => $dirname,
             'basename' => pathinfo($path, PATHINFO_BASENAME),
             'type' => 'file',
-            'dateModified' => $volume->getDateModified($path),
-            'fileSize' => $volume->getFileSize($path),
+            'dateModified' => $volume->sourceDisk()->lastModified($path),
+            'fileSize' => $volume->sourceDisk()->size($path),
         ]);
 
         return $this->indexFileByListing($volume, $listing, $sessionId, $cacheImages, $createIfMissing);
@@ -770,13 +803,13 @@ class AssetIndexer extends Component
 
         if (!$folder) {
             /** @var Volume $volume */
-            $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
+            $volume = app(Volumes::class)->getVolumeById($indexEntry->volumeId);
             $folder = $assets->ensureFolderByFullPathAndVolume($path, $volume);
         } else {
             $volume = $folder->getVolume();
         }
 
-        $fs = $volume->getFs();
+        $isLocalFs = $volume->sourceDisk() instanceof LocalFilesystemAdapter;
 
         $folderId = $folder->id;
 
@@ -806,7 +839,7 @@ class AssetIndexer extends Component
         $asset->setScenario(Asset::SCENARIO_INDEX);
 
         try {
-            if ($fs instanceof LocalFsInterface) {
+            if ($isLocalFs) {
                 // Have the asset store its MIME type, since it will be able to get it from its file info
                 $asset->setMimeType($asset->getMimeType());
             }
@@ -817,7 +850,7 @@ class AssetIndexer extends Component
                 $tempPath = null;
 
                 // For local images it's easy - the image is right there, nothing to cache and the asset ID means nothing.
-                if ($fs instanceof LocalFsInterface) {
+                if ($isLocalFs) {
                     $transformSourcePath = $asset->getImageTransformSourcePath();
                     $dimensions = Image::imageSize($transformSourcePath);
                 } else {
@@ -840,7 +873,7 @@ class AssetIndexer extends Component
                     // if $dimensions is not an array by now, either smart-guessing failed or the user wants to cache this.
                     if (!is_array($dimensions)) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
-                        AssetsHelper::downloadFile($volume, $indexEntry->uri, $tempPath);
+                        AssetsHelper::downloadFile($volume->sourceDisk(), $indexEntry->uri, $tempPath);
                         $dimensions = Image::imageSize($tempPath);
 
                         // Store the MIME type on the asset so long as we have it downloaded
@@ -856,7 +889,7 @@ class AssetIndexer extends Component
                 Craft::$app->getElements()->saveElement($asset);
 
                 // Now we definitely have an asset ID, so let's cover one last base.
-                $shouldCache = !$fs instanceof LocalFsInterface && $cacheImages && Cms::config()->maxCachedCloudImageSize > 0;
+                $shouldCache = !$isLocalFs && $cacheImages && Cms::config()->maxCachedCloudImageSize > 0;
 
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();
@@ -903,7 +936,7 @@ class AssetIndexer extends Component
         ]);
 
         /** @var Volume $volume */
-        $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
+        $volume = app(Volumes::class)->getVolumeById($indexEntry->volumeId);
 
         if (!$folder && !$createIfMissing) {
             throw new MissingVolumeFolderException($indexEntry, $volume, $indexEntry->uri);

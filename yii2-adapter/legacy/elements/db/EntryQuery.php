@@ -959,7 +959,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).
         $now = new DateTime();
         $now->setTime((int)$now->format('H'), (int)$now->format('i'), 59);
-        $currentTimeDb = Db::prepareDateForDb($now);
+        $currentTimeDb = \CraftCms\Cms\Support\Query::prepareDateForDb($now);
 
         return match ($status) {
             Entry::STATUS_LIVE => [

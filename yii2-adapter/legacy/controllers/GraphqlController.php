@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\errors\GqlException;
-use craft\errors\MissingComponentException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\UrlHelper;
@@ -22,6 +21,7 @@ use craft\web\ErrorHandler;
 use craft\web\Response;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;

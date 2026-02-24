@@ -9,8 +9,8 @@ namespace craft\helpers;
 
 use craft\base\ElementInterface;
 use craft\base\Model;
-use craft\errors\MissingComponentException;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
+use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;

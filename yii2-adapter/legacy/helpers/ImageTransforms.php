@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -9,30 +11,32 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Image as BaseImage;
-use craft\base\LocalFsInterface;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
-use craft\errors\FsException;
-use craft\errors\FsObjectNotFoundException;
 use craft\errors\ImageException;
 use craft\errors\ImageTransformException;
 use craft\image\Raster;
 use craft\models\ImageTransform;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Imagine\Image\Format;
 use InvalidArgumentException;
+
 use function CraftCms\Cms\t;
 
 /**
  * Image Transforms helper.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  */
 class ImageTransforms
@@ -44,9 +48,6 @@ class ImageTransforms
 
     /**
      * Create an AssetImageTransform model from a string.
-     *
-     * @param string $transformString
-     * @return ImageTransform
      */
     public static function createTransformFromString(string $transformString): ImageTransform
     {
@@ -86,8 +87,6 @@ class ImageTransforms
     /**
      * Detect the auto web-safe format for the Asset. Returns null, if the Asset is not an image.
      *
-     * @param Asset $asset
-     * @return string
      * @throws AssetOperationException If attempting to detect an image format for a non-image.
      */
     public static function detectTransformFormat(Asset $asset): string
@@ -106,10 +105,6 @@ class ImageTransforms
 
     /**
      * Extend a transform by taking an existing transform and overriding its parameters.
-     *
-     * @param ImageTransform $transform
-     * @param array $parameters
-     * @return ImageTransform
      */
     public static function extendTransform(ImageTransform $transform, array $parameters): ImageTransform
     {
@@ -144,8 +139,6 @@ class ImageTransforms
     /**
      * Get a local image source to use for transforms.
      *
-     * @param Asset $asset
-     * @return string
      * @throws FsObjectNotFoundException If the file cannot be found.
      */
     public static function getLocalImageSource(Asset $asset): string
@@ -154,7 +147,9 @@ class ImageTransforms
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
         try {
-            if (!$volume->getFs() instanceof LocalFsInterface) {
+            $isLocalFs = $volume->sourceDisk() instanceof LocalFilesystemAdapter;
+
+            if (!$isLocalFs) {
                 // This is a non-local fs
                 if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
                     if (is_file($imageSourcePath)) {
@@ -182,13 +177,13 @@ class ImageTransforms
                         }
                     }
 
-                    Assets::downloadFile($volume, $asset->getPath(), $tempFilePath);
+                    Assets::downloadFile($volume->sourceDisk(), $asset->getPath(), $tempFilePath);
 
                     if (!is_file($tempFilePath) || filesize($tempFilePath) === 0) {
                         if (is_file($tempFilePath) && !FileHelper::unlink($tempFilePath)) {
                             Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                         }
-                        throw new FsException(t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
+                        throw new FilesystemException(t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
                             'file' => $asset->getFilename(),
                         ]));
                     }
@@ -221,9 +216,7 @@ class ImageTransforms
     /**
      * Get the transform string for a given asset image transform.
      *
-     * @param ImageTransform $transform
-     * @param bool $ignoreHandle whether the transform handle should be ignored
-     * @return string
+     * @param  bool  $ignoreHandle  whether the transform handle should be ignored
      */
     public static function getTransformString(ImageTransform $transform, bool $ignoreHandle = false): string
     {
@@ -247,8 +240,6 @@ class ImageTransforms
     /**
      * Parses a transform string.
      *
-     * @param string $str
-     * @return array
      * @since 4.4.0
      */
     public static function parseTransformString(string $str): array
@@ -258,12 +249,13 @@ class ImageTransforms
         }
 
         $upscale = $match['upscale'] ?? null;
+
         return [
-            'width' => $match['width'] !== 'AUTO' ? (int)$match['width'] : null,
-            'height' => $match['height'] !== 'AUTO' ? (int)$match['height'] : null,
+            'width' => $match['width'] !== 'AUTO' ? (int) $match['width'] : null,
+            'height' => $match['height'] !== 'AUTO' ? (int) $match['height'] : null,
             'mode' => $match['mode'],
             'position' => $match['position'],
-            'quality' => $match['quality'] ? (int)$match['quality'] : null,
+            'quality' => $match['quality'] ? (int) $match['quality'] : null,
             'interlace' => $match['interlace'],
             'fill' => ($match['fill'] ?? null) ? sprintf('%s%s', $match['fill'] !== 'transparent' ? '#' : '', $match['fill']) : null,
             'upscale' => $upscale !== 'ns',
@@ -273,8 +265,6 @@ class ImageTransforms
     /**
      * Normalize a transform from handle or a set of properties to an ImageTransform.
      *
-     * @param mixed $transform
-     * @return ImageTransform|null
      * @throws ImageTransformException if $transform is an invalid transform handle
      */
     public static function normalizeTransform(mixed $transform): ?ImageTransform
@@ -319,6 +309,7 @@ class ImageTransforms
 
             if (array_key_exists('transform', $transform)) {
                 $baseTransform = self::normalizeTransform(Arr::pull($transform, 'transform'));
+
                 return self::extendTransform($baseTransform, $transform);
             }
 
@@ -347,8 +338,6 @@ class ImageTransforms
     /**
      * Store a local image copy to a destination path.
      *
-     * @param string $source
-     * @param string $destination
      * @throws ImageException
      */
     public static function storeLocalSource(string $source, string $destination = ''): void
@@ -378,12 +367,15 @@ class ImageTransforms
     /**
      * Generates an image transform for an asset.
      *
-     * @param Asset $asset The asset
-     * @param ImageTransform $transform The image transform
-     * @param callable|null $heartbeat A callback that should be called while the transform is being generated
-     * @param BaseImage|null $image The image object loaded for the transform
+     * @param  Asset  $asset  The asset
+     * @param  ImageTransform  $transform  The image transform
+     * @param  callable|null  $heartbeat  A callback that should be called while the transform is being generated
+     * @param  BaseImage|null  $image  The image object loaded for the transform
+     *
      * @param-out BaseImage $image The image object loaded for the transform
+     *
      * @return string The temp path that the transform was saved to
+     *
      * @throws ImageTransformException if the transform couldn’t be generated.
      */
     public static function generateTransform(
@@ -447,7 +439,7 @@ class ImageTransforms
                         $scaleIfSmaller
                     );
                 } else {
-                    Log::info("Cannot add fill to non-raster images");
+                    Log::info('Cannot add fill to non-raster images');
                     $image->scaleToFit($transform->width, $transform->height, $scaleIfSmaller);
                 }
                 break;

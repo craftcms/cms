@@ -1,25 +1,36 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\errors;
 
-/**
- * Class FsObjectExistsException
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class FsObjectExistsException extends FsException
-{
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Class FsObjectExistsException
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     *
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see CraftCms\Cms\Filesystem\Exceptions\FsObjectExistsException} instead.
      */
-    public function getName(): string
+    class FsObjectExistsException extends FilesystemException
     {
-        return 'Filesystem object exists';
+        /**
+         * {@inheritdoc}
+         */
+        public function getName(): string
+        {
+            return 'Filesystem object exists';
+        }
     }
 }
+
+class_alias(\CraftCms\Cms\Filesystem\Exceptions\FsObjectExistsException::class, FsObjectExistsException::class);

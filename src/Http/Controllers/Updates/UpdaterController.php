@@ -261,7 +261,7 @@ final class UpdaterController extends BaseUpdaterController
         }
 
         // Is Craft already in Maintenance Mode?
-        if (! $force && Craft::$app->getIsInMaintenanceMode()) {
+        if (! $force && app()->isDownForMaintenance()) {
             // Bail if Craft is already in maintenance mode
             return [
                 'error' => str_replace(['<br>', '<br/>'], "\n\n", t('It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.')),
@@ -277,7 +277,7 @@ final class UpdaterController extends BaseUpdaterController
         }
 
         // Enable maintenance mode
-        Craft::$app->enableMaintenanceMode();
+        app()->maintenanceMode()->activate([]);
 
         if (! empty($this->data['install'])) {
             $nextAction = self::ACTION_COMPOSER_INSTALL;
@@ -328,7 +328,7 @@ final class UpdaterController extends BaseUpdaterController
     protected function sendFinished(array $state = []): Response
     {
         // Disable maintenance mode
-        Craft::$app->disableMaintenanceMode();
+        app()->maintenanceMode()->deactivate();
 
         return parent::sendFinished($state);
     }

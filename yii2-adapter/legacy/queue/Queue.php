@@ -588,7 +588,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 }
                 Db::update($this->tableName, [
                     'fail' => true,
-                    'dateFailed' => Db::prepareDateForDb(new DateTime()),
+                    'dateFailed' => \CraftCms\Cms\Support\Query::prepareDateForDb(new DateTime()),
                     'error' => $event->error ? $this->_truncateErrorMessage($event->error->getMessage()) : null,
                 ], [
                     'id' => $event->id,
@@ -747,7 +747,7 @@ EOD;
                 $payload['timeUpdated'] = $payload['dateReserved']->getTimestamp();
                 $payload['attempt'] = (int)$payload['attempt'] + 1;
                 Db::update($this->tableName, [
-                    'dateReserved' => Db::prepareDateForDb($payload['dateReserved']),
+                    'dateReserved' => \CraftCms\Cms\Support\Query::prepareDateForDb($payload['dateReserved']),
                     'timeUpdated' => $payload['timeUpdated'],
                     'attempt' => $payload['attempt'],
                 ], [

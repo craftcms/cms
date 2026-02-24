@@ -29,7 +29,6 @@ use craft\services\Globals;
 use craft\services\Gql;
 use craft\services\Tags;
 use craft\services\UserGroups;
-use craft\services\Volumes;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
 use craft\test\TestCase;
@@ -319,15 +318,15 @@ class GqlTest extends TestCase
             ->shouldReceive('getAllSections')
             ->andReturn(collect([$sectionA, $sectionB]));
 
-        $volumeService = $this->make(Volumes::class, [
-            'getAllVolumes' => [
+        \CraftCms\Cms\Support\Facades\Volumes::partialMock()
+            ->shouldReceive('getAllVolumes')
+            ->andReturn(collect([
                 new Local([
                     'id' => 1,
                     'name' => 'Test volume',
                     'uid' => 'volumeUid',
                 ]),
-            ],
-        ]);
+            ]));
 
         $globalService = $this->make(Globals::class, [
             'getAllSets' => [
@@ -368,7 +367,6 @@ class GqlTest extends TestCase
         ]);
 
         Craft::$app->set('entries', $entriesService);
-        Craft::$app->set('volumes', $volumeService);
         Craft::$app->set('globals', $globalService);
         Craft::$app->set('categories', $categoryService);
         Craft::$app->set('tags', $tagService);

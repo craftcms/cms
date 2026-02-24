@@ -601,7 +601,7 @@ trait ApplicationTrait
      */
     public function getIsInMaintenanceMode(): bool
     {
-        return \CraftCms\Cms\Shared\Models\Info::fetch()->maintenance;
+        return app()->isDownForMaintenance();
     }
 
     /**
@@ -612,7 +612,9 @@ trait ApplicationTrait
      */
     public function enableMaintenanceMode(): bool
     {
-        return $this->_setMaintenanceMode(true);
+        app()->maintenanceMode()->activate([]);
+
+        return true;
     }
 
     /**
@@ -623,7 +625,9 @@ trait ApplicationTrait
      */
     public function disableMaintenanceMode(): bool
     {
-        return $this->_setMaintenanceMode(false);
+        app()->maintenanceMode()->deactivate();
+
+        return true;
     }
 
     /**
@@ -980,6 +984,7 @@ trait ApplicationTrait
      * @return Fs The filesystems service
      *
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems} instead.
      */
     public function getFs(): Fs
     {
@@ -1363,20 +1368,6 @@ trait ApplicationTrait
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
         }
-    }
-
-    /**
-     * Enables or disables Maintenance Mode
-     */
-    private function _setMaintenanceMode(bool $value): bool
-    {
-        $info = \CraftCms\Cms\Shared\Models\Info::fetch();
-        if ($info->maintenance === $value) {
-            return true;
-        }
-        $info->maintenance = $value;
-
-        return $info->save();
     }
 
     /**

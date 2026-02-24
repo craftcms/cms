@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -12,8 +14,6 @@ use craft\base\Component;
 use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageEditorTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
-use craft\base\LocalFsInterface;
-use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\events\ImageTransformerOperationEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -27,16 +27,19 @@ use craft\models\ImageTransformIndex;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
+
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
 
@@ -44,13 +47,14 @@ use function CraftCms\Cms\t;
  * ImageTransformer transforms image assets using GD or ImageMagick.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 4.0.0
  *
  * @property-read int $editedImageHeight
  * @property-read int $editedImageWidth
  * @property-read array $pendingTransformIndexIds
  */
-class ImageTransformer extends Component implements ImageTransformerInterface, EagerImageTransformerInterface, ImageEditorTransformerInterface
+class ImageTransformer extends Component implements EagerImageTransformerInterface, ImageEditorTransformerInterface, ImageTransformerInterface
 {
     /**
      * @event ImageTransformerOperationEvent The event that is fired when an image is transformed
@@ -67,21 +71,18 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      */
     protected array $eagerLoadedTransformIndexes = [];
 
-    /**
-     * @var array
-     */
     protected array $imageEditorData = [];
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
-        $fs = $asset->getVolume()->getTransformFs();
+        $disk = $asset->getVolume()->transformDisk();
         $mimeType = $asset->getMimeType();
         $generalConfig = Cms::config();
 
-        if (!$fs->hasUrls) {
+        if (!$asset->getVolume()->getFs()->hasUrls) {
             throw new NotSupportedException('The asset’s volume’s transform filesystem doesn’t have URLs.');
         }
 
@@ -97,15 +98,15 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)) . $this->getTransformUri($asset, $index);
 
         // If it's a local filesystem, make sure `fileExists` is accurate
-        if ($fs instanceof LocalFsInterface) {
-            $fileExists = $fs->fileExists($uri);
+        if ($disk instanceof LocalFilesystemAdapter) {
+            $fileExists = $disk->exists($uri);
 
             // if the file exists on disk, make sure it's not stale
             if (
                 $fileExists &&
                 !$index->fileExists &&
                 $imageTransform->parameterChangeTime &&
-                $fs->getDateModified($uri) < $imageTransform->parameterChangeTime->getTimestamp()
+                $disk->lastModified($uri) < $imageTransform->parameterChangeTime->getTimestamp()
             ) {
                 $fileExists = false;
             }
@@ -183,7 +184,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             }
         }
 
-        $url = sprintf('%s/%s', rtrim($fs->getRootUrl() ?? '', '/'), $uri);
+        $url = $disk->url($uri);
 
         if (Cms::config()->revAssetUrls) {
             return AssetsHelper::revUrl($url, $asset, $index->dateUpdated);
@@ -193,7 +194,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function invalidateAssetTransforms(Asset $asset): void
     {
@@ -207,9 +208,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     }
 
     /**
-     * @param Asset $asset
-     * @param ImageTransformIndex $transformIndex
-     *
      * @throws InvalidConfigException
      */
     public function deleteImageTransformFile(Asset $asset, ImageTransformIndex $transformIndex): void
@@ -225,14 +223,14 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         }
 
         try {
-            $asset->getVolume()->getTransformFs()->deleteFile($path);
+            $asset->getVolume()->transformDisk()->delete($path);
         } catch (InvalidConfigException|NotSupportedException) {
             // NBD
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function eagerLoadTransforms(array $transforms, array $assets): void
     {
@@ -308,10 +306,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * Return a subfolder used by the Transform Index for the Asset.
      *
-     * @param Asset $asset
-     * @param ImageTransformIndex $transformIndex
      *
-     * @return string
      * @throws InvalidConfigException
      */
     protected function getTransformSubfolder(Asset $asset, ImageTransformIndex $transformIndex): string
@@ -328,10 +323,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * Return the filename used by the Transform Index for the Asset.
      *
-     * @param Asset $asset
-     * @param ImageTransformIndex $transformIndex
      *
-     * @return string
      * @throws InvalidConfigException
      */
     protected function getTransformFilename(Asset $asset, ImageTransformIndex $transformIndex): string
@@ -342,37 +334,28 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * Returns the path to a transform, relative to the asset's folder.
      *
-     * @param Asset $asset
-     * @param ImageTransformIndex $transformIndex
      *
-     * @return string
      * @throws InvalidConfigException
      */
     protected function getTransformSubpath(Asset $asset, ImageTransformIndex $transformIndex): string
     {
         return $this->getTransformSubfolder($asset,
-                $transformIndex) . DIRECTORY_SEPARATOR . $this->getTransformFilename($asset, $transformIndex);
+            $transformIndex) . DIRECTORY_SEPARATOR . $this->getTransformFilename($asset, $transformIndex);
     }
 
     /**
      * Returns the URI for a transform, relative to the asset's folder.
-     *
-     * @param Asset $asset
-     * @param ImageTransformIndex $index
-     *
-     * @return string
      */
     protected function getTransformUri(Asset $asset, ImageTransformIndex $index): string
     {
         $uri = $this->getTransformSubpath($asset, $index);
+
         return str_replace('\\', '/', $uri);
     }
 
     /**
      * Generate the actual image for the Asset by the transform index.
      *
-     * @param Asset $asset
-     * @param ImageTransformIndex $index
      *
      * @throws ImageTransformException If a transform index has an invalid transform assigned.
      */
@@ -383,11 +366,11 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         }
 
         $volume = $asset->getVolume();
-        $transformFs = $volume->getTransformFs();
+        $transformDisk = $volume->transformDisk();
         $transformPath = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $index);
 
-        if ($transformFs->fileExists($transformPath)) {
-            $dateModified = $transformFs->getDateModified($transformPath);
+        if ($transformDisk->exists($transformPath)) {
+            $dateModified = $transformDisk->lastModified($transformPath);
             $parameterChangeTime = $index->getTransform()->parameterChangeTime;
 
             if (!$parameterChangeTime || $parameterChangeTime->getTimestamp() <= $dateModified) {
@@ -396,7 +379,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             }
 
             try {
-                $volume->deleteFile($transformPath);
+                $transformDisk->delete($transformPath);
             } catch (Throwable) {
                 // Unlikely, but if it got deleted while we were comparing timestamps, don't freak out.
             }
@@ -422,8 +405,10 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $stream = fopen($tempPath, 'rb');
 
         try {
-            $transformFs->writeFileFromStream($transformPath, $stream);
-        } catch (FsException $e) {
+            if (!is_resource($stream) || !$transformDisk->writeStream($transformPath, $stream)) {
+                throw new FilesystemException("Unable to write stream to path: $transformPath");
+            }
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
         }
 
@@ -441,15 +426,17 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * Check if a transformed image exists. If it does not, attempt to generate it.
      *
-     * @param ImageTransformIndex $index
      *
      * @return bool true if transform exists for the index
+     *
      * @throws ImageTransformException
+     *
      * @deprecated in 4.4.0. [[generateTransform()]] should be used instead.
      */
     protected function procureTransformedImage(ImageTransformIndex $index): bool
     {
         $this->generateTransform($index);
+
         return true;
     }
 
@@ -471,7 +458,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $index->filename = $transformFilename;
 
         $matchFound = $this->getSimilarTransformIndex($asset, $index);
-        $fs = $volume->getTransformFs();
+        $disk = $volume->transformDisk();
 
         $target = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $index);
         // If we have a match, copy the file.
@@ -480,19 +467,21 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
             // Sanity check
             try {
-                if ($fs->fileExists($target)) {
+                if ($disk->exists($target)) {
                     return;
                 }
 
-                $fs->copyFile($from, $target);
-            } catch (FsException $exception) {
+                if (!$disk->copy($from, $target)) {
+                    throw new FilesystemException("Unable to copy $from to $target");
+                }
+            } catch (Throwable $exception) {
                 throw new ImageTransformException('There was a problem re-using an existing transform.', 0, $exception);
             }
         } else {
             $this->generateTransformedImage($asset, $index);
         }
 
-        if (!$fs->fileExists($target)) {
+        if (!$disk->exists($target)) {
             throw new ImageTransformException('There was a problem generating the image transform.');
         }
     }
@@ -500,11 +489,9 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * Get a transform URL by the transform index model.
      *
-     * @param Asset $asset
-     * @param ImageTransformIndex $index
      *
-     * @return string
      * @throws ImageTransformException If there was an error generating the transform.
+     *
      * @deprecated in 4.4.0. [[getTransformUrl()]] should be used instead.
      */
     protected function ensureTransformUrlByIndexModel(Asset $asset, ImageTransformIndex $index): string
@@ -515,10 +502,8 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * Get a transform index row. If it doesn't exist - create one.
      *
-     * @param Asset $asset
-     * @param ImageTransform|string|array|null $transform
+     * @param  ImageTransform|string|array|null  $transform
      *
-     * @return ImageTransformIndex
      * @throws ImageTransformException if the transform cannot be found by the handle
      */
     public function getTransformIndex(Asset $asset, mixed $transform): ImageTransformIndex
@@ -536,7 +521,8 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         if (isset($this->eagerLoadedTransformIndexes[$fingerprint])) {
             $result = $this->eagerLoadedTransformIndexes[$fingerprint];
-            return new ImageTransformIndex((array)$result);
+
+            return new ImageTransformIndex((array) $result);
         }
 
         // Check if an entry exists already
@@ -589,16 +575,14 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         ]);
 
         $this->storeTransformIndexData($index);
+
         return $index;
     }
 
     /**
      * Validates a transform index result to see if the index is still valid for a given asset.
      *
-     * @param array $result
-     * @param ImageTransform $transform
-     * @param array|Asset $asset The asset object or a raw database result
-     *
+     * @param  array|Asset  $asset  The asset object or a raw database result
      * @return bool Whether the index result is still valid
      */
     protected function validateTransformIndexResult(array $result, ImageTransform $transform, array|Asset $asset): bool
@@ -629,10 +613,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
     /**
      * Store a transform index data by it's model.
-     *
-     * @param ImageTransformIndex $index
-     *
-     * @return ImageTransformIndex
      */
     public function storeTransformIndexData(ImageTransformIndex $index): ImageTransformIndex
     {
@@ -671,8 +651,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
     /**
      * Returns a list of pending transform index IDs.
-     *
-     * @return array
      */
     public function getPendingTransformIndexIds(): array
     {
@@ -688,10 +666,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
     /**
      * Get a transform index model by a row id.
-     *
-     * @param int $transformId
-     *
-     * @return ImageTransformIndex|null
      */
     public function getTransformIndexModelById(int $transformId): ?ImageTransformIndex
     {
@@ -703,7 +677,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function startImageEditing(Asset $asset): void
     {
@@ -731,7 +705,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function flipImage(bool $flipX, bool $flipY): void
     {
@@ -744,7 +718,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function scaleImage(int $width, int $height): void
     {
@@ -752,7 +726,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function rotateImage(float $degrees): void
     {
@@ -760,7 +734,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getEditedImageWidth(): int
     {
@@ -768,7 +742,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getEditedImageHeight(): int
     {
@@ -776,7 +750,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function crop(int $x, int $y, int $width, int $height): void
     {
@@ -784,7 +758,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function finishImageEditing(): string
     {
@@ -796,34 +770,32 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function cancelImageEditing(): string
     {
         $tempLocation = $this->imageEditorData['tempLocation'];
         $this->imageEditorData = [];
+
         return $tempLocation;
     }
 
     /**
      * Get the transform base path for a given asset.
      *
-     * @param Asset $asset
      *
-     * @return string
      * @throws InvalidConfigException
      */
     protected function getTransformBasePath(Asset $asset): string
     {
         $subPath = $asset->getVolume()->getTransformSubpath();
         $subPath = Str::chopEnd($subPath, '/');
+
         return ($subPath ? $subPath . DIRECTORY_SEPARATOR : '') . $asset->folderPath;
     }
 
     /**
      * Delete transform records by an Asset id
-     *
-     * @param int $assetId
      */
     protected function deleteTransformIndexDataByAssetId(int $assetId): void
     {
@@ -835,7 +807,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * Get an array of ImageTransformIndex models for all created transforms for an Asset.
      *
-     * @param Asset $asset
      *
      * @return ImageTransformIndex[]
      */
@@ -851,10 +822,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * Find a similar image transform for reuse for an asset and existing transform.
      *
-     * @param Asset $asset
-     * @param ImageTransformIndex $index
      *
-     * @return ImageTransformIndex|null
      * @throws InvalidConfigException
      */
     protected function getSimilarTransformIndex(Asset $asset, ImageTransformIndex $index): ?ImageTransformIndex
