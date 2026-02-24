@@ -21,8 +21,8 @@ use craft\gql\types\elements\Tag as TagGqlType;
 use craft\models\CategoryGroup;
 use craft\models\GqlSchema;
 use craft\models\TagGroup;
-use craft\models\Volume;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
@@ -30,7 +30,9 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Volumes;
 use Exception;
+use Illuminate\Support\Collection;
 use UnitTester;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownMethodException;
@@ -45,11 +47,10 @@ class CreateMutationsTest extends TestCase
     protected function _before(): void
     {
         // Mock all the things
-        $this->tester->mockCraftMethods('volumes', [
-            'getAllVolumes' => [
+        Volumes::shouldReceive('getAllVolumes')
+            ->andReturn(new Collection([
                 new Volume(['uid' => 'uid', 'handle' => 'localVolume']),
-            ],
-        ]);
+            ]));
 
         $this->tester->mockCraftMethods('categories', [
             'getAllGroups' => [
@@ -125,12 +126,7 @@ class CreateMutationsTest extends TestCase
     public function testCreateAssetSaveMutation(): void
     {
         $volume = $this->make(Volume::class, [
-            '__call' => fn($name) => match ($name) {
-                'getCustomFields' => [
-                    new Number(['handle' => 'someNumberField']),
-                ],
-                default => throw new UnknownMethodException("Calling unknown method: $name()"),
-            },
+            'getCustomFields' => fn() => [new Number(['handle' => 'someNumberField'])],
         ]);
 
         $mutation = AssetMutations::createSaveMutation($volume);

@@ -8,7 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\errors\MissingComponentException;
+use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use yii\web\Session as YiiSession;
 
 /**

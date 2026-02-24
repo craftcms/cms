@@ -3,9 +3,10 @@
 declare(strict_types=1);
 
 use craft\base\Fs;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Policies\AssetPolicy;
+use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 
@@ -165,6 +166,45 @@ it('returns same result for copy as view', function () {
     expect($copyResult)->toBe($viewResult);
 });
 
+it('allows view for temp upload filesystem regardless of permissions', function () {
+    $user = createAssetTestUser([]);
+    $asset = createAssetTestAssetWithTempFs($this->volume, uploaderId: $user->id);
+
+    $result = $this->policy->view($user, $asset);
+
+    expect($result)->toBeTrue();
+});
+
+it('allows delete for temp upload filesystem regardless of permissions', function () {
+    $user = createAssetTestUser([]);
+    $asset = createAssetTestAssetWithTempFs($this->volume, uploaderId: $user->id);
+
+    $result = $this->policy->delete($user, $asset);
+
+    expect($result)->toBeTrue();
+});
+
+it('still checks peer permissions for view even on temp fs when uploader differs', function () {
+    $user = createAssetTestUser([]);
+    $asset = createAssetTestAssetWithTempFs($this->volume, uploaderId: 999);
+
+    // Temp FS view bypass only applies when the user is the uploader (the code checks uploaderId first)
+    // When uploaderId !== user.id, it goes to the peer permission check
+    $result = $this->policy->view($user, $asset);
+
+    expect($result)->toBeFalse();
+});
+
+it('allows delete on temp fs even for peer assets', function () {
+    $user = createAssetTestUser([]);
+    $asset = createAssetTestAssetWithTempFs($this->volume, uploaderId: 999);
+
+    // Delete checks temp FS before checking uploader, so it should allow
+    $result = $this->policy->delete($user, $asset);
+
+    expect($result)->toBeTrue();
+});
+
 // Helper functions
 function createAssetTestUser(array $permissions): User
 {
@@ -284,6 +324,50 @@ function createAssetTestAsset(
     $asset->siteId = null;
     $asset->uploaderId = $uploaderId;
     $asset->isFolder = $isFolder;
+    $asset->mockVolume = $mockVolume;
+
+    return $asset;
+}
+
+function createAssetTestAssetWithTempFs(
+    Volume $volume,
+    ?int $uploaderId = null,
+): Asset {
+    $tempFs = new Temp([
+        'handle' => 'tempFs',
+        'path' => sys_get_temp_dir().'/craft-policy-test-temp',
+    ]);
+
+    $mockVolume = new class extends Volume
+    {
+        public ?Temp $mockFs = null;
+
+        public function getFs(): Temp
+        {
+            return $this->mockFs;
+        }
+    };
+
+    $mockVolume->id = $volume->id;
+    $mockVolume->uid = $volume->uid;
+    $mockVolume->name = $volume->name;
+    $mockVolume->handle = $volume->handle;
+    $mockVolume->mockFs = $tempFs;
+
+    $asset = new class extends Asset
+    {
+        public ?Volume $mockVolume = null;
+
+        public function getVolume(): Volume
+        {
+            return $this->mockVolume;
+        }
+    };
+
+    $asset->id = 100;
+    $asset->siteId = null;
+    $asset->uploaderId = $uploaderId;
+    $asset->isFolder = false;
     $asset->mockVolume = $mockVolume;
 
     return $asset;

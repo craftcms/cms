@@ -479,7 +479,6 @@ class Install extends Migration
             $table->integer('id', true);
             $table->string('version', 50);
             $table->string('schemaVersion', 15);
-            $table->boolean('maintenance')->default(false);
             $table->char('configVersion', 12)->default('000000000000');
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -1068,7 +1067,6 @@ class Install extends Migration
                 'id' => 1,
                 'version' => Cms::VERSION,
                 'schemaVersion' => Cms::SCHEMA_VERSION,
-                'maintenance' => false,
                 'configVersion' => Str::random(12),
             ]);
         });

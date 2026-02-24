@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import SystemInfo from '@/components/SystemInfo.vue';
-  import {computed, reactive, ref, watch} from 'vue';
+  import {computed, reactive, ref, watch, useTemplateRef} from 'vue';
   import CpSidebar from '@/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
   import {Head, usePage} from '@inertiajs/vue3';
@@ -30,6 +30,7 @@
   const errorFlash = computed(() => page.props.flash?.error);
   const successFlash = computed(() => page.props.flash?.success);
   const crumbs = computed(() => page.props.crumbs ?? null);
+  const sidebarToggle = useTemplateRef('sidebarToggle');
 
   const state = reactive<{
     sidebar: {
@@ -68,6 +69,11 @@
     }
   }
 
+  function closeSidebar() {
+    state.sidebar.visibility = 'hidden';
+    (sidebarToggle.value as HTMLButtonElement).focus();
+  }
+
   const sidebarIcon = computed(() => {
     return state.sidebar.visibility === 'visible' ? 'x' : 'bars';
   });
@@ -93,6 +99,7 @@
           appearance="plain"
           @click="toggleSidebar"
           v-if="!isLargeScreen"
+          ref="sidebarToggle"
         >
           <craft-icon :name="sidebarIcon"></craft-icon>
         </craft-button>
@@ -119,7 +126,7 @@
       <CpSidebar
         :mode="state.sidebar.mode"
         :visibility="state.sidebar.visibility"
-        @close="state.sidebar.visibility = 'hidden'"
+        @close="closeSidebar"
       />
     </div>
     <div class="cp__main">

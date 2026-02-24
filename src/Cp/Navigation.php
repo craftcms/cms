@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Http\Request;
@@ -73,7 +74,7 @@ readonly class Navigation
         //     ];
         // }
 
-        if (Craft::$app->getVolumes()->getTotalViewableVolumes()) {
+        if (Volumes::getTotalViewableVolumes()) {
             $navItems[] = [
                 'label' => t('Assets'),
                 'url' => 'assets',

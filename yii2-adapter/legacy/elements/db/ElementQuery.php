@@ -2774,7 +2774,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
                     // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
                     // see https://github.com/craftcms/cms/issues/15609
-                    if ($isMysql && Db::parseColumnType($dbType) === Schema::TYPE_TEXT) {
+                    if ($isMysql && \CraftCms\Cms\Support\Query::parseColumnType($dbType) === Schema::TYPE_TEXT) {
                         $this->_columnsToCast[$alias] = 'CHAR(255)';
                     }
                 }

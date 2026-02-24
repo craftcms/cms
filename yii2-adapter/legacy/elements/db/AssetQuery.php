@@ -14,8 +14,9 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -315,7 +316,7 @@ class AssetQuery extends ElementQuery
     {
         if (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
-                $item = Craft::$app->getVolumes()->getVolumeByHandle($item);
+                $item = app(Volumes::class)->getVolumeByHandle($item);
             }
             return $item instanceof Volume ? $item->id : null;
         })) {
@@ -1076,7 +1077,7 @@ class AssetQuery extends ElementQuery
         $partiallyAuthorizedVolumeIds = [];
         $unauthorizedVolumeIds = [];
 
-        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
+        foreach (app(Volumes::class)->getAllVolumes() as $volume) {
             if ($user->can("$peerPermissionPrefix:$volume->uid")) {
                 $fullyAuthorizedVolumeIds[] = $volume->id;
             } elseif ($user->can("$permissionPrefix:$volume->uid")) {
@@ -1186,7 +1187,7 @@ class AssetQuery extends ElementQuery
     {
         if ($this->volumeId && $this->volumeId !== ':empty:') {
             $fieldLayouts = [];
-            $volumesService = Craft::$app->getVolumes();
+            $volumesService = app(Volumes::class);
             foreach ($this->volumeId as $volumeId) {
                 $volume = $volumesService->getVolumeById($volumeId);
                 if ($volume) {

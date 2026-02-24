@@ -15,7 +15,8 @@ use craft\gql\resolvers\mutations\Asset as AssetResolver;
 use craft\gql\types\generators\AssetType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Volumes;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 
@@ -40,7 +41,7 @@ class Asset extends Mutation
 
         $createDeleteMutation = false;
 
-        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
+        foreach (app(Volumes::class)->getAllVolumes() as $volume) {
             $scope = 'volumes.' . $volume->uid;
 
             $canCreate = Gql::canSchema($scope, 'create');

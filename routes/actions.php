@@ -22,7 +22,6 @@ use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
-use CraftCms\Cms\Http\Controllers\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
@@ -32,10 +31,12 @@ use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
+use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
@@ -269,6 +270,13 @@ Route::prefix(implode('/', [
             Route::get('fs/edit', [FilesystemsController::class, 'edit']);
             Route::post('fs/save', [FilesystemsController::class, 'save']);
             Route::post('fs/remove', [FilesystemsController::class, 'delete']);
+        });
+
+        // Volumes
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('volumes/save-volume', [VolumesController::class, 'save']);
+            Route::post('volumes/delete-volume', [VolumesController::class, 'delete']);
+            Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
         });
 
         // Plugins

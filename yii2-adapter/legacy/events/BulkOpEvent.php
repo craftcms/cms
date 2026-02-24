@@ -9,10 +9,10 @@ namespace craft\events;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\services\Elements;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Query;
 use yii\base\Application;
 use yii\base\Event;
 
@@ -89,7 +89,7 @@ class BulkOpEvent extends ElementQueryEvent
             Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() {
                 // keep track of any event triggers that haven’t been handled yet
                 if (!empty(self::$triggers)) {
-                    $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
+                    $timestamp = Query::prepareDateForDb(DateTimeHelper::now());
                     $connection = Craft::$app->getElements()->getBulkOpConnection();
                     foreach (self::$triggers as $key => $triggers) {
                         foreach ($triggers as $class => $eventNames) {

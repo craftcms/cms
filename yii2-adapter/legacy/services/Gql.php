@@ -53,10 +53,10 @@ use craft\gql\types\Number;
 use craft\gql\types\Query;
 use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db as DbHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -1748,9 +1748,9 @@ class Gql extends Component
         $queryComponents = [];
         $mutationComponents = [];
 
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+        $volumes = app(Volumes::class)->getAllVolumes();
 
-        if (!empty($volumes)) {
+        if ($volumes->isNotEmpty()) {
             foreach ($volumes as $volume) {
                 $name = t($volume->name, category: 'site');
                 $prefix = "volumes.$volume->uid";
@@ -1894,8 +1894,8 @@ class Gql extends Component
 
         $tokenModel->name = $token->name;
         $tokenModel->enabled = $token->enabled;
-        $tokenModel->expiryDate = DbHelper::prepareDateForDb($token->expiryDate);
-        $tokenModel->lastUsed = DbHelper::prepareDateForDb($token->lastUsed);
+        $tokenModel->expiryDate = \CraftCms\Cms\Support\Query::prepareDateForDb($token->expiryDate);
+        $tokenModel->lastUsed = \CraftCms\Cms\Support\Query::prepareDateForDb($token->lastUsed);
         $tokenModel->schemaId = $token->schemaId;
 
         if ($token->accessToken) {

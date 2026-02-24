@@ -1,25 +1,16 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\errors;
 
-/**
- * Class ImageTransformException
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class ImageTransformException extends AssetException
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Exceptions\ImageTransformException} instead.
      */
-    public function getName(): string
+    class ImageTransformException
     {
-        return 'Image Transform Error';
     }
 }
+
+class_alias(\CraftCms\Cms\Asset\Exceptions\ImageTransformException::class, ImageTransformException::class);

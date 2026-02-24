@@ -225,7 +225,7 @@ class PrepareQueryTest extends TestCase
         $this->tester->mockCraftMethods('volumes', [
             'getVolumeByUid' => function($uid) use ($volumesService) {
                 if ($uid === self::VOLUME_UID) {
-                    return new \craft\models\Volume([
+                    return new \CraftCms\Cms\Asset\Data\Volume([
                         'id' => $this->_volume->id,
                         'uid' => self::VOLUME_UID,
                         'name' => $this->_volume->name,

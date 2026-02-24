@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Traits\Macroable;
 use Yiisoft\Arrays\ArrayableInterface;
 use Yiisoft\Arrays\ArrayableTrait;
 
@@ -65,13 +66,13 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
 
     public function __get(string $name)
     {
-        $getter = 'get'.$name;
+        $getter = $this->resolveMagicMethod('get', $name);
 
-        if (method_exists($this, $getter)) {
+        if ($getter !== null) {
             return $this->$getter();
         }
 
-        if (method_exists($this, 'set'.$name)) {
+        if ($this->resolveMagicMethod('set', $name) !== null) {
             throw new InvalidCallException('Getting write-only property: '.static::class.'::'.$name);
         }
 
@@ -80,16 +81,16 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
 
     public function __set(string $name, $value): void
     {
-        $setter = 'set'.$name;
+        $setter = $this->resolveMagicMethod('set', $name);
 
-        if (method_exists($this, $setter)) {
+        if ($setter !== null) {
             // set property
             $this->$setter($value);
 
             return;
         }
 
-        if (method_exists($this, 'get'.$name)) {
+        if ($this->resolveMagicMethod('get', $name) !== null) {
             throw new InvalidCallException('Setting read-only property: '.static::class.'::'.$name);
         }
 
@@ -98,9 +99,9 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
 
     public function __isset(string $name): bool
     {
-        $getter = 'get'.$name;
+        $getter = $this->resolveMagicMethod('get', $name);
 
-        if (method_exists($this, $getter)) {
+        if ($getter !== null) {
             return $this->$getter() !== null;
         }
 
@@ -109,14 +110,61 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
 
     public function __unset(string $name): void
     {
-        $setter = 'set'.$name;
+        $setter = $this->resolveMagicMethod('set', $name);
 
-        if (method_exists($this, $setter)) {
+        if ($setter !== null) {
             $this->$setter(null);
 
             return;
         }
 
         throw new InvalidCallException('Unsetting an unknown or read-only property: '.static::class.'::'.$name);
+    }
+
+    private function resolveMagicMethod(string $prefix, string $name): ?string
+    {
+        $method = $prefix.$name;
+
+        if (method_exists($this, $method)) {
+            return $method;
+        }
+
+        if (! self::supportsMacroableMagicMethods()) {
+            return null;
+        }
+
+        if (self::macroMethodExists($method)) {
+            return $method;
+        }
+
+        $normalizedMethod = $prefix.ucfirst($name);
+
+        if ($normalizedMethod !== $method && self::macroMethodExists($normalizedMethod)) {
+            return $normalizedMethod;
+        }
+
+        return null;
+    }
+
+    private static function supportsMacroableMagicMethods(): bool
+    {
+        static $supports = [];
+
+        $class = static::class;
+
+        if (array_key_exists($class, $supports)) {
+            return $supports[$class];
+        }
+
+        $usesRecursive = class_uses_recursive($class);
+
+        $supports[$class] = in_array(Macroable::class, $usesRecursive, true) && is_callable([$class, 'hasMacro']);
+
+        return $supports[$class];
+    }
+
+    private static function macroMethodExists(string $method): bool
+    {
+        return (bool) call_user_func([static::class, 'hasMacro'], $method);
     }
 }

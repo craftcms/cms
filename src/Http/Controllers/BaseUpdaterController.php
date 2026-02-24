@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use craft\web\Application;
 use craft\web\assets\updater\UpdaterAsset;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -200,7 +199,7 @@ abstract class BaseUpdaterController
     public function finish(): Response
     {
         // Disable maintenance mode
-        Craft::$app->disableMaintenanceMode();
+        app()->maintenanceMode()->deactivate();
 
         return $this->send([
             'finished' => true,

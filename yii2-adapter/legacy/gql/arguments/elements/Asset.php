@@ -11,6 +11,7 @@ use Craft;
 use craft\gql\base\ElementArguments;
 use craft\gql\types\QueryArgument;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Asset\Volumes;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -100,7 +101,7 @@ class Asset extends ElementArguments
      */
     public static function getContentArguments(): array
     {
-        $volumeFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getVolumes()->getAllVolumes(), AssetElement::class);
+        $volumeFieldArguments = Craft::$app->getGql()->getContentArguments(app(Volumes::class)->getAllVolumes()->all(), AssetElement::class);
         return array_merge(parent::getContentArguments(), $volumeFieldArguments);
     }
 

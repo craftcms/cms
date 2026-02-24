@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesAssetProperties;
 use CraftCms\Cms\Element\Queries\Concerns\Asset\QueriesSizes;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -121,7 +121,7 @@ final class AssetQuery extends ElementQuery
         $partiallyAuthorizedVolumeIds = [];
         $unauthorizedVolumeIds = [];
 
-        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
+        foreach (Volumes::getAllVolumes() as $volume) {
             if ($user->can("$peerPermissionPrefix:$volume->uid")) {
                 $fullyAuthorizedVolumeIds[] = $volume->id;
             } elseif ($user->can("$permissionPrefix:$volume->uid")) {
@@ -212,10 +212,9 @@ final class AssetQuery extends ElementQuery
         }
 
         $fieldLayouts = [];
-        $volumesService = Craft::$app->getVolumes();
 
         foreach (Arr::wrap($this->volumeId) as $volumeId) {
-            if ($volume = $volumesService->getVolumeById((int) $volumeId)) {
+            if ($volume = Volumes::getVolumeById((int) $volumeId)) {
                 $fieldLayouts[] = $volume->getFieldLayout();
             }
         }

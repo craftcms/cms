@@ -18,11 +18,12 @@ use craft\helpers\Console;
 use craft\helpers\ElementHelper;
 use craft\models\CategoryGroup;
 use craft\models\TagGroup;
-use craft\models\Volume;
 use craft\services\Elements;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
@@ -478,7 +479,7 @@ class ResaveController extends Controller
         }
 
         if (!empty($this->withFields)) {
-            $handles = Collection::make(Craft::$app->getVolumes()->getAllVolumes())
+            $handles = app(Volumes::class)->getAllVolumes()
                 ->filter(fn(Volume $volume) => $this->hasTheFields($volume->getFieldLayout()))
                 ->map(fn(Volume $volume) => $volume->handle)
                 ->all();

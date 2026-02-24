@@ -9,9 +9,9 @@ namespace craft\image;
 
 use Craft;
 use craft\base\Image;
-use craft\errors\ImageException;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
+use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Cms;
 use Illuminate\Support\Facades\Log;
 use Imagick;

@@ -54,6 +54,19 @@ final readonly class ValidateMixin
         };
     }
 
+    public function addError(): Closure
+    {
+        return function(string $attribute, string $error = ''): void {
+            Deprecator::log($this::class . '->addError', 'Calling `->addError` is deprecated. Use `->errors()->add($attribute, $message)` instead.');
+
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume|\CraftCms\Cms\Dashboard\Widgets\Widget|\CraftCms\Cms\Element\Element|\CraftCms\Cms\Field\Field|\CraftCms\Cms\FieldLayout\FieldLayoutComponent|\CraftCms\Cms\Filesystem\Filesystems\Filesystem $this
+             * @phpstan-ignore-next-line
+             */
+            $this->errors()->add($attribute, $error);
+        };
+    }
+
     public function clearErrors(): Closure
     {
         return function($attribute = null): void {
@@ -90,6 +103,19 @@ final readonly class ValidateMixin
              * @phpstan-ignore-next-line
              */
             return Arr::get($this->getFirstErrors(), $attribute);
+        };
+    }
+
+    public function getAttributeLabel(): Closure
+    {
+        return function(string $attribute): string {
+            Deprecator::log($this::class . '->getAttributeLabel', 'Calling `->getAttributeLabel` is deprecated. Use `->attributeLabels()` instead.');
+
+            /**
+             * @var \CraftCms\Cms\Asset\Data\Volume|\CraftCms\Cms\Dashboard\Widgets\Widget|\CraftCms\Cms\Element\Element|\CraftCms\Cms\Field\Field|\CraftCms\Cms\FieldLayout\FieldLayoutComponent|\CraftCms\Cms\Filesystem\Filesystems\Filesystem $this
+             * @phpstan-ignore-next-line
+             */
+            return $this->attributeLabels()[$attribute] ?? $attribute;
         };
     }
 

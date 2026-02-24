@@ -42,6 +42,7 @@ uses(UnitTestCase::class)->in('Unit');
 - For element traits, create minimal test elements that override only what is needed.
 - Use Laravel event fakes/listeners to assert dispatch, cancellation, or data changes.
 - Use Pest's `->with()` data providers to consolidate tests that share the same structure but differ only in input/expected values. Use named dataset entries for clarity.
+- Tests that assert Yii2 backwards-compatibility surfaces (legacy aliases, `ValidateMixin` helpers like `hasErrors()`, other adapter-only behavior) must live in `yii2-adapter/tests-laravel/`, not `tests/Feature/` or `tests/Unit/`.
 
 ## When to Load References
 

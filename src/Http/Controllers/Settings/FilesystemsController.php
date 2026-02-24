@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Http\Controllers;
+namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use Craft;
-use craft\base\Fs;
-use craft\base\FsInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
@@ -25,21 +25,19 @@ final class FilesystemsController
 
     private bool $readOnly;
 
-    public function __construct(GeneralConfig $generalConfig)
-    {
+    public function __construct(
+        GeneralConfig $generalConfig,
+        private readonly Filesystems $filesystems,
+    ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
-
-        // Need Craft for now
-        app('Craft');
     }
 
     public function index(): View
     {
-        $variables = [];
-        $variables['filesystems'] = Craft::$app->getFs()->getAllFilesystems();
-        $variables['readOnly'] = $this->readOnly;
-
-        return view('settings/filesystems/_index', $variables);
+        return view('settings/filesystems/_index', [
+            'filesystems' => $this->filesystems->getAllFilesystems(),
+            'readOnly' => $this->readOnly,
+        ]);
     }
 
     public function create(): CpScreenResponse
@@ -53,22 +51,21 @@ final class FilesystemsController
             abort(403, 'Administrative changes are disallowed in this environment.');
         }
 
-        $fsService = Craft::$app->getFs();
         $filesystem = null;
 
         if ($handle !== null) {
-            $filesystem = $fsService->getFilesystemByHandle($handle);
+            $filesystem = $this->filesystems->getFilesystemByHandle($handle);
 
             abort_if(is_null($filesystem), 404, 'Filesystem not found');
         }
 
-        $allFsTypes = Craft::$app->getFs()->getAllFilesystemTypes();
+        $allFsTypes = $this->filesystems->getAllFilesystemTypes();
 
         $fsInstances = [];
         $fsOptions = [];
 
         foreach ($allFsTypes as $fsType) {
-            /** @var Fs $fsInstance */
+            /** @var FsInterface $fsInstance */
             $fsInstance = Craft::createObject($fsType);
 
             if ($filesystem === null) {
@@ -85,7 +82,7 @@ final class FilesystemsController
         // Sort them by name
         $fsOptions = Arr::sort($fsOptions, 'label');
 
-        if ($handle && $fsService->getFilesystemByHandle($handle)) {
+        if ($handle && $this->filesystems->getFilesystemByHandle($handle)) {
             $title = trim((string) $filesystem->name ?: t('Edit Filesystem'));
         } else {
             $title = t('Create a new filesystem');
@@ -123,11 +120,10 @@ final class FilesystemsController
 
     public function save(Request $request): Response
     {
-        $fsService = Craft::$app->getFs();
         $type = $request->input('type');
 
-        /** @var FsInterface|Fs $fs */
-        $fs = $fsService->createFilesystem([
+        /** @var FsInterface $fs */
+        $fs = $this->filesystems->createFilesystem([
             'type' => $type,
             'name' => $request->input('name'),
             'handle' => $request->input('handle'),
@@ -135,7 +131,7 @@ final class FilesystemsController
             'settings' => $request->input('types')[Html::id($type)] ?? [],
         ]);
 
-        if (! $fsService->saveFilesystem($fs)) {
+        if (! $this->filesystems->saveFilesystem($fs)) {
             return $this->asModelFailure($fs, t('Couldn’t save filesystem.'), 'filesystem');
         }
 
@@ -144,15 +140,12 @@ final class FilesystemsController
 
     public function delete(Request $request): Response
     {
-        $request->validate([
-            'id' => ['required', 'string'],
-        ]);
+        $request->validate(['id' => ['required', 'string']]);
 
-        $fsService = Craft::$app->getFs();
-        $fs = $fsService->getFilesystemByHandle($request->input('id'));
+        $fs = $this->filesystems->getFilesystemByHandle($request->input('id'));
 
         if ($fs) {
-            $fsService->removeFilesystem($fs);
+            $this->filesystems->removeFilesystem($fs);
         }
 
         return $this->asSuccess();

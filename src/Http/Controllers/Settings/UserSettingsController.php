@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use Craft;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Flash;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -45,7 +45,7 @@ final readonly class UserSettingsController
 
         $settings = $this->projectConfig->get('users') ?? [];
         $settings['photoVolumeUid'] = $request->input('photoVolumeId')
-            ? Craft::$app->getVolumes()->getVolumeById($request->integer('photoVolumeId'))?->uid
+            ? Volumes::getVolumeById($request->integer('photoVolumeId'))?->uid
             : null;
         $settings['photoSubpath'] = $request->input('photoSubpath');
 
