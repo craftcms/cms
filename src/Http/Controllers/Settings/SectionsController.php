@@ -46,7 +46,7 @@ final readonly class SectionsController
         $limit = $request->integer('per_page', 50);
         $searchTerm = $request->input('search');
 
-        $sort = $request->input('sort', [
+        $sort = $request->array('sort', [
             ['field' => 'name', 'direction' => 'asc'],
         ]);
 
