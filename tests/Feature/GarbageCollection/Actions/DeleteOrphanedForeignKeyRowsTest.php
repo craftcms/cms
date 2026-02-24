@@ -8,8 +8,13 @@ use Illuminate\Support\Facades\Schema;
 
 beforeEach(function () {
     $this->markTestSkippedWhen(
+        DB::isSqlite(),
+        'SQLite cannot change PRAGMA foreign_keys inside a transaction, making it impossible to set up orphaned rows for this test.'
+    );
+
+    $this->markTestSkippedWhen(
         DB::connection()->getDriverName() === 'pgsql',
-        'Postgres check foreign key constraints differently.'
+        'Postgres checks foreign key constraints differently.'
     );
 
     // Create test tables

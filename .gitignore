@@ -20,6 +20,9 @@ cpresources/*
 test-results/
 resources/hot
 
+# Test database(s)
+database/*.sqlite
+
 # Wayfinder generated files
 resources/js/actions
 resources/js/routes

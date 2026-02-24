@@ -77,6 +77,7 @@ final readonly class JobProgress
         $delay = match (DB::connection()->getDriverName()) {
             'mysql' => 'GREATEST(?, UNIX_TIMESTAMP(dateCreated) + delay)',
             'pgsql' => 'GREATEST(?, EXTRACT(EPOCH FROM "dateCreated") + delay)',
+            'sqlite' => 'MAX(?, CAST(strftime(\'%s\', dateCreated) AS INTEGER) + delay)',
             default => throw new RuntimeException('Unsupported database driver: '.DB::connection()->getDriverName()),
         };
 

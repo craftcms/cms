@@ -23,10 +23,11 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
-use Dotenv\Dotenv;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Context;
@@ -38,6 +39,7 @@ use Illuminate\Support\Facades\Http;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
+use Pdo\Pgsql;
 use ReflectionProperty;
 
 class TestCase extends Orchestra
@@ -85,6 +87,10 @@ class TestCase extends Orchestra
 
     protected function connectionsToTransact(): array
     {
+        if (config('database.default') === 'sqlite') {
+            return [config('database.default')];
+        }
+
         return [config('database.default'), 'db2'];
     }
 
@@ -157,76 +163,80 @@ class TestCase extends Orchestra
         }
     }
 
-    protected function migrateDatabases(): void
+    protected function refreshTestDatabase(): void
     {
-        // Clear any stale cached info from previous test runs
-        // This must happen before db:wipe to ensure fresh state
-        Context::forgetHidden('craft.info');
-        Context::forgetHidden('craft.isInstalled');
+        if (! RefreshDatabaseState::$migrated) {
+            // Clear any stale cached info from previous test runs
+            // This must happen before db:wipe to ensure fresh state
+            Context::forgetHidden('craft.info');
+            Context::forgetHidden('craft.isInstalled');
 
-        $this->artisan('db:wipe');
+            $this->artisan('db:wipe');
 
-        $site = new Site([
-            'name' => 'Craft test site',
-            'handle' => 'defaultSite',
-            'language' => 'en-US',
-            'baseUrl' => 'https://localhost/',
-            'primary' => true,
-            'hasUrls' => true,
-        ]);
+            $site = new Site([
+                'name' => 'Craft test site',
+                'handle' => 'defaultSite',
+                'language' => 'en-US',
+                'baseUrl' => 'https://localhost/',
+                'primary' => true,
+                'hasUrls' => true,
+            ]);
 
-        $migration = new Install(
-            username: 'craftcms',
-            password: 'craftcms2018!!',
-            email: 'support@craftcms.com',
-            site: $site,
-        );
+            $migration = new Install(
+                username: 'craftcms',
+                password: 'craftcms2018!!',
+                email: 'support@craftcms.com',
+                site: $site,
+            );
 
-        Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
+            Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 
-        $migration->up();
+            $migration->up();
 
-        // Mark all existing migrations as applied
-        $migrator = app(Migrator::class)->track('craft');
-        foreach ($migrator->getPendingMigrations() as $file) {
-            $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
+            // Mark all existing migrations as applied
+            $migrator = app(Migrator::class)->track('craft');
+            foreach ($migrator->getPendingMigrations() as $file) {
+                $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
+            }
+
+            RefreshDatabaseState::$migrated = true;
         }
+
+        $this->beginDatabaseTransaction();
     }
 
     #[Override]
-    protected function getEnvironmentSetUp($app)
+    protected function defineEnvironment($app): void
     {
-        $config = $app->make(ConfigRepository::class);
-
-        $config->set('inertia.testing.page_paths', [__DIR__.'/../resources/js/pages']);
-        $config->set('auth.defaults.guard', 'craft');
-
         File::cleanDirectory(config_path('craft/project'));
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
+        File::cleanDirectory(storage_path('logs'));
 
-        if (! file_exists(__DIR__.'/.env')) {
-            return;
-        }
+        $app->useEnvironmentPath(__DIR__);
+        $app->bootstrapWith([LoadEnvironmentVariables::class]);
 
-        $dotenv = Dotenv::createMutable(__DIR__);
-        $dotenv->load();
+        tap($app->make(ConfigRepository::class), function (ConfigRepository $config) {
+            $config->set('inertia.testing.page_paths', [__DIR__.'/../resources/js/pages']);
+            $config->set('auth.defaults.guard', 'craft');
 
-        $configKey = 'database.connections.'.env('DB_CONNECTION');
+            $connection = env('DB_CONNECTION', 'testing');
+            $driver = $config->get("database.connections.{$connection}.driver");
 
-        $config->set($configKey, array_merge(
-            Config::array($configKey, []),
-            [
-                'host' => env('DB_HOST'),
-                'port' => env('DB_PORT'),
-                'database' => env('DB_DATABASE'),
-                'username' => env('DB_USERNAME'),
-                'password' => env('DB_PASSWORD'),
-                'charset' => env('DB_CHARSET', in_array($configKey, ['mysql', 'mariadb']) ? 'utf8mb4' : 'utf8'),
-                'collation' => env('DB_COLLATION', in_array($configKey, ['mysql', 'mariadb']) ? 'utf8mb4_unicode_ci' : null),
-                'prefix' => env('DB_PREFIX'),
-            ]),
-        );
+            $config->set('database.default', $connection);
+            $config->set("database.connections.{$connection}.database", env('DB_DATABASE', ':memory:'));
+            $config->set("database.connections.{$connection}.username", env('DB_USERNAME', 'root'));
+            $config->set("database.connections.{$connection}.password", env('DB_PASSWORD', ''));
+            $config->set("database.connections.{$connection}.charset", env('DB_CHARSET', in_array($driver, ['mysql', 'mariadb']) ? 'utf8mb4' : 'utf8'));
+            $config->set("database.connections.{$connection}.collation", env('DB_COLLATION', in_array($driver, ['mysql', 'mariadb']) ? 'utf8mb4_unicode_ci' : 'utf8'));
+            $config->set("database.connections.{$connection}.prefix", env('DB_PREFIX'));
 
-        DB::setDefaultConnection(env('DB_CONNECTION'));
+            if ($connection === 'pgsql') {
+                $config->set("database.connections.{$connection}.options", [
+                    Pgsql::ATTR_EMULATE_PREPARES => false,
+                ]);
+            }
+
+            DB::setDefaultConnection($connection);
+        });
     }
 }

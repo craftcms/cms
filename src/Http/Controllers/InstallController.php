@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\LanguageRule;
+use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -96,16 +97,11 @@ final readonly class InstallController
     {
         $data = $this->validateDbData($request->input());
 
-        Config::set("database.connections.{$data['driver']}", array_merge(
-            Config::get("database.connections.{$data['driver']}"),
-            $data,
-        ));
-
         // Test the connection
         $errors = [];
 
         try {
-            DB::reconnect()->getPdo();
+            DB::build($data)->select('SELECT 1');
         } catch (PDOException $e) {
             $attr = match ($e->getCode()) {
                 1045 => 'user',
@@ -115,6 +111,8 @@ final readonly class InstallController
             };
 
             $errors[$attr][] = 'PDO exception: '.$e->getMessage();
+        } catch (SQLiteDatabaseDoesNotExistException $e) {
+            $errors['database'][] = 'PDO exception: '.$e->getMessage();
         }
 
         $validates = empty($errors);
@@ -264,7 +262,7 @@ final readonly class InstallController
     public function validateDbData($data): array
     {
         $data = Validator::validate($data, [
-            'driver' => ['required', 'string', Rule::in('mysql', 'pgsql')],
+            'driver' => ['required', 'string', Rule::in('mysql', 'pgsql', 'sqlite')],
             'host' => ['nullable', 'string'],
             'database' => ['required', 'string'],
             'port' => ['nullable', 'integer'],

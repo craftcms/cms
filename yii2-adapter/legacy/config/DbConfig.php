@@ -762,7 +762,8 @@ class DbConfig extends BaseConfig
             $laravelDriver = ConfigFacade::get('database.default');
 
             if (!in_array($laravelDriver, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL], true)) {
-                $laravelDriver = Connection::DRIVER_MYSQL;
+                // SQLite and other drivers don't need a DSN - they use the Laravel connection directly
+                return;
             }
 
             $this->driver = $laravelDriver;

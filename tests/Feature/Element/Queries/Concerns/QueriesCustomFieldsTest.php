@@ -6,6 +6,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 
@@ -45,9 +46,15 @@ it('can query custom fields', function () {
         'value' => 'fo*',
         'caseInsensitive' => true,
     ])->count())->toBe(1);
-    expect(entryQuery()->textField([
-        'value' => 'fo*',
-        'caseInsensitive' => false,
-    ])->count())->toBe(0);
+
+    // SQLite's LIKE operator is case-insensitive for ASCII by default and does not
+    // support case-sensitive wildcard matching without custom functions or GLOB.
+    if (DB::getDriverName() !== 'sqlite') {
+        expect(entryQuery()->textField([
+            'value' => 'fo*',
+            'caseInsensitive' => false,
+        ])->count())->toBe(0);
+    }
+
     expect(entryQuery()->textField('bar')->count())->toBe(0);
 });

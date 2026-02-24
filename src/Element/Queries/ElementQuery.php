@@ -1058,8 +1058,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         $this->applyOrderByParams($this);
         $this->applyUniqueParams($this);
 
-        if ($this->getOffset() !== null && $this->getLimit() === null && DB::isMysql()) {
-            // Limit is not optional in MySQL
+        if ($this->getOffset() !== null && $this->getLimit() === null && (DB::isMysql() || DB::isSqlite())) {
+            // Limit is not optional in MySQL or SQLite
             $this->subQuery->limit(PHP_INT_MAX);
         }
 

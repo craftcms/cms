@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use Craft;
-use craft\services\AssetIndexer;
+use CraftCms\Cms\Asset\AssetIndexer;
+use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Utility\Utilities;
@@ -19,8 +20,10 @@ final readonly class AssetIndexesController
 {
     use RespondsWithFlash;
 
-    public function __construct(Utilities $utilitiesService, private AssetIndexer $assetIndexer)
-    {
+    public function __construct(
+        private AssetIndexer $assetIndexer,
+        Utilities $utilitiesService,
+    ) {
         if (! $utilitiesService->checkAuthorization(AssetIndexes::class)) {
             abort(403, 'User is not authorized to perform this action.');
         }
@@ -95,8 +98,7 @@ final readonly class AssetIndexesController
             return $this->asFailure(t('No indexing session specified.'));
         }
 
-        $assetIndexer = $this->assetIndexer;
-        $indexingSession = $assetIndexer->getIndexingSessionById($sessionId);
+        $indexingSession = $this->assetIndexer->getIndexingSessionById($sessionId);
 
         // Have to account for the fact that some people might be processing this in parallel
         // If the indexing session no longer exists - most likely a parallel user finished it
@@ -108,10 +110,10 @@ final readonly class AssetIndexesController
 
         // If action is not required, continue with indexing
         if (! $indexingSession->actionRequired) {
-            $indexingSession = $assetIndexer->processIndexSession($indexingSession);
+            $indexingSession = $this->assetIndexer->processIndexSession($indexingSession);
 
             if ($indexingSession->forceStop) {
-                $assetIndexer->stopIndexingSession($indexingSession);
+                $this->assetIndexer->stopIndexingSession($indexingSession);
 
                 return $this->asFailure(null, [
                     'stop' => $sessionId,
@@ -122,8 +124,8 @@ final readonly class AssetIndexesController
             // If action is now required, we just processed the last entry
             // To save a round-trip, just pull the session review data
             if ($indexingSession->actionRequired) {
-                $indexingSession->skippedEntries = $assetIndexer->getSkippedItemsForSession($indexingSession);
-                $indexingSession->missingEntries = $assetIndexer->getMissingEntriesForSession($indexingSession);
+                $indexingSession->skippedEntries = $this->assetIndexer->getSkippedItemsForSession($indexingSession);
+                $indexingSession->missingEntries = $this->assetIndexer->getMissingEntriesForSession($indexingSession);
 
                 // If nothing out of ordinary, just end it.
                 if (
@@ -131,7 +133,7 @@ final readonly class AssetIndexesController
                     empty($indexingSession->missingEntries['folders']) &&
                     empty($indexingSession->missingEntries['files'])
                 ) {
-                    $assetIndexer->stopIndexingSession($indexingSession);
+                    $this->assetIndexer->stopIndexingSession($indexingSession);
 
                     return $this->asSuccess(null, ['stop' => $sessionId]);
                 }
@@ -155,15 +157,14 @@ final readonly class AssetIndexesController
             return $this->asFailure(t('No indexing session specified.'));
         }
 
-        $assetIndexer = $this->assetIndexer;
-        $indexingSession = $assetIndexer->getIndexingSessionById($sessionId);
+        $indexingSession = $this->assetIndexer->getIndexingSessionById($sessionId);
 
         if (! $indexingSession || ! $indexingSession->actionRequired) {
-            return $this->asFailure(t('Cannot find the indexing session, or there’s nothing to review.'));
+            return $this->asFailure(t("Cannot find the indexing session, or there\u{2019}s nothing to review."));
         }
 
-        $indexingSession->skippedEntries = $assetIndexer->getSkippedItemsForSession($indexingSession);
-        $indexingSession->missingEntries = $assetIndexer->getMissingEntriesForSession($indexingSession);
+        $indexingSession->skippedEntries = $this->assetIndexer->getSkippedItemsForSession($indexingSession);
+        $indexingSession->missingEntries = $this->assetIndexer->getMissingEntriesForSession($indexingSession);
 
         return $this->asSuccess(null, ['session' => $indexingSession]);
     }
@@ -211,5 +212,17 @@ final readonly class AssetIndexesController
         }
 
         return $this->asSuccess(null, ['stop' => $sessionId]);
+    }
+
+    private function prepareSessionData(IndexingSession $indexingSession): array
+    {
+        $sessionData = $indexingSession->toArray();
+
+        unset($sessionData['dateUpdated']);
+
+        $sessionData['dateCreated'] = $indexingSession->dateUpdated->format(I18N::getLocale()->getDateTimeFormat('medium', Locale::FORMAT_PHP));
+        $sessionData['indexedVolumes'] = Json::decodeIfJson($indexingSession->indexedVolumes);
+
+        return $sessionData;
     }
 }

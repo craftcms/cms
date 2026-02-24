@@ -8,8 +8,8 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\errors\ImageException;
 use craft\image\Svg;
+use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Cms;
 use Illuminate\Support\Facades\Log;
 use Imagick;

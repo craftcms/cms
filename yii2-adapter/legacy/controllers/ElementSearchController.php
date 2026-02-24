@@ -9,13 +9,13 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\errors\InvalidTypeException;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Search;
 use yii\web\BadRequestHttpException;

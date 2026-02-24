@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Utility\Utilities;
 
 use craft\helpers\App;
-use craft\services\AssetIndexer;
 use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;

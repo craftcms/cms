@@ -11,7 +11,6 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\errors\InvalidSubpathException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\helpers\ImageTransforms as TransformHelper;
@@ -22,6 +21,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
@@ -1037,7 +1037,7 @@ class Assets
                 }
                 $renderedSubpath = renderObjectTemplate($subpath, $element);
             } catch (InvalidConfigException|RuntimeError $e) {
-                throw new InvalidSubpathException($subpath, null, 0, $e);
+                throw new InvalidSubpathException($subpath, previous: $e);
             }
 
             // Did any of the tokens return null?

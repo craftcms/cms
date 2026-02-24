@@ -155,8 +155,13 @@ class Connection extends DatabaseConnection
                 return false;
             }
 
-            // if elements_sites supports mb4, pretty good chance everything else does too
-            $this->_supportsMb4 = $this->getSchema()->supportsMb4(Table::ELEMENTS_SITES);
+            // SQLite has no charset restrictions, so it always supports mb4
+            if (!$this->getIsMysql() && !$this->getIsPgsql()) {
+                $this->_supportsMb4 = true;
+            } else {
+                // if elements_sites supports mb4, pretty good chance everything else does too
+                $this->_supportsMb4 = $this->getSchema()->supportsMb4(Table::ELEMENTS_SITES);
+            }
         }
         return $this->_supportsMb4;
     }
