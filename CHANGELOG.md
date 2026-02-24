@@ -3,6 +3,7 @@
 ## Unreleased
 
 - The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is now set to `false` by default for database connections.
+- Fixed a bug where `searchindex` and `searchindexqueue` rows weren’t being deleted when an element was deleted for a site. ([#18394](https://github.com/craftcms/cms/issues/18394))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-472v-j2g4-g9h2)
 
 ## 4.17.6 - 2026-02-18

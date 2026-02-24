@@ -3548,6 +3548,8 @@ class Elements extends Component
 
                 if ($element::hasContent()) {
                     Db::deleteIfExists($element->getContentTable(), $deleteCondition);
+                    Db::deleteIfExists(Table::SEARCHINDEX, $deleteCondition);
+                    Db::deleteIfExists(Table::SEARCHINDEXQUEUE, $deleteCondition);
                 }
             }
 
