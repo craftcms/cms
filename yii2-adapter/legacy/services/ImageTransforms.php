@@ -12,21 +12,21 @@ use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\MemoizableArray;
 use craft\db\Connection;
-use craft\errors\ImageTransformException;
 use craft\events\AssetEvent;
 use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\Db as DbHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Database\Query\Builder;
@@ -260,7 +260,7 @@ class ImageTransforms extends Component
             $upscaleChanged = ($transformModel->upscale !== null ? (bool)$transformModel->upscale : null) !== ($data['upscale'] ?? null);
 
             if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
-                $transformModel->parameterChangeTime = DbHelper::prepareDateForDb(new DateTime());
+                $transformModel->parameterChangeTime = Query::prepareDateForDb(new DateTime());
             }
 
             $transformModel->mode = $data['mode'];

@@ -7,10 +7,6 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use craft\errors\FsObjectNotFoundException;
-use craft\errors\InvalidFsException;
-use craft\errors\InvalidSubpathException;
-use craft\fs\Temp;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
@@ -21,10 +17,10 @@ use craft\helpers\FileHelper;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
-use craft\models\Volume;
-use craft\models\VolumeFolder;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
@@ -35,7 +31,12 @@ use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Events\LocateUploadedFiles;
+use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
+use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
+use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
+use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -606,9 +607,8 @@ final class Assets extends BaseRelationField
             return null;
         }
 
-        $volumesService = Craft::$app->getVolumes();
-        $volumeIds = array_filter(array_map(function (string $uid) use ($volumesService) {
-            $volume = $volumesService->getVolumeByUid($uid);
+        $volumeIds = array_filter(array_map(function (string $uid) {
+            $volume = Volumes::getVolumeByUid($uid);
 
             return $volume->id ?? null;
         }, $volumeUids));
@@ -660,10 +660,8 @@ final class Assets extends BaseRelationField
 
         // Now enforce the showUnpermittedVolumes setting
         if (! $this->showUnpermittedVolumes && ! empty($sources)) {
-            $volumesService = Craft::$app->getVolumes();
-
             return Collection::make($sources)
-                ->filter(function (string $source) use ($volumesService) {
+                ->filter(function (string $source) {
                     // If it’s not a volume folder, let it through
                     if (! str_starts_with($source, 'volume:')) {
                         return true;
@@ -675,7 +673,7 @@ final class Assets extends BaseRelationField
                         return true;
                     }
 
-                    $volume = $volumesService->getVolumeByUid($volumeUid);
+                    $volume = Volumes::getVolumeByUid($volumeUid);
 
                     return $volume?->getFs() instanceof Temp;
                 })
@@ -965,7 +963,7 @@ final class Assets extends BaseRelationField
             return null;
         }
 
-        return Craft::$app->getVolumes()->getVolumeByUid($parts[1]);
+        return Volumes::getVolumeByUid($parts[1]);
     }
 
     /**

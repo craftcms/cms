@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
-use craft\base\FsInterface;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\models\ImageTransform;
-use craft\models\Volume;
 use craft\services\ElementSources;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Data\ProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
@@ -39,10 +39,12 @@ use CraftCms\Cms\Site\Data\SiteGroup;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -1795,10 +1797,8 @@ final class ProjectConfig
      */
     private function _getFsData(): array
     {
-        $fsService = Craft::$app->getFs();
-
-        return collect($fsService->getAllFilesystems())
-            ->mapWithKeys(fn (FsInterface $fs) => [$fs->handle => $fsService->createFilesystemConfig($fs)])
+        return Filesystems::getAllFilesystems()
+            ->mapWithKeys(fn (FsInterface $fs) => [$fs->handle => Filesystems::createFilesystemConfig($fs)])
             ->all();
     }
 
@@ -1817,7 +1817,7 @@ final class ProjectConfig
      */
     private function _getVolumeData(): array
     {
-        return collect(Craft::$app->getVolumes()->getAllVolumes())
+        return Volumes::getAllVolumes()
             ->mapWithKeys(fn (Volume $volume) => [$volume->uid => $volume->getConfig()])
             ->all();
     }

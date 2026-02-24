@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Element\Jobs;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\errors\UnsupportedSiteException;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Queue\BatchedJob;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Facades\I18N;

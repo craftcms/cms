@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\helpers;
 
-use craft\errors\MissingComponentException;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\test\mockclasses\components\ComponentExample;
@@ -15,6 +14,7 @@ use craft\test\mockclasses\components\DependencyHeavyComponentExample;
 use craft\test\mockclasses\components\ExtendedComponentExample;
 use craft\test\TestCase;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
+use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;

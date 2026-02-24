@@ -7,10 +7,10 @@
 
 namespace craft\gql\resolvers\elements;
 
-use Craft;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use yii\base\UnknownMethodException;
@@ -57,7 +57,7 @@ class Asset extends ElementResolver
             return ElementCollection::empty();
         }
 
-        $volumesService = Craft::$app->getVolumes();
+        $volumesService = app(Volumes::class);
         $volumeIds = array_filter(array_map(function(string $uid) use ($volumesService) {
             $volume = $volumesService->getVolumeByUid($uid);
             return $volume->id ?? null;

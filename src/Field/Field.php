@@ -9,7 +9,6 @@ use craft\base\ElementInterface;
 use craft\base\Serializable;
 use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
@@ -470,7 +469,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return t($this->name, category: 'site') ?: static::class;
     }
 
-    #[\Override]
+    #[Override]
     public function attributes(): array
     {
         return Collection::make($this->settingsAttributes())
@@ -482,7 +481,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             ->all();
     }
 
-    #[\Override]
+    #[Override]
     public function attributeLabels(): array
     {
         return [
@@ -491,7 +490,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return [
@@ -904,7 +903,7 @@ JS, [
     {
         // Dates should be stored in UTC w/o the time zone
         if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
-            return DbHelper::prepareDateForDb($value);
+            return Query::prepareDateForDb($value);
         }
 
         return $this->serializeValue($value, $element);
@@ -973,7 +972,7 @@ JS, [
         if (DB::isMysql()) {
             // If the field uses an optimized DB type, cast it so its values can be indexed
             // (see "Functional Key Parts" on https://dev.mysql.com/doc/refman/8.0/en/create-index.html)
-            $castType = match (DbHelper::parseColumnType($dbType)) {
+            $castType = match (Query::parseColumnType($dbType)) {
                 Query::TYPE_CHAR,
                 Query::TYPE_STRING,
                 'varchar' => 'CHAR(255)',
@@ -1005,11 +1004,11 @@ JS, [
 
         if ($castType !== null) {
             // if a length was specified, replace the default with that
-            $length = DbHelper::parseColumnLength($dbType);
+            $length = Query::parseColumnLength($dbType);
             if ($length) {
                 $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
             } elseif ($castType === 'DECIMAL') {
-                [$precision, $scale] = DbHelper::parseColumnPrecisionAndScale($dbType) ?? [null, null];
+                [$precision, $scale] = Query::parseColumnPrecisionAndScale($dbType) ?? [null, null];
                 if ($precision !== null && $scale !== null) {
                     $castType .= "($precision,$scale)";
                 }

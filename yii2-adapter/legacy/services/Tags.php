@@ -13,7 +13,6 @@ use craft\db\Table;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
 use craft\events\TagGroupEvent;
-use craft\helpers\Db;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;
 use CraftCms\Cms\Field\Fields;
@@ -21,6 +20,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Facades\Log;
@@ -388,7 +388,7 @@ class Tags extends Component
             // Delete the tags
             $elementsTable = Table::ELEMENTS;
             $tagsTable = Table::TAGS;
-            $now = Db::prepareDateForDb(new DateTime());
+            $now = Query::prepareDateForDb(new DateTime());
             $db = Craft::$app->getDb();
 
             $conditionSql = <<<SQL

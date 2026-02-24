@@ -1,4 +1,4 @@
-import{a as t,i as a,x as l}from"./lit-element.js";var s=class extends a{render(){return l`
+import{a as t,i as l,x as a}from"./lit-element.js";var s=class extends l{render(){return a`
       <ul class="nav-list">
         <slot></slot>
       </ul>
@@ -13,4 +13,4 @@ import{a as t,i as a,x as l}from"./lit-element.js";var s=class extends a{render(
       padding: 0;
       list-style: none;
     }
-  `;customElements.get("craft-nav-list")||customElements.define("craft-nav-list",s);export{s as default};
+  `,customElements.get("craft-nav-list")||customElements.define("craft-nav-list",s);export{s as default};

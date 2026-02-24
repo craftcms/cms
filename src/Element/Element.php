@@ -405,13 +405,13 @@ abstract class Element extends Component implements ElementInterface
         $attributes = $this->attributes();
         $values = [];
 
-        try {
-            foreach ($attributes as $attribute) {
+        foreach ($attributes as $attribute) {
+            try {
                 $values[$attribute] = $this->$attribute;
+            } catch (Throwable) {
+                // Skip attributes that throw errors during access (e.g., lazy-loaded relations that fail)
+                // This is expected for attributes that may not be accessible in all contexts
             }
-        } catch (Throwable) {
-            // Skip attributes that throw errors during access (e.g., lazy-loaded relations that fail)
-            // This is expected for attributes that may not be accessible in all contexts
         }
 
         return $values;
@@ -494,7 +494,7 @@ abstract class Element extends Component implements ElementInterface
         return $fields;
     }
 
-    #[\Override]
+    #[Override]
     public function toArray(array $fields = [], array $expand = [], $recursive = true): array
     {
         if ($recursive) {

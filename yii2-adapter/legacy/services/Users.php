@@ -8,13 +8,13 @@
 namespace craft\services;
 
 use Craft;
-use craft\errors\ImageException;
-use craft\errors\VolumeException;
 use craft\events\DefineUserGroupsEvent;
 use craft\events\UserAssignGroupEvent;
 use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
 use craft\events\UserPhotoEvent;
+use CraftCms\Cms\Asset\Exceptions\ImageException;
+use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;

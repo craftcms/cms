@@ -29,3 +29,4 @@ parameters:
         - src/Database/Migrations
     configDirectories:
         - tests
+    tmpDir: /tmp/phpstan

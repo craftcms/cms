@@ -10,6 +10,7 @@ use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Updates\Updates;
+use Illuminate\Foundation\MaintenanceModeManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -27,7 +28,7 @@ final class MigrateController
      * services (like [DeployBot](https://deploybot.com/) or [DeployPlace](https://deployplace.com/)) to minimize site
      * downtime after a deployment.
      */
-    public function __invoke(Request $request, GeneralConfig $generalConfig, Updates $updates, ProjectConfig $projectConfig)
+    public function __invoke(Request $request, GeneralConfig $generalConfig, Updates $updates, ProjectConfig $projectConfig, MaintenanceModeManager $maintenance)
     {
         $handles = $updates->pendingMigrationHandles(true);
         $runMigrations = ! empty($handles);
@@ -42,19 +43,19 @@ final class MigrateController
         }
 
         // Bail if Craft is already in maintenance mode
-        if (Craft::$app->getIsInMaintenanceMode()) {
+        if (app()->isDownForMaintenance()) {
             throw new ServiceUnavailableHttpException('Craft is already being updated.');
         }
 
         // Enable maintenance mode
-        Craft::$app->enableMaintenanceMode();
+        $maintenance->activate([]);
 
         // Backup the DB?
         if ($generalConfig->getBackupOnUpdate()) {
             try {
                 $backupPath = Craft::$app->getDb()->backup();
             } catch (Throwable $e) {
-                Craft::$app->disableMaintenanceMode();
+                $maintenance->deactivate();
                 throw new HttpException(500, 'Error backing up the database.', $e);
             }
         }
@@ -103,12 +104,12 @@ final class MigrateController
                 default => ' The database has not been restored.',
             };
 
-            Craft::$app->disableMaintenanceMode();
+            $maintenance->deactivate();
 
             throw new HttpException(500, $error, $e);
         }
 
-        Craft::$app->disableMaintenanceMode();
+        $maintenance->deactivate();
 
         return response()->noContent();
     }

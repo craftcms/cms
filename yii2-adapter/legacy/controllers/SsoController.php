@@ -9,11 +9,11 @@ namespace craft\controllers;
 
 use Craft;
 use craft\errors\AuthProviderNotFoundException;
-use craft\errors\MissingComponentException;
 use craft\errors\SsoFailedException;
 use craft\web\Controller;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use Exception;

@@ -3,9 +3,9 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
-use craft\errors\ImageTransformException;
 use craft\helpers\ImageTransforms;
 use craft\models\ImageTransform;
+use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Support\Arr;
 use UnitTester;
 

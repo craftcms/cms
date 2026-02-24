@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Entry;
 
 use Craft;
 use craft\base\MemoizableArray;
-use craft\errors\EntryTypeNotFoundException;
 use craft\helpers\AdminTable;
 use craft\helpers\Cp;
 use CraftCms\Cms\Database\Table;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Entry\Events\DeletingEntryType;
 use CraftCms\Cms\Entry\Events\EntryTypeDeleted;
 use CraftCms\Cms\Entry\Events\EntryTypeSaved;
 use CraftCms\Cms\Entry\Events\SavingEntryType;
+use CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
