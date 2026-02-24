@@ -138,7 +138,7 @@ enum Edition: int implements Arrayable
             ($licensedEdition !== null && $licensedEdition->value < self::Pro->value);
     }
 
-    public static function isAtLeast(Edition|int $edition, bool $orBetter = true): bool
+    public static function isAtLeast(Edition|int|string $edition, bool $orBetter = true): bool
     {
         try {
             self::require($edition, $orBetter);
@@ -149,10 +149,12 @@ enum Edition: int implements Arrayable
         }
     }
 
-    public static function require(Edition|int $edition, bool $orBetter = true): void
+    public static function require(Edition|int|string $edition, bool $orBetter = true): void
     {
         if (is_int($edition)) {
             $edition = self::from($edition);
+        } elseif (is_string($edition)) {
+            $edition = self::fromHandle($edition);
         }
 
         if (! Cms::isInstalled()) {

@@ -383,6 +383,10 @@ class Str extends \Illuminate\Support\Str
     #[Override]
     public static function random($length = 36, bool $extendedChars = false): string
     {
+        if (static::$randomStringFactory) {
+            return (static::$randomStringFactory)($length);
+        }
+
         if ($extendedChars) {
             return parent::random($length);
         }

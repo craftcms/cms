@@ -1,0 +1,9 @@
+// line 1
+switch (($context["myVar"] ?? null)) {
+    case "foo":
+    case "bar":
+    {
+        yield "Foo or Bar content";
+        break;
+    }
+}

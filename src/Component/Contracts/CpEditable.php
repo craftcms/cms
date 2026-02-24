@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component\Contracts;
 
-use craft\web\twig\AllowedInSandbox;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 
 /**
  * CpEditable defines the common interface to be implemented by components

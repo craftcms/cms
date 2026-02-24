@@ -6,10 +6,10 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
-use craft\web\twig\CpExtension;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Environment;
+use CraftCms\Cms\Twig\Extensions\CpExtension;
 use CraftCms\Cms\View\TemplateMode;
 use Override;
 use Throwable;

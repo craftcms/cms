@@ -10,12 +10,12 @@ namespace craft\helpers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\db\Paginator;
-use craft\web\twig\variables\Paginate;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Twig\TwigExceptionMapper;
+use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Support\Facades\Auth;
 use Stringable;
@@ -94,6 +94,48 @@ class Template
             throw new UnknownPropertyException("$name is not defined as a fallback template variable.");
         }
         return self::$_fallbacks[$name];
+    }
+
+    /**
+     * Resolves a template variable from the context, falling back to preloaded singles.
+     *
+     * Used by {@see \CraftCms\Cms\Twig\Nodes\FallbackNameExpression} to consolidate
+     * variable resolution with fallback support into a single runtime call.
+     *
+     * @param string $name The variable name
+     * @param array $context The Twig template context
+     * @param bool $strict Whether strict variables mode is enabled
+     * @param int $lineno The template line number (for error reporting)
+     * @param Source|null $source The template source (for error reporting)
+     * @since 6.0.0
+     */
+    public static function resolveVariable(string $name, array $context, bool $strict, int $lineno = -1, ?Source $source = null): mixed
+    {
+        if (isset($context[$name]) || array_key_exists($name, $context)) {
+            return $context[$name];
+        }
+
+        if (static::fallbackExists($name)) {
+            return static::fallback($name);
+        }
+
+        if ($strict) {
+            throw new RuntimeError("Variable \"$name\" does not exist.", $lineno, $source);
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks whether a template variable exists in the context or as a fallback.
+     *
+     * @param string $name The variable name
+     * @param array $context The Twig template context
+     * @since 6.0.0
+     */
+    public static function variableExists(string $name, array $context): bool
+    {
+        return array_key_exists($name, $context) || static::fallbackExists($name);
     }
 
     /**
