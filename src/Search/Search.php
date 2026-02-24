@@ -55,6 +55,8 @@ class Search
 
     private readonly bool $isMysql;
 
+    private readonly bool $isPgsql;
+
     private ?array $mysqlStopWords = null;
 
     /**
@@ -68,6 +70,7 @@ class Search
     public function __construct()
     {
         $this->isMysql = DB::isMysql();
+        $this->isPgsql = DB::isPgsql();
 
         if ($this->isMysql && ! isset($this->minFullTextWordLength)) {
             $this->minFullTextWordLength = 4;
@@ -661,7 +664,7 @@ class Search
             $keywords = $this->normalizeTerm($term->term, $siteId);
 
             if ($keywords !== '' || $term->subLeft) {
-                $pgsqlPhrase = ! $this->isMysql && $term->phrase;
+                $pgsqlPhrase = $this->isPgsql && $term->phrase;
                 if ($pgsqlPhrase && $term->exact) {
                     $sql = $this->sqlPhraseExactMatch($keywords);
                 } elseif (! $pgsqlPhrase && $this->doFullTextSearch($keywords, $term)) {
@@ -812,6 +815,7 @@ class Search
     private function doFullTextSearch(string $keywords, SearchQueryTerm $term): bool
     {
         return
+            ($this->isMysql || $this->isPgsql) &&
             $this->useFullText &&
             $keywords !== '' &&
             ! $term->subLeft &&
