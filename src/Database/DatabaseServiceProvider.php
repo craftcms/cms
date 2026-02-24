@@ -11,8 +11,10 @@ use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Connection;
+use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Expression as QueryExpression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder as SchemaBuilder;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +36,9 @@ final class DatabaseServiceProvider extends ServiceProvider
         Connection::macro('isMaria', fn () => $this->getDriverName() === 'mariadb');
         Connection::macro('isPgsql', fn () => $this->getDriverName() === 'pgsql');
         Connection::macro('isSqlite', fn () => $this->getDriverName() === 'sqlite');
+
+        Builder::macro('whereBool', fn ($column, bool $value) => $this->where($column, new QueryExpression(var_export($value, true))));
+        Builder::macro('orWhereBool', fn ($column, bool $value) => $this->orWhere($column, new QueryExpression(var_export($value, true))));
 
         $this->registerQueryBuilderMacros();
         $this->registerSchemaBuilderMacros();
@@ -60,7 +65,7 @@ final class DatabaseServiceProvider extends ServiceProvider
          * For SQLite db2 must be the same connection as the default.
          */
         $config->set('database.connections.db2', $db->getConfig());
-        $appDb = app(\Illuminate\Database\ConnectionResolverInterface::class);
+        $appDb = app(ConnectionResolverInterface::class);
 
         $connections = new ReflectionProperty($appDb, 'connections');
         $current = $connections->getValue($appDb);

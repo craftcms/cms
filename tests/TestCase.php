@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,6 +39,7 @@ use Illuminate\Support\Facades\Http;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
+use Pdo\Pgsql;
 use ReflectionProperty;
 
 class TestCase extends Orchestra
@@ -212,7 +214,7 @@ class TestCase extends Orchestra
         $app->useEnvironmentPath(__DIR__);
         $app->bootstrapWith([LoadEnvironmentVariables::class]);
 
-        tap($app->make(\Illuminate\Contracts\Config\Repository::class), function (mixed $config) {
+        tap($app->make(ConfigRepository::class), function (ConfigRepository $config) {
             $config->set('inertia.testing.page_paths', [__DIR__.'/../resources/js/pages']);
             $config->set('auth.defaults.guard', 'craft');
 
@@ -222,6 +224,17 @@ class TestCase extends Orchestra
             $config->set("database.connections.{$connection}.database", env('DB_DATABASE', ':memory:'));
             $config->set("database.connections.{$connection}.username", env('DB_USERNAME', 'root'));
             $config->set("database.connections.{$connection}.password", env('DB_PASSWORD', ''));
+            $config->set("database.connections.{$connection}.charset", env('DB_CHARSET', in_array($connection, ['mysql', 'mariadb']) ? 'utf8mb4' : 'utf8'));
+            $config->set("database.connections.{$connection}.collation", env('DB_COLLATION', in_array($connection, ['mysql', 'mariadb']) ? 'utf8mb4_unicode_ci' : 'utf8'));
+            $config->set("database.connections.{$connection}.prefix", env('DB_PREFIX'));
+
+            if ($connection === 'pgsql') {
+                $config->set("database.connections.{$connection}.options", [
+                    Pgsql::ATTR_EMULATE_PREPARES => false,
+                ]);
+            }
+
+            DB::setDefaultConnection($connection);
         });
     }
 }

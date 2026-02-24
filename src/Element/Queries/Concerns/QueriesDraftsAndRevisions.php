@@ -141,7 +141,7 @@ trait QueriesDraftsAndRevisions
         if (isset($elementQuery->provisionalDrafts)) {
             $elementQuery->subQuery->where(function (Builder $q) use ($elementQuery) {
                 $q->whereNull('elements.draftId')
-                    ->orWhere('drafts.provisional', $elementQuery->provisionalDrafts);
+                    ->orWhereBool('drafts.provisional', $elementQuery->provisionalDrafts);
             });
         }
 
@@ -153,7 +153,7 @@ trait QueriesDraftsAndRevisions
                             ->whereNull('elements.canonicalId')
                             ->when(
                                 $elementQuery->savedDraftsOnly,
-                                fn (Builder $q) => $q->where('drafts.saved', true)
+                                fn (Builder $q) => $q->whereBool('drafts.saved', true)
                             );
                     });
             });
@@ -161,7 +161,7 @@ trait QueriesDraftsAndRevisions
             $elementQuery->subQuery->where(function (Builder $query) {
                 $query->whereNull('elements.draftId')
                     ->orWhereNotNull('elements.canonicalId')
-                    ->orWhere('drafts.saved', true);
+                    ->orWhereBool('drafts.saved', true);
             });
         }
     }

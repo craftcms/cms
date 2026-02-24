@@ -40,6 +40,7 @@ use CraftCms\Yii2Adapter\Cache;
 use InvalidArgumentException;
 use yii\base\Event;
 use yii\base\Exception;
+use yii\db\sqlite\Schema as SqliteSchema;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
@@ -646,7 +647,7 @@ class App
         } else {
             // SQLite or other: use Yii2's built-in schema support
             $schemaConfig = [
-                'class' => 'yii\db\sqlite\Schema',
+                'class' => SqliteSchema::class,
             ];
         }
 
