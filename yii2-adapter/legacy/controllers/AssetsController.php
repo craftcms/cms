@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -9,11 +11,9 @@ namespace craft\controllers;
 
 use Craft;
 use craft\assetpreviews\Image as ImagePreview;
-use craft\base\LocalFsInterface;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
 use craft\errors\ElementNotFoundException;
-use craft\errors\FsException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\helpers\Assets;
@@ -23,11 +23,12 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\UrlHelper;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
-use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
@@ -35,6 +36,7 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -42,6 +44,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\Crypt;
 use Throwable;
 use Twig\Error\LoaderError;
@@ -61,6 +64,7 @@ use yii\web\RangeNotSatisfiableHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use ZipArchive;
+
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -74,6 +78,7 @@ use function CraftCms\Cms\template;
  * require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class AssetsController extends Controller
@@ -81,7 +86,7 @@ class AssetsController extends Controller
     use AssetsControllerTrait;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected array|bool|int $allowAnonymous = ['generate-thumb', 'generate-transform'];
 
@@ -89,9 +94,10 @@ class AssetsController extends Controller
      * Displays the Assets index page.
      *
      * @return Response
+     *
      * @since 4.4.0
      */
-    public function actionIndex(string $defaultSource = null)
+    public function actionIndex(?string $defaultSource = null)
     {
         $this->requireCpRequest();
 
@@ -99,7 +105,7 @@ class AssetsController extends Controller
 
         if ($defaultSource) {
             $defaultSourcePath = Arr::whereNotEmpty(explode('/', $defaultSource));
-            $volumesService = Craft::$app->getVolumes();
+            $volumesService = app(Volumes::class);
             $volume = $volumesService->getVolumeByHandle(array_shift($defaultSourcePath));
 
             if ($volume) {
@@ -137,9 +143,9 @@ class AssetsController extends Controller
     /**
      * Returns an updated preview image for an asset.
      *
-     * @return Response
      * @throws BadRequestHttpException
      * @throws NotSupportedException
+     *
      * @since 3.4.0
      */
     public function actionPreviewThumb(): Response
@@ -162,7 +168,6 @@ class AssetsController extends Controller
     /**
      * Saves an asset.
      *
-     * @return Response|null
      * @throws BadRequestHttpException
      * @throws Exception
      * @throws ForbiddenHttpException
@@ -172,6 +177,7 @@ class AssetsController extends Controller
      * @throws DeprecationException
      * @throws ElementNotFoundException
      * @throws InvalidRouteException
+     *
      * @since 3.4.0
      * @deprecated in 4.0.0
      */
@@ -179,6 +185,7 @@ class AssetsController extends Controller
     {
         if (UploadedFile::getInstanceByName('assets-upload') !== null) {
             Deprecator::log(__METHOD__, 'Uploading new files via `assets/save-asset` has been deprecated. Use `assets/upload` instead.');
+
             return $this->runAction('upload');
         }
 
@@ -240,8 +247,8 @@ class AssetsController extends Controller
     /**
      * Handles a file upload.
      *
-     * @return Response
      * @throws BadRequestHttpException
+     *
      * @since 3.4.0
      */
     public function actionUpload(): Response
@@ -255,8 +262,8 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('No file was uploaded');
         }
 
-        $folderId = (int)$this->request->getBodyParam('folderId') ?: null;
-        $fieldId = (int)$this->request->getBodyParam('fieldId') ?: null;
+        $folderId = (int) $this->request->getBodyParam('folderId') ?: null;
+        $fieldId = (int) $this->request->getBodyParam('fieldId') ?: null;
 
         if (!$folderId && !$fieldId) {
             throw new BadRequestHttpException('No target destination provided for uploading');
@@ -268,7 +275,7 @@ class AssetsController extends Controller
 
         if (empty($folderId)) {
             /** @var AssetsField|null $field */
-            $field = app(Fields::class)->getFieldById((int)$fieldId);
+            $field = app(Fields::class)->getFieldById((int) $fieldId);
 
             if (!$field instanceof AssetsField) {
                 throw new BadRequestHttpException('The field provided is not an Assets field');
@@ -341,6 +348,7 @@ class AssetsController extends Controller
             if (!$selectionCondition->matchElement($asset)) {
                 // delete and reject it
                 $elementsService->deleteElement($asset, true);
+
                 return $this->asFailure(t('{filename} isn’t selectable for this field.', [
                     'filename' => $uploadedFile->name,
                 ]));
@@ -390,7 +398,6 @@ class AssetsController extends Controller
     /**
      * Replaces a file.
      *
-     * @return Response
      * @throws BadRequestHttpException if incorrect combination of parameters passed.
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
@@ -475,7 +482,7 @@ class AssetsController extends Controller
                 // - targetFilename - filename of the file we're replacing with,
                 // - replaceFile - the file we're replacing with
                 $volume = $sourceAsset->getVolume();
-                $volume->deleteFile(rtrim($sourceAsset->folderPath, '/') . '/' . $targetFilename);
+                $volume->sourceDisk()->delete(rtrim($sourceAsset->folderPath, '/') . '/' . $targetFilename);
                 $sourceAsset->newFilename = $targetFilename;
                 // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($sourceAsset);
@@ -500,7 +507,6 @@ class AssetsController extends Controller
     /**
      * Creates a folder.
      *
-     * @return Response
      * @throws BadRequestHttpException if the parent folder cannot be found
      * @throws InvalidConfigException
      */
@@ -543,11 +549,10 @@ class AssetsController extends Controller
     /**
      * Delete a folder.
      *
-     * @return Response
      * @throws BadRequestHttpException if the folder cannot be found
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
-     * @throws FsException
+     * @throws FilesystemException
      * @throws Throwable
      */
     public function actionDeleteFolder(): Response
@@ -572,7 +577,6 @@ class AssetsController extends Controller
     /**
      * Deletes an asset.
      *
-     * @return Response|null
      * @throws BadRequestHttpException if the folder cannot be found
      * @throws ForbiddenHttpException
      * @throws Throwable
@@ -616,7 +620,6 @@ class AssetsController extends Controller
     /**
      * Renames a folder.
      *
-     * @return Response
      * @throws BadRequestHttpException if the folder cannot be found
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException|VolumeException
@@ -639,14 +642,13 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByFolder('createFolders', $folder);
 
         $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
+
         return $this->asSuccess(data: ['newName' => $newName]);
     }
-
 
     /**
      * Move one or more assets.
      *
-     * @return Response
      * @throws BadRequestHttpException if the asset or the target folder cannot be found
      * @throws Exception
      * @throws ForbiddenHttpException
@@ -700,7 +702,7 @@ class AssetsController extends Controller
                 Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
             } else {
                 $volume = $folder->getVolume();
-                $volume->deleteFile(rtrim($folder->path, '/') . '/' . $asset->getFilename());
+                $volume->sourceDisk()->delete(rtrim($folder->path, '/') . '/' . $asset->getFilename());
             }
         }
 
@@ -724,7 +726,6 @@ class AssetsController extends Controller
     /**
      * Moves a folder.
      *
-     * @return Response
      * @throws BadRequestHttpException if the folder to move, or the destination parent folder, cannot be found
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
@@ -767,7 +768,7 @@ class AssetsController extends Controller
         ]);
 
         if (!$existingFolder) {
-            $existingFolder = $targetVolume->directoryExists(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+            $existingFolder = $targetVolume->sourceDisk()->directoryExists(trim(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name, '/'));
         }
 
         // If there's a conflict and `force`/`merge` flags weren't passed in, then STOP RIGHT THERE!
@@ -805,6 +806,7 @@ class AssetsController extends Controller
                         $assets->deleteFoldersByIds($existingFolder->id);
                     } catch (VolumeException $exception) {
                         Craft::$app->getErrorHandler()->logException($exception);
+
                         return $this->asFailure(t('Directories cannot be deleted while moving assets.'));
                     }
                 } else {
@@ -819,7 +821,7 @@ class AssetsController extends Controller
                 }
             } elseif ($force) {
                 // An un-indexed folder is conflicting. If we're forcing things, just remove it.
-                $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+                $targetVolume->sourceDisk()->deleteDirectory(trim(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name, '/'));
             }
 
             // Mirror the structure, passing along the existing folder map
@@ -848,7 +850,6 @@ class AssetsController extends Controller
     /**
      * Returns the Image Editor template.
      *
-     * @return Response
      * @throws BadRequestHttpException if the asset is missing.
      * @throws Exception
      * @throws LoaderError
@@ -874,14 +875,13 @@ class AssetsController extends Controller
     /**
      * Returns the image being edited.
      *
-     * @return Response
      * @throws BadRequestHttpException
      * @throws Exception
      */
     public function actionEditImage(): Response
     {
-        $assetId = (int)$this->request->getRequiredQueryParam('assetId');
-        $size = (int)$this->request->getRequiredQueryParam('size');
+        $assetId = (int) $this->request->getRequiredQueryParam('assetId');
+        $size = (int) $this->request->getRequiredQueryParam('size');
 
         $asset = Asset::findOne($assetId);
         if (!$asset) {
@@ -890,10 +890,12 @@ class AssetsController extends Controller
 
         try {
             $url = Craft::$app->getAssets()->getImagePreviewUrl($asset, $size, $size);
+
             return $this->response->redirect($url);
         } catch (NotSupportedException) {
             // just output the file contents
             $path = ImageTransforms::getLocalImageSource($asset);
+
             return $this->response->sendFile($path, $asset->getFilename());
         }
     }
@@ -901,7 +903,6 @@ class AssetsController extends Controller
     /**
      * Saves an image according to the posted parameters.
      *
-     * @return Response
      * @throws BadRequestHttpException if some parameters are missing.
      * @throws Throwable if something went wrong saving the asset.
      */
@@ -911,14 +912,14 @@ class AssetsController extends Controller
         $assets = Craft::$app->getAssets();
 
         $assetId = $this->request->getRequiredBodyParam('assetId');
-        $viewportRotation = (int)$this->request->getRequiredBodyParam('viewportRotation');
-        $imageRotation = (float)$this->request->getRequiredBodyParam('imageRotation');
+        $viewportRotation = (int) $this->request->getRequiredBodyParam('viewportRotation');
+        $imageRotation = (float) $this->request->getRequiredBodyParam('imageRotation');
         $replace = $this->request->getRequiredBodyParam('replace');
         $cropData = $this->request->getRequiredBodyParam('cropData');
         $focalPoint = $this->request->getBodyParam('focalPoint');
         $imageDimensions = $this->request->getBodyParam('imageDimensions');
         $flipData = $this->request->getBodyParam('flipData');
-        $zoom = (float)$this->request->getBodyParam('zoom', 1);
+        $zoom = (float) $this->request->getBodyParam('zoom', 1);
 
         // avoid a potential division by zero error (somehow)
         // see https://github.com/craftcms/cms/issues/17019
@@ -974,7 +975,7 @@ class AssetsController extends Controller
         $generalConfig->upscaleImages = true;
 
         if ($zoom !== 1.0) {
-            $transformer->scaleImage((int)($originalImageWidth * $zoom), (int)($originalImageHeight * $zoom));
+            $transformer->scaleImage((int) ($originalImageWidth * $zoom), (int) ($originalImageHeight * $zoom));
         }
 
         $generalConfig->upscaleImages = $upscale;
@@ -1006,7 +1007,7 @@ class AssetsController extends Controller
         }
 
         if ($imageCropped) {
-            $transformer->crop((int)$x, (int)$y, (int)$width, (int)$height);
+            $transformer->crop((int) $x, (int) $y, (int) $width, (int) $height);
         }
 
         if ($imageChanged) {
@@ -1056,7 +1057,6 @@ class AssetsController extends Controller
     /**
      * Returns a file’s contents.
      *
-     * @return Response
      * @throws AssetException
      * @throws BadRequestHttpException if the file to download cannot be found.
      * @throws Exception
@@ -1087,6 +1087,7 @@ class AssetsController extends Controller
         // If only one asset was selected, send it back unzipped
         if (count($assets) === 1) {
             $asset = reset($assets);
+
             return $this->response
                 ->sendStreamAsFile($asset->getStream(), $asset->getFilename(), [
                     'fileSize' => $asset->size,
@@ -1118,8 +1119,8 @@ class AssetsController extends Controller
     /**
      * Returns a file icon with an extension.
      *
-     * @param string $extension The asset’s UID
-     * @return Response
+     * @param  string  $extension  The asset’s UID
+     *
      * @since 4.0.0
      */
     public function actionIcon(string $extension): Response
@@ -1136,8 +1137,6 @@ class AssetsController extends Controller
     /**
      * Generates a transform.
      *
-     * @param int|null $transformId
-     * @return Response
      * @throws BadRequestHttpException
      * @throws ServerErrorHttpException
      */
@@ -1191,7 +1190,6 @@ class AssetsController extends Controller
     /**
      * Returns file preview info for an asset.
      *
-     * @return Response
      * @throws BadRequestHttpException if not a valid request
      */
     public function actionPreviewFile(): Response
@@ -1248,7 +1246,6 @@ class AssetsController extends Controller
     /**
      * Update an asset's focal point position.
      *
-     * @return Response
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @throws InvalidConfigException
@@ -1288,13 +1285,14 @@ class AssetsController extends Controller
     /**
      * Sends a broken image response based on a given exception.
      *
-     * @param Throwable|null $e The exception that was thrown
-     * @return Response
+     * @param  Throwable|null  $e  The exception that was thrown
+     *
      * @since 3.4.8
      */
     protected function asBrokenImage(?Throwable $e = null): Response
     {
         $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
+
         return $this->response
             ->sendFile(Aliases::get('@appicons/broken-image.svg'), 'nope.svg', [
                 'mimeType' => 'image/svg+xml',
@@ -1304,8 +1302,6 @@ class AssetsController extends Controller
     }
 
     /**
-     * @param UploadedFile $uploadedFile
-     * @return string
      * @throws UploadFailedException
      */
     private function _getUploadedFileTempPath(UploadedFile $uploadedFile): string
@@ -1337,8 +1333,6 @@ class AssetsController extends Controller
     /**
      * Generates a fallback transform.
      *
-     * @param string $transform
-     * @return Response
      * @since 4.4.0
      */
     public function actionGenerateFallbackTransform(string $transform): Response
@@ -1363,14 +1357,14 @@ class AssetsController extends Controller
         $useOriginal = $transformString === 'original';
         if ($useOriginal) {
             $volume = $asset->getVolume();
-            $fs = $volume->getFs();
-            if ($fs instanceof LocalFsInterface) {
+            if ($volume->sourceDisk() instanceof LocalFilesystemAdapter) {
                 $path = sprintf(
                     '%s/%s/%s',
-                    rtrim($fs->getRootPath(), '/'),
+                    rtrim($volume->sourceDisk()->path(''), '/'),
                     rtrim($volume->getSubpath(), '/'),
                     $asset->getPath()
                 );
+
                 return $this->response->sendFile($path, $asset->getFilename(), [
                     'inline' => true,
                 ]);
@@ -1419,7 +1413,6 @@ class AssetsController extends Controller
      * Show in folder action.
      * Find asset by id and Return source path info for each folder up until the one the asset is in.
      *
-     * @return Response
      * @throws BadRequestHttpException
      * @throws InvalidConfigException
      * @throws MethodNotAllowedHttpException
@@ -1469,8 +1462,8 @@ class AssetsController extends Controller
     /**
      * Returns the total number of assets, and their total file size, based on their IDs and/or folder IDs.
      *
-     * @return Response
      * @throws BadRequestHttpException
+     *
      * @since 5.7.0
      */
     public function actionMoveInfo(): Response
@@ -1499,7 +1492,7 @@ class AssetsController extends Controller
             ->orWhereIn('folderId', array_unique($folderIds));
 
         $count = $query->count();
-        $totalSize = (int)$query->sum('size');
+        $totalSize = (int) $query->sum('size');
 
         return $this->asJson([
             'count' => $count,

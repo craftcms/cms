@@ -8,8 +8,8 @@
 namespace craft\errors;
 
 use craft\models\AssetIndexData;
-use craft\models\Volume;
-use craft\models\VolumeFolder;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
 use Throwable;
 use yii\base\Exception;
 

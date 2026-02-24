@@ -6,9 +6,6 @@ namespace CraftCms\Cms\Asset\Elements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Fs;
-use craft\base\FsInterface;
-use craft\base\LocalFsInterface;
 use craft\controllers\ElementIndexesController;
 use craft\controllers\ElementSelectorModalsController;
 use craft\db\Query;
@@ -28,7 +25,6 @@ use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\AssetException;
 use craft\errors\FileException;
-use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
@@ -41,8 +37,6 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
-use craft\models\Volume;
-use craft\models\VolumeFolder;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
@@ -50,6 +44,8 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\web\twig\AllowedInSandbox;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
 use CraftCms\Cms\Asset\Events\BeforeDefineAssetUrl;
 use CraftCms\Cms\Asset\Events\BeforeGenerateTransform;
@@ -67,11 +63,15 @@ use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -80,6 +80,7 @@ use CraftCms\Cms\Validation\Attributes\Ruleset;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
@@ -348,9 +349,9 @@ class Asset extends Element
         $sources = [];
 
         if ($context === ElementSources::CONTEXT_INDEX) {
-            $volumeIds = Craft::$app->getVolumes()->getViewableVolumeIds();
+            $volumeIds = Volumes::getViewableVolumeIds();
         } else {
-            $volumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
+            $volumeIds = Volumes::getAllVolumeIds();
         }
 
         $assetsService = Craft::$app->getAssets();
@@ -430,10 +431,10 @@ class Asset extends Element
     {
         if ($source !== null && preg_match('/^volume:(.+)$/', $source, $matches)) {
             $volumes = array_filter([
-                Craft::$app->getVolumes()->getVolumeByUid($matches[1]),
+                Volumes::getVolumeByUid($matches[1]),
             ]);
         } else {
-            $volumes = Craft::$app->getVolumes()->getAllVolumes();
+            $volumes = Volumes::getAllVolumes()->all();
         }
 
         return array_map(fn (Volume $volume) => $volume->getFieldLayout(), $volumes);
@@ -445,7 +446,7 @@ class Asset extends Element
         $actions = [];
 
         if (preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches)) {
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]);
+            $volume = Volumes::getVolumeByUid($matches[1]);
         } elseif (preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches)) {
             $folder = Craft::$app->getAssets()->getFolderByUid($matches[1]);
             $volume = $folder?->getVolume();
@@ -699,7 +700,7 @@ class Asset extends Element
             $folderQuery = self::_createFolderQueryForIndex($elementQuery, $queryFolder);
             $totalFolders = $folderQuery->count();
 
-            if ($totalFolders > $elementQuery->offset) {
+            if ((int) $totalFolders > (int) $elementQuery->offset) {
                 $source = ElementHelper::findSource(self::class, $sourceKey);
                 if (isset($source['criteria']['folderId'])) {
                     $baseFolder = $assetsService->getFolderById($source['criteria']['folderId']);
@@ -719,7 +720,7 @@ class Asset extends Element
                 foreach ($folders as $folder) {
                     $sourcePath = [$baseSourcePathStep];
                     $path = rtrim($baseFolder->path ?? '', '/');
-                    $pathSegs = Arr::whereNotEmpty(explode('/', Str::chopStart($folder['path'], $baseFolder->path ?? '')));
+                    $pathSegs = Arr::whereNotEmpty(explode('/', Str::chopStart($folder->path, $baseFolder->path ?? '')));
                     foreach ($pathSegs as $i => $seg) {
                         $path .= ($path !== '' ? '/' : '').$seg;
                         if (isset($foldersByPath[$path])) {
@@ -768,7 +769,7 @@ class Asset extends Element
         // return the folders directly
         if (
             self::isFolderIndex() ||
-            count($assets) === (int) $originalLimit
+            count($assets) === $originalLimit
         ) {
             return $assets;
         }
@@ -1282,7 +1283,7 @@ class Asset extends Element
         // Is the volume’s source enabled?
         $elementSourcesService = app(\CraftCms\Cms\Element\ElementSources::class);
         if ($elementSourcesService->sourceExists(Asset::class, "volume:$volume->uid")) {
-            $volumes = Collection::make(Craft::$app->getVolumes()->getViewableVolumes());
+            $volumes = Volumes::getViewableVolumes();
 
             // Filter out any volumes that don’t have an enabled source
             $sources = $elementSourcesService->getSources(Asset::class);
@@ -1859,13 +1860,11 @@ JS, [
             return $this->_volume;
         }
 
-        $volumesService = Craft::$app->getVolumes();
-
         if (! isset($this->_volumeId)) {
-            return $volumesService->getTemporaryVolume();
+            return Volumes::getTemporaryVolume();
         }
 
-        if (($volume = $volumesService->getVolumeById($this->_volumeId)) === null) {
+        if (($volume = Volumes::getVolumeById($this->_volumeId)) === null) {
             throw new InvalidConfigException('Invalid volume ID: '.$this->_volumeId);
         }
 
@@ -2327,10 +2326,9 @@ JS, [
     public function getImageTransformSourcePath(): string
     {
         $volume = $this->getVolume();
-        $fs = $volume->getFs();
 
-        if ($fs instanceof LocalFsInterface) {
-            return FileHelper::normalizePath($fs->getRootPath().DIRECTORY_SEPARATOR.$volume->getSubpath().$this->getPath());
+        if ($volume->sourceDisk() instanceof LocalFilesystemAdapter) {
+            return FileHelper::normalizePath($volume->sourceDisk()->path($this->getPath()));
         }
 
         return Craft::$app->getPath()->getAssetSourcesPath().DIRECTORY_SEPARATOR.$this->id.'.'.$this->getExtension();
@@ -2346,7 +2344,7 @@ JS, [
     {
         $tempFilename = FileHelper::uniqueName($this->_filename);
         $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
-        Assets::downloadFile($this->getVolume(), $this->getPath(), $tempPath);
+        Assets::downloadFile($this->getVolume()->sourceDisk(), $this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -2357,11 +2355,17 @@ JS, [
      * @return resource
      *
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
-     * @throws FsException if a stream cannot be created
+     * @throws FilesystemException if a stream cannot be created
      */
     public function getStream()
     {
-        return $this->getVolume()->getFileStream($this->getPath());
+        $stream = $this->getVolume()->sourceDisk()->readStream($this->getPath());
+
+        if (! is_resource($stream)) {
+            throw new FilesystemException("Unable to open {$this->getPath()}.");
+        }
+
+        return $stream;
     }
 
     /**
@@ -3048,7 +3052,7 @@ JS;
     {
         if (! $this->keepFileOnDelete) {
             try {
-                $this->getVolume()->deleteFile($this->getPath());
+                $this->getVolume()->sourceDisk()->delete($this->getPath());
             } catch (InvalidConfigException|NotSupportedException) {
                 // NBD
             }
@@ -3224,7 +3228,9 @@ JS;
 
         // Is this just a simple move/rename within the same volume?
         if (! isset($this->tempFilePath) && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
-            $oldVolume->renameFile($oldPath, $newPath);
+            if (! $oldVolume->sourceDisk()->move($oldPath, $newPath)) {
+                throw new FilesystemException("Unable to move $oldPath to $newPath");
+            }
         } else {
             // Get the temp path
             if (isset($this->tempFilePath)) {
@@ -3235,9 +3241,13 @@ JS;
 
                 $tempPath = $this->tempFilePath;
             } else {
+                if ($oldVolume === null || $oldPath === null) {
+                    throw new FileException(t('There was an error relocating the file.'));
+                }
+
                 $tempFilename = FileHelper::uniqueName($filename);
                 $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
-                Assets::downloadFile($oldVolume, $oldPath, $tempPath);
+                Assets::downloadFile($oldVolume->sourceDisk(), $oldPath, $tempPath);
             }
 
             // Try to open a file stream
@@ -3250,10 +3260,12 @@ JS;
 
             // Upload the file to the new location
             try {
-                $newVolume->writeFileFromStream($newPath, $stream, [
-                    Fs::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
-                ]);
-            } catch (FsException $exception) {
+                if (! $newVolume->sourceDisk()->writeStream($newPath, $stream, [
+                    Filesystem::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
+                ])) {
+                    throw new FilesystemException("Unable to write stream to path: $newPath");
+                }
+            } catch (FilesystemException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
                 throw $exception;
             } finally {
@@ -3269,7 +3281,7 @@ JS;
                 ($oldFolder->id !== $newFolder->id || $oldPath !== $newPath)
             ) {
                 // Delete the old file
-                $oldVolume->deleteFile($oldPath);
+                $oldVolume->sourceDisk()->delete($oldPath);
             }
         }
 

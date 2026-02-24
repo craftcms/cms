@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -8,30 +10,33 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\BaseFsInterface;
 use craft\base\ElementInterface;
-use craft\base\FsInterface;
-use craft\base\LocalFsInterface;
-use craft\errors\FsException;
 use craft\errors\InvalidSubpathException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
-use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
-use craft\models\Volume;
-use craft\models\VolumeFolder;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
+use Throwable;
 use Twig\Error\RuntimeError;
 use yii\base\Event;
 use yii\base\Exception;
@@ -43,6 +48,7 @@ use function CraftCms\Cms\t;
  * Class Assets
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class Assets
@@ -61,12 +67,14 @@ class Assets
 
     /**
      * @var array Supported file kinds
+     *
      * @see getFileKinds()
      */
     private static array $_fileKinds;
 
     /**
      * @var array Allowed file kinds
+     *
      * @see getAllowedFileKinds()
      */
     private static array $_allowedFileKinds;
@@ -74,8 +82,9 @@ class Assets
     /**
      * Get a temporary file path.
      *
-     * @param string $extension extension to use. "tmp" by default.
+     * @param  string  $extension  extension to use. "tmp" by default.
      * @return string The temporary file path
+     *
      * @throws Exception in case of failure
      */
     public static function tempFilePath(string $extension = 'tmp'): string
@@ -95,10 +104,9 @@ class Assets
     /**
      * Generates the URL for an asset.
      *
-     * @param Asset $asset
-     * @param string|null $uri Asset URI to use. Defaults to the filename.
-     * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
-     * @return string
+     * @param  string|null  $uri  Asset URI to use. Defaults to the filename.
+     * @param  DateTime|null  $dateUpdated  last datetime the target of the url was updated, if known
+     *
      * @throws InvalidConfigException if the asset doesn’t have a filename.
      */
     public static function generateUrl(Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
@@ -106,8 +114,7 @@ class Assets
         $volume = $asset->getVolume();
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
-        $rootUrl = $volume->getRootUrl() ?? '';
-        $url = $rootUrl . $path;
+        $url = $volume->sourceDisk()->url($path);
 
         if (Cms::config()->revAssetUrls) {
             return self::revUrl($url, $asset, $dateUpdated);
@@ -119,9 +126,6 @@ class Assets
     /**
      * Returns revision query parameters that should be appended to as asset URL.
      *
-     * @param Asset $asset
-     * @param DateTime|null $dateUpdated
-     * @return array
      * @since 4.0.0
      */
     public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
@@ -147,45 +151,63 @@ class Assets
     /**
      * Appends revision parameters to a URL.
      *
-     * @param string $url
-     * @param Asset $asset
-     * @param DateTime|null $dateUpdated
-     * @param bool $fsOnly Only append a revision param if the URL begins with the asset’s filesystem URL
-     * @return string
+     * @param  bool  $fsOnly  Only append a revision param if the URL begins with the asset’s filesystem URL
+     *
      * @since 4.3.7
      */
     public static function revUrl(string $url, Asset $asset, ?DateTime $dateUpdated = null, bool $fsOnly = false): string
     {
         if ($fsOnly) {
             $volume = $asset->getVolume();
-            $fs = $volume->getFs();
-            $fss = [$fs];
-            $transformFs = $volume->getTransformFs();
-            if ($transformFs !== $fs) {
-                $fss[] = $transformFs;
+            /** @var Collection<int, string> $baseUrls */
+            $baseUrls = Collection::make();
+
+            if ($volume->getFs()->hasUrls) {
+                $baseUrls->push(self::diskBaseUrl($volume->sourceDisk()));
             }
-            $matchingFs = Collection::make($fss)->contains(function(FsInterface $fs) use ($url): bool {
-                if (!$fs->hasUrls) {
-                    return false;
-                }
-                $baseUrl = $fs->getRootUrl();
-                return $baseUrl !== null && str_starts_with($url, Str::finish($baseUrl, '/'));
-            });
-            if (!$matchingFs) {
+
+            if ($volume->getTransformFs()->hasUrls) {
+                $baseUrls->push(self::diskBaseUrl($volume->transformDisk()));
+            }
+
+            $baseUrls = $baseUrls
+                ->filter()
+                ->unique();
+
+            if (!$baseUrls->contains(fn(string $baseUrl): bool => str_starts_with($url, $baseUrl))) {
                 return $url;
             }
         }
 
         $revParams = static::revParams($asset, $dateUpdated);
+
         return UrlHelper::urlWithParams($url, $revParams);
+    }
+
+    private static function diskBaseUrl(FilesystemAdapter $disk): ?string
+    {
+        $probePath = '__craft_url_probe__';
+
+        try {
+            $probeUrl = $disk->url($probePath);
+        } catch (Throwable) {
+            return null;
+        }
+
+        foreach ([$probePath, rawurlencode($probePath)] as $suffix) {
+            if (str_ends_with($probeUrl, $suffix)) {
+                return Str::finish(substr($probeUrl, 0, -strlen($suffix)), '/');
+            }
+        }
+
+        return Str::finish($probeUrl, '/');
     }
 
     /**
      * Get appendix for a URL based on its Source caching settings.
      *
-     * @param Asset $asset
-     * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
-     * @return string
+     * @param  DateTime|null  $dateUpdated  last datetime the target of the url was updated, if known
+     *
      * @deprecated in 4.0.0. [[generateUrl()]] should be used instead.
      */
     public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
@@ -195,17 +217,16 @@ class Assets
         }
 
         $revParams = self::revParams($asset, $dateUpdated);
+
         return sprintf('?%s', UrlHelper::buildQuery($revParams));
     }
 
     /**
      * Clean an Asset's filename.
      *
-     * @param string $name
-     * @param bool $isFilename if set to true (default), will separate extension
-     * and clean the filename separately.
-     * @param bool $preventPluginModifications if set to true, will prevent plugins from modify
-     * @return string
+     * @param  bool  $isFilename  if set to true (default), will separate extension
+     *                            and clean the filename separately.
+     * @param  bool  $preventPluginModifications  if set to true, will prevent plugins from modify
      */
     public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false): string
     {
@@ -259,8 +280,7 @@ class Assets
     /**
      * Generates a default asset title based on its filename.
      *
-     * @param string $filename The asset's filename
-     * @return string
+     * @param  string  $filename  The asset's filename
      */
     public static function filename2Title(string $filename): string
     {
@@ -276,9 +296,9 @@ class Assets
     /**
      * Mirrors a folder structure within a volume.
      *
-     * @param VolumeFolder $sourceParentFolder Folder whose nested folder structure should be mirrored.
-     * @param VolumeFolder $destinationFolder The destination folder
-     * @param array $targetTreeMap map of relative path => existing folder ID
+     * @param  VolumeFolder  $sourceParentFolder  Folder whose nested folder structure should be mirrored.
+     * @param  VolumeFolder  $destinationFolder  The destination folder
+     * @param  array  $targetTreeMap  map of relative path => existing folder ID
      * @return array map of original folder ID => new folder ID
      */
     public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = []): array
@@ -316,9 +336,8 @@ class Assets
      * Create an asset transfer list based on a list of assets and an array of
      * changing folder IDs.
      *
-     * @param array $assets List of assets
-     * @param array $folderIdChanges A map of folder ID changes
-     * @return array
+     * @param  array  $assets  List of assets
+     * @param  array  $folderIdChanges  A map of folder ID changes
      */
     public static function fileTransferList(array $assets, array $folderIdChanges): array
     {
@@ -340,8 +359,6 @@ class Assets
 
     /**
      * Get a list of available periods for Cache duration settings.
-     *
-     * @return array
      */
     public static function periodList(): array
     {
@@ -358,8 +375,10 @@ class Assets
     /**
      * Sorts a folder tree by the volume sort order.
      *
-     * @param VolumeFolder[] $tree array passed by reference of the sortable folders.
+     * @param  VolumeFolder[]  $tree  array passed by reference of the sortable folders.
+     *
      * @param-out VolumeFolder[] $tree
+     *
      * @deprecated in 4.4.0
      */
     public static function sortFolderTree(array &$tree): void
@@ -378,6 +397,7 @@ class Assets
     public static function getFileKinds(): array
     {
         self::_buildFileKinds();
+
         return self::$_fileKinds;
     }
 
@@ -385,6 +405,7 @@ class Assets
      * Returns a list of file kinds that are allowed to be uploaded.
      *
      * @return array The allowed file kinds
+     *
      * @since 3.1.16
      */
     public static function getAllowedFileKinds(): array
@@ -400,6 +421,7 @@ class Assets
             foreach ($info['extensions'] as $extension) {
                 if (isset($allowedExtensions[$extension])) {
                     self::$_allowedFileKinds[$kind] = $info;
+
                     continue 2;
                 }
             }
@@ -410,20 +432,18 @@ class Assets
 
     /**
      * Returns the label of a given file kind.
-     *
-     * @param string $kind
-     * @return string
      */
     public static function getFileKindLabel(string $kind): string
     {
         self::_buildFileKinds();
+
         return self::$_fileKinds[$kind]['label'] ?? Asset::KIND_UNKNOWN;
     }
 
     /**
      * Return a file's kind by a file's extension.
      *
-     * @param string $file The file name/path
+     * @param  string  $file  The file name/path
      * @return string The file kind, or "unknown" if unknown.
      */
     public static function getFileKindByExtension(string $file): string
@@ -444,8 +464,6 @@ class Assets
     /**
      * Parses a file location in the format of `{folder:X}filename.ext` returns the folder ID + filename.
      *
-     * @param string $location
-     * @return array
      * @throws InvalidArgumentException if the file location is invalid
      */
     public static function parseFileLocation(string $location): array
@@ -456,7 +474,7 @@ class Assets
 
         [, $folderId, $filename] = $matches;
 
-        return [(int)$folderId, $filename];
+        return [(int) $folderId, $filename];
     }
 
     /**
@@ -719,9 +737,6 @@ class Assets
     /**
      * Return an image path to use in the Image Editor for an asset by its ID and size.
      *
-     * @param int $assetId
-     * @param int $size
-     * @return string|false
      * @throws Exception in case of failure
      */
     public static function getImageEditorSource(int $assetId, int $size): string|false
@@ -774,8 +789,9 @@ class Assets
 
         // For remote files, check if maxCachedImageSizes setting would work for us.
         $maxCachedSize = Cms::config()->maxCachedCloudImageSize;
+        $isLocalFs = $volume->sourceDisk() instanceof LocalFilesystemAdapter;
 
-        if (!$volume->getFs() instanceof LocalFsInterface && $maxCachedSize > $size) {
+        if (!$isLocalFs && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
             $localSource = TransformHelper::getLocalImageSource($asset);
             Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
@@ -791,8 +807,6 @@ class Assets
 
     /**
      * Returns the maximum allowed upload size in bytes per all config settings combined.
-     *
-     * @return int|float
      */
     public static function getMaxUploadSize(): float|int
     {
@@ -818,11 +832,8 @@ class Assets
     /**
      * Returns scaled width & height values for a maximum container size.
      *
-     * @param int $realWidth
-     * @param int $realHeight
-     * @param int $maxWidth
-     * @param int $maxHeight
      * @return array The scaled width and height
+     *
      * @since 3.4.21
      */
     public static function scaledDimensions(int $realWidth, int $realHeight, int $maxWidth, int $maxHeight): array
@@ -843,15 +854,16 @@ class Assets
             $scaledWidth = floor($realWidth * ($scaledHeight / $realHeight));
         }
 
-        return [(int)$scaledWidth, (int)$scaledHeight];
+        return [(int) $scaledWidth, (int) $scaledHeight];
     }
 
     /**
      * Parses a srcset size (e.g. `100w` or `2x`).
      *
-     * @param mixed $size
      * @return array An array of the size value and unit (`w` or `x`)
+     *
      * @throws InvalidArgumentException if the size can’t be parsed
+     *
      * @since 3.5.0
      */
     public static function parseSrcsetSize(mixed $size): array
@@ -866,22 +878,23 @@ class Assets
         if (!preg_match('/^([\d\.]+)(w|x)$/', $size, $match)) {
             throw new InvalidArgumentException("Invalid srcset size: $size");
         }
-        return [(float)$match[1], $match[2]];
+
+        return [(float) $match[1], $match[2]];
     }
 
     /**
      * Save a file from a filesystem locally.
      *
-     * @param BaseFsInterface $fs
-     * @param string $uriPath
-     * @param string $localPath
-     * @return int
-     * @throws FsException
+     * @throws FilesystemException
+     *
      * @since 4.0.0
      */
-    public static function downloadFile(BaseFsInterface $fs, string $uriPath, string $localPath): int
+    public static function downloadFile(LaravelFilesystem $fs, string $uriPath, string $localPath): int
     {
-        $stream = $fs->getFileStream($uriPath);
+        $stream = $fs->readStream($uriPath);
+        if (!is_resource($stream)) {
+            throw new FilesystemException("Unable to open $uriPath.");
+        }
         $outputStream = fopen($localPath, 'wb');
 
         $bytes = stream_copy_to_stream($stream, $outputStream);
@@ -895,8 +908,6 @@ class Assets
     /**
      * Returns the URL to an asset icon for a given extension.
      *
-     * @param string $extension
-     * @return string
      * @since 4.0.0
      * @deprecated in 4.5.0
      */
@@ -910,8 +921,6 @@ class Assets
     /**
      * Returns the file path to an asset icon for a given extension.
      *
-     * @param string $extension
-     * @return string
      * @since 4.0.0
      * @deprecated in 4.5.0. [[iconSvg()]] or [[Asset::getThumbSvg()]] should be used instead.
      */
@@ -926,14 +935,13 @@ class Assets
         $svg = static::iconSvg($extension);
 
         FileHelper::writeToFile($path, $svg);
+
         return $path;
     }
 
     /**
      * Returns the SVG contents for an asset icon with a given extension.
      *
-     * @param string $extension
-     * @return string
      * @since 4.5.0
      */
     public static function iconSvg(string $extension): string
@@ -973,9 +981,6 @@ class Assets
 
     /**
      * Returns whether the given filesystem is used to store temporary asset uploads.
-     *
-     * @param FsInterface $fs
-     * @return bool
      */
     public static function isTempUploadFs(FsInterface $fs): bool
     {
@@ -987,20 +992,30 @@ class Assets
             return false;
         }
 
+        $target = self::normalizedTempUploadTarget();
+
+        return $target !== null && $fs->handle === $target;
+    }
+
+    private static function normalizedTempUploadTarget(): ?string
+    {
         $handle = Env::parse(Cms::config()->tempAssetUploadFs);
-        return $fs->handle === $handle;
+        if (!is_string($handle) || $handle === '') {
+            return null;
+        }
+
+        return Filesystems::resolve($handle)?->handle;
     }
 
     /**
      * Resolves a possibly dynamic subpath for a given element, and returns the rendered subpath and
      * matching volume folder (if one exists).
      *
-     * @param Volume $volume
-     * @param string|null $subpath
-     * @param ElementInterface|null $element
      * @return array{0:string,1:VolumeFolder|null}
+     *
      * @throws Exception
      * @throws InvalidSubpathException
+     *
      * @since 5.9.0
      */
     public static function resolveSubpath(Volume $volume, ?string $subpath, ?ElementInterface $element = null): array

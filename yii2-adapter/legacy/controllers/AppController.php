@@ -19,6 +19,8 @@ use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Data\Volume as LegacyVolume;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -455,7 +457,12 @@ class AppController extends Controller
                 throw new BadRequestHttpException('Missing component ID');
             }
 
-            $component = $componentType::get($id);
+            $component = null;
+            if (is_callable([$componentType, 'get'])) {
+                $component = $componentType::get($id);
+            } elseif (is_a($componentType, LegacyVolume::class, true)) {
+                $component = app(Volumes::class)->getVolumeById((int)$id);
+            }
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
                     if (!empty($config['overrides'])) {

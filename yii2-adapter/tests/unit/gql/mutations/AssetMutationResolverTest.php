@@ -9,10 +9,10 @@ namespace crafttests\unit\gql\mutations;
 
 use Craft;
 use craft\gql\resolvers\mutations\Asset;
-use craft\models\VolumeFolder;
 use craft\records\Volume;
 use craft\services\Assets;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\Data\VolumeFolder;
 use GraphQL\Type\Definition\ResolveInfo;
 use Throwable;
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
-use Craft;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
@@ -678,9 +678,9 @@ final class UserPermissions
 
     private function volumePermissions(Collection $permissions): void
     {
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+        $volumes = Volumes::getAllVolumes();
 
-        if (! $volumes) {
+        if ($volumes->isEmpty()) {
             return;
         }
 

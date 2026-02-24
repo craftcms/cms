@@ -12,8 +12,8 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\UrlHelper;
-use craft\models\Volume;
 use craft\web\Request;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -26,6 +26,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -406,7 +407,7 @@ final class Users
             throw new VolumeException('No user photo volume is set.');
         }
 
-        $volume = Craft::$app->getVolumes()->getVolumeByUid($uid);
+        $volume = Volumes::getVolumeByUid($uid);
         if ($volume === null) {
             throw new VolumeException("Invalid volume UID: $uid");
         }
