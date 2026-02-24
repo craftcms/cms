@@ -217,12 +217,19 @@ final class AssetIndexer
 
         /** @var FsListing $volumeListing */
         foreach ($indexList as $volumeListing) {
+            if ($volumeListing->getIsDir()) {
+                $timestamp = null;
+            } else {
+                $dateModified = $volumeListing->getDateModified();
+                $timestamp = $dateModified !== null ? new DateTime('@'.$dateModified) : $now;
+            }
+
             $values[] = [
                 'volumeId' => $volume->id,
                 'sessionId' => $sessionId,
                 'uri' => $volumeListing->getAdjustedUri($fsSubpath),
                 'size' => $volumeListing->getFileSize(),
-                'timestamp' => ! $volumeListing->getIsDir() ? new DateTime('@'.$volumeListing->getDateModified()) : null,
+                'timestamp' => $timestamp,
                 'isDir' => $volumeListing->getIsDir(),
                 'inProgress' => false,
                 'completed' => false,

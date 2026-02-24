@@ -9,7 +9,7 @@ use Override;
 
 /**
  * @method static \Generator getIndexListOnVolume(\CraftCms\Cms\Asset\Data\Volume $volume, string $directory = '')
- * @method static \CraftCms\Cms\Asset\Data\IndexingSession[] getExistingIndexingSessions()
+ * @method static \Illuminate\Support\Collection<int, \CraftCms\Cms\Asset\Data\IndexingSession> getExistingIndexingSessions()
  * @method static int removeCliIndexingSessions()
  * @method static \CraftCms\Cms\Asset\Data\IndexingSession|null getIndexingSessionById(int $sessionId)
  * @method static \CraftCms\Cms\Asset\Data\IndexingSession startIndexingSession(array $volumes, bool $cacheRemoteImages = true, bool $listEmptyFolders = false)
