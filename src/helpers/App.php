@@ -37,6 +37,7 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
+use PDO;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionNamedType;
@@ -1046,7 +1047,10 @@ class App
             'commandMap' => [
                 $driver => Command::class,
             ],
-            'attributes' => $dbConfig->attributes,
+            'attributes' => [
+                PDO::MYSQL_ATTR_MULTI_STATEMENTS => false,
+                ...$dbConfig->attributes,
+            ],
             'enableSchemaCache' => !static::devMode(),
         ];
 
@@ -1263,15 +1267,12 @@ class App
             'enableCsrfValidation' => $generalConfig->enableCsrfProtection,
             'enableCsrfCookie' => $generalConfig->enableCsrfCookie,
             'csrfParam' => $generalConfig->csrfTokenName,
+            'trustedHosts' => $generalConfig->trustedHosts,
             'parsers' => [
                 'application/json' => JsonParser::class,
             ],
             'isCpRequest' => static::normalizeBooleanValue(static::env('CRAFT_CP')),
         ];
-
-        if ($generalConfig->trustedHosts !== null) {
-            $config['trustedHosts'] = $generalConfig->trustedHosts;
-        }
 
         if ($generalConfig->secureHeaders !== null) {
             $config['secureHeaders'] = $generalConfig->secureHeaders;

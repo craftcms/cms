@@ -1503,6 +1503,7 @@ class Elements extends Component
         $newAttributes += [
             'id' => $canonical->id,
             'uid' => $canonical->uid,
+            'canonicalId' => $canonical->getCanonicalId(),
             'root' => $canonical->root,
             'lft' => $canonical->lft,
             'rgt' => $canonical->rgt,
@@ -4265,14 +4266,15 @@ class Elements extends Component
             if (!$element->propagating) {
                 // Delete the rows that don't need to be there anymore
                 if (!$isNewElement) {
-                    Db::deleteIfExists(
-                        Table::ELEMENTS_SITES,
-                        [
-                            'and',
-                            ['elementId' => $element->id],
-                            ['not', ['siteId' => array_keys($supportedSites)]],
-                        ]
-                    );
+                    $deleteCondition = [
+                        'and',
+                        ['elementId' => $element->id],
+                        ['not', ['siteId' => array_keys($supportedSites)]],
+                    ];
+
+                    Db::deleteIfExists(Table::ELEMENTS_SITES, $deleteCondition);
+                    Db::deleteIfExists(Table::SEARCHINDEX, $deleteCondition);
+                    Db::deleteIfExists(Table::SEARCHINDEXQUEUE, $deleteCondition);
                 }
 
                 // Invalidate any caches involving this element

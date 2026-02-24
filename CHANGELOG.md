@@ -2,8 +2,16 @@
 
 ## Unreleased
 
+- The control panel is now translated into Greek. ([#18458](https://github.com/craftcms/cms/pull/18458))
+- The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is now set to `false` by default for database connections.
+- Fixed a bug where `searchindex` and `searchindexqueue` rows weren’t being deleted when an element was deleted for a site. ([#18394](https://github.com/craftcms/cms/issues/18394))
+- Fixed a bug where multi-select condition rules weren’t applying their “has a value” and “is empty” operators correctly. ([#18470](https://github.com/craftcms/cms/pull/18470))
 - Fixed an unintended change in behavior where `craft\helpers\App::parseEnv()` was returning `null` instad of an empty string, when an environment variable name was passed in, which was set to an empty string.
+- Fixed a bug where drafts within “My Drafts” widgets weren’t getting hyperlinked. ([#18456](https://github.com/craftcms/cms/issues/18456))
+- Fixed a bug where nested entries were getting assigned new IDs if they were edited multiple times for the same owner element draft. ([#18461](https://github.com/craftcms/cms/issues/18461))
+- Fixed a bug where the “New Tab” button within field layout designers could be positioned incorrectly. ([#18450](https://github.com/craftcms/cms/issues/18450))
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-2fph-6v5w-89hh](https://github.com/craftcms/cms/security/advisories/GHSA-2fph-6v5w-89hh))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-472v-j2g4-g9h2)
 
 ## 5.9.12 - 2026-02-18
 
@@ -380,9 +388,9 @@
 - Fixed a bug where verification emails weren’t getting sent when a user without the “Administrate users” permission changed a user account’s email address.
 - Fixed a bug where MP3 files weren’t always being properly recognized. ([#18243](https://github.com/craftcms/cms/issues/18243))
 - Fixed a bug where deeply-nested slideouts could cause visual glitches in Chromium-based browsers. ([#18255](https://github.com/craftcms/cms/issues/18255))
-- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. (GHSA-6j87-m5qx-9fqp, GHSA-3jh3-prx3-w6wc)
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. (GHSA-gp2f-7wcm-5fhx, GHSA-v2gc-rm6g-wrw9)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) TOCTOU vulnerability. (GHSA-6fx5-5cw5-4897)
+- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. ([GHSA-6j87-m5qx-9fqp](https://github.com/craftcms/cms/security/advisories/GHSA-6j87-m5qx-9fqp), [GHSA-3jh3-prx3-w6wc](https://github.com/craftcms/cms/security/advisories/GHSA-3jh3-prx3-w6wc))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. ([GHSA-gp2f-7wcm-5fhx](https://github.com/craftcms/cms/security/advisories/GHSA-gp2f-7wcm-5fhx), [GHSA-v2gc-rm6g-wrw9](https://github.com/craftcms/cms/security/advisories/GHSA-v2gc-rm6g-wrw9))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) TOCTOU vulnerability. ([GHSA-6fx5-5cw5-4897](https://github.com/craftcms/cms/security/advisories/GHSA-6fx5-5cw5-4897))
 
 ## 5.8.22 - 2026-01-09
 

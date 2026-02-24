@@ -581,20 +581,20 @@ class Search extends Component
     {
         $db = Craft::$app->getDb();
         $searchIndexTable = Table::SEARCHINDEX;
-        $elementsTable = Table::ELEMENTS;
+        $elementsSitesTable = Table::ELEMENTS_SITES;
 
         if ($db->getIsMysql()) {
             $sql = <<<SQL
 DELETE s.* FROM $searchIndexTable s
-LEFT JOIN $elementsTable e ON e.id = s.elementId
-WHERE e.id IS NULL
+LEFT JOIN $elementsSitesTable es ON es.elementId = s.elementId AND es.siteId = s.siteId
+WHERE es.elementId IS NULL
 SQL;
         } else {
             $sql = <<<SQL
 DELETE FROM $searchIndexTable s
 WHERE NOT EXISTS (
-    SELECT * FROM $elementsTable
-    WHERE id = s."elementId"
+    SELECT * FROM $elementsSitesTable
+    WHERE "elementId" = s."elementId" AND "siteId" = s."siteId"
 )
 SQL;
         }
@@ -610,20 +610,20 @@ SQL;
     {
         $db = Craft::$app->getDb();
         $searchIndexQueueTable = Table::SEARCHINDEXQUEUE;
-        $elementsTable = Table::ELEMENTS;
+        $elementsSitesTable = Table::ELEMENTS_SITES;
 
         if ($db->getIsMysql()) {
             $sql = <<<SQL
 DELETE q.* FROM $searchIndexQueueTable q
-LEFT JOIN $elementsTable e ON e.id = q.elementId
-WHERE e.id IS NULL
+LEFT JOIN $elementsSitesTable es ON es.elementId = q.elementId AND es.siteId = q.siteId
+WHERE es.elementId IS NULL
 SQL;
         } else {
             $sql = <<<SQL
 DELETE FROM $searchIndexQueueTable q
 WHERE NOT EXISTS (
-    SELECT * FROM $elementsTable
-    WHERE id = q."elementId"
+    SELECT * FROM $elementsSitesTable
+    WHERE "elementId" = q."elementId" AND "siteId" = q."siteId"
 )
 SQL;
         }

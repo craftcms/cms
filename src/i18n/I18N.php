@@ -187,6 +187,7 @@ class I18N extends \yii\i18n\I18N
             'da' => true,
             'de' => true,
             'de-CH' => true,
+            'el' => true,
             'en' => true,
             'en-GB' => true,
             'es' => true,
