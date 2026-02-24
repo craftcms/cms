@@ -137,12 +137,25 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 ## Assets
 
+- Added `CraftCms\Cms\Support\Facades\AssetIndexer` facade.
 - Deprecated `\craft\records\Asset`. `\CraftCms\Cms\Asset\Models\Asset` should be used instead.
 - Deprecated `\craft\records\AssetIndexData`. `\CraftCms\Cms\Asset\Models\AssetIndexData` should be used instead.
 - Deprecated `\craft\records\AssetIndexingSession`. `\CraftCms\Cms\Asset\Models\AssetIndexingSession` should be used instead.
 - Deprecated `\craft\records\Volume`. `\CraftCms\Cms\Asset\Models\Volume` should be used instead.
 - Deprecated `\craft\records\VolumeFolder`. `\CraftCms\Cms\Asset\Models\VolumeFolder` should be used instead.
 - Deprecated `\craft\controllers\AssetIndexesController`. `\CraftCms\Cms\Http\Controllers\Utilities\AssetIndexesController` should be used instead.
+- Deprecated `craft\services\AssetIndexer`. `CraftCms\Cms\Asset\AssetIndexer` should be used instead.
+- Deprecated `craft\models\AssetIndexData`. `CraftCms\Cms\Asset\Data\AssetIndexEntry` should be used instead.
+- Deprecated `craft\models\AssetIndexingSession`. `CraftCms\Cms\Asset\Data\IndexingSession` should be used instead.
+- Deprecated `craft\errors\AssetException`. `CraftCms\Cms\Asset\Exceptions\AssetException` should be used instead.
+- Deprecated `craft\errors\AssetDisallowedExtensionException`. `CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException` should be used instead.
+- Deprecated `craft\errors\AssetNotIndexableException`. `CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException` should be used instead.
+- Deprecated `craft\errors\FileException`. `CraftCms\Cms\Asset\Exceptions\FileException` should be used instead.
+- Deprecated `craft\errors\ImageException`. `CraftCms\Cms\Asset\Exceptions\ImageException` should be used instead.
+- Deprecated `craft\errors\ImageTransformException`. `CraftCms\Cms\Asset\Exceptions\ImageTransformException` should be used instead.
+- Deprecated `craft\errors\MissingAssetException`. `CraftCms\Cms\Asset\Exceptions\MissingAssetException` should be used instead.
+- Deprecated `craft\errors\MissingVolumeFolderException`. `CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException` should be used instead.
+- Deprecated `craft\errors\VolumeException`. `CraftCms\Cms\Asset\Exceptions\VolumeException` should be used instead.
 
 ## Auth
 
@@ -331,6 +344,9 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 
 ## Elements
 
+- Deprecated `craft\errors\InvalidTypeException`. `CraftCms\Cms\Element\Exceptions\InvalidTypeException` should be used instead.
+- Deprecated `craft\errors\UnsupportedSiteException`. `CraftCms\Cms\Element\Exceptions\UnsupportedSiteException` should be used instead.
+
 ### Validation
 
 Craft 6 introduces a new validation system that uses Laravel's Validator instead of Yii2's model validation.
@@ -403,6 +419,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `craft\models\EntryType`. `CraftCms\Cms\Entry\Data\EntryType` should be used instead.
 - Deprecated `craft\records\EntryType`. `CraftCms\Cms\Entry\Models\EntryType` should be used instead.
 - Deprecated `craft\records\Entry`. `CraftCms\Cms\Entry\Models\Entry` should be used instead.
+- Deprecated `craft\errors\EntryTypeNotFoundException`. `CraftCms\Cms\Entry\Exceptions\EntryTypeNotFoundException` should be used instead.
 - Deprecated `craft\events\EntryTypeEvent`. One of these should be used instead:
   - `craft\services\Entries::EVENT_BEFORE_DELETE_ENTRY_TYPE` => `CraftCms\Cms\Section\Events\DeletingEntryType`
   - `craft\services\Entries::EVENT_BEFORE_APPLY_ENTRY_TYPE_DELETE` => `CraftCms\Cms\Entry\Events\ApplyingEntryTypeDelete`
@@ -480,6 +497,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 ## Fields
 
 - Removed `craft\controllers\FieldsController` in favor of `CraftCms\Cms\Http\Controllers\FieldsController`.
+- Deprecated `craft\errors\InvalidFieldException`. `CraftCms\Cms\Field\Exceptions\InvalidFieldException` should be used instead.
 - Deprecated `craft\fields\data\ColorData`. `CraftCms\Cms\Field\Data\ColorData` should be used instead.
 - Deprecated `craft\fields\data\IconData`. `CraftCms\Cms\Field\Data\IconData` should be used instead.
 - Deprecated `craft\fields\data\JsonData`. `CraftCms\Cms\Field\Data\JsonData` should be used instead.
@@ -529,6 +547,10 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `craft\fields\Url`. `CraftCms\Cms\Field\Url` should be used instead.
 - Deprecated `craft\fields\Users`. `CraftCms\Cms\Field\Users` should be used instead.
 - Deprecated `craft\services\Fields`. `CraftCms\Cms\Field\Fields` should be used instead.
+
+## Filesystems
+
+- Deprecated `craft\errors\InvalidSubpathException`. `CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException` should be used instead.
 
 ## GQL
 
@@ -580,6 +602,7 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 - Deprecated `craft\base\PluginTrait`.
 - Deprecated `craft\base\PluginInterface`. `CraftCms\Cms\Plugin\Contracts\PluginInterface` should be used instead.
 - Deprecated `craft\errors\InvalidPluginException`. `CraftCms\Cms\Plugin\Exceptions\InvalidPluginException` should be used instead.
+- Deprecated `craft\errors\InvalidLicenseKeyException`. `CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException` should be used instead.
 
 ### Controllers
 - Removed `craft\controllers\PluginsController`. Use `CraftCms\Cms\Http\Controllers\PluginsController` instead.
@@ -726,6 +749,7 @@ Moved the following controllers:
   - `CraftCms\Cms\Section\Commands\DeleteCommand`
 - Added `CraftCms\Cms\Section\Enums\DefaultPlacement`
 - Added `CraftCms\Cms\Section\Enums\SectionType`
+- Deprecated `craft\errors\SectionNotFoundException`. `CraftCms\Cms\Section\Exceptions\SectionNotFoundException` should be used instead.
 
 ## Sites
 
