@@ -11,8 +11,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\assetpreviews\Image as ImagePreview;
-use craft\errors\AssetDisallowedExtensionException;
-use craft\errors\AssetException;
 use craft\errors\ElementNotFoundException;
 use craft\errors\UploadFailedException;
 use craft\helpers\Assets;
@@ -27,6 +25,8 @@ use craft\web\UploadedFile;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
+use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
