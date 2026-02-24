@@ -10,6 +10,7 @@
 - Fixed a bug where drafts within “My Drafts” widgets weren’t getting hyperlinked. ([#18456](https://github.com/craftcms/cms/issues/18456))
 - Fixed a bug where nested entries were getting assigned new IDs if they were edited multiple times for the same owner element draft. ([#18461](https://github.com/craftcms/cms/issues/18461))
 - Fixed a bug where the “New Tab” button within field layout designers could be positioned incorrectly. ([#18450](https://github.com/craftcms/cms/issues/18450))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-2fph-6v5w-89hh](https://github.com/craftcms/cms/security/advisories/GHSA-2fph-6v5w-89hh))
 - Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-472v-j2g4-g9h2)
 
 ## 5.9.12 - 2026-02-18
