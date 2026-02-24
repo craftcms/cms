@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Support\Facades\Search;
 
 test('search', function () {
     $entry1 = EntryModel::factory()->create();
@@ -16,8 +17,8 @@ test('search', function () {
     $element1 = Craft::$app->getElements()->getElementById($entry1->id);
     $element2 = Craft::$app->getElements()->getElementById($entry2->id);
 
-    Craft::$app->getSearch()->indexElementAttributes($element1);
-    Craft::$app->getSearch()->indexElementAttributes($element2);
+    Search::indexElementAttributes($element1);
+    Search::indexElementAttributes($element2);
 
     expect(entryQuery()->count())->toBe(2);
     expect(entryQuery()->search('Foo')->count())->toBe(1);
@@ -39,8 +40,8 @@ test('search with score', function () {
     $element1 = Craft::$app->getElements()->getElementById($entry1->id);
     $element2 = Craft::$app->getElements()->getElementById($entry2->id);
 
-    Craft::$app->getSearch()->indexElementAttributes($element1);
-    Craft::$app->getSearch()->indexElementAttributes($element2);
+    Search::indexElementAttributes($element1);
+    Search::indexElementAttributes($element2);
 
     expect(entryQuery()->orderBy('score')->count())->toBe(2);
     expect(entryQuery()->search('Foo')->orderBy('score')->count())->toBe(2);

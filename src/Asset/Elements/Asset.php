@@ -44,9 +44,6 @@ use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
-use craft\search\SearchQuery;
-use craft\search\SearchQueryTerm;
-use craft\search\SearchQueryTermGroup;
 use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\web\twig\AllowedInSandbox;
@@ -68,10 +65,14 @@ use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Search\SearchQuery;
+use CraftCms\Cms\Search\SearchQueryTerm;
+use CraftCms\Cms\Search\SearchQueryTermGroup;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -822,7 +823,7 @@ class Asset extends Element
         }
 
         if ($assetQuery->search) {
-            $assetQuery->search = $searchQuery = Craft::$app->getSearch()->normalizeSearchQuery($assetQuery->search);
+            $assetQuery->search = $searchQuery = Search::normalizeSearchQuery($assetQuery->search);
             $tokens = $searchQuery->getTokens();
             if (count($tokens) !== 1 || ! self::_validateSearchTermForIndex(reset($tokens))) {
                 return false;
