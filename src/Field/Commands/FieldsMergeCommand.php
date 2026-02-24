@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Commands;
 
-use craft\errors\InvalidFieldException;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Commands\Concerns\MergesFields;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
+use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Str;

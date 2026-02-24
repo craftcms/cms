@@ -7,8 +7,8 @@
 
 namespace craft\base;
 
-use craft\errors\ImageException;
 use craft\helpers\Image as ImageHelper;
+use CraftCms\Cms\Asset\Exceptions\ImageException;
 use yii\base\BaseObject;
 
 /**

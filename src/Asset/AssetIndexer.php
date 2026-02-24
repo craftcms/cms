@@ -25,7 +25,6 @@ use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Data\FsListing;
-use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -42,12 +41,11 @@ use Illuminate\Support\Facades\Log;
 use League\Flysystem\StorageAttributes;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\InvalidConfigException;
 
 #[Singleton]
 final class AssetIndexer
 {
-    public array $existingIndexingSessions {
+    public Collection $existingIndexingSessions {
         get => $this->getExistingIndexingSessions();
     }
 
@@ -367,8 +365,8 @@ final class AssetIndexer
                 $path !== '',
                 fn (Builder $query) => $query->where('folders.path', 'like', "$path%"),
             )
-            ->when(
-                ! $session->listEmptyFolders,
+            ->unless(
+                $session->listEmptyFolders,
                 fn (Builder $query) => $query
                     ->leftJoin(new Alias(Table::ASSETINDEXDATA, 'indexData'), function (JoinClause $join) {
                         $join->whereColumn('folders.id', 'indexData.recordId')
@@ -421,7 +419,7 @@ final class AssetIndexer
             }
 
             if ($session->listEmptyFolders && $hasAssets > 0) {
-                if ($hasAssets === $missingFiles->filter(fn ($file) => str_starts_with($file['path'], $path))->count()) {
+                if ($hasAssets === $missingFiles->filter(fn ($file) => str_starts_with((string) $file['path'], (string) $path))->count()) {
                     $missing['folders'][$folderId] = "$volumeName/$path";
                 }
             }
@@ -563,7 +561,7 @@ final class AssetIndexer
         bool $createIfMissing = true,
     ): Asset {
         $uriPath = $indexEntry->uri;
-        $dirname = dirname($uriPath);
+        $dirname = dirname((string) $uriPath);
 
         foreach (preg_split('/\\\\|\//', $dirname) as $part) {
             if ($part[0] === '_') {
@@ -571,8 +569,8 @@ final class AssetIndexer
             }
         }
 
-        $extension = pathinfo($indexEntry->uri, PATHINFO_EXTENSION);
-        $filename = basename($indexEntry->uri);
+        $extension = pathinfo((string) $indexEntry->uri, PATHINFO_EXTENSION);
+        $filename = basename((string) $indexEntry->uri);
 
         if (preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $filename)) {
             throw new AssetNotIndexableException("File \"{$indexEntry->uri}\" will not be indexed.");

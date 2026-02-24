@@ -8,7 +8,7 @@ if (false) {
      * @since 3.4.29
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Element\Exceptions\UnsupportedSiteException} instead.
      */
-    class UnsupportedSiteException extends \CraftCms\Cms\Element\Exceptions\UnsupportedSiteException
+    class UnsupportedSiteException
     {
     }
 }

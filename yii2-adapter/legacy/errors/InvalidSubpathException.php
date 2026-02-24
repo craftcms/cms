@@ -8,7 +8,7 @@ if (false) {
      * @since 3.0.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException} instead.
      */
-    class InvalidSubpathException extends \CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException
+    class InvalidSubpathException
     {
     }
 }

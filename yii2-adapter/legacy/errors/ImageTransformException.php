@@ -8,7 +8,7 @@ if (false) {
      * @since 4.0.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Asset\Exceptions\ImageTransformException} instead.
      */
-    class ImageTransformException extends \CraftCms\Cms\Asset\Exceptions\ImageTransformException
+    class ImageTransformException
     {
     }
 }

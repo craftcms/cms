@@ -280,7 +280,7 @@ it('encodes indexed volumes as json', function () {
 
     $session = $this->indexer->createIndexingSession([$volumeData]);
 
-    $decoded = json_decode($session->indexedVolumes, true);
+    $decoded = json_decode((string) $session->indexedVolumes, true);
 
     expect($decoded)->toBeArray();
     expect($decoded)->toHaveKey((string) $volumeData->id);
@@ -321,7 +321,7 @@ it('sets processIfRootEmpty when volume has no files', function () {
     @mkdir($diskRoot, 0777, true);
 
     // Remove any leftover files
-    array_map('unlink', glob("$diskRoot/*") ?: []);
+    array_map(unlink(...), glob("$diskRoot/*") ?: []);
 
     $session = $this->indexer->startIndexingSession(
         volumes: [$volumeData->id],
