@@ -13,6 +13,6 @@ final class LoginUserRetrieved
 {
     public function __construct(
         public string $loginName,
-        public User $user,
+        public ?User $user,
     ) {}
 }

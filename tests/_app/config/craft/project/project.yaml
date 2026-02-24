@@ -1,0 +1,24 @@
+dateModified: 1771907646
+email:
+  fromEmail: test@craftcms.com
+  fromName: 'E2E Tests'
+  transportType: craft\mail\transportadapters\Sendmail
+meta:
+  __names__:
+    44e416fa-ed39-4a5e-ba8a-71ede55afd21: 'E2E Tests' # E2E Tests
+    16996594-3209-4854-aace-a71c78667377: 'Public Schema' # Public Schema
+    cee8f4a6-6ae0-4fa8-a14a-10cba1dfe1e7: 'E2E Tests' # E2E Tests
+system:
+  edition: solo
+  live: true
+  name: 'Test Name'
+  retryDuration: '600'
+  schemaVersion: 6.0.0.0
+  timeZone: America/Los_Angeles
+users:
+  allowPublicRegistration: false
+  defaultGroup: null
+  photoSubpath: null
+  photoVolumeUid: null
+  require2fa: false
+  requireEmailVerification: true

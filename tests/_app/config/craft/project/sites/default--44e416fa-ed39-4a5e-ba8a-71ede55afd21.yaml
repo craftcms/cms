@@ -1,0 +1,9 @@
+baseUrl: 'https://e2e.ddev.site/'
+enabled: true
+handle: default
+hasUrls: true
+language: en_US
+name: 'E2E Tests'
+primary: true
+siteGroup: cee8f4a6-6ae0-4fa8-a14a-10cba1dfe1e7 # E2E Tests
+sortOrder: 1

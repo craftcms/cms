@@ -17,6 +17,8 @@ AUTH_MODEL=\CraftCms\Cms\User\Models\User
 # Test driver: "laravel" (default) or "ddev"
 #TEST_DRIVER=laravel
 
-# Base URL for Pest browser tests (e.g. a DDEV instance)
-#BROWSER_TEST_URL=https://craft6-dev.ddev.site
-#DDEV_PROJECT_DIR=/path/to/your/ddev/project
+# Browser test settings (for the embedded DDEV app in tests/_app/)
+# Start with: cd tests/_app && ddev start && ddev composer install
+#TEST_DRIVER=ddev
+#BROWSER_TEST_URL=https://e2e.ddev.site
+#DDEV_PROJECT_DIR=tests/_app
