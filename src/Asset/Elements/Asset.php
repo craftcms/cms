@@ -34,14 +34,6 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
-<<<<<<< feature/port-search-service
-use craft\models\Volume;
-use craft\models\VolumeFolder;
-=======
-use craft\search\SearchQuery;
-use craft\search\SearchQueryTerm;
-use craft\search\SearchQueryTermGroup;
->>>>>>> 6.x
 use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\web\twig\AllowedInSandbox;
@@ -68,15 +60,12 @@ use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-<<<<<<< feature/port-search-service
-use CraftCms\Cms\Search\SearchQuery;
-use CraftCms\Cms\Search\SearchQueryTerm;
-use CraftCms\Cms\Search\SearchQueryTermGroup;
-=======
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
->>>>>>> 6.x
+use CraftCms\Cms\Search\SearchQuery;
+use CraftCms\Cms\Search\SearchQueryTerm;
+use CraftCms\Cms\Search\SearchQueryTermGroup;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
