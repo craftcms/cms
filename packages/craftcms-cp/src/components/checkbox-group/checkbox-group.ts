@@ -6,6 +6,11 @@ export default class CraftCheckboxGroup extends LionCheckboxGroup {
     return [
       ...LionCheckboxGroup.styles,
       css`
+        .input-group {
+          display: grid;
+          gap: var(--c-spacing-sm);
+        }
+
         .form-field__group-two {
           margin-top: var(--c-spacing-sm);
         }

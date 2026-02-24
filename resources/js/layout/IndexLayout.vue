@@ -26,13 +26,17 @@
     navState.value = navState.value === 'expanded' ? 'collapsed' : 'expanded';
   }
 
-  watch(isLarge, (newValue) => {
-    /**
-     * When transitioning from small to large or large to small make sure
-     * we set the nav state accordingly
-     */
-    navState.value = newValue ? 'expanded' : 'collapsed';
-  });
+  watch(
+    isLarge,
+    (newValue) => {
+      /**
+       * When transitioning from small to large or large to small make sure
+       * we set the nav state accordingly
+       */
+      navState.value = newValue ? 'expanded' : 'collapsed';
+    },
+    {immediate: true}
+  );
 </script>
 
 <template>
@@ -42,8 +46,8 @@
       <slot :name="name" v-bind="slotData || {}"></slot>
     </template>
 
-    <div class="interior">
-      <div class="">
+    <div class="index-grid">
+      <div>
         <craft-button
           v-if="!isLarge"
           type="button"
@@ -69,7 +73,7 @@
         </div>
       </div>
       <div
-        class="bg-white border border-border-subtle rounded-sm shadow-sm overflow-auto"
+        class="bg-white border border-border-subtle rounded-sm shadow-sm @container"
       >
         <slot></slot>
       </div>
@@ -78,18 +82,6 @@
 </template>
 
 <style scoped lang="scss">
-  .interior {
-    display: grid;
-    gap: var(--c-spacing-md);
-
-    @container (width >= 768px) {
-      grid-template-columns:
-        clamp(calc(120rem / 16), 20%, calc(180rem / 16))
-        6fr;
-      align-items: start;
-    }
-  }
-
   #nav-container {
     background-color: color-mix(var(--color-slate-900), trans);
   }

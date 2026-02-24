@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -17,12 +19,13 @@ use yii\base\NotSupportedException;
  * Class RegisterResourceNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class RegisterResourceNode extends Node implements NodeCaptureInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function compile(Compiler $compiler): void
     {

@@ -21,6 +21,7 @@
     height: 44px;
 
     @supports (backdrop-filter: blur(10px)) {
+      /* stylelint-disable block-no-redundant-nested-style-rules */
       & {
         position: absolute;
         z-index: 2;
@@ -34,6 +35,7 @@
           padding-block-start: #{44 + 24}px;
         }
       }
+      /* stylelint-enable */
     }
 
     .btn,

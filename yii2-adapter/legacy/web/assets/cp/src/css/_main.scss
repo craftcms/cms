@@ -1147,7 +1147,7 @@ i em {
 }
 
 .break-word {
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .light {
@@ -1462,7 +1462,7 @@ td.right {
   }
 
   td {
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     width: 100%;
   }
 }
@@ -5700,7 +5700,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   padding: var(--pane-padding);
   border: var(--pane-border);
   border-radius: var(--pane-border-radius);
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   box-sizing: border-box;
 
   &.secondary {
@@ -6094,7 +6094,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
 
   .data {
     overflow-wrap: break-word;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   & > .field .heading,
@@ -8187,6 +8187,7 @@ textarea.text.fullwidth {
     }
 
     @container (max-width: calc(399rem/16)) {
+      /* stylelint-disable block-no-redundant-nested-style-rules */
       & {
         flex-direction: column;
         align-items: stretch;
@@ -8203,6 +8204,7 @@ textarea.text.fullwidth {
           align-items: stretch;
         }
       }
+      /* stylelint-enable */
     }
   }
 }
@@ -9178,7 +9180,9 @@ body .selectize-dropdown {
     flex-direction: row;
     padding-block: 3px !important;
     padding-inline: 7px !important;
+    /* stylelint-disable declaration-property-value-keyword-no-deprecated */
     word-break: break-word;
+    /* stylelint-enable */
 
     &.active {
       @include mixins.active-token-styles;
@@ -9751,7 +9755,7 @@ body.licensing-issues {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    word-wrap: normal;
+    overflow-wrap: normal;
     cursor: default;
     user-select: none;
     position: relative;

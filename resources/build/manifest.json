@@ -1,105 +1,61 @@
 {
-  "_Badge.css": {
-    "file": "assets/Badge.css",
-    "src": "_Badge.css"
+  "_AppLayout.css": {
+    "file": "assets/AppLayout.css",
+    "src": "_AppLayout.css"
   },
-  "_Badge.vue_vue_type_script_setup_true_lang.js": {
-    "file": "Badge.vue_vue_type_script_setup_true_lang.js",
-    "name": "Badge.vue_vue_type_script_setup_true_lang",
+  "_AppLayout.js": {
+    "file": "AppLayout.js",
+    "name": "AppLayout",
     "imports": [
-      "resources/js/cp.ts",
-      "__plugin-vue_export-helper.js",
-      "_nav-item.ts.js",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_progress-DOMF4PIT.js",
-      "_Modal.js",
-      "_index.js"
+      "_cp3.js"
     ],
     "css": [
-      "assets/Badge.css"
+      "assets/AppLayout.css"
     ]
-  },
-  "_CalloutReadOnly.css": {
-    "file": "assets/CalloutReadOnly.css",
-    "src": "_CalloutReadOnly.css"
   },
   "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js": {
     "file": "CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
     "name": "CalloutReadOnly.vue_vue_type_script_setup_true_lang",
     "imports": [
-      "resources/js/cp.ts",
-      "_nav-item.ts.js",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_progress-DOMF4PIT.js",
-      "__plugin-vue_export-helper.js"
+      "_cp3.js"
+    ]
+  },
+  "_DeleteSiteModal.css": {
+    "file": "assets/DeleteSiteModal.css",
+    "src": "_DeleteSiteModal.css"
+  },
+  "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js": {
+    "file": "DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
+    "name": "DeleteSiteModal.vue_vue_type_script_setup_true_lang",
+    "imports": [
+      "_cp3.js"
     ],
     "css": [
-      "assets/CalloutReadOnly.css"
+      "assets/DeleteSiteModal.css"
     ]
   },
-  "_Modal.css": {
-    "file": "assets/Modal.css",
-    "src": "_Modal.css"
+  "_IndexLayout.css": {
+    "file": "assets/IndexLayout.css",
+    "src": "_IndexLayout.css"
   },
-  "_Modal.js": {
-    "file": "Modal.js",
-    "name": "Modal",
+  "_IndexLayout.js": {
+    "file": "IndexLayout.js",
+    "name": "IndexLayout",
     "imports": [
-      "resources/js/cp.ts",
-      "__plugin-vue_export-helper.js"
+      "_cp3.js",
+      "_AppLayout.js"
     ],
     "css": [
-      "assets/Modal.css"
+      "assets/IndexLayout.css"
     ]
   },
-  "_TransitionFade.css": {
-    "file": "assets/TransitionFade.css",
-    "src": "_TransitionFade.css"
+  "_cp2.css": {
+    "file": "assets/cp2.css",
+    "src": "_cp2.css"
   },
-  "_TransitionFade.js": {
-    "file": "TransitionFade.js",
-    "name": "TransitionFade",
-    "imports": [
-      "resources/js/cp.ts",
-      "__plugin-vue_export-helper.js"
-    ],
-    "css": [
-      "assets/TransitionFade.css"
-    ]
-  },
-  "__plugin-vue_export-helper.js": {
-    "file": "_plugin-vue_export-helper.js",
-    "name": "_plugin-vue_export-helper",
-    "imports": [
-      "resources/js/cp.ts"
-    ]
-  },
-  "_index.js": {
-    "file": "index.js",
-    "name": "index"
-  },
-  "_index2.js": {
-    "file": "index2.js",
-    "name": "index"
-  },
-  "_lit-element.js": {
-    "file": "lit-element.js",
-    "name": "lit-element"
-  },
-  "_nav-item.ts.js": {
-    "file": "nav-item.ts.js",
-    "name": "nav-item.ts",
-    "isDynamicEntry": true,
-    "imports": [
-      "_lit-element.js",
-      "_property.js",
-      "_progress-DOMF4PIT.js",
-      "_query.js",
-      "_index2.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs"
-    ],
+  "_cp3.js": {
+    "file": "cp3.js",
+    "name": "cp",
     "dynamicImports": [
       "node_modules/@lion/ui/components/form-core/translations/bg-BG.js",
       "node_modules/@lion/ui/components/form-core/translations/bg.js",
@@ -187,27 +143,18 @@
       "node_modules/@lion/ui/components/combobox/translations/sk.js",
       "node_modules/@lion/ui/components/combobox/translations/uk.js",
       "node_modules/@lion/ui/components/combobox/translations/zh.js",
-      "node_modules/@lion/ui/components/combobox/translations/en.js"
+      "node_modules/@lion/ui/components/combobox/translations/en.js",
+      "resources/js/pages/Install.vue",
+      "resources/js/pages/SettingsGeneralPage.vue",
+      "resources/js/pages/SettingsIndexPage.vue",
+      "resources/js/pages/SettingsSitesEdit.vue",
+      "resources/js/pages/SettingsSitesIndex.vue",
+      "resources/js/pages/Updater.vue",
+      "resources/js/pages/UtilitiesShowPage.vue"
+    ],
+    "css": [
+      "assets/cp2.css"
     ]
-  },
-  "_progress-DOMF4PIT.js": {
-    "file": "progress-DOMF4PIT.js",
-    "name": "progress-DOMF4PIT",
-    "imports": [
-      "_property.js",
-      "_lit-element.js"
-    ]
-  },
-  "_property.js": {
-    "file": "property.js",
-    "name": "property",
-    "imports": [
-      "_lit-element.js"
-    ]
-  },
-  "_query.js": {
-    "file": "query.js",
-    "name": "query"
   },
   "node_modules/@lion/ui/components/combobox/translations/bg.js": {
     "file": "bg.js",
@@ -824,15 +771,6 @@
     "src": "node_modules/@popperjs/core/dist/esm/popper.js",
     "isDynamicEntry": true
   },
-  "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs": {
-    "file": "nav-list.ts.js",
-    "name": "nav-list.ts",
-    "src": "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-    "isDynamicEntry": true,
-    "imports": [
-      "_lit-element.js"
-    ]
-  },
   "resources/css/cp.css": {
     "file": "assets/cp.css",
     "src": "resources/css/cp.css",
@@ -864,9 +802,7 @@
     "src": "resources/js/components/CpGlobalSidebar.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_lit-element.js",
-      "_property.js",
-      "_query.js"
+      "_cp3.js"
     ]
   },
   "resources/js/components/CpQueueIndicator.ts": {
@@ -875,34 +811,18 @@
     "src": "resources/js/components/CpQueueIndicator.ts",
     "isDynamicEntry": true,
     "imports": [
-      "_lit-element.js",
-      "_property.js",
-      "_progress-DOMF4PIT.js",
-      "resources/js/legacy.ts",
-      "_index2.js"
+      "_cp3.js"
     ]
   },
   "resources/js/cp.ts": {
-    "file": "cp2.js",
+    "file": "cp.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
-      "_index2.js",
-      "_nav-item.ts.js",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_progress-DOMF4PIT.js",
+      "_cp3.js",
       "resources/js/components/CpGlobalSidebar.ts",
-      "_property.js",
-      "_query.js"
-    ],
-    "dynamicImports": [
-      "resources/js/pages/Install.vue",
-      "resources/js/pages/SettingsGeneralPage.vue",
-      "resources/js/pages/SettingsIndexPage.vue",
-      "resources/js/pages/SettingsSitesEdit.vue",
-      "resources/js/pages/SettingsSitesIndex.vue"
+      "resources/js/components/CpQueueIndicator.ts"
     ]
   },
   "resources/js/legacy.ts": {
@@ -911,11 +831,9 @@
     "src": "resources/js/legacy.ts",
     "isEntry": true,
     "imports": [
-      "_index2.js"
+      "_cp3.js"
     ],
     "dynamicImports": [
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_nav-item.ts.js",
       "resources/js/components/CpGlobalSidebar.ts",
       "resources/js/components/CpQueueIndicator.ts"
     ]
@@ -926,17 +844,7 @@
     "src": "resources/js/pages/Install.vue",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/cp.ts",
-      "_nav-item.ts.js",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_progress-DOMF4PIT.js",
-      "__plugin-vue_export-helper.js",
-      "_index2.js",
-      "_Modal.js",
-      "resources/js/components/CpGlobalSidebar.ts",
-      "_property.js",
-      "_query.js"
+      "_cp3.js"
     ],
     "css": [
       "assets/Install.css"
@@ -954,19 +862,9 @@
     "src": "resources/js/pages/SettingsGeneralPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/cp.ts",
-      "_nav-item.ts.js",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_progress-DOMF4PIT.js",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "_index.js",
-      "_TransitionFade.js",
-      "__plugin-vue_export-helper.js",
-      "_index2.js",
-      "resources/js/components/CpGlobalSidebar.ts",
-      "_property.js",
-      "_query.js"
+      "_cp3.js",
+      "_AppLayout.js",
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js"
     ],
     "css": [
       "assets/SettingsGeneralPage.css"
@@ -978,17 +876,9 @@
     "src": "resources/js/pages/SettingsIndexPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/cp.ts",
-      "_nav-item.ts.js",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_progress-DOMF4PIT.js",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "__plugin-vue_export-helper.js",
-      "_index2.js",
-      "resources/js/components/CpGlobalSidebar.ts",
-      "_property.js",
-      "_query.js"
+      "_cp3.js",
+      "_AppLayout.js",
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js"
     ],
     "css": [
       "assets/SettingsIndexPage.css"
@@ -1000,21 +890,10 @@
     "src": "resources/js/pages/SettingsSitesEdit.vue",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/cp.ts",
+      "_cp3.js",
+      "_AppLayout.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "_nav-item.ts.js",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_progress-DOMF4PIT.js",
-      "_TransitionFade.js",
-      "_Badge.vue_vue_type_script_setup_true_lang.js",
-      "__plugin-vue_export-helper.js",
-      "_index2.js",
-      "resources/js/components/CpGlobalSidebar.ts",
-      "_property.js",
-      "_query.js",
-      "_Modal.js",
-      "_index.js"
+      "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js"
     ]
   },
   "resources/js/pages/SettingsSitesIndex.vue": {
@@ -1023,23 +902,37 @@
     "src": "resources/js/pages/SettingsSitesIndex.vue",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/cp.ts",
-      "_nav-item.ts.js",
-      "_lit-element.js",
-      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
-      "_progress-DOMF4PIT.js",
+      "_cp3.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "__plugin-vue_export-helper.js",
-      "_Badge.vue_vue_type_script_setup_true_lang.js",
-      "_index.js",
-      "_index2.js",
-      "resources/js/components/CpGlobalSidebar.ts",
-      "_property.js",
-      "_query.js",
-      "_Modal.js"
+      "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
+      "_IndexLayout.js",
+      "_AppLayout.js"
     ],
     "css": [
       "assets/SettingsSitesIndex.css"
+    ]
+  },
+  "resources/js/pages/Updater.vue": {
+    "file": "Updater.js",
+    "name": "Updater",
+    "src": "resources/js/pages/Updater.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_cp3.js"
+    ],
+    "css": [
+      "assets/Updater.css"
+    ]
+  },
+  "resources/js/pages/UtilitiesShowPage.vue": {
+    "file": "UtilitiesShowPage.js",
+    "name": "UtilitiesShowPage",
+    "src": "resources/js/pages/UtilitiesShowPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_cp3.js",
+      "_IndexLayout.js",
+      "_AppLayout.js"
     ]
   }
 }

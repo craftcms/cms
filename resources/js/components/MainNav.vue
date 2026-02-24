@@ -1,7 +1,18 @@
 <script setup lang="ts">
   import useCraftData from '@/composables/useCraftData';
+  import {computed} from 'vue';
+  import {usePage} from '@inertiajs/vue3';
 
+  const page = usePage<{
+    queue: {
+      enabled: boolean;
+      displayedJob: any;
+      hasReservedJobs: boolean;
+      hasWaitingJobs: boolean;
+    };
+  }>();
   const {nav} = useCraftData();
+  const queue = computed(() => page.props.queue);
 </script>
 
 <template>
@@ -36,6 +47,11 @@
         </craft-nav-list>
       </template>
     </craft-nav-item>
+    <cp-queue-indicator
+      :displayedJob.prop="queue.displayedJob"
+      :hasReservedJobs.prop="queue.hasReservedJobs"
+      :hasWaitingJobs.prop="queue.hasWaitingJobs"
+    ></cp-queue-indicator>
   </craft-nav-list>
 </template>
 

@@ -1,8 +1,13 @@
 import {css} from 'lit';
-import inputStyles from '../input/input.styles.js';
+
 export default css`
   :host(:not([label-sr-only])) .form-field__group-one {
     margin-bottom: var(--c-spacing-sm);
+  }
+
+  :host([monospace]) ::slotted([slot='input']) {
+    font-family: var(--c-font-mono, monospace) !important;
+    font-size: var(--c-text-sm);
   }
 
   ::slotted(label) {

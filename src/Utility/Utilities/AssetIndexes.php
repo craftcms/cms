@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
 use craft\helpers\App;
-use craft\web\assets\assetindexes\AssetIndexesAsset;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -18,7 +16,6 @@ use CraftCms\Cms\Utility\Utility;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
@@ -69,25 +66,14 @@ final class AssetIndexes extends Utility
             ];
         }
 
-        $view = Craft::$app->getView();
-        $checkboxSelectHtml = template('_includes/forms/checkboxSelect', [
-            'class' => 'first',
-            'name' => 'volumes',
-            'options' => $volumeOptions,
-            'showAllOption' => true,
-            'values' => '*',
-        ]);
-
-        $view->registerAssetBundle(AssetIndexesAsset::class);
         $dateFormat = I18N::getLocale()->getDateTimeFormat('short', Locale::FORMAT_PHP);
-
         $existingIndexingSessions = AssetIndexer::getExistingIndexingSessions();
 
-        return template('_components/utilities/AssetIndexes', [
-            'existingSessions' => $existingIndexingSessions,
-            'checkboxSelectHtml' => $checkboxSelectHtml,
+        return Html::tag('AssetIndexes', attributes: [
+            ':existingSessions' => $existingIndexingSessions,
+            ':volumeOptions' => $volumeOptions,
             'dateFormat' => $dateFormat,
-            'isEphemeral' => App::isEphemeral(),
+            ':isEphemeral' => App::isEphemeral(),
         ]);
     }
 }

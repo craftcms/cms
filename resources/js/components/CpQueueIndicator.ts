@@ -1,9 +1,11 @@
-import {css, html, LitElement, nothing} from 'lit';
-import {customElement, state} from 'lit/decorators.js';
+import {css, html, LitElement, nothing, type PropertyValues} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 import {JobStatus} from '@craftcms/cp/src/types/queue.js';
 import type {JobInfo, JobUpdateDetail} from '@craftcms/cp';
 
 import '@craftcms/cp/components/progress/progress.ts';
+import {QueueService} from '@craftcms/cp/src/services/Queue.js';
+import {ConfigService} from '@craftcms/cp/src/services/Config.js';
 
 @customElement('cp-queue-indicator')
 class CpQueueIndicator extends LitElement {
@@ -22,32 +24,69 @@ class CpQueueIndicator extends LitElement {
     }
   `;
 
-  @state() private displayedJob: JobInfo | null = null;
+  @property({type: Object, attribute: 'displayed-job'})
+  displayedJob: JobInfo | null = null;
+  @property({type: Boolean, attribute: 'has-reserved-jobs'})
+  hasReservedJobs: boolean = false;
+  @property({type: Boolean, attribute: 'has-waiting-jobs'})
+  hasWaitingJobs: boolean = false;
+
+  #queue: QueueService = QueueService.getInstance();
+  #config: ConfigService = ConfigService.getInstance();
 
   override connectedCallback() {
     super.connectedCallback();
-    window.Craft?.$queue?.addEventListener(
+
+    // Use service's displayed job if we don't have one from props
+    if (!this.displayedJob) {
+      this.displayedJob = this.#queue.displayedJob;
+    }
+
+    this.#queue.addEventListener(
       'job-update',
       this.#handleJobUpdate as EventListener
     );
 
     // Set initial visibility based on current state
     this.#updateVisibility();
+    // Either track or run the queue based on initial state
+    this.#updateQueue();
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    window.Craft?.$queue?.removeEventListener(
+    this.#queue.removeEventListener(
       'job-update',
       this.#handleJobUpdate as EventListener
     );
   }
 
+  protected override update(changedProperties: PropertyValues) {
+    super.update(changedProperties);
+
+    if (
+      changedProperties.has('hasReservedJobs') ||
+      changedProperties.has('hasWaitingJobs')
+    ) {
+      this.#updateQueue();
+    }
+
+    if (changedProperties.has('displayedJob')) {
+      this.#updateVisibility();
+    }
+  }
+
   #handleJobUpdate = (event: CustomEvent<JobUpdateDetail>) => {
-    console.log('handling update');
     this.displayedJob = event.detail.displayedJob;
-    this.#updateVisibility();
   };
+
+  #updateQueue() {
+    if (this.hasReservedJobs) {
+      this.#queue.startTracking();
+    } else if (this.hasWaitingJobs) {
+      this.#queue.runQueue();
+    }
+  }
 
   #updateVisibility() {
     if (this.displayedJob) {
@@ -59,20 +98,20 @@ class CpQueueIndicator extends LitElement {
 
   get #progress(): number {
     if (!this.displayedJob) return 0;
-    if (this.displayedJob.status === JobStatus.Failed) return 100;
+    if (this.displayedJob.status.value === JobStatus.Failed) return 100;
     return this.displayedJob.progress ?? 0;
   }
 
   get #isFailed(): boolean {
-    return this.displayedJob?.status === JobStatus.Failed;
+    return this.displayedJob?.status.value === JobStatus.Failed;
   }
 
   get #queueManagerUrl(): string | null {
-    if (!window.Craft?.$queue?.canAccessQueueManager) return null;
-    if (window.Craft?.getUrl) {
-      return window.Craft.getUrl('utilities/queue-manager');
+    if (this.#queue.canAccessQueueManager) {
+      return null;
     }
-    return '/admin/utilities/queue-manager';
+
+    return this.#config.getCpUrl('utilities/queue-manager');
   }
 
   protected override render() {
@@ -83,7 +122,7 @@ class CpQueueIndicator extends LitElement {
     const url = this.#queueManagerUrl;
 
     return html`
-      <craft-nav-item .url=${url}>
+      <craft-nav-item .href=${url}>
         <craft-progress
           slot="prefix"
           progress=${this.#progress}

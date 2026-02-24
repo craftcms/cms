@@ -9,8 +9,10 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 use function Pest\Laravel\swap;
 
@@ -47,7 +49,7 @@ it('requires authentication all routes', function (string $controller, string $a
 
 test('all routes validate data', function (string $controller, string $action) {
     if ($action === 'index') {
-        postJson(action([$controller, $action]))->assertOk();
+        post(action([$controller, $action]))->assertOk();
 
         return;
     }
@@ -59,10 +61,15 @@ test('all routes validate data', function (string $controller, string $action) {
     ]);
 })->with('routes');
 
-test('index', function () {
-    postJson(action([ConfigSyncController::class, 'index']))
-        ->assertOk()
-        ->assertSee('Project Config Sync');
+test('index returns Inertia Updater page', function () {
+    post(action([ConfigSyncController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Updater')
+            ->has('title')
+            ->has('initialState')
+            ->has('actionPrefix')
+            ->has('returnUrl')
+        );
 });
 
 test('retry', function () {

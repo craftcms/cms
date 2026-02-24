@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -17,6 +19,7 @@ use Twig\TokenStream;
  * Class RegisterResourceTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class RegisterResourceTokenParser extends AbstractTokenParser
@@ -53,14 +56,15 @@ class RegisterResourceTokenParser extends AbstractTokenParser
 
     /**
      * @var int|null The default `$position` value that should be possed to the [[method]], if it has a `$position` argument.
+     *
      * @since 3.6.11
      */
     public ?int $defaultPosition = null;
 
     /**
-     * @param string $tag the tag name
-     * @param string $method the View method the tag represents
-     * @param array $config name-value pairs that will be used to initialize the object properties
+     * @param  string  $tag  the tag name
+     * @param  string  $method  the View method the tag represents
+     * @param  array  $config  name-value pairs that will be used to initialize the object properties
      */
     public function __construct(string $tag, string $method, array $config = [])
     {
@@ -73,7 +77,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function parse(Token $token): RegisterResourceNode
     {
@@ -151,17 +155,13 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getTag(): string
     {
         return $this->tag;
     }
 
-    /**
-     * @param Token $token
-     * @return bool
-     */
     public function decideBlockEnd(Token $token): bool
     {
         return $token->test('end' . strtolower($this->tag));
@@ -170,25 +170,22 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     /**
      * Returns whether the next token in the stream is a position param.
      *
-     * @param TokenStream $stream The Twig token stream
-     * @return bool
+     * @param  TokenStream  $stream  The Twig token stream
      */
     private function _testPositionParam(TokenStream $stream): bool
     {
-        return (
+        return
             ($this->allowPosition && $stream->test(Token::NAME_TYPE, 'at')) ||
-            ($this->allowRuntimePosition && $stream->test(Token::NAME_TYPE, 'on'))
-        );
+            ($this->allowRuntimePosition && $stream->test(Token::NAME_TYPE, 'on'));
     }
 
     /**
      * Returns whether the next token in the stream is an options param.
      *
-     * @param TokenStream $stream The Twig token stream
-     * @return bool
+     * @param  TokenStream  $stream  The Twig token stream
      */
     private function _testOptionsParam(TokenStream $stream): bool
     {
-        return ($this->allowOptions && $stream->test(Token::NAME_TYPE, 'with'));
+        return $this->allowOptions && $stream->test(Token::NAME_TYPE, 'with');
     }
 }

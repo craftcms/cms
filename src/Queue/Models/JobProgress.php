@@ -8,6 +8,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -32,5 +33,19 @@ final class JobProgress extends BaseModel
     protected function getLabelAttribute(): ?string
     {
         return $this->progressLabel ? t($this->progressLabel) : null;
+    }
+
+    #[Override]
+    public function attributesToArray(): array
+    {
+        $attributes = parent::attributesToArray();
+
+        $attributes['description'] = t($this->description);
+
+        if ($this->status instanceof JobStatus) {
+            $attributes['status'] = $this->status->jsonSerialize();
+        }
+
+        return $attributes;
     }
 }

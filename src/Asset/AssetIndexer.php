@@ -141,13 +141,9 @@ final class AssetIndexer
     ): IndexingSession {
         $volumeList = [];
 
-        if ($volumes[0] === '*') {
-            $volumeList = $this->volumes->getAllVolumes()->all();
-        } else {
-            foreach ($volumes as $volumeId) {
-                if ($volume = $this->volumes->getVolumeById((int) $volumeId)) {
-                    $volumeList[] = $volume;
-                }
+        foreach ($volumes as $volumeId) {
+            if ($volume = $this->volumes->getVolumeById((int) $volumeId)) {
+                $volumeList[] = $volume;
             }
         }
 
