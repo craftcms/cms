@@ -14,8 +14,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-use function CraftCms\Cms\template;
-
 final readonly class SystemMessagesController
 {
     use RespondsWithFlash;
@@ -41,10 +39,7 @@ final readonly class SystemMessagesController
         $message = $this->systemMessages->getMessage($data['key'], $data['language'] ?? null);
 
         return new JsonResponse([
-            'body' => template('_components/utilities/SystemMessages/message-modal', [
-                'message' => $message,
-                'language' => $message?->language,
-            ]),
+            'message' => $message,
         ]);
     }
 
@@ -59,6 +54,9 @@ final readonly class SystemMessagesController
 
         $this->systemMessages->saveMessage($message);
 
-        return $this->asSuccess();
+        return $this->asSuccess(data: [
+            'subject' => $message->subject,
+            'body' => $message->body,
+        ]);
     }
 }

@@ -1,87 +1,132 @@
-<div class="readable">
-    <h2>{{ "Application Info"|t('app') }}</h2>
+<div class="p-4 grid gap-8">
+  <div id="application-info">
+    <h2 class="mb-3">{{ "Application Info"|t('app') }}</h2>
 
-    <table class="data fullwidth fixed-layout" dir="ltr">
-        <tbody>
-            {% for label, value in appInfo %}
-                <tr>
-                    <th class="light">{{ label }}</th>
-                    <td>{{ value }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
+    <table class="cp-table cp-table--borderless" dir="ltr">
+      <tbody>
+        {% for label, value in appInfo %}
+          <tr>
+            <th class="light">{{ label }}</th>
+            <td>{{ value }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
+  </div>
 
-    <h2>{{ "Plugins"|t('app') }}</h2>
+  <div id="plugins">
+
+    <h2 class="mb-3">{{ "Plugins"|t('app') }}</h2>
 
     {% if plugins|length %}
-        <table class="data fullwidth fixed-layout" dir="ltr">
-            <tbody>
-                {% for plugin in plugins %}
-                    <tr>
-                        <th class="light">{{ plugin.name }}</th>
-                        <td>{{ plugin.version }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+      <table class="cp-table cp-table--borderless" dir="ltr">
+        <tbody>
+          {% for plugin in plugins %}
+            <tr>
+              <th class="light">{{ plugin.name }}</th>
+              <td>{{ plugin.version }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     {% else %}
-        <p>{{ 'No plugins are enabled.'|t('app') }}</p>
+      <p>{{ 'No plugins are enabled.'|t('app') }}</p>
     {% endif %}
+  </div>
 
-    <h2>{{ 'Modules'|t('app') }}</h2>
+  <div id="modules">
+
+    <h2 class="mb-3">{{ 'Modules'|t('app') }}</h2>
 
     {% if modules|length %}
-        <table class="data fullwidth fixed-layout" dir="ltr">
-            <tbody>
-                {% for id, class in modules %}
-                    <tr>
-                        <th class="light">{{ id }}</th>
-                        <td>{{ class }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>{{ 'No modules are installed.'|t('app') }}</p>
-    {% endif %}
-
-  <h2>{{ 'Aliases'|t('app') }}</h2>
-  <p>
-      {{ 'The following <a href="{url}">aliases</a> are defined:'|t('app', {
-          url: 'https://craftcms.com/docs/5.x/configure.html#aliases',
-      })|raw }}
-  </p>
-
-  <table class="data fullwidth fixed-layout" dir="ltr">
-      <tbody>
-          {% for alias, value in aliases %}
-              <tr>
-                  <th class="light">{{ alias }}</th>
-                  <td>{{ value }}</td>
-              </tr>
-          {% endfor %}
-      </tbody>
-  </table>
-
-    <h2>{{ "Requirements"|t('app') }}</h2>
-
-    <table class="data fullwidth" dir="ltr">
+      <table class="cp-table cp-table--borderless" dir="ltr">
         <tbody>
-        {% for requirement in requirements %}
+          {% for id, class in modules %}
             <tr>
-                <td class="thin centeralign">
-                    {% if requirement.error %}
-                        <span class="error" title="{{ 'Failed'|t('app') }}" aria-label="{{ 'Failed'|t('app') }}" data-icon="error"></span>
-                    {% elseif requirement.warning %}
-                        <span class="warning" title="{{ 'Passed with warning'|t('app') }}" aria-label="{{ 'Passed with warning'|t('app') }}" data-icon="alert"></span>
-                    {% else %}
-                        <span class="success" title="{{ 'Passed'|t('app') }}" aria-label="{{ 'Passed'|t('app') }}" data-icon="check"></span>
-                    {% endif %}
-                </td>
-                <td>{{ requirement.name }}{% if requirement.memo %} <span class="info">{{ requirement.memo|raw }}</span>{% endif %}</td>
+              <th class="light">{{ id }}</th>
+              <td>{{ class }}</td>
             </tr>
-        {% endfor %}
+          {% endfor %}
         </tbody>
+      </table>
+    {% else %}
+      <p>{{ 'No modules are installed.'|t('app') }}</p>
+    {% endif %}
+  </div>
+
+  <div id="aliases">
+
+    <h2 class="mb-3">{{ 'Aliases'|t('app') }}</h2>
+    <p>
+      {{ 'The following <a href="{url}">aliases</a> are defined:'|t('app', {
+        url: 'https://craftcms.com/docs/5.x/configure.html#aliases',
+      })|raw }}
+    </p>
+
+    <table class="cp-table cp-table--borderless" dir="ltr">
+      <tbody>
+        {% for alias, value in aliases %}
+          <tr>
+            <th class="light">{{ alias }}</th>
+            <td>{{ value }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
+  </div>
+
+  <div id="requirements">
+
+    <h2 class="mb-3">{{ "Requirements"|t('app') }}</h2>
+
+    <table class="cp-table cp-table--borderless" dir="ltr">
+      <tbody>
+        {% for requirement in requirements %}
+          <tr>
+            <td>
+              <div class="flex gap-2 items-center">
+                {% if requirement.error %}
+                  <craft-callout
+                    class="p-0"
+                    appearance="plain"
+                    variant="danger"
+                  >
+                    <craft-icon name="triangle-exclamation" slot="icon" label="{{ 'Failed'|t('app') }}"></craft-icon>
+                    {{ requirement.name }}
+                  </craft-callout>
+                {% elseif requirement.warning %}
+                  <craft-callout
+                    class="p-0"
+                    appearance="plain"
+                    variant="warning"
+                  >
+                    <craft-icon
+                      name="circle-exclamation"
+                      slot="icon"
+                      label="{{ 'Passed with warning'|t('app') }}"
+                    ></craft-icon>
+                    {{ requirement.name }}
+                  </craft-callout>
+                  <craft-icon name="alert" label="{{ 'Passed with warning'|t('app') }}"></craft-icon>
+                {% else %}
+                  <craft-callout
+                    class="p-0"
+                    appearance="plain"
+                    variant="success"
+                  >
+                    <craft-icon name="circle-check" slot="icon" label="{{ 'Passed'|t('app') }}"></craft-icon>
+                    {{ requirement.name }}
+                  </craft-callout>
+                {% endif %}
+              </div>
+            </td>
+
+            <td>
+              {{ requirement.memo|raw }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>

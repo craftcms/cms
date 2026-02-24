@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -72,6 +74,7 @@ use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\validators\RequiredValidator;
+
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
@@ -79,6 +82,7 @@ use function CraftCms\Cms\template;
  * Class Cp
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class Cp
@@ -90,6 +94,7 @@ class Cp
 
     /**
      * @event DefineElementHtmlEvent The event that is triggered when defining an element’s chip HTML.
+     *
      * @see elementChipHtml()
      * @since 5.0.0
      */
@@ -97,6 +102,7 @@ class Cp
 
     /**
      * @event DefineElementHtmlEvent The event that is triggered when defining an element’s card HTML.
+     *
      * @see elementCardHtml()
      * @since 5.0.0
      */
@@ -104,6 +110,7 @@ class Cp
 
     /**
      * @event DefineElementInnerHtmlEvent The event that is triggered when defining an element’s inner HTML.
+     *
      * @since 4.0.0
      * @deprecated in 5.0.0. [[EVENT_DEFINE_ELEMENT_CHIP_HTML]] should be used instead.
      */
@@ -114,6 +121,7 @@ class Cp
      * @deprecated in 5.0.0. [[CHIP_SIZE_SMALL]] should be used instead.
      */
     public const ELEMENT_SIZE_SMALL = 'small';
+
     /**
      * @since 3.5.8
      * @deprecated in 5.0.0. [[CHIP_SIZE_LARGE]] should be used instead.
@@ -124,13 +132,13 @@ class Cp
      * @since 5.0.0
      */
     public const CHIP_SIZE_SMALL = 'small';
+
     /**
      * @since 5.0.0
      */
     public const CHIP_SIZE_LARGE = 'large';
 
     /**
-     * @var Site|false|null
      * @see requestedSite()
      */
     private static Site|false|null $_requestedSite = null;
@@ -150,9 +158,6 @@ class Cp
     }
 
     /**
-     * @param string|null $path
-     * @param bool $fetch
-     * @return array
      * @internal
      */
     public static function alerts(?string $path = null, bool $fetch = false): array
@@ -352,9 +357,9 @@ class Cp
      * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      *
-     * @param Chippable $component The component that the chip represents
-     * @param array $config Chip configuration
-     * @return string
+     * @param  Chippable  $component  The component that the chip represents
+     * @param  array  $config  Chip configuration
+     *
      * @since 5.0.0
      */
     public static function chipHtml(Chippable $component, array $config = []): string
@@ -492,6 +497,7 @@ class Cp
                             if ($color instanceof Color) {
                                 $color = $color->value;
                             }
+
                             return Html::tag('div', Cp::iconSvg($indicator['icon']), [
                                 'class' => array_filter(['cp-icon', 'puny', $color]),
                                 'title' => $indicator['label'],
@@ -530,7 +536,7 @@ class Cp
 
         if ($config['inputName'] !== null) {
             $inputValue = $config['inputValue'] ?? $component->getId();
-            $html .= Html::hiddenInput($config['inputName'], (string)$inputValue);
+            $html .= Html::hiddenInput($config['inputName'], (string) $inputValue);
         }
 
         $html .= Html::endTag('div') . // .chip-content
@@ -567,9 +573,9 @@ class Cp
      * - `size` – The size of the chip (`small` or `large`)
      * - `sortable` – Whether the chip should include a drag handle
      *
-     * @param ElementInterface $element The element to be rendered
-     * @param array $config Chip configuration
-     * @return string
+     * @param  ElementInterface  $element  The element to be rendered
+     * @param  array  $config  Chip configuration
+     *
      * @since 5.0.0
      */
     public static function elementChipHtml(ElementInterface $element, array $config = []): string
@@ -637,6 +643,7 @@ class Cp
                 'html' => $html,
             ]);
             Event::trigger(self::class, self::EVENT_DEFINE_ELEMENT_CHIP_HTML, $event);
+
             return $event->html;
         }
 
@@ -659,9 +666,9 @@ class Cp
      * - `showEditButton` – Whether the card should include an edit button
      * - `sortable` – Whether the card should include a drag handle
      *
-     * @param ElementInterface $element The element to be rendered
-     * @param array $config Card configuration
-     * @return string
+     * @param  ElementInterface  $element  The element to be rendered
+     * @param  array  $config  Card configuration
+     *
      * @since 5.0.0
      */
     public static function elementCardHtml(ElementInterface $element, array $config = []): string
@@ -798,9 +805,9 @@ JS, [
             }
 
             $status = Html::beginTag('div', [
-                    'class' => ['status-badge', AttributeStatus::Modified->value],
-                    'title' => $statusLabel,
-                ]) .
+                'class' => ['status-badge', AttributeStatus::Modified->value],
+                'title' => $statusLabel,
+            ]) .
                 Html::tag('span', $statusLabel, [
                     'class' => 'visually-hidden',
                 ]) .
@@ -881,7 +888,7 @@ JS, [
 
         if ($config['context'] === 'field' && $config['inputName'] !== null) {
             $inputValue = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
-            $html .= Html::hiddenInput($config['inputName'], (string)$inputValue);
+            $html .= Html::hiddenInput($config['inputName'], (string) $inputValue);
         }
 
         $html .= Html::endTag('div'); // .card
@@ -894,6 +901,7 @@ JS, [
                 'html' => $html,
             ]);
             Event::trigger(self::class, self::EVENT_DEFINE_ELEMENT_CARD_HTML, $event);
+
             return $event->html;
         }
 
@@ -906,9 +914,9 @@ JS, [
      * When the `status` is equal to "draft" the draft icon will be displayed. The attributes passed as the
      * second argument should be a status definition from [[\craft\base\ElementInterface::statuses]]
      *
-     * @param string $status Status string
-     * @param array $attributes Attributes to be passed along.
-     * @return string|null
+     * @param  string  $status  Status string
+     * @param  array  $attributes  Attributes to be passed along.
+     *
      * @since 5.0.0
      */
     public static function statusIndicatorHtml(string $status, array $attributes = []): ?string
@@ -956,8 +964,6 @@ JS, [
     /**
      * Renders status indicator HTML for a [[Statusable]] component.
      *
-     * @param Statusable $component
-     * @return string|null
      * @since 5.2.0
      */
     public static function componentStatusIndicatorHtml(Statusable $component): ?string
@@ -984,8 +990,8 @@ JS, [
      * When the `status` is equal to "draft" the draft icon will be displayed. The attributes passed as the
      * second argument should be a status definition from [[\craft\base\ElementInterface::statuses]]
      *
-     * @param array $config Config options
-     * @return string|null
+     * @param  array  $config  Config options
+     *
      * @since 5.2.0
      */
     public static function statusLabelHtml(array $config = []): ?string
@@ -1036,8 +1042,6 @@ JS, [
     /**
      * Renders status label HTML for a [[Statusable]] component.
      *
-     * @param Statusable $component
-     * @return string|null
      * @since 5.2.0
      */
     public static function componentStatusLabelHtml(Statusable $component): ?string
@@ -1155,9 +1159,9 @@ JS, [
     private static function elementLabelHtml(ElementInterface $element, array $config, array $attributes, callable $uiLabel): string
     {
         $content = implode('', array_map(
-                fn(string $segment) => Html::tag('span', Html::encode($segment), ['class' => 'segment']),
-                $element->getUiLabelPath()
-            )) .
+            fn(string $segment) => Html::tag('span', Html::encode($segment), ['class' => 'segment']),
+            $element->getUiLabelPath()
+        )) .
             $uiLabel();
 
         // show the draft name?
@@ -1245,17 +1249,17 @@ JS, [
     /**
      * Renders an element’s chip HTML.
      *
-     * @param ElementInterface $element The element to be rendered
-     * @param string $context The context the chip is going to be shown in (`index`, `field`, etc.)
-     * @param string $size The size of the chip (`small` or `large`)
-     * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
-     * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
-     * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
-     * @param bool $showLabel Whether the element label should be shown
-     * @param bool $showDraftName Whether to show the draft name beside the label if the element is a draft of a published element
-     * @param bool $single Whether the input name should omit the trailing `[]`
-     * @param bool $autoReload Whether the element should auto-reload itself when it’s saved
-     * @return string
+     * @param  ElementInterface  $element  The element to be rendered
+     * @param  string  $context  The context the chip is going to be shown in (`index`, `field`, etc.)
+     * @param  string  $size  The size of the chip (`small` or `large`)
+     * @param  string|null  $inputName  The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
+     * @param  bool  $showStatus  Whether the element status should be shown (if the element type has statuses)
+     * @param  bool  $showThumb  Whether the element thumb should be shown (if the element has one)
+     * @param  bool  $showLabel  Whether the element label should be shown
+     * @param  bool  $showDraftName  Whether to show the draft name beside the label if the element is a draft of a published element
+     * @param  bool  $single  Whether the input name should omit the trailing `[]`
+     * @param  bool  $autoReload  Whether the element should auto-reload itself when it’s saved
+     *
      * @since 3.5.8
      * @deprecated in 5.0.0. [[elementChipHtml()]] or [[elementCardHtml()]] should be used instead.
      */
@@ -1297,6 +1301,7 @@ JS, [
                 'innerHtml',
             ));
             Event::trigger(self::class, self::EVENT_DEFINE_ELEMENT_INNER_HTML, $event);
+
             return substr($html, 0, $parsed['htmlStart']) .
                 $event->innerHtml .
                 substr($html, $parsed['htmlEnd']);
@@ -1308,13 +1313,13 @@ JS, [
     /**
      * Returns element preview HTML, for a list of elements.
      *
-     * @param ElementInterface[] $elements The elements
-     * @param string $size The size of the element (`small` or `large`)
-     * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
-     * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
-     * @param bool $showLabel Whether the element label should be shown
-     * @param bool $showDraftName Whether to show the draft name beside the label if the element is a draft of a published element
-     * @return string
+     * @param  ElementInterface[]  $elements  The elements
+     * @param  string  $size  The size of the element (`small` or `large`)
+     * @param  bool  $showStatus  Whether the element status should be shown (if the element type has statuses)
+     * @param  bool  $showThumb  Whether the element thumb should be shown (if the element has one)
+     * @param  bool  $showLabel  Whether the element label should be shown
+     * @param  bool  $showDraftName  Whether to show the draft name beside the label if the element is a draft of a published element
+     *
      * @since 3.6.3
      */
     public static function elementPreviewHtml(
@@ -1365,15 +1370,15 @@ JS, [
         }
 
         $html .= Html::endTag('div'); // .inline-chips
+
         return $html;
     }
 
     /**
      * Returns component preview HTML, for a list of elements.
      *
-     * @param Chippable[] $components The components
-     * @param array $chipConfig
-     * @return string
+     * @param  Chippable[]  $components  The components
+     *
      * @since 5.4.0
      */
     public static function componentPreviewHtml(array $components, array $chipConfig = []): string
@@ -1405,15 +1410,15 @@ JS, [
         }
 
         $html .= Html::endTag('div'); // .inline-chips
+
         return $html;
     }
 
     /**
      * Returns the HTML for an element index.
      *
-     * @param class-string<ElementInterface> $elementType
-     * @param array $config
-     * @return string
+     * @param  class-string<ElementInterface>  $elementType
+     *
      * @since 5.0.0
      */
     public static function elementIndexHtml(string $elementType, array $config = []): string
@@ -1435,12 +1440,12 @@ JS, [
         ];
 
         if ($config['showStatusMenu'] !== 'auto') {
-            $config['showStatusMenu'] = (bool)$config['showStatusMenu'];
+            $config['showStatusMenu'] = (bool) $config['showStatusMenu'];
         }
 
         $config['showSiteMenu'] = $config['showSiteMenu'] === 'auto'
             ? $elementType::isLocalized()
-            : (bool)$config['showSiteMenu'];
+            : (bool) $config['showSiteMenu'];
 
         $siteIds = Sites::getEditableSiteIds()->all();
 
@@ -1513,6 +1518,7 @@ JS, [
                         $foundSource = true;
                     }
                 }
+
                 return false;
             })();
         } else {
@@ -1584,14 +1590,14 @@ JS, [
         }
 
         $html = Html::beginTag('div', [
-                'id' => $config['id'],
-                'class' => array_merge(
-                    ['element-index'],
-                    ($showSidebar ? ['has-sidebar'] : []),
-                    ($config['context'] === 'embedded-index' ? ['pane', 'padding-s', 'hairline'] : []),
-                    Html::explodeClass($config['class']),
-                ),
-            ]) .
+            'id' => $config['id'],
+            'class' => array_merge(
+                ['element-index'],
+                ($showSidebar ? ['has-sidebar'] : []),
+                ($config['context'] === 'embedded-index' ? ['pane', 'padding-s', 'hairline'] : []),
+                Html::explodeClass($config['class']),
+            ),
+        ]) .
             Html::beginTag('div', [
                 'class' => array_filter([
                     'sidebar',
@@ -1623,8 +1629,8 @@ JS, [
 
         if (self::contextIsAdministrative($config['context'])) {
             $html .= Html::beginTag('div', [
-                    'class' => ['footer', 'flex', 'flex-justify'],
-                ]) .
+                'class' => ['footer', 'flex', 'flex-justify'],
+            ]) .
                 template('_elements/footer', templateMode: TemplateMode::Cp) .
                 Html::endTag('div'); // .footer
         }
@@ -1647,6 +1653,7 @@ JS, [
      * @return string
      * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.5.8
      */
     public static function fieldHtml(string|callable $input, array $config = []): string
@@ -1678,7 +1685,7 @@ JS, [
             $label = null;
         }
 
-        $siteId = Sites::isMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
+        $siteId = Sites::isMultiSite() && isset($config['siteId']) ? (int) $config['siteId'] : null;
 
         if (is_callable($input) || str_starts_with($input, 'template:')) {
             // Set labelledBy and describedBy values in case the input template supports it
@@ -1712,7 +1719,7 @@ JS, [
             $site = null;
         }
 
-        $required = (bool)($config['required'] ?? false);
+        $required = (bool) ($config['required'] ?? false);
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : I18N::getLocale())->getOrientation();
         $translatable = Sites::isMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
@@ -1761,19 +1768,19 @@ JS, [
 
         if ($label) {
             $labelHtml = $label . (
-                    ($required
-                        ? Html::tag('span', t('Required'), [
-                            'class' => ['visually-hidden'],
-                        ]) .
-                        Html::tag('span', '', [
-                            'class' => ['required'],
-                            'aria' => [
-                                'hidden' => 'true',
-                            ],
-                        ])
-                        : '') .
-                    ($translatable ? $translationIconHtml : '')
-                );
+                ($required
+                    ? Html::tag('span', t('Required'), [
+                        'class' => ['visually-hidden'],
+                    ]) .
+                    Html::tag('span', '', [
+                        'class' => ['required'],
+                        'aria' => [
+                            'hidden' => 'true',
+                        ],
+                    ])
+                    : '') .
+                ($translatable ? $translationIconHtml : '')
+            );
         } else {
             $labelHtml = '';
         }
@@ -1864,12 +1871,6 @@ JS, [
 
     /**
      * Returns the HTML for a field tip/warning.
-     *
-     * @param string $id
-     * @param string $class
-     * @param string $label
-     * @param string|null $message
-     * @return string
      */
     private static function _noticeHtml(string $id, string $class, string $label, ?string $message): string
     {
@@ -1898,9 +1899,8 @@ JS, [
     /**
      * Renders a button’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws TemplateLoaderException
+     *
      * @since 5.7.0
      */
     public static function buttonHtml(array $config): string
@@ -1911,8 +1911,6 @@ JS, [
     /**
      * Renders a button group.
      *
-     * @param array $config
-     * @return string
      * @since 5.8.0
      */
     public static function buttonGroupHtml(array $config): string
@@ -1923,15 +1921,15 @@ JS, [
     /**
      * Renders a button group field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 5.8.0
      */
     public static function buttonGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'buttongroup' . mt_rand();
         $config['fieldset'] = true;
+
         return static::fieldHtml('template:_includes/forms/buttonGroup', $config);
     }
 
@@ -1941,9 +1939,8 @@ JS, [
      * Note that unlike the `checkboxField` macro in `_includes/forms.html`, you must set the checkbox label via
      * `$config['checkboxLabel']`.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.6.0
      */
     public static function checkboxFieldHtml(array $config): string
@@ -1963,23 +1960,21 @@ JS, [
     /**
      * Renders a checkbox select field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.6.0
      */
     public static function checkboxSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxselect' . mt_rand();
         $config['fieldset'] = true;
+
         return static::fieldHtml('template:_includes/forms/checkboxSelect', $config);
     }
 
     /**
      * Renders a checkbox group input.
      *
-     * @param array $config
-     * @return string
      * @since 5.0.0
      */
     public static function checkboxGroupHtml(array $config): string
@@ -1990,13 +1985,12 @@ JS, [
     /**
      * Renders a checkbox group field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @since 5.0.0
      */
     public static function checkboxGroupFieldHtml(array $config): string
     {
         $config['id'] ??= 'checkboxgroup' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/checkboxGroup', $config);
     }
 
@@ -2017,36 +2011,33 @@ JS, [
     /**
      * Renders a color field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.6.0
      */
     public static function colorFieldHtml(array $config): string
     {
         $config['id'] ??= 'color' . mt_rand();
         $config['fieldset'] = true;
+
         return static::fieldHtml('template:_includes/forms/color', $config);
     }
 
     /**
      * Renders a color select field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @since 5.0.0
      */
     public static function colorSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'colorselect' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/colorSelect', $config);
     }
 
     /**
      * Renders an icon picker’s HTML.
      *
-     * @param array $config
-     * @return string
      * @since 5.0.0
      */
     public static function iconPickerHtml(array $config): string
@@ -2057,22 +2048,20 @@ JS, [
     /**
      * Renders an icon picker field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @since 5.0.0
      */
     public static function iconPickerFieldHtml(array $config): string
     {
         $config['id'] ??= 'iconpicker' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/iconPicker', $config);
     }
 
     /**
      * Renders an editable table’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws TemplateLoaderException
+     *
      * @since 5.8.0
      */
     public static function editableTableHtml(array $config): string
@@ -2083,14 +2072,14 @@ JS, [
     /**
      * Renders an editable table field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.6.0
      */
     public static function editableTableFieldHtml(array $config): string
     {
         $config['id'] ??= 'editabletable' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/editableTable', $config);
     }
 
@@ -2111,9 +2100,8 @@ JS, [
     /**
      * Renders a lightswitch field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.6.0
      */
     public static function lightswitchFieldHtml(array $config): string
@@ -2133,9 +2121,8 @@ JS, [
     /**
      * Renders a range input’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws TemplateLoaderException
+     *
      * @since 5.5.0
      */
     public static function rangeHtml(array $config): string
@@ -2146,23 +2133,22 @@ JS, [
     /**
      * Renders a range field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 5.5.0
      */
     public static function rangeFieldHtml(array $config): string
     {
         $config['id'] ??= 'range' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/range', $config);
     }
 
     /**
      * Renders a money input’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws TemplateLoaderException
+     *
      * @since 5.0.0
      */
     public static function moneyInputHtml(array $config): string
@@ -2182,14 +2168,13 @@ JS, [
     public static function moneyFieldHtml(array $config): string
     {
         $config['id'] ??= 'money' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/money', $config);
     }
 
     /**
      * Renders a select input.
      *
-     * @param array $config
-     * @return string
      * @since 3.6.0
      */
     public static function selectHtml(array $config): string
@@ -2200,22 +2185,20 @@ JS, [
     /**
      * Renders a select field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.6.0
      */
     public static function selectFieldHtml(array $config): string
     {
         $config['id'] ??= 'select' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/select', $config);
     }
 
     /**
      * Renders a custom select input.
      *
-     * @param array $config
-     * @return string
      * @since 5.0.0
      */
     public static function customSelectHtml(array $config): string
@@ -2226,21 +2209,18 @@ JS, [
     /**
      * Renders a selectize field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @since 5.0.0
      */
     public static function customSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'customselect' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/customSelect', $config);
     }
 
     /**
      * Renders a selectize input.
      *
-     * @param array $config
-     * @return string
      * @since 4.0.0
      */
     public static function selectizeHtml(array $config): string
@@ -2251,22 +2231,20 @@ JS, [
     /**
      * Renders a selectize field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 4.0.0
      */
     public static function selectizeFieldHtml(array $config): string
     {
         $config['id'] ??= 'selectize' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/selectize', $config);
     }
 
     /**
      * Renders a multi-select input.
      *
-     * @param array $config
-     * @return string
      * @since 4.0.0
      */
     public static function multiSelectHtml(array $config): string
@@ -2277,23 +2255,22 @@ JS, [
     /**
      * Renders a multi-select field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 4.0.0
      */
     public static function multiSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'multiselect' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/multiselect', $config);
     }
 
     /**
      * Renders a text input’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws TemplateLoaderException
+     *
      * @since 4.0.0
      */
     public static function textHtml(array $config): string
@@ -2304,14 +2281,14 @@ JS, [
     /**
      * Renders a text field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.6.0
      */
     public static function textFieldHtml(array $config): string
     {
         $config['id'] ??= 'text' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/text', $config);
     }
 
@@ -2332,14 +2309,14 @@ JS, [
     /**
      * Renders a textarea field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.6.0
      */
     public static function textareaFieldHtml(array $config): string
     {
         $config['id'] ??= 'textarea' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/textarea', $config);
     }
 
@@ -2360,23 +2337,22 @@ JS, [
     /**
      * Returns a date field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 4.0.0
      */
     public static function dateFieldHtml(array $config): string
     {
         $config['id'] ??= 'date' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/date', $config);
     }
 
     /**
      * Returns a time input’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws TemplateLoaderException
+     *
      * @since 4.0.0
      */
     public static function timeHtml(array $config): string
@@ -2387,23 +2363,22 @@ JS, [
     /**
      * Returns a date field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 4.0.0
      */
     public static function timeFieldHtml(array $config): string
     {
         $config['id'] ??= 'time' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/time', $config);
     }
 
     /**
      * Renders a date + time field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.7.0
      */
     public static function dateTimeFieldHtml(array $config): string
@@ -2412,6 +2387,7 @@ JS, [
             'id' => 'datetime' . mt_rand(),
             'fieldset' => true,
         ];
+
         return static::fieldHtml('template:_includes/forms/datetime', $config);
     }
 
@@ -2432,22 +2408,20 @@ JS, [
     /**
      * Renders an element select field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.7.0
      */
     public static function elementSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'elementselect' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/elementSelect', $config);
     }
 
     /**
      * Renders an entry type select input’s HTML
      *
-     * @param array $config
-     * @return string
      * @since 5.0.0
      */
     public static function entryTypeSelectHtml(array $config): string
@@ -2458,22 +2432,20 @@ JS, [
     /**
      * Renders an entry type select field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @since 5.0.0
      */
     public static function entryTypeSelectFieldHtml(array $config): string
     {
         $config['id'] ??= 'entrytypeselect' . mt_rand();
+
         return static::fieldHtml('template:_includes/forms/entryTypeSelect', $config);
     }
 
     /**
      * Renders an autosuggest field’s HTML.
      *
-     * @param array $config
-     * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.7.0
      */
     public static function autosuggestFieldHtml(array $config): string
@@ -2507,9 +2479,6 @@ JS, [
     /**
      * Returns address fields’ HTML (sans country) for a given address.
      *
-     * @param Address $address
-     * @param bool $static
-     * @return string
      * @since 4.0.0
      */
     public static function addressFieldsHtml(Address $address, bool $static = false): string
@@ -2533,9 +2502,9 @@ JS, [
 
         $addressesService = app(Addresses::class);
         $visibleFields = array_flip(array_merge(
-                $addressesService->getUsedFields($address->countryCode),
-                $addressesService->getUsedSubdivisionFields($address->countryCode),
-            )) + $requiredFields;
+            $addressesService->getUsedFields($address->countryCode),
+            $addressesService->getUsedSubdivisionFields($address->countryCode),
+        )) + $requiredFields;
 
         $parents = self::_subdivisionParents($address, $visibleFields);
 
@@ -2667,10 +2636,6 @@ JS, [
      * For the dependentLocality:
      *      - as above but taking locality into consideration too; e.g. China has all 3 levels of subdivisions and has lists for all 3 of them
      *          (China => Heilongjiang Sheng > Hegang Shi > Dongshan Qu)
-     *
-     * @param Address $address
-     * @param array $visibleFields
-     * @return array
      */
     private static function _subdivisionParents(Address $address, array $visibleFields): array
     {
@@ -2784,10 +2749,7 @@ JS, [
     /**
      * Renders a card view designer.
      *
-     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
-     * @param array $config
      *
-     * @return string
      * @since 5.5.0
      */
     public static function cardViewDesignerHtml(FieldLayout $fieldLayout, array $config = []): string
@@ -2853,9 +2815,9 @@ JS, [
     /**
      * Returns an array of available card preview options for the given field layout.
      *
-     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      *
      * @return array{label:string,value:string}[]
+     *
      * @since 5.9.0
      */
     public static function cardPreviewOptions(FieldLayout $fieldLayout, bool $withAttributes = true): array
@@ -2894,6 +2856,7 @@ JS, [
                         sprintf('%s%s → ', $labelPrefix, $layoutElement->label()),
                         false,
                     );
+
                     continue;
                 }
             }
@@ -2925,9 +2888,9 @@ JS, [
     /**
      * Returns an array of available card thumbnail options for the given field layout.
      *
-     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
      *
      * @return array{label:string,value:string}[]
+     *
      * @since 5.9.6
      */
     public static function cardThumbOptions(FieldLayout $fieldLayout): array
@@ -2955,6 +2918,7 @@ JS, [
                         "{$keyPrefix}contentBlock:$layoutElement->uid.",
                         sprintf('%s%s → ', $labelPrefix, $layoutElement->label()),
                     );
+
                     continue;
                 }
             }
@@ -2978,10 +2942,7 @@ JS, [
     /**
      * Return HTML for managing thumbnail provider and position.
      *
-     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
-     * @param array $config
      *
-     * @return string
      * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException
      */
     private static function _thumbManagementHtml(FieldLayout $fieldLayout, array $config): string
@@ -3052,7 +3013,6 @@ JS, [
             'disabled' => $config['disabled'],
         ]);
 
-
         $thumbHtml .= Html::endTag('div') . // .flex
             Html::endTag('div'); // .thumb-management
 
@@ -3062,11 +3022,8 @@ JS, [
     /**
      * Returns HTML for the card preview based on selected fields and attributes.
      *
-     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
-     * @param array $cardElements (deprecated)
-     * @param bool|null $showThumb
+     * @param  array  $cardElements  (deprecated)
      *
-     * @return string
      * @throws Throwable
      */
     public static function cardPreviewHtml(FieldLayout $fieldLayout, array $cardElements = [], ?bool $showThumb = null): string
@@ -3146,10 +3103,7 @@ JS, [
     /**
      * Renders a field layout designer.
      *
-     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
-     * @param array $config
      *
-     * @return string
      * @since 4.0.0
      */
     public static function fieldLayoutDesignerHtml(FieldLayout $fieldLayout, array $config = []): string
@@ -3240,7 +3194,7 @@ JS;
 
         $fieldLayoutConfig = [
             'uid' => $fieldLayout->uid,
-            ...(array)$fieldLayout->getConfig(),
+            ...(array) $fieldLayout->getConfig(),
         ];
 
         // Default `dateAdded` to a minute ago for each element, so there’s no chance that an element that predated 5.3
@@ -3342,8 +3296,7 @@ JS;
     }
 
     /**
-     * @param FieldLayoutElement[] $elements
-     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
+     * @param  FieldLayoutElement[]  $elements
      */
     private static function _setLayoutOnElements(array $elements, FieldLayout $fieldLayout): void
     {
@@ -3353,10 +3306,7 @@ JS;
     }
 
     /**
-     * @param FieldLayoutTab $tab
-     * @param bool $customizable
-     * @param bool $disabled
-     * @return string
+     * @param  bool  $disabled
      */
     private static function _fldTabHtml(FieldLayoutTab $tab, bool $customizable, $disabled): string
     {
@@ -3389,10 +3339,6 @@ JS;
     /**
      * Renders a field layout element’s selector HTML.
      *
-     * @param FieldLayoutElement $element
-     * @param bool $forLibrary
-     * @param array $attributes
-     * @return string
      * @since 5.0.0
      */
     public static function layoutElementSelectorHtml(
@@ -3443,11 +3389,7 @@ JS;
     }
 
     /**
-     * @param string $groupName
-     * @param BaseField[] $groupFields
-     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
-     *
-     * @return string
+     * @param  BaseField[]  $groupFields
      */
     private static function _fldFieldSelectorsHtml(string $groupName, array $groupFields, FieldLayout $fieldLayout): string
     {
@@ -3477,15 +3419,15 @@ JS;
         $attribute = $field->attribute();
         $uid = $field instanceof CustomField ? $field->getField()->uid : null;
 
-        return (
+        return
             $field->isMultiInstance() ||
             !$fieldLayout->isFieldIncluded(function(BaseField $field) use ($attribute, $uid) {
                 if ($field instanceof CustomField) {
                     return $field->getFieldUid() === $uid;
                 }
+
                 return $field->attribute() === $attribute;
-            })
-        );
+            });
     }
 
     private static function _showFldUiElementSelector(FieldLayout $fieldLayout, FieldLayoutElement $uiElement): bool
@@ -3498,11 +3440,6 @@ JS;
 
     /**
      * Renders a Generated Fields table for a field layout
-     *
-     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
-     * @param array $config
-     *
-     * @return string
      */
     public static function generatedFieldsTableHtml(FieldLayout $fieldLayout, array $config = []): string
     {
@@ -3538,6 +3475,7 @@ JS;
                     'uid' => $field['uid'],
                 ];
             }
+
             return $field;
         }, $fieldLayout->getGeneratedFields());
 
@@ -3574,9 +3512,8 @@ JS, [
     /**
      * Returns a metadata component’s HTML.
      *
-     * @param array $data The data, with keys representing the labels. The values can either be strings or callables.
-     * If a value is `false`, it will be omitted.
-     * @return string
+     * @param  array  $data  The data, with keys representing the labels. The values can either be strings or callables.
+     *                       If a value is `false`, it will be omitted.
      */
     public static function metadataHtml(array $data): string
     {
@@ -3622,9 +3559,8 @@ JS, [
      * - `items` – The nested item definitions
      * - `listAttributes` – any HTML attributes that should be included on the `<ul>`
      *
-     * @param array $items The menu items.
-     * @param array $config
-     * @return string
+     * @param  array  $items  The menu items.
+     *
      * @since 5.0.0
      */
     public static function disclosureMenu(array $items, array $config = []): string
@@ -3714,9 +3650,6 @@ JS, [
      * - `attributes` – Any HTML attributes that should be set on the item’s `<a>` or `<button>` tag
      * - `liAttributes` – Any HTML attributes that should be set on the item’s `<li>` tag
      *
-     * @param array $config
-     * @param string $menuId
-     * @return string
      * @since 5.0.0
      */
     public static function menuItem(array $config, string $menuId): string
@@ -3730,8 +3663,8 @@ JS, [
     /**
      * Normalizes and cleans up the given disclosure menu items.
      *
-     * @param array $items
-     * @return array
+     * @param  array  $items
+     *
      * @since 5.0.0
      */
     public static function normalizeMenuItems(array|Collection $items): array
@@ -3770,15 +3703,13 @@ JS, [
      *
      * If only one site is meant to be shown, an empty array will be returned.
      *
-     * @param array<int,Site|array{site:Site,status?:string}> $sites
-     * @param Site|null $selectedSite
-     * @param array $config
-     * @return array
+     * @param  array<int,Site|array{site:Site,status?:string}>  $sites
+     *
      * @since 5.0.0
      */
     public static function siteMenuItems(
         array|Collection|null $sites = null,
-        Site|null $selectedSite = null,
+        ?Site $selectedSite = null,
         array $config = [],
     ): array {
         if ($sites === null) {
@@ -3856,10 +3787,6 @@ JS, [
      *
      * System icons can be found in `src/icons/solid/`.
      *
-     * @param string|null $icon
-     * @param string|null $fallbackLabel
-     * @param string|null $altText
-     * @return string|null
      * @since 5.0.0
      */
     public static function iconSvg(?string $icon, ?string $fallbackLabel = null, ?string $altText = null): ?string
@@ -3960,8 +3887,7 @@ JS, [
                     'slideout-left',
                     'slideout-right',
                     'thumb-left',
-                    'thumb-right',
-                    => Aliases::get("@craftcms/resources/icons/custom-icons/$icon.svg"),
+                    'thumb-right', => Aliases::get("@craftcms/resources/icons/custom-icons/$icon.svg"),
                     default => Aliases::get("@appicons/$icon.svg"),
                 };
                 if (!file_exists($path)) {
@@ -3976,6 +3902,7 @@ JS, [
             if (!$fallbackLabel) {
                 return '';
             }
+
             return self::fallbackIconSvg($fallbackLabel);
         }
 
@@ -4004,8 +3931,6 @@ JS, [
     /**
      * Returns a fallback icon SVG for a component with a given label.
      *
-     * @param string $label
-     * @return string
      * @since 5.0.0
      */
     public static function fallbackIconSvg(string $label): string
@@ -4018,12 +3943,12 @@ JS, [
     /**
      * Returns the appropriate Earth icon, depending on the system time zone.
      *
-     * @return string
      * @since 5.0.0
      */
     public static function earthIcon(): string
     {
         $tzGroup = explode('/', app()->getTimezone(), 2)[0];
+
         return match ($tzGroup) {
             'Africa' => 'earth-africa',
             'Asia' => 'earth-asia',
@@ -4037,6 +3962,7 @@ JS, [
      * Returns the site the control panel is currently working with, via a `site` query string param if sent.
      *
      * @return Site|null The site, or `null` if the user doesn’t have permission to edit any sites.
+     *
      * @since 4.0.0
      */
     public static function requestedSite(): ?Site
@@ -4073,7 +3999,6 @@ JS, [
      * Returns the notice that should show when admin is viewing the available settings pages
      * while `allowAdminChanges` is set to false.
      *
-     * @return string
      * @since 5.6.0
      */
     public static function readOnlyNoticeHtml(): string
@@ -4107,9 +4032,6 @@ JS, [
     /**
      * Processes the given text as Markdown, with extra defenses against invalid tags and double-encoded entities.
      *
-     * @param string $text
-     * @param string $flavor
-     * @return string
      * @since 5.8.3
      */
     public static function parseMarkdown(string $text, string $flavor = 'gfm-comment'): string

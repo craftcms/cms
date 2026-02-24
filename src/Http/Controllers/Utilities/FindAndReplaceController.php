@@ -6,8 +6,9 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\Utility\Utilities;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+
+use function CraftCms\Cms\t;
 
 final readonly class FindAndReplaceController
 {
@@ -21,16 +22,15 @@ final readonly class FindAndReplaceController
     public function __invoke(Request $request)
     {
         $params = $request->validate([
-            'params' => ['required', 'array'],
-            'params.find' => ['required', 'string'],
-            'params.replace' => ['required', 'string'],
-        ])['params'];
+            'find' => ['required', 'string'],
+            'replace' => ['required', 'string'],
+        ]);
 
         dispatch(new FindAndReplace(
             find: $params['find'],
             replace: $params['replace']
         ));
 
-        return new JsonResponse;
+        return back()->with('success', t('Replace job dispatched.'));
     }
 }

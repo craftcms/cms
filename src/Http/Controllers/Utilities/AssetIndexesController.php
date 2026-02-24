@@ -6,12 +6,8 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use Craft;
 use CraftCms\Cms\Asset\AssetIndexer;
-use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use Illuminate\Http\Request;
@@ -53,9 +49,8 @@ final readonly class AssetIndexesController
         }
 
         $indexingSession = $this->assetIndexer->startIndexingSession($volumeIds, $cacheRemoteImages, $listEmptyFolders);
-        $sessionData = $this->prepareSessionData($indexingSession);
 
-        $data = ['session' => $sessionData];
+        $data = ['session' => $indexingSession];
         $error = null;
 
         if ($indexingSession->totalEntries === 0 && ! $indexingSession->processIfRootEmpty) {
@@ -146,9 +141,7 @@ final readonly class AssetIndexesController
             $skipDialog = true;
         }
 
-        $sessionData = $this->prepareSessionData($indexingSession);
-
-        return $this->asSuccess(null, ['session' => $sessionData, 'skipDialog' => $skipDialog]);
+        return $this->asSuccess(null, ['session' => $indexingSession, 'skipDialog' => $skipDialog]);
     }
 
     public function indexingSessionOverview(Request $request): Response
@@ -172,9 +165,7 @@ final readonly class AssetIndexesController
         $indexingSession->skippedEntries = $this->assetIndexer->getSkippedItemsForSession($indexingSession);
         $indexingSession->missingEntries = $this->assetIndexer->getMissingEntriesForSession($indexingSession);
 
-        $sessionData = $this->prepareSessionData($indexingSession);
-
-        return $this->asSuccess(null, ['session' => $sessionData]);
+        return $this->asSuccess(null, ['session' => $indexingSession]);
     }
 
     public function finishIndexingSession(Request $request): Response
@@ -220,17 +211,5 @@ final readonly class AssetIndexesController
         }
 
         return $this->asSuccess(null, ['stop' => $sessionId]);
-    }
-
-    private function prepareSessionData(IndexingSession $indexingSession): array
-    {
-        $sessionData = $indexingSession->toArray();
-
-        unset($sessionData['dateUpdated']);
-
-        $sessionData['dateCreated'] = $indexingSession->dateUpdated->format(I18N::getLocale()->getDateTimeFormat('medium', Locale::FORMAT_PHP));
-        $sessionData['indexedVolumes'] = Json::decodeIfJson($indexingSession->indexedVolumes);
-
-        return $sessionData;
     }
 }

@@ -34,9 +34,6 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
-use craft\search\SearchQuery;
-use craft\search\SearchQueryTerm;
-use craft\search\SearchQueryTermGroup;
 use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use CraftCms\Aliases\Aliases;
@@ -65,10 +62,14 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Cms\Search\SearchQuery;
+use CraftCms\Cms\Search\SearchQueryTerm;
+use CraftCms\Cms\Search\SearchQueryTermGroup;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
@@ -822,7 +823,7 @@ class Asset extends Element
         }
 
         if ($assetQuery->search) {
-            $assetQuery->search = $searchQuery = Craft::$app->getSearch()->normalizeSearchQuery($assetQuery->search);
+            $assetQuery->search = $searchQuery = Search::normalizeSearchQuery($assetQuery->search);
             $tokens = $searchQuery->getTokens();
             if (count($tokens) !== 1 || ! self::_validateSearchTermForIndex(reset($tokens))) {
                 return false;

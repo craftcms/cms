@@ -18,29 +18,23 @@ test('unauthorized users cannot access find and replace utility', function () {
     Cms::config()->disabledUtilities = [FindAndReplaceUtility::id()];
 
     postJson(action(FindAndReplaceController::class), [
-        'params' => [
-            'find' => 'oldtext',
-            'replace' => 'newtext',
-        ],
+        'find' => 'oldtext',
+        'replace' => 'newtext',
     ])
         ->assertForbidden();
 });
 
 test('can queue a find and replace job', function () {
     $params = [
-        'params' => [
-            'find' => 'oldtext',
-            'replace' => 'newtext',
-        ],
+        'find' => 'oldtext',
+        'replace' => 'newtext',
     ];
 
     postJson(action(FindAndReplaceController::class), $params)
-        ->assertOk();
+        ->assertRedirectBack();
 });
 
 test('requires find and replace parameters', function () {
-    postJson(action(FindAndReplaceController::class), [
-        'params' => [],
-    ])
-        ->assertJsonValidationErrors(['params.find', 'params.replace']);
+    postJson(action(FindAndReplaceController::class), [])
+        ->assertJsonValidationErrors(['find', 'replace']);
 });

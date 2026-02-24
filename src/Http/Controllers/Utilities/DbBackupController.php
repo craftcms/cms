@@ -10,9 +10,10 @@ use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\DbBackup;
 use Exception;
 use Illuminate\Container\Attributes\Give;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
+
+use function CraftCms\Cms\t;
 
 final readonly class DbBackupController
 {
@@ -41,7 +42,7 @@ final readonly class DbBackupController
         unlink($backupPath);
 
         if (! $request->input('downloadBackup')) {
-            return new JsonResponse;
+            return back()->with('success', t('Backup created.'));
         }
 
         return response()->download($zipPath);

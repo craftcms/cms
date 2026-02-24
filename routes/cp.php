@@ -60,7 +60,9 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::get('dashboard', DashboardController::class);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
-    Route::get('utilities/{id}', [UtilitiesController::class, 'show']);
+    Route::get('utilities/{id}/{extra?}', [UtilitiesController::class, 'show'])
+        ->where('extra', '.*')
+        ->name('utilities.show');
 
     Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::view('settings/addresses', 'settings/addresses/_fields');

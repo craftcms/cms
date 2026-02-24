@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
-use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Utility\Utility;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * DeprecationErrors represents a DeprecationErrors dashboard widget.
@@ -43,12 +41,21 @@ final class DeprecationErrors extends Utility
     }
 
     #[Override]
+    public static function toolbarHtml(): string
+    {
+        return view('utilities.deprecation-errors.toolbar', [
+            'logs' => Deprecator::getLogs(),
+        ])->toHtml();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    #[\Override]
     public static function contentHtml(): string
     {
-        Craft::$app->getView()->registerAssetBundle(DeprecationErrorsAsset::class);
-
-        return template('_components/utilities/DeprecationErrors/index', [
-            'logs' => Deprecator::getLogs(),
+        return Html::tag('DeprecationErrors', attributes: [
+            ':logs' => Deprecator::getLogs(),
         ]);
     }
 }

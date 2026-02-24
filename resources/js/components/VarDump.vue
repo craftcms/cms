@@ -5,7 +5,7 @@
 </script>
 
 <template>
-  <pre>{{ JSON.stringify(data, null, 2) }}</pre>
+  <pre v-bind="$attrs">{{ JSON.stringify(data, null, 2) }}</pre>
 </template>
 
 <style scoped lang="scss">

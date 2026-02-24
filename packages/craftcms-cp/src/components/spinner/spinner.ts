@@ -7,10 +7,10 @@ export default class CraftSpinner extends LitElement {
   static override styles = [componentStyles];
 
   @property({reflect: true})
-  visible: boolean = false;
+  visible: boolean = true;
 
   @query('.wrapper')
-  wrapper: HTMLElement | null = null;
+  wrapper!: HTMLElement | null;
 
   show() {
     this.visible = true;

@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
-use craft\web\assets\prismjs\PrismJsAsset;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
-use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Utility\Utility;
 use Override;
 use Symfony\Component\Yaml\Yaml;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * ProjectConfig represents a ProjectConfig utility.
@@ -45,10 +42,7 @@ final class ProjectConfig extends Utility
         $areChangesPending = $projectConfig->areChangesPending(force: true);
 
         if ($areChangesPending) {
-            Craft::$app->getView()->registerAssetBundle(PrismJsAsset::class);
-            HtmlStack::translations([
-                'Show all changes',
-            ]);
+
             $invert = (
                 ! $projectConfig->readOnly &&
                 ! $projectConfig->writeYamlAutomatically &&
@@ -58,12 +52,12 @@ final class ProjectConfig extends Utility
             $invert = false;
         }
 
-        return template('_components/utilities/ProjectConfig', [
-            'readOnly' => $projectConfig->readOnly,
-            'invert' => $invert,
-            'yamlExists' => $projectConfig->writeYamlAutomatically || $projectConfig->getDoesExternalConfigExist(),
-            'areChangesPending' => $areChangesPending,
-            'entireConfig' => Yaml::dump($projectConfig->get(), 20, 2),
+        return Html::tag('ProjectConfig', attributes: [
+            ':read-only' => $projectConfig->readOnly,
+            ':invert' => $invert,
+            ':yaml-exists' => ($projectConfig->writeYamlAutomatically || $projectConfig->getDoesExternalConfigExist()) ? 'true' : 'false',
+            ':are-changes-pending' => $areChangesPending,
+            'entire-config' => Yaml::dump($projectConfig->get(), 20, 2),
         ]);
     }
 }
