@@ -219,13 +219,14 @@ class TestCase extends Orchestra
             $config->set('auth.defaults.guard', 'craft');
 
             $connection = env('DB_CONNECTION', 'testing');
+            $driver = $config->get("database.connections.{$connection}.driver");
 
             $config->set('database.default', $connection);
             $config->set("database.connections.{$connection}.database", env('DB_DATABASE', ':memory:'));
             $config->set("database.connections.{$connection}.username", env('DB_USERNAME', 'root'));
             $config->set("database.connections.{$connection}.password", env('DB_PASSWORD', ''));
-            $config->set("database.connections.{$connection}.charset", env('DB_CHARSET', in_array($connection, ['mysql', 'mariadb']) ? 'utf8mb4' : 'utf8'));
-            $config->set("database.connections.{$connection}.collation", env('DB_COLLATION', in_array($connection, ['mysql', 'mariadb']) ? 'utf8mb4_unicode_ci' : 'utf8'));
+            $config->set("database.connections.{$connection}.charset", env('DB_CHARSET', in_array($driver, ['mysql', 'mariadb']) ? 'utf8mb4' : 'utf8'));
+            $config->set("database.connections.{$connection}.collation", env('DB_COLLATION', in_array($driver, ['mysql', 'mariadb']) ? 'utf8mb4_unicode_ci' : 'utf8'));
             $config->set("database.connections.{$connection}.prefix", env('DB_PREFIX'));
 
             if ($connection === 'pgsql') {

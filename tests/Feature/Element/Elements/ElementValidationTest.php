@@ -78,6 +78,8 @@ describe('Title validation', function () {
         $this->markTestSkippedWhen(DB::getDriverName() === 'pgsql', 'PostgreSQL always supports 4-byte unicode characters');
         $this->markTestSkippedWhen(DB::getDriverName() === 'sqlite', 'SQLite always supports 4-byte unicode characters');
 
+        Craft::$app->getDb()->setSupportsMb4(false);
+
         $entry = EntryModel::factory()->createElement();
         $entry->title = 'Test 𝕋𝕚𝕥𝕝𝕖'; // Contains 4-byte unicode characters
 
