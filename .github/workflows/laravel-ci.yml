@@ -27,8 +27,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.5'
-          tools: composer:v2, laravel/pint
           extensions: json, dom, curl, libxml, mbstring
+          tools: composer:v2, laravel/pint
           coverage: none
 
       - name: Run Pint
@@ -48,7 +48,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
+          php-version: '8.5'
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
           coverage: none
         env:
@@ -68,7 +68,16 @@ jobs:
 
       - name: Install dependencies
         uses: ramsey/composer-install@v3
-      
+
+      - name: Rector Cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/rector
+          key: ${{ runner.os }}-rector-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-rector-
+
+      - run: mkdir -p /tmp/rector
+
       - name: Run Rector
         run: vendor/bin/rector process --dry-run --ansi
 
@@ -79,9 +88,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: shivammathur/setup-php@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
           php-version: '8.5'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          tools: composer:v2
           coverage: none
 
       - name: Set version
@@ -89,21 +101,63 @@ jobs:
 
       - name: Install composer dependencies
         uses: ramsey/composer-install@v3
+      
+      - name: PHPStan Cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/phpstan
+          key: ${{ runner.os }}-phpstan-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-phpstan-
 
       - name: Run PHPStan
         run: ./vendor/bin/phpstan --error-format=github
 
-  tests:
-    needs: [pint, phpstan]
-    name: Tests / PHP ${{ matrix.php }} on ${{ matrix.db }}
+  unit-tests:
+    needs: [pint, phpstan, rector]
+    name: 'Tests / Unit'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        uses: ./.github/actions/run-tests
+        with:
+          test-command: ./vendor/bin/pest --ci --compact --testsuite=Unit
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          packagist-username: ${{ secrets.packagist_username }}
+          packagist-token: ${{ secrets.packagist_token }}
+
+  arch-tests:
+    needs: [pint, phpstan, rector]
+    name: 'Tests / Arch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        uses: ./.github/actions/run-tests
+        with:
+          test-command: ./vendor/bin/pest --ci --testsuite=Arch
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          packagist-username: ${{ secrets.packagist_username }}
+          packagist-token: ${{ secrets.packagist_token }}
+
+  feature-tests:
+    needs: [pint, phpstan, rector]
+    name: 'Tests / Feature on ${{ matrix.db }}'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: true
       matrix:
-        php: [8.5]
         db: [mysql, pgsql]
     services:
-      # Install Postgres
       pgsql:
         image: ${{ (matrix.db == 'pgsql') && 'postgres:latest' || '' }}
         env:
@@ -112,16 +166,13 @@ jobs:
           POSTGRES_DB: craft_test
         ports:
           - 5432:5432
-        # Set health checks to wait until Postgres has started
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
-      # Install MySQL
       mysql:
         image: ${{ (matrix.db == 'mysql') && 'mysql:8.0' || '' }}
         env:
           MYSQL_ROOT_PASSWORD: mysecretpassword
           MYSQL_DATABASE: craft_test
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
-        # Set health checks to wait until mysql has started
         options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 3306:3306
@@ -130,55 +181,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          ini-values: display_errors=On, memory_limit=2G
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
-          coverage: none
-        env:
-          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMPOSER_AUTH_JSON: |
-            {
-              "http-basic": {
-                "repo.packagist.com": {
-                  "username": "${{ secrets.packagist_username }}",
-                  "password": "${{ secrets.packagist_token }}"
-                }
-              }
-            }
-
-      - name: Setup problem matchers
-        run: |
-          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
-          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
-
       - name: Copy tests .env
         run: |
           cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
           sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
 
-      - name: Set version
-        run: composer config version "6.x-dev"
-
-      - name: Install dependencies
-        uses: ramsey/composer-install@v3
-
-      - name: Execute CMS tests
-        run: ./vendor/bin/pest --ci --compact --testsuite=Tests
-
-      - name: Execute Arch tests
-        run: ./vendor/bin/pest --ci --testsuite=Arch
-
-      - name: Set version
-        run: composer config version "6.x-dev"
-        working-directory: yii2-adapter
-
-      - name: Install yii2-adapter dependencies
-        uses: ramsey/composer-install@v3
+      - name: Run tests
+        uses: ./.github/actions/run-tests
         with:
-          working-directory: yii2-adapter
+          test-command: ./vendor/bin/pest --ci --compact --testsuite=Feature
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          packagist-username: ${{ secrets.packagist_username }}
+          packagist-token: ${{ secrets.packagist_token }}
 
-      - name: Execute Yii2 Adapter tests
-        run: vendor/bin/pest --ci --compact --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel
+  yii2-adapter-tests:
+    needs: [pint, phpstan, rector]
+    name: 'Tests / Yii2 Adapter'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        uses: ./.github/actions/run-tests
+        with:
+          test-command: vendor/bin/pest --ci --compact --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          packagist-username: ${{ secrets.packagist_username }}
+          packagist-token: ${{ secrets.packagist_token }}
+          working-directory: yii2-adapter
