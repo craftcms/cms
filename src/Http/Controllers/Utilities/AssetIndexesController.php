@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use Craft;
 use CraftCms\Cms\Asset\AssetIndexer;
-use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Utility\Utilities;
@@ -212,17 +211,5 @@ final readonly class AssetIndexesController
         }
 
         return $this->asSuccess(null, ['stop' => $sessionId]);
-    }
-
-    private function prepareSessionData(IndexingSession $indexingSession): array
-    {
-        $sessionData = $indexingSession->toArray();
-
-        unset($sessionData['dateUpdated']);
-
-        $sessionData['dateCreated'] = $indexingSession->dateUpdated->format(I18N::getLocale()->getDateTimeFormat('medium', Locale::FORMAT_PHP));
-        $sessionData['indexedVolumes'] = Json::decodeIfJson($indexingSession->indexedVolumes);
-
-        return $sessionData;
     }
 }
