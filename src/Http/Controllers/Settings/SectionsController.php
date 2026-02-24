@@ -42,8 +42,8 @@ final readonly class SectionsController
 
     public function index(Request $request, Sections $sections): \Inertia\Response
     {
-        $page = (int) $request->input('page', 1);
-        $limit = (int) $request->input('per_page', 50);
+        $page = $request->integer('page', 1);
+        $limit = $request->integer('per_page', 50);
         $searchTerm = $request->input('search');
 
         $sort = $request->input('sort', [
