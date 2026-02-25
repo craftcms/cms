@@ -1031,6 +1031,11 @@ class App
             ];
         }
 
+        $dbConfigAttributes = [];
+        if ((new ReflectionClass('\PDO'))->hasConstant('MYSQL_ATTR_MULTI_STATEMENTS')) {
+            $dbConfigAttributes[PDO::MYSQL_ATTR_MULTI_STATEMENTS] = false;
+        }
+
         $config = [
             'class' => Connection::class,
             'driverName' => $driver,
@@ -1048,7 +1053,7 @@ class App
                 $driver => Command::class,
             ],
             'attributes' => [
-                PDO::MYSQL_ATTR_MULTI_STATEMENTS => false,
+                ...$dbConfigAttributes,
                 ...$dbConfig->attributes,
             ],
             'enableSchemaCache' => !static::devMode(),
