@@ -4,18 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image\Jobs;
 
-use Craft;
-use craft\imagetransforms\ImageTransformer;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Support\Facades\Log;
 use Override;
 use Throwable;
 
-/**
- * Generates an image transform.
- */
 final class GenerateImageTransform extends Job
 {
     public function __construct(
@@ -27,7 +23,7 @@ final class GenerateImageTransform extends Job
 
     public function handle(): void
     {
-        $transformer = Craft::createObject(ImageTransformer::class);
+        $transformer = new ImageTransformer;
         $index = $transformer->getTransformIndexModelById($this->transformId);
 
         if ($index && ! $index->fileExists) {

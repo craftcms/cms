@@ -818,6 +818,7 @@ trait ApplicationTrait
      * Returns the image transforms service.
      *
      * @return ImageTransforms The asset transforms service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\ImageTransforms} instead.
      */
     public function getImageTransforms(): ImageTransforms
     {

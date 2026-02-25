@@ -368,6 +368,8 @@ class Yii2ServiceProvider extends ServiceProvider
         AssetVolumeFolder::mixin(new ValidateMixin());
         FilesystemFsListing::mixin(new ValidateMixin());
         Widget::mixin(new ValidateMixin());
+        \CraftCms\Cms\Image\Data\ImageTransform::mixin(new ValidateMixin());
+        \CraftCms\Cms\Image\Data\ImageTransformIndex::mixin(new ValidateMixin());
     }
 
     protected function registerLegacyApp(): void
@@ -655,6 +657,8 @@ class Yii2ServiceProvider extends ServiceProvider
         Users::registerEvents();
         View::registerEvents();
         Volumes::registerEvents();
+        \craft\services\ImageTransforms::registerEvents();
+        \craft\imagetransforms\ImageTransformer::registerEvents();
 
         /**
          * Controllers

@@ -29,10 +29,8 @@ use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\ImageTransforms;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\models\ImageTransform;
 use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use CraftCms\Aliases\Aliases;
@@ -60,6 +58,8 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
@@ -1186,7 +1186,7 @@ class Asset extends Element
             return true;
         }
 
-        return (bool) Craft::$app->getImageTransforms()->getTransformByHandle($name);
+        return (bool) app(\CraftCms\Cms\Image\ImageTransforms::class)->getTransformByHandle($name);
     }
 
     /**
@@ -1214,7 +1214,7 @@ class Asset extends Element
             /** @phpstan-ignore catch.neverThrown */
         } catch (UnknownPropertyException|\CraftCms\Cms\Component\Exceptions\UnknownPropertyException $e) {
             // Is $name a transform handle?
-            if (($transform = Craft::$app->getImageTransforms()->getTransformByHandle($name)) !== null) {
+            if (($transform = app(\CraftCms\Cms\Image\ImageTransforms::class)->getTransformByHandle($name)) !== null) {
                 return $this->copyWithTransform($transform);
             }
 
@@ -1758,7 +1758,7 @@ JS, [
             ($transform !== null || $this->_transform) &&
             Image::canManipulateAsImage($this->getExtension())
         ) {
-            $transform = ImageTransforms::normalizeTransform($transform ?? $this->_transform);
+            $transform = ImageTransformHelper::normalizeTransform($transform ?? $this->_transform);
         } else {
             $transform = null;
         }
@@ -1922,7 +1922,7 @@ JS, [
     public function setTransform(mixed $transform): Asset
     {
         if ($this->allowTransforms()) {
-            $this->_transform = ImageTransforms::normalizeTransform($transform);
+            $this->_transform = ImageTransformHelper::normalizeTransform($transform);
         }
 
         return $this;
@@ -1996,7 +1996,7 @@ JS, [
                 }
             }
 
-            $transform = ImageTransforms::normalizeTransform($transform);
+            $transform = ImageTransformHelper::normalizeTransform($transform);
 
             if ($immediately === null) {
                 $immediately = Cms::config()->generateTransformsBeforePageLoad;
@@ -2181,7 +2181,7 @@ JS, [
     public function getMimeType(mixed $transform = null): ?string
     {
         $transform ??= $this->_transform;
-        $transform = ImageTransforms::normalizeTransform($transform);
+        $transform = ImageTransformHelper::normalizeTransform($transform);
 
         if ($transform?->format) {
             // Prepend with '.' to let pathinfo() work
@@ -2218,7 +2218,7 @@ JS, [
 
         $transform ??= $this->_transform;
 
-        return ImageTransforms::normalizeTransform($transform)->format ?? $ext;
+        return ImageTransformHelper::normalizeTransform($transform)->format ?? $ext;
     }
 
     /**
@@ -3068,7 +3068,7 @@ JS;
             }
         }
 
-        Craft::$app->getImageTransforms()->deleteAllTransformData($this);
+        app(\CraftCms\Cms\Image\ImageTransforms::class)->deleteAllTransformData($this);
         parent::afterDelete();
     }
 
@@ -3193,7 +3193,7 @@ JS;
             return [$this->_width, $this->_height];
         }
 
-        $transform = ImageTransforms::normalizeTransform($transform);
+        $transform = ImageTransformHelper::normalizeTransform($transform);
 
         return Image::targetDimensions(
             $this->_width,
@@ -3295,7 +3295,7 @@ JS;
 
         if ($this->folderId) {
             // Nuke the transforms
-            Craft::$app->getImageTransforms()->deleteAllTransformData($this);
+            app(\CraftCms\Cms\Image\ImageTransforms::class)->deleteAllTransformData($this);
         }
 
         // Update file properties

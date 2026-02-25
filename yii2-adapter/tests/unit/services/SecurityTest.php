@@ -53,7 +53,7 @@ class SecurityTest extends TestCase
             ['test stuff craft cms', ' ', 'test stuff craft cms', ['   ']],
             ['test stuff craft cms', '😀', 'test stuff craft cms', ['😀😘']],
             ['test stuff craft cms', '😀 😘', 'test stuff craft cms', ['😀', '😘']],
-            ['test stuff craft cms', '😀⛄', 'test stuff craft cms', []],
+            ['••••••••••••••••••••', '😀⛄', 'test stuff craft cms', []],
             ['not stuff craft cms', '', 'not stuff craft cms', ['not']],
             ['•••••••••••••••••••', 'NOT_STUFF_CRAFT_CMS', 'not stuff craft cms', ['NOT_STUFF']],
         ];

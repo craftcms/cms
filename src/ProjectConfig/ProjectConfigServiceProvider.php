@@ -20,6 +20,7 @@ use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\ImageTransforms;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -92,9 +93,9 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             ->onUpdate(ProjectConfig::PATH_VOLUMES.'.{uid}', fn (ConfigEvent $event) => Volumes::handleChangedVolume($event))
             ->onRemove(ProjectConfig::PATH_VOLUMES.'.{uid}', fn (ConfigEvent $event) => Volumes::handleDeletedVolume($event))
             // Transforms
-            ->onAdd(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', $this->proxy('imageTransforms', 'handleChangedTransform'))
-            ->onUpdate(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', $this->proxy('imageTransforms', 'handleChangedTransform'))
-            ->onRemove(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', $this->proxy('imageTransforms', 'handleDeletedTransform'))
+            ->onAdd(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', fn (ConfigEvent $event) => ImageTransforms::handleChangedTransform($event))
+            ->onUpdate(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', fn (ConfigEvent $event) => ImageTransforms::handleChangedTransform($event))
+            ->onRemove(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', fn (ConfigEvent $event) => ImageTransforms::handleDeletedTransform($event))
             // Site groups
             ->onAdd(ProjectConfig::PATH_SITE_GROUPS.'.{uid}', fn (ConfigEvent $event) => SiteGroups::handleChangedGroup($event))
             ->onUpdate(ProjectConfig::PATH_SITE_GROUPS.'.{uid}', fn (ConfigEvent $event) => SiteGroups::handleChangedGroup($event))

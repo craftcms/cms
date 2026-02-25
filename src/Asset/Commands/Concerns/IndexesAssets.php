@@ -111,7 +111,7 @@ trait IndexesAssets
                     $assets = Asset::find()->id($assetIds)->get();
 
                     foreach ($assets as $asset) {
-                        $craft->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
+                        app(\CraftCms\Cms\Image\ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
                         $asset->keepFileOnDelete = true;
                         $craft->getElements()->deleteElement($asset);
                     }

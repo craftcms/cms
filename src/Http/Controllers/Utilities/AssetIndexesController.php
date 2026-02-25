@@ -205,7 +205,7 @@ final readonly class AssetIndexesController
                 ->all();
 
             foreach ($assets as $asset) {
-                Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
+                app(\CraftCms\Cms\Image\ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
                 $asset->keepFileOnDelete = true;
                 Craft::$app->getElements()->deleteElement($asset);
             }

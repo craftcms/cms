@@ -10,38 +10,18 @@
 namespace craft\imagetransforms;
 
 use Craft;
-use craft\base\Component;
 use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageEditorTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\events\ImageTransformerOperationEvent;
-use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\FileHelper;
-use craft\helpers\Image;
-use craft\helpers\ImageTransforms as TransformHelper;
-use craft\helpers\UrlHelper;
-use craft\image\Raster;
-use craft\models\ImageTransform;
-use craft\models\ImageTransformIndex;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Str;
-use Exception;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Filesystem\LocalFilesystemAdapter;
-use Illuminate\Support\Facades\DB;
-use Throwable;
-use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
-
-use function CraftCms\Cms\maxPowerCaptain;
-use function CraftCms\Cms\t;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Data\ImageTransformIndex;
+use CraftCms\Cms\Image\Events\DeletingTransformedImage;
+use CraftCms\Cms\Image\Events\TransformingImage;
+use CraftCms\Cms\Image\ImageTransformer as NewImageTransformer;
+use Illuminate\Support\Facades\Event as EventFacade;
+use yii\base\Component;
 
 /**
  * ImageTransformer transforms image assets using GD or ImageMagick.
@@ -49,6 +29,7 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see NewImageTransformer} instead.
  *
  * @property-read int $editedImageHeight
  * @property-read int $editedImageWidth
@@ -66,131 +47,19 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public const EVENT_DELETE_TRANSFORMED_IMAGE = 'deleteTransformedImage';
 
-    /**
-     * @var ImageTransformIndex[]
-     */
-    protected array $eagerLoadedTransformIndexes = [];
+    private ?NewImageTransformer $_transformer = null;
 
-    protected array $imageEditorData = [];
+    private function transformer(): NewImageTransformer
+    {
+        return $this->_transformer ??= new NewImageTransformer();
+    }
 
     /**
      * {@inheritdoc}
      */
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
-        $disk = $asset->getVolume()->transformDisk();
-        $mimeType = $asset->getMimeType();
-        $generalConfig = Cms::config();
-
-        if (!$asset->getVolume()->getFs()->hasUrls) {
-            throw new NotSupportedException('The asset’s volume’s transform filesystem doesn’t have URLs.');
-        }
-
-        if ($mimeType === 'image/gif' && !$generalConfig->transformGifs) {
-            throw new NotSupportedException('GIF files shouldn’t be transformed.');
-        }
-
-        if ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs) {
-            throw new NotSupportedException('SVG files shouldn’t be transformed.');
-        }
-
-        $index = $this->getTransformIndex($asset, $imageTransform);
-        $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)) . $this->getTransformUri($asset, $index);
-
-        // If it's a local filesystem, make sure `fileExists` is accurate
-        if ($disk instanceof LocalFilesystemAdapter) {
-            $fileExists = $disk->exists($uri);
-
-            // if the file exists on disk, make sure it's not stale
-            if (
-                $fileExists &&
-                !$index->fileExists &&
-                $imageTransform->parameterChangeTime &&
-                $disk->lastModified($uri) < $imageTransform->parameterChangeTime->getTimestamp()
-            ) {
-                $fileExists = false;
-            }
-
-            if ($fileExists !== $index->fileExists) {
-                // Flip it and save it
-                $index->fileExists = !$index->fileExists;
-                $this->storeTransformIndexData($index);
-            }
-        }
-
-        if (!$index->fileExists) {
-            if (!$immediately) {
-                // Add a Generate Image Transform job to the queue, in case the temp URL never gets requested
-                dispatch(new GenerateImageTransform(
-                    transformId: $index->id,
-                    description: I18N::prep('Generating image transform for {file}', [
-                        'file' => $asset->getFilename(),
-                    ]),
-                ))->onQueue(Cms::config()->lowPriorityQueueName);
-
-                // Prevent the page from being cached
-                if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
-                    Craft::$app->getResponse()->setNoCacheHeaders();
-                }
-
-                // Return the temporary transform URL
-                return UrlHelper::actionUrl('assets/generate-transform', [
-                    'transformId' => $index->id,
-                ], showScriptName: false);
-            }
-
-            // Is the transform being generated by another request?
-            if ($index->inProgress) {
-                for ($try = 1; $try <= 30; $try++) {
-                    if ($index->error) {
-                        throw new ImageTransformException(t('Failed to generate transform with id of {id}.', [
-                            'id' => $index->id,
-                        ]));
-                    }
-
-                    // Wait a second and check again
-                    maxPowerCaptain();
-                    sleep(1);
-                    $index = $this->getTransformIndexModelById($index->id);
-                    if (!$index->inProgress) {
-                        break;
-                    }
-                }
-            }
-
-            // No file, then
-            if (!$index->fileExists) {
-                // Mark the transform as in progress
-                $index->inProgress = true;
-                $this->storeTransformIndexData($index);
-
-                // Generate the transform
-                try {
-                    $this->generateTransform($index);
-                } catch (Exception $e) {
-                    $index->inProgress = false;
-                    $index->fileExists = false;
-                    $index->error = true;
-                    $this->storeTransformIndexData($index);
-
-                    throw new ImageTransformException(t('Failed to generate transform with id of {id}.', [
-                        'id' => $index->id,
-                    ]), previous: $e);
-                }
-
-                $index->inProgress = false;
-                $index->fileExists = true;
-                $this->storeTransformIndexData($index);
-            }
-        }
-
-        $url = $disk->url($uri);
-
-        if (Cms::config()->revAssetUrls) {
-            return AssetsHelper::revUrl($url, $asset, $index->dateUpdated);
-        }
-
-        return $url;
+        return $this->transformer()->getTransformUrl($asset, $imageTransform, $immediately);
     }
 
     /**
@@ -198,35 +67,12 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function invalidateAssetTransforms(Asset $asset): void
     {
-        $transformIndexes = $this->getAllCreatedTransformsForAsset($asset);
-
-        foreach ($transformIndexes as $transformIndex) {
-            $this->deleteImageTransformFile($asset, $transformIndex);
-        }
-
-        $this->deleteTransformIndexDataByAssetId($asset->id);
+        $this->transformer()->invalidateAssetTransforms($asset);
     }
 
-    /**
-     * @throws InvalidConfigException
-     */
     public function deleteImageTransformFile(Asset $asset, ImageTransformIndex $transformIndex): void
     {
-        $path = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $transformIndex);
-
-        if ($this->hasEventHandlers(static::EVENT_DELETE_TRANSFORMED_IMAGE)) {
-            $this->trigger(static::EVENT_DELETE_TRANSFORMED_IMAGE, new ImageTransformerOperationEvent([
-                'asset' => $asset,
-                'imageTransformIndex' => $transformIndex,
-                'path' => $path,
-            ]));
-        }
-
-        try {
-            $asset->getVolume()->transformDisk()->delete($path);
-        } catch (InvalidConfigException|NotSupportedException) {
-            // NBD
-        }
+        $this->transformer()->deleteImageTransformFile($asset, $transformIndex);
     }
 
     /**
@@ -234,418 +80,26 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function eagerLoadTransforms(array $transforms, array $assets): void
     {
-        // Index the assets by ID
-        $assetsById = Arr::keyBy($assets, 'id');
-        $transformsByFingerprint = [];
-
-        // Query for the indexes
-        $results = $this->_createTransformIndexQuery()
-            ->whereIn('assetId', array_keys($assetsById))
-            ->where(function(Builder $query) use ($transforms, &$transformsByFingerprint) {
-                foreach ($transforms as $transform) {
-                    $transformString = $fingerprint = TransformHelper::getTransformString($transform);
-
-                    if ($transform->format !== null) {
-                        $fingerprint .= ':' . $transform->format;
-                    }
-
-                    $transformsByFingerprint[$fingerprint] = $transform;
-
-                    $query->orWhere(function(Builder $query) use ($transform, $transformString) {
-                        $query->where('transformString', $transformString)
-                            ->when(
-                                $transform->format !== null,
-                                fn(Builder $query) => $query->whereNull('format'),
-                                fn(Builder $query) => $query->where('format', $transform->format),
-                            );
-                    });
-
-                    if (!is_null($transform->format)) {
-                        $fingerprint .= ':' . $transform->format;
-                    }
-
-                    $transformsByFingerprint[$fingerprint] = $transform;
-                }
-            })
-            ->get();
-
-        // Index the valid transform indexes by fingerprint, and capture the IDs of indexes that should be deleted
-        $invalidIndexIds = [];
-
-        foreach ($results as $result) {
-            // Get the transform's fingerprint
-            $transformFingerprint = $result->transformString;
-
-            if ($result->format) {
-                $transformFingerprint .= ':' . $result->format;
-            }
-
-            // Is it still valid?
-            $transform = $transformsByFingerprint[$transformFingerprint];
-            $asset = $assetsById[$result->assetId];
-
-            if ($this->validateTransformIndexResult((array) $result, $transform, $asset)) {
-                $indexFingerprint = $result->assetId . ':' . $transformFingerprint;
-                $this->eagerLoadedTransformIndexes[$indexFingerprint] = (array) $result;
-            } else {
-                $invalidIndexIds[] = $result->id;
-            }
-        }
-
-        // Delete any invalid indexes
-        if (!empty($invalidIndexIds)) {
-            DB::table(Table::IMAGETRANSFORMINDEX)
-                ->whereIn('id', $invalidIndexIds)
-                ->delete();
-        }
-    }
-
-    // Protected methods
-    // =============================================================
-
-    /**
-     * Return a subfolder used by the Transform Index for the Asset.
-     *
-     *
-     * @throws InvalidConfigException
-     */
-    protected function getTransformSubfolder(Asset $asset, ImageTransformIndex $transformIndex): string
-    {
-        $path = $transformIndex->transformString;
-
-        if (!empty($transformIndex->filename) && $transformIndex->filename !== $asset->getFilename()) {
-            $path .= DIRECTORY_SEPARATOR . $asset->id;
-        }
-
-        return $path;
-    }
-
-    /**
-     * Return the filename used by the Transform Index for the Asset.
-     *
-     *
-     * @throws InvalidConfigException
-     */
-    protected function getTransformFilename(Asset $asset, ImageTransformIndex $transformIndex): string
-    {
-        return $transformIndex->filename ?: $asset->getFilename();
-    }
-
-    /**
-     * Returns the path to a transform, relative to the asset's folder.
-     *
-     *
-     * @throws InvalidConfigException
-     */
-    protected function getTransformSubpath(Asset $asset, ImageTransformIndex $transformIndex): string
-    {
-        return $this->getTransformSubfolder($asset,
-            $transformIndex) . DIRECTORY_SEPARATOR . $this->getTransformFilename($asset, $transformIndex);
-    }
-
-    /**
-     * Returns the URI for a transform, relative to the asset's folder.
-     */
-    protected function getTransformUri(Asset $asset, ImageTransformIndex $index): string
-    {
-        $uri = $this->getTransformSubpath($asset, $index);
-
-        return str_replace('\\', '/', $uri);
-    }
-
-    /**
-     * Generate the actual image for the Asset by the transform index.
-     *
-     *
-     * @throws ImageTransformException If a transform index has an invalid transform assigned.
-     */
-    protected function generateTransformedImage(Asset $asset, ImageTransformIndex $index): void
-    {
-        if (!Image::canManipulateAsImage($asset->getExtension())) {
-            return;
-        }
-
-        $volume = $asset->getVolume();
-        $transformDisk = $volume->transformDisk();
-        $transformPath = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $index);
-
-        if ($transformDisk->exists($transformPath)) {
-            $dateModified = $transformDisk->lastModified($transformPath);
-            $parameterChangeTime = $index->getTransform()->parameterChangeTime;
-
-            if (!$parameterChangeTime || $parameterChangeTime->getTimestamp() <= $dateModified) {
-                // The file already exists and isn't stale yet
-                return;
-            }
-
-            try {
-                $transformDisk->delete($transformPath);
-            } catch (Throwable) {
-                // Unlikely, but if it got deleted while we were comparing timestamps, don't freak out.
-            }
-        }
-
-        $tempPath = TransformHelper::generateTransform($asset, $index->getTransform(), function() use ($index) {
-            $this->storeTransformIndexData($index);
-        }, $image);
-
-        // Fire a 'transformImage' event
-        if ($this->hasEventHandlers(static::EVENT_TRANSFORM_IMAGE)) {
-            $event = new ImageTransformerOperationEvent([
-                'asset' => $asset,
-                'imageTransformIndex' => $index,
-                'path' => $transformPath,
-                'image' => $image,
-                'tempPath' => $tempPath,
-            ]);
-            $this->trigger(static::EVENT_TRANSFORM_IMAGE, $event);
-            $tempPath = $event->tempPath;
-        }
-
-        $stream = fopen($tempPath, 'rb');
-
-        try {
-            if (!is_resource($stream) || !$transformDisk->writeStream($transformPath, $stream)) {
-                throw new FilesystemException("Unable to write stream to path: $transformPath");
-            }
-        } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-        }
-
-        // when Google Cloud Storage is done with the $stream, it's no longer recognised as a valid resource
-        // it comes back with type=Unknown and then causes fclose to trigger an error:
-        // TypeError: fclose(): supplied resource is not a valid stream resource
-        // https://github.com/craftcms/cms/issues/12878
-        if (is_resource($stream)) {
-            fclose($stream);
-        }
-
-        FileHelper::unlink($tempPath);
-    }
-
-    /**
-     * Check if a transformed image exists. If it does not, attempt to generate it.
-     *
-     *
-     * @return bool true if transform exists for the index
-     *
-     * @throws ImageTransformException
-     *
-     * @deprecated in 4.4.0. [[generateTransform()]] should be used instead.
-     */
-    protected function procureTransformedImage(ImageTransformIndex $index): bool
-    {
-        $this->generateTransform($index);
-
-        return true;
-    }
-
-    /**
-     * @throws ImageTransformException
-     */
-    private function generateTransform(ImageTransformIndex $index): void
-    {
-        $asset = app(\CraftCms\Cms\Asset\Assets::class)->getAssetById($index->assetId);
-
-        if (!$asset) {
-            throw new ImageTransformException('Asset not found - ' . $index->assetId);
-        }
-
-        $volume = $asset->getVolume();
-
-        $index->detectedFormat = $index->format ?: TransformHelper::detectTransformFormat($asset);
-        $transformFilename = pathinfo($asset->getFilename(), PATHINFO_FILENAME) . '.' . $index->detectedFormat;
-        $index->filename = $transformFilename;
-
-        $matchFound = $this->getSimilarTransformIndex($asset, $index);
-        $disk = $volume->transformDisk();
-
-        $target = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $index);
-        // If we have a match, copy the file.
-        if ($matchFound) {
-            $from = $this->getTransformBasePath($asset) . $this->getTransformSubpath($asset, $matchFound);
-
-            // Sanity check
-            try {
-                if ($disk->exists($target)) {
-                    return;
-                }
-
-                if (!$disk->copy($from, $target)) {
-                    throw new FilesystemException("Unable to copy $from to $target");
-                }
-            } catch (Throwable $exception) {
-                throw new ImageTransformException('There was a problem re-using an existing transform.', 0, $exception);
-            }
-        } else {
-            $this->generateTransformedImage($asset, $index);
-        }
-
-        if (!$disk->exists($target)) {
-            throw new ImageTransformException('There was a problem generating the image transform.');
-        }
-    }
-
-    /**
-     * Get a transform URL by the transform index model.
-     *
-     *
-     * @throws ImageTransformException If there was an error generating the transform.
-     *
-     * @deprecated in 4.4.0. [[getTransformUrl()]] should be used instead.
-     */
-    protected function ensureTransformUrlByIndexModel(Asset $asset, ImageTransformIndex $index): string
-    {
-        return $this->getTransformUrl($asset, $index->getTransform(), true);
+        $this->transformer()->eagerLoadTransforms($transforms, $assets);
     }
 
     /**
      * Get a transform index row. If it doesn't exist - create one.
      *
-     * @param  ImageTransform|string|array|null  $transform
-     *
-     * @throws ImageTransformException if the transform cannot be found by the handle
+     * @param ImageTransform|string|array|null $transform
      */
     public function getTransformIndex(Asset $asset, mixed $transform): ImageTransformIndex
     {
-        $transform = TransformHelper::normalizeTransform($transform);
-
-        if ($transform === null) {
-            throw new ImageTransformException('There was a problem finding the transform.');
-        }
-
-        $transformString = TransformHelper::getTransformString($transform);
-
-        // Was it eager-loaded?
-        $fingerprint = $asset->id . ':' . $transformString . ($transform->format === null ? '' : ':' . $transform->format);
-
-        if (isset($this->eagerLoadedTransformIndexes[$fingerprint])) {
-            $result = $this->eagerLoadedTransformIndexes[$fingerprint];
-
-            return new ImageTransformIndex((array) $result);
-        }
-
-        // Check if an entry exists already
-        $result = $this->_createTransformIndexQuery()
-            ->where([
-                'assetId' => $asset->id,
-                'transformString' => $transformString,
-            ])
-            ->when(
-                $transform->format,
-                fn(Builder $query) => $query->where('format', $transform->format),
-                fn(Builder $query) => $query->whereNull('format'),
-            )
-            ->when(
-                $transform->indexId,
-                fn(Builder $query) => $query->where('id', $transform->indexId),
-            )
-            ->first();
-
-        if ($result) {
-            $result = (array) $result;
-
-            $existingIndex = new ImageTransformIndex($result);
-
-            if ($this->validateTransformIndexResult($result, $transform, $asset)) {
-                return $existingIndex;
-            }
-
-            // Delete the out-of-date record
-            DB::table(Table::IMAGETRANSFORMINDEX)->delete($result['id']);
-
-            // And the generated transform itself, too
-            $this->deleteImageTransformFile($asset, $existingIndex);
-        }
-
-        $detectedFormat = $transform->format ?: TransformHelper::detectTransformFormat($asset);
-        $transformFilename = pathinfo($asset->getFilename(), PATHINFO_FILENAME) . '.' . $detectedFormat;
-
-        // Create a new record
-        $index = new ImageTransformIndex([
-            'assetId' => $asset->id,
-            'format' => $transform->format,
-            'transformer' => $transform->getTransformer(),
-            'dateIndexed' => now(),
-            'transformString' => $transformString,
-            'fileExists' => false,
-            'inProgress' => false,
-            'filename' => $transformFilename,
-            'transform' => $transform,
-        ]);
-
-        $this->storeTransformIndexData($index);
-
-        return $index;
+        return $this->transformer()->getTransformIndex($asset, $transform);
     }
 
     /**
-     * Validates a transform index result to see if the index is still valid for a given asset.
-     *
-     * @param  array|Asset  $asset  The asset object or a raw database result
-     * @return bool Whether the index result is still valid
-     */
-    protected function validateTransformIndexResult(array $result, ImageTransform $transform, array|Asset $asset): bool
-    {
-        // If the transform hasn't been generated yet, it's probably not yet invalid.
-        if (empty($result['dateIndexed'])) {
-            return true;
-        }
-
-        // If the asset has been modified since the time the index was created, it’s no longer valid
-        $dateModified = Arr::get($asset, 'dateModified');
-        if ($result['dateIndexed'] < $dateModified) {
-            return false;
-        }
-
-        // If it’s not a named transform, consider it valid
-        if (!$transform->getIsNamedTransform()) {
-            return true;
-        }
-
-        // If the named transform's dimensions have changed since the time the index was created, it's no longer valid
-        if ($result['dateIndexed'] < $transform->parameterChangeTime) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Store a transform index data by it's model.
+     * Store a transform index data by its model.
      */
     public function storeTransformIndexData(ImageTransformIndex $index): ImageTransformIndex
     {
-        $values = $index->toArray([
-            'assetId',
-            'transformer',
-            'filename',
-            'format',
-            'transformString',
-            'volumeId',
-            'fileExists',
-            'inProgress',
-            'error',
-            'dateIndexed',
-        ], [], false);
+        $this->transformer()->storeTransformIndexData($index);
 
-        $now = now();
-        if ($index->id !== null) {
-            DB::table(Table::IMAGETRANSFORMINDEX)
-                ->where('id', $index->id)
-                ->update(array_merge([
-                    'dateUpdated' => $now,
-                ], $values));
-        } else {
-            $index->id = DB::table(Table::IMAGETRANSFORMINDEX)
-                ->insertGetId(array_merge([
-                    'dateCreated' => $now,
-                    'dateUpdated' => $now,
-                    'uid' => Str::uuid(),
-                ], $values));
-        }
-
-        // todo: this should return void
         return $index;
     }
 
@@ -654,14 +108,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function getPendingTransformIndexIds(): array
     {
-        return $this->_createTransformIndexQuery()
-            ->where([
-                'fileExists' => false,
-                'inProgress' => false,
-                'error' => false,
-            ])
-            ->pluck('id')
-            ->all();
+        return $this->transformer()->getPendingTransformIndexIds();
     }
 
     /**
@@ -669,11 +116,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function getTransformIndexModelById(int $transformId): ?ImageTransformIndex
     {
-        $result = $this->_createTransformIndexQuery()
-            ->where('id', $transformId)
-            ->first();
-
-        return $result ? new ImageTransformIndex((array) $result) : null;
+        return $this->transformer()->getTransformIndexModelById($transformId);
     }
 
     /**
@@ -681,27 +124,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function startImageEditing(Asset $asset): void
     {
-        $imageCopy = $asset->getCopyOfFile();
-
-        if (FileHelper::isSvg($imageCopy)) {
-            $size = max($asset->width, $asset->height) ?? 1000;
-            /** @var Raster $image */
-            $image = Craft::$app->getImages()->loadImage($imageCopy, true, $size);
-        } else {
-            /** @var Raster $image */
-            $image = Craft::$app->getImages()->loadImage($imageCopy);
-        }
-
-        // TODO Is this hacky? It seems hacky.
-        // We're rasterizing SVG, we have to make sure that the filename change does not get lost
-        if (strtolower($asset->getExtension()) === 'svg') {
-            unlink($imageCopy);
-            $imageCopy = preg_replace('/(svg)$/i', 'png', $imageCopy);
-            $asset->setFilename(preg_replace('/(svg)$/i', 'png', $asset->getFilename()));
-        }
-
-        $this->imageEditorData['image'] = $image;
-        $this->imageEditorData['tempLocation'] = $imageCopy;
+        $this->transformer()->startImageEditing($asset);
     }
 
     /**
@@ -709,12 +132,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function flipImage(bool $flipX, bool $flipY): void
     {
-        if ($flipX) {
-            $this->imageEditorData['image']->flipHorizontally();
-        }
-        if ($flipY) {
-            $this->imageEditorData['image']->flipVertically();
-        }
+        $this->transformer()->flipImage($flipX, $flipY);
     }
 
     /**
@@ -722,7 +140,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function scaleImage(int $width, int $height): void
     {
-        $this->imageEditorData['image']->scaleToFit($width, $height);
+        $this->transformer()->scaleImage($width, $height);
     }
 
     /**
@@ -730,7 +148,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function rotateImage(float $degrees): void
     {
-        $this->imageEditorData['image']->rotate($degrees);
+        $this->transformer()->rotateImage($degrees);
     }
 
     /**
@@ -738,7 +156,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function getEditedImageWidth(): int
     {
-        return $this->imageEditorData['image']->getWidth();
+        return $this->transformer()->getEditedImageWidth();
     }
 
     /**
@@ -746,7 +164,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function getEditedImageHeight(): int
     {
-        return $this->imageEditorData['image']->getHeight();
+        return $this->transformer()->getEditedImageHeight();
     }
 
     /**
@@ -754,7 +172,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function crop(int $x, int $y, int $width, int $height): void
     {
-        $this->imageEditorData['image']->crop($x, $x + $width, $y, $y + $height);
+        $this->transformer()->crop($x, $y, $width, $height);
     }
 
     /**
@@ -762,11 +180,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function finishImageEditing(): string
     {
-        $tempLocation = $this->imageEditorData['tempLocation'];
-        $this->imageEditorData['image']->saveAs($tempLocation);
-        $this->imageEditorData = [];
-
-        return $tempLocation;
+        return $this->transformer()->finishImageEditing();
     }
 
     /**
@@ -774,104 +188,39 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     public function cancelImageEditing(): string
     {
-        $tempLocation = $this->imageEditorData['tempLocation'];
-        $this->imageEditorData = [];
-
-        return $tempLocation;
+        return $this->transformer()->cancelImageEditing();
     }
 
-    /**
-     * Get the transform base path for a given asset.
-     *
-     *
-     * @throws InvalidConfigException
-     */
-    protected function getTransformBasePath(Asset $asset): string
+    public static function registerEvents(): void
     {
-        $subPath = $asset->getVolume()->getTransformSubpath();
-        $subPath = Str::chopEnd($subPath, '/');
+        EventFacade::listen(TransformingImage::class, function(TransformingImage $event) {
+            $legacyTransformer = Craft::$app->getImageTransforms()->getImageTransformer(self::class);
 
-        return ($subPath ? $subPath . DIRECTORY_SEPARATOR : '') . $asset->folderPath;
-    }
-
-    /**
-     * Delete transform records by an Asset id
-     */
-    protected function deleteTransformIndexDataByAssetId(int $assetId): void
-    {
-        DB::table(Table::IMAGETRANSFORMINDEX)
-            ->where('assetId', $assetId)
-            ->delete();
-    }
-
-    /**
-     * Get an array of ImageTransformIndex models for all created transforms for an Asset.
-     *
-     *
-     * @return ImageTransformIndex[]
-     */
-    protected function getAllCreatedTransformsForAsset(Asset $asset): array
-    {
-        return $this->_createTransformIndexQuery()
-            ->where('assetId', $asset->id)
-            ->get()
-            ->map(fn(object $result) => new ImageTransformIndex((array) $result))
-            ->all();
-    }
-
-    /**
-     * Find a similar image transform for reuse for an asset and existing transform.
-     *
-     *
-     * @throws InvalidConfigException
-     */
-    protected function getSimilarTransformIndex(Asset $asset, ImageTransformIndex $index): ?ImageTransformIndex
-    {
-        $transform = $index->getTransform();
-        $result = null;
-
-        if ($asset->getExtension() === $index->detectedFormat && !$asset->getHasFocalPoint()) {
-            $possibleLocations = [TransformHelper::getTransformString($transform, true)];
-
-            if ($transform->getIsNamedTransform()) {
-                $namedLocation = TransformHelper::getTransformString($transform);
-                $possibleLocations[] = $namedLocation;
+            if (!$legacyTransformer->hasEventHandlers(self::EVENT_TRANSFORM_IMAGE)) {
+                return;
             }
 
-            // We're looking for transforms that fit the bill and are not the one we are trying to find/create
-            // the image for.
-            $result = $this->_createTransformIndexQuery()
-                ->where([
-                    'assetId' => $asset->id,
-                    'fileExists' => true,
-                    'transformString' => $possibleLocations,
-                    'format' => $index->detectedFormat,
-                ])
-                ->whereNot('id', $index->id)
-                ->first();
-        }
-
-        return $result ? Craft::createObject(array_merge(['class' => ImageTransformIndex::class], (array) $result)) : null;
-    }
-
-    /**
-     * Returns a Query object prepped for retrieving transform indexes.
-     */
-    private function _createTransformIndexQuery(): Builder
-    {
-        return DB::table(Table::IMAGETRANSFORMINDEX)
-            ->select([
-                'id',
-                'assetId',
-                'filename',
-                'format',
-                'transformString',
-                'fileExists',
-                'inProgress',
-                'error',
-                'dateIndexed',
-                'dateUpdated',
-                'dateCreated',
+            $legacyEvent = new ImageTransformerOperationEvent([
+                'asset' => $event->asset,
+                'imageTransformIndex' => $event->imageTransformIndex,
+                'path' => '',
+                'tempPath' => $event->tempPath,
             ]);
+            $legacyTransformer->trigger(self::EVENT_TRANSFORM_IMAGE, $legacyEvent);
+            $event->tempPath = $legacyEvent->tempPath;
+        });
+
+        EventFacade::listen(DeletingTransformedImage::class, function(DeletingTransformedImage $event) {
+            $legacyTransformer = Craft::$app->getImageTransforms()->getImageTransformer(self::class);
+
+            if (!$legacyTransformer->hasEventHandlers(self::EVENT_DELETE_TRANSFORMED_IMAGE)) {
+                return;
+            }
+
+            $legacyTransformer->trigger(self::EVENT_DELETE_TRANSFORMED_IMAGE, new ImageTransformerOperationEvent([
+                'asset' => $event->asset,
+                'path' => $event->path,
+            ]));
+        });
     }
 }
