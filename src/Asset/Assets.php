@@ -9,23 +9,24 @@ use craft\assetpreviews\Image as ImagePreview;
 use craft\assetpreviews\Pdf;
 use craft\assetpreviews\Text;
 use craft\assetpreviews\Video;
-use craft\base\AssetPreviewHandlerInterface;
-use craft\errors\AssetOperationException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\imagetransforms\FallbackTransformer;
 use craft\models\ImageTransform;
+use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\AfterReplaceAsset;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
 use CraftCms\Cms\Asset\Events\DefineThumbUrl;
 use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
+use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Support\Env;
@@ -62,13 +63,14 @@ final class Assets
 
     public function getTotalAssets(mixed $criteria = null): int
     {
-        if ($criteria instanceof \craft\elements\db\AssetQuery) {
-            $query = $criteria;
-        } else {
-            $query = Asset::find();
-            if ($criteria) {
-                Craft::configure($query, $criteria);
-            }
+        if ($criteria instanceof AssetQuery) {
+            return $criteria->count();
+        }
+
+        $query = Asset::find();
+
+        if ($criteria) {
+            Craft::configure($query, $criteria);
         }
 
         return $query->count();
@@ -76,18 +78,18 @@ final class Assets
 
     public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename, ?string $mimeType = null): void
     {
-        $event = new BeforeReplaceAsset(
+        event($event = new BeforeReplaceAsset(
             asset: $asset,
             replaceWith: $pathOnServer,
             filename: $filename,
-        );
-        event($event);
+        ));
+
         $filename = $event->filename;
 
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
         $asset->setMimeType(FileHelper::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
-        $asset->uploaderId = Craft::$app->getUser()->getId();
+        $asset->uploaderId = Auth::user()?->id;
         $asset->avoidFilenameConflicts = true;
         $asset->setScenario(Asset::SCENARIO_REPLACE);
         Craft::$app->getElements()->saveElement($asset);
@@ -125,12 +127,11 @@ final class Assets
     {
         $height ??= $width;
 
-        $event = new DefineThumbUrl(
+        event($event = new DefineThumbUrl(
             asset: $asset,
             width: $width,
             height: $height,
-        );
-        event($event);
+        ));
 
         if ($event->url !== null) {
             return $event->url;
@@ -189,10 +190,8 @@ final class Assets
             $transform = null;
         }
 
-        $url = $asset->getUrl($transform, true);
-
-        if (! $url) {
-            throw new NotSupportedException("A preview URL couldn\u{2019}t be generated for the asset.");
+        if (! $url = $asset->getUrl($transform, true)) {
+            throw new NotSupportedException('A preview URL couldn’t be generated for the asset.');
         }
 
         return AssetsHelper::revUrl($url, $asset, fsOnly: true);
@@ -240,7 +239,8 @@ final class Assets
             $potentialConflicts[mb_strtolower((string) $filename)] = true;
         }
 
-        $canUse = static fn ($filenameToTest) => ! isset($potentialConflicts[mb_strtolower((string) $filenameToTest)]) && ! $volume->sourceDisk()->exists($folder->path.$filenameToTest);
+        $canUse = static fn ($filenameToTest) => ! isset($potentialConflicts[mb_strtolower((string) $filenameToTest)])
+            && ! $volume->sourceDisk()->exists($folder->path.$filenameToTest);
 
         if ($canUse($originalFilename)) {
             return $originalFilename;
@@ -279,8 +279,7 @@ final class Assets
 
     public function getAssetPreviewHandler(Asset $asset): ?AssetPreviewHandlerInterface
     {
-        $event = new RegisterPreviewHandler(asset: $asset);
-        event($event);
+        event($event = new RegisterPreviewHandler(asset: $asset));
 
         if ($event->previewHandler instanceof AssetPreviewHandlerInterface) {
             return $event->previewHandler;
@@ -330,12 +329,9 @@ final class Assets
         );
     }
 
-    public function createTempAssetQuery(): \craft\elements\db\AssetQuery
+    public function createTempAssetQuery(): AssetQuery
     {
-        $query = new \craft\elements\db\AssetQuery(Asset::class);
-        $query->volumeId(':empty:');
-
-        return $query;
+        return new AssetQuery()->volumeId(':empty:');
     }
 
     /**
@@ -354,10 +350,10 @@ final class Assets
 
         if ($user) {
             $folderName = "user_{$user->id}";
-        } elseif (Craft::$app->getRequest()->getIsConsoleRequest()) {
+        } elseif (app()->runningInConsole()) {
             $folderName = 'temp_'.sha1((string) time());
         } else {
-            $folderName = 'user_'.sha1((string) Craft::$app->getSession()->id);
+            $folderName = 'user_'.sha1(session()->id());
         }
 
         $volumeTopFolder = $folders->findFolder([
@@ -368,7 +364,7 @@ final class Assets
         if (! $volumeTopFolder) {
             $volumeTopFolder = new VolumeFolder;
             $volumeTopFolder->name = t('Temporary Uploads');
-            $folders->storeFolderRecord($volumeTopFolder);
+            $folders->storeFolderModel($volumeTopFolder);
         }
 
         $folder = $folders->findFolder([
@@ -381,7 +377,7 @@ final class Assets
             $folder->parentId = $volumeTopFolder->id;
             $folder->name = $folderName;
             $folder->path = $folderName.'/';
-            $folders->storeFolderRecord($folder);
+            $folders->storeFolderModel($folder);
         }
 
         $disk = $this->getTempAssetUploadDisk();

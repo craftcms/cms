@@ -5,18 +5,19 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use Craft;
-use craft\errors\AssetException;
-use craft\errors\AssetOperationException;
 use craft\helpers\Assets as AssetsHelper;
 use CraftCms\Cms\Asset\Data\FolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Exceptions\AssetException;
+use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectExistsException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
+use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -161,7 +162,7 @@ final class Folders
     public function getRootFolderByVolumeId(int $volumeId): ?VolumeFolder
     {
         if (! array_key_exists($volumeId, $this->rootFolders)) {
-            $volume = app(Volumes::class)->getVolumeById($volumeId);
+            $volume = Volumes::getVolumeById($volumeId);
 
             if (! $volume) {
                 return $this->rootFolders[$volumeId] = null;
@@ -178,7 +179,7 @@ final class Folders
                 $folder->parentId = null;
                 $folder->name = $volume->name;
                 $folder->path = '';
-                $this->storeFolderRecord($folder);
+                $this->storeFolderModel($folder);
             }
 
             $this->rootFolders[$volumeId] = $folder;
@@ -223,7 +224,7 @@ final class Folders
         $parent = $folder->getParent();
 
         if (! $parent) {
-            throw new AssetException("Folder {$folder->id} doesn\u{2019}t have a parent.");
+            throw new AssetException("Folder {$folder->id} doesn’t have a parent.");
         }
 
         $existingFolder = $this->findFolder([
@@ -238,14 +239,13 @@ final class Folders
             ));
         }
 
-        $volume = $parent->getVolume();
         $path = rtrim((string) $folder->path, '/');
 
-        if (! $volume->sourceDisk()->makeDirectory($path)) {
+        if (! $parent->getVolume()->sourceDisk()->makeDirectory($path)) {
             throw new FilesystemException("Unable to create directory at path: $path");
         }
 
-        $this->storeFolderRecord($folder);
+        $this->storeFolderModel($folder);
     }
 
     /**
@@ -291,12 +291,12 @@ final class Folders
 
         foreach ($descendantFolders as $descendantFolder) {
             $descendantFolder->path = preg_replace('#^'.$folder->path.'#', $newFolderPath, (string) $descendantFolder->path);
-            $this->storeFolderRecord($descendantFolder);
+            $this->storeFolderModel($descendantFolder);
         }
 
         $folder->name = $newName;
         $folder->path = $newFolderPath;
-        $this->storeFolderRecord($folder);
+        $this->storeFolderModel($folder);
 
         return $newName;
     }
@@ -324,7 +324,7 @@ final class Folders
                 try {
                     $volume->sourceDisk()->deleteDirectory(trim($folder->path, '/'));
                 } catch (Throwable $exception) {
-                    Craft::$app->getErrorHandler()->logException($exception);
+                    report($exception);
                 }
             }
         }
@@ -369,13 +369,11 @@ final class Folders
                     $folderModel->parentId = $parentId;
                     $folderModel->name = $part;
                     $folderModel->path = $path;
-                    $this->storeFolderRecord($folderModel);
+                    $this->storeFolderModel($folderModel);
                 }
 
-                if (! $justRecord) {
-                    if (! $volume->sourceDisk()->makeDirectory($path)) {
-                        throw new FilesystemException("Unable to create directory at path: $path");
-                    }
+                if (! $justRecord && ! $volume->sourceDisk()->makeDirectory($path)) {
+                    throw new FilesystemException("Unable to create directory at path: $path");
                 }
 
                 $parentId = $folderModel->id;
@@ -385,7 +383,7 @@ final class Folders
         return $folderModel;
     }
 
-    public function storeFolderRecord(VolumeFolder $folder): void
+    public function storeFolderModel(VolumeFolder $folder): void
     {
         if (! $folder->id) {
             $model = new VolumeFolderModel;

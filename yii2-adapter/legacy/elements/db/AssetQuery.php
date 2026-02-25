@@ -946,8 +946,8 @@ class AssetQuery extends ElementQuery
 
             $folderCondition = Db::parseNumericParam('assets.folderId', $this->folderId);
             if (is_numeric($this->folderId) && $this->includeSubfolders) {
-                $assetsService = Craft::$app->getAssets();
-                $descendants = $assetsService->getAllDescendantFolders($assetsService->getFolderById($this->folderId));
+                $folders = app(\CraftCms\Cms\Asset\Folders::class);
+                $descendants = $folders->getAllDescendantFolders($folders->getFolderById($this->folderId));
                 $folderCondition = ['or', $folderCondition, ['in', 'assets.folderId', array_keys($descendants)]];
             }
             $this->subQuery->andWhere($folderCondition);

@@ -784,6 +784,7 @@ trait ApplicationTrait
      * Returns the assets service.
      *
      * @return Assets The assets service
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Asset\Assets} or {@see \CraftCms\Cms\Asset\Folders} instead.
      */
     public function getAssets(): Assets
     {

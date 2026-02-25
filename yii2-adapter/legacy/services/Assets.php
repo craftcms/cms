@@ -10,15 +10,16 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\AssetPreviewHandlerInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\AssetQuery;
-
 use craft\events\AssetPreviewEvent;
+
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
 use CraftCms\Cms\Asset\Assets as AssetsService;
+use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -81,6 +82,10 @@ class Assets extends Component
 
     public function getTotalAssets(mixed $criteria = null): int
     {
+        if ($criteria instanceof AssetQuery) {
+            return $criteria->count();
+        }
+
         return $this->assetsService()->getTotalAssets($criteria);
     }
 
@@ -247,7 +252,7 @@ class Assets extends Component
 
     public function storeFolderRecord(VolumeFolder $folder): void
     {
-        $this->foldersService()->storeFolderRecord($folder);
+        $this->foldersService()->storeFolderModel($folder);
     }
 
     public function getTempAssetUploadFs(): FsInterface
@@ -262,7 +267,10 @@ class Assets extends Component
 
     public function createTempAssetQuery(): AssetQuery
     {
-        return $this->assetsService()->createTempAssetQuery();
+        $query = new AssetQuery(Asset::class);
+        $query->volumeId(':empty:');
+
+        return $query;
     }
 
     public function getUserTemporaryUploadFolder(?User $user = null): VolumeFolder
@@ -282,7 +290,7 @@ class Assets extends Component
     {
         return (new Query())
             ->select(['id', 'parentId', 'volumeId', 'name', 'path', 'uid'])
-            ->from([\craft\db\Table::VOLUMEFOLDERS]);
+            ->from([Table::VOLUMEFOLDERS]);
     }
 
     public static function registerEvents(): void

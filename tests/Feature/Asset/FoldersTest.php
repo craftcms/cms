@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Support\Facades\Folders as FoldersFacade;
+use Illuminate\Database\Query\Builder;
 
 beforeEach(function () {
     $this->folders = app(Folders::class);
@@ -354,7 +355,7 @@ it('can store a new folder record', function () {
     $folder->name = 'New Folder';
     $folder->path = 'new-folder/';
 
-    $this->folders->storeFolderRecord($folder);
+    $this->folders->storeFolderModel($folder);
 
     expect($folder->id)->not->toBeNull();
     expect($folder->uid)->not->toBeNull();
@@ -379,7 +380,7 @@ it('can update an existing folder record', function () {
         'path' => 'updated/',
     ]);
 
-    $this->folders->storeFolderRecord($folder);
+    $this->folders->storeFolderModel($folder);
 
     $model->refresh();
     expect($model->name)->toBe('Updated');
@@ -461,5 +462,5 @@ it('resets caches', function () {
 it('creates a folder query builder', function () {
     $query = $this->folders->createFolderQuery();
 
-    expect($query)->toBeInstanceOf(\Illuminate\Database\Query\Builder::class);
+    expect($query)->toBeInstanceOf(Builder::class);
 });

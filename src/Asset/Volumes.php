@@ -208,7 +208,7 @@ final class Volumes
                 ]);
             } else {
                 $rootFolder->name = $volumeModel->name;
-                $this->folders->storeFolderRecord($rootFolder);
+                $this->folders->storeFolderModel($rootFolder);
             }
 
             DB::commit();

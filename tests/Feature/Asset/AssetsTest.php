@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use craft\assetpreviews\Text;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
@@ -11,6 +12,7 @@ use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
 use Illuminate\Support\Facades\Event;
@@ -73,7 +75,7 @@ it('dispatches DefineThumbUrl event in getThumbUrl', function () {
 
     $this->assets->getThumbUrl($asset, 100);
 
-    Event::assertDispatched(fn (\CraftCms\Cms\Asset\Events\DefineThumbUrl $event) => $event->asset->id === $asset->id
+    Event::assertDispatched(fn (DefineThumbUrl $event) => $event->asset->id === $asset->id
         && $event->width === 100
         && $event->height === 100);
 });
@@ -127,7 +129,7 @@ it('returns default preview handler for known asset kinds', function () {
 
     $handler = $this->assets->getAssetPreviewHandler($textAsset);
 
-    expect($handler)->toBeInstanceOf(\craft\assetpreviews\Text::class);
+    expect($handler)->toBeInstanceOf(Text::class);
 });
 
 it('returns null preview handler for unknown asset kinds', function () {
@@ -155,7 +157,7 @@ it('can get temp asset upload filesystem', function () {
 it('can create a temp asset query', function () {
     $query = $this->assets->createTempAssetQuery();
 
-    expect($query)->toBeInstanceOf(\craft\elements\db\AssetQuery::class);
+    expect($query)->toBeInstanceOf(AssetQuery::class);
 });
 
 it('can get name replacement in folder when no conflict', function () {
@@ -189,7 +191,7 @@ it('dispatches BeforeReplaceAsset event with filename', function () {
         // The save may fail due to missing filesystem setup, but the event should still fire
     }
 
-    Event::assertDispatched(fn (\CraftCms\Cms\Asset\Events\BeforeReplaceAsset $event) => $event->asset->id === $asset->id
+    Event::assertDispatched(fn (BeforeReplaceAsset $event) => $event->asset->id === $asset->id
         && $event->filename === 'new-filename.jpg');
 
     @unlink($tempFile);

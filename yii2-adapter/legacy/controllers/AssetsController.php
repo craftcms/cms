@@ -23,11 +23,13 @@ use craft\models\ImageTransform;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Assets as AssetsService;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
+use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -109,11 +111,11 @@ class AssetsController extends Controller
             $volume = $volumesService->getVolumeByHandle(array_shift($defaultSourcePath));
 
             if ($volume) {
-                $assetsService = Craft::$app->getAssets();
+                $folders = app(Folders::class);
                 $variables['defaultSource'] = "volume:$volume->uid";
 
                 if (!empty($defaultSourcePath)) {
-                    $subfolder = $assetsService->findFolder([
+                    $subfolder = $folders->findFolder([
                         'volumeId' => $volume->id,
                         'path' => sprintf('%s/', implode('/', $defaultSourcePath)),
                     ]);
@@ -269,7 +271,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('No target destination provided for uploading');
         }
 
-        $assets = Craft::$app->getAssets();
+        $folders = app(Folders::class);
 
         $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
 
@@ -301,7 +303,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The target destination provided for uploading is not valid');
         }
 
-        $folder = $assets->findFolder(['id' => $folderId]);
+        $folder = $folders->findFolder(['id' => $folderId]);
 
         if (!$folder) {
             throw new BadRequestHttpException('The target folder provided for uploading is not valid');
@@ -313,7 +315,7 @@ class AssetsController extends Controller
         $filename = Assets::prepareAssetName($uploadedFile->name);
 
         if ($selectionCondition) {
-            $tempFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
+            $tempFolder = app(AssetsService::class)->getUserTemporaryUploadFolder();
             if ($folder->id !== $tempFolder->id) {
                 // upload to the user's temp folder initially, with a temp name
                 $originalFolder = $folder;
@@ -421,7 +423,7 @@ class AssetsController extends Controller
 
         $uploadedFile = UploadedFile::getInstanceByName('replaceFile');
 
-        $assets = Craft::$app->getAssets();
+        $assets = app(AssetsService::class);
 
         // Must have at least one existing asset (source or target).
         // Must have either target asset or target filename.
@@ -517,8 +519,8 @@ class AssetsController extends Controller
         $folderName = $this->request->getRequiredBodyParam('folderName');
         $folderName = Assets::prepareAssetName($folderName, false);
 
-        $assets = Craft::$app->getAssets();
-        $parentFolder = $assets->findFolder(['id' => $parentId]);
+        $folders = app(Folders::class);
+        $parentFolder = $folders->findFolder(['id' => $parentId]);
 
         if (!$parentFolder) {
             throw new BadRequestHttpException('The parent folder cannot be found');
@@ -534,7 +536,7 @@ class AssetsController extends Controller
             $folderModel->volumeId = $parentFolder->volumeId;
             $folderModel->path = $parentFolder->path . $folderName . '/';
 
-            $assets->createFolder($folderModel);
+            $folders->createFolder($folderModel);
 
             return $this->asSuccess(data: [
                 'folderName' => $folderModel->name,
@@ -560,8 +562,8 @@ class AssetsController extends Controller
         $this->requireAcceptsJson();
         $folderId = $this->request->getRequiredBodyParam('folderId');
 
-        $assets = Craft::$app->getAssets();
-        $folder = $assets->getFolderById($folderId);
+        $folders = app(Folders::class);
+        $folder = $folders->getFolderById($folderId);
 
         if (!$folder) {
             throw new BadRequestHttpException('The folder cannot be found');
@@ -569,7 +571,7 @@ class AssetsController extends Controller
 
         // Check if it's possible to delete objects in the target volume.
         $this->requireVolumePermissionByFolder('deleteAssets', $folder);
-        $assets->deleteFoldersByIds($folderId);
+        $folders->deleteFoldersByIds($folderId);
 
         return $this->asSuccess();
     }
@@ -586,7 +588,7 @@ class AssetsController extends Controller
         $this->requirePostRequest();
 
         $assetId = $this->request->getBodyParam('sourceId') ?? $this->request->getRequiredBodyParam('assetId');
-        $asset = Craft::$app->getAssets()->getAssetById($assetId);
+        $asset = app(AssetsService::class)->getAssetById($assetId);
 
         if (!$asset) {
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
@@ -628,10 +630,10 @@ class AssetsController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $assets = Craft::$app->getAssets();
+        $folders = app(Folders::class);
         $folderId = $this->request->getRequiredBodyParam('folderId');
         $newName = $this->request->getRequiredBodyParam('newName');
-        $folder = $assets->getFolderById($folderId);
+        $folder = $folders->getFolderById($folderId);
 
         if (!$folder) {
             throw new BadRequestHttpException('The folder cannot be found');
@@ -641,7 +643,7 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByFolder('deleteAssets', $folder);
         $this->requireVolumePermissionByFolder('createFolders', $folder);
 
-        $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
+        $newName = $folders->renameFolderById($folderId, $newName);
 
         return $this->asSuccess(data: ['newName' => $newName]);
     }
@@ -661,11 +663,11 @@ class AssetsController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $assetsService = Craft::$app->getAssets();
+        $assets = app(AssetsService::class);
 
         // Get the asset
         $assetId = $this->request->getRequiredBodyParam('assetId');
-        $asset = $assetsService->getAssetById($assetId);
+        $asset = $assets->getAssetById($assetId);
 
         if ($asset === null) {
             throw new BadRequestHttpException('The Asset cannot be found');
@@ -673,7 +675,7 @@ class AssetsController extends Controller
 
         // Get the target folder
         $folderId = $this->request->getBodyParam('folderId', $asset->folderId);
-        $folder = $assetsService->getFolderById($folderId);
+        $folder = app(Folders::class)->getFolderById($folderId);
 
         if ($folder === null) {
             throw new BadRequestHttpException('The folder cannot be found');
@@ -706,7 +708,7 @@ class AssetsController extends Controller
             }
         }
 
-        $result = $assetsService->moveAsset($asset, $folder, $filename);
+        $result = $assets->moveAsset($asset, $folder, $filename);
 
         if (!$result) {
             // Get the corrected filename
@@ -742,9 +744,9 @@ class AssetsController extends Controller
         $force = $this->request->getBodyParam('force', false);
         $merge = !$force ? $this->request->getBodyParam('merge', false) : false;
 
-        $assets = Craft::$app->getAssets();
-        $folderToMove = $assets->getFolderById($folderBeingMovedId);
-        $destinationFolder = $assets->getFolderById($newParentFolderId);
+        $folders = app(Folders::class);
+        $folderToMove = $folders->getFolderById($folderBeingMovedId);
+        $destinationFolder = $folders->getFolderById($newParentFolderId);
 
         if ($folderToMove === null) {
             throw new BadRequestHttpException('The folder you are trying to move does not exist');
@@ -762,7 +764,7 @@ class AssetsController extends Controller
 
         $targetVolume = $destinationFolder->getVolume();
 
-        $existingFolder = $assets->findFolder([
+        $existingFolder = $folders->findFolder([
             'parentId' => $newParentFolderId,
             'name' => $folderToMove->name,
         ]);
@@ -781,7 +783,7 @@ class AssetsController extends Controller
             ]);
         }
 
-        $sourceTree = $assets->getAllDescendantFolders($folderToMove);
+        $sourceTree = $folders->getAllDescendantFolders($folderToMove);
 
         if (!$existingFolder) {
             // No conflicts, mirror the existing structure
@@ -803,7 +805,7 @@ class AssetsController extends Controller
                 // Delete if using force
                 if ($force) {
                     try {
-                        $assets->deleteFoldersByIds($existingFolder->id);
+                        $folders->deleteFoldersByIds($existingFolder->id);
                     } catch (VolumeException $exception) {
                         Craft::$app->getErrorHandler()->logException($exception);
 
@@ -811,7 +813,7 @@ class AssetsController extends Controller
                     }
                 } else {
                     // Or build a map of existing folders for file move
-                    $targetTree = $assets->getAllDescendantFolders($existingFolder);
+                    $targetTree = $folders->getAllDescendantFolders($existingFolder);
                     $targetPrefixLength = strlen($destinationFolder->path);
 
                     foreach ($targetTree as $existingFolder) {
@@ -838,7 +840,7 @@ class AssetsController extends Controller
         }
 
         $newFolderId = $folderIdChanges[$folderBeingMovedId] ?? null;
-        $newFolder = $assets->getFolderById($newFolderId);
+        $newFolder = $folders->getFolderById($newFolderId);
 
         return $this->asSuccess(data: [
             'transferList' => $fileTransferList,
@@ -859,7 +861,7 @@ class AssetsController extends Controller
     public function actionImageEditor(): Response
     {
         $assetId = $this->request->getRequiredBodyParam('assetId');
-        $asset = Craft::$app->getAssets()->getAssetById($assetId);
+        $asset = app(AssetsService::class)->getAssetById($assetId);
 
         if (!$asset) {
             throw new BadRequestHttpException(t('The asset you’re trying to edit does not exist.'));
@@ -889,7 +891,7 @@ class AssetsController extends Controller
         }
 
         try {
-            $url = Craft::$app->getAssets()->getImagePreviewUrl($asset, $size, $size);
+            $url = app(AssetsService::class)->getImagePreviewUrl($asset, $size, $size);
 
             return $this->response->redirect($url);
         } catch (NotSupportedException) {
@@ -909,7 +911,7 @@ class AssetsController extends Controller
     public function actionSaveImage(): Response
     {
         $this->requireAcceptsJson();
-        $assets = Craft::$app->getAssets();
+        $assets = app(AssetsService::class);
 
         $assetId = $this->request->getRequiredBodyParam('assetId');
         $viewportRotation = (int) $this->request->getRequiredBodyParam('viewportRotation');
@@ -1209,7 +1211,7 @@ class AssetsController extends Controller
 
         $previewHtml = null;
 
-        $previewHandler = Craft::$app->getAssets()->getAssetPreviewHandler($asset);
+        $previewHandler = app(AssetsService::class)->getAssetPreviewHandler($asset);
         $variables = [];
 
         if ($previewHandler instanceof ImagePreview) {
@@ -1476,13 +1478,13 @@ class AssetsController extends Controller
 
         if (!empty($folderIds)) {
             // Add descendant folders
-            $assetsService = Craft::$app->getAssets();
+            $folders = app(Folders::class);
             foreach ($folderIds as $folderId) {
-                $folder = $assetsService->getFolderById($folderId);
+                $folder = $folders->getFolderById($folderId);
                 if (!$folder) {
                     throw new BadRequestHttpException("Invalid folder ID: $folderId");
                 }
-                $descendants = $assetsService->getAllDescendantFolders($folder);
+                $descendants = $folders->getAllDescendantFolders($folder);
                 array_push($folderIds, ...array_keys($descendants));
             }
         }

@@ -445,7 +445,7 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
      */
     private function generateTransform(ImageTransformIndex $index): void
     {
-        $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
+        $asset = app(\CraftCms\Cms\Asset\Assets::class)->getAssetById($index->assetId);
 
         if (!$asset) {
             throw new ImageTransformException('Asset not found - ' . $index->assetId);
