@@ -18,7 +18,6 @@ use craft\services\Assets;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
-use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Database\Table;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
@@ -64,7 +63,8 @@ class Asset extends ElementMutationResolver
         $elementService = Craft::$app->getElements();
 
         $newFolderId = $arguments['newFolderId'] ?? null;
-        $folders = app(Folders::class);
+        // Legacy service, tests depend on it
+        $folders = Craft::$app->getAssets();
 
         if ($canIdentify) {
             $this->requireSchemaAction('volumes.' . $volume->uid, 'save');
@@ -119,7 +119,7 @@ class Asset extends ElementMutationResolver
 
         $asset = $this->populateElementWithData($asset, $arguments, $resolveInfo);
 
-        // Legacy Yii2 event handling — must remain on legacy service for now
+        // Legacy Yii2 event handling — must remain on legacy service
         $legacyAssets = Craft::$app->getAssets();
         $triggerReplaceEvents = (
             $asset->getScenario() === AssetElement::SCENARIO_REPLACE &&
