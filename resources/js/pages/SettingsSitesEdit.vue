@@ -24,7 +24,7 @@
   }>();
 
   const form = useForm({
-    id: props.site.id ?? null,
+    siteId: props.site.id ?? null,
     group: props.groupId,
     name: props.site.nameRaw,
     handle: props.site.handle,

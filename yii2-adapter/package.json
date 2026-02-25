@@ -36,9 +36,10 @@
   },
   "dependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",
-    "@craftcms/graphiql": "file:../craftcms-graphiql",
-    "@craftcms/sass": "file:../craftcms-sass",
-    "@craftcms/vue": "file:../craftcms-vue",
+    "@craftcms/graphiql": "file:../packages/craftcms-graphiql",
+    "@craftcms/sass": "file:../packages/craftcms-sass",
+    "@craftcms/vue": "file:../packages/craftcms-vue",
+    "@craftcms/cp": "file:../packages/craftcms-cp",
     "@floating-ui/dom": "^1.6.3",
     "@selectize/selectize": "selectize/selectize.js#master",
     "@simplewebauthn/browser": "^7.1.0",

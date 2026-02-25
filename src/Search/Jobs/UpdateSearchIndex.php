@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Search\Jobs;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Search;
 use InvalidArgumentException;
 use Override;
 
@@ -32,14 +32,12 @@ final class UpdateSearchIndex extends Job
 
     public function handle(): void
     {
-        $searchService = Craft::$app->getSearch();
-
         if ($this->queued) {
             if (! is_int($this->elementId) || ! is_int($this->siteId)) {
                 throw new InvalidArgumentException('`elementId` and `siteId` must be an integer when `queued` is true.');
             }
 
-            $searchService->indexElementIfQueued($this->elementId, $this->siteId, $this->elementType);
+            Search::indexElementIfQueued($this->elementId, $this->siteId, $this->elementType);
 
             return;
         }
@@ -56,7 +54,7 @@ final class UpdateSearchIndex extends Job
 
         foreach ($elements as $i => $element) {
             $this->setProgress((int) ((($i + 1) / max($total, 1)) * 100));
-            $searchService->indexElementAttributes($element, $this->fieldHandles);
+            Search::indexElementAttributes($element, $this->fieldHandles);
         }
     }
 

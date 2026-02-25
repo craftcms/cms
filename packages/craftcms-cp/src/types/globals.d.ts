@@ -37,7 +37,7 @@ type Site = {
   uid: string;
 };
 
-export interface CpGlobal {
+export interface CpServices {
   $queue: QueueService;
   $config: ConfigService;
 }

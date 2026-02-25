@@ -15,7 +15,7 @@ export default css`
     display: flex;
     gap: var(--c-spacing-sm);
     align-items: start;
-    padding: var(--c-spacing-md);
+    padding: var(--c-spacing-sm) var(--c-spacing-md);
     border: 1px solid transparent;
   }
 

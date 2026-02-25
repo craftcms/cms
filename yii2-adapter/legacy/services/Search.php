@@ -10,38 +10,31 @@ namespace craft\services;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\MemoizableArray;
-use craft\cache\ElementQueryTagDependency;
 use craft\db\Query;
 use craft\db\Table;
 use craft\events\IndexKeywordsEvent;
 use craft\events\SearchEvent;
-use craft\helpers\Component as ComponentHelper;
-use craft\helpers\Db as DbHelper;
-use craft\helpers\ElementHelper;
-use craft\search\SearchQuery;
-use craft\search\SearchQueryTerm;
-use craft\search\SearchQueryTermGroup;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
+use CraftCms\Cms\Search\Events\AfterSearch;
+use CraftCms\Cms\Search\Events\BeforeIndexKeywords;
+use CraftCms\Cms\Search\Events\BeforeScoreResults;
+use CraftCms\Cms\Search\Events\BeforeSearch;
+use CraftCms\Cms\Search\Search as LaravelSearch;
+use CraftCms\Cms\Search\SearchQuery;
+use CraftCms\Cms\Search\SearchQueryTerm;
+use CraftCms\Cms\Search\SearchQueryTermGroup;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Search as SearchHelper;
 use CraftCms\Cms\Support\Str;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Throwable;
+use Illuminate\Support\Facades\Event;
 use yii\base\Component;
-use yii\base\Exception;
-use yii\db\Exception as DbException;
 use yii\db\Expression;
-use yii\db\Schema;
 
 /**
  * Search service.
@@ -50,13 +43,14 @@ use yii\db\Schema;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Search\Search} instead.
  */
 class Search extends Component
 {
     /**
      * @event IndexKeywordsEvent The event that is triggered before keywords are indexed for an element attribute or field.
      *
-     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the attribute/field’s keywords from being indexed.
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the attribute/field's keywords from being indexed.
      *
      * @since 4.2.0
      */
@@ -149,74 +143,7 @@ class Search extends Component
      */
     public function indexElementAttributes(ElementInterface $element, ?array $fieldHandles = null): bool
     {
-        // Acquire a lock for this element/site ID
-        $mutex = Cache::lock("searchindex:$element->id:$element->siteId", 30);
-
-        if (!$mutex->get()) {
-            // Not worth waiting around; for all we know the other process has newer search attributes anyway
-            return true;
-        }
-
-        // Figure out which fields to update, and which to ignore
-        $customFields = $element->getFieldLayout()?->getCustomFields() ?? [];
-        $updateFieldIds = [];
-        $ignoreFieldIds = [];
-
-        if (!empty($customFields)) {
-            if ($fieldHandles !== null) {
-                $fieldHandles = array_flip($fieldHandles);
-            }
-            foreach ($customFields as $field) {
-                if ($field->searchable && !isset($updateFieldIds[$field->id])) {
-                    // Are we updating this field's keywords?
-                    if ($fieldHandles === null || isset($fieldHandles[$field->handle])) {
-                        $updateFieldIds[$field->id] = true;
-                        unset($ignoreFieldIds[$field->id]);
-                    } else {
-                        // Leave its existing keywords alone
-                        $ignoreFieldIds[$field->id] = true;
-                    }
-                }
-            }
-        }
-
-        // Clear the element’s current search keywords
-        DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEX)
-            ->where('elementId', $element->id)
-            ->where('siteId', $element->siteId)
-            ->when(
-                !empty($ignoreFieldIds),
-                fn(Builder $query) => $query->whereNotIn('fieldId', array_map(fn(int $fieldId) => (string)$fieldId, array_keys($ignoreFieldIds))),
-            )
-            ->delete();
-
-        // Update the element attributes' keywords
-        foreach (ElementHelper::searchableAttributes($element) as $attribute) {
-            $value = $element->getSearchKeywords($attribute);
-            $this->_indexKeywords($element, $value, attribute: $attribute);
-        }
-
-        // Update the custom fields' keywords
-        $keywords = [];
-        foreach ($customFields as $field) {
-            if (isset($updateFieldIds[$field->id])) {
-                $fieldValue = $element->getFieldValue($field->handle);
-                $keywords[$field->id][] = $field->getSearchKeywords($fieldValue, $element);
-            }
-        }
-        foreach ($keywords as $fieldId => $instanceKeywords) {
-            $this->_indexKeywords($element, implode(' ', $instanceKeywords), fieldId: $fieldId);
-        }
-
-        // Release the lock
-        $mutex->release();
-
-        // Invalidate search query caches for this element type
-        TagDependency::invalidate([
-            sprintf('element-search-query:%s', get_class($element)),
-        ]);
-
-        return true;
+        return app(LaravelSearch::class)->indexElementAttributes($element, $fieldHandles);
     }
 
     /**
@@ -228,74 +155,11 @@ class Search extends Component
      */
     public function queueIndexElement(ElementInterface $element, array $fieldHandles): void
     {
-        try {
-            $this->createOrUpdateIndexJob($element, $fieldHandles);
-        } catch (DbException) {
-            // the job was probably just cascade-deleted
-            return;
-        }
-
-        dispatch(new UpdateSearchIndex(
-            elementType: $element::class,
-            elementId: $element->id,
-            siteId: $element->siteId,
-            queued: true,
-        ))->onQueue(Cms::config()->lowPriorityQueueName);
+        app(LaravelSearch::class)->queueIndexElement($element, $fieldHandles);
     }
 
     /**
-     * @throws DbException
-     */
-    private function createOrUpdateIndexJob(ElementInterface $element, array $fieldHandles): void
-    {
-        $jobId = $this->pendingIndexJobId($element->id, $element->siteId);
-
-        if ($jobId) {
-            if (empty($fieldHandles)) {
-                // nothing more to do
-                return;
-            }
-
-            // get a lock on the job and make sure it still exists && is pending
-            $mutex = Cache::lock("searchqueue:$jobId", 30);
-
-            if ($mutex->get()) {
-                try {
-                    if ($this->isIndexJobPending($jobId)) {
-                        foreach ($fieldHandles as $fieldHandle) {
-                            DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE_FIELDS)
-                                ->upsert([
-                                    'jobId' => $jobId,
-                                    'fieldHandle' => $fieldHandle,
-                                ], ['jobId', 'fieldHandle']);
-                        }
-                        return;
-                    }
-                } finally {
-                    $mutex->release();
-                }
-            }
-        }
-
-        DB::transaction(function() use ($element, $fieldHandles) {
-            $jobId = DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)
-                ->insertGetId([
-                    'elementId' => $element->id,
-                    'siteId' => $element->siteId,
-                ]);
-
-            $fieldData = array_map(fn(string $fieldHandle) => [
-                'jobId' => $jobId,
-                'fieldHandle' => $fieldHandle,
-            ], $fieldHandles);
-
-            DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE_FIELDS)
-                ->insert($fieldData);
-        });
-    }
-
-    /**
-     * Indexes the attributes of a given element, only if it’s queued.
+     * Indexes the attributes of a given element, only if it's queued.
      *
      * @param int $elementId
      * @param int $siteId
@@ -304,80 +168,7 @@ class Search extends Component
      */
     public function indexElementIfQueued(int $elementId, int $siteId, ?string $elementType = null): void
     {
-        $jobId = $this->pendingIndexJobId($elementId, $siteId);
-
-        if (!$jobId) {
-            // no pending jobs
-            return;
-        }
-
-        // get a lock on the job and then mark it as reserved,
-        // so there's no chance another process reserves it/modifies it, overlapping with this one
-        $mutex = Cache::lock("searchqueue:$jobId", 5);
-        if (!$mutex->get()) {
-            throw new Exception("Unable to acquire a mutex lock for search queue job $jobId");
-        }
-
-        try {
-            if (!DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)->where('id', $jobId)->update(['reserved' => true])) {
-                // another process must be handling the same job
-                return;
-            }
-        } finally {
-            $mutex->release();
-        }
-
-        try {
-            // Figure out which fields need to be updated for the element
-            $fieldHandles = DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE_FIELDS)
-                ->where('jobId', $jobId)
-                ->pluck('fieldHandle')
-                ->all();
-
-            $elementType ??= Craft::$app->getElements()->getElementTypeById($elementId);
-
-            if ($elementType && ComponentHelper::validateComponentClass($elementType, ElementInterface::class)) {
-                $element = $elementType::find()
-                    ->drafts(null)
-                    ->provisionalDrafts(null)
-                    ->id($elementId)
-                    ->siteId($siteId)
-                    ->status(null)
-                    ->one();
-
-                if ($element) {
-                    $this->indexElementAttributes($element, $fieldHandles);
-                }
-            }
-
-            DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)->delete($jobId);
-        } catch (Throwable $e) {
-            DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)
-                ->where('id', $jobId)
-                ->update(['reserved' => false]);
-            throw $e;
-        }
-    }
-
-    private function pendingIndexJobId(int $elementId, int $siteId): ?int
-    {
-        return DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)
-            ->where([
-                'elementId' => $elementId,
-                'siteId' => $siteId,
-                'reserved' => false,
-            ])
-            ->value('id');
-    }
-
-    private function isIndexJobPending(int $jobId): bool
-    {
-        /** @var ?object{reserved: bool} $job */
-        $job = DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)
-            ->select('reserved')
-            ->find($jobId);
-
-        return $job?->reserved;
+        app(LaravelSearch::class)->indexElementIfQueued($elementId, $siteId, $elementType);
     }
 
     /**
@@ -393,7 +184,7 @@ class Search extends Component
      */
     public function shouldCallSearchElements(ElementQueryInterface $elementQuery): bool
     {
-        return false;
+        return app(LaravelSearch::class)->shouldCallSearchElements($elementQuery);
     }
 
     /**
@@ -405,78 +196,7 @@ class Search extends Component
      */
     public function searchElements(ElementQueryInterface $elementQuery): array
     {
-        $searchQuery = $this->normalizeSearchQuery($elementQuery->search);
-
-        $elementQuery = (clone $elementQuery)
-            ->select('elements.id')
-            ->search(null)
-            ->offset(null)
-            ->limit(null);
-
-        // Fire a 'beforeSearch' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SEARCH)) {
-            $this->trigger(self::EVENT_BEFORE_SEARCH, new SearchEvent([
-                'elementQuery' => $elementQuery,
-                'query' => $searchQuery,
-                'siteId' => $elementQuery->siteId,
-            ]));
-        }
-
-        // Execute the sql
-        $query = $this->createDbQuery($searchQuery, $elementQuery);
-
-        if ($query === false) {
-            return [];
-        }
-
-        /**
-         * TODO: Remove once $query is a Laravel Builder
-         */
-        if ($elementQuery instanceof ElementQuery) {
-            $elementQuery->reorder();
-            $elementQuery->select('elements.id as id');
-            $elementQuery->getSubQuery()->offset = null;
-            $elementQuery->getSubQuery()->limit = null;
-            $ids = $elementQuery->pluck('id')->all();
-        } else {
-            $ids = $elementQuery;
-        }
-
-        $results = $query
-            ->andWhere(['elementId' => $ids])
-            ->cache(true, new ElementQueryTagDependency($elementQuery, [
-                'tags' => [
-                    'element-index-query',
-                    sprintf('element-index-query::%s', $elementQuery->elementType),
-                ],
-            ]))
-            ->all();
-
-        // Score the results
-        $scores = $this->_scoreResults($results, $searchQuery, $elementQuery);
-
-        // Fire an 'afterSearch' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
-            $event = new SearchEvent([
-                'elementQuery' => $elementQuery,
-                'query' => $searchQuery,
-                'siteId' => $elementQuery->siteId,
-                'results' => $results,
-                'scores' => $scores,
-            ]);
-            $this->trigger(self::EVENT_AFTER_SEARCH, $event);
-
-            // Use the scores from the event, in case any last minute changes were made to it
-            if ($event->scores !== null) {
-                $scores = $event->scores;
-            }
-        }
-
-        // Sort by element ID/site ID ascending, then score descending
-        ksort($scores, SORT_NATURAL);
-        arsort($scores);
-
-        return $scores;
+        return app(LaravelSearch::class)->searchElements($elementQuery);
     }
 
     /**
@@ -528,42 +248,6 @@ class Search extends Component
         return $query;
     }
 
-    private function _scoreResults(array $results, SearchQuery $searchQuery, ElementQueryInterface $elementQuery): array
-    {
-        // Fire a 'beforeScoreResults' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SCORE_RESULTS)) {
-            $event = new SearchEvent([
-                'elementQuery' => $elementQuery,
-                'query' => $searchQuery,
-                'siteId' => $elementQuery->siteId,
-                'results' => $results,
-            ]);
-            $this->trigger(self::EVENT_BEFORE_SCORE_RESULTS, $event);
-
-            if ($event->scores !== null) {
-                return $event->scores;
-            }
-
-            // Use whatever changes may have been made to the results (unless it was set to null for some reason)
-            if ($event->results !== null) {
-                $results = $event->results;
-            }
-        }
-
-        $scores = [];
-
-        // Loop through results and calculate score per element
-        foreach ($results as $row) {
-            $key = sprintf('%s-%s', $row['elementId'], $row['siteId']);
-            if (!isset($scores[$key])) {
-                $scores[$key] = 0;
-            }
-            $scores[$key] += $this->_scoreRow($row);
-        }
-
-        return $scores;
-    }
-
     /**
      * Normalizes a `search` param into a [[SearchQuery]] object.
      *
@@ -588,192 +272,91 @@ class Search extends Component
     }
 
     /**
-     * Deletes any search indexes that belong to elements that don’t exist anymore.
+     * Deletes any search indexes that belong to elements that don't exist anymore.
      *
      * @since 3.2.10
      */
     public function deleteOrphanedIndexes(): void
     {
-        DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEX, 's')
-            ->whereNotExists(
-                DB::table(\CraftCms\Cms\Database\Table::ELEMENTS, 'e')
-                    ->whereColumn('e.id', 's.elementId'),
-            )
-            ->delete();
+        app(LaravelSearch::class)->deleteOrphanedIndexes();
     }
 
     /**
-     * Deletes any search indexes that belong to elements that don’t exist anymore.
+     * Deletes any search index jobs that belong to elements that don't exist anymore.
      *
      * @since 5.9.0
      */
     public function deleteOrphanedIndexJobs(): void
     {
-        DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE, 'q')
-            ->whereNotExists(
-                DB::table(\CraftCms\Cms\Database\Table::ELEMENTS, 'elements')
-                    ->whereColumn('elements.id', 'q.elementId'),
-            )
-            ->delete();
+        app(LaravelSearch::class)->deleteOrphanedIndexJobs();
     }
 
-    /**
-     * Indexes keywords for a specific element attribute/field.
-     *
-     * @param ElementInterface $element
-     * @param string $keywords
-     * @param string|null $attribute
-     * @param int|null $fieldId
-     */
-    private function _indexKeywords(ElementInterface $element, string $keywords, ?string $attribute = null, ?int $fieldId = null): void
+    public static function registerEvents(): void
     {
-        if ($attribute !== null) {
-            $attribute = strtolower($attribute);
-        }
+        Event::listen(BeforeIndexKeywords::class, function(BeforeIndexKeywords $event) {
+            if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_BEFORE_INDEX_KEYWORDS)) {
+                $yiiEvent = new IndexKeywordsEvent([
+                    'element' => $event->element,
+                    'attribute' => $event->attribute,
+                    'fieldId' => $event->fieldId,
+                    'keywords' => $event->keywords,
+                ]);
+                Craft::$app->getSearch()->trigger(self::EVENT_BEFORE_INDEX_KEYWORDS, $yiiEvent);
 
-        // Clean 'em up
-        $site = $element->getSite();
-        $keywords = SearchHelper::normalizeKeywords($keywords, [], true, $site->getLanguage());
+                if (!$yiiEvent->isValid) {
+                    $event->isValid = false;
+                }
 
-        // Fire a 'beforeIndexKeywords' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_INDEX_KEYWORDS)) {
-            $event = new IndexKeywordsEvent([
-                'element' => $element,
-                'attribute' => $attribute,
-                'fieldId' => $fieldId,
-                'keywords' => $keywords,
-            ]);
-            $this->trigger(self::EVENT_BEFORE_INDEX_KEYWORDS, $event);
-
-            if (!$event->isValid) {
-                return;
+                $event->keywords = $yiiEvent->keywords;
             }
+        });
 
-            $keywords = $event->keywords;
-        }
-
-        // Save 'em
-        $columns = [
-            'elementId' => $element->id,
-            'attribute' => $attribute ?? 'field',
-            'fieldId' => $fieldId ? (string)$fieldId : '0',
-            'siteId' => $site->id,
-        ];
-
-        if ($keywords !== '') {
-            // Add padding around keywords
-            $keywords = ' ' . $keywords . ' ';
-        }
-
-        $db = Craft::$app->getDb();
-        if ($isPgsql = $db->getIsPgsql()) {
-            $maxSize = $this->maxPostgresKeywordLength;
-        } else {
-            $maxSize = DbHelper::getTextualColumnStorageCapacity(Schema::TYPE_TEXT);
-        }
-
-        if ($maxSize !== null && $maxSize !== false) {
-            $keywords = $this->_truncateSearchIndexKeywords($keywords, $maxSize);
-        }
-
-        $columns['keywords'] = $keywords;
-
-        if ($isPgsql) {
-            $columns['keywords_vector'] = $keywords;
-        }
-
-        // Insert/update the row in searchindex
-        retry(3, function() use ($columns) {
-            DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEX)
-                ->insert($columns);
-        }, 1_000, fn(Throwable $e) =>
-            // A gap lock was probably hit. Try again in one second
-            // https://github.com/craftcms/cms/issues/15221
-            $e instanceof QueryException && str_contains($e->getMessage(), 'deadlock'));
-    }
-
-    /**
-     * Calculate score for a result.
-     *
-     * @param array $row A single result from the search query.
-     * @return int The total score for this row.
-     */
-    private function _scoreRow(array $row): int
-    {
-        // Starting point
-        $score = 0;
-
-        // Loop through AND-terms and score each one against this row
-        foreach ($this->_terms as $term) {
-            $score += $this->_scoreTerm($term, $row, 1);
-        }
-
-        // Loop through each group of OR-terms
-        foreach ($this->_groups as $terms) {
-            // OR-terms are weighted less depending on the amount of OR terms in the group
-            $weight = 1 / count($terms);
-
-            // Get the score for each term and add it to the total
-            foreach ($terms as $term) {
-                $score += $this->_scoreTerm($term, $row, $weight);
+        Event::listen(BeforeSearch::class, function(BeforeSearch $event) {
+            if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_BEFORE_SEARCH)) {
+                Craft::$app->getSearch()->trigger(self::EVENT_BEFORE_SEARCH, new SearchEvent([
+                    'elementQuery' => $event->elementQuery,
+                    'query' => new SearchQuery($event->query->getQuery()),
+                    'siteId' => $event->elementQuery->siteId,
+                ]));
             }
-        }
+        });
 
-        return (int)round($score);
-    }
+        Event::listen(BeforeScoreResults::class, function(BeforeScoreResults $event) {
+            if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_BEFORE_SCORE_RESULTS)) {
+                $yiiEvent = new SearchEvent([
+                    'elementQuery' => $event->elementQuery,
+                    'query' => new SearchQuery($event->query->getQuery()),
+                    'siteId' => $event->elementQuery->siteId,
+                    'results' => $event->results,
+                ]);
+                Craft::$app->getSearch()->trigger(self::EVENT_BEFORE_SCORE_RESULTS, $yiiEvent);
 
-    /**
-     * Calculate score for a row/term combination.
-     *
-     * @param SearchQueryTerm $term The SearchQueryTerm to score.
-     * @param array $row The result row to score against.
-     * @param float|int $weight Optional weight for this term.
-     * @return float The total score for this term/row combination.
-     */
-    private function _scoreTerm(SearchQueryTerm $term, array $row, float|int $weight = 1): float
-    {
-        // Skip these terms: exact filtering is just that, no weighted search applies since all elements will
-        // already apply for these filters.
-        if ($term->exact || !($keywords = $this->_normalizeTerm($term->term, $row['siteId']))) {
-            return 0;
-        }
+                if ($yiiEvent->scores !== null) {
+                    $event->scores = $yiiEvent->scores;
+                }
 
-        // Account for substrings
-        if (!$term->subLeft) {
-            $keywords = ' ' . $keywords;
-        }
-
-        if (!$term->subRight) {
-            $keywords .= ' ';
-        }
-
-        // Get haystack and safe word count
-        $haystack = $row['keywords'];
-        $wordCount = count(array_filter(explode(' ', $haystack)));
-
-        // Get number of matches
-        $score = Str::substrCount($haystack, $keywords);
-
-        if ($score) {
-            // Exact match
-            if (trim($keywords) === trim($haystack)) {
-                $mod = 100;
-            } // Don't scale up for substring matches
-            elseif ($term->subLeft || $term->subRight) {
-                $mod = 10;
-            } else {
-                $mod = 50;
+                if ($yiiEvent->results !== null) {
+                    $event->results = $yiiEvent->results;
+                }
             }
+        });
 
-            // If this is a title, 100X it
-            if ($row['attribute'] === 'title') {
-                $mod *= 100;
+        Event::listen(AfterSearch::class, function(AfterSearch $event) {
+            if (Craft::$app->getSearch()->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
+                $yiiEvent = new SearchEvent([
+                    'elementQuery' => $event->elementQuery,
+                    'query' => new SearchQuery($event->query->getQuery()),
+                    'siteId' => $event->elementQuery->siteId,
+                    'results' => $event->results,
+                    'scores' => $event->scores,
+                ]);
+                Craft::$app->getSearch()->trigger(self::EVENT_AFTER_SEARCH, $yiiEvent);
+
+                if ($yiiEvent->scores !== null) {
+                    $event->scores = $yiiEvent->scores;
+                }
             }
-
-            $score = ($score / $wordCount) * $mod * $weight;
-        }
-
-        return $score;
+        });
     }
 
     /**
@@ -821,7 +404,6 @@ class Search extends Component
      * @param int|int[]|null $siteId
      * @param MemoizableArray<FieldInterface>|null $customFields
      * @return string|false
-     * @throws Throwable
      */
     private function _processTokens(array $tokens, bool $inclusive, array|int|null $siteId, ?MemoizableArray $customFields): string|false
     {
@@ -883,7 +465,6 @@ class Search extends Component
      * @param int|int[]|null $siteId
      * @param MemoizableArray<FieldInterface>|null $customFields
      * @return array
-     * @throws Throwable
      */
     private function _getSqlFromTerm(SearchQueryTerm $term, array|int|null $siteId, ?MemoizableArray $customFields): array
     {
@@ -1059,7 +640,6 @@ class Search extends Component
      * @param bool $bool Use In Boolean Mode or not
      * @param string $glue If multiple values are passed in as an array, the operator to combine them (AND or OR)
      * @return string
-     * @throws Throwable
      */
     private function _sqlFullText(mixed $val, bool $bool = true, string $glue = ' AND '): string
     {
@@ -1122,7 +702,7 @@ class Search extends Component
             ->whereRaw($where)
             ->when(
                 $siteId !== null,
-                fn(Builder $query) => $query->where('siteId', $siteId),
+                fn(Builder $query) => $query->whereIn('siteId', Arr::wrap($siteId)),
             )
             ->pluck('elementId');
 
@@ -1171,36 +751,6 @@ class Search extends Component
 
         $ftVal = implode(' & ', explode(' ', $val));
         return sprintf("%s @@ '%s'::tsquery AND %s LIKE ' %s '", $db->quoteColumnName('keywords_vector'), $ftVal, $db->quoteColumnName('keywords'), $val);
-    }
-
-    /**
-     * @param string $keywords The string of space separated search keywords.
-     * @param int $maxSize The maximum size the keywords string should be.
-     * @return string The (possibly) truncated keyword string.
-     */
-    private function _truncateSearchIndexKeywords(string $keywords, int $maxSize): string
-    {
-        $cleanKeywordsLength = strlen($keywords);
-
-        // Give ourselves a little wiggle room.
-        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-        $maxSize = (int)ceil($maxSize * 0.95);
-
-        if ($cleanKeywordsLength > $maxSize) {
-            // Time to truncate.
-            $keywords = mb_strcut($keywords, 0, $maxSize);
-
-            // Make sure we don't cut off a word in the middle.
-            if ($keywords[mb_strlen($keywords) - 1] !== ' ') {
-                $position = mb_strrpos($keywords, ' ');
-
-                if ($position) {
-                    $keywords = mb_substr($keywords, 0, $position + 1);
-                }
-            }
-        }
-
-        return $keywords;
     }
 
     /**

@@ -52,7 +52,13 @@
         {{ _self.action(item, false) }}
       {% endfor %}
 
-      <cp-queue-indicator></cp-queue-indicator>
+      {% if queue is instance of("craft\\queue\\QueueInterface") %}
+        <cp-queue-indicator
+          displayed-job="{{ queue.getJobInfo(1)|first|json_encode|e('html_attr') }}"
+          has-reserved-jobs="{{ queue.getHasReservedJobs() }}"
+          has-waiting-jobs="{{ queue.getHasWaitingJobs }}"
+        ></cp-queue-indicator>
+      {% endif %}
     </craft-nav-list>
 
     <div class="global-sidebar__footer">

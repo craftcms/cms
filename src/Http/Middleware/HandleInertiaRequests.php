@@ -9,6 +9,9 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Rebrand;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Queue\Enums\JobStatus;
+use CraftCms\Cms\Queue\JobProgress;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
@@ -28,7 +31,7 @@ class HandleInertiaRequests extends Middleware
      * @var string
      */
     #[\Override]
-    protected $rootView = 'c::app';
+    protected $rootView = 'app';
 
     /**
      * Determines the current asset version.
@@ -60,6 +63,7 @@ class HandleInertiaRequests extends Middleware
         $currentSite = Sites::getCurrentSite();
         $updates = app(Updates::class);
         $nav = app(Navigation::class);
+        $progressService = app(JobProgress::class);
 
         if (! $updates->isCraftUpdatePending()) {
             $currentUser = $request->user();
@@ -77,7 +81,12 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
-            'craft' => [
+            'queue' => fn () => [
+                'displayedJob' => $progressService->getDisplayedJob(),
+                'hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
+                'hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
+            ],
+            'craft' => fn () => [
                 'system' => [
                     'name' => Cms::systemName(),
                     'icon' => $systemIcon,
@@ -94,6 +103,7 @@ class HandleInertiaRequests extends Middleware
                 ],
                 'cpUrl' => cp_url(),
                 'actionUrl' => action_url(),
+                'baseApiUrl' => Api::craftApiEndpoint(),
                 'nav' => $nav->getItems(),
             ],
         ];

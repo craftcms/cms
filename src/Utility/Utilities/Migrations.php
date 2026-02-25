@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Utility\Utilities;
 
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utility;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Migrations represents a Migrations utility.
@@ -54,9 +54,9 @@ final class Migrations extends Utility
             $migrator->getPendingMigrations(),
         );
 
-        return template('_components/utilities/Migrations', [
-            'migrationHistory' => $migrationHistory,
-            'newMigrations' => $newMigrations,
+        return Html::tag('Migrations', attributes: [
+            ':migrationHistory' => $migrationHistory,
+            ':newMigrations' => $newMigrations,
         ]);
     }
 }

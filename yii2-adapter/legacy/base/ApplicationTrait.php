@@ -1170,6 +1170,7 @@ trait ApplicationTrait
      * Returns the search service.
      *
      * @return Search The search service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Search\Search} instead.
      */
     public function getSearch(): Search
     {

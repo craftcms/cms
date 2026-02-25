@@ -3,7 +3,7 @@ import {styleMap} from 'lit/directives/style-map.js';
 import {property, state} from 'lit/decorators.js';
 import '../badge-indicator/badge-indicator';
 import styles from './nav-item.styles';
-import {t} from '@craftcms/cp';
+import {t} from '../../utilities/translate.js';
 import {classMap} from 'lit/directives/class-map.js';
 
 /**
@@ -38,6 +38,10 @@ export default class CraftNavItem extends LitElement {
   @property({reflect: true, type: Boolean, attribute: 'icon-only'})
   iconOnly: boolean = false;
 
+  /** Compensate for padding with a negative margin for better visual alignment */
+  @property()
+  flush: boolean = false;
+
   @state()
   subnavState: string = 'closed';
 
@@ -63,7 +67,7 @@ export default class CraftNavItem extends LitElement {
 
     return html`
       <a
-        class="nav-item"
+        class="nav-item nav-item--icon"
         id="${itemId}"
         href="${this.href}"
         aria-current="${this.active ? 'page' : false}"
@@ -133,6 +137,7 @@ export default class CraftNavItem extends LitElement {
         class="${classMap({
           'nav-item': true,
           'nav-item--prefixed': hasPrefix,
+          'nav-item--flush': this.flush,
         })}"
         href="${this.href}"
         aria-current="${this.active ? 'page' : false}"

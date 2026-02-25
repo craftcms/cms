@@ -9,10 +9,13 @@ import {
 } from 'vue';
 import axios, {
   type AxiosError,
+  type AxiosInstance,
   type AxiosRequestConfig,
   type AxiosResponse,
   type CancelTokenSource,
 } from 'axios';
+import {useHelpers} from '@/composables/useCraftData';
+import {apiClient} from '@craftcms/cp/src/utilities/api/apiClient.js';
 
 // Type for URL parameter - can be string, ref, or computed
 type MaybeRef<T> = T | Ref<T> | ComputedRef<T>;
@@ -31,6 +34,7 @@ interface UseAxiosOptions<T = any> extends Omit<
   onSuccess?: (data: T, response: AxiosResponse) => void;
   onError?: (error: any) => void;
   initialData?: T | null;
+  axiosInstance?: AxiosInstance;
 }
 
 // Return type interface
@@ -69,6 +73,7 @@ export function useFetch<T = any>(
     onError,
     initialData = null,
     method = 'get',
+    axiosInstance = axios,
     ...axiosOptions
   } = options;
 
@@ -107,7 +112,7 @@ export function useFetch<T = any>(
     error.value = null;
 
     try {
-      const response = await axios<T>({
+      const response = await axiosInstance<T>({
         method: computedMethod.value,
         url: computedUrl.value,
         params: computedParams.value,
@@ -124,12 +129,12 @@ export function useFetch<T = any>(
       if (axios.isCancel(err)) {
         state.value = 'aborted';
       } else if (axios.isAxiosError(err)) {
-        console.log('Axios error:', err.response?.data);
+        console.error('Axios error:', err.response?.data);
         state.value = 'error';
         error.value = err.response?.data || err.message || 'Unknown error';
         onError?.(err);
       } else {
-        console.log('Unkown error:', err.message);
+        console.error('Unkown error:', err.message);
         state.value = 'error';
         error.value = err.message || 'Unknown error';
       }
@@ -208,5 +213,34 @@ export function usePost<T = any>(
     immediate: false,
     ...options,
     method: 'post',
+  });
+}
+
+export function useActionClient<T = any>(
+  url: MaybeRef<string>,
+  options: UseAxiosOptions<T> = {}
+) {
+  const method = options.method ?? 'POST';
+
+  const {getActionUrl} = useHelpers();
+  const actionUrl = computed(() => getActionUrl(unref(url)));
+
+  return useFetch(actionUrl, {
+    immediate: false,
+    ...options,
+    method,
+  });
+}
+
+export function useApiClient<T = any>(
+  url: MaybeRef<string>,
+  options: UseAxiosOptions<T> = {}
+) {
+  const {getApiUrl} = useHelpers();
+  const apiUrl = computed(() => getApiUrl(unref(url)));
+
+  return useFetch(apiUrl, {
+    ...options,
+    axiosInstance: apiClient,
   });
 }

@@ -1,9 +1,12 @@
 <script setup lang="ts">
   import {computed} from 'vue';
 
-  const props = defineProps<{
-    variant: 'success' | 'danger' | 'default';
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      variant?: 'success' | 'danger' | 'warning' | 'default';
+    }>(),
+    {variant: 'default'}
+  );
 
   const indicatorVariant = computed(() => {
     if (props.variant === 'default') {

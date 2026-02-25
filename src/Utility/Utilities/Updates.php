@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
-use craft\web\assets\updates\UpdatesAsset;
-use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Updates\Updates as UpdatesService;
 use CraftCms\Cms\Utility\Utility;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Updates represents a Updates dashboard widget.
@@ -46,10 +43,6 @@ final class Updates extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        Craft::$app->getView()->registerAssetBundle(UpdatesAsset::class);
-
-        HtmlStack::js('new Craft.UpdatesUtility();');
-
-        return template('_components/utilities/Updates');
+        return Html::tag('Updates');
     }
 }

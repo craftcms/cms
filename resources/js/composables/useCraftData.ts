@@ -24,6 +24,13 @@ export interface CraftData {
   [key: string]: any;
 }
 
+function getUrl(baseUrl: string, path: string) {
+  const url = new URL(baseUrl);
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  url.pathname = `${url.pathname}/${cleanPath}`;
+  return url.toString();
+}
+
 /**
  * @TODO move to NPM package
  */
@@ -33,17 +40,15 @@ export function useHelpers() {
   return {
     // @TODO move to NPM package
     getActionUrl(action: string) {
-      const url = new URL(craftData.actionUrl);
-      const cleanPath = action.startsWith('/') ? action.slice(1) : action;
-      url.pathname = `${url.pathname}/${cleanPath}`;
-      return url.toString();
+      return `${craftData.actionUrl}${action}`;
+      // return getUrl(craftData.actionUrl, action);
     },
     // @TODO move to NPM package
     getCpUrl(action: string) {
-      const url = new URL(craftData.cpUrl);
-      const cleanPath = action.startsWith('/') ? action.slice(1) : action;
-      url.pathname = `${url.pathname}/${cleanPath}`;
-      return url.toString();
+      return `${craftData.cpUrl}${action}`;
+    },
+    getApiUrl(path: string) {
+      return getUrl(craftData.baseApiUrl, path);
     },
   };
 }

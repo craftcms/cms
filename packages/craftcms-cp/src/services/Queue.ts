@@ -1,4 +1,3 @@
-import {actionClient} from '../utilities/api/actionClient.js';
 import type {
   JobFailedDetail,
   JobInfo,
@@ -8,6 +7,8 @@ import type {
   QueueServiceOptions,
 } from '@src/types';
 import {JobStatus} from '@src/types';
+import axios from 'axios';
+import {ConfigService} from '@src/services/Config';
 
 /**
  * Service for managing queue job tracking.
@@ -48,6 +49,9 @@ export class QueueService extends EventTarget {
   // Cross-tab broadcasting
   #broadcaster: BroadcastChannel | null = null;
 
+  // Configuration service instance
+  #config: ConfigService = ConfigService.getInstance();
+
   /** Get the singleton instance */
   static getInstance(): QueueService {
     if (!QueueService.#instance) {
@@ -66,7 +70,6 @@ export class QueueService extends EventTarget {
   }
 
   initialize(options: QueueServiceOptions = {}) {
-    this.enabled = options.enabled ?? true;
     this.#appId = options.appId ?? '';
     this.canAccessQueueManager = options.canAccessQueueManager ?? false;
     this.#initBroadcaster();
@@ -79,12 +82,11 @@ export class QueueService extends EventTarget {
    * Sends a request to execute waiting jobs.
    */
   async runQueue(): Promise<void> {
-    if (!this.enabled) return;
-
     try {
-      await actionClient.post('queue/run');
-    } catch {
+      await axios.post(this.#config.getActionUrl('queue/run'));
+    } catch (e: unknown) {
       // Ignore errors - queue might already be running
+      console.error(e);
     }
 
     this.startTracking(false, true);
@@ -96,10 +98,6 @@ export class QueueService extends EventTarget {
    * @param force - Force tracking even if already tracking
    */
   startTracking(delay: boolean | number = false, force: boolean = false): void {
-    if (!this.enabled) {
-      return;
-    }
-
     if (this.isTracking && !force) {
       return;
     }
@@ -146,9 +144,9 @@ export class QueueService extends EventTarget {
    * Set job data from server response.
    * Used for initial data and cross-tab sync.
    */
-  setJobData(data: QueueJobData): void {
-    this.totalJobs = data.total;
-    this.#setJobInfo(data.jobs);
+  setJobData(data: Array<JobInfo>): void {
+    this.totalJobs = data.length;
+    this.#setJobInfo(data);
   }
 
   // ─── Private Methods ─────────────────────────────────────────────────────────
@@ -183,7 +181,7 @@ export class QueueService extends EventTarget {
       case 'trackJobProgress':
         // Another tab finished polling - use their data
         if (data.jobData) {
-          this.setJobData(data.jobData);
+          this.setJobData(data.jobData.jobs);
         }
         // Schedule our next poll with extra delay to avoid conflicts
         if (this.jobInfo.length > 0) {
@@ -208,8 +206,6 @@ export class QueueService extends EventTarget {
   }
 
   async #trackJobProgress(): Promise<void> {
-    if (!this.enabled) return;
-
     // Notify other tabs we're taking over
     this.#broadcast('beforeTrackJobProgress');
 
@@ -217,15 +213,15 @@ export class QueueService extends EventTarget {
     this.#abortController = new AbortController();
 
     try {
-      const response = await actionClient.get<QueueJobData>(
-        'queue/get-job-info',
+      const response = await axios.get<QueueJobData>(
+        this.#config.getActionUrl('queue/get-job-info'),
         {
-          params: {limit: 50, dontExtendSession: 1},
+          params: {dontExtendSession: 1},
           signal: this.#abortController.signal,
         }
       );
 
-      this.setJobData(response.data);
+      this.setJobData(response.data.jobs);
 
       // Broadcast to other tabs
       this.#broadcast('trackJobProgress', {jobData: response.data});
@@ -282,7 +278,7 @@ export class QueueService extends EventTarget {
     this.#emitJobUpdate();
 
     // Check for failed jobs
-    if (this.displayedJob?.status === JobStatus.Failed) {
+    if (this.displayedJob?.status.value === JobStatus.Failed) {
       this.#emitJobFailed(this.displayedJob);
     }
 
@@ -301,17 +297,22 @@ export class QueueService extends EventTarget {
     const priorities: JobStatusKey[] = [
       JobStatus.Reserved,
       JobStatus.Failed,
-      JobStatus.Waiting,
+      JobStatus.Pending,
     ];
 
     for (const status of priorities) {
       const job = this.jobInfo.find((j) => {
-        if (j.status !== status) return false;
+        if (j.status.value !== status) {
+          return false;
+        }
+
         // Skip delayed waiting jobs
-        if (status === JobStatus.Waiting && j.delay > 0) return false;
-        return true;
+        return !(status === JobStatus.Pending && j.delay > 0);
       });
-      if (job) return job;
+
+      if (job) {
+        return job;
+      }
     }
 
     return null;

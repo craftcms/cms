@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -47,11 +49,13 @@ use Twig\Extension\ExtensionInterface;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
+
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
 /**
- * @inheritdoc
+ * {@inheritdoc}
+ *
  * @property string $templateMode the current template mode (either `site` or `cp`)
  * @property string $templatesPath the base path that templates should be found in
  * @property string|null $namespace the active namespace
@@ -64,13 +68,16 @@ use function CraftCms\Cms\template;
  * @property-read string $headHtml the content to be inserted in the head section
  * @property-write string[] $registeredAssetBundles the asset bundle names that should be marked as already registered
  * @property-write string[] $registeredJsFiles the JS files that should be marked as already registered
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class View extends \yii\web\View
 {
     /**
      * @event CreateTwigEvent The event that is triggered when a Twig environment is created.
+     *
      * @see createTwig()
      * @since 4.3.0
      * @deprecated 6.0.0 use {@see TwigCreated} instead.
@@ -79,12 +86,14 @@ class View extends \yii\web\View
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering control panel template roots
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterCpTemplateRoots} instead.
      */
     public const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
     /**
      * @event RegisterTemplateRootsEvent The event that is triggered when registering site template roots
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\Events\RegisterSiteTemplateRoots} instead.
      */
     public const EVENT_REGISTER_SITE_TEMPLATE_ROOTS = 'registerSiteTemplateRoots';
@@ -113,24 +122,28 @@ class View extends \yii\web\View
 
     /**
      * @event AssetBundleEvent The event that is triggered after an asset bundle is registered
+     *
      * @since 4.5.0
      */
     public const EVENT_AFTER_REGISTER_ASSET_BUNDLE = 'afterRegisterAssetBundle';
 
     /**
      * @const TEMPLATE_MODE_CP
+     *
      * @deprecated 6.0.0 use {@see TemplateMode::Cp} instead.
      */
     public const TEMPLATE_MODE_CP = 'cp';
 
     /**
      * @const TEMPLATE_MODE_SITE
+     *
      * @deprecated 6.0.0 use {@see TemplateMode::Site} instead.
      */
     public const TEMPLATE_MODE_SITE = 'site';
 
     /**
      * @var bool Whether to minify CSS registered with [[registerCss()]]
+     *
      * @since 3.4.0
      * @deprecated in 3.6.0.
      */
@@ -138,6 +151,7 @@ class View extends \yii\web\View
 
     /**
      * @var bool Whether to minify JS registered with [[registerJs()]]
+     *
      * @since 3.4.0
      * @deprecated in 3.6.0
      */
@@ -190,7 +204,6 @@ class View extends \yii\web\View
     private int $_metaTagBufferDepth = 0;
 
     /**
-     * @var array
      * @see startAssetBundleBuffer()
      * @see clearAssetBundleBuffer()
      */
@@ -203,21 +216,21 @@ class View extends \yii\web\View
 
     /**
      * @var array<string, string> JS registered at POS_READY, keyed by key.
-     * These are kept in the adapter (not the registry) because they require
-     * jQuery wrapping at render time.
+     *                            These are kept in the adapter (not the registry) because they require
+     *                            jQuery wrapping at render time.
      */
     private array $_readyJs = [];
 
     /**
      * @var array<string, string> JS registered at POS_LOAD, keyed by key.
-     * These are kept in the adapter (not the registry) because they require
-     * jQuery wrapping at render time.
+     *                            These are kept in the adapter (not the registry) because they require
+     *                            jQuery wrapping at render time.
      */
     private array $_loadJs = [];
 
     /**
      * @var list<array{ready: array<string, string>, load: array<string, string>, begin: array<string, string>}>
-     * Buffer stack for POS_READY/POS_LOAD/POS_BEGIN JS.
+     *                                                                                                           Buffer stack for POS_READY/POS_LOAD/POS_BEGIN JS.
      */
     private array $_readyLoadBuffers = [];
 
@@ -229,17 +242,18 @@ class View extends \yii\web\View
 
     /**
      * @var array<string, int> Maps JS keys to their original Yii2 position (POS_HEAD or POS_BEGIN)
-     * when both map to Position::Head. Used by clearJsBuffer to reconstruct accurate position keys.
+     *                         when both map to Position::Head. Used by clearJsBuffer to reconstruct accurate position keys.
      */
     private array $_jsOriginalPositions = [];
 
     /**
-     * @var list<array<string, int>> Buffer stack for $_jsOriginalPositions.
+     * @var list<array<string, int>> Buffer stack for.
      */
     private array $_jsOriginalPositionBuffers = [];
 
     /**
      * @var string[]
+     *
      * @see registerAssetFiles()
      * @see setRegisteredAssetBundles()
      */
@@ -247,6 +261,7 @@ class View extends \yii\web\View
 
     /**
      * @var string[]
+     *
      * @see registerJsFile()
      * @see setRegisteredJsfiles()
      */
@@ -267,7 +282,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function init(): void
     {
@@ -280,8 +295,6 @@ class View extends \yii\web\View
     /**
      * Returns the Twig environment.
      *
-     * @param string|null $templateMode
-     * @return Environment
      * @deprecated 6.0.0 use {@see Twig::get()} instead.
      */
     public function getTwig(?string $templateMode = null): Environment
@@ -296,7 +309,6 @@ class View extends \yii\web\View
     /**
      * Sets the Twig environment for the current template mode.
      *
-     * @param Environment $twig
      *
      * @since 5.6.0
      * @deprecated 6.0.0 use {@see Twig::set()} instead.
@@ -311,7 +323,6 @@ class View extends \yii\web\View
     /**
      * Creates a new Twig environment.
      *
-     * @return Environment
      * @deprecated 6.0.0 use {@see Twig::create()} instead.
      */
     public function createTwig(): Environment
@@ -324,7 +335,6 @@ class View extends \yii\web\View
     /**
      * Registers a new Twig extension both CP and site templates.
      *
-     * @param ExtensionInterface $extension
      *
      * @deprecated 6.0.0 use {@see Twig::registerExtension()} instead.
      */
@@ -338,7 +348,6 @@ class View extends \yii\web\View
     /**
      * Registers a new Twig extension for CP templates.
      *
-     * @param ExtensionInterface $extension
      *
      * @since 5.5.0
      * @deprecated 6.0.0 use {@see Twig::registerExtension($extension, TemplateMode::Cp)} instead.
@@ -353,7 +362,6 @@ class View extends \yii\web\View
     /**
      * Registers a new Twig extension for site templates.
      *
-     * @param ExtensionInterface $extension
      *
      * @since 5.5.0
      * @deprecated 6.0.0 use {@see Twig::registerExtension($extension, TemplateMode::Site)} instead.
@@ -381,10 +389,11 @@ class View extends \yii\web\View
     /**
      * Renders a Twig template.
      *
-     * @param string $template The name of the template to load
-     * @param array $variables The variables that should be available to the template
-     * @param string|null $templateMode The template mode to use
+     * @param  string  $template  The name of the template to load
+     * @param  array  $variables  The variables that should be available to the template
+     * @param  string|null  $templateMode  The template mode to use
      * @return string the rendering result
+     *
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
@@ -405,14 +414,16 @@ class View extends \yii\web\View
     /**
      * Renders a Twig template in a sandboxed environment.
      *
-     * @param string $template The name of the template to load
-     * @param array $variables The variables that should be available to the template
-     * @param string|null $templateMode The template mode to use
+     * @param  string  $template  The name of the template to load
+     * @param  array  $variables  The variables that should be available to the template
+     * @param  string|null  $templateMode  The template mode to use
      * @return string the rendering result
+     *
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
      * @throws Exception if $templateMode is invalid
+     *
      * @see renderTemplate()
      * @since 4.17.0
      * @deprecated 6.0.0 use {@see TemplateRenderer::renderSandboxedTemplate()} instead.
@@ -440,10 +451,11 @@ class View extends \yii\web\View
     /**
      * Renders a Twig template that represents an entire web page.
      *
-     * @param string $template The name of the template to load
-     * @param array $variables The variables that should be available to the template
-     * @param string|null $templateMode The template mode to use
+     * @param  string  $template  The name of the template to load
+     * @param  array  $variables  The variables that should be available to the template
+     * @param  string|null  $templateMode  The template mode to use
      * @return string the rendering result
+     *
      * @throws TwigLoaderError
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
@@ -460,11 +472,12 @@ class View extends \yii\web\View
     /**
      * Renders a template defined by a string.
      *
-     * @param string $template The source template string.
-     * @param array $variables Any variables that should be available to the template.
-     * @param string $templateMode The template mode to use.
-     * @param bool $escapeHtml Whether dynamic HTML should be escaped
+     * @param  string  $template  The source template string.
+     * @param  array  $variables  Any variables that should be available to the template.
+     * @param  string  $templateMode  The template mode to use.
+     * @param  bool  $escapeHtml  Whether dynamic HTML should be escaped
      * @return string The rendered template.
+     *
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
      * @deprecated 6.0.0 use {@see TemplateRenderer::renderString()} instead.
@@ -479,13 +492,15 @@ class View extends \yii\web\View
     /**
      * Renders a template defined by a string in a sandboxed environment.
      *
-     * @param string $template The source template string.
-     * @param array $variables Any variables that should be available to the template.
-     * @param string $templateMode The template mode to use.
-     * @param bool $escapeHtml Whether dynamic HTML should be escaped
+     * @param  string  $template  The source template string.
+     * @param  array  $variables  Any variables that should be available to the template.
+     * @param  string  $templateMode  The template mode to use.
+     * @param  bool  $escapeHtml  Whether dynamic HTML should be escaped
      * @return string The rendered template.
+     *
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
+     *
      * @see renderString()
      * @since 4.17.0
      * @deprecated 6.0.0 use {@see TemplateRenderer::renderSandboxedString()} instead.
@@ -508,11 +523,12 @@ class View extends \yii\web\View
      * If `$object` is an instance of [[Arrayable]], any attributes returned by its [[Arrayable::fields()|fields()]] or
      * [[Arrayable::extraFields()|extraFields()]] methods will also be available as variables to the template.
      *
-     * @param string $template the source template string
-     * @param mixed $object the object that should be passed into the template
-     * @param array $variables any additional variables that should be available to the template
-     * @param string $templateMode The template mode to use.
+     * @param  string  $template  the source template string
+     * @param  mixed  $object  the object that should be passed into the template
+     * @param  array  $variables  any additional variables that should be available to the template
+     * @param  string  $templateMode  The template mode to use.
      * @return string The rendered template.
+     *
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
      * @deprecated 6.0.0 use {@see TemplateRenderer::renderObjectTemplate()} instead.
@@ -527,13 +543,15 @@ class View extends \yii\web\View
     /**
      * Renders an object template in a sandboxed environment.
      *
-     * @param string $template the source template string
-     * @param mixed $object the object that should be passed into the template
-     * @param array $variables any additional variables that should be available to the template
-     * @param string $templateMode The template mode to use.
+     * @param  string  $template  the source template string
+     * @param  mixed  $object  the object that should be passed into the template
+     * @param  array  $variables  any additional variables that should be available to the template
+     * @param  string  $templateMode  The template mode to use.
      * @return string The rendered template.
+     *
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
+     *
      * @see renderObjectTemplate()
      * @since 4.17.0
      * @deprecated 6.0.0 use {@see TemplateRenderer::renderSandboxedObjectTemplate()} instead.
@@ -560,6 +578,8 @@ class View extends \yii\web\View
     {
         Deprecator::log(__METHOD__, '`craft\web\View::normalizeObjectTemplate()` has been deprecated. Use `CraftCms\Cms\Twig\TemplateRenderer::normalizeObjectTemplate()` instead.');
 
+
+
         return app(TemplateRenderer::class)->normalizeObjectTemplate($template);
     }
 
@@ -569,10 +589,11 @@ class View extends \yii\web\View
      * Internally, this will just call [[resolveTemplate()]] with the given template name, and return whether that
      * method found anything.
      *
-     * @param string $name The name of the template.
-     * @param string|null $templateMode The template mode to use.
-     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
+     * @param  string  $name  The name of the template.
+     * @param  string|null  $templateMode  The template mode to use.
+     * @param  bool  $publicOnly  Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return bool Whether the template exists.
+     *
      * @deprecated 6.0.0 use {@see TemplateResolver::exists()} instead.
      */
     public function doesTemplateExist(string $name, ?string $templateMode = null, bool $publicOnly = false): bool
@@ -647,11 +668,13 @@ class View extends \yii\web\View
      *     - path/to/fooplugin/templates/bar/index.html
      *     - path/to/fooplugin/templates/bar/index.twig
      *
-     * @param string $name The name of the template.
-     * @param string|null $templateMode The template mode to use.
-     * @param bool $publicOnly Whether to only look for public templates (template paths that don’t start with the private template trigger).
+     * @param  string  $name  The name of the template.
+     * @param  string|null  $templateMode  The template mode to use.
+     * @param  bool  $publicOnly  Whether to only look for public templates (template paths that don’t start with the private template trigger).
      * @return string|false The path to the template if it exists, or `false`.
+     *
      * @throws TwigLoaderError
+     *
      * @deprecated 6.0.0 use {@see TemplateResolver::resolve()} instead.
      */
     public function resolveTemplate(string $name, ?string $templateMode = null, bool $publicOnly = false): string|false
@@ -662,7 +685,6 @@ class View extends \yii\web\View
     /**
      * Returns any registered control panel template roots.
      *
-     * @return array
      * @deprecated 6.0.0 use {@see TemplateMode::templateRoots()} instead.
      */
     public function getCpTemplateRoots(): array
@@ -673,7 +695,6 @@ class View extends \yii\web\View
     /**
      * Returns any registered site template roots.
      *
-     * @return array
      * @deprecated 6.0.0 use {@see TemplateMode::templateRoots()} instead.
      */
     public function getSiteTemplateRoots(): array
@@ -714,10 +735,10 @@ class View extends \yii\web\View
     /**
      * Registers JavaScript code with the given variables, pre-JSON-encoded.
      *
-     * @param callable $jsFn callback function that returns the JS code to be registered.
-     * @param array $vars Array of variables that will be JSON-encoded before being passed to `$jsFn`.
-     * @param int $position the position at which the JS script tag should be inserted
-     * in a page. The possible values are:
+     * @param  callable  $jsFn  callback function that returns the JS code to be registered.
+     * @param  array  $vars  Array of variables that will be JSON-encoded before being passed to `$jsFn`.
+     * @param  int  $position  the position at which the JS script tag should be inserted
+     *                         in a page. The possible values are:
      *
      * - [[POS_HEAD]]: in the head section
      * - [[POS_BEGIN]]: at the beginning of the body section
@@ -726,10 +747,10 @@ class View extends \yii\web\View
      *   Note that by using this position, the method will automatically register the jQuery js file.
      * - [[POS_READY]]: enclosed within jQuery(document).ready(). This is the default value.
      *   Note that by using this position, the method will automatically register the jQuery js file.
+     * @param  string|null  $key  the key that identifies the JS code block. If null, it will use
+     *                            $js as the key. If two JS code blocks are registered with the same key, the latter
+     *                            will overwrite the former.
      *
-     * @param string|null $key the key that identifies the JS code block. If null, it will use
-     * $js as the key. If two JS code blocks are registered with the same key, the latter
-     * will overwrite the former.
      * @since 3.7.31
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::jsWithVars()} instead.
      */
@@ -768,10 +789,10 @@ class View extends \yii\web\View
      * Clears and ends a buffer started via [[startJsBuffer()]], returning any JavaScript code that was registered while
      * the buffer was active.
      *
-     * @param bool $scriptTag Whether the returned JavaScript code should be wrapped in a `<script>` tag.
-     * @param bool $combine Whether the JavaScript code should be returned in a combined blob. (Position and key info will be lost.)
-     *
+     * @param  bool  $scriptTag  Whether the returned JavaScript code should be wrapped in a `<script>` tag.
+     * @param  bool  $combine  Whether the JavaScript code should be returned in a combined blob. (Position and key info will be lost.)
      * @return string|array|false The JavaScript code that was registered while the buffer was active, or `false` if there wasn't an active buffer.
+     *
      * @see startJsBuffer()
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearJsBuffer()} instead.
      */
@@ -878,6 +899,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The `<script>` tags that were registered while the buffer was active, or `false` if there wasn't an active buffer.
+     *
      * @see startScriptBuffer()
      * @since 3.7.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearScriptBuffer()} instead.
@@ -927,6 +949,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The `<style>` tags that were registered while the buffer was active, or `false` if there wasn't an active buffer.
+     *
      * @see startCssBuffer()
      * @since 3.7.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearCssBuffer()} instead.
@@ -963,6 +986,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The `<link rel="stylesheet">` tags that were registered while the buffer was active, or `false` if there wasn't an active buffer.
+     *
      * @see startCssFileBuffer()
      * @since 4.0.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearCssFileBuffer()} instead.
@@ -999,6 +1023,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The `<script>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn't an active buffer.
+     *
      * @see startJsFileBuffer()
      * @since 4.0.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearJsFileBuffer()} instead.
@@ -1051,6 +1076,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The html that was registered while the buffer was active or `false` if there wasn't an active buffer.
+     *
      * @since 4.3.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearHtmlBuffer()} instead.
      */
@@ -1098,6 +1124,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The `<meta>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn't an active buffer.
+     *
      * @see startMetaTagBuffer()
      * @since 4.5.8
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearMetaTagBuffer()} instead.
@@ -1134,6 +1161,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The asset bundles that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     *
      * @see startAssetBundleBuffer()
      * @since 5.3.0
      * @deprecated 6.0.0. AssetBundle support is deprecated
@@ -1146,6 +1174,7 @@ class View extends \yii\web\View
 
         $bufferedAssetBundles = $this->assetBundles;
         $this->assetBundles = array_pop($this->_assetBundleBuffers);
+
         return $bufferedAssetBundles;
     }
 
@@ -1278,17 +1307,18 @@ class View extends \yii\web\View
     /**
      * Registers a generic `<script>` tag with the given variables, pre-JSON-encoded.
      *
-     * @param callable $scriptFn callback function that returns the JS code to be registered.
-     * @param array $vars Array of variables that will be JSON-encoded before being passed to `$scriptFn`
-     * @param int $position the position at which the JS script tag should be inserted
-     *  in a page. The possible values are:
-     *  - [[POS_HEAD]]: in the head section
-     *  - [[POS_BEGIN]]: at the beginning of the body section
-     *  - [[POS_END]]: at the end of the body section
-     * @param array $options the HTML attributes for the `<script>` tag.
-     * @param string|null $key the key that identifies the generic `<script>` code block. If null, it will use
-     * $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
-     * will overwrite the former.
+     * @param  callable  $scriptFn  callback function that returns the JS code to be registered.
+     * @param  array  $vars  Array of variables that will be JSON-encoded before being passed to `$scriptFn`
+     * @param  int  $position  the position at which the JS script tag should be inserted
+     *                         in a page. The possible values are:
+     *                         - [[POS_HEAD]]: in the head section
+     *                         - [[POS_BEGIN]]: at the beginning of the body section
+     *                         - [[POS_END]]: at the end of the body section
+     * @param  array  $options  the HTML attributes for the `<script>` tag.
+     * @param  string|null  $key  the key that identifies the generic `<script>` code block. If null, it will use
+     *                            $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
+     *                            will overwrite the former.
+     *
      * @since 5.6.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::scriptWithVars()} instead.
      */
@@ -1303,13 +1333,14 @@ class View extends \yii\web\View
     /**
      * Registers arbitrary HTML to be injected into the final page response.
      *
-     * @param string $html the HTML code to be registered
-     * @param int $position the position at which the HTML code should be inserted in the page. Possible values are:
-     * - [[POS_HEAD]]: in the head section
-     * - [[POS_BEGIN]]: at the beginning of the body section
-     * - [[POS_END]]: at the end of the body section
-     * @param string|null $key the key that identifies the HTML code. If null, it will use a hash of the HTML as the key.
-     * If two HTML code blocks are registered with the same position and key, the latter will overwrite the former.
+     * @param  string  $html  the HTML code to be registered
+     * @param  int  $position  the position at which the HTML code should be inserted in the page. Possible values are:
+     *                         - [[POS_HEAD]]: in the head section
+     *                         - [[POS_BEGIN]]: at the beginning of the body section
+     *                         - [[POS_END]]: at the end of the body section
+     * @param  string|null  $key  the key that identifies the HTML code. If null, it will use a hash of the HTML as the key.
+     *                            If two HTML code blocks are registered with the same position and key, the latter will overwrite the former.
+     *
      * @since 3.5.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::html()} instead.
      */
@@ -1329,11 +1360,12 @@ class View extends \yii\web\View
     /**
      * Registers a JavaScript import map entry to be injected into the final page response.
      *
-     * @param string $key The module specifier.
-     * @param string $value  The URL or path to the resource the key will resolve to.
+     * @param  string  $key  The module specifier.
+     * @param  string  $value  The URL or path to the resource the key will resolve to.
+     *
      * @since 5.6.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::jsImport()} instead.
-    */
+     */
     public function registerJsImport(string $key, string $value): void
     {
         $this->registry()->jsImport($key, $value);
@@ -1350,7 +1382,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function endBody(): void
     {
@@ -1368,7 +1400,7 @@ class View extends \yii\web\View
      * - JS code registered with [[registerJs()]] with the position set to [[POS_HEAD]]
      * - JS files registered with [[registerJsFile()]] with the position set to [[POS_HEAD]]
      *
-     * @param bool $clear Whether the content should be cleared from the queue (default is true)
+     * @param  bool  $clear  Whether the content should be cleared from the queue (default is true)
      * @return string the rendered content
      * @deprecated 6.0.0 use {@see HtmlStack::headHtml()} instead.
      */
@@ -1386,7 +1418,7 @@ class View extends \yii\web\View
      * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
      * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]] or [[POS_END]]
      *
-     * @param bool $clear Whether the content should be cleared from the queue (default is true)
+     * @param  bool  $clear  Whether the content should be cleared from the queue (default is true)
      * @return string the rendered content
      * @deprecated 6.0.0 use {@see HtmlStack::bodyHtml()} instead.
      */
@@ -1415,7 +1447,8 @@ class View extends \yii\web\View
     /**
      * Registers icons for `Craft.ui.icon()`.
      *
-     * @param string[] $icons The icons to be registered
+     * @param  string[]  $icons  The icons to be registered
+     *
      * @since 5.7.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::icons()} instead.
      */
@@ -1431,6 +1464,7 @@ class View extends \yii\web\View
      * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
      *
      * @return string|null The namespace.
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::get()} instead.
      */
     public function getNamespace(): ?string
@@ -1444,7 +1478,7 @@ class View extends \yii\web\View
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
      * and [[namespaceInputId()]] are called, if their|null $namespace arguments are null.
      *
-     * @param string|null $namespace The new namespace. Set to null to remove the namespace.
+     * @param  string|null  $namespace  The new namespace. Set to null to remove the namespace.
      *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::set()} instead.
      */
@@ -1513,6 +1547,7 @@ class View extends \yii\web\View
      * Returns the current template mode (either `site` or `cp`).
      *
      * @return string Either `site` or `cp`.
+     *
      * @deprecated 6.0.0 use {@see TemplateMode::get()} instead.
      */
     public function getTemplateMode(): string
@@ -1528,8 +1563,10 @@ class View extends \yii\web\View
      * - the default template file extensions that should be automatically added when looking for templates
      * - the "index" template filenames that should be checked when looking for templates
      *
-     * @param string|TemplateMode $templateMode Either 'site' or 'cp'
+     * @param  string |TemplateMode  $templateMode  Either 'site' or 'cp'
+     *
      * @throws Exception if $templateMode is invalid
+     *
      * @deprecated 6.0.0 use {@see TemplateMode::set()} instead.
      */
     public function setTemplateMode(string|TemplateMode $templateMode): void
@@ -1545,7 +1582,6 @@ class View extends \yii\web\View
     /**
      * Returns the base path that templates should be found in.
      *
-     * @return string
      * @deprecated 6.0.0 use {@see TemplateMode::templatesPath()} instead.
      */
     public function getTemplatesPath(): string
@@ -1556,7 +1592,6 @@ class View extends \yii\web\View
     /**
      * Sets the base path that templates should be found in.
      *
-     * @param string $templatesPath
      *
      * @deprecated 6.0.0 use {@see TemplateMode::templatesPath()} instead.
      */
@@ -1610,13 +1645,13 @@ class View extends \yii\web\View
      * }, 'widget-settings');
      * ```
      *
-     * @param callable|string $html The HTML code, or a callable that returns the HTML code
-     * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
-     * @param bool $otherAttributes Whether `id`, `for`, and other attributes should be namespaced (in addition to `name`)
-     * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and
-     * class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
-     *
+     * @param  callable|string  $html  The HTML code, or a callable that returns the HTML code
+     * @param  string|null  $namespace  The namespace. Defaults to the [[getNamespace()|active namespace]].
+     * @param  bool  $otherAttributes  Whether `id`, `for`, and other attributes should be namespaced (in addition to `name`)
+     * @param  bool  $withClasses  Whether class names should be namespaced as well (affects both `class` attributes and
+     *                             class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
      * @return string The HTML with namespaced attributes
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::namespaceInputs()} instead.
      */
     public function namespaceInputs(callable|string $html, ?string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
@@ -1630,10 +1665,10 @@ class View extends \yii\web\View
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `name=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
-     * @param string $inputName The input name that should be namespaced.
-     * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
-     *
+     * @param  string  $inputName  The input name that should be namespaced.
+     * @param  string|null  $namespace  The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @return string The namespaced input name.
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::namespaceInputName()} instead.
      */
     public function namespaceInputName(string $inputName, ?string $namespace = null): string
@@ -1647,10 +1682,10 @@ class View extends \yii\web\View
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `id=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
-     * @param string $inputId The input ID that should be namespaced.
-     * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
-     *
+     * @param  string  $inputId  The input ID that should be namespaced.
+     * @param  string|null  $namespace  The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @return string The namespaced input ID.
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\InputNamespace::namespaceId()} instead.
      */
     public function namespaceInputId(string $inputId, ?string $namespace = null): string
@@ -1667,8 +1702,9 @@ class View extends \yii\web\View
      * the following ID would be returned:
      *     foo-bar-title
      *
-     * @param string $inputName The input name.
+     * @param  string  $inputName  The input name.
      * @return string The input ID.
+     *
      * @deprecated in 3.5.0. Use [[Html::id()]] instead.
      */
     public function formatInputId(string $inputName): string
@@ -1714,10 +1750,11 @@ class View extends \yii\web\View
      * });
      * ```
      *
-     * @param string $hook The hook name.
-     * @param callable $method The callback function.
-     * @param bool $append whether to append the method handler to the end of the existing method list for the hook. If `false`, the method will be
-     * inserted at the beginning of the existing method list.
+     * @param  string  $hook  The hook name.
+     * @param  callable  $method  The callback function.
+     * @param  bool  $append  whether to append the method handler to the end of the existing method list for the hook. If `false`, the method will be
+     *                        inserted at the beginning of the existing method list.
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\TemplateHooks::register()} instead.
      */
     public function hook(string $hook, callable $method, bool $append = true): void
@@ -1730,9 +1767,10 @@ class View extends \yii\web\View
      *
      * This is called by [[HookNode|`{% hook %}` tags]].
      *
-     * @param string $hook The hook name.
-     * @param array $context The current template context.
+     * @param  string  $hook  The hook name.
+     * @param  array  $context  The current template context.
      * @return string Whatever the hooks returned.
+     *
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\TemplateHooks::invoke()} instead.
      */
     public function invokeHook(string $hook, array &$context): string
@@ -1743,7 +1781,7 @@ class View extends \yii\web\View
     /**
      * Sets the JS files that should be marked as already registered.
      *
-     * @param string[] $keys
+     * @param  string[]  $keys
      *
      * @since 3.0.10
      * @deprecated 6.0.0
@@ -1756,7 +1794,8 @@ class View extends \yii\web\View
     /**
      * Sets the asset bundle names that should be marked as already registered.
      *
-     * @param string[] $names Asset bundle names
+     * @param  string[]  $names  Asset bundle names
+     *
      * @since 3.0.10
      * @deprecated 6.0.0
      */
@@ -1766,7 +1805,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function endPage($ajaxMode = false): void
     {
@@ -1839,7 +1878,8 @@ class View extends \yii\web\View
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @throws NotSupportedException unless [[allowEval]] has been set to `true`.
      */
     public function evaluateDynamicContent($statements)
@@ -1857,9 +1897,9 @@ class View extends \yii\web\View
     /**
      * Performs actions before a page template is rendered.
      *
-     * @param string $template The name of the template to render
-     * @param array $variables The variables that should be available to the template
-     * @param string $templateMode The template mode to use when rendering the template
+     * @param  string  $template  The name of the template to render
+     * @param  array  $variables  The variables that should be available to the template
+     * @param  string  $templateMode  The template mode to use when rendering the template
      *
      * @return bool Whether the template should be rendered
      * @deprecated 6.0.0
@@ -1877,6 +1917,7 @@ class View extends \yii\web\View
             $template = $event->template;
             $variables = $event->variables;
             $templateMode = $event->templateMode;
+
             return $event->isValid;
         }
 
@@ -1886,10 +1927,10 @@ class View extends \yii\web\View
     /**
      * Performs actions after a page template is rendered.
      *
-     * @param string $template The name of the template that was rendered
-     * @param array $variables The variables that were available to the template
-     * @param string $templateMode The template mode that was used when rendering the template
-     * @param string $output The template’s rendering result
+     * @param  string  $template  The name of the template that was rendered
+     * @param  array  $variables  The variables that were available to the template
+     * @param  string  $templateMode  The template mode that was used when rendering the template
+     * @param  string  $output  The template’s rendering result
      * @deprecated 6.0.0
      */
     public function afterRenderPageTemplate(string $template, array $variables, string $templateMode, string &$output): void
@@ -1908,7 +1949,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function renderHeadHtml(): string
     {
@@ -1916,7 +1957,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function renderBodyBeginHtml(): string
     {
@@ -1924,7 +1965,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function renderBodyEndHtml($ajaxMode): string
     {
@@ -1988,7 +2029,6 @@ class View extends \yii\web\View
      * Registers all files provided by all registered asset bundles, including depending bundles files.
      *
      * Removes a bundle from [[assetBundles]] once files are registered.
-     *
      */
     protected function registerAllAssetFiles(): void
     {
@@ -2049,7 +2089,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function registerAssetBundle($name, $position = null)
     {
@@ -2072,8 +2112,7 @@ class View extends \yii\web\View
     }
 
     /**
-     * @param string $property
-     * @param string[] $names
+     * @param  string[]  $names
      */
     private function _setJsProperty(string $property, array $names): void
     {
@@ -2096,9 +2135,6 @@ class View extends \yii\web\View
 
     /**
      * Renders an element’s chip HTML.
-     *
-     * @param array $context
-     * @return string|null
      */
     public function elementChipHtml(array $context): ?string
     {
