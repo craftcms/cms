@@ -610,7 +610,7 @@ JS, [
         $this->requireCpRequest();
         $this->requireAcceptsJson();
 
-        $fieldLayoutConfig = $this->request->getRequiredBodyParam('fieldLayoutConfig');
+        $fieldLayoutConfig = Component::cleanseConfig($this->request->getRequiredBodyParam('fieldLayoutConfig'));
         $fieldLayout = Craft::$app->getFields()->createLayout($fieldLayoutConfig);
 
         return $this->asJson([

@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-86vw-x4ww-x467)
+
 ## 5.9.13 - 2026-02-24
 
 - The control panel is now translated into Greek. ([#18458](https://github.com/craftcms/cms/pull/18458))
