@@ -3,7 +3,7 @@
 ## Unreleased
 
 - The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is no longer set by default for database connections. ([#18474](https://github.com/craftcms/cms/issues/18474))
-- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-5pgf-h923-m958, GHSA-vgjg-248p-rfm2)
+- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-5pgf-h923-m958, GHSA-vgjg-248p-rfm2, GHSA-x76w-8c62-48mg)
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) access control vulnerability. (GHSA-6mrr-q3pj-h53w)
 - Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-3pvf-vxrv-hh9c, GHSA-5pgf-h923-m958)
 
