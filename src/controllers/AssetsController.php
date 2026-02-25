@@ -849,6 +849,13 @@ class AssetsController extends Controller
             throw new BadRequestHttpException(Craft::t('app', 'The asset you’re trying to edit does not exist.'));
         }
 
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+
+        if (!$asset->getSupportsImageEditor()) {
+            throw new BadRequestHttpException('Unsupported file format');
+        }
+
         $focal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
 
         $html = $this->getView()->renderTemplate('_special/image_editor.twig');
