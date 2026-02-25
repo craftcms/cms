@@ -143,6 +143,9 @@ class AssetsController extends Controller
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+
         return $this->asJson([
             'img' => $asset->getPreviewThumbImg($width, $height),
         ]);
