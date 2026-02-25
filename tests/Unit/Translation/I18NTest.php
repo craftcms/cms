@@ -213,3 +213,148 @@ test('defaultCpLanguage is included in app locale IDs', function () {
     expect(I18N::getAppLocaleIds())->toContain('pt-BR');
     expect(I18N::validateAppLocaleId('pt-BR'))->toBeTrue();
 });
+
+test('getAllTranslationsForLocale returns translations for registered categories', function () {
+    $reader = new class implements \Yiisoft\Translator\MessageReaderInterface
+    {
+        public function getMessage(string $id, string $category, string $locale, array $parameters = []): ?string
+        {
+            return $this->getMessages($category, $locale)[$id]['message'] ?? null;
+        }
+
+        public function getMessages(string $category, string $locale): array
+        {
+            if ($locale === 'nl') {
+                return [
+                    'Save' => ['message' => 'Opslaan'],
+                    'Cancel' => ['message' => 'Annuleren'],
+                ];
+            }
+
+            return [];
+        }
+    };
+
+    $source = new \Yiisoft\Translator\CategorySource('testcat', $reader);
+    I18N::addCategorySources($source);
+
+    $translations = I18N::getAllTranslationsForLocale('nl');
+
+    expect($translations)->toHaveKey('testcat')
+        ->and($translations['testcat'])->toBe([
+            'Save' => 'Opslaan',
+            'Cancel' => 'Annuleren',
+        ]);
+});
+
+test('getAllTranslationsForLocale filters out untranslated messages', function () {
+    $reader = new class implements \Yiisoft\Translator\MessageReaderInterface
+    {
+        public function getMessage(string $id, string $category, string $locale, array $parameters = []): ?string
+        {
+            return $this->getMessages($category, $locale)[$id]['message'] ?? null;
+        }
+
+        public function getMessages(string $category, string $locale): array
+        {
+            return [
+                'Translated' => ['message' => 'Vertaald'],
+                'Untranslated' => ['message' => 'Untranslated'],
+            ];
+        }
+    };
+
+    $source = new \Yiisoft\Translator\CategorySource('filtertest', $reader);
+    I18N::addCategorySources($source);
+
+    $translations = I18N::getAllTranslationsForLocale('nl');
+
+    expect($translations['filtertest'])->toHaveKey('Translated')
+        ->and($translations['filtertest'])->not->toHaveKey('Untranslated');
+});
+
+test('getAllTranslationsForLocale excludes categories with no translated messages', function () {
+    $reader = new class implements \Yiisoft\Translator\MessageReaderInterface
+    {
+        public function getMessage(string $id, string $category, string $locale, array $parameters = []): ?string
+        {
+            return null;
+        }
+
+        public function getMessages(string $category, string $locale): array
+        {
+            return [
+                'Same' => ['message' => 'Same'],
+            ];
+        }
+    };
+
+    $source = new \Yiisoft\Translator\CategorySource('emptycat', $reader);
+    I18N::addCategorySources($source);
+
+    $translations = I18N::getAllTranslationsForLocale('nl');
+
+    expect($translations)->not->toHaveKey('emptycat');
+});
+
+test('getAllTranslationsForLocale handles locale fallback', function () {
+    $reader = new class implements \Yiisoft\Translator\MessageReaderInterface
+    {
+        public function getMessage(string $id, string $category, string $locale, array $parameters = []): ?string
+        {
+            return $this->getMessages($category, $locale)[$id]['message'] ?? null;
+        }
+
+        public function getMessages(string $category, string $locale): array
+        {
+            if ($locale === 'fr') {
+                return [
+                    'Hello' => ['message' => 'Bonjour'],
+                    'Goodbye' => ['message' => 'Au revoir'],
+                ];
+            }
+
+            if ($locale === 'fr-CA') {
+                return [
+                    'Hello' => ['message' => 'Allô'],
+                ];
+            }
+
+            return [];
+        }
+    };
+
+    $source = new \Yiisoft\Translator\CategorySource('fallbacktest', $reader);
+    I18N::addCategorySources($source);
+
+    $translations = I18N::getAllTranslationsForLocale('fr-CA');
+
+    // fr-CA should override fr for 'Hello', but 'Goodbye' should fall through from fr
+    expect($translations['fallbacktest'])->toBe([
+        'Hello' => 'Allô',
+        'Goodbye' => 'Au revoir',
+    ]);
+});
+
+test('getAllTranslationsForLocale returns real app translations for Dutch', function () {
+    $translations = I18N::getAllTranslationsForLocale('nl');
+
+    expect($translations)->toHaveKey('app')
+        ->and($translations['app'])->toHaveKey('(blank)')
+        ->and($translations['app']['(blank)'])->toBe('(leeg)');
+});
+
+test('getAllTranslationsForLocale returns few or no app translations for English', function () {
+    $translations = I18N::getAllTranslationsForLocale('en-US');
+
+    // en-US falls back to en, which has a few entries that differ from the source key
+    // (e.g., capitalization fixes, template content). But it should be far fewer than
+    // a fully translated locale like Dutch.
+    $dutchTranslations = I18N::getAllTranslationsForLocale('nl');
+
+    $enCount = isset($translations['app']) ? count($translations['app']) : 0;
+    $nlCount = count($dutchTranslations['app']);
+
+    expect($enCount)->toBeLessThan(50)
+        ->and($nlCount)->toBeGreaterThan(500);
+});

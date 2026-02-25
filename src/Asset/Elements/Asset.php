@@ -35,7 +35,6 @@ use craft\helpers\UrlHelper;
 use craft\models\ImageTransform;
 use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
-use craft\web\twig\AllowedInSandbox;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -66,9 +65,9 @@ use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Search;
@@ -77,6 +76,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use DateInterval;
@@ -1396,7 +1396,7 @@ class Asset extends Element
                 'label' => t('Preview file'),
             ];
 
-            AssetRegistry::jsWithVars(fn ($id, $assetId, $settings) => <<<JS
+            HtmlStack::jsWithVars(fn ($id, $assetId, $settings) => <<<JS
 $('#' + $id).on('activate', () => {
   new Craft.PreviewFileModal($assetId, $settings)
 });
@@ -1419,7 +1419,7 @@ JS, [
             'label' => t('Download'),
         ];
 
-        AssetRegistry::jsWithVars(fn ($id, $assetId) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $assetId) => <<<JS
 $('#' + $id).on('activate', () => {
   const form = Craft.createForm().appendTo(Garnish.\$bod);
   form.append(Craft.getCsrfInput());
@@ -1465,7 +1465,7 @@ JS, [
                 'showInChips' => false,
             ];
 
-            AssetRegistry::jsWithVars(fn ($id, $namespace, $assetId, $fsType, $dimensionsLabel) => <<<JS
+            HtmlStack::jsWithVars(fn ($id, $namespace, $assetId, $fsType, $dimensionsLabel) => <<<JS
 $('#' + $id).on('activate', () => {
   const fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
   const uploader = Craft.createUploader($fsType, fileInput, {
@@ -1608,7 +1608,7 @@ JS, [
                 'label' => t('Open in Image Editor'),
             ];
 
-            AssetRegistry::jsWithVars(fn ($id, $assetId) => <<<JS
+            HtmlStack::jsWithVars(fn ($id, $assetId) => <<<JS
 $('#' + $id).on('activate', () => {
   new Craft.AssetImageEditor($assetId, {
     allowDegreeFractions: Craft.isImagick,
@@ -2640,7 +2640,7 @@ $('#$previewBtnId').on('activate', () => {
     new Craft.PreviewFileModal($this->id, null, $jsSettings)
 });
 JS;
-                    AssetRegistry::js($js);
+                    HtmlStack::js($js);
                 }
 
                 if ($editable) {
@@ -2671,7 +2671,7 @@ $('#$editBtnId').on('activate', () => {
     })
 });
 JS;
-                    AssetRegistry::js($js);
+                    HtmlStack::js($js);
                 }
 
                 $imageButtonHtml .= Html::endTag('div'); // .image-actions

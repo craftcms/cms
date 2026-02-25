@@ -1,10 +1,6 @@
 {% import "_includes/forms" as forms %}
 {% set orientation = craft.i18n.locale.getOrientation() -%}
-{% do view.registerTranslations('app', [
-  'Original',
-  'Square',
-  'Unconstrained',
-]) %}
+
 {{ tag('h1', {
     class: 'visually-hidden',
     text: 'Edit Image'|t('app'),

@@ -7,11 +7,6 @@
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
-{% do view.registerTranslations('app', [
-    "Name",
-    "Handle",
-    "No groups exist yet.",
-]) %}
 
 {% set groups = craft.userGroups.getAllGroups() %}
 

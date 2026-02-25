@@ -1,0 +1,2 @@
+// line 1
+craft\debug\DumpPanel::dump(craft\helpers\Template::contextWithoutTemplate($context), '', 1);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Translation;
 
-use craft\web\twig\AllowedInSandbox;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use DateTime;
 use Exception;
 use Illuminate\Support\Collection;

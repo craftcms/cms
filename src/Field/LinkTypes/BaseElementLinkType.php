@@ -11,7 +11,7 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -129,7 +129,7 @@ abstract class BaseElementLinkType extends BaseLinkType
     {
         $id = sprintf('elementselect%s', mt_rand());
 
-        AssetRegistry::jsWithVars(fn ($id, $refHandle) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $refHandle) => <<<JS
 (() => {
   const container = $('#' + $id);
   const field = container.closest('[data-link-field]').parent().data('linkField');

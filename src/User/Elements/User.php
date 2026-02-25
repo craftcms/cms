@@ -17,7 +17,6 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
@@ -41,8 +40,8 @@ use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -51,6 +50,7 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Formatter;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Events\DefineFriendlyName;
 use CraftCms\Cms\User\Events\DefineName;
@@ -1612,7 +1612,7 @@ XML;
                         'label' => t('Copy impersonation URL…'),
                     ];
 
-                    AssetRegistry::jsWithVars(fn ($id, $userId, $message) => <<<JS
+                    HtmlStack::jsWithVars(fn ($id, $userId, $message) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.elevatedSessionManager.requireElevatedSession(() => {
       Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
@@ -1701,7 +1701,7 @@ JS, [
                         ])),
                     ];
 
-                    AssetRegistry::jsWithVars(fn ($id, $userId, $redirect) => <<<JS
+                    HtmlStack::jsWithVars(fn ($id, $userId, $redirect) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.sendActionRequest('POST', 'users/user-content-summary', {
     data: {userId: $userId}
@@ -1730,7 +1730,7 @@ JS,
     {
         $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
 
-        AssetRegistry::jsWithVars(fn ($id, $userId, $message) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $userId, $message) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.elevatedSessionManager.requireElevatedSession(() => {
     Craft.sendActionRequest('POST', 'users/get-password-reset-url', {

@@ -7,6 +7,7 @@
 
 namespace craft\web\twig\variables;
 
+use BadMethodCallException;
 use Craft;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
@@ -34,8 +35,9 @@ use CraftCms\Cms\Route\Routes;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Translation\I18N;
+use CraftCms\Cms\Twig\Variables\Io;
+use CraftCms\Cms\Twig\Variables\Rebrand;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserGroups;
 use CraftCms\Cms\User\UserPermissions;
@@ -70,24 +72,23 @@ class CraftVariable extends ServiceLocator
      */
     public null|WebApplication|ConsoleApplication $app = null;
 
+    public ?Rebrand $rebrand = null;
+    public Io $io;
+    public Cp $cp;
+
     /**
      * @inheritdoc
      */
     public function __construct($config = [])
     {
-        // Set the core components
-        $components = [
-            'cp' => Cp::class,
-            'io' => Io::class,
-        ];
+        $this->app = Craft::$app;
 
-        if (Edition::get() !== Edition::Solo) {
-            $components = array_merge($components, [
-                'rebrand' => Rebrand::class,
-            ]);
+        if (Edition::isAtLeast(Edition::Pro)) {
+            $this->rebrand = app()->make(Rebrand::class);
         }
 
-        $config['components'] = $components;
+        $this->io = app()->make(Io::class);
+        $this->cp = app()->make(Cp::class);
 
         parent::__construct($config);
     }
@@ -97,10 +98,6 @@ class CraftVariable extends ServiceLocator
      */
     public function init(): void
     {
-        parent::init();
-
-        $this->app = Craft::$app;
-
         if ($this->hasEventHandlers(self::EVENT_INIT)) {
             $this->trigger(self::EVENT_INIT);
         }
@@ -111,17 +108,11 @@ class CraftVariable extends ServiceLocator
      */
     public function __call($name, $params)
     {
-        // Are they calling one of the components as if it's still a function?
-        if ($params === [] && $this->has($name)) {
-            Deprecator::log("CraftVariable::$name()", "`craft.$name()` is no longer a function. Use `craft.$name` instead (without the parentheses).");
-            return $this->get($name);
-        }
-
         if (method_exists(app(), $name)) {
             return app()->$name(...$params);
         }
 
-        return parent::__call($name, $params);
+        throw new BadMethodCallException("Method $name does not exist on CraftVariable.");
     }
 
     /**
@@ -141,19 +132,6 @@ class CraftVariable extends ServiceLocator
 
     // General info
     // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function canGetProperty($name, $checkVars = true, $checkBehaviors = true): bool
-    {
-        // Check the services
-        if ($this->has($name)) {
-            return true;
-        }
-
-        return parent::canGetProperty($name, $checkVars, $checkBehaviors);
-    }
 
     public function config(): array
     {

@@ -28,12 +28,6 @@
 </div>
 
 {% do view.registerAssetBundle("craft\\web\\assets\\focalpoint\\FocalPointAsset") %}
-{% do view.registerTranslations('app', [
-    'Enable focal point',
-    'Disable focal point',
-    'Saved',
-    'Saving…',
-]) %}
 
 {% if enableFocalPoint %}
   {% js %}

@@ -1,0 +1,19 @@
+// line 1
+$_namespace = "myNamespace";
+if ($_namespace !== null && $_namespace !== '') {
+    $_originalNamespace = Craft::$app->getView()->getNamespace();
+    Craft::$app->getView()->setNamespace(Craft::$app->getView()->namespaceInputName($_namespace));
+    ob_start();
+    try {
+        yield "<input name=\"title\">";
+    } catch (Exception $e) {
+        ob_end_clean();
+
+        throw $e;
+    }
+    yield CraftCms\Cms\Support\Html::namespaceHtml(ob_get_clean(), $_namespace, true);
+    Craft::$app->getView()->setNamespace($_originalNamespace);
+} else {
+    yield "<input name=\"title\">";
+}
+unset($_originalNamespace, $_namespace);

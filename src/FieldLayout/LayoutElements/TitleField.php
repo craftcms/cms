@@ -7,7 +7,7 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -79,7 +79,7 @@ class TitleField extends TextField
                 ? Str::asciiCharMap(true, $language)
                 : null;
 
-            AssetRegistry::jsWithVars(fn ($titleId, $slugId, $charMap) => <<<JS
+            HtmlStack::jsWithVars(fn ($titleId, $slugId, $charMap) => <<<JS
 (() => {
   const slugInput = $('#' + $slugId);
   if (slugInput.length && !slugInput.val().length) {

@@ -3,16 +3,7 @@
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
-{% do view.registerTranslations('app', [
-    'Handle',
-    'Name',
-    'No fields exist yet.',
-    'No results.',
-    'No usages',
-    'This field’s values are used as search keywords.',
-    'Type',
-    'Used by',
-]) %}
+
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') }

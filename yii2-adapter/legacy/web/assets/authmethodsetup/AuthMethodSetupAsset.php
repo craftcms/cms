@@ -9,7 +9,6 @@ namespace craft\web\assets\authmethodsetup;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use craft\web\View;
 
 /**
  * Authentication method setup asset bundle.
@@ -43,20 +42,4 @@ class AuthMethodSetupAsset extends AssetBundle
     public $css = [
         'css/auth.css',
     ];
-
-    /**
-     * @inheritdoc
-     */
-    public function registerAssetFiles($view): void
-    {
-        parent::registerAssetFiles($view);
-
-        if ($view instanceof View) {
-            $view->registerTranslations('app', [
-                'Download codes',
-                'QR Code',
-                '{name} added successfully.',
-            ]);
-        }
-    }
 }

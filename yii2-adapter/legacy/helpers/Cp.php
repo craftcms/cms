@@ -51,7 +51,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\SiteGroups;
@@ -690,7 +690,7 @@ class Cp
 
         if ($showEditButton) {
             $editId = sprintf('action-edit-%s', mt_rand());
-            AssetRegistry::jsWithVars(fn($id, $elementType, $settings, $cpEditUrl) => <<<JS
+            HtmlStack::jsWithVars(fn($id, $elementType, $settings, $cpEditUrl) => <<<JS
 $('#' + $id).on('activate', (ev) => {
   if ($cpEditUrl && Garnish.isCtrlKeyPressed(ev.originalEvent)) {
     window.open($cpEditUrl)
@@ -1572,10 +1572,8 @@ JS, [
             $siteIds = array_filter($siteIds, fn(int $siteId) => isset($representedSiteIds[$siteId]));
         }
 
-        $view = Craft::$app->getView();
-
         if ($config['registerJs']) {
-            AssetRegistry::jsWithVars(fn($elementType, $id, $settings) => <<<JS
+            HtmlStack::jsWithVars(fn($elementType, $id, $settings) => <<<JS
 Craft.createElementIndex($elementType, $('#' + $id), $settings)
 JS, [
                 $elementType,
@@ -3168,7 +3166,6 @@ JS, [
             $tab->setElements($layoutElements);
         }
 
-        $view = Craft::$app->getView();
         $jsSettings = JsonHelper::encode([
             'elementType' => $fieldLayout->type,
             'customizableTabs' => $config['customizableTabs'],
@@ -3182,7 +3179,7 @@ JS, [
         $js = <<<JS
 new Craft.FieldLayoutDesigner("#$namespacedId", $jsSettings)
 JS;
-        AssetRegistry::js($js);
+        HtmlStack::js($js);
 
         $availableCustomFields = $fieldLayout->getAvailableCustomFields();
         $availableNativeFields = $fieldLayout->getAvailableNativeFields();
@@ -3489,7 +3486,7 @@ JS;
             'static' => $config['disabled'],
         ];
 
-        AssetRegistry::jsWithVars(fn($id, $name, $cols, $settings) => <<<JS
+        HtmlStack::jsWithVars(fn($id, $name, $cols, $settings) => <<<JS
 (() => {
   new Craft.GeneratedFieldsTable($id, $name, $cols, $settings)
 })();

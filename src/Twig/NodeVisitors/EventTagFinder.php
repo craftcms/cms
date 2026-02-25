@@ -1,0 +1,78 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CraftCms\Cms\Twig\NodeVisitors;
+
+use CraftCms\Cms\Twig\TemplateRenderer;
+use Twig\Environment;
+use Twig\Node\DoNode;
+use Twig\Node\Expression\FilterExpression;
+use Twig\Node\Expression\FunctionExpression;
+use Twig\Node\Node;
+use Twig\Node\PrintNode;
+
+/**
+ * EventTagFinder looks for `head()`, `beginBody()`, and `endBody()`
+ * event tags in templates as they’re being compiled.
+ */
+final class EventTagFinder extends BaseEventTagVisitor
+{
+    public function enterNode(Node $node, Environment $env): Node
+    {
+        // Ignore if we're not rendering a page template
+        if (! app(TemplateRenderer::class)->isRenderingPageTemplate()) {
+            return $node;
+        }
+
+        // Ignore if this isn't a print/do tag
+        if (! $node instanceof PrintNode && ! $node instanceof DoNode) {
+            return $node;
+        }
+
+        // Get the expression
+        $expression = $node->getNode('expr');
+        if ($expression instanceof FilterExpression) {
+            $expression = $expression->getNode('node');
+        }
+
+        // Ignore if the expression isn't a function
+        if (! $expression instanceof FunctionExpression) {
+            return $node;
+        }
+
+        // See which event function they're calling (if any)
+        switch ($expression->getAttribute('name')) {
+            case 'head':
+                self::$foundHead = true;
+                break;
+            case 'beginBody':
+                self::$foundBeginBody = true;
+                break;
+            case 'endBody':
+                self::$foundEndBody = true;
+                break;
+            default:
+                // Not a function we care about
+                return $node;
+        }
+
+        if ($node instanceof PrintNode) {
+            // Switch it to a {% do %} tag, since the functions do their own `echo`ing
+            return new DoNode($expression, $expression->getTemplateLine());
+        }
+
+        return $node;
+    }
+
+    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
+    {
+        return $node;
+    }
+
+    public function getPriority(): int
+    {
+        // This needs to run before EventTagAdder
+        return 0;
+    }
+}

@@ -13,7 +13,7 @@ use craft\web\assets\totp\TotpAsset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Models\Authenticator;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Session\SessionManager;
@@ -72,10 +72,9 @@ final class TOTP extends BaseAuthMethod
     {
         $secret = $this->secret();
         $totpFormId = sprintf('totp-form-%s', mt_rand());
-        $view = Craft::$app->getView();
 
-        $view->registerAssetBundle(TotpAsset::class);
-        AssetRegistry::jsWithVars(fn ($totpFormId, $containerId) => <<<JS
+        Craft::$app->getView()->registerAssetBundle(TotpAsset::class);
+        HtmlStack::jsWithVars(fn ($totpFormId, $containerId) => <<<JS
 Craft.createAuthFormHandler(Craft.TotpForm.METHOD, $('#' + $totpFormId), () => {
   Craft.Slideout.instances[$containerId].showSuccess();
   Craft.authMethodSetup.refresh();
@@ -95,8 +94,7 @@ JS, [
 
     public function getAuthFormHtml(): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(TotpAsset::class);
+        Craft::$app->getView()->registerAssetBundle(TotpAsset::class);
 
         return template('_components/auth/methods/TOTP/form');
     }
