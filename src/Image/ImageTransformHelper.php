@@ -58,8 +58,7 @@ final class ImageTransformHelper
             $fill = ColorRule::normalizeColor($matches['fill']);
         }
 
-        return Craft::createObject([
-            'class' => ImageTransform::class,
+        return new ImageTransform([
             'width' => $matches['width'] ?? null,
             'height' => $matches['height'] ?? null,
             'mode' => $matches['mode'],
@@ -233,6 +232,11 @@ final class ImageTransformHelper
         }
 
         $upscale = $match['upscale'] ?? null;
+        $fill = $match['fill'] ?? null;
+
+        if ($fill !== null && $fill !== 'transparent') {
+            $fill = '#'.$fill;
+        }
 
         return [
             'width' => $match['width'] !== 'AUTO' ? (int) $match['width'] : null,
@@ -241,7 +245,7 @@ final class ImageTransformHelper
             'position' => $match['position'],
             'quality' => $match['quality'] ? (int) $match['quality'] : null,
             'interlace' => $match['interlace'],
-            'fill' => ($match['fill'] ?? null) ? sprintf('%s%s', $match['fill'] !== 'transparent' ? '#' : '', $match['fill']) : null,
+            'fill' => $fill,
             'upscale' => $upscale !== 'ns',
         ];
     }
@@ -297,10 +301,7 @@ final class ImageTransformHelper
                 return self::extendTransform($baseTransform, $transform);
             }
 
-            return Craft::createObject([
-                'class' => ImageTransform::class,
-                ...$transform,
-            ]);
+            return new ImageTransform($transform);
         }
 
         if (is_string($transform)) {
@@ -327,7 +328,7 @@ final class ImageTransformHelper
     public static function storeLocalSource(string $source, string $destination = ''): void
     {
         if (! $destination) {
-            $source = $destination;
+            $destination = $source;
         }
 
         $maxCachedImageSize = Cms::config()->maxCachedCloudImageSize;

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Image;
 
 use Craft;
 use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\UrlHelper;
@@ -27,10 +28,12 @@ use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Sleep;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -40,15 +43,12 @@ use function CraftCms\Cms\t;
 
 final class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTransformerInterface, ImageTransformerInterface
 {
-    /**
-     * @var array<string, array<string, mixed>>
-     */
+    /** @var array<string, array<string, mixed>> */
     private array $eagerLoadedTransformIndexes = [];
 
-    /**
-     * @var array<string, mixed>
-     */
-    private array $imageEditorData = [];
+    private ?Raster $editingImage = null;
+
+    private ?string $editingTempPath = null;
 
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
@@ -124,7 +124,7 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
 
                     // Wait a second and check again
                     maxPowerCaptain();
-                    \Illuminate\Support\Sleep::sleep(1);
+                    Sleep::sleep(1);
                     $index = $this->getTransformIndexModelById($index->id);
                     if (! $index->inProgress) {
                         break;
@@ -202,11 +202,10 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
             ->whereIn('assetId', array_keys($assetsById))
             ->where(function (Builder $query) use ($transforms, &$transformsByFingerprint) {
                 foreach ($transforms as $transform) {
-                    $transformString = $fingerprint = ImageTransformHelper::getTransformString($transform);
-
-                    if ($transform->format !== null) {
-                        $fingerprint .= ':'.$transform->format;
-                    }
+                    $transformString = ImageTransformHelper::getTransformString($transform);
+                    $fingerprint = $transform->format !== null
+                        ? $transformString.':'.$transform->format
+                        : $transformString;
 
                     $transformsByFingerprint[$fingerprint] = $transform;
 
@@ -214,16 +213,10 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
                         $query->where('transformString', $transformString)
                             ->when(
                                 $transform->format !== null,
-                                fn (Builder $query) => $query->whereNull('format'),
                                 fn (Builder $query) => $query->where('format', $transform->format),
+                                fn (Builder $query) => $query->whereNull('format'),
                             );
                     });
-
-                    if (! is_null($transform->format)) {
-                        $fingerprint .= ':'.$transform->format;
-                    }
-
-                    $transformsByFingerprint[$fingerprint] = $transform;
                 }
             })
             ->get();
@@ -242,8 +235,9 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
             // Is it still valid?
             $transform = $transformsByFingerprint[$transformFingerprint];
             $asset = $assetsById[$result->assetId];
+            $index = new ImageTransformIndex((array) $result);
 
-            if ($this->validateTransformIndexResult((array) $result, $transform, $asset)) {
+            if ($this->validateTransformIndexResult($index, $transform, $asset)) {
                 $indexFingerprint = $result->assetId.':'.$transformFingerprint;
                 $this->eagerLoadedTransformIndexes[$indexFingerprint] = (array) $result;
             } else {
@@ -445,7 +439,7 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
 
             $existingIndex = new ImageTransformIndex($result);
 
-            if ($this->validateTransformIndexResult($result, $transform, $asset)) {
+            if ($this->validateTransformIndexResult($existingIndex, $transform, $asset)) {
                 return $existingIndex;
             }
 
@@ -476,36 +470,31 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
         return $index;
     }
 
-    /**
-     * Validates a transform index result to see if the index is still valid for a given asset.
-     *
-     * @param  array<string, mixed>  $result
-     * @param  array<string, mixed>|Asset  $asset
-     */
-    private function validateTransformIndexResult(array $result, ImageTransform $transform, array|Asset $asset): bool
+    private function validateTransformIndexResult(ImageTransformIndex $result, ImageTransform $transform, array|Asset $asset): bool
     {
-        // If the transform hasn't been generated yet, it's probably not yet invalid.
-        if (empty($result['dateIndexed'])) {
+        if ($result->dateIndexed === null) {
             return true;
         }
 
-        // If the asset has been modified since the time the index was created, it's no longer valid
         $dateModified = Arr::get($asset, 'dateModified');
-        if ($result['dateIndexed'] < $dateModified) {
+
+        if (is_string($dateModified) || is_numeric($dateModified)) {
+            $dateModified = DateTimeHelper::toDateTime($dateModified);
+        }
+
+        if (
+            $dateModified instanceof DateTimeInterface &&
+            $result->dateIndexed->getTimestamp() < $dateModified->getTimestamp()
+        ) {
             return false;
         }
 
-        // If it's not a named transform, consider it valid
         if (! $transform->getIsNamedTransform()) {
             return true;
         }
 
-        // If the named transform's dimensions have changed since the time the index was created, it's no longer valid
-        if ($result['dateIndexed'] < $transform->parameterChangeTime) {
-            return false;
-        }
-
-        return true;
+        return $transform->parameterChangeTime === null ||
+            $result->dateIndexed->getTimestamp() >= $transform->parameterChangeTime->getTimestamp();
     }
 
     public function storeTransformIndexData(ImageTransformIndex $index): void
@@ -524,19 +513,22 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
         ], [], false);
 
         $now = now();
+
         if ($index->id !== null) {
             DB::table(Table::IMAGETRANSFORMINDEX)
                 ->where('id', $index->id)
-                ->update(array_merge([
+                ->update([
                     'dateUpdated' => $now,
-                ], $values));
+                    ...$values,
+                ]);
         } else {
             $index->id = DB::table(Table::IMAGETRANSFORMINDEX)
-                ->insertGetId(array_merge([
+                ->insertGetId([
                     'dateCreated' => $now,
                     'dateUpdated' => $now,
                     'uid' => Str::uuid(),
-                ], $values));
+                    ...$values,
+                ]);
         }
     }
 
@@ -585,60 +577,64 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
             $asset->setFilename(preg_replace('/(svg)$/i', 'png', $asset->getFilename()));
         }
 
-        $this->imageEditorData['image'] = $image;
-        $this->imageEditorData['tempLocation'] = $imageCopy;
+        $this->editingImage = $image;
+        $this->editingTempPath = $imageCopy;
     }
 
     public function flipImage(bool $flipX, bool $flipY): void
     {
         if ($flipX) {
-            $this->imageEditorData['image']->flipHorizontally();
+            $this->editingImage->flipHorizontally();
         }
+
         if ($flipY) {
-            $this->imageEditorData['image']->flipVertically();
+            $this->editingImage->flipVertically();
         }
     }
 
     public function scaleImage(int $width, int $height): void
     {
-        $this->imageEditorData['image']->scaleToFit($width, $height);
+        $this->editingImage->scaleToFit($width, $height);
     }
 
     public function rotateImage(float $degrees): void
     {
-        $this->imageEditorData['image']->rotate($degrees);
+        $this->editingImage->rotate($degrees);
     }
 
     public function getEditedImageWidth(): int
     {
-        return $this->imageEditorData['image']->getWidth();
+        return $this->editingImage->getWidth();
     }
 
     public function getEditedImageHeight(): int
     {
-        return $this->imageEditorData['image']->getHeight();
+        return $this->editingImage->getHeight();
     }
 
     public function crop(int $x, int $y, int $width, int $height): void
     {
-        $this->imageEditorData['image']->crop($x, $x + $width, $y, $y + $height);
+        $this->editingImage->crop($x, $x + $width, $y, $y + $height);
     }
 
     public function finishImageEditing(): string
     {
-        $tempLocation = $this->imageEditorData['tempLocation'];
-        $this->imageEditorData['image']->saveAs($tempLocation);
-        $this->imageEditorData = [];
+        $this->editingImage->saveAs($this->editingTempPath);
 
-        return $tempLocation;
+        $tempPath = $this->editingTempPath;
+        $this->editingImage = null;
+        $this->editingTempPath = null;
+
+        return $tempPath;
     }
 
     public function cancelImageEditing(): string
     {
-        $tempLocation = $this->imageEditorData['tempLocation'];
-        $this->imageEditorData = [];
+        $tempPath = $this->editingTempPath;
+        $this->editingImage = null;
+        $this->editingTempPath = null;
 
-        return $tempLocation;
+        return $tempPath;
     }
 
     private function getTransformBasePath(Asset $asset): string
@@ -673,28 +669,26 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
     private function getSimilarTransformIndex(Asset $asset, ImageTransformIndex $index): ?ImageTransformIndex
     {
         $transform = $index->getTransform();
-        $result = null;
 
-        if ($asset->getExtension() === $index->detectedFormat && ! $asset->getHasFocalPoint()) {
-            $possibleLocations = [ImageTransformHelper::getTransformString($transform, true)];
-
-            if ($transform->getIsNamedTransform()) {
-                $namedLocation = ImageTransformHelper::getTransformString($transform);
-                $possibleLocations[] = $namedLocation;
-            }
-
-            // We're looking for transforms that fit the bill and are not the one we are trying to find/create
-            // the image for.
-            $result = $this->createTransformIndexQuery()
-                ->where([
-                    'assetId' => $asset->id,
-                    'fileExists' => true,
-                    'transformString' => $possibleLocations,
-                    'format' => $index->detectedFormat,
-                ])
-                ->whereNot('id', $index->id)
-                ->first();
+        if ($asset->getExtension() !== $index->detectedFormat || $asset->getHasFocalPoint()) {
+            return null;
         }
+
+        $possibleLocations = [ImageTransformHelper::getTransformString($transform, true)];
+
+        if ($transform->getIsNamedTransform()) {
+            $possibleLocations[] = ImageTransformHelper::getTransformString($transform);
+        }
+
+        $result = $this->createTransformIndexQuery()
+            ->where([
+                'assetId' => $asset->id,
+                'fileExists' => true,
+                'transformString' => $possibleLocations,
+                'format' => $index->detectedFormat,
+            ])
+            ->whereNot('id', $index->id)
+            ->first();
 
         return $result ? new ImageTransformIndex((array) $result) : null;
     }

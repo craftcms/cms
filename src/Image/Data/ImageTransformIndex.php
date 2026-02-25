@@ -41,18 +41,24 @@ class ImageTransformIndex extends Component
 
     private ?ImageTransform $_transform = null;
 
+    public ImageTransform $transform {
+        get => $this->getTransform();
+        set {
+            $this->setTransform($value);
+        }
+    }
+
     public function __construct(array|object $config = [])
     {
         parent::__construct($config);
 
         // Reset inProgress if stale (30+ seconds)
-        if ($this->inProgress && $this->dateUpdated) {
-            $time = new DateTime;
-            $diff = $time->getTimestamp() - $this->dateUpdated->getTimestamp();
-
-            if ($diff > 30) {
-                $this->inProgress = false;
-            }
+        if (
+            $this->inProgress
+            && $this->dateUpdated
+            && now()->diffInSeconds($this->dateUpdated, true) > 30
+        ) {
+            $this->inProgress = false;
         }
     }
 

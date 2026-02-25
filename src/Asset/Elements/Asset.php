@@ -60,6 +60,7 @@ use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
@@ -1186,7 +1187,7 @@ class Asset extends Element
             return true;
         }
 
-        return (bool) app(\CraftCms\Cms\Image\ImageTransforms::class)->getTransformByHandle($name);
+        return (bool) app(ImageTransforms::class)->getTransformByHandle($name);
     }
 
     /**
@@ -1214,7 +1215,7 @@ class Asset extends Element
             /** @phpstan-ignore catch.neverThrown */
         } catch (UnknownPropertyException|\CraftCms\Cms\Component\Exceptions\UnknownPropertyException $e) {
             // Is $name a transform handle?
-            if (($transform = app(\CraftCms\Cms\Image\ImageTransforms::class)->getTransformByHandle($name)) !== null) {
+            if (($transform = app(ImageTransforms::class)->getTransformByHandle($name)) !== null) {
                 return $this->copyWithTransform($transform);
             }
 
@@ -1979,7 +1980,7 @@ JS, [
                 // if it's a site request - check the mime type and general settings and decide whether to nullify the transform
                 // otherwise - we can proceed and rely on the FallbackTransformer (e.g. for thumbs in the CP)
                 // see https://github.com/craftcms/cms/issues/13306 and https://github.com/craftcms/cms/issues/13624 for more info
-                (Craft::$app->getRequest()->getIsSiteRequest() && ! $this->allowTransforms()) ||
+                (request()->isSiteRequest() && ! $this->allowTransforms()) ||
                 ! Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
             )
         ) {
@@ -2017,7 +2018,7 @@ JS, [
                 return null;
             } catch (ImageTransformException $e) {
                 Log::warning("Couldn’t get image transform URL: {$e->getMessage()}", [__METHOD__]);
-                Craft::$app->getErrorHandler()->logException($e);
+                report($e);
 
                 return null;
             }
@@ -3068,7 +3069,7 @@ JS;
             }
         }
 
-        app(\CraftCms\Cms\Image\ImageTransforms::class)->deleteAllTransformData($this);
+        app(ImageTransforms::class)->deleteAllTransformData($this);
         parent::afterDelete();
     }
 
@@ -3295,7 +3296,7 @@ JS;
 
         if ($this->folderId) {
             // Nuke the transforms
-            app(\CraftCms\Cms\Image\ImageTransforms::class)->deleteAllTransformData($this);
+            app(ImageTransforms::class)->deleteAllTransformData($this);
         }
 
         // Update file properties

@@ -43,8 +43,7 @@ describe('defaults', function () {
 
 describe('stale inProgress reset', function () {
     test('resets inProgress when dateUpdated is more than 30 seconds ago', function () {
-        $staleDate = new DateTime;
-        $staleDate->modify('-60 seconds');
+        $staleDate = now()->subSeconds(31);
 
         $index = new ImageTransformIndex([
             'inProgress' => true,
@@ -55,8 +54,7 @@ describe('stale inProgress reset', function () {
     });
 
     test('keeps inProgress when dateUpdated is within 30 seconds', function () {
-        $recentDate = new DateTime;
-        $recentDate->modify('-10 seconds');
+        $recentDate = now()->subSeconds(29);
 
         $index = new ImageTransformIndex([
             'inProgress' => true,
@@ -67,8 +65,7 @@ describe('stale inProgress reset', function () {
     });
 
     test('keeps inProgress false when already false', function () {
-        $staleDate = new DateTime;
-        $staleDate->modify('-60 seconds');
+        $staleDate = now()->subSeconds(60);
 
         $index = new ImageTransformIndex([
             'inProgress' => false,
@@ -85,18 +82,6 @@ describe('stale inProgress reset', function () {
         ]);
 
         expect($index->inProgress)->toBeTrue();
-    });
-
-    test('resets inProgress at exactly 31 seconds', function () {
-        $date = new DateTime;
-        $date->modify('-31 seconds');
-
-        $index = new ImageTransformIndex([
-            'inProgress' => true,
-            'dateUpdated' => $date,
-        ]);
-
-        expect($index->inProgress)->toBeFalse();
     });
 });
 

@@ -10,6 +10,7 @@ use CraftCms\Cms\Image\ImageTransformer;
 use DateTime;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -18,6 +19,29 @@ class ImageTransform extends Component
     use Macroable;
 
     public const string DEFAULT_TRANSFORMER = ImageTransformer::class;
+
+    private const array POSITIONS = [
+        'top-left',
+        'top-center',
+        'top-right',
+        'center-left',
+        'center-center',
+        'center-right',
+        'bottom-left',
+        'bottom-center',
+        'bottom-right',
+    ];
+
+    private const array MODES = [
+        'crop',
+        'fit',
+        'stretch',
+        'letterbox',
+    ];
+
+    private const array INTERLACES = ['none', 'line', 'plane', 'partition'];
+
+    private const array FORMATS = ['jpg', 'gif', 'png', 'webp', 'avif'];
 
     public ?int $id = null;
 
@@ -50,14 +74,16 @@ class ImageTransform extends Component
     /**
      * @var class-string<ImageTransformerInterface>
      */
-    protected string $transformer = self::DEFAULT_TRANSFORMER;
+    public string $transformer {
+        get => $this->getTransformer();
+        set {
+            $this->setTransformer($value);
+        }
+    }
 
-    /**
-     * Returns whether this is a named transform.
-     */
     public function getIsNamedTransform(): bool
     {
-        return (bool) $this->id && $this->getTransformer() === self::DEFAULT_TRANSFORMER;
+        return $this->id && $this->getTransformer() === self::DEFAULT_TRANSFORMER;
     }
 
     /**
@@ -120,7 +146,7 @@ class ImageTransform extends Component
     /**
      * @return array<string, mixed>
      */
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return [
@@ -128,32 +154,11 @@ class ImageTransform extends Component
             'handle' => ['required', 'string'],
             'width' => ['nullable', 'integer', 'min:1'],
             'height' => ['nullable', 'integer', 'min:1'],
-            'mode' => [
-                'required',
-                Rule::in([
-                    'crop',
-                    'fit',
-                    'stretch',
-                    'letterbox',
-                ]),
-            ],
-            'position' => [
-                'required',
-                Rule::in([
-                    'top-left',
-                    'top-center',
-                    'top-right',
-                    'center-left',
-                    'center-center',
-                    'center-right',
-                    'bottom-left',
-                    'bottom-center',
-                    'bottom-right',
-                ]),
-            ],
-            'interlace' => ['required', Rule::in('none', 'line', 'plane', 'partition')],
+            'mode' => ['required', Rule::in(self::MODES)],
+            'position' => ['required', Rule::in(self::POSITIONS)],
+            'interlace' => ['required', Rule::in(self::INTERLACES)],
             'quality' => ['nullable', 'integer', 'min:1', 'max:100'],
-            'format' => ['nullable', Rule::in('jpg', 'gif', 'png', 'webp', 'avif')],
+            'format' => ['nullable', Rule::in(self::FORMATS)],
         ];
     }
 }

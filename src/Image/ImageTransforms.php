@@ -32,7 +32,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
-use Throwable;
 
 #[Singleton]
 final class ImageTransforms
@@ -108,23 +107,21 @@ final class ImageTransforms
         $transformUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
-        DB::beginTransaction();
-
-        try {
+        [$transformModel, $isNewTransform] = DB::transaction(function () use ($transformUid, $data) {
             $transformModel = $this->getImageTransformModel($transformUid);
             $isNewTransform = ! $transformModel->exists;
 
             $transformModel->name = $data['name'];
             $transformModel->handle = $data['handle'];
 
-            $heightChanged = $transformModel->width !== ($data['width'] ?? null) || $transformModel->height !== ($data['height'] ?? null);
+            $dimensionsChanged = $transformModel->width !== ($data['width'] ?? null) || $transformModel->height !== ($data['height'] ?? null);
             $modeChanged = $transformModel->mode !== $data['mode'] || $transformModel->position !== $data['position'];
             $qualityChanged = $transformModel->quality !== ($data['quality'] ?? null);
             $interlaceChanged = $transformModel->interlace !== $data['interlace'];
             $fillChanged = $transformModel->fill !== ($data['fill'] ?? null);
             $upscaleChanged = ($transformModel->upscale !== null ? (bool) $transformModel->upscale : null) !== ($data['upscale'] ?? null);
 
-            if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
+            if ($dimensionsChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
                 $transformModel->parameterChangeTime = Query::prepareDateForDb(new DateTime);
             }
 
@@ -141,13 +138,9 @@ final class ImageTransforms
 
             $transformModel->save();
 
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
+            return [$transformModel, $isNewTransform];
+        });
 
-        // Clear caches
         $this->transforms = null;
 
         event(new TransformSaved(
