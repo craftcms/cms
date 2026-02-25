@@ -743,7 +743,8 @@ class Asset extends Element
                     }
 
                     $path = rtrim((string) $folder->path, '/');
-                    $path = Str::between($path, $queryFolder->path ?? '', $folder->name);
+                    $path = Str::chopStart($path, $queryFolder->path ?? '');
+                    $path = Str::beforeLast($path, $folder->name);
 
                     $assets[] = new self([
                         'isFolder' => true,
