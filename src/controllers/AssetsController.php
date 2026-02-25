@@ -870,7 +870,14 @@ class AssetsController extends Controller
 
         $asset = Asset::findOne($assetId);
         if (!$asset) {
-            throw new BadRequestHttpException('The Asset cannot be found');
+            throw new BadRequestHttpException("Invalid asset ID: $asset");
+        }
+
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+
+        if (!$asset->getSupportsImageEditor()) {
+            throw new BadRequestHttpException('Unsupported file format');
         }
 
         try {
