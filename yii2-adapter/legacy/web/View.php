@@ -33,10 +33,11 @@ use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\Twig\Twig;
-use CraftCms\Cms\View\AssetRegistry;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
+use CraftCms\Cms\View\Events\RenderingAssets;
+use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateHooks;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
@@ -234,6 +235,12 @@ class View extends \yii\web\View
     private array $_readyLoadBuffers = [];
 
     /**
+     * When true, the RenderingAssets listener skips flushing _readyJs/_loadJs
+     * so that placeholderHtml() can handle jQuery wrapping itself.
+     */
+    private bool $_skipReadyLoadFlush = false;
+
+    /**
      * @var array<string, int> Maps JS keys to their original Yii2 position (POS_HEAD or POS_BEGIN)
      *                         when both map to Position::Head. Used by clearJsBuffer to reconstruct accurate position keys.
      */
@@ -260,11 +267,11 @@ class View extends \yii\web\View
      */
     private array $_registeredJsFiles = [];
 
-    private ?AssetRegistry $_registry = null;
+    private ?HtmlStack $_registry = null;
 
-    private function registry(): AssetRegistry
+    private function registry(): HtmlStack
     {
-        return $this->_registry ??= app(AssetRegistry::class);
+        return $this->_registry ??= app(HtmlStack::class);
     }
 
     private ?TemplateHooks $_templateHooks = null;
@@ -696,9 +703,8 @@ class View extends \yii\web\View
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::js()} instead.
+     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::js()} instead.
      */
     public function registerJs($js, $position = self::POS_READY, $key = null): void
     {
@@ -746,7 +752,7 @@ class View extends \yii\web\View
      *                            will overwrite the former.
      *
      * @since 3.7.31
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::jsWithVars()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::jsWithVars()} instead.
      */
     public function registerJsWithVars(callable $jsFn, array $vars, int $position = self::POS_READY, ?string $key = null): void
     {
@@ -761,7 +767,7 @@ class View extends \yii\web\View
      * The buffer’s contents can be cleared and returned later via [[clearJsBuffer()]].
      *
      * @see clearJsBuffer()
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startJsBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::startJsBuffer()} instead.
      */
     public function startJsBuffer(): void
     {
@@ -788,7 +794,7 @@ class View extends \yii\web\View
      * @return string|array|false The JavaScript code that was registered while the buffer was active, or `false` if there wasn't an active buffer.
      *
      * @see startJsBuffer()
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearJsBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearJsBuffer()} instead.
      */
     public function clearJsBuffer(bool $scriptTag = true, bool $combine = true): string|array|false
     {
@@ -880,7 +886,7 @@ class View extends \yii\web\View
      *
      * @see clearScriptBuffer()
      * @since 3.7.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startScriptBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::startScriptBuffer()} instead.
      */
     public function startScriptBuffer(): void
     {
@@ -896,7 +902,7 @@ class View extends \yii\web\View
      *
      * @see startScriptBuffer()
      * @since 3.7.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearScriptBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearScriptBuffer()} instead.
      */
     public function clearScriptBuffer(): array|false
     {
@@ -930,7 +936,7 @@ class View extends \yii\web\View
      *
      * @see clearCssBuffer()
      * @since 3.7.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startCssBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::startCssBuffer()} instead.
      */
     public function startCssBuffer(): void
     {
@@ -946,7 +952,7 @@ class View extends \yii\web\View
      *
      * @see startCssBuffer()
      * @since 3.7.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearCssBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearCssBuffer()} instead.
      */
     public function clearCssBuffer(): array|false
     {
@@ -967,7 +973,7 @@ class View extends \yii\web\View
      *
      * @see clearCssFileBuffer()
      * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startCssFileBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::startCssFileBuffer()} instead.
      */
     public function startCssFileBuffer(): void
     {
@@ -983,7 +989,7 @@ class View extends \yii\web\View
      *
      * @see startCssFileBuffer()
      * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearCssFileBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearCssFileBuffer()} instead.
      */
     public function clearCssFileBuffer(): array|false
     {
@@ -1004,7 +1010,7 @@ class View extends \yii\web\View
      *
      * @see clearJsFileBuffer()
      * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startJsFileBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::startJsFileBuffer()} instead.
      */
     public function startJsFileBuffer(): void
     {
@@ -1020,7 +1026,7 @@ class View extends \yii\web\View
      *
      * @see startJsFileBuffer()
      * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearJsFileBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearJsFileBuffer()} instead.
      */
     public function clearJsFileBuffer(): array|false
     {
@@ -1057,7 +1063,7 @@ class View extends \yii\web\View
      * Starts a buffer for any html tags registered with [[registerHtml()]].
      *
      * @since 4.3.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startHtmlBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::startHtmlBuffer()} instead.
      */
     public function startHtmlBuffer(): void
     {
@@ -1072,7 +1078,7 @@ class View extends \yii\web\View
      * @return array|false The html that was registered while the buffer was active or `false` if there wasn't an active buffer.
      *
      * @since 4.3.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearHtmlBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearHtmlBuffer()} instead.
      */
     public function clearHtmlBuffer(): array|false
     {
@@ -1105,7 +1111,7 @@ class View extends \yii\web\View
      *
      * @see clearMetaTagBuffer()
      * @since 4.5.8
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startMetaTagBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::startMetaTagBuffer()} instead.
      */
     public function startMetaTagBuffer(): void
     {
@@ -1121,7 +1127,7 @@ class View extends \yii\web\View
      *
      * @see startMetaTagBuffer()
      * @since 4.5.8
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearMetaTagBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearMetaTagBuffer()} instead.
      */
     public function clearMetaTagBuffer(): array|false
     {
@@ -1179,7 +1185,7 @@ class View extends \yii\web\View
      *
      * @see clearJsImportBuffer()
      * @since 5.6.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::startJsImportBuffer()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::startJsImportBuffer()} instead.
      */
     public function startJsImportBuffer(): void
     {
@@ -1188,9 +1194,8 @@ class View extends \yii\web\View
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::clearJsImportBuffer()} instead.
+     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::clearJsImportBuffer()} instead.
      */
     public function clearJsImportBuffer(): array|false
     {
@@ -1205,9 +1210,8 @@ class View extends \yii\web\View
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::jsFile()} instead.
+     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::jsFile()} instead.
      */
     public function registerJsFile($url, $options = [], $key = null): void
     {
@@ -1237,9 +1241,8 @@ class View extends \yii\web\View
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::metaTag()} instead.
+     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::metaTag()} instead.
      */
     public function registerMetaTag($options, $key = null): void
     {
@@ -1247,9 +1250,8 @@ class View extends \yii\web\View
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::linkTag()} instead.
+     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::linkTag()} instead.
      */
     public function registerLinkTag($options, $key = null): void
     {
@@ -1257,9 +1259,8 @@ class View extends \yii\web\View
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::css()} instead.
+     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::css()} instead.
      */
     public function registerCss($css, $options = [], $key = null): void
     {
@@ -1267,9 +1268,8 @@ class View extends \yii\web\View
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::cssFile()} instead.
+     * @inheritdoc
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::cssFile()} instead.
      */
     public function registerCssFile($url, $options = [], $key = null): void
     {
@@ -1279,18 +1279,17 @@ class View extends \yii\web\View
     /**
      * Registers a generic `<script>` code block.
      *
-     * @param  string  $script  the generic `<script>` code block to be registered
-     * @param  int  $position  the position at which the generic `<script>` code block should be inserted
-     *                         in a page. The possible values are:
-     *                         - [[POS_HEAD]]: in the head section
-     *                         - [[POS_BEGIN]]: at the beginning of the body section
-     *                         - [[POS_END]]: at the end of the body section
-     * @param  array  $options  the HTML attributes for the `<script>` tag.
-     * @param  string|null  $key  the key that identifies the generic `<script>` code block. If null, it will use
-     *                            $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
-     *                            will overwrite the former.
-     *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::script()} instead.
+     * @param string $script the generic `<script>` code block to be registered
+     * @param int $position the position at which the generic `<script>` code block should be inserted
+     * in a page. The possible values are:
+     * - [[POS_HEAD]]: in the head section
+     * - [[POS_BEGIN]]: at the beginning of the body section
+     * - [[POS_END]]: at the end of the body section
+     * @param array $options the HTML attributes for the `<script>` tag.
+     * @param string|null $key the key that identifies the generic `<script>` code block. If null, it will use
+     * $script as the key. If two generic `<script>` code blocks are registered with the same key, the latter
+     * will overwrite the former.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::script()} instead.
      */
     public function registerScript(string $script, int $position = self::POS_END, array $options = [], ?string $key = null): void
     {
@@ -1321,7 +1320,7 @@ class View extends \yii\web\View
      *                            will overwrite the former.
      *
      * @since 5.6.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::scriptWithVars()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::scriptWithVars()} instead.
      */
     public function registerScriptWithVars(callable $scriptFn, array $vars, int $position = self::POS_END, array $options = [], ?string $key = null): void
     {
@@ -1343,7 +1342,7 @@ class View extends \yii\web\View
      *                            If two HTML code blocks are registered with the same position and key, the latter will overwrite the former.
      *
      * @since 3.5.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::html()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::html()} instead.
      */
     public function registerHtml(string $html, int $position = self::POS_END, ?string $key = null): void
     {
@@ -1365,7 +1364,7 @@ class View extends \yii\web\View
      * @param  string  $value  The URL or path to the resource the key will resolve to.
      *
      * @since 5.6.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::jsImport()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::jsImport()} instead.
      */
     public function registerJsImport(string $key, string $value): void
     {
@@ -1403,11 +1402,11 @@ class View extends \yii\web\View
      *
      * @param  bool  $clear  Whether the content should be cleared from the queue (default is true)
      * @return string the rendered content
+     * @deprecated 6.0.0 use {@see HtmlStack::headHtml()} instead.
      */
     public function getHeadHtml(bool $clear = true): string
     {
-        // Register any asset bundles
-        $this->registerAllAssetFiles();
+        Deprecator::log(__METHOD__, '`craft\web\View::getHeadHtml()` has been deprecated. Use `CraftCms\Cms\View\HtmlStack::headHtml()` instead.');
 
         return $this->registry()->headHtml(clear: $clear);
     }
@@ -1421,27 +1420,13 @@ class View extends \yii\web\View
      *
      * @param  bool  $clear  Whether the content should be cleared from the queue (default is true)
      * @return string the rendered content
+     * @deprecated 6.0.0 use {@see HtmlStack::bodyHtml()} instead.
      */
     public function getBodyHtml(bool $clear = true): string
     {
-        // Register any asset bundles
-        $this->registerAllAssetFiles();
+        Deprecator::log(__METHOD__, '`craft\web\View::getBodyHtml()` has been deprecated. Use `CraftCms\Cms\View\HtmlStack::bodyHtml()` instead.');
 
-        // Include both body-begin and body-end content
-        $html = $this->renderBodyBeginHtml() . $this->renderBodyEndHtml(true);
-
-        // Clear out the queued up files
-        if ($clear === true) {
-            // Clear registry body content (head was not touched)
-            $this->registry()->bodyBeginHtml(clear: true);
-            $this->registry()->bodyEndHtml(clear: true);
-
-            // Clear adapter's internal begin/ready/load JS
-            $this->_readyJs = [];
-            $this->_loadJs = [];
-        }
-
-        return $html;
+        return $this->registry()->bodyHtml(clear: $clear);
     }
 
     /**
@@ -1451,10 +1436,9 @@ class View extends \yii\web\View
      * that will need to use the translations, unless the JavaScript is
      * registered at [[\yii\web\View::POS_READY]].
      *
-     * @param  string  $category  The category the messages are in
-     * @param  string[]  $messages  The messages to be translated
-     *
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::translations()} instead.
+     * @param string $category The category the messages are in
+     * @param string[] $messages The messages to be translated
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::translations()} instead.
      */
     public function registerTranslations(string $category, array $messages): void
     {
@@ -1491,7 +1475,7 @@ JS;
      * @param  string[]  $icons  The icons to be registered
      *
      * @since 5.7.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\AssetRegistry::icons()} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::icons()} instead.
      */
     public function registerIcons(array $icons): void
     {
@@ -1867,15 +1851,15 @@ JS;
      * that `TemplateRenderer::renderPageTemplate()` uses for placeholder replacement.
      *
      * **Asset clearing behavior:** When `$clear` is `true` (the default), this method
-     * calls `AssetRegistry::headHtml(clear: true)`, `bodyBeginHtml(clear: true)`, and
+     * calls `HtmlStack::headHtml(clear: true)`, `bodyBeginHtml(clear: true)`, and
      * `bodyEndHtml(clear: true)` after rendering, which empties the registry's asset
      * collections for those positions. This prevents assets from being rendered twice
-     * (once here and once via the `AssetRegistry` fallback in `TemplateRenderer`).
+     * (once here and once via the `HtmlStack` fallback in `TemplateRenderer`).
      * Legacy `_readyJs` and `_loadJs` arrays are also cleared.
      *
      * @param  bool  $ajaxMode  Whether to render in AJAX mode (omits certain assets).
      * @param  bool  $clear  Whether to clear rendered assets from the registry after output.
-     *                       When `true`, the `AssetRegistry` fallback in `TemplateRenderer`
+     *                       When `true`, the `HtmlStack` fallback in `TemplateRenderer`
      *                       will produce empty strings since the assets have already been consumed.
      * @return array{headHtml: string, bodyBeginHtml: string, bodyEndHtml: string}
      */
@@ -1886,6 +1870,10 @@ JS;
             $this->_setJsProperty('registeredAssetBundles', $this->_registeredAssetBundles);
         }
 
+        // Prevent the RenderingAssets listener from flushing _readyJs/_loadJs,
+        // since renderBodyEndHtml() handles jQuery wrapping for page renders.
+        $this->_skipReadyLoadFlush = true;
+
         // Ensure all queued bundle resources are registered before rendering.
         $this->registerAllAssetFiles();
 
@@ -1893,9 +1881,11 @@ JS;
         $bodyBeginHtml = $this->renderBodyBeginHtml();
         $bodyEndHtml = $this->renderBodyEndHtml($ajaxMode);
 
+        $this->_skipReadyLoadFlush = false;
+
         if ($clear) {
-            // Clear the AssetRegistry so that TemplateRenderer's ?? fallback to
-            // AssetRegistry::headHtml() / bodyBeginHtml() / bodyEndHtml() returns
+            // Clear the HtmlStack so that TemplateRenderer's ?? fallback to
+            // HtmlStack::headHtml() / bodyBeginHtml() / bodyEndHtml() returns
             // empty strings — the assets have already been consumed above.
             $this->registry()->headHtml(clear: true);
             $this->registry()->bodyBeginHtml(clear: true);
@@ -2073,7 +2063,44 @@ JS;
     }
 
     /**
-     * {@inheritdoc}
+     * Flushes all pending asset registrations into the HtmlStack.
+     *
+     * Called by the {@see \CraftCms\Cms\View\Events\RenderingAssets} listener to ensure
+     * Yii2 asset bundles and POS_READY/POS_LOAD JS are pushed into the registry
+     * before it renders.
+     */
+    public function flushPendingAssets(): void
+    {
+        $this->registerAssetFlashes();
+        $this->registerAllAssetFiles();
+
+        if (!$this->_skipReadyLoadFlush) {
+            $this->flushReadyLoadJs();
+        }
+    }
+
+    /**
+     * Pushes any queued POS_READY/POS_LOAD JS into the HtmlStack as BodyEnd JS,
+     * then clears the queues.
+     */
+    private function flushReadyLoadJs(): void
+    {
+        if (!empty($this->_readyJs)) {
+            foreach ($this->_readyJs as $key => $js) {
+                $this->registry()->js($js, Position::BodyEnd, is_string($key) ? $key : null);
+            }
+            $this->_readyJs = [];
+        }
+        if (!empty($this->_loadJs)) {
+            foreach ($this->_loadJs as $key => $js) {
+                $this->registry()->js($js, Position::BodyEnd, is_string($key) ? $key : null);
+            }
+            $this->_loadJs = [];
+        }
+    }
+
+    /**
+     * @inheritdoc
      */
     protected function registerAssetFiles($name): void
     {
@@ -2274,6 +2301,10 @@ JS;
             $event->headHtml = $html['headHtml'];
             $event->bodyBeginHtml = $html['bodyBeginHtml'];
             $event->bodyEndHtml = $html['bodyEndHtml'];
+        });
+
+        Event::listen(function(RenderingAssets $event) {
+            Craft::$app->getView()->flushPendingAssets();
         });
     }
 }

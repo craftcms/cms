@@ -1,0 +1,2 @@
+// line 1
+Craft::dd(($context["entry"] ?? null));

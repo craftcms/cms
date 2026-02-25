@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -47,7 +47,7 @@ final readonly class LoginController extends AuthenticationController
         return redirect(URL::defaultReturnUrl());
     }
 
-    public function showLoginModal(Request $request, Impersonation $impersonation): JsonResponse
+    public function showLoginModal(Request $request, Impersonation $impersonation, HtmlStack $HtmlStack): JsonResponse
     {
         $forElevatedSession = $request->boolean('forElevatedSession');
 
@@ -58,7 +58,6 @@ final readonly class LoginController extends AuthenticationController
             $staticEmail = $request->validate(['email' => ['required']])['email'];
         }
 
-        $view = Craft::$app->getView();
         $html = template('_special/login-modal', [
             'staticEmail' => $staticEmail,
             'forElevatedSession' => $forElevatedSession,
@@ -66,8 +65,8 @@ final readonly class LoginController extends AuthenticationController
 
         return new JsonResponse([
             'html' => $html,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => $HtmlStack->headHtml(),
+            'bodyHtml' => $HtmlStack->bodyHtml(),
         ]);
     }
 

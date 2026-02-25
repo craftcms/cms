@@ -29,7 +29,6 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
-use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -63,10 +62,10 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -75,6 +74,7 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use DateInterval;
@@ -1864,7 +1864,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 'label' => t('Entry type settings'),
             ];
 
-            AssetRegistry::jsWithVars(fn ($id, $params, $isNestedEntry) => <<<JS
+            HtmlStack::jsWithVars(fn ($id, $params, $isNestedEntry) => <<<JS
 (() => {
   $('#' + $id).on('activate', function() {
     const params = $params;
@@ -1892,7 +1892,7 @@ JS, [
                     'label' => t('Section settings'),
                 ];
 
-                AssetRegistry::jsWithVars(fn ($id, $params) => <<<JS
+                HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
     (() => {
       $('#' + $id).on('activate', function() {
         new Craft.CpScreenSlideout('sections/edit-section', {params: $params})
@@ -1917,7 +1917,7 @@ JS, [
                     'label' => Craft::t('app', 'Field settings'),
                 ];
 
-                AssetRegistry::jsWithVars(fn ($id, $params) => <<<JS
+                HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
     (() => {
       $('#' + $id).on('activate', function() {
         new Craft.CpScreenSlideout('fields/edit-field', {params: $params})
@@ -2293,7 +2293,7 @@ if (revertRevisionBtn.length > 0) {
   revertRevisionBtn.replaceWith(tooltipBtn);
 }
 JS;
-            AssetRegistry::js($js);
+            HtmlStack::js($js);
         }
     }
 

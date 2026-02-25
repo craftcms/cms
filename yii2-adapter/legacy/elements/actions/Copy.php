@@ -9,7 +9,7 @@ namespace craft\elements\actions;
 
 use craft\base\ElementAction;
 
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use function CraftCms\Cms\t;
 
 /**
@@ -35,7 +35,7 @@ class Copy extends ElementAction
     public function getTriggerHtml(): ?string
     {
         // Only enable for copyable elements, per canCopy()
-        AssetRegistry::jsWithVars(fn($type) => <<<JS
+        HtmlStack::jsWithVars(fn($type) => <<<JS
 (() => {
   new Craft.ElementActionTrigger({
     type: $type,

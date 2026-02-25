@@ -12,7 +12,7 @@ use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -59,7 +59,7 @@ class Duplicate extends ElementAction
     public function getTriggerHtml(): ?string
     {
         // Only enable for duplicatable elements, per canDuplicate()
-        AssetRegistry::jsWithVars(fn($type, $attr) => <<<JS
+        HtmlStack::jsWithVars(fn($type, $attr) => <<<JS
 (() => {
   new Craft.ElementActionTrigger({
     type: $type,

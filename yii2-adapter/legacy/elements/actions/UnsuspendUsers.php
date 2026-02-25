@@ -9,7 +9,7 @@ namespace craft\elements\actions;
 
 use craft\base\ElementAction;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -37,7 +37,7 @@ class UnsuspendUsers extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        AssetRegistry::jsWithVars(fn($type) => <<<JS
+        HtmlStack::jsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,

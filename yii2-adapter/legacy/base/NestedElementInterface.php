@@ -7,8 +7,8 @@
 
 namespace craft\base;
 
-use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use yii\base\InvalidConfigException;
 
 /**

@@ -9,7 +9,7 @@ use craft\helpers\DateRange;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use DateTime;
@@ -149,7 +149,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
         $inputId = 'date-range-input';
         $menuId = 'date-range-menu';
 
-        AssetRegistry::jsWithVars(
+        HtmlStack::jsWithVars(
             fn ($buttonId, $inputId) => <<<JS
 Garnish.requestAnimationFrame(() => {
   const \$button = $('#' + $buttonId);

@@ -42,6 +42,7 @@ final class ProjectConfig extends Utility
         $areChangesPending = $projectConfig->areChangesPending(force: true);
 
         if ($areChangesPending) {
+
             $invert = (
                 ! $projectConfig->readOnly &&
                 ! $projectConfig->writeYamlAutomatically &&

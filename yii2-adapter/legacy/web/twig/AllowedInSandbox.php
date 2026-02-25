@@ -7,15 +7,15 @@
 
 namespace craft\web\twig;
 
-use Attribute;
-
-/**
- * Attribute AllowedInSandbox
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.9.0
- */
-#[Attribute]
-class AllowedInSandbox
-{
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Attributes\AllowedInSandbox} instead.
+     */
+    #[\Attribute]
+    class AllowedInSandbox
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Twig\Attributes\AllowedInSandbox::class, AllowedInSandbox::class);

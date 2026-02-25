@@ -8,12 +8,12 @@ use craft\base\NestedElementInterface;
 use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\BeforeDefineUrl;
 use CraftCms\Cms\Element\Events\DefineUrl;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Twig\Markup;
 
 /**

@@ -42,7 +42,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Api;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -123,12 +123,12 @@ class CpAsset extends AssetBundle
         $js = <<<JS
 window.Craft = $craftJson;
 JS;
-        AssetRegistry::js($js, Position::Head);
+        HtmlStack::js($js, Position::Head);
     }
 
     private function _registerTranslations(): void
     {
-        AssetRegistry::translations([
+        HtmlStack::translations([
             '(blank)',
             '<span class="visually-hidden">Characters left:</span> {chars, number}',
             'A server error occurred.',
@@ -484,20 +484,20 @@ JS;
             '“{name}” deleted.',
         ]);
 
-        AssetRegistry::translations([
+        HtmlStack::translations([
             'New category in the {group} category group',
             'New category, choose a category group',
             'New {group} category',
             'Tag',
         ], 'yii2-adapter');
 
-        AssetRegistry::translations([
+        HtmlStack::translations([
             '{attribute} cannot be blank.',
             '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',
             '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
         ], 'yii');
 
-        AssetRegistry::icons([
+        HtmlStack::icons([
             'arrow-down',
             'arrow-left',
             'arrow-right',

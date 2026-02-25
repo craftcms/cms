@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Tests;
 
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Config;
 use Orchestra\Testbench\Concerns\WithWorkbench;
@@ -28,6 +30,8 @@ class UnitTestCase extends Orchestra
 
         Edition::set(Edition::Pro);
         TemplateMode::set(TemplateMode::Cp);
+
+        Sites::setCurrentSite(new Site);
 
         app()->setLocale('en-US');
 

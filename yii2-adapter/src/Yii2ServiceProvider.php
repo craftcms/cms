@@ -77,6 +77,7 @@ use craft\services\Volumes;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
+use craft\web\twig\Extension;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\variables\Cp;
 use craft\web\twig\variables\Cp as CpVariable;
@@ -1106,6 +1107,9 @@ class Yii2ServiceProvider extends ServiceProvider
 
             Twig::registerExtension(new GlobalsExtension(), TemplateMode::Site);
         }
+
+        // Legacy `view` global remains available through the adapter layer only.
+        Twig::registerExtension(new Extension());
 
         Event::listen(function(DefineNativeFields $event) {
             switch ($event->fieldLayout->type) {

@@ -19,8 +19,8 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Twig\TemplateResolver;
-use CraftCms\Cms\View\AssetRegistry;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
+use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use crafttests\fixtures\SitesFixture;
 use Illuminate\Support\Facades\Event as LaravelEvent;
@@ -673,7 +673,7 @@ TWIG;
         parent::_before();
 
         // Clear the asset registry to prevent state leaking between tests
-        app(AssetRegistry::class)->clear();
+        app(HtmlStack::class)->clear();
 
         $this->view = Craft::createObject(View::class);
 
