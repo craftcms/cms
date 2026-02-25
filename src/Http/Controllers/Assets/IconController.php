@@ -13,9 +13,9 @@ final readonly class IconController
 {
     use RespondsWithFlash;
 
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request, ?string $extension = null): Response
     {
-        $svg = AssetsHelper::iconSvg($request->input('extension'));
+        $svg = AssetsHelper::iconSvg($request->input('extension', $extension));
 
         // iconSvg() may return a file path when the icon is already cached on disk
         if (is_file($svg)) {

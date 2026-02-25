@@ -281,7 +281,7 @@ Route::prefix(implode('/', [
         Route::get('assets/edit-image', [ImageEditorController::class, 'editImage']);
         Route::post('assets/save-image', [ImageEditorController::class, 'save']);
         Route::post('assets/update-focal-position', [ImageEditorController::class, 'updateFocalPoint']);
-        Route::get('assets/icon', AssetsIconController::class);
+        Route::get('assets/icon/{extension?}', AssetsIconController::class);
 
         // Preview
         Route::any('preview/create-token', [PreviewController::class, 'createToken']);

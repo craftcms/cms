@@ -20,11 +20,11 @@ final readonly class IndexController
         private Folders $folders,
     ) {}
 
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request, ?string $defaultSource = null): View
     {
         $variables = [];
 
-        if (! $defaultSource = $request->input('defaultSource')) {
+        if (! $defaultSource = $request->input('defaultSource', $defaultSource)) {
             return view('assets/_index', $variables);
         }
 

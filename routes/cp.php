@@ -105,7 +105,8 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     /**
      * Assets
      */
-    Route::get('assets', AssetsIndexController::class);
+    Route::get('assets/{defaultSource?}', AssetsIndexController::class)
+        ->where('defaultSource', '.*');
 
     /**
      * Routes that require admin, but do not require admin changes
