@@ -26,6 +26,7 @@ use craft\web\assets\iframeresizer\IframeResizerAsset;
 use craft\web\assets\jquerypayment\JqueryPaymentAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\jqueryui\JqueryUiAsset;
+use craft\web\assets\picturefill\PicturefillAsset;
 use craft\web\assets\selectize\SelectizeAsset;
 use craft\web\assets\tailwindreset\TailwindResetAsset;
 use craft\web\assets\theme\ThemeAsset;
@@ -92,6 +93,7 @@ class CpAsset extends AssetBundle
         FabricAsset::class,
         IframeResizerAsset::class,
         ThemeAsset::class,
+        PicturefillAsset::class,
     ];
 
     /**
