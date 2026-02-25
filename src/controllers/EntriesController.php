@@ -463,15 +463,19 @@ class EntriesController extends BaseEntriesController
         $this->requireCpRequest();
 
         $sectionId = $this->request->getRequiredParam('sectionId');
+        $entryIds = $this->request->getRequiredParam('entryIds');
+        if (empty($entryIds)) {
+            throw new BadRequestHttpException('entryIds cannot be empty.');
+        }
+
         $section = Craft::$app->getEntries()->getSectionById($sectionId);
         if (!$section) {
             throw new BadRequestHttpException('Cannot find the section to move the entries to.');
         }
 
-        $entryIds = $this->request->getRequiredParam('entryIds');
-        if (empty($entryIds)) {
-            throw new BadRequestHttpException('entryIds cannot be empty.');
-        }
+        $this->requirePermission("viewEntries:$section->uid");
+
+        /** @var Entry[] $entries */
         $entries = Entry::find()
             ->id($entryIds)
             ->status(null)
@@ -479,8 +483,15 @@ class EntriesController extends BaseEntriesController
             ->site('*')
             ->unique()
             ->all();
+
         if (empty($entries)) {
             throw new BadRequestHttpException('Cannot find the entries to move to the new section.');
+        }
+
+        foreach ($entries as $entry) {
+            if (!$entry->canMove()) {
+                throw new ForbiddenHttpException('User is not authorized to perform this action.');
+            }
         }
 
         $errors = [];

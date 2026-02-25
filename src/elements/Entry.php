@@ -2497,15 +2497,19 @@ JS, [
         return [
             'data' => [
                 'entry-type-id' => $this->getType()->id,
-                'movable' => $this->_canMove(),
+                'movable' => $this->canMove(),
             ],
         ];
     }
 
     /**
-     * Returns whether the given user is authorized to move this entry.
+     * Returns whether the given user is authorized to move this entry to a different section.
+     *
+     * @param User|null $user
+     * @return bool
+     * @since 5.9.14
      */
-    private function _canMove(?User $user = null): bool
+    public function canMove(?User $user = null): bool
     {
         if (!$user) {
             $user = Craft::$app->getUser()->getIdentity();
