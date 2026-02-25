@@ -1194,6 +1194,9 @@ class AssetsController extends Controller
             return $this->asFailure(Craft::t('app', 'Asset not found with that id'));
         }
 
+        $this->requireVolumePermissionByAsset('viewAssets', $asset);
+        $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
+
         $previewHtml = null;
 
         $previewHandler = Craft::$app->getAssets()->getAssetPreviewHandler($asset);

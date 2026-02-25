@@ -3,6 +3,7 @@
 ## Unreleased
 
 - The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is no longer set by default for database connections. ([#18474](https://github.com/craftcms/cms/issues/18474))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-5pgf-h923-m958)
 
 ## 4.17.7 - 2026-02-24
 
