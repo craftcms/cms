@@ -1149,6 +1149,7 @@ class AssetsController extends Controller
                 throw new ServerErrorHttpException('Image transform cannot be created.', previous: $e);
             }
         } else {
+            $this->requirePermission('accessCp');
             $assetId = $this->request->getRequiredBodyParam('assetId');
             $handle = $this->request->getRequiredBodyParam('handle');
             if (!is_string($handle)) {
