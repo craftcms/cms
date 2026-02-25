@@ -3,6 +3,7 @@
 ## Unreleased
 
 - The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is no longer set by default for database connections. ([#18474](https://github.com/craftcms/cms/issues/18474))
+- Fixed a bug where element selector modals weren’t showing any results if they were limited to sources that only exist for a different site than the active one. ([#18478](https://github.com/craftcms/cms/issues/18478))
 
 ## 5.9.13 - 2026-02-24
 
