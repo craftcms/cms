@@ -1438,35 +1438,10 @@ class View extends \yii\web\View
      *
      * @param string $category The category the messages are in
      * @param string[] $messages The messages to be translated
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\View\HtmlStack::translations()} instead.
+     * @deprecated 6.0.0 All translations are now loaded in bulk via `window.Craft.translations`.
      */
     public function registerTranslations(string $category, array $messages): void
     {
-        $jsCategory = Json::encode($category);
-        $js = '';
-
-        foreach ($messages as $message) {
-            $translation = t($message, category: $category);
-
-            if ($translation !== $message) {
-                $jsMessage = Json::encode($message);
-                $jsTranslation = Json::encode($translation);
-                $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[$jsCategory][$jsMessage] = $jsTranslation;";
-            }
-        }
-
-        if ($js === '') {
-            return;
-        }
-
-        $js = <<<JS
-if (typeof Craft.translations[$jsCategory] === 'undefined') {
-    Craft.translations[$jsCategory] = {};
-}
-$js
-JS;
-
-        $this->registerJs($js, self::POS_BEGIN);
     }
 
     /**

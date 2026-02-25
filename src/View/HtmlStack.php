@@ -15,8 +15,6 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Stringable;
 
-use function CraftCms\Cms\t;
-
 /**
  * Manages the registration and rendering of front-end assets (JavaScript, CSS, HTML, meta tags, etc.)
  * for a single request lifecycle.
@@ -209,49 +207,6 @@ final class HtmlStack
     public function jsImport(string $key, string $value): void
     {
         $this->jsImports[$key] = $value;
-    }
-
-    /**
-     * Registers JavaScript translation messages.
-     *
-     * For each message whose translation differs from the original, a line of JavaScript is
-     * registered that populates `Craft.translations[category][message]`. Messages that don't
-     * have a translation are skipped.
-     *
-     * @param  array  $messages  The message strings to translate.
-     * @param  string  $category  The translation category (e.g. `'app'` or `'site'`).
-     */
-    public function translations(array $messages, string $category = 'app'): void
-    {
-        $jsCategory = Json::encode($category);
-
-        $lines = collect($messages)
-            ->map(function (string $message) use ($jsCategory, $category): ?string {
-                $translation = t($message, category: $category);
-
-                if ($translation === $message) {
-                    return null;
-                }
-
-                $jsMessage = Json::encode($message);
-                $jsTranslation = Json::encode($translation);
-
-                return "Craft.translations[$jsCategory][$jsMessage] = $jsTranslation;";
-            })
-            ->whereNotNull();
-
-        if ($lines->isEmpty()) {
-            return;
-        }
-
-        $assignments = $lines->implode(PHP_EOL);
-
-        $this->js(<<<JS
-        if (typeof Craft.translations[$jsCategory] === 'undefined') {
-            Craft.translations[$jsCategory] = {};
-        }
-        $assignments
-        JS, Position::BodyBegin);
     }
 
     /**

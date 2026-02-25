@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\web;
 
-use Codeception\Stub;
 use Craft;
 use craft\test\Craft as CraftTest;
 use craft\test\mockclasses\arrayable\ExampleArrayable;
@@ -17,7 +16,6 @@ use craft\web\View;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use CraftCms\Cms\View\HtmlStack;
@@ -235,16 +233,11 @@ class ViewTest extends TestCase
     /**
      *
      */
-    public function testRegisterTranslations(): void
+    public function testRegisterTranslationsIsNoop(): void
     {
-        app()->setLocale('nl');
-
-        // Basic test that register translations gets rendered
-        $js = $this->_generateTranslationJs('app', ['Save' => 'Bewaren', 'Cancel' => 'Afbreken']);
-        $this->_assertRegisterJsInputValues($js, View::POS_BEGIN);
+        // registerTranslations() is now a no-op — all translations are loaded
+        // in bulk via window.Craft.translations. Just verify it doesn't throw.
         $this->view->registerTranslations('app', ['Save', 'Cancel']);
-
-        app()->setLocale('en-US');
     }
 
     /**
@@ -682,42 +675,6 @@ TWIG;
     }
 
     /**
-     * @param mixed $category
-     * @param array $messages
-     * @return string
-     */
-    private function _generateTranslationJs(mixed $category, array $messages): string
-    {
-        $category = Json::encode($category);
-        $js = '';
-        foreach ($messages as $message => $translation) {
-            $translation = Json::encode($translation);
-            $message = Json::encode($message);
-            $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[$category][$message] = $translation;";
-        }
-
-        return "if (typeof Craft.translations[$category] === 'undefined') {" . PHP_EOL . "    Craft.translations[$category] = {};" . PHP_EOL . '}' . PHP_EOL . $js;
-    }
-
-    /**
-     * @param mixed $desiredJs
-     * @param mixed $desiredPosition
-     * @throws \Exception
-     */
-    private function _assertRegisterJsInputValues(mixed $desiredJs, mixed $desiredPosition)
-    {
-        $this->view = Stub::construct(
-            View::class,
-            [],
-            [
-                'registerJs' => function($inputJs, $inputPosition) use ($desiredJs, $desiredPosition) {
-                    self::assertSame($desiredJs, $inputJs);
-                    self::assertSame($desiredPosition, $inputPosition);
-                },
-            ]
-        );
-    }
-
     /**
      * @param string $which
      * @return array

@@ -4,12 +4,6 @@
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
-{% do view.registerTranslations('app', [
-    "Name",
-    "Handle",
-    "Type",
-    "No volumes exist yet."
-]) %}
 
 {% if readOnly %}
     {% set contentNotice = readOnlyNotice() %}
