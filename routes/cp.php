@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Assets\IndexController as AssetsIndexController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
@@ -100,6 +101,11 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     });
 
     Route::get('users/{slug?}', [UsersController::class, 'index']);
+
+    /**
+     * Assets
+     */
+    Route::get('assets', AssetsIndexController::class);
 
     /**
      * Routes that require admin, but do not require admin changes

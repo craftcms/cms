@@ -58,7 +58,6 @@ use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Search\SearchQuery;
@@ -75,6 +74,7 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
@@ -121,7 +121,6 @@ use function CraftCms\Cms\t;
  * @property-read bool $hasCheckeredThumb
  * @property-read bool $supportsImageEditor
  * @property-read array $previewTargets
- * @property-read FsInterface $fs
  * @property-read string $titleTranslationKey
  * @property-read null|string $titleTranslationDescription
  * @property-read string $dataUrl
@@ -711,8 +710,8 @@ class Asset extends Element
                 $baseSourcePathStep = $baseFolder->getSourcePathInfo();
 
                 $folderQuery
-                    ->offset($elementQuery->offset)
-                    ->limit($elementQuery->limit);
+                    ->when($elementQuery->getOffset(), fn ($query) => $query->offset($elementQuery->getOffset()))
+                    ->when($elementQuery->getLimit(), fn ($query) => $query->limit($elementQuery->getLimit()));
 
                 $folders = $folderQuery->get()->map(fn (object $result) => new VolumeFolder((array) $result))->all();
 
@@ -1589,7 +1588,7 @@ JS, [
                 InputNamespace::namespaceId($replaceId),
                 InputNamespace::get(),
                 $this->id,
-                $this->fs::class,
+                $this->getVolume()->getFs()::class,
                 t('Dimensions'),
             ]);
         }
@@ -2993,7 +2992,7 @@ JS;
             $model->size = (int) $this->size ?: null;
             $model->width = (int) $this->_width ?: $fallbackWidth;
             $model->height = (int) $this->_height ?: $fallbackHeight;
-            $model->dateModified = \CraftCms\Cms\Support\Query::prepareDateForDb($this->dateModified);
+            $model->dateModified = Query::prepareDateForDb($this->dateModified);
 
             if (isset($this->_mimeType)) {
                 $model->mimeType = $this->_mimeType;

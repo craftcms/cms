@@ -57,6 +57,7 @@ use CraftCms\Cms\Utility\Utilities\QueueManager;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Support\Facades\Auth;
+use stdClass;
 use yii\web\JqueryAsset;
 use function CraftCms\Cms\t;
 
@@ -200,7 +201,7 @@ JS;
             'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
             'timezone' => app()->getTimezone(),
             'tokenParam' => $generalConfig->tokenParam,
-            'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new \stdClass(),
+            'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass(),
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
             'usePathInfo' => $generalConfig->usePathInfo,
         ];

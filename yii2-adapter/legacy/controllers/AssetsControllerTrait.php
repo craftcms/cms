@@ -20,6 +20,7 @@ use yii\web\ForbiddenHttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
+ * @deprecated 6.0.0
  */
 trait AssetsControllerTrait
 {
@@ -41,7 +42,6 @@ trait AssetsControllerTrait
             if ($userTemporaryFolder->id == $asset->folderId) {
                 return;
             }
-        }
         }
 
         $volume = $asset->getVolume();
@@ -83,7 +83,6 @@ trait AssetsControllerTrait
             if ($userTemporaryFolder->id == $folder->id) {
                 return;
             }
-        }
         }
 
         $volume = $folder->getVolume();
