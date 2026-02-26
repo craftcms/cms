@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use Craft;
-use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
-use craft\web\assets\editsection\EditSectionAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
@@ -36,6 +34,7 @@ final readonly class SectionsController
 
     public function __construct(
         GeneralConfig $generalConfig,
+        private EntryTypes $entryTypes,
     ) {
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
@@ -84,39 +83,21 @@ final readonly class SectionsController
         ]);
     }
 
-    public function create(): CpScreenResponse
+    public function create(Sites $sites): CpScreenResponse
     {
-        Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
+        $section = new Section([
+            'type' => SectionType::Channel,
+        ]);
 
         return new CpScreenResponse()
             ->title(t('Create a new section'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Sections'), 'settings/sections')
-            ->contentTemplate('settings/sections/_edit.twig', [
-                'brandNewSection' => true,
-                'section' => new Section([
-                    'type' => SectionType::Channel,
-                ]),
-                'typeOptions' => [
-                    SectionType::Single->value => SectionType::Single->label(),
-                    SectionType::Channel->value => SectionType::Channel->label(),
-                    SectionType::Structure->value => SectionType::Structure->label(),
-                ],
-                'readOnly' => $this->readOnly,
-            ])
-            ->action('sections/save-section')
-            ->redirectUrl('settings/sections')
-            ->addAltAction(t('Save and continue editing'), [
-                'redirect' => 'settings/sections/{id}',
-                'shortcut' => true,
-                'retainScroll' => true,
-            ]);
+            ->inertiaPage('SettingsSectionsEditPage', $this->sectionProps($section, $sites, brandNew: true));
     }
 
-    public function edit(Sections $sections, SectionModel $section): CpScreenResponse
+    public function edit(Sections $sections, Sites $sites, SectionModel $section): CpScreenResponse
     {
-        Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
-
         $sectionData = $sections->getSectionById($section->id);
         abort_if(is_null($sectionData), 404, 'Section not found');
 
@@ -124,33 +105,65 @@ final readonly class SectionsController
             ->title(trim($sectionData->name) ?: t('Edit Section'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Sections'), 'settings/sections')
-            ->contentTemplate('settings/sections/_edit.twig', [
-                'brandNewSection' => false,
-                'sectionId' => $sectionData->id,
-                'section' => $sectionData,
-                'typeOptions' => [
-                    SectionType::Single->value => SectionType::Single->label(),
-                    SectionType::Channel->value => SectionType::Channel->label(),
-                    SectionType::Structure->value => SectionType::Structure->label(),
-                ],
-                'readOnly' => $this->readOnly,
-            ])
-            ->when(
-                $this->readOnly,
-                function (CpScreenResponse $response) {
-                    $response->noticeHtml(Cp::readOnlyNoticeHtml());
-                },
-                function (CpScreenResponse $response) {
-                    $response
-                        ->action('sections/save-section')
-                        ->redirectUrl('settings/sections')
-                        ->addAltAction(t('Save and continue editing'), [
-                            'redirect' => 'settings/sections/{id}',
-                            'shortcut' => true,
-                            'retainScroll' => true,
-                        ]);
-                },
-            );
+            ->inertiaPage('SettingsSectionsEditPage', $this->sectionProps($sectionData, $sites, brandNew: false));
+    }
+
+    private function sectionProps(Section $section, Sites $sites, bool $brandNew): array
+    {
+        $headlessMode = app(GeneralConfig::class)->headlessMode;
+
+        $allSites = $sites->getAllSites();
+        $siteSettings = [];
+
+        foreach ($allSites as $site) {
+            $settings = $section->siteSettings[$site->id] ?? null;
+            $siteSettings[] = [
+                'siteId' => $site->id,
+                'handle' => $site->handle,
+                'name' => $site->getName(),
+                'enabled' => $brandNew || $settings !== null,
+                'enabledByDefault' => $settings?->enabledByDefault ?? true,
+                'uriFormat' => $settings?->uriFormat,
+                'template' => $settings?->template,
+            ];
+        }
+
+        return [
+            'section' => [
+                'id' => $section->id,
+                'name' => $section->name,
+                'handle' => $section->handle,
+                'type' => $section->type?->value ?? SectionType::Channel->value,
+                'enableVersioning' => $section->enableVersioning,
+                'maxAuthors' => $section->maxAuthors ?? 1,
+                'maxLevels' => $section->maxLevels,
+                'propagationMethod' => $section->propagationMethod->value,
+                'defaultPlacement' => $section->defaultPlacement->value,
+                'previewTargets' => $section->previewTargets ?? [],
+                'entryTypes' => $section->entryTypes ?? [],
+            ],
+            'brandNew' => $brandNew,
+            'entryTypes' => $this->entryTypes->getAllEntryTypes(),
+            'typeOptions' => array_map(fn (SectionType $type) => [
+                'value' => $type->value,
+                'label' => $type->label(),
+            ], SectionType::cases()),
+            'propagationOptions' => [
+                ['value' => 'none', 'label' => t('Only save entries to the site they were created in')],
+                ['value' => 'siteGroup', 'label' => t('Save entries to other sites in the same site group')],
+                ['value' => 'language', 'label' => t('Save entries to other sites with the same language')],
+                ['value' => 'all', 'label' => t('Save entries to all sites enabled for this section')],
+                ['value' => 'custom', 'label' => t('Let each entry choose which sites it should be saved to')],
+            ],
+            'placementOptions' => [
+                ['value' => 'beginning', 'label' => t('Before other {type}', ['type' => t('entries')])],
+                ['value' => 'end', 'label' => t('After other {type}', ['type' => t('entries')])],
+            ],
+            'siteSettings' => $siteSettings,
+            'isMultiSite' => $sites->isMultiSite(),
+            'headlessMode' => $headlessMode,
+            'readOnly' => $this->readOnly,
+        ];
     }
 
     public function store(
@@ -226,10 +239,10 @@ final readonly class SectionsController
         $section->setSiteSettings($allSiteSettings);
 
         if (! $sections->saveSection($section)) {
-            return $this->asModelFailure($section, t('Couldn’t save section.'), 'section');
+            return back()->with('error', t('Couldn’t save section.'));
         }
 
-        return $this->asModelSuccess($section, t('Section saved.'), 'section');
+        return back()->with('success', t('Section saved.'));
     }
 
     public function destroy(Request $request, Sections $sections): Response

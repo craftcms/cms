@@ -54,7 +54,7 @@ hr {
   width: 100%;
   border: 0;
   border-top: 1px solid var(--c-color-neutral-border-subtle);
-  margin-block: var(--c-spacing-xl);
+  margin-block: var(--c-spacing-lg);
 }
 
 .index-grid {
@@ -132,6 +132,8 @@ Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
  */
 .cp-table {
+  --_cell-spacing: var(--c-spacing-md);
+  --_cell-height: var(--c-size-control-md);
   text-align: left;
   width: 100%;
   border-collapse: collapse;
@@ -142,18 +144,35 @@ Modify with `cp-table--auto` to apply table-layout: auto
   }
 
   thead {
+    border-bottom: 1px solid var(--c-color-neutral-border-subtle);
+  }
+
+  thead,
+  th {
     background-color: var(--c-color-neutral-bg-normal);
   }
 
   th,
   td {
-    vertical-align: top;
-    padding-block: var(--c-spacing-md);
-    padding-inline: var(--c-spacing-md);
+    vertical-align: middle;
+    padding-inline: var(--_cell-spacing);
+    height: var(--_cell-height);
+
+    &:has(input:not([type='checkbox']):not([type='radio'])) {
+      padding: 0;
+    }
   }
 
   tr:not(:last-child) {
     border-bottom: 1px solid var(--c-color-neutral-border-subtle);
+  }
+
+  input:not([type='checkbox']):not([type='radio']) {
+    border: 0;
+    padding: 0 var(--_cell-spacing);
+    margin: 0;
+    width: 100%;
+    height: var(--_cell-height);
   }
 }
 
@@ -165,23 +184,19 @@ Modify with `cp-table--auto` to apply table-layout: auto
   table-layout: fixed;
 }
 
+.cp-table--collapsed,
 .cp-table--borderless {
-  th,
-  td {
-    padding-inline: 0;
-  }
+  --_cell-spacing: 0;
 }
 
 .cp-table--compact {
-  th,
-  td {
-    padding-block: var(--c-spacing-sm);
-  }
+  --_cell-spacing: var(--c-spacing-sm);
+  --_cell-height: var(--c-size-control-sm);
 }
 
 .cp-table-header,
 .cp-table-footer {
-  padding: var(--c-spacing-md);
+  padding: var(--_cell-spacing);
   background-color: var(--c-color-neutral-bg-normal);
   display: flex;
   align-items: center;

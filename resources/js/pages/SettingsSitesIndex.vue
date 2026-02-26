@@ -151,6 +151,7 @@
       cell: (info) => h('code', info.getValue()),
     }),
     columnHelper.accessor('group.name', {
+      id: 'group',
       header: () => t('Group'),
     }),
     columnHelper.display({

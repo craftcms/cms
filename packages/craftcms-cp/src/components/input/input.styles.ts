@@ -2,7 +2,7 @@ import {css} from 'lit';
 
 export default css`
   /* If an input has a "size" attribute, it should not grow */
-  :host([size]) ::slotted(.form-control) {
+  :host([maxlength]) ::slotted(.form-control) {
     width: auto;
     flex: 0 0 auto;
   }

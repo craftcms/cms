@@ -25,6 +25,67 @@ export interface SiteGroup {
   name: string;
 }
 
+export interface SectionSiteSettingsData {
+  siteId: number;
+  handle: string;
+  name: string;
+  enabled: boolean;
+  enabledByDefault: boolean;
+  singleHomepage: boolean;
+  singleUri: string | null;
+  uriFormat: string | null;
+  template: string | null;
+}
+
+export interface EntryType {
+  name: string;
+  handle: string;
+  id: number;
+}
+
+export interface SectionResource {
+  id: number | null;
+  name: string | null;
+  handle: string | null;
+  type: string;
+  enableVersioning: boolean;
+  maxAuthors: number | null;
+  maxLevels: number | null;
+  propagationMethod: string;
+  defaultPlacement: string;
+  previewTargets: Array<{label: string; urlFormat: string; refresh: boolean}>;
+  entryTypes: Array<EntryType>;
+}
+
+export type EditableTableCellType =
+  | 'checkbox'
+  | 'lightswitch'
+  | 'select'
+  | 'color'
+  | 'date'
+  | 'time'
+  | 'email'
+  | 'url'
+  | 'autosuggest'
+  | 'template'
+  | 'number'
+  | 'singleline'
+  | 'multiline'
+  | 'heading'
+  | 'html'
+  | 'icon';
+
+/**
+ * @TODO this could probably be a more generic `spacing` constant
+ */
+export const TableSpacing = {
+  Relaxed: 'relaxed',
+  Compact: 'compact',
+} as const;
+
+export type TableSpacingValue =
+  (typeof TableSpacing)[keyof typeof TableSpacing];
+
 export interface Site {
   name: string;
   nameRaw: string;

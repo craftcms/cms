@@ -1,7 +1,7 @@
 import {property} from 'lit/decorators.js';
+import type {CSSResultGroup} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import styles from './chip.styles.js';
-import type {CSSResultGroup} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
 
 /**
@@ -32,6 +32,7 @@ export default class CraftChip extends LitElement {
 
     return html`
       <div
+        part="chip"
         class="${classMap({
           chip: true,
           'chip--small': this.size === 'small',

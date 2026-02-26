@@ -1,8 +1,9 @@
 <script setup lang="ts">
   import {FlexRender} from '@tanstack/vue-table';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue';
-  import {useTableDragAndDrop} from '@/composables/useTableDragAndDrop';
+  import {computed} from 'vue';
+  import {useReorderableRows} from '@/composables/useReorderableRows';
+  import {TableSpacing} from '@/types';
   import ReorderButton from '@/components/ReorderButton.vue';
   import DropIndicator from '@/components/DropIndicator.vue';
   import Select from '@/components/form/Select.vue';
@@ -37,53 +38,13 @@
     reorder: [startIndex: number, finishIndex: number];
   }>();
 
-  // Row element refs for drag-and-drop registration
-  const rowRefs = ref<Map<string, HTMLTableRowElement>>(new Map());
-  const handleRefs = ref<Map<string, HTMLElement>>(new Map());
-  const cleanupFns = ref<Map<string, () => void>>(new Map());
-
-  const {registerRow, getDragState, getDropState} = useTableDragAndDrop({
+  const {setRowRef, getDragState, getDropState} = useReorderableRows({
+    getRowIds: () => props.table.getRowModel().rows.map((row: any) => row.id),
     onReorder: (startIndex, finishIndex) => {
       emit('reorder', startIndex, finishIndex);
     },
-    getRowId: (row) => row.id,
+    enabled: () => !props.readOnly && props.reorderable,
   });
-
-  function setRowRef(el: HTMLTableRowElement | null, rowId: string) {
-    if (el) {
-      rowRefs.value.set(rowId, el);
-    } else {
-      rowRefs.value.delete(rowId);
-    }
-  }
-
-  function registerRows() {
-    if (props.readOnly) return;
-
-    // Clean up existing registrations
-    cleanupFns.value.forEach((fn) => fn());
-    cleanupFns.value.clear();
-
-    // Register each row
-    props.table.getRowModel().rows.forEach((row: any, index: number) => {
-      const rowEl = rowRefs.value.get(row.id);
-      const handleEl = handleRefs.value.get(row.id);
-
-      if (rowEl) {
-        const cleanup = registerRow(rowEl, handleEl ?? null, row.id, index);
-        cleanupFns.value.set(row.id, cleanup);
-      }
-    });
-  }
-
-  // Re-register rows when data changes
-  watch(
-    () => props.table.getRowModel().rows,
-    () => {
-      nextTick(registerRows);
-    },
-    {deep: true}
-  );
 
   const pageIndexProxy = computed({
     get() {
@@ -116,25 +77,30 @@
     () => showPagination.value || showPageSize.value || showDisplayedRows.value
   );
 
-  onMounted(() => {
-    nextTick(registerRows);
-  });
+  function resolveMetaClasses(value: any) {
+    if (!value) {
+      return {};
+    }
 
-  onUnmounted(() => {
-    cleanupFns.value.forEach((fn) => fn());
-  });
+    if (typeof value === 'string') {
+      return {[value]: true};
+    }
+
+    return value;
+  }
 </script>
 
 <template>
-  <div class="admin-table-wrapper">
+  <div class="cp-table-wrapper">
     <div class="cp-table-header" v-if="$slots['search-form']">
       <slot name="search-form"></slot>
     </div>
+
     <table
       :class="{
         'cp-table': true,
-        'cp-table--compact': spacing === 'compact',
-        'cp-table--relaxed': spacing === 'relaxed',
+        'cp-table--compact': spacing === TableSpacing.Compact,
+        'cp-table--relaxed': spacing === TableSpacing.Relaxed,
         'cp-table--auto': layout === 'auto',
       }"
     >
@@ -153,6 +119,7 @@
             :key="header.id"
             :colSpan="header.colSpan"
             :style="{width: `${header.getSize()}px`}"
+            :id="`header-${header.id}`"
             :class="{
               cell: true,
               'cell--header': true,
@@ -160,7 +127,18 @@
             }"
             @click="header.column.getToggleSortingHandler()?.($event)"
           >
-            <div class="flex gap-1 items-center">
+            <div
+              class="flex gap-1 items-center"
+              :class="{
+                'sr-only': header.column.columnDef.meta?.headerSrOnly,
+                ...resolveMetaClasses(
+                  header.column.columnDef.meta?.columnClass
+                ),
+                ...resolveMetaClasses(
+                  header.column.columnDef.meta?.headerClass
+                ),
+              }"
+            >
               <FlexRender
                 v-if="!header.isPlaceholder"
                 :render="header.column.columnDef.header"
@@ -190,6 +168,7 @@
           :key="row.id"
           :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
           :class="{
+            row: true,
             'row--dragging':
               !readOnly && getDragState(row.id).type === 'dragging',
           }"
@@ -211,20 +190,23 @@
               </Teleport>
             </td>
           </template>
-          <td
+          <component
             v-for="cell in row.getVisibleCells()"
+            :is="cell.column.columnDef.meta?.cellTag ?? 'td'"
             :key="cell.id"
             :style="{width: `${cell.column.getSize()}px`}"
             :class="{
               cell: true,
               'cell--wrap': cell.column.columnDef.meta?.wrap,
+              ...resolveMetaClasses(cell.column.columnDef.meta?.columnClass),
+              ...resolveMetaClasses(cell.column.columnDef.meta?.cellClass),
             }"
           >
             <FlexRender
               :render="cell.column.columnDef.cell"
               :props="cell.getContext()"
             />
-          </td>
+          </component>
         </tr>
       </tbody>
     </table>
@@ -293,28 +275,31 @@
 </template>
 
 <style scoped lang="scss">
-  .admin-table-wrapper {
+  .cp-table-wrapper {
     overflow-y: clip;
     overflow-x: auto;
   }
 
-  .cell {
+  :deep(.cell) {
     white-space: nowrap;
   }
 
-  .cell--wrap {
+  :deep(.cell--header) {
+    white-space: nowrap;
+  }
+
+  :deep(.cell--wrap) {
     white-space: normal;
   }
 
-  .cell--drag-handle {
+  :deep(.cell--drag-handle) {
     width: 40px;
     padding-inline: var(--c-spacing-sm);
     position: relative;
-    overflow: visible; // Allow drop indicator to extend beyond cell
+    overflow: visible;
   }
 
-  // Drag handle styles
-  .drag-handle {
+  :deep(.drag-handle) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -335,8 +320,7 @@
     }
   }
 
-  // Drag states
-  .row--dragging {
+  :deep(.row--dragging) {
     opacity: 0.4;
   }
 </style>

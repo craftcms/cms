@@ -60,10 +60,11 @@ export const inputStyles = css`
     ${baseInputStyles}
   }
 
-  :host([small]) ::slotted([slot='input']) {
+  :host([size~='small']) ::slotted([slot='input']) {
     --c-input-height: var(--c-size-control-sm);
     --c-input-spacing-inline: var(--c-spacing-sm);
   }
+
   :host([center]) ::slotted([slot='input']) {
     text-align: center;
   }

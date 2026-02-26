@@ -104,6 +104,18 @@ export default css`
     color: var(--c-button-fg-hover);
   }
 
+  :host([appearance~='dashed']) {
+    background-color: transparent;
+    border-color: var(--c-button-border);
+    border-style: dashed;
+    color: inherit;
+  }
+
+  :host([appearance~='dashed']:hover) {
+    background-color: rgba(from var(--c-button-bg-hover) r g b / 0.4);
+    color: var(--c-button-fg-hover);
+  }
+
   /*
   Variants
    */
