@@ -71,15 +71,8 @@ class ImageTransform extends Component
 
     public ?DateTime $parameterChangeTime = null;
 
-    /**
-     * @var class-string<ImageTransformerInterface>
-     */
-    public string $transformer {
-        get => $this->getTransformer();
-        set {
-            $this->setTransformer($value);
-        }
-    }
+    /** @var class-string<ImageTransformerInterface> */
+    protected string $transformer = self::DEFAULT_TRANSFORMER;
 
     public function getIsNamedTransform(): bool
     {

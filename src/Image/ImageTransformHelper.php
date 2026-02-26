@@ -180,7 +180,7 @@ final class ImageTransformHelper
                     self::storeLocalSource($tempFilePath, $imageSourcePath);
 
                     // And delete it after the request, if nobody wants it.
-                    if (Cms::config()->maxCachedCloudImageSize == 0) {
+                    if (Cms::config()->maxCachedCloudImageSize === 0) {
                         FileHelper::deleteFileAfterRequest($imageSourcePath);
                     }
 
@@ -216,13 +216,17 @@ final class ImageTransformHelper
             ? $transform->position
             : 'center-center';
 
-        return '_'.($transform->width ?: 'AUTO').'x'.($transform->height ?: 'AUTO').
-            '_'.$transform->mode.
-            "_$position".
-            ($transform->quality ? '_'.$transform->quality : '').
-            '_'.$transform->interlace.
-            ($transform->fill ? '_'.ltrim($transform->fill, '#') : '').
-            ($transform->upscale ? '' : '_ns');
+        $width = ($transform->width ?: 'AUTO').'x'.($transform->height ?: 'AUTO');
+
+        return '_'.implode('_', array_filter([
+            $width,
+            $transform->mode,
+            $position,
+            $transform->quality,
+            $transform->interlace,
+            $transform->fill ? ltrim($transform->fill, '#') : '',
+            $transform->upscale ? '' : 'ns',
+        ]));
     }
 
     public static function parseTransformString(string $str): array
