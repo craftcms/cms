@@ -153,8 +153,8 @@ export function useEditableTable<T extends Record<string, any>>(
         disabled: cellOptions?.disabled
           ? resolve(cellOptions.disabled)
           : undefined,
-        'onUpdate:modelValue': (value: boolean) => {
-          handleChange(row, column.id, value);
+        'onUpdate:modelValue': (value: boolean | undefined) => {
+          handleChange(row, column.id, value ?? false);
         },
       });
   }
