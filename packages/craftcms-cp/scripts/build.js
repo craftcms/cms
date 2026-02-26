@@ -156,6 +156,7 @@ async function runBuild() {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(async () => {
           await generateManifest();
+          await generateVueWrappers();
         }, 100);
       }
     });

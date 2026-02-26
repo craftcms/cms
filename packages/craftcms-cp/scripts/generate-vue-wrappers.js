@@ -31,7 +31,7 @@ const VALUE_COMPONENTS = [
     tagName: 'craft-input',
     className: 'CraftInput',
     fileName: 'CraftInput',
-    modelType: 'string',
+    modelType: 'string | number',
     importPath: '../components/input/input',
     slots: [
       'label',
