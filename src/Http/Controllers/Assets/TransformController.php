@@ -104,11 +104,7 @@ final readonly class TransformController
         if ($useOriginal) {
             $ext = $asset->getExtension();
         } else {
-            /** @var ImageTransform $transform */
-            $transform = new ImageTransform(
-                ...ImageTransformHelper::parseTransformString($transformString),
-            );
-
+            $transform = new ImageTransform(ImageTransformHelper::parseTransformString($transformString));
             $ext = $transform->format ?: ImageTransformHelper::detectTransformFormat($asset);
         }
 

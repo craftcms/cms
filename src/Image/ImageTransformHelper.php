@@ -43,10 +43,10 @@ final class ImageTransformHelper
             throw new ImageTransformException('Cannot create a transform from string: '.$transformString);
         }
 
-        if ($matches['width'] === 'AUTO') {
+        if (mb_strtoupper($matches['width']) === 'AUTO') {
             unset($matches['width']);
         }
-        if ($matches['height'] === 'AUTO') {
+        if (mb_strtoupper($matches['height']) === 'AUTO') {
             unset($matches['height']);
         }
 
@@ -332,7 +332,7 @@ final class ImageTransformHelper
     public static function storeLocalSource(string $source, string $destination = ''): void
     {
         if (! $destination) {
-            $destination = $source;
+            $source = $destination;
         }
 
         $maxCachedImageSize = Cms::config()->maxCachedCloudImageSize;
