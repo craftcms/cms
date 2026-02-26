@@ -19,7 +19,6 @@ use craft\image\SvgAllowedAttributes;
 use enshrined\svgSanitize\Sanitizer;
 use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\Format;
-use Imagine\Imagick\Imagick;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
 use yii\base\Component;

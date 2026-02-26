@@ -1542,7 +1542,7 @@ JS, [
                     }
                 }
             }
-            $siteIds = array_filter($siteIds, fn(int $siteId) => isset($representedSiteIds[$siteId]));
+            $siteIds = array_values(array_filter($siteIds, fn(int $siteId) => isset($representedSiteIds[$siteId])));
         }
 
         $view = Craft::$app->getView();
@@ -1572,6 +1572,9 @@ JS, [
                     ($config['context'] === 'embedded-index' ? ['pane', 'padding-s', 'hairline'] : []),
                     Html::explodeClass($config['class']),
                 ),
+                'data' => [
+                    'site-ids' => $siteIds,
+                ],
             ]) .
             Html::beginTag('div', [
                 'class' => array_filter([

@@ -144,6 +144,9 @@ class AssetsController extends Controller
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+
         return $this->asJson([
             'img' => $asset->getPreviewThumbImg($width, $height),
         ]);
@@ -854,6 +857,13 @@ class AssetsController extends Controller
             throw new BadRequestHttpException(Craft::t('app', 'The asset you’re trying to edit does not exist.'));
         }
 
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+
+        if (!$asset->getSupportsImageEditor()) {
+            throw new BadRequestHttpException('Unsupported file format');
+        }
+
         $focal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
 
         $html = $this->getView()->renderTemplate('_special/image_editor.twig');
@@ -875,7 +885,14 @@ class AssetsController extends Controller
 
         $asset = Asset::findOne($assetId);
         if (!$asset) {
-            throw new BadRequestHttpException('The Asset cannot be found');
+            throw new BadRequestHttpException("Invalid asset ID: $asset");
+        }
+
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+
+        if (!$asset->getSupportsImageEditor()) {
+            throw new BadRequestHttpException('Unsupported file format');
         }
 
         try {
@@ -1147,6 +1164,7 @@ class AssetsController extends Controller
                 throw new ServerErrorHttpException('Image transform cannot be created.', previous: $e);
             }
         } else {
+            $this->requirePermission('accessCp');
             $assetId = $this->request->getRequiredBodyParam('assetId');
             $handle = $this->request->getRequiredBodyParam('handle');
             if (!is_string($handle)) {
@@ -1198,6 +1216,9 @@ class AssetsController extends Controller
         if (!$asset) {
             return $this->asFailure(Craft::t('app', 'Asset not found with that id'));
         }
+
+        $this->requireVolumePermissionByAsset('viewAssets', $asset);
+        $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
 
         $previewHtml = null;
 
