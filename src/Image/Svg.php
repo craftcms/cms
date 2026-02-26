@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image;
 
 use craft\helpers\FileHelper;
-use craft\helpers\Image as ImageHelper;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
 use Illuminate\Support\Facades\Log;
 

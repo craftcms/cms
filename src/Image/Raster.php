@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image;
 
 use craft\helpers\FileHelper;
-use craft\helpers\Image as ImageHelper;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Cms;
 use Illuminate\Support\Facades\Log;
@@ -14,8 +13,7 @@ use ImagickException;
 use Imagine\Exception\NotSupportedException;
 use Imagine\Exception\RuntimeException;
 use Imagine\Gd\Imagine as GdImagine;
-use Imagine\Image\AbstractFont as Font;
-use Imagine\Image\AbstractImage;
+use Imagine\Image\AbstractFont;
 use Imagine\Image\AbstractImagine;
 use Imagine\Image\Box;
 use Imagine\Image\BoxInterface;
@@ -24,6 +22,7 @@ use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Image\Palette\Color\ColorInterface;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
+use Imagine\Imagick\Image as ImagickImage;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
 
@@ -46,7 +45,7 @@ class Raster extends Image
 
     private ?RGB $_palette = null;
 
-    private ?Font $_font = null;
+    private ?AbstractFont $_font = null;
 
     private ?ColorInterface $_fill = null;
 
@@ -77,7 +76,7 @@ class Raster extends Image
         parent::__construct($config);
     }
 
-    public function getImagineImage(): ?AbstractImage
+    public function getImagineImage(): ?ImageInterface
     {
         return $this->_image;
     }
@@ -124,9 +123,9 @@ class Raster extends Image
         } catch (Throwable $e) {
             // Imagick can throw all sorts of errors via the open() method
             // we should log them to better know what's going on
-            Log::info($e->getMessage(), $e->getFile());
+            Log::info($e->getMessage(), ['file' => $e->getFile()]);
             if (($instanceException = $e->getPrevious()) !== null) {
-                Log::info($instanceException->getMessage(), $instanceException->getFile().':'.$instanceException->getLine());
+                Log::info($instanceException->getMessage(), ['file' => $instanceException->getFile().':'.$instanceException->getLine()]);
             }
             throw new ImageException(t('The file “{name}” does not appear to be an image.', [
                 'name' => basename($path),
@@ -137,6 +136,7 @@ class Raster extends Image
         if (
             ! app(Images::class)->getIsGd()
             && ! Cms::config()->preserveCmykColorspace
+            && $this->_image instanceof ImagickImage
             && method_exists($this->_image->getImagick(), 'getImageColorspace')
             && $this->_image->getImagick()->getImageColorspace() === Imagick::COLORSPACE_CMYK
             && method_exists($this->_image->getImagick(), 'transformImageColorspace')
@@ -144,6 +144,7 @@ class Raster extends Image
             $this->_image->getImagick()->transformImageColorspace(Imagick::COLORSPACE_SRGB);
             $this->_image->save();
 
+            /** @var self */
             return app(Images::class)->loadImage($path);
         }
 
@@ -271,12 +272,12 @@ class Raster extends Image
         if ($scaleIfSmaller || ($width > $targetWidth && $height > $targetHeight)) {
             // Scale first.
             $factor = min($width / $targetWidth, $height / $targetHeight);
-            $newHeight = round($height / $factor);
-            $newWidth = round($width / $factor);
+            $newHeight = (int) round($height / $factor);
+            $newWidth = (int) round($width / $factor);
 
             $this->resize($newWidth, $newHeight);
             // If we need to upscale AND that's ok
-        } elseif (($targetWidth > $width || $targetHeight > $height) && ! $scaleIfSmaller) {
+        } elseif ($targetWidth > $width || $targetHeight > $height) {
             // Figure the crop size reductions
             $factor = max($targetWidth / $width, $targetHeight / $height);
             $newHeight = $height;
@@ -387,7 +388,7 @@ class Raster extends Image
 
             $this->_image = $gif;
         } else {
-            if (app(Images::class)->getIsImagick() && Cms::config()->optimizeImageFilesize) {
+            if ($this->_image instanceof ImagickImage && Cms::config()->optimizeImageFilesize) {
                 $keepImageProfiles = Cms::config()->preserveImageColorProfiles;
 
                 $this->_image->smartResize(new Box($targetWidth, $targetHeight), $keepImageProfiles, true, $this->_quality);
@@ -395,7 +396,7 @@ class Raster extends Image
                 $this->_image->resize(new Box($targetWidth, $targetHeight), $this->_getResizeFilter());
             }
 
-            if (app(Images::class)->getIsImagick()) {
+            if ($this->_image instanceof ImagickImage) {
                 $this->_image->getImagick()->setImagePage(0, 0, 0, 0);
             }
         }
@@ -405,9 +406,9 @@ class Raster extends Image
 
     public function rotate(float $degrees): self
     {
-        $this->_image->rotate($degrees);
+        $this->_image->rotate((int) $degrees);
 
-        if (app(Images::class)->getIsImagick()) {
+        if ($this->_image instanceof ImagickImage) {
             $this->_image->getImagick()->setImagePage($this->getWidth(), $this->getHeight(), 0, 0);
         }
 
@@ -467,7 +468,7 @@ class Raster extends Image
                 clearstatcache();
                 maxPowerCaptain();
 
-                if (app(Images::class)->getIsImagick() && method_exists(Imagick::class, 'getImageCompressionQuality')) {
+                if (app(Images::class)->getIsImagick()) {
                     try {
                         $image = new Imagick($this->_imageSourcePath);
                         $quality = $image->getImageCompressionQuality();
@@ -484,7 +485,7 @@ class Raster extends Image
                 }
             }
 
-            if (app(Images::class)->getIsImagick()) {
+            if ($this->_image instanceof ImagickImage) {
                 ImageHelper::cleanExifDataFromImagickImage($this->_image->getImagick());
             }
 
@@ -526,7 +527,7 @@ class Raster extends Image
 
     public function getIsTransparent(): bool
     {
-        if (app(Images::class)->getIsImagick()) {
+        if ($this->_image instanceof ImagickImage) {
             // https://github.com/php-imagine/Imagine/issues/842#issuecomment-1402748019
             $alphaRange = $this->_image->getImagick()->getImageChannelRange(Imagick::CHANNEL_ALPHA);
 
@@ -569,7 +570,9 @@ class Raster extends Image
             $this->_palette = new RGB;
         }
 
-        $this->_font = $this->_instance->font($fontFile, $size, $this->_palette->color($color));
+        /** @var AbstractFont $font */
+        $font = $this->_instance->font($fontFile, $size, $this->_palette->color($color));
+        $this->_font = $font;
     }
 
     /**
@@ -649,7 +652,7 @@ class Raster extends Image
             clearstatcache();
 
             // Generate one last time.
-            if (app(Images::class)->getIsImagick()) {
+            if ($this->_image instanceof ImagickImage) {
                 ImageHelper::cleanExifDataFromImagickImage($this->_image->getImagick());
             }
 

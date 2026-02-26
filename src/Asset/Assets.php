@@ -12,7 +12,6 @@ use craft\assetpreviews\Video;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Image;
 use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -29,6 +28,7 @@ use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\FallbackTransformer;
+use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Str;
@@ -139,7 +139,7 @@ final class Assets
 
         $extension = $asset->getExtension();
 
-        if (! Image::canManipulateAsImage($extension)) {
+        if (! ImageHelper::canManipulateAsImage($extension)) {
             return $iconFallback ? AssetsHelper::iconUrl($extension) : null;
         }
 
@@ -168,7 +168,7 @@ final class Assets
      */
     public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
     {
-        $isWebSafe = Image::isWebSafe($asset->getExtension());
+        $isWebSafe = ImageHelper::isWebSafe($asset->getExtension());
         $originalWidth = (int) $asset->getWidth();
         $originalHeight = (int) $asset->getHeight();
         [$width, $height] = AssetsHelper::scaledDimensions((int) $asset->getWidth(), (int) $asset->getHeight(), $maxWidth, $maxHeight);

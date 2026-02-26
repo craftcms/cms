@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use craft\helpers\Image as ImageHelper;
 use CraftCms\Cms\Component\Component;
 
 abstract class Image extends Component

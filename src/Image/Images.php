@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image;
 
 use craft\helpers\FileHelper;
-use craft\helpers\Image as ImageHelper;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Image\Enums\ExifOrientation;
 use CraftCms\Cms\Image\Enums\ImageDriver;
 use CraftCms\Cms\Support\PHP;
 use enshrined\svgSanitize\Sanitizer;
@@ -273,25 +273,29 @@ final class Images
             return false;
         }
 
-        if (! ($this->getIsImagick() && method_exists(Imagick::class, 'getImageOrientation'))) {
+        if (! $this->getIsImagick()) {
             return false;
         }
 
         $image = new Imagick($filePath);
-        $orientation = $image->getImageOrientation();
+        $orientation = ExifOrientation::tryFrom($image->getImageOrientation());
+        if ($orientation === null) {
+            return false;
+        }
 
         $degrees = match ($orientation) {
-            ImageHelper::EXIF_IFD0_ROTATE_180, ImageHelper::EXIF_IFD0_ROTATE_180_MIRRORED => 180,
-            ImageHelper::EXIF_IFD0_ROTATE_90, ImageHelper::EXIF_IFD0_ROTATE_90_MIRRORED => 90,
-            ImageHelper::EXIF_IFD0_ROTATE_270, ImageHelper::EXIF_IFD0_ROTATE_270_MIRRORED => 270,
+            ExifOrientation::Rotate180, ExifOrientation::Rotate180Mirrored => 180,
+            ExifOrientation::Rotate90, ExifOrientation::Rotate90Mirrored => 90,
+            ExifOrientation::Rotate270, ExifOrientation::Rotate270Mirrored => 270,
             default => 0,
         };
 
-        $mirrored = match ($orientation) {
-            ImageHelper::EXIF_IFD0_ROTATE_0_MIRRORED, ImageHelper::EXIF_IFD0_ROTATE_180_MIRRORED,
-            ImageHelper::EXIF_IFD0_ROTATE_90_MIRRORED, ImageHelper::EXIF_IFD0_ROTATE_270_MIRRORED => true,
-            default => false,
-        };
+        $mirrored = in_array($orientation, [
+            ExifOrientation::Rotate0Mirrored,
+            ExifOrientation::Rotate180Mirrored,
+            ExifOrientation::Rotate90Mirrored,
+            ExifOrientation::Rotate270Mirrored,
+        ], true);
 
         if ($degrees === 0 && ! $mirrored) {
             return false;
@@ -330,7 +334,7 @@ final class Images
             return false;
         }
 
-        if (! ($this->getIsImagick() && method_exists(Imagick::class, 'setImageOrientation'))) {
+        if (! $this->getIsImagick()) {
             return false;
         }
 
