@@ -6,6 +6,7 @@
   import type {SelectItem, SelectOption, Site} from '@/types';
   import InputCombobox from '@/components/InputCombobox.vue';
   import {useInputGenerator} from '@/composables/useInputGenerator';
+  import {toHandle} from '../../../../packages/craftcms-cp/src';
 
   const props = withDefaults(
     defineProps<{
@@ -76,20 +77,16 @@
 
   const handleGenerator = useInputGenerator(
     () => form.value.name,
-    (v) => (form.value.handle = v),
-    {transform: 'handle'}
+    (v) => (form.value.handle = toHandle(v))
   );
 
   const envVarGenerator = useInputGenerator(
     () => form.value.name,
-    (v) => (form.value.baseUrl = v),
-    {
-      transform: (value) =>
-        toEnvVar(value, {
-          prefix: '$',
-          suffix: '_URL',
-        }),
-    }
+    (value) =>
+      (form.value.baseUrl = toEnvVar(value, {
+        prefix: '$',
+        suffix: '_URL',
+      }))
   );
 
   // For existing sites, mark handle as already dirty

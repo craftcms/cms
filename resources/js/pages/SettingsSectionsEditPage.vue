@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import AppLayout from '@/layout/AppLayout.vue';
   import {useForm} from '@inertiajs/vue3';
-  import {t} from '@craftcms/cp';
+  import {t, toHandle, toUriFormat} from '@craftcms/cp';
   import TransitionFade from '@/components/TransitionFade.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import {store} from '@actions/Settings/SectionsController';
@@ -75,8 +75,7 @@
   // Auto-generate handle from name for new sections
   const handleGenerator = useInputGenerator(
     () => form.name,
-    (v) => (form.handle = v),
-    {transform: 'handle'}
+    (v) => (form.handle = toHandle(v))
   );
 
   const uriGenerator = useInputGenerator(
@@ -86,19 +85,18 @@
         return;
       }
 
+      const uri = toUriFormat(v);
+
       form.sites = Object.fromEntries(
         Object.entries(form.sites).map(([key, site]) => [
           key,
           {
             ...site,
-            uriFormat: v ? `${v}/{slug}` : '',
-            template: v ? `${v}/_entry.twig` : '',
+            uriFormat: uri ? `${uri}/{slug}` : '',
+            template: uri ? `${uri}/_entry.twig` : '',
           },
         ])
       );
-    },
-    {
-      transform: 'uri',
     }
   );
 
