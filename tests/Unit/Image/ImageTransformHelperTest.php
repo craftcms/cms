@@ -297,6 +297,8 @@ describe('createTransformFromString', function () {
     })->with([
         'AUTO width' => ['_AUTOx600_fit_center-center_none', null, 600, true],
         'AUTO height' => ['_800xAUTO_fit_center-center_none', 800, null, true],
+        'lowercase AUTO width' => ['_autox600_fit_center-center_none', null, 600, true],
+        'mixed case AUTO height' => ['_800xAuTo_fit_center-center_none', 800, null, true],
         'no-upscale flag' => ['_800x600_crop_center-center_none_ns', 800, 600, false],
     ]);
 
