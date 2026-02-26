@@ -37,24 +37,22 @@ describe('getTransformString', function () {
         expect($result)->toBe('_200x100_crop_center-center_none');
     });
 
-    test('uses AUTO for missing dimensions', function () {
-        $transform = new ImageTransform([
-            'width' => 300,
-            'mode' => 'fit',
-        ]);
+    test('uses AUTO for missing dimensions', function (array $config, string $expected) {
+        $transform = new ImageTransform($config);
 
         $result = ImageTransformHelper::getTransformString($transform, true);
 
-        expect($result)->toBe('_300xAUTO_fit_center-center_none');
-    });
-
-    test('uses AUTO for both missing dimensions', function () {
-        $transform = new ImageTransform(['mode' => 'crop']);
-
-        $result = ImageTransformHelper::getTransformString($transform, true);
-
-        expect($result)->toBe('_AUTOxAUTO_crop_center-center_none');
-    });
+        expect($result)->toBe($expected);
+    })->with([
+        'missing height' => [
+            ['width' => 300, 'mode' => 'fit'],
+            '_300xAUTO_fit_center-center_none',
+        ],
+        'missing width and height' => [
+            ['mode' => 'crop'],
+            '_AUTOxAUTO_crop_center-center_none',
+        ],
+    ]);
 
     test('includes quality when set', function () {
         $transform = new ImageTransform([
@@ -124,11 +122,99 @@ describe('getTransformString', function () {
 
         expect($result)->toBe('_100x100_crop_center-center_none');
     });
+
+    test('matches legacy getTransformString provider cases', function (array $config, string $expected) {
+        $transform = new ImageTransform($config);
+
+        expect(ImageTransformHelper::getTransformString($transform))->toBe($expected);
+    })->with([
+        'basic transform (no upscale)' => [
+            [
+                'width' => 1200,
+                'height' => 900,
+                'upscale' => false,
+            ],
+            '_1200x900_crop_center-center_none_ns',
+        ],
+        'no width' => [
+            [
+                'width' => null,
+                'height' => 900,
+                'upscale' => true,
+            ],
+            '_AUTOx900_crop_center-center_none',
+        ],
+        'no height' => [
+            [
+                'width' => 1200,
+                'height' => null,
+            ],
+            '_1200xAUTO_crop_center-center_none',
+        ],
+        'no height + explicit upscale true' => [
+            [
+                'width' => 1200,
+                'height' => null,
+                'upscale' => true,
+            ],
+            '_1200xAUTO_crop_center-center_none',
+        ],
+        'no height + no upscale' => [
+            [
+                'width' => 1200,
+                'height' => null,
+                'upscale' => false,
+            ],
+            '_1200xAUTO_crop_center-center_none_ns',
+        ],
+        'with handle' => [
+            [
+                'handle' => 'testTransform',
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'center-center',
+                'fill' => '#ff0000',
+                'quality' => 95,
+                'interlace' => 'line',
+                'upscale' => true,
+            ],
+            '_testTransform',
+        ],
+        'full transform' => [
+            [
+                'handle' => null,
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'center-center',
+                'fill' => '#ff0000',
+                'quality' => 95,
+                'interlace' => 'line',
+                'upscale' => false,
+            ],
+            '_100x200_fit_center-center_95_line_ff0000_ns',
+        ],
+        'transparent fill' => [
+            [
+                'handle' => null,
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'center-center',
+                'fill' => 'transparent',
+                'quality' => 95,
+                'interlace' => 'line',
+                'upscale' => false,
+            ],
+            '_100x200_fit_center-center_95_line_transparent_ns',
+        ],
+    ]);
 });
 
 describe('parseTransformString', function () {
-    test('parses a basic transform string', function () {
-        $result = ImageTransformHelper::parseTransformString('800x600_crop_center-center_none');
+    test('parses basic transform string', function (string $transformString) {
+        $result = ImageTransformHelper::parseTransformString($transformString);
 
         expect($result)->toBe([
             'width' => 800,
@@ -140,22 +226,10 @@ describe('parseTransformString', function () {
             'fill' => null,
             'upscale' => true,
         ]);
-    });
-
-    test('parses with leading underscore', function () {
-        $result = ImageTransformHelper::parseTransformString('_800x600_crop_center-center_none');
-
-        expect($result)->toBe([
-            'width' => 800,
-            'height' => 600,
-            'mode' => 'crop',
-            'position' => 'center-center',
-            'quality' => null,
-            'interlace' => 'none',
-            'fill' => null,
-            'upscale' => true,
-        ]);
-    });
+    })->with([
+        'without leading underscore' => ['800x600_crop_center-center_none'],
+        'with leading underscore' => ['_800x600_crop_center-center_none'],
+    ]);
 
     test('parses AUTO as null', function () {
         $result = ImageTransformHelper::parseTransformString('AUTOx600_fit_center-center_none');
@@ -164,29 +238,16 @@ describe('parseTransformString', function () {
             ->and($result['height'])->toBe(600);
     });
 
-    test('parses quality', function () {
-        $result = ImageTransformHelper::parseTransformString('800x600_crop_center-center_80_none');
+    test('parses option-specific values', function (string $transformString, string $parsedKey, mixed $expected) {
+        $result = ImageTransformHelper::parseTransformString($transformString);
 
-        expect($result['quality'])->toBe(80);
-    });
-
-    test('parses fill color', function () {
-        $result = ImageTransformHelper::parseTransformString('800x600_letterbox_center-center_none_ff0000');
-
-        expect($result['fill'])->toBe('#ff0000');
-    });
-
-    test('parses transparent fill', function () {
-        $result = ImageTransformHelper::parseTransformString('800x600_letterbox_center-center_none_transparent');
-
-        expect($result['fill'])->toBe('transparent');
-    });
-
-    test('parses no-upscale flag', function () {
-        $result = ImageTransformHelper::parseTransformString('800x600_crop_center-center_none_ns');
-
-        expect($result['upscale'])->toBeFalse();
-    });
+        expect($result[$parsedKey])->toBe($expected);
+    })->with([
+        'quality' => ['800x600_crop_center-center_80_none', 'quality', 80],
+        'fill color' => ['800x600_letterbox_center-center_none_ff0000', 'fill', '#ff0000'],
+        'transparent fill' => ['800x600_letterbox_center-center_none_transparent', 'fill', 'transparent'],
+        'no-upscale' => ['800x600_crop_center-center_none_ns', 'upscale', false],
+    ]);
 
     test('parses all options together', function () {
         $result = ImageTransformHelper::parseTransformString('800x600_letterbox_top-left_90_line_aabbcc_ns');
@@ -222,29 +283,76 @@ describe('createTransformFromString', function () {
             ->and($transform->upscale)->toBeTrue();
     });
 
-    test('handles AUTO width', function () {
-        $transform = ImageTransformHelper::createTransformFromString('_AUTOx600_fit_center-center_none');
+    test('handles special transform string flags', function (
+        string $transformString,
+        ?int $expectedWidth,
+        ?int $expectedHeight,
+        bool $expectedUpscale
+    ) {
+        $transform = ImageTransformHelper::createTransformFromString($transformString);
 
-        expect($transform->width)->toBeNull()
-            ->and($transform->height)->toBe(600);
-    });
-
-    test('handles AUTO height', function () {
-        $transform = ImageTransformHelper::createTransformFromString('_800xAUTO_fit_center-center_none');
-
-        expect($transform->width)->toBe(800)
-            ->and($transform->height)->toBeNull();
-    });
-
-    test('handles no-upscale flag', function () {
-        $transform = ImageTransformHelper::createTransformFromString('_800x600_crop_center-center_none_ns');
-
-        expect($transform->upscale)->toBeFalse();
-    });
+        expect($transform->width)->toBe($expectedWidth)
+            ->and($transform->height)->toBe($expectedHeight)
+            ->and($transform->upscale)->toBe($expectedUpscale);
+    })->with([
+        'AUTO width' => ['_AUTOx600_fit_center-center_none', null, 600, true],
+        'AUTO height' => ['_800xAUTO_fit_center-center_none', 800, null, true],
+        'no-upscale flag' => ['_800x600_crop_center-center_none_ns', 800, 600, false],
+    ]);
 
     test('throws on invalid string', function () {
         ImageTransformHelper::createTransformFromString('invalid');
     })->throws(ImageTransformException::class, 'Cannot create a transform from string');
+
+    test('matches legacy createTransformFromString provider cases', function (string $transformString, array $expected) {
+        $transform = ImageTransformHelper::createTransformFromString($transformString);
+
+        foreach ($expected as $property => $value) {
+            expect($transform->{$property})->toBe($value);
+        }
+    })->with([
+        'happy path' => [
+            '_1280x600_crop_center-center',
+            [
+                'width' => 1280,
+                'height' => 600,
+                'mode' => 'crop',
+                'position' => 'center-center',
+            ],
+        ],
+        'with quality' => [
+            '_1280x600_crop_center-center_95',
+            ['quality' => 95],
+        ],
+        'with interlace' => [
+            '_1280x600_crop_center-center_95_line',
+            ['interlace' => 'line'],
+        ],
+        'with fill' => [
+            '_1280x600_crop_center-center_95_line_ff0000',
+            ['fill' => '#ff0000'],
+        ],
+        // Pattern is intentionally non-anchored; invalid fill suffix is ignored.
+        'invalid fill suffix' => [
+            '_1280x600_crop_center-center_95_line_invalidFill',
+            ['fill' => null],
+        ],
+        'transparent fill' => [
+            '_1280x600_crop_center-center_95_line_transparent',
+            ['fill' => 'transparent'],
+        ],
+        'no upscale' => [
+            '_1280x600_crop_center-center_95_line_ns',
+            ['upscale' => false],
+        ],
+        'no upscale with fill' => [
+            '_1280x600_crop_center-center_95_line_ff0000_ns',
+            [
+                'fill' => '#ff0000',
+                'upscale' => false,
+            ],
+        ],
+    ]);
 });
 
 describe('extendTransform', function () {
@@ -324,6 +432,7 @@ describe('normalizeTransform', function () {
         'empty string' => [''],
         'zero' => [0],
         'false' => [false],
+        'true' => [true],
     ]);
 
     test('returns same instance for ImageTransform', function () {
@@ -345,25 +454,15 @@ describe('normalizeTransform', function () {
             ->and($result->mode)->toBe('fit');
     });
 
-    test('normalizes non-numeric width to null', function () {
-        $result = ImageTransformHelper::normalizeTransform([
-            'width' => 'abc',
-            'height' => 600,
-        ]);
+    test('normalizes non-numeric dimensions to null', function (array $input, ?int $expectedWidth, ?int $expectedHeight) {
+        $result = ImageTransformHelper::normalizeTransform($input);
 
-        expect($result->width)->toBeNull()
-            ->and($result->height)->toBe(600);
-    });
-
-    test('normalizes non-numeric height to null', function () {
-        $result = ImageTransformHelper::normalizeTransform([
-            'width' => 800,
-            'height' => 'abc',
-        ]);
-
-        expect($result->width)->toBe(800)
-            ->and($result->height)->toBeNull();
-    });
+        expect($result->width)->toBe($expectedWidth)
+            ->and($result->height)->toBe($expectedHeight);
+    })->with([
+        'non-numeric width' => [['width' => 'abc', 'height' => 600], null, 600],
+        'non-numeric height' => [['width' => 800, 'height' => 'abc'], 800, null],
+    ]);
 
     test('creates transform from object', function () {
         $obj = (object) [
@@ -415,7 +514,7 @@ describe('normalizeTransform', function () {
         ImageTransformHelper::normalizeTransform('nonExistent');
     })->throws(ImageTransformException::class, 'Invalid transform handle');
 
-    test('looks up named transform by handle', function () {
+    test('looks up named transform by handle', function (string $handleInput) {
         $transform = new ImageTransform(['handle' => 'myHandle', 'width' => 500]);
 
         $this->mock(ImageTransforms::class, function ($mock) use ($transform) {
@@ -424,24 +523,130 @@ describe('normalizeTransform', function () {
                 ->andReturn($transform);
         });
 
-        $result = ImageTransformHelper::normalizeTransform('myHandle');
+        $result = ImageTransformHelper::normalizeTransform($handleInput);
 
         expect($result)->toBe($transform);
-    });
+    })->with([
+        'handle' => ['myHandle'],
+        'handle with underscore' => ['_myHandle'],
+    ]);
 
-    test('strips leading underscore from handle', function () {
-        $transform = new ImageTransform(['handle' => 'myHandle', 'width' => 500]);
+    test('matches legacy normalizeTransform provider cases', function (mixed $input, ?array $expected) {
+        $result = ImageTransformHelper::normalizeTransform($input);
 
-        $this->mock(ImageTransforms::class, function ($mock) use ($transform) {
-            $mock->shouldReceive('getTransformByHandle')
-                ->with('myHandle')
-                ->andReturn($transform);
-        });
+        if ($expected === null) {
+            expect($result)->toBeNull();
 
-        $result = ImageTransformHelper::normalizeTransform('_myHandle');
+            return;
+        }
 
-        expect($result)->toBe($transform);
-    });
+        expect($result)->toBeInstanceOf(ImageTransform::class);
+
+        foreach ($expected as $property => $value) {
+            expect($result->{$property})->toBe($value);
+        }
+    })->with([
+        'object input' => [
+            (object) [
+                'id' => 123,
+                'name' => 'Test Transform',
+                'handle' => 'testTransform',
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'center-center',
+                'fill' => '#ff0000',
+                'quality' => 95,
+                'interlace' => 'line',
+                'upscale' => true,
+            ],
+            [
+                'id' => 123,
+                'name' => 'Test Transform',
+                'handle' => 'testTransform',
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'center-center',
+                'fill' => '#ff0000',
+                'quality' => 95,
+                'interlace' => 'line',
+                'upscale' => true,
+            ],
+        ],
+        'array input' => [
+            [
+                'id' => 123,
+                'name' => 'Test Transform',
+                'handle' => 'testTransform',
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'center-center',
+                'fill' => '#ff0000',
+                'quality' => 95,
+                'interlace' => 'line',
+                'upscale' => true,
+            ],
+            [
+                'id' => 123,
+                'name' => 'Test Transform',
+                'handle' => 'testTransform',
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'center-center',
+                'fill' => '#ff0000',
+                'quality' => 95,
+                'interlace' => 'line',
+                'upscale' => true,
+            ],
+        ],
+        'invalid fill' => [
+            ['fill' => 'invalidFill'],
+            ['fill' => null],
+        ],
+        'transparent fill' => [
+            ['fill' => 'transparent'],
+            ['fill' => 'transparent'],
+        ],
+        'extended transform from array base' => [
+            [
+                'id' => 123,
+                'name' => 'Test Transform',
+                'handle' => 'testTransform',
+                'width' => 100,
+                'height' => 200,
+                'mode' => 'fit',
+                'position' => 'center-center',
+                'fill' => '#ff0000',
+                'quality' => 95,
+                'interlace' => 'line',
+                'upscale' => true,
+                'transform' => [
+                    'id' => '200',
+                    'name' => 'Base Transform',
+                    'width' => '300',
+                    'height' => '400',
+                ],
+            ],
+            [
+                'id' => null,
+                'name' => null,
+                'width' => 100,
+                'height' => 200,
+            ],
+        ],
+        'valid transform string' => [
+            '_1280x600_crop_center-center',
+            [
+                'width' => 1280,
+                'height' => 600,
+                'mode' => 'crop',
+                'position' => 'center-center',
+            ],
+        ],
+    ]);
 });
 
 describe('getTransformString and parseTransformString roundtrip', function () {
@@ -453,7 +658,10 @@ describe('getTransformString and parseTransformString roundtrip', function () {
         expect($parsed['width'])->toBe($transform->width)
             ->and($parsed['height'])->toBe($transform->height)
             ->and($parsed['mode'])->toBe($transform->mode)
+            ->and($parsed['position'])->toBe($transform->position)
+            ->and($parsed['quality'])->toBe($transform->quality)
             ->and($parsed['interlace'])->toBe($transform->interlace)
+            ->and($parsed['fill'])->toBe($transform->fill)
             ->and($parsed['upscale'])->toBe($transform->upscale);
     })->with([
         'basic crop' => [['width' => 800, 'height' => 600, 'mode' => 'crop']],
@@ -461,5 +669,56 @@ describe('getTransformString and parseTransformString roundtrip', function () {
         'no upscale' => [['width' => 200, 'height' => 200, 'mode' => 'crop', 'upscale' => false]],
         'letterbox with fill' => [['width' => 100, 'height' => 100, 'mode' => 'letterbox', 'fill' => '#aabbcc']],
         'width only' => [['width' => 500, 'mode' => 'fit']],
+        // Legacy provider parity cases
+        'legacy top-left partition' => [[
+            'width' => 100,
+            'height' => 200,
+            'mode' => 'fit',
+            'position' => 'top-left',
+            'quality' => 70,
+            'interlace' => 'partition',
+            'fill' => null,
+            'upscale' => true,
+        ]],
+        'legacy null height no upscale' => [[
+            'width' => 100,
+            'height' => null,
+            'mode' => 'crop',
+            'position' => 'bottom-right',
+            'quality' => null,
+            'interlace' => 'none',
+            'fill' => null,
+            'upscale' => false,
+        ]],
+        'legacy transparent fill' => [[
+            'width' => 100,
+            'height' => 200,
+            'mode' => 'fit',
+            'position' => 'top-left',
+            'quality' => 70,
+            'interlace' => 'partition',
+            'fill' => 'transparent',
+            'upscale' => true,
+        ]],
+        'legacy shorthand fill' => [[
+            'width' => 100,
+            'height' => 200,
+            'mode' => 'fit',
+            'position' => 'top-left',
+            'quality' => 70,
+            'interlace' => 'partition',
+            'fill' => '#f00',
+            'upscale' => false,
+        ]],
+        'legacy full hex fill' => [[
+            'width' => 100,
+            'height' => 200,
+            'mode' => 'fit',
+            'position' => 'top-left',
+            'quality' => 70,
+            'interlace' => 'partition',
+            'fill' => '#ff0000',
+            'upscale' => true,
+        ]],
     ]);
 });

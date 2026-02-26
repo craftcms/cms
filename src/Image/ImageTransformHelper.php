@@ -235,10 +235,10 @@ final class ImageTransformHelper
             throw new InvalidArgumentException("Invalid transform string: $str");
         }
 
-        $upscale = $match['upscale'] ?? null;
-        $fill = $match['fill'] ?? null;
+        $upscale = ($match['upscale'] ?? null) ?: null;
+        $fill = ($match['fill'] ?? null) ?: null;
 
-        if ($fill !== null && $fill !== 'transparent') {
+        if (! empty($fill) && $fill !== 'transparent') {
             $fill = '#'.$fill;
         }
 
