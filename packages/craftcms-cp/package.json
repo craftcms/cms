@@ -27,7 +27,8 @@
     "check:types": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
     "build:storybook": "storybook build",
-    "build:manifest": "custom-elements-manifest analyze --litelement --outdir dist"
+    "build:manifest": "custom-elements-manifest analyze --litelement --outdir dist",
+    "generate:vue-wrappers": "node ./scripts/generate-vue-wrappers.js"
   },
   "exports": {
     "./package.json": "./package.json",
@@ -36,8 +37,11 @@
       "import": "./dist/cp.mjs",
       "require": "./dist/cp.cjs"
     },
-    "./src/*": "./src/*",
+    "./*": "./dist/*",
     "./dist/*": "./dist/*",
+    "./vue/*": "./dist/vue/*",
+    "./types/*": "./src/types/*",
+    "./services/*": "./dist/services/*",
     "./styles/*": "./dist/styles/*",
     "./utilities/*": "./dist/utilities/*",
     "./components/*": "./dist/components/*",

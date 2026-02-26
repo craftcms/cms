@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import type {VariantKey} from '@craftcms/cp/src/types/index.js';
+  import type {VariantKey} from '@craftcms/cp/types/index.ts';
   import {computed} from 'vue';
 
   export interface ActionItem {
