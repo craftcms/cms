@@ -5,6 +5,7 @@
   import type {SectionSiteSettingsData} from '@/types';
   import Pane from '@/components/Pane.vue';
   import {useEditableTable} from '@/composables/useEditableTable';
+  import {usePage} from '@inertiajs/vue3';
 
   type SitesData = Record<
     string,
@@ -27,11 +28,17 @@
     {isMultisite: false, isHeadless: false}
   );
 
+  const page = usePage<{
+    homepageUri?: string;
+  }>();
+
+  const homepageUri = computed(() => page.props.homepageUri);
+
   const columnVisibility = computed(() => {
     return {
       name: true,
       enabled: props.isMultisite,
-      homepage: props.selectedType === 'single',
+      singleHomepage: props.selectedType === 'single',
       singleUri: props.selectedType === 'single',
       uriFormat: props.selectedType !== 'single',
       template: !props.isHeadless,
@@ -40,7 +47,7 @@
   });
 
   const {table} = useEditableTable<SectionSiteSettingsData>({
-    data: () => props.modelValue,
+    data: () => props.modelValue as Record<string, SectionSiteSettingsData>,
     key: 'handle',
     columnVisibility: () => columnVisibility.value,
     onChange: (data) => emit('update:modelValue', data as SitesData),
@@ -61,37 +68,55 @@
         label: t('Enabled'),
         ariaLabelledBy: 'header-enabled',
       }),
-      columnHelper.display({
-        id: 'homepage',
+      columnHelper.input('singleHomepage', 'checkbox', {
         header: () => h('craft-icon', {name: 'home', label: t('Homepage')}),
         size: 44,
         meta: {
           cellClass: 'text-center',
           headerClass: 'justify-center',
         },
-        cell: ({row}) =>
-          h('input', {type: 'checkbox', value: row.original.singleHomepage}),
+        ariaLabelledBy: 'header-singleHomepage',
+        onChange: (value, {row}) => {
+          if (value) {
+            const newValue = {...props.modelValue};
+            newValue[row.original.handle]!['singleUri'] =
+              homepageUri.value ?? '';
+
+            emit('update:modelValue', newValue);
+          } else {
+            const newValue = {...props.modelValue};
+            newValue[row.original.handle]!['singleUri'] = '';
+
+            emit('update:modelValue', newValue);
+          }
+        },
+        name: (row, c) => `sites[${row.original.handle}][${c}]`,
+        disabled: (row) => !row.original.enabled,
       }),
       columnHelper.input('singleUri', 'singleline', {
         header: t('URI'),
         class: 'font-mono text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
         name: (row, c) => `sites[${row.original.handle}][${c}]`,
+        disabled: (row) => !row.original.enabled || row.original.singleHomepage,
       }),
       columnHelper.input('uriFormat', 'singleline', {
         header: t('Entry URI Format'),
         class: 'font-mono text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
         name: (row, c) => `sites[${row.original.handle}][${c}]`,
+        disabled: (row) => !row.original.enabled,
       }),
       columnHelper.input('template', 'singleline', {
         header: t('Template'),
         class: 'font-mono text-xs',
         name: (row, c) => `sites[${row.original.handle}][${c}]`,
+        disabled: (row) => !row.original.enabled,
       }),
       columnHelper.input('enabledByDefault', 'lightswitch', {
         header: t('Default Status'),
         size: 40,
+        disabled: (row) => !row.original.enabled,
       }),
     ],
   });

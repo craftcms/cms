@@ -142,6 +142,7 @@ final readonly class SectionsController
                 'previewTargets' => $section->previewTargets ?? [],
                 'entryTypes' => $section->entryTypes ?? [],
             ],
+            'homepageUri' => Element::HOMEPAGE_URI,
             'brandNew' => $brandNew,
             'entryTypes' => $this->entryTypes->getAllEntryTypes(),
             'typeOptions' => array_map(fn (SectionType $type) => [

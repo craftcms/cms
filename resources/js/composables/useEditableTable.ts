@@ -24,7 +24,7 @@ interface InputColumnOptions<T extends Record<string, any>> {
   meta?: Record<string, any>;
 
   // Shared cell options
-  disabled?: MaybeGetter<boolean>;
+  disabled?: MaybeGetter<boolean> | ((row: Row<T>) => boolean);
 
   // Text-specific options (singleline, email, url, number)
   class?: string;
@@ -35,6 +35,14 @@ interface InputColumnOptions<T extends Record<string, any>> {
   label?: string;
   ariaLabelledBy?: string;
   switchSize?: 'small' | 'medium';
+
+  // Events
+  onChange?: (
+    value: any,
+    ctx: Pick<CellContext<T, any>, 'row' | 'column'>
+  ) => void;
+  onInput?: (event: Event) => void;
+  onUpdate?: (value: boolean | undefined) => void;
 }
 
 interface EditableColumnHelper<T extends Record<string, any>> {
@@ -110,11 +118,24 @@ export function useEditableTable<T extends Record<string, any>>(
     }
   }
 
+  function resolveDisabled<T extends Record<string, any>>(
+    disabled: InputColumnOptions<T>['disabled'],
+    row: Row<T>
+  ): boolean | undefined {
+    if (disabled === undefined) return undefined;
+    if (typeof disabled === 'boolean') return disabled;
+    if (typeof disabled === 'function') {
+      // Check if it's a row-aware function (has parameters) or a simple getter
+      return (disabled as (row: Row<T>) => boolean)(row);
+    }
+    return undefined;
+  }
+
   function textInputCell(
     inputType: string,
     cellOptions?: Pick<
       InputColumnOptions<T>,
-      'class' | 'placeholder' | 'disabled' | 'name'
+      'class' | 'placeholder' | 'disabled' | 'name' | 'onChange' | 'onInput'
     >
   ): (ctx: CellContext<T, any>) => ReturnType<typeof h> {
     return ({row, column, getValue}) =>
@@ -123,11 +144,17 @@ export function useEditableTable<T extends Record<string, any>>(
         value: getValue(),
         class: cellOptions?.class,
         placeholder: cellOptions?.placeholder,
-        disabled: cellOptions?.disabled
-          ? resolve(cellOptions.disabled)
-          : undefined,
+        disabled: resolveDisabled(cellOptions?.disabled, row),
         name: cellOptions?.name?.(row, column.id),
+        onInput: (event: Event) => {
+          if (typeof cellOptions?.onInput === 'function') {
+            cellOptions.onInput(event);
+          }
+        },
         onChange: (event: Event) => {
+          if (typeof cellOptions?.onChange === 'function') {
+            cellOptions.onChange(event, {row, column});
+          }
           handleChange(
             row,
             column.id,
@@ -140,7 +167,7 @@ export function useEditableTable<T extends Record<string, any>>(
   function switchCell(
     cellOptions?: Pick<
       InputColumnOptions<T>,
-      'disabled' | 'label' | 'ariaLabelledBy' | 'switchSize'
+      'disabled' | 'label' | 'ariaLabelledBy' | 'switchSize' | 'onUpdate'
     >
   ): (ctx: CellContext<T, any>) => ReturnType<typeof h> {
     return ({row, column}) =>
@@ -150,13 +177,34 @@ export function useEditableTable<T extends Record<string, any>>(
         size: cellOptions?.switchSize ?? 'small',
         label: cellOptions?.label,
         'aria-labelledby': cellOptions?.ariaLabelledBy,
-        disabled: cellOptions?.disabled
-          ? resolve(cellOptions.disabled)
-          : undefined,
+        disabled: resolveDisabled(cellOptions?.disabled, row),
         'onUpdate:modelValue': (value: boolean | undefined) => {
+          if (typeof cellOptions?.onUpdate === 'function') {
+            cellOptions.onUpdate(value);
+          }
           handleChange(row, column.id, value ?? false);
         },
       });
+  }
+
+  function checkboxCell(
+    cellOptions?: Pick<InputColumnOptions<T>, any>
+  ): (ctx: CellContext<T, any>) => ReturnType<typeof h> {
+    return ({row, column}) => {
+      return h('input', {
+        type: 'checkbox',
+        checked: row.original[column.id],
+        'aria-labelledby': cellOptions?.ariaLabelledBy,
+        disabled: resolveDisabled(cellOptions?.disabled, row),
+        onChange: (event: Event) => {
+          const value = (event.target as HTMLInputElement).checked;
+          if (typeof cellOptions?.onChange === 'function') {
+            cellOptions.onChange(value, {row, column});
+          }
+          handleChange(row, column.id, value ?? false);
+        },
+      });
+    };
   }
 
   const baseHelper = createColumnHelper<T>();
@@ -178,6 +226,9 @@ export function useEditableTable<T extends Record<string, any>>(
         label,
         ariaLabelledBy,
         switchSize,
+        onChange,
+        onInput,
+        onUpdate,
       } = inputOptions;
 
       const columnDef: Record<string, any> = {};
@@ -193,6 +244,16 @@ export function useEditableTable<T extends Record<string, any>>(
           placeholder,
           disabled,
           name,
+          onInput,
+          onChange,
+        });
+      } else if (type === 'checkbox') {
+        columnDef.cell = checkboxCell({
+          disabled,
+          label,
+          ariaLabelledBy,
+          switchSize,
+          onChange,
         });
       } else if (type === 'lightswitch') {
         columnDef.cell = switchCell({
@@ -200,6 +261,7 @@ export function useEditableTable<T extends Record<string, any>>(
           label,
           ariaLabelledBy,
           switchSize,
+          onUpdate,
         });
       } else {
         console.warn(

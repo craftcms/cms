@@ -92,6 +92,7 @@
           key,
           {
             ...site,
+            singleUri: uri && !site.singleHomepage ? `${uri}` : site.singleUri,
             uriFormat: uri ? `${uri}/{slug}` : '',
             template: uri ? `${uri}/_entry.twig` : '',
           },
@@ -317,9 +318,6 @@
               :is-headless="headlessMode"
               :selected-type="form.type"
               v-model="form.sites"
-              @input="
-                ({columnId, value}) => console.log('input', {columnId, value})
-              "
             />
           </div>
 
