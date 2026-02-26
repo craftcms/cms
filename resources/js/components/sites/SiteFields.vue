@@ -1,10 +1,11 @@
 <script setup lang="ts" generic="T">
-  import {t, toEnvVar, toHandle} from '@craftcms/cp';
-  import {type InertiaForm, usePage} from '@inertiajs/vue3';
-  import {computed, useTemplateRef, watch} from 'vue';
-  import type {SelectItem, SelectOption, Site} from '@/types';
   import type {CraftInput} from '@craftcms/cp';
+  import {t, toEnvVar} from '@craftcms/cp';
+  import {type InertiaForm, usePage} from '@inertiajs/vue3';
+  import {computed, useTemplateRef} from 'vue';
+  import type {SelectItem, SelectOption, Site} from '@/types';
   import InputCombobox from '@/components/InputCombobox.vue';
+  import {useInputGenerator} from '@/composables/useInputGenerator';
 
   const props = withDefaults(
     defineProps<{
@@ -73,21 +74,29 @@
     },
   });
 
-  watch(
-    () => form.value?.name,
-    (newValue) => {
-      if (form.value?.handle === '') {
-        form.value.handle = toHandle(newValue);
-      }
+  const handleGenerator = useInputGenerator(
+    () => form.value.name,
+    (v) => (form.value.handle = v),
+    {transform: 'handle'}
+  );
 
-      if (form.value?.baseUrl === '') {
-        form.value.baseUrl = toEnvVar(newValue, {
+  const envVarGenerator = useInputGenerator(
+    () => form.value.name,
+    (v) => (form.value.baseUrl = v),
+    {
+      transform: (value) =>
+        toEnvVar(value, {
           prefix: '$',
           suffix: '_URL',
-        });
-      }
+        }),
     }
   );
+
+  // For existing sites, mark handle as already dirty
+  if (form.value.id) {
+    handleGenerator.stop();
+    envVarGenerator.stop();
+  }
 </script>
 
 <template>
