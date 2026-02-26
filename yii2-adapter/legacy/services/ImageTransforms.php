@@ -12,7 +12,6 @@ use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\events\AssetEvent;
 use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\models\ImageTransform;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
 use CraftCms\Cms\Image\Events\ApplyingTransformDelete;
@@ -32,7 +31,7 @@ use yii\base\Component;
  *
  * An instance of the service is available via [[\craft\base\ApplicationTrait::getImageTransforms()|`Craft::$app->getImageTransforms()`]].
  *
- * @property-read ImageTransform[] $allTransforms
+ * @property-read ImageTransformData[] $allTransforms
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  * @deprecated 6.0.0 use {@see ImageTransformsService} instead.
@@ -85,7 +84,7 @@ class ImageTransforms extends Component
     /**
      * Returns all named asset transforms.
      *
-     * @return ImageTransform[]
+     * @return ImageTransformData[]
      */
     public function getAllTransforms(): array
     {
