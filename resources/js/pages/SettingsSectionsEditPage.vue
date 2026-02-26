@@ -1,17 +1,18 @@
 <script setup lang="ts">
   import AppLayout from '@/layout/AppLayout.vue';
   import {useForm} from '@inertiajs/vue3';
-  import {t, toHandle} from '@craftcms/cp';
+  import {t} from '@craftcms/cp';
   import TransitionFade from '@/components/TransitionFade.vue';
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import {store} from '@actions/Settings/SectionsController';
   import {useEventListener} from '@vueuse/core';
-  import {computed, watch} from 'vue';
+  import {computed} from 'vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import CraftInputHandle from '@craftcms/cp/vue/CraftInputHandle.vue';
   import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
   import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
   import EntryTypeSelect from '@/components/form/EntryTypeSelect.vue';
+  import {useInputGenerator} from '@/composables/useInputGenerator';
   import type {
     SectionResource,
     SectionSiteSettingsData,
@@ -72,14 +73,40 @@
   );
 
   // Auto-generate handle from name for new sections
-  watch(
+  const handleGenerator = useInputGenerator(
     () => form.name,
-    (newValue) => {
-      if (props.brandNew && form.handle === '') {
-        form.handle = toHandle(newValue);
+    (v) => (form.handle = v),
+    {transform: 'handle'}
+  );
+
+  const uriGenerator = useInputGenerator(
+    () => form.name,
+    (v) => {
+      if (!form.sites) {
+        return;
       }
+
+      form.sites = Object.fromEntries(
+        Object.entries(form.sites).map(([key, site]) => [
+          key,
+          {
+            ...site,
+            uriFormat: v ? `${v}/{slug}` : '',
+            template: v ? `${v}/_entry.twig` : '',
+          },
+        ])
+      );
+    },
+    {
+      transform: 'uri',
     }
   );
+
+  // For existing sections, mark handle as already dirty
+  if (!props.brandNew) {
+    handleGenerator.stop();
+    uriGenerator.stop();
+  }
 
   useEventListener('keydown', (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 's') {
@@ -199,6 +226,7 @@
             :disabled="readOnly"
             :has-feedback-for="form.errors?.handle ? 'error' : ''"
             required
+            @change="handleGenerator.markDirty()"
           >
             <div slot="feedback">
               <ul class="error-list" v-if="form.errors?.handle">
@@ -291,6 +319,9 @@
               :is-headless="headlessMode"
               :selected-type="form.type"
               v-model="form.sites"
+              @input="
+                ({columnId, value}) => console.log('input', {columnId, value})
+              "
             />
           </div>
 
