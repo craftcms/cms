@@ -62,6 +62,7 @@ interface UseEditableTableOptions<T extends Record<string, any>> {
     columnHelper: EditableColumnHelper<T>;
   }) => ColumnDef<T, any>[];
   key?: string;
+  name?: string;
   columnVisibility?: () => Record<string, boolean>;
   onChange: (data: T[] | Record<string, T>) => void;
 }
@@ -145,7 +146,12 @@ export function useEditableTable<T extends Record<string, any>>(
         class: cellOptions?.class,
         placeholder: cellOptions?.placeholder,
         disabled: resolveDisabled(cellOptions?.disabled, row),
-        name: cellOptions?.name?.(row, column.id),
+        name: cellOptions?.name
+          ? cellOptions.name(row, column.id)
+          : options.name
+            ? `${options.name}[${row.original[key]}][${column.id}]`
+            : undefined,
+        'aria-labelledby': `header-${column.id}`,
         onInput: (event: Event) => {
           if (typeof cellOptions?.onInput === 'function') {
             cellOptions.onInput(event);
@@ -176,7 +182,7 @@ export function useEditableTable<T extends Record<string, any>>(
         'label-sr-only': true,
         size: cellOptions?.switchSize ?? 'small',
         label: cellOptions?.label,
-        'aria-labelledby': cellOptions?.ariaLabelledBy,
+        'aria-labelledby': cellOptions?.ariaLabelledBy ?? `header-${column.id}`,
         disabled: resolveDisabled(cellOptions?.disabled, row),
         'onUpdate:modelValue': (value: boolean | undefined) => {
           if (typeof cellOptions?.onUpdate === 'function') {
@@ -194,7 +200,7 @@ export function useEditableTable<T extends Record<string, any>>(
       return h('input', {
         type: 'checkbox',
         checked: row.original[column.id],
-        'aria-labelledby': cellOptions?.ariaLabelledBy,
+        'aria-labelledby': cellOptions?.ariaLabelledBy ?? `header-${column.id}`,
         disabled: resolveDisabled(cellOptions?.disabled, row),
         onChange: (event: Event) => {
           const value = (event.target as HTMLInputElement).checked;

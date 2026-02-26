@@ -23,18 +23,17 @@
 
   const {table} = useEditableTable<PreviewTarget>({
     data: () => props.modelValue,
+    name: props.name,
     onChange: (data) => emit('update:modelValue', data as Array<PreviewTarget>),
     columns: ({columnHelper}) => [
       columnHelper.input('label', 'singleline', {
         header: t('Label'),
         disabled: () => props.disabled,
-        name: (row, c) => `${props.name}[${row.original.id}][${c}]`,
       }),
       columnHelper.input('urlFormat', 'singleline', {
         header: t('URL Format'),
         class: 'font-mono text-xs',
         disabled: () => props.disabled,
-        name: (row, c) => `${props.name}[${row.original.id}][${c}]`,
       }),
       columnHelper.input('refresh', 'lightswitch', {
         header: t('Auto-Refresh'),

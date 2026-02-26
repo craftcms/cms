@@ -49,6 +49,7 @@
   const {table} = useEditableTable<SectionSiteSettingsData>({
     data: () => props.modelValue as Record<string, SectionSiteSettingsData>,
     key: 'handle',
+    name: 'sites',
     columnVisibility: () => columnVisibility.value,
     onChange: (data) => emit('update:modelValue', data as SitesData),
     columns: ({columnHelper}) => [
@@ -66,7 +67,6 @@
           cellClass: 'bg-[var(--c-color-neutral-bg-normal)]',
         },
         label: t('Enabled'),
-        ariaLabelledBy: 'header-enabled',
       }),
       columnHelper.input('singleHomepage', 'checkbox', {
         header: () => h('craft-icon', {name: 'home', label: t('Homepage')}),
@@ -75,7 +75,6 @@
           cellClass: 'text-center',
           headerClass: 'justify-center',
         },
-        ariaLabelledBy: 'header-singleHomepage',
         onChange: (value, {row}) => {
           if (value) {
             const newValue = {...props.modelValue};
@@ -90,27 +89,23 @@
             emit('update:modelValue', newValue);
           }
         },
-        name: (row, c) => `sites[${row.original.handle}][${c}]`,
         disabled: (row) => !row.original.enabled,
       }),
       columnHelper.input('singleUri', 'singleline', {
         header: t('URI'),
         class: 'font-mono text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
-        name: (row, c) => `sites[${row.original.handle}][${c}]`,
         disabled: (row) => !row.original.enabled || row.original.singleHomepage,
       }),
       columnHelper.input('uriFormat', 'singleline', {
         header: t('Entry URI Format'),
         class: 'font-mono text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
-        name: (row, c) => `sites[${row.original.handle}][${c}]`,
         disabled: (row) => !row.original.enabled,
       }),
       columnHelper.input('template', 'singleline', {
         header: t('Template'),
         class: 'font-mono text-xs',
-        name: (row, c) => `sites[${row.original.handle}][${c}]`,
         disabled: (row) => !row.original.enabled,
       }),
       columnHelper.input('enabledByDefault', 'lightswitch', {
