@@ -87,9 +87,6 @@ class ImageTransforms
     }
 
     /**
-     * Generates an image transform for an asset.
-     */
-    /**
      * @param-out Image|null $image
      */
     public static function generateTransform(
