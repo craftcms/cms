@@ -67,7 +67,6 @@
   });
 
   const isStructure = computed(() => form.type === 'structure');
-  const isSingle = computed(() => form.type === 'single');
   const isChannelOrStructure = computed(
     () => form.type === 'channel' || form.type === 'structure'
   );
@@ -91,14 +90,6 @@
 
   function save() {
     form.clearErrors().submit(store());
-  }
-
-  function addPreviewTarget() {
-    form.previewTargets.push({label: '', urlFormat: '', refresh: true});
-  }
-
-  function removePreviewTarget(index: number) {
-    form.previewTargets.splice(index, 1);
   }
 </script>
 
