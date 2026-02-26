@@ -599,7 +599,6 @@ class UrlHelper
 
         // Make sure it didn't refer itself
         if ($referrerFullUri === Craft::$app->getRequest()->getFullUri()) {
-//        if ($referrer === Craft::$app->getRequest()->getFullUri()) {
             return null;
         }
 
