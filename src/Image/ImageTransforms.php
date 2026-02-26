@@ -211,7 +211,7 @@ final class ImageTransforms
      * @param  array  $transforms  The transform definitions to eager-load
      * @param  Asset[]  $assets  The assets to eager-load transforms for
      */
-    public function eagerLoadTransforms(array $transforms, array $assets): void
+    public function eagerLoadTransforms(array $assets, array $transforms): void
     {
         if (empty($assets) || empty($transforms)) {
             return;

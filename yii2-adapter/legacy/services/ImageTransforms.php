@@ -187,7 +187,7 @@ class ImageTransforms extends Component
      */
     public function eagerLoadTransforms(array $assets, array $transforms): void
     {
-        $this->service()->eagerLoadTransforms($transforms, $assets);
+        $this->service()->eagerLoadTransforms($assets, $transforms);
     }
 
     /**
