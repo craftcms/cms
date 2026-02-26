@@ -7,10 +7,10 @@
 
 namespace craft\helpers;
 
-use Craft;
 use craft\image\Svg;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\Images;
 use Illuminate\Support\Facades\Log;
 use Imagick;
 use Imagine\Image\Format;
@@ -146,7 +146,7 @@ class Image
             $extension = Format::ID_HEIC;
         }
 
-        $formats = Craft::$app->getImages()->getSupportedImageFormats();
+        $formats = Images::getSupportedImageFormats();
 
         $alwaysManipulatable = ['svg'];
         $neverManipulatable = ['pdf', 'json', 'html', 'htm'];
@@ -265,7 +265,7 @@ class Image
         $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
 
         if (static::canManipulateAsImage($extension)) {
-            Craft::$app->getImages()->cleanImage($imagePath);
+            Images::cleanImage($imagePath);
         }
     }
 
@@ -284,7 +284,8 @@ class Image
                 return static::parseSvgSize($svg);
             }
 
-            $image = Craft::$app->getImages()->loadImage($filePath);
+            $image = Images::loadImage($filePath);
+
             return [$image->getWidth(), $image->getHeight()];
         } catch (Throwable $e) {
             Log::warning($e->getMessage(), [__METHOD__]);

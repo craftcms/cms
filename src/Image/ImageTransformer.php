@@ -8,9 +8,8 @@ use Craft;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Image;
+use craft\helpers\Image as ImageHelper;
 use craft\helpers\UrlHelper;
-use craft\image\Raster;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
@@ -289,7 +288,7 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
 
     private function generateTransformedImage(Asset $asset, ImageTransformIndex $index): void
     {
-        if (! Image::canManipulateAsImage($asset->getExtension())) {
+        if (! ImageHelper::canManipulateAsImage($asset->getExtension())) {
             return;
         }
 
@@ -563,10 +562,10 @@ final class ImageTransformer implements EagerImageTransformerInterface, ImageEdi
         if (FileHelper::isSvg($imageCopy)) {
             $size = max($asset->width, $asset->height) ?? 1000;
             /** @var Raster $image */
-            $image = Craft::$app->getImages()->loadImage($imageCopy, true, $size);
+            $image = app(Images::class)->loadImage($imageCopy, true, $size);
         } else {
             /** @var Raster $image */
-            $image = Craft::$app->getImages()->loadImage($imageCopy);
+            $image = app(Images::class)->loadImage($imageCopy);
         }
 
         // TODO Is this hacky? It seems hacky.

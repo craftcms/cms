@@ -14,6 +14,7 @@ use Codeception\Stub;
 use Craft;
 use craft\helpers\Image;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Facades\Images;
 use Exception;
 use TypeError;
 use UnitTester;
@@ -187,7 +188,7 @@ class ImageHelperTest extends TestCase
      */
     public function testImageSize(array $expected, string $filePath, bool $skipIfGd): void
     {
-        if ($skipIfGd && Craft::$app->getImages()->getIsGd()) {
+        if ($skipIfGd && Images::getIsGd()) {
             $this->markTestSkipped('Need Imagick to test this function.');
         }
 
