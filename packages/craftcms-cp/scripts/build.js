@@ -7,6 +7,7 @@ import copy from 'recursive-copy';
 import {getDistDir, getRootDir, resolveFrom} from './utils.js';
 import {join} from 'path';
 import {deleteAsync} from 'del';
+import createVueWrappers from './generate-vue-wrappers.js';
 
 const spinner = ora({text: '@craftcms/cp', color: 'red'}).start();
 const isDeveloping = process.argv.includes('--develop');
@@ -86,9 +87,22 @@ async function generateStyles() {
   return Promise.resolve();
 }
 
+async function generateVueWrappers() {
+  spinner.start('Generating Vue Wrappers');
+
+  createVueWrappers();
+  return Promise.resolve();
+}
+
 async function buildAll() {
   try {
-    const steps = [cleanup, generateManifest, generateStyles, generateBundle];
+    const steps = [
+      cleanup,
+      generateManifest,
+      generateStyles,
+      generateVueWrappers,
+      generateBundle,
+    ];
 
     for (const step of steps) {
       await step();
