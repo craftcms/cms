@@ -6,12 +6,8 @@ namespace CraftCms\Cms\Tests\Feature\Support;
 
 use CraftCms\Cms\Support\Security;
 
-beforeEach(function () {
-    $this->security = app(Security::class);
-});
-
 test('isSensitive', function (string $key, bool $expected) {
-    expect($this->security->isSensitive($key))->toBe($expected);
+    expect(new Security()->isSensitive($key))->toBe($expected);
 })->with([
     ['password', true],
     ['password_reset', true],
@@ -27,9 +23,7 @@ test('isSensitive', function (string $key, bool $expected) {
 ]);
 
 test('redactIfSensitive', function (mixed $expected, string $name, mixed $value, array $sensitiveKeywords) {
-    $security = new Security($sensitiveKeywords);
-
-    expect($security->redactIfSensitive($name, $value))->toBe($expected);
+    expect(new Security($sensitiveKeywords)->redactIfSensitive($name, $value))->toBe($expected);
 })->with([
     ['••••••••••••••••••••', 'Name', 'test stuff craft cms', []],
     ['test stuff craft cms', 'Name', 'test stuff craft cms', ['Foo']],
@@ -55,10 +49,11 @@ test('redactIfSensitive', function (mixed $expected, string $name, mixed $value,
 test('isSystemDir', function () {
     $configPath = config_path('craft');
     $vendorPath = base_path('vendor');
+    $security = new Security;
 
-    expect($this->security->isSystemDir($configPath))->toBeTrue();
-    expect($this->security->isSystemDir($vendorPath))->toBeTrue();
-    expect($this->security->isSystemDir('/tmp/random-path'))->toBeFalse();
+    expect($security->isSystemDir($configPath))->toBeTrue();
+    expect($security->isSystemDir($vendorPath))->toBeTrue();
+    expect($security->isSystemDir('/tmp/random-path'))->toBeFalse();
 });
 
 test('custom sensitive keywords', function () {
