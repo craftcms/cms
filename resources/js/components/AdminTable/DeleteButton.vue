@@ -4,15 +4,13 @@
   const emit = defineEmits<{
     (e: 'click'): void;
   }>();
-  const props = withDefaults(
+  withDefaults(
     defineProps<{
       label?: string;
       icon?: string;
     }>(),
     {label: t('Delete item'), icon: 'x'}
   );
-
-  function handleSubmit() {}
 </script>
 
 <template>
@@ -24,7 +22,7 @@
     variant="danger"
     v-bind="$attrs"
   >
-    <craft-icon name="x" :label="label"></craft-icon>
+    <craft-icon :name="icon" :label="label"></craft-icon>
   </craft-button>
 </template>
 
