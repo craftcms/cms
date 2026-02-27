@@ -1,7 +1,7 @@
 import {css} from 'lit';
 
 export default css`
-  /* If an input has a "size" attribute, it should not grow */
+  /* If an input has a "maxlength" attribute, it should not grow */
   :host([maxlength]) {
     .input-group__container {
       display: inline-flex;

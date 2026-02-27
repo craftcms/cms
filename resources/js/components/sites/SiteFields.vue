@@ -6,7 +6,7 @@
   import type {SelectItem, SelectOption, Site} from '@/types';
   import InputCombobox from '@/components/InputCombobox.vue';
   import {useInputGenerator} from '@/composables/useInputGenerator';
-  import {toHandle} from '../../../../packages/craftcms-cp/src';
+  import {toHandle} from '@craftcms/cp/utilities/string.ts.mjs';
 
   const props = withDefaults(
     defineProps<{
