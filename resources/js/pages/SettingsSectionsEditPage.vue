@@ -46,7 +46,7 @@
     entryTypes: props.section.entryTypes.map((type) => type.id) ?? [],
     enableVersioning: props.section.enableVersioning,
     maxAuthors: props.section.maxAuthors ?? 1,
-    maxLevels: props.section.maxLevels,
+    maxLevels: props.section.maxLevels ?? '',
     propagationMethod: props.section.propagationMethod,
     defaultPlacement: props.section.defaultPlacement,
     previewTargets: props.section.previewTargets ?? [],
