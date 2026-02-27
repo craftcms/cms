@@ -9,6 +9,8 @@ import {
   useVueTable,
 } from '@tanstack/vue-table';
 import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
+import InputCombobox from '@/components/InputCombobox.vue';
+import type {SelectItem, SelectOption} from '@/types';
 
 type MaybeGetter<T> = T | (() => T);
 
@@ -56,6 +58,17 @@ interface CheckboxColumnOptions<
   ) => void;
 }
 
+interface AutocompleteColumnOptions<T extends Record<string, any>>
+  extends BaseColumnOptions<T> {
+  options?: MaybeGetter<Array<SelectItem>> | ((row: Row<T>) => Array<SelectItem>);
+  requireOptionMatch?: boolean;
+  transformModelValue?: (newValue: SelectOption | null) => string;
+  onChange?: (
+    value: string,
+    ctx: Pick<CellContext<T, any>, 'row' | 'column'>
+  ) => void;
+}
+
 type AccessorParam<T extends Record<string, any>> = Parameters<
   ColumnHelper<T>['accessor']
 >[0];
@@ -75,6 +88,10 @@ interface EditableColumnHelper<T extends Record<string, any>> {
   checkbox: (
     accessor: AccessorParam<T>,
     options?: CheckboxColumnOptions<T>
+  ) => ColumnDef<T, any>;
+  autocomplete: (
+    accessor: AccessorParam<T>,
+    options?: AutocompleteColumnOptions<T>
   ) => ColumnDef<T, any>;
 }
 
@@ -222,6 +239,30 @@ export function useEditableTable<T extends Record<string, any>>(
     };
   }
 
+  function autocompleteCell(
+    cellOptions?: Omit<AutocompleteColumnOptions<T>, 'header' | 'size' | 'meta'>
+  ): (ctx: CellContext<T, any>) => ReturnType<typeof h> {
+    return ({row, column}) => {
+      const opts =
+        typeof cellOptions?.options === 'function'
+          ? (cellOptions.options as (row: Row<T>) => Array<SelectItem>)(row)
+          : resolve(cellOptions?.options ?? []);
+
+      return h(InputCombobox, {
+        modelValue: row.original[column.id],
+        options: opts,
+        requireOptionMatch: cellOptions?.requireOptionMatch,
+        transformModelValue: cellOptions?.transformModelValue,
+        'onUpdate:modelValue': (value: string) => {
+          if (typeof cellOptions?.onChange === 'function') {
+            cellOptions.onChange(value, {row, column});
+          }
+          handleChange(row, column.id, value);
+        },
+      });
+    };
+  }
+
   const baseHelper = createColumnHelper<T>();
 
   function buildColumnDef(
@@ -280,6 +321,19 @@ export function useEditableTable<T extends Record<string, any>>(
       columnDef.cell = checkboxCell({
         disabled: base.disabled,
         ariaLabelledBy,
+        onChange,
+      });
+      return baseHelper.accessor(accessor as any, columnDef);
+    },
+
+    autocomplete(accessor, opts = {}) {
+      const {options, requireOptionMatch, transformModelValue, onChange, ...base} = opts;
+      const columnDef = buildColumnDef(base);
+      columnDef.cell = autocompleteCell({
+        disabled: base.disabled,
+        options,
+        requireOptionMatch,
+        transformModelValue,
         onChange,
       });
       return baseHelper.accessor(accessor as any, columnDef);
