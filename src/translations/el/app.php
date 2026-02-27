@@ -1115,7 +1115,7 @@ return [
     'New {group} category' => 'Νέα κατηγορία {group}',
     'New {section} entry' => 'Νέα καταχώρηση {section}',
     'New {total, plural, =1{position} other{positions}} saved.' => '{total, plural, =1{Νέα θέση αποθηκεύτηκε.} other{Νέες θέσεις αποθηκεύτηκαν.}}',
-    'New {type}' => 'Νέο',
+    'New {type}' => '{type, select, καταχώρηση {Νέα} χρήστης {Νέος} other {Νέο}} {type}',
     'New' => 'Νέο',
     'Next Page' => 'Επόμενη σελίδα',
     'Next' => 'Επόμενο',
