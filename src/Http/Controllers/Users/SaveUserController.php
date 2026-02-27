@@ -24,6 +24,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -417,9 +418,7 @@ readonly class SaveUserController
             try {
                 $this->users->saveUserPhoto($fileLocation, $user, $filename, $mimeType);
             } catch (Throwable $e) {
-                if (file_exists($fileLocation)) {
-                    FileHelper::unlink($fileLocation);
-                }
+                File::delete($fileLocation);
 
                 throw $e;
             }

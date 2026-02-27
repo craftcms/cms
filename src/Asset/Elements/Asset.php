@@ -89,6 +89,7 @@ use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as DbFacade;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -3256,9 +3257,7 @@ JS;
 
             // Try to open a file stream
             if (($stream = fopen($tempPath, 'rb')) === false) {
-                if (file_exists($tempPath)) {
-                    FileHelper::unlink($tempPath);
-                }
+                File::delete($tempPath);
                 throw new FileException(t('Could not open file for streaming at {path}', ['path' => $tempPath]));
             }
 
@@ -3317,7 +3316,7 @@ JS;
             $this->dateModified = $mtime ? new DateTime('@'.$mtime) : null;
 
             // Delete the temp file
-            FileHelper::unlink($tempPath);
+            File::delete($tempPath);
         }
 
         // Clear out the temp location properties

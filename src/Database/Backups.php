@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Database;
 use Closure;
 use Craft;
 use craft\helpers\FileHelper;
+use Illuminate\Support\Facades\File;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Events\AfterCreateBackup;
@@ -414,7 +415,7 @@ final readonly class Backups
         usort($files, static fn (string $a, string $b) => filemtime($b) <=> filemtime($a));
 
         foreach (array_slice($files, $maxBackups) as $backupToDelete) {
-            FileHelper::unlink($backupToDelete);
+            File::delete($backupToDelete);
         }
     }
 

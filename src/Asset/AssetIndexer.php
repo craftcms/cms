@@ -37,6 +37,7 @@ use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use League\Flysystem\StorageAttributes;
 use Throwable;
@@ -679,7 +680,7 @@ class AssetIndexer
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();
                     ImageTransformHelper::storeLocalSource($tempPath, $targetPath);
-                    FileHelper::unlink($tempPath);
+                    File::delete($tempPath);
                 }
             } else {
                 $asset->dateModified = $timeModified;

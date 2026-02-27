@@ -15,6 +15,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use FilesystemIterator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RecursiveDirectoryIterator;
@@ -563,16 +564,13 @@ class FileHelper extends \yii\helpers\FileHelper
 
     /**
      * @inheritdoc
+     * @deprecated 6.0.0 use {@see \Illuminate\Support\Facades\File::delete()} instead.
+     * @see \Illuminate\Support\Facades\File::delete()
      * @since 3.4.16
      */
     public static function unlink($path): bool
     {
-        // BaseFileHelper::unlink() doesn't seem to catch all possible exceptions
-        try {
-            return parent::unlink($path);
-        } catch (Throwable) {
-            return false;
-        }
+        return File::delete($path);
     }
 
     /**

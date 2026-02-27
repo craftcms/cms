@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Image;
 
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
+use Illuminate\Support\Facades\File;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
@@ -139,7 +140,7 @@ class ImageTransformHelper
                 if (! is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
                     if (is_file($imageSourcePath)) {
                         // Delete since it's a 0-byter
-                        FileHelper::unlink($imageSourcePath);
+                        File::delete($imageSourcePath);
                     }
 
                     $prefix = pathinfo($asset->getFilename(), PATHINFO_FILENAME).'.delimiter.';
@@ -158,14 +159,14 @@ class ImageTransformHelper
                     // And clean them up.
                     if (! empty($files)) {
                         foreach ($files as $filePath) {
-                            FileHelper::unlink($filePath);
+                            File::delete($filePath);
                         }
                     }
 
                     Assets::downloadFile($volume->sourceDisk(), $asset->getPath(), $tempFilePath);
 
                     if (! is_file($tempFilePath) || filesize($tempFilePath) === 0) {
-                        if (is_file($tempFilePath) && ! FileHelper::unlink($tempFilePath)) {
+                        if (is_file($tempFilePath) && ! File::delete($tempFilePath)) {
                             Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                         }
                         throw new FilesystemException(t('Tried to download the source file for image "{file}", but it was 0 bytes long.', [
@@ -181,7 +182,7 @@ class ImageTransformHelper
                         FileHelper::deleteFileAfterRequest($imageSourcePath);
                     }
 
-                    if (! FileHelper::unlink($tempFilePath)) {
+                    if (! File::delete($tempFilePath)) {
                         Log::warning("Unable to delete the file \"$tempFilePath\".", [__METHOD__]);
                     }
                 }

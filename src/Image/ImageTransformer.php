@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Image;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
+use Illuminate\Support\Facades\File;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -343,7 +344,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
             fclose($stream);
         }
 
-        FileHelper::unlink($tempPath);
+        File::delete($tempPath);
     }
 
     /**

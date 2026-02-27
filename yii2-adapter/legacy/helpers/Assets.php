@@ -38,6 +38,7 @@ use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use InvalidArgumentException;
 use Throwable;
 use Twig\Error\RuntimeError;
@@ -801,7 +802,7 @@ class Assets
             // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
             $localSource = $asset->getCopyOfFile();
             Images::loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
-            FileHelper::unlink($localSource);
+            File::delete($localSource);
         }
 
         return $targetFilePath;
