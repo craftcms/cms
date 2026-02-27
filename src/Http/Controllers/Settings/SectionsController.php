@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
@@ -85,7 +85,7 @@ final readonly class SectionsController
 
     public function create(Sites $sites): CpScreenResponse
     {
-        $section = new Section([
+        $section = new SectionData([
             'type' => SectionType::Channel,
         ]);
 
@@ -108,7 +108,7 @@ final readonly class SectionsController
             ->inertiaPage('SettingsSectionsEditPage', $this->sectionProps($sectionData, $sites, brandNew: false));
     }
 
-    private function sectionProps(Section $section, Sites $sites, bool $brandNew): array
+    private function sectionProps(SectionData $section, Sites $sites, bool $brandNew): array
     {
         $headlessMode = app(GeneralConfig::class)->headlessMode;
 
@@ -122,7 +122,7 @@ final readonly class SectionsController
                 'handle' => $site->handle,
                 'name' => $site->getName(),
                 'enabled' => $brandNew || $settings !== null,
-                'enabledByDefault' => $settings?->enabledByDefault ?? true,
+                'enabledByDefault' => $settings->enabledByDefault ?? true,
                 'uriFormat' => $settings?->uriFormat,
                 'template' => $settings?->template,
             ];
@@ -133,13 +133,19 @@ final readonly class SectionsController
                 'id' => $section->id,
                 'name' => $section->name,
                 'handle' => $section->handle,
-                'type' => $section->type?->value ?? SectionType::Channel->value,
+                'type' => $section->type->value ?? SectionType::Channel->value,
                 'enableVersioning' => $section->enableVersioning,
                 'maxAuthors' => $section->maxAuthors ?? 1,
                 'maxLevels' => $section->maxLevels,
                 'propagationMethod' => $section->propagationMethod->value,
                 'defaultPlacement' => $section->defaultPlacement->value,
                 'previewTargets' => $section->previewTargets ?? [],
+                /**
+                 * PHPStan thinks this can't be null because of the rules, but when a section is first created
+                 * it is `null`
+                 *
+                 * @phpstan-ignore nullCoalesce.property
+                 */
                 'entryTypes' => $section->entryTypes ?? [],
             ],
             'homepageUri' => Element::HOMEPAGE_URI,
@@ -178,7 +184,7 @@ final readonly class SectionsController
             $sectionId = (int) $sectionId;
             abort_if(is_null($section = $sections->getSectionById($sectionId)), 404, "Invalid section ID: $sectionId");
         } else {
-            $section = new Section;
+            $section = new SectionData;
         }
 
         // Main section settings
