@@ -140,13 +140,7 @@ final readonly class SectionsController
                 'propagationMethod' => $section->propagationMethod->value,
                 'defaultPlacement' => $section->defaultPlacement->value,
                 'previewTargets' => $section->previewTargets ?? [],
-                /**
-                 * PHPStan thinks this can't be null because of the rules, but when a section is first created
-                 * it is `null`
-                 *
-                 * @phpstan-ignore nullCoalesce.property
-                 */
-                'entryTypes' => $section->entryTypes ?? [],
+                'entryTypes' => $section->entryTypes,
             ],
             'homepageUri' => Element::HOMEPAGE_URI,
             'brandNew' => $brandNew,
