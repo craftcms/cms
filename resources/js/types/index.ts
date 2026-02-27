@@ -38,9 +38,32 @@ export interface SectionSiteSettingsData {
 }
 
 export interface EntryType {
+  id: number;
   name: string;
   handle: string;
-  id: number;
+  description: null;
+  icon: string;
+  color: string | null;
+  uiLabelFormat: string;
+  hasTitleField: boolean;
+  titleTranslationMethod: TranslationMethod;
+  titleTranslationKeyFormat: null;
+  titleFormat: null;
+  allowLineBreaksInTitles: boolean;
+  showSlugField: boolean;
+  slugTranslationMethod: TranslationMethod;
+  slugTranslationKeyFormat: null;
+  showStatusField: boolean;
+  uid: string;
+  validateHandleUniqueness: boolean;
+  group: null;
+  original: null;
+  idAttribute: null;
+}
+
+export interface TranslationMethod {
+  name: string;
+  value: string;
 }
 
 export interface SectionResource {

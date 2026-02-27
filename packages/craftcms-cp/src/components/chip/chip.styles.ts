@@ -18,7 +18,7 @@ export default css`
     background-color: var(--c-chip-bg, var(--c-color-neutral-bg-faint));
     padding-inline: var(--c-chip-spacing-inline, var(--c-spacing-md));
     padding-block: var(--c-chip-spacing-block, var(--c-spacing-sm));
-    align-items: center;
+    align-items: start;
     box-shadow: var(--c-chip-shadow, var(--c-shadow-sm));
   }
 
@@ -48,7 +48,7 @@ export default css`
   .chip__suffix {
     display: inline-flex;
     flex-direction: column;
-    justify-content: center;
+    align-self: center;
   }
 
   .chip__body {

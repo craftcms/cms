@@ -10,7 +10,6 @@ export const baseInputStyles = css`
   padding-block: 0;
   width: 100%;
   flex: 1 1 auto;
-  padding-inline: var(--c-input-spacing-inline);
   background-color: var(--c-input-bg, var(--c-form-control-bg));
   box-shadow: var(--c-input-shadow);
 
@@ -57,7 +56,30 @@ export const inputStyles = css`
   ${baseFieldStyles}
 
   ::slotted([slot='input']) {
+    font: inherit;
+    padding-block: 0;
+    border: none;
+    appearance: none;
+    padding-inline: var(--c-input-spacing-inline);
+    background-color: transparent;
+  }
+
+  .input-group__container {
     ${baseInputStyles}
+  }
+
+  .input-group__input {
+  }
+
+  .input-group__prefix {
+    padding-inline: var(--c-input-spacing-inline);
+    display: grid;
+    place-items: center;
+  }
+
+  .input-group__prefix + .input-group__input {
+    border-radius-start-start: 0;
+    border-radius-start-end: 0;
   }
 
   :host([size~='small']) ::slotted([slot='input']) {

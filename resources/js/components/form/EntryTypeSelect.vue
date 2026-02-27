@@ -1,25 +1,37 @@
 <script setup lang="ts">
   import type {EntryType} from '@/types';
-  import {computed} from 'vue';
+  import {computed, ref} from 'vue';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import ReorderButton from '@/components/ReorderButton.vue';
   import ActionMenu from '@/components/ActionMenu.vue';
+  import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
+  import Text from '@/components/Text.vue';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void;
   }>();
   const props = defineProps<{
     modelValue: Array<number>;
-    types?: Array<EntryType>;
+    types: Array<EntryType>;
     actions?: Array<any>;
   }>();
 
   const selectedTypes = computed(() => {
     return props.modelValue
       .map((id) => {
-        return props.types?.find((type) => type.id === id);
+        return props.types?.find((type) => type.id === id) ?? null;
       })
       .filter(Boolean);
+  });
+
+  const entryTypeQuery = ref('');
+
+  const selectableTypes = computed(() => {
+    return props.types?.filter(
+      (type) =>
+        type.name.includes(entryTypeQuery.value) ||
+        type.handle.includes(entryTypeQuery.value)
+    );
   });
 
   function handleTypeSelect(type: EntryType) {
@@ -44,30 +56,32 @@
 
 <template>
   <div>
-    <craft-chip v-for="type in selectedTypes">
-      <div :data-id="type?.id">
-        <div class="font-bold">{{ type?.name }}</div>
-        <code>{{ type?.handle }}</code>
-      </div>
+    <template v-for="type in selectedTypes">
+      <craft-chip v-if="type" :icon="type.icon">
+        <div :data-id="type.id">
+          <div class="font-bold">{{ type.name }}</div>
+          <code>{{ type.handle }}</code>
+        </div>
 
-      <div slot="suffix" class="flex gap-1 items-center">
-        <ActionMenu
-          :actions="[
-            {
-              label: t('Settings'),
-              icon: 'gear',
-            },
-            {
-              label: t('Remove'),
-              variant: 'danger',
-              icon: 'x',
-              onClick: () => removeItem(type.id),
-            },
-          ]"
-        />
-        <ReorderButton></ReorderButton>
-      </div>
-    </craft-chip>
+        <div slot="suffix" class="flex gap-1 items-center">
+          <ActionMenu
+            :actions="[
+              {
+                label: t('Settings'),
+                icon: 'gear',
+              },
+              {
+                label: t('Remove'),
+                variant: 'danger',
+                icon: 'x',
+                onClick: () => removeItem(type.id),
+              },
+            ]"
+          />
+          <ReorderButton></ReorderButton>
+        </div>
+      </craft-chip>
+    </template>
   </div>
 
   <div class="flex gap-2 mt-3">
@@ -78,20 +92,39 @@
       </craft-button>
 
       <div slot="content">
-        <craft-action-item
-          v-for="type in types"
-          :key="type.id"
-          @click="handleTypeSelect(type)"
-        >
-          <craft-icon
-            slot="prefix"
-            :name="modelValue.includes(type.id) ? 'check' : ''"
-          ></craft-icon>
-          <div>
-            {{ type.name }}
-            <pre>{{ type.handle }}</pre>
+        <div class="p-2">
+          <CraftInput
+            :label="t('Search')"
+            v-model="entryTypeQuery"
+            label-sr-only
+          >
+            <craft-icon name="search" slot="prefix"></craft-icon>
+          </CraftInput>
+        </div>
+        <hr class="m-0" />
+        <template v-if="selectableTypes.length < 1">
+          <div class="p-2">
+            <Text
+              template="No entry types match “{query}”"
+              :params="{query: entryTypeQuery}"
+            />
           </div>
-        </craft-action-item>
+        </template>
+        <template v-else>
+          <craft-action-item
+            v-for="type in selectableTypes"
+            :key="type.id"
+            @click="handleTypeSelect(type)"
+            type="checkbox"
+            :icon="type.icon"
+            :checked="modelValue.includes(type.id)"
+          >
+            <div>
+              {{ type.name }}
+              <pre>{{ type.handle }}</pre>
+            </div>
+          </craft-action-item>
+        </template>
       </div>
     </craft-action-menu>
     <craft-button type="button">
@@ -104,5 +137,13 @@
 <style scoped lang="scss">
   craft-chip::part(chip) {
     min-width: 200px;
+  }
+
+  // Some special styles for nice icon alignment. We might want to move this
+  // into chips, but for right now this is the only spot
+  craft-chip::part(prefix) {
+    align-self: start;
+    height: 1lh;
+    justify-content: center;
   }
 </style>
