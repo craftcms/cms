@@ -342,7 +342,7 @@ final class CpScreenResponse implements Responsable
      *
      * This will only be used by full-page screens.
      */
-    public function addCrumb(string $label, string $url): self
+    public function addCrumb(string $label, ?string $url = null): self
     {
         if (! is_array($this->crumbs)) {
             $this->crumbs = [];
@@ -350,7 +350,7 @@ final class CpScreenResponse implements Responsable
 
         $this->crumbs[] = [
             'label' => $label,
-            'url' => UrlHelper::cpUrl($url),
+            'url' => $url ? UrlHelper::cpUrl($url) : null,
         ];
 
         return $this;
@@ -734,9 +734,14 @@ final class CpScreenResponse implements Responsable
             ($this->prepareScreen)($this, $request);
         }
 
+        $crumbs = $this->crumbs;
+        if ($this->title) {
+            $crumbs[] = ['label' => $this->title];
+        }
+
         $props = array_filter([
             'title' => $this->title,
-            'crumbs' => $this->crumbs,
+            'crumbs' => $crumbs,
         ], fn ($value) => $value !== null);
 
         return Inertia::render(
