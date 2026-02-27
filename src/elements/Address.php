@@ -743,6 +743,21 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * @inheritdoc
      */
+    public function getChipLabelHtml(): string
+    {
+        $html = parent::getChipLabelHtml();
+        if ($html !== '') {
+            return $html;
+        }
+
+        return Craft::t('app', 'Untitled {type}', [
+            'type' => self::lowerDisplayName(),
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getUiLabel(): string
     {
         return $this->title ?? '';
