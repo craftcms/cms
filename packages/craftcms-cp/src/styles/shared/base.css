@@ -196,7 +196,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
 .cp-table-header,
 .cp-table-footer {
-  padding: var(--_cell-spacing);
+  padding: var(--c-spacing-md);
   background-color: var(--c-color-neutral-bg-normal);
   display: flex;
   align-items: center;
