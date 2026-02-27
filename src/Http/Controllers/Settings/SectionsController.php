@@ -240,10 +240,10 @@ final readonly class SectionsController
         $section->setSiteSettings($allSiteSettings);
 
         if (! $sections->saveSection($section)) {
-            return back()->with('error', t('Couldn’t save section.'));
+            return $this->asModelFailure($section, t('Couldn’t save section.'), 'section');
         }
 
-        return back()->with('success', t('Section saved.'));
+        return $this->asModelSuccess($section, t('Section saved.'), 'section');
     }
 
     public function destroy(Request $request, Sections $sections): Response
