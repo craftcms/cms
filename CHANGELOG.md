@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where global set GraphQL query caches weren’t getting invalidated when global sets were updated. ([#18479](https://github.com/craftcms/cms/issues/18479))
+
 ## 5.9.14 - 2026-02-25
 
 - The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is no longer set by default for database connections. ([#18474](https://github.com/craftcms/cms/issues/18474))
