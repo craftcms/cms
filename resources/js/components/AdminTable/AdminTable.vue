@@ -237,7 +237,7 @@
             <craft-input
               type="text"
               v-model="pageIndexProxy"
-              size="3"
+              maxlength="3"
               :label="t('Current page')"
               label-sr-only
               center
