@@ -13,15 +13,14 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
-use FilesystemIterator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Path;
+use Symfony\Component\Finder\Finder;
 use Throwable;
 use UnexpectedValueException;
 use yii\base\ErrorException;
@@ -153,7 +152,7 @@ class FileHelper extends \yii\helpers\FileHelper
     {
         $path = static::absolutePath($path, ds: '/');
         $parentPath = static::absolutePath($parentPath, ds: '/');
-        return $path !== $parentPath && str_starts_with("$path/", "$parentPath/");
+        return $path !== $parentPath && Path::isBasePath($parentPath, $path);
     }
 
     /**
@@ -169,7 +168,32 @@ class FileHelper extends \yii\helpers\FileHelper
             $options['dirMode'] = Cms::config()->defaultDirMode;
         }
 
-        parent::copyDirectory($src, $dst, $options);
+        $unsupportedOptions = array_diff(array_keys($options), ['fileMode', 'dirMode']);
+        if (!empty($unsupportedOptions)) {
+            parent::copyDirectory($src, $dst, $options);
+            return;
+        }
+
+        $src = static::normalizePath($src);
+        $dst = static::normalizePath($dst);
+
+        if ($src === $dst || str_starts_with($dst, $src . DIRECTORY_SEPARATOR)) {
+            throw new InvalidArgumentException('Trying to copy a directory to itself or a subdirectory.');
+        }
+
+        if (!is_dir($src)) {
+            throw new InvalidArgumentException("Unable to open directory: $src");
+        }
+
+        if (!File::copyDirectory($src, $dst)) {
+            throw new ErrorException("Unable to copy directory: $src");
+        }
+
+        static::applyModesRecursively(
+            $dst,
+            (int)$options['dirMode'],
+            (int)$options['fileMode'],
+        );
     }
 
     /**
@@ -181,7 +205,19 @@ class FileHelper extends \yii\helpers\FileHelper
             $mode = Cms::config()->defaultDirMode;
         }
 
-        return parent::createDirectory($path, $mode, $recursive);
+        if (is_dir($path)) {
+            return true;
+        }
+
+        if (!File::makeDirectory($path, $mode, $recursive, true) && !is_dir($path)) {
+            return false;
+        }
+
+        try {
+            return @chmod($path, $mode);
+        } catch (Throwable $e) {
+            throw new Exception("Failed to change permissions for directory \"$path\": " . $e->getMessage(), (int)$e->getCode(), $e);
+        }
     }
 
     /**
@@ -189,10 +225,21 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function removeDirectory($dir, $options = []): void
     {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        if (empty($options) && !is_link($dir) && File::deleteDirectory($dir)) {
+            return;
+        }
+
         try {
             parent::removeDirectory($dir, $options);
         } catch (ErrorException $e) {
-            // Try Symfony's thing as a fallback
+            if (!is_dir($dir)) {
+                return;
+            }
+
             $fs = new Filesystem();
 
             try {
@@ -310,27 +357,16 @@ class FileHelper extends \yii\helpers\FileHelper
             throw new InvalidArgumentException("The dir argument must be a directory: $dir");
         }
 
-        if (!($handle = opendir($dir))) {
+        try {
+            return !Finder::create()
+                ->ignoreDotFiles(false)
+                ->ignoreVCS(false)
+                ->files()
+                ->in($dir)
+                ->hasResults();
+        } catch (Throwable $e) {
             throw new ErrorException("Unable to open the directory: $dir");
         }
-
-        // It's empty until we find a file
-        $empty = true;
-
-        while (($file = readdir($handle)) !== false) {
-            if ($file === '.' || $file === '..') {
-                continue;
-            }
-            $path = $dir . DIRECTORY_SEPARATOR . $file;
-            if (is_file($path) || !static::isDirectoryEmpty($path)) {
-                $empty = false;
-                break;
-            }
-        }
-
-        closedir($handle);
-
-        return $empty;
     }
 
     /**
@@ -593,8 +629,8 @@ class FileHelper extends \yii\helpers\FileHelper
             throw new InvalidArgumentException("The dir argument must be a directory: $dir");
         }
 
-        // Adapted from [[removeDirectory()]], plus addition of filters, and minus the root directory removal at the end
-        if (!($handle = opendir($dir))) {
+        if (empty($options)) {
+            File::cleanDirectory($dir);
             return;
         }
 
@@ -603,13 +639,17 @@ class FileHelper extends \yii\helpers\FileHelper
             $options = static::normalizeOptions($options);
         }
 
-        while (($file = readdir($handle)) !== false) {
-            if ($file === '.' || $file === '..') {
-                continue;
-            }
-            $path = $dir . DIRECTORY_SEPARATOR . $file;
+        $finder = Finder::create()
+            ->ignoreDotFiles(false)
+            ->ignoreVCS(false)
+            ->depth('== 0')
+            ->in($dir);
+
+        foreach ($finder as $item) {
+            $path = $item->getPathname();
+
             if (static::filterPath($path, $options)) {
-                if (is_dir($path)) {
+                if ($item->isDir() && !$item->isLink()) {
                     try {
                         static::removeDirectory($path, $options);
                     } catch (UnexpectedValueException $e) {
@@ -624,7 +664,6 @@ class FileHelper extends \yii\helpers\FileHelper
                 }
             }
         }
-        closedir($handle);
     }
 
     /**
@@ -677,12 +716,14 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         $times = [filemtime($path)];
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::SELF_FIRST);
 
-        foreach ($iterator as $p => $info) {
-            $times[] = filemtime($p);
+        $finder = Finder::create()
+            ->ignoreDotFiles(false)
+            ->ignoreVCS(false)
+            ->in($path);
+
+        foreach ($finder as $item) {
+            $times[] = $item->getMTime();
         }
 
         return max($times);
@@ -707,26 +748,56 @@ class FileHelper extends \yii\helpers\FileHelper
             throw new InvalidArgumentException("The ref argument must be a directory: $ref");
         }
 
-        if (!($handle = opendir($dir))) {
+        try {
+            $finder = Finder::create()
+                ->ignoreDotFiles(false)
+                ->ignoreVCS(false)
+                ->in($dir);
+        } catch (Throwable) {
             throw new ErrorException("Unable to open the directory: $dir");
         }
 
-        while (($file = readdir($handle)) !== false) {
-            if ($file === '.' || $file === '..') {
-                continue;
-            }
-            $path = $dir . DIRECTORY_SEPARATOR . $file;
-            $refPath = $ref . DIRECTORY_SEPARATOR . $file;
-            if (is_dir($path)) {
-                if (!is_dir($refPath) || static::hasAnythingChanged($path, $refPath)) {
+        try {
+            foreach ($finder as $item) {
+                $refPath = $ref . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $item->getRelativePathname());
+
+                if ($item->isDir()) {
+                    if (!is_dir($refPath)) {
+                        return true;
+                    }
+                    continue;
+                }
+
+                if (!is_file($refPath) || $item->getMTime() > filemtime($refPath)) {
                     return true;
                 }
-            } elseif (!is_file($refPath) || filemtime($path) > filemtime($refPath)) {
-                return true;
             }
+        } catch (Throwable) {
+            throw new ErrorException("Unable to open the directory: $dir");
         }
 
         return false;
+    }
+
+    /**
+     * Applies directory and file modes recursively.
+     *
+     * @param string $path
+     * @param int $dirMode
+     * @param int $fileMode
+     */
+    private static function applyModesRecursively(string $path, int $dirMode, int $fileMode): void
+    {
+        @chmod($path, $dirMode);
+
+        $finder = Finder::create()
+            ->ignoreDotFiles(false)
+            ->ignoreVCS(false)
+            ->in($path);
+
+        foreach ($finder as $item) {
+            @chmod($item->getPathname(), $item->isDir() ? $dirMode : $fileMode);
+        }
     }
 
     /**
