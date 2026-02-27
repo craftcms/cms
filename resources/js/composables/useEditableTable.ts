@@ -8,7 +8,6 @@ import {
   type Row,
   useVueTable,
 } from '@tanstack/vue-table';
-import type {EditableTableCellType} from '@/types';
 import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
 
 type MaybeGetter<T> = T | (() => T);
@@ -17,42 +16,62 @@ function resolve<T>(value: MaybeGetter<T>): T {
   return typeof value === 'function' ? (value as () => T)() : value;
 }
 
-interface InputColumnOptions<T extends Record<string, any>> {
-  // TanStack column options
+interface BaseColumnOptions<T extends Record<string, any>> {
   header?: string | ((...args: any[]) => any);
   size?: number;
   meta?: Record<string, any>;
-
-  // Shared cell options
   disabled?: MaybeGetter<boolean> | ((row: Row<T>) => boolean);
+}
 
-  // Text-specific options (singleline, email, url, number)
+interface TextColumnOptions<T extends Record<string, any>>
+  extends BaseColumnOptions<T> {
+  inputType?: 'text' | 'email' | 'url' | 'number';
   class?: string;
   placeholder?: string;
   name?: (row: Row<T>, columnId: string) => string;
-
-  // Switch-specific options (lightswitch)
-  label?: string;
-  ariaLabelledBy?: string;
-  switchSize?: 'small' | 'medium';
-
-  // Events
   onChange?: (
     value: any,
     ctx: Pick<CellContext<T, any>, 'row' | 'column'>
   ) => void;
   onInput?: (event: Event) => void;
+}
+
+interface LightswitchColumnOptions<T extends Record<string, any>>
+  extends BaseColumnOptions<T> {
+  label?: string;
+  ariaLabelledBy?: string;
+  switchSize?: 'small' | 'medium';
   onUpdate?: (value: boolean | undefined) => void;
 }
+
+interface CheckboxColumnOptions<T extends Record<string, any>>
+  extends BaseColumnOptions<T> {
+  ariaLabelledBy?: string;
+  onChange?: (
+    value: any,
+    ctx: Pick<CellContext<T, any>, 'row' | 'column'>
+  ) => void;
+}
+
+type AccessorParam<T extends Record<string, any>> = Parameters<
+  ColumnHelper<T>['accessor']
+>[0];
 
 interface EditableColumnHelper<T extends Record<string, any>> {
   accessor: ColumnHelper<T>['accessor'];
   display: ColumnHelper<T>['display'];
   group: ColumnHelper<T>['group'];
-  input: (
-    accessor: Parameters<ColumnHelper<T>['accessor']>[0],
-    type: EditableTableCellType,
-    options?: InputColumnOptions<T>
+  text: (
+    accessor: AccessorParam<T>,
+    options?: TextColumnOptions<T>
+  ) => ColumnDef<T, any>;
+  lightswitch: (
+    accessor: AccessorParam<T>,
+    options?: LightswitchColumnOptions<T>
+  ) => ColumnDef<T, any>;
+  checkbox: (
+    accessor: AccessorParam<T>,
+    options?: CheckboxColumnOptions<T>
   ) => ColumnDef<T, any>;
 }
 
@@ -66,13 +85,6 @@ interface UseEditableTableOptions<T extends Record<string, any>> {
   columnVisibility?: () => Record<string, boolean>;
   onChange: (data: T[] | Record<string, T>) => void;
 }
-
-const textInputTypes: Record<string, string> = {
-  singleline: 'text',
-  email: 'email',
-  url: 'url',
-  number: 'number',
-};
 
 export function useEditableTable<T extends Record<string, any>>(
   options: UseEditableTableOptions<T>
@@ -120,7 +132,7 @@ export function useEditableTable<T extends Record<string, any>>(
   }
 
   function resolveDisabled<T extends Record<string, any>>(
-    disabled: InputColumnOptions<T>['disabled'],
+    disabled: BaseColumnOptions<T>['disabled'],
     row: Row<T>
   ): boolean | undefined {
     if (disabled === undefined) return undefined;
@@ -134,10 +146,7 @@ export function useEditableTable<T extends Record<string, any>>(
 
   function textInputCell(
     inputType: string,
-    cellOptions?: Pick<
-      InputColumnOptions<T>,
-      'class' | 'placeholder' | 'disabled' | 'name' | 'onChange' | 'onInput'
-    >
+    cellOptions?: Omit<TextColumnOptions<T>, 'header' | 'size' | 'meta' | 'inputType'>
   ): (ctx: CellContext<T, any>) => ReturnType<typeof h> {
     return ({row, column, getValue}) =>
       h('input', {
@@ -171,10 +180,7 @@ export function useEditableTable<T extends Record<string, any>>(
   }
 
   function switchCell(
-    cellOptions?: Pick<
-      InputColumnOptions<T>,
-      'disabled' | 'label' | 'ariaLabelledBy' | 'switchSize' | 'onUpdate'
-    >
+    cellOptions?: Omit<LightswitchColumnOptions<T>, 'header' | 'size' | 'meta'>
   ): (ctx: CellContext<T, any>) => ReturnType<typeof h> {
     return ({row, column}) =>
       h(CraftSwitch, {
@@ -194,7 +200,7 @@ export function useEditableTable<T extends Record<string, any>>(
   }
 
   function checkboxCell(
-    cellOptions?: Pick<InputColumnOptions<T>, any>
+    cellOptions?: Omit<CheckboxColumnOptions<T>, 'header' | 'size' | 'meta'>
   ): (ctx: CellContext<T, any>) => ReturnType<typeof h> {
     return ({row, column}) => {
       return h('input', {
@@ -215,67 +221,56 @@ export function useEditableTable<T extends Record<string, any>>(
 
   const baseHelper = createColumnHelper<T>();
 
+  function buildColumnDef(
+    base: BaseColumnOptions<T> | undefined
+  ): Record<string, any> {
+    const columnDef: Record<string, any> = {};
+    if (base?.header !== undefined) columnDef.header = base.header;
+    if (base?.size !== undefined) columnDef.size = base.size;
+    if (base?.meta !== undefined) columnDef.meta = base.meta;
+    return columnDef;
+  }
+
   const columnHelper: EditableColumnHelper<T> = {
     accessor: baseHelper.accessor,
     display: baseHelper.display,
     group: baseHelper.group,
 
-    input(accessor, type, inputOptions = {}) {
-      const {
-        header,
-        size,
-        meta,
-        disabled,
+    text(accessor, opts = {}) {
+      const {inputType, class: className, placeholder, name, onInput, onChange, ...base} = opts;
+      const columnDef = buildColumnDef(base);
+      columnDef.cell = textInputCell(inputType ?? 'text', {
         class: className,
         placeholder,
+        disabled: base.disabled,
         name,
+        onInput,
+        onChange,
+      });
+      return baseHelper.accessor(accessor as any, columnDef);
+    },
+
+    lightswitch(accessor, opts = {}) {
+      const {label, ariaLabelledBy, switchSize, onUpdate, ...base} = opts;
+      const columnDef = buildColumnDef(base);
+      columnDef.cell = switchCell({
+        disabled: base.disabled,
         label,
         ariaLabelledBy,
         switchSize,
-        onChange,
-        onInput,
         onUpdate,
-      } = inputOptions;
+      });
+      return baseHelper.accessor(accessor as any, columnDef);
+    },
 
-      const columnDef: Record<string, any> = {};
-
-      if (header !== undefined) columnDef.header = header;
-      if (size !== undefined) columnDef.size = size;
-      if (meta !== undefined) columnDef.meta = meta;
-
-      const htmlType = textInputTypes[type];
-      if (htmlType) {
-        columnDef.cell = textInputCell(htmlType, {
-          class: className,
-          placeholder,
-          disabled,
-          name,
-          onInput,
-          onChange,
-        });
-      } else if (type === 'checkbox') {
-        columnDef.cell = checkboxCell({
-          disabled,
-          label,
-          ariaLabelledBy,
-          switchSize,
-          onChange,
-        });
-      } else if (type === 'lightswitch') {
-        columnDef.cell = switchCell({
-          disabled,
-          label,
-          ariaLabelledBy,
-          switchSize,
-          onUpdate,
-        });
-      } else {
-        console.warn(
-          `[useEditableTable] Column type "${type}" is not yet implemented. Rendering as plain text.`
-        );
-        columnDef.cell = ({getValue}: CellContext<T, any>) => getValue();
-      }
-
+    checkbox(accessor, opts = {}) {
+      const {ariaLabelledBy, onChange, ...base} = opts;
+      const columnDef = buildColumnDef(base);
+      columnDef.cell = checkboxCell({
+        disabled: base.disabled,
+        ariaLabelledBy,
+        onChange,
+      });
       return baseHelper.accessor(accessor as any, columnDef);
     },
   };

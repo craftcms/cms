@@ -26,16 +26,16 @@
     name: props.name,
     onChange: (data) => emit('update:modelValue', data as Array<PreviewTarget>),
     columns: ({columnHelper}) => [
-      columnHelper.input('label', 'singleline', {
+      columnHelper.text('label', {
         header: t('Label'),
         disabled: () => props.disabled,
       }),
-      columnHelper.input('urlFormat', 'singleline', {
+      columnHelper.text('urlFormat', {
         header: t('URL Format'),
         class: 'font-mono text-xs',
         disabled: () => props.disabled,
       }),
-      columnHelper.input('refresh', 'lightswitch', {
+      columnHelper.lightswitch('refresh', {
         header: t('Auto-Refresh'),
         disabled: () => props.disabled,
       }),

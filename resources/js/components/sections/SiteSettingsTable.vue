@@ -60,7 +60,7 @@
           cellTag: 'th',
         },
       }),
-      columnHelper.input('enabled', 'lightswitch', {
+      columnHelper.lightswitch('enabled', {
         header: t('Enabled'),
         size: 80,
         meta: {
@@ -68,7 +68,7 @@
         },
         label: t('Enabled'),
       }),
-      columnHelper.input('singleHomepage', 'checkbox', {
+      columnHelper.checkbox('singleHomepage', {
         header: () => h('craft-icon', {name: 'home', label: t('Homepage')}),
         size: 44,
         meta: {
@@ -91,24 +91,24 @@
         },
         disabled: (row) => !row.original.enabled,
       }),
-      columnHelper.input('singleUri', 'singleline', {
+      columnHelper.text('singleUri', {
         header: t('URI'),
         class: 'font-mono text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
         disabled: (row) => !row.original.enabled || row.original.singleHomepage,
       }),
-      columnHelper.input('uriFormat', 'singleline', {
+      columnHelper.text('uriFormat', {
         header: t('Entry URI Format'),
         class: 'font-mono text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
         disabled: (row) => !row.original.enabled,
       }),
-      columnHelper.input('template', 'singleline', {
+      columnHelper.text('template', {
         header: t('Template'),
         class: 'font-mono text-xs',
         disabled: (row) => !row.original.enabled,
       }),
-      columnHelper.input('enabledByDefault', 'lightswitch', {
+      columnHelper.lightswitch('enabledByDefault', {
         header: t('Default Status'),
         size: 40,
         disabled: (row) => !row.original.enabled,
