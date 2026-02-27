@@ -68,10 +68,8 @@ export const inputStyles = css`
     ${baseInputStyles}
   }
 
-  .input-group__input {
-  }
-
-  .input-group__prefix {
+  .input-group__prefix,
+  .input-group__suffix {
     padding-inline: var(--c-input-spacing-inline);
     display: grid;
     place-items: center;

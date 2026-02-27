@@ -16,8 +16,8 @@ const meta = {
       control: {type: 'number'},
     },
   },
-  render: function ({size}) {
-    return html`<craft-input label="Craft Input" help-text="This is some instructions text" .size="${size}"></craft-uinput>`;
+  render: function ({maxlength}) {
+    return html`<craft-input label="Craft Input" help-text="This is some instructions text" .maxlength="${maxlength}"></craft-uinput>`;
   },
 } satisfies Meta<any>;
 
@@ -29,8 +29,24 @@ export const Default: Story = {
   args: {},
 };
 
-export const WithSize: Story = {
+export const WithMaxLength: Story = {
   args: {
-    size: 5,
+    maxlength: 5,
   },
+};
+
+export const WithPrefix: Story = {
+  render: () => html`
+    <craft-input label="Search">
+      <craft-icon name="search" slot="prefix"></craft-icon>
+    </craft-input>
+  `,
+};
+
+export const WithSuffix: Story = {
+  render: () => html`
+    <craft-input label="Search">
+      <craft-icon name="search" slot="suffix"></craft-icon>
+    </craft-input>
+  `,
 };
