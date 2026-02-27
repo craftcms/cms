@@ -187,7 +187,7 @@ it('can delete a section', function () {
 
     postJson(action([SectionsController::class, 'destroy']), [
         'id' => $newSection->id,
-    ])->assertRedirectBack();
+    ])->assertSuccessful();
 
     assertSoftDeleted(Section::class, ['id' => $newSection->id]);
     expect(ProjectConfig::get(ProjectConfigPaths::PATH_SECTIONS.'.'.$newSection->uid))->toBeNull();
