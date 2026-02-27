@@ -50,7 +50,7 @@ final readonly class SectionsController
         ]);
 
         $orderBy = match (Arr::get($sort, '0.field')) {
-            '__slot:handle' => 'handle',
+            'handle' => 'handle',
             'type' => 'type',
             default => 'name',
         };
