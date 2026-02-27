@@ -264,7 +264,7 @@ final readonly class SectionsController
         $name = $section->name;
         $sections->deleteSectionById($sectionId);
 
-        return back()->with('success', t('Section “{name}” deleted.', [
+        return $this->asSuccess(t('Section “{name}” deleted.', [
             'name' => $name,
         ]));
     }
