@@ -49,6 +49,13 @@
       "assets/IndexLayout.css"
     ]
   },
+  "_SectionsController.js": {
+    "file": "SectionsController.js",
+    "name": "SectionsController",
+    "imports": [
+      "_cp3.js"
+    ]
+  },
   "_cp2.css": {
     "file": "assets/cp2.css",
     "src": "_cp2.css"
@@ -147,6 +154,7 @@
       "resources/js/pages/Install.vue",
       "resources/js/pages/SettingsGeneralPage.vue",
       "resources/js/pages/SettingsIndexPage.vue",
+      "resources/js/pages/SettingsSectionsEditPage.vue",
       "resources/js/pages/SettingsSectionsIndexPage.vue",
       "resources/js/pages/SettingsSitesEdit.vue",
       "resources/js/pages/SettingsSitesIndex.vue",
@@ -155,6 +163,13 @@
     ],
     "css": [
       "assets/cp2.css"
+    ]
+  },
+  "_useInputGenerator.js": {
+    "file": "useInputGenerator.js",
+    "name": "useInputGenerator",
+    "imports": [
+      "_cp3.js"
     ]
   },
   "node_modules/@lion/ui/components/combobox/translations/bg.js": {
@@ -885,6 +900,22 @@
       "assets/SettingsIndexPage.css"
     ]
   },
+  "resources/js/pages/SettingsSectionsEditPage.vue": {
+    "file": "SettingsSectionsEditPage.js",
+    "name": "SettingsSectionsEditPage",
+    "src": "resources/js/pages/SettingsSectionsEditPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_cp3.js",
+      "_AppLayout.js",
+      "_useInputGenerator.js",
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
+      "_SectionsController.js"
+    ],
+    "css": [
+      "assets/SettingsSectionsEditPage.css"
+    ]
+  },
   "resources/js/pages/SettingsSectionsIndexPage.vue": {
     "file": "SettingsSectionsIndexPage.js",
     "name": "SettingsSectionsIndexPage",
@@ -892,6 +923,7 @@
     "isDynamicEntry": true,
     "imports": [
       "_cp3.js",
+      "_SectionsController.js",
       "_AppLayout.js"
     ]
   },
@@ -904,7 +936,8 @@
       "_cp3.js",
       "_AppLayout.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js"
+      "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
+      "_useInputGenerator.js"
     ]
   },
   "resources/js/pages/SettingsSitesIndex.vue": {
