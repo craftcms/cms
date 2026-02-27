@@ -23,8 +23,9 @@ interface BaseColumnOptions<T extends Record<string, any>> {
   disabled?: MaybeGetter<boolean> | ((row: Row<T>) => boolean);
 }
 
-interface TextColumnOptions<T extends Record<string, any>>
-  extends BaseColumnOptions<T> {
+interface TextColumnOptions<
+  T extends Record<string, any>,
+> extends BaseColumnOptions<T> {
   inputType?: 'text' | 'email' | 'url' | 'number';
   class?: string;
   placeholder?: string;
@@ -36,16 +37,18 @@ interface TextColumnOptions<T extends Record<string, any>>
   onInput?: (event: Event) => void;
 }
 
-interface LightswitchColumnOptions<T extends Record<string, any>>
-  extends BaseColumnOptions<T> {
+interface LightswitchColumnOptions<
+  T extends Record<string, any>,
+> extends BaseColumnOptions<T> {
   label?: string;
   ariaLabelledBy?: string;
   switchSize?: 'small' | 'medium';
   onUpdate?: (value: boolean | undefined) => void;
 }
 
-interface CheckboxColumnOptions<T extends Record<string, any>>
-  extends BaseColumnOptions<T> {
+interface CheckboxColumnOptions<
+  T extends Record<string, any>,
+> extends BaseColumnOptions<T> {
   ariaLabelledBy?: string;
   onChange?: (
     value: any,
@@ -146,7 +149,10 @@ export function useEditableTable<T extends Record<string, any>>(
 
   function textInputCell(
     inputType: string,
-    cellOptions?: Omit<TextColumnOptions<T>, 'header' | 'size' | 'meta' | 'inputType'>
+    cellOptions?: Omit<
+      TextColumnOptions<T>,
+      'header' | 'size' | 'meta' | 'inputType'
+    >
   ): (ctx: CellContext<T, any>) => ReturnType<typeof h> {
     return ({row, column, getValue}) =>
       h('input', {
@@ -167,14 +173,11 @@ export function useEditableTable<T extends Record<string, any>>(
           }
         },
         onChange: (event: Event) => {
+          const value = (event.target as HTMLInputElement).value;
           if (typeof cellOptions?.onChange === 'function') {
-            cellOptions.onChange(event, {row, column});
+            cellOptions.onChange(value, {row, column});
           }
-          handleChange(
-            row,
-            column.id,
-            (event.target as HTMLInputElement).value
-          );
+          handleChange(row, column.id, value);
         },
       });
   }
@@ -237,7 +240,15 @@ export function useEditableTable<T extends Record<string, any>>(
     group: baseHelper.group,
 
     text(accessor, opts = {}) {
-      const {inputType, class: className, placeholder, name, onInput, onChange, ...base} = opts;
+      const {
+        inputType,
+        class: className,
+        placeholder,
+        name,
+        onInput,
+        onChange,
+        ...base
+      } = opts;
       const columnDef = buildColumnDef(base);
       columnDef.cell = textInputCell(inputType ?? 'text', {
         class: className,
