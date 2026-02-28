@@ -13,13 +13,14 @@ use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Override;
 
 use function CraftCms\Cms\t;
 
 /** @extends Ruleset<\CraftCms\Cms\Section\Data\Section> */
 final class SectionRules extends Ruleset
 {
-    #[\Override]
+    #[Override]
     public function defineRules(): array
     {
         return [

@@ -150,7 +150,7 @@ test('handle needs to be unique without trashed', function () {
     post(action([SectionsController::class, 'store']), $data)
         ->assertSessionHasNoErrors();
 
-    Section::latest('id')->first()->update(['dateDeleted' => now()]);
+    \CraftCms\Cms\Support\Facades\Sections::deleteSectionById(Section::latest('id')->first()->id);
 
     post(action([SectionsController::class, 'store']), $data)
         ->assertSessionHasNoErrors();

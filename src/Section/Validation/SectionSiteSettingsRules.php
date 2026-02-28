@@ -18,9 +18,9 @@ final class SectionSiteSettingsRules extends Ruleset
     #[Override]
     public function defineRules(): array
     {
-        $sectionType = null;
+        $section = null;
         try {
-            $sectionType = $this->component->getSection()->type;
+            $section = $this->component->getSection();
         } catch (Throwable) {
         }
 
@@ -30,8 +30,8 @@ final class SectionSiteSettingsRules extends Ruleset
             'template' => ['nullable', 'string', 'max:500'],
             'uriFormat' => array_merge(
                 ['required_if:hasUrls,true', new UriFormatRule],
-                $sectionType === SectionType::Single
-                    ? [new SingleSectionUriRule]
+                $section?->type === SectionType::Single
+                    ? [new SingleSectionUriRule($section)]
                     : [],
             ),
             'hasUrls' => ['nullable', 'boolean'],
