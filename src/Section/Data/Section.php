@@ -17,19 +17,23 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Validation\SectionRules;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Override;
 use Stringable;
 
 use function CraftCms\Cms\t;
 
+#[Ruleset(SectionRules::class)]
 final class Section extends Component implements Chippable, CpEditable, Iconic, Stringable
 {
     /**
@@ -111,7 +115,7 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
         return $this->id;
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return [
@@ -146,54 +150,6 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
                 },
             ],
         ];
-    }
-
-    private function validateSiteSettings(Closure $fail): void
-    {
-        // If this is an existing section, make sure they aren't moving it to a
-        // completely different set of sites in one fell swoop
-        if ($this->id) {
-            $currentSiteIds = DB::table(Table::SECTIONS_SITES)
-                ->where('sectionId', $this->id)
-                ->pluck('siteId')
-                ->all();
-
-            if (empty(array_intersect($currentSiteIds, array_keys($this->getSiteSettings())))) {
-                $fail('siteSettings', t('At least one currently-enabled site must remain enabled.'));
-            }
-        }
-
-        foreach ($this->getSiteSettings() as $i => $siteSettings) {
-            if ($siteSettings->validate()) {
-                continue;
-            }
-
-            foreach ($siteSettings->errors()->getMessages() as $a => $errors) {
-                foreach ($errors as $error) {
-                    $this->errors()->add("siteSettings[$i].$a", $error);
-                }
-            }
-        }
-    }
-
-    private function validatePreviewTargets(array $value, Closure $fail): void
-    {
-        $hasErrors = false;
-
-        foreach ($value as &$target) {
-            $target['label'] = trim((string) $target['label']);
-            $target['urlFormat'] = trim((string) $target['urlFormat']);
-
-            if ($target['label'] === '') {
-                $target['label'] = ['value' => $target['label'], 'hasErrors' => true];
-                $hasErrors = true;
-            }
-        }
-        unset($target);
-
-        if ($hasErrors) {
-            $fail(t('All targets must have a label.'));
-        }
     }
 
     /**

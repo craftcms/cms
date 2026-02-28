@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Section\Rules;
+namespace CraftCms\Cms\Section\Validation\Rules;
 
 use Closure;
 use CraftCms\Cms\Database\Table;

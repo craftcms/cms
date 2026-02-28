@@ -6,12 +6,13 @@ namespace CraftCms\Cms\Section\Data;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Rules\SingleSectionUriRule;
+use CraftCms\Cms\Section\Validation\Rules\SingleSectionUriRule;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Validation\Rules\SiteIdRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
+use Override;
 use RuntimeException;
 
 final class SectionSiteSettings extends Component
@@ -80,7 +81,7 @@ final class SectionSiteSettings extends Component
         return $site;
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return [
