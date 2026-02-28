@@ -68,7 +68,7 @@ final class SectionRules extends Ruleset
                 ->all();
 
             if (empty(array_intersect($currentSiteIds, array_keys($this->component->getSiteSettings())))) {
-                $fail('siteSettings', t('At least one currently-enabled site must remain enabled.'));
+                $fail(t('At least one currently-enabled site must remain enabled.'));
             }
         }
 
