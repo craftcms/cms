@@ -1,4 +1,4 @@
-import {computed, h, ref, type Ref} from 'vue';
+import {computed, h, type HTMLAttributes, ref, type Ref} from 'vue';
 import {
   type CellContext,
   type ColumnDef,
@@ -58,11 +58,15 @@ interface CheckboxColumnOptions<
   ) => void;
 }
 
-interface AutocompleteColumnOptions<T extends Record<string, any>>
-  extends BaseColumnOptions<T> {
-  options?: MaybeGetter<Array<SelectItem>> | ((row: Row<T>) => Array<SelectItem>);
+interface AutocompleteColumnOptions<
+  T extends Record<string, any>,
+> extends BaseColumnOptions<T> {
+  options?:
+    | MaybeGetter<Array<SelectItem>>
+    | ((row: Row<T>) => Array<SelectItem>);
   requireOptionMatch?: boolean;
   transformModelValue?: (newValue: SelectOption | null) => string;
+  class?: HTMLAttributes['class'];
   onChange?: (
     value: string,
     ctx: Pick<CellContext<T, any>, 'row' | 'column'>
@@ -240,9 +244,10 @@ export function useEditableTable<T extends Record<string, any>>(
   }
 
   function autocompleteCell(
-    cellOptions?: Omit<AutocompleteColumnOptions<T>, 'header' | 'size' | 'meta'>
+    cellOptions?: AutocompleteColumnOptions<T>
   ): (ctx: CellContext<T, any>) => ReturnType<typeof h> {
     return ({row, column}) => {
+      console.log(cellOptions);
       const opts =
         typeof cellOptions?.options === 'function'
           ? (cellOptions.options as (row: Row<T>) => Array<SelectItem>)(row)
@@ -251,6 +256,7 @@ export function useEditableTable<T extends Record<string, any>>(
       return h(InputCombobox, {
         modelValue: row.original[column.id],
         options: opts,
+        class: cellOptions?.class,
         requireOptionMatch: cellOptions?.requireOptionMatch,
         transformModelValue: cellOptions?.transformModelValue,
         'onUpdate:modelValue': (value: string) => {
@@ -327,7 +333,13 @@ export function useEditableTable<T extends Record<string, any>>(
     },
 
     autocomplete(accessor, opts = {}) {
-      const {options, requireOptionMatch, transformModelValue, onChange, ...base} = opts;
+      const {
+        options,
+        requireOptionMatch,
+        transformModelValue,
+        onChange,
+        ...base
+      } = opts;
       const columnDef = buildColumnDef(base);
       columnDef.cell = autocompleteCell({
         disabled: base.disabled,
@@ -335,6 +347,7 @@ export function useEditableTable<T extends Record<string, any>>(
         requireOptionMatch,
         transformModelValue,
         onChange,
+        class: opts.class ?? '',
       });
       return baseHelper.accessor(accessor as any, columnDef);
     },

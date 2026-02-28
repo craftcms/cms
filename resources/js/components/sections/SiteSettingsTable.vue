@@ -30,9 +30,11 @@
 
   const page = usePage<{
     homepageUri?: string;
+    templateOptions: Array<any>;
   }>();
 
   const homepageUri = computed(() => page.props.homepageUri);
+  const templateOptions = computed(() => page.props.templateOptions);
 
   const columnVisibility = computed(() => {
     return {
@@ -103,9 +105,10 @@
         placeholder: t("Leave blank if the entry doesn't have a URL"),
         disabled: (row) => !row.original.enabled,
       }),
-      columnHelper.text('template', {
+      columnHelper.autocomplete('template', {
         header: t('Template'),
         class: 'font-mono text-xs',
+        options: templateOptions.value,
         disabled: (row) => !row.original.enabled,
       }),
       columnHelper.lightswitch('enabledByDefault', {
@@ -118,6 +121,7 @@
 </script>
 
 <template>
+  <VarDump :data="templateOptions" />
   <Pane :padding="0" appearance="raised">
     <AdminTable :table="table" spacing="relaxed" :reorderable="false" />
   </Pane>

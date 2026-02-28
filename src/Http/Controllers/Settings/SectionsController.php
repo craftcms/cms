@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
@@ -160,6 +161,7 @@ final readonly class SectionsController
                 ['value' => 'beginning', 'label' => t('Before other {type}', ['type' => t('entries')])],
                 ['value' => 'end', 'label' => t('After other {type}', ['type' => t('entries')])],
             ],
+            'templateOptions' => SelectOptions::getTemplateSuggestions(),
             'siteSettings' => $siteSettings,
             'isMultiSite' => $sites->isMultiSite(),
             'headlessMode' => $headlessMode,
