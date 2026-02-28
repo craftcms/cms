@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Section\Data;
 
 use CraftCms\Cms\Component\Component;
-use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Validation\Rules\SingleSectionUriRule;
+use CraftCms\Cms\Section\Validation\SectionSiteSettingsRules;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Validation\Rules\SiteIdRule;
-use CraftCms\Cms\Validation\Rules\UriFormatRule;
-use Override;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
 use RuntimeException;
 
+#[Ruleset(SectionSiteSettingsRules::class)]
 final class SectionSiteSettings extends Component
 {
     private ?Section $section = null;
@@ -79,22 +77,5 @@ final class SectionSiteSettings extends Component
         }
 
         return $site;
-    }
-
-    #[Override]
-    public function getRules(): array
-    {
-        return [
-            'id' => ['nullable', 'integer'],
-            'siteId' => ['nullable', 'integer', new SiteIdRule],
-            'template' => ['nullable', 'string', 'max:500'],
-            'uriFormat' => array_merge(
-                ['required_if:hasUrls,true', new UriFormatRule],
-                $this->section?->type === SectionType::Single->value
-                    ? [new SingleSectionUriRule]
-                    : [],
-            ),
-            'hasUrls' => ['nullable', 'boolean'],
-        ];
     }
 }
