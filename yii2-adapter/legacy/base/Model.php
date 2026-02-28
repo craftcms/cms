@@ -431,4 +431,9 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     {
         return parent::attributeLabels();
     }
+
+    public function inScenarios(string ...$scenarios): bool
+    {
+        return in_array($this->getScenario(), $scenarios, true);
+    }
 }

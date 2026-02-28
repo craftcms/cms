@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
-use CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset;
+use CraftCms\Cms\Validation\Concerns\Validates;
+use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Ruleset;
 
-function createValidatableComponent(array $attributes, ?string $rulesetClass = null): ValidatableWithRuleset
+function createValidatableComponent(array $attributes, ?string $rulesetClass = null): Validatable
 {
-    return new class($attributes, $rulesetClass) implements ValidatableWithRuleset
+    return new class($attributes, $rulesetClass) implements Validatable
     {
-        use ValidatesWithRuleset;
+        use Validates;
 
         private string $rulesetClass;
 
@@ -123,10 +123,10 @@ describe('getRuleset', function () {
         expect($ruleset1)->toBe($ruleset2);
     });
 
-    test('throws when no ruleset configured', function () {
-        $component = new class implements ValidatableWithRuleset
+    test('returns false when no ruleset configured', function () {
+        $component = new class implements Validatable
         {
-            use ValidatesWithRuleset;
+            use Validates;
 
             public function getRules(): array
             {
@@ -150,18 +150,13 @@ describe('getRuleset', function () {
                 return [];
             }
 
-            public function rulesClass(): string
-            {
-                throw new BadMethodCallException('No ruleset configured');
-            }
-
             public function attributeLabels(): array
             {
                 return [];
             }
         };
 
-        expect(fn () => $component->getRuleset())->toThrow(BadMethodCallException::class);
+        expect($component->getRuleset())->toBeFalse();
     });
 });
 
