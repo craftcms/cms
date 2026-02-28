@@ -12,9 +12,9 @@ interface Validatable
     /**
      * Returns the validation rules or ruleset for attributes.
      *
-     * @return Ruleset|array<string, mixed>
+     * @return array<string, mixed>
      */
-    public function getRules(): Ruleset|array;
+    public function getRules(): array;
 
     /**
      * Returns custom error messages for validation rules.
