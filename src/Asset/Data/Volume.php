@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Data;
 
-use Closure;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\Asset\Validation\VolumeRules;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\CpEditable;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
@@ -22,15 +19,12 @@ use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
-use CraftCms\Cms\Validation\Rules\HandleRule;
-use Illuminate\Database\Eloquent\Builder;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Traits\Macroable;
-use Illuminate\Validation\Rule;
 use Override;
 use RuntimeException;
 use yii\base\InvalidConfigException;
@@ -43,14 +37,15 @@ use function CraftCms\Cms\t;
  * @property string $subpath
  * @property string $transformSubpath
  */
+#[Ruleset(VolumeRules::class)]
 class Volume extends Component implements CpEditable, FieldLayoutProviderInterface
 {
     use HasFieldLayout;
     use Macroable;
 
-    private const string STORAGE_FS_PREFIX = 'fs:';
+    public const string STORAGE_FS_PREFIX = 'fs:';
 
-    private const string STORAGE_DISK_PREFIX = 'disk:';
+    public const string STORAGE_DISK_PREFIX = 'disk:';
 
     public ?int $id = null;
 
@@ -189,156 +184,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         return $this->attributeLabels()[$attribute] ?? $attribute;
     }
 
-    #[Override]
-    public function getRules(): array
-    {
-        $rules = [
-            'id' => ['nullable', 'integer'],
-            'fieldLayoutId' => ['nullable', 'integer'],
-            'name' => [
-                'required',
-                Rule::unique(Table::VOLUMES, 'name')->ignore($this->id)->withoutTrashed('dateDeleted'),
-            ],
-            'handle' => [
-                'required',
-                new HandleRule(reservedWords: [
-                    'dateCreated',
-                    'dateUpdated',
-                    'edit',
-                    'id',
-                    'temp',
-                    'title',
-                    'uid',
-                ]),
-                Rule::unique(Table::VOLUMES, 'handle')->ignore($this->id)->withoutTrashed('dateDeleted'),
-            ],
-            'fieldLayout' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFieldLayout()],
-            'fsHandle' => [fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
-            'transformFsHandle' => ['nullable', fn (string $attribute, mixed $value, Closure $fail) => $this->validateFilesystemHandle($attribute, $fail)],
-            'subpath' => [
-                Rule::requiredIf(fn () => $this->subpathRequired()),
-                fn (string $attribute, mixed $value, Closure $fail) => $this->validateUniqueSubpath($attribute, $fail),
-            ],
-        ];
-
-        $tempAssetUploadTarget = $this->resolveStorageTargetKey(Cms::config()->tempAssetUploadFs);
-        if ($tempAssetUploadTarget !== null) {
-            $rules['fsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
-            $rules['transformFsHandle'][] = fn (string $attribute, mixed $value, Closure $fail) => $this->validateReservedTempUploadFilesystem($attribute, $tempAssetUploadTarget, $fail);
-        }
-
-        return $rules;
-    }
-
-    #[Override]
-    public function getMessages(): array
-    {
-        return [
-            'subpath.required' => t('A subpath is required for this filesystem.'),
-        ];
-    }
-
-    private function validateUniqueSubpath(string $attribute, ?Closure $fail = null): void
-    {
-        $records = $this->volumesSharingStorageTarget();
-        if ($records->isEmpty()) {
-            return;
-        }
-
-        $subpath = $this->getSubpath(ensureTrailing: false, parse: false);
-        if ($subpath === '') {
-            return;
-        }
-
-        $subpathRoot = $this->firstPathSegment($subpath);
-        foreach ($records as $record) {
-            if (strcmp($this->firstPathSegment((string) $record->$attribute), $subpathRoot) === 0) {
-                $this->pushValidationError($attribute, t('The subpath cannot overlap with any other volumes sharing the same filesystem.'), $fail);
-            }
-        }
-    }
-
-    private function subpathRequired(): bool
-    {
-        return $this->volumesSharingStorageTarget()->isNotEmpty();
-    }
-
-    /**
-     * @return Collection<int, VolumeModel>
-     */
-    private function volumesSharingStorageTarget(): Collection
-    {
-        $storageTarget = $this->resolveStorageTargetKey($this->_fsHandle);
-        if ($storageTarget === null) {
-            return collect();
-        }
-
-        return VolumeModel::query()
-            ->when($this->id !== null, fn (Builder $query) => $query->whereNot('id', $this->id))
-            ->get()
-            ->filter(fn (VolumeModel $record): bool => $this->resolveStorageTargetKey($record->fs) === $storageTarget)
-            ->values();
-    }
-
-    private function validateFilesystemHandle(string $attribute, ?Closure $fail = null): void
-    {
-        $handle = $this->storageHandleForAttribute($attribute);
-
-        if ($handle === null || $handle === '') {
-            if ($attribute === 'fsHandle') {
-                $this->pushValidationError($attribute, t('{attribute} cannot be blank.', [
-                    'attribute' => $this->getAttributeLabel($attribute),
-                ]), $fail);
-            }
-
-            return;
-        }
-
-        if ($this->isUnresolvedEnvValue($handle)) {
-            return;
-        }
-
-        if ($this->isInternalDiskReference($handle)) {
-            $this->pushValidationError($attribute, t('This disk is reserved for internal use.'), $fail);
-
-            return;
-        }
-
-        if ($this->resolveStorageTargetKey($handle) === null) {
-            $this->pushValidationError($attribute, t('This filesystem reference is invalid.'), $fail);
-        }
-    }
-
-    private function validateReservedTempUploadFilesystem(string $attribute, string $tempUploadTarget, ?Closure $fail = null): void
-    {
-        $handle = $this->storageHandleForAttribute($attribute);
-
-        if ($handle === null || $handle === '') {
-            return;
-        }
-
-        $target = $this->resolveStorageTargetKey($handle);
-        if ($target !== null && $target === $tempUploadTarget) {
-            $this->pushValidationError(
-                $attribute,
-                t('This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
-                $fail,
-            );
-        }
-    }
-
-    private function pushValidationError(string $attribute, string $message, ?Closure $fail = null): void
-    {
-        if ($fail !== null) {
-            $fail($message);
-
-            return;
-        }
-
-        $this->errors()->add($attribute, $message);
-    }
-
-    private function resolveStorageTargetKey(?string $value, bool $parse = true): ?string
+    public function resolveStorageTargetKey(?string $value, bool $parse = true): ?string
     {
         if ($value === null || $value === '') {
             return null;
@@ -432,28 +278,9 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         ]);
     }
 
-    private function isUnresolvedEnvValue(string $value): bool
-    {
-        if (! preg_match('/\\$\\{?\\w+\\}?/', $value)) {
-            return false;
-        }
-
-        return Env::parse($value) === null;
-    }
-
     private function diskExists(string $diskName): bool
     {
-        return app(\CraftCms\Cms\Filesystem\Filesystems::class)->diskExists($diskName);
-    }
-
-    private function isInternalDiskReference(string $value): bool
-    {
-        $diskName = $value;
-        if (str_starts_with($value, self::STORAGE_DISK_PREFIX)) {
-            $diskName = substr($value, strlen(self::STORAGE_DISK_PREFIX));
-        }
-
-        return $diskName !== '' && $this->diskExists($diskName) && $this->isInternalDiskName($diskName);
+        return app(FilesystemsService::class)->diskExists($diskName);
     }
 
     private function isInternalDiskName(string $diskName): bool
@@ -699,15 +526,6 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         return $subpath;
     }
 
-    private function storageHandleForAttribute(string $attribute): ?string
-    {
-        return match ($attribute) {
-            'fsHandle' => $this->_fsHandle,
-            'transformFsHandle' => $this->_transformFsHandle,
-            default => null,
-        };
-    }
-
     private function parseStorageHandle(?string $handle, bool $parse): ?string
     {
         if (! $handle) {
@@ -715,11 +533,6 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
         }
 
         return $parse ? Env::parse($handle) : $handle;
-    }
-
-    private function firstPathSegment(string $path): string
-    {
-        return explode('/', $path)[0];
     }
 
     private function diskNameForOperations(?string $handle = null): string
