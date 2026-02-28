@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Data;
 
-use Closure;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Component;
@@ -24,11 +23,8 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
-use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
-use Override;
 use Stringable;
 
 use function CraftCms\Cms\t;
@@ -113,43 +109,6 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    #[Override]
-    public function getRules(): array
-    {
-        return [
-            'id' => ['nullable', 'integer'],
-            'structureId' => ['nullable', 'integer'],
-            'maxLevels' => ['nullable', 'integer', 'min:0', 'max:32767'],
-            'maxAuthors' => ['nullable', 'integer', 'min:0', 'max:32767'],
-            'name' => ['required', 'string', 'max:255'],
-            'handle' => [
-                'required',
-                'string',
-                'max:255',
-                new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                Rule::unique(Table::SECTIONS)->ignore($this->id)->withoutTrashed('dateDeleted'),
-            ],
-            'entryTypes' => ['required'],
-            'type' => ['required', Rule::enum(SectionType::class)],
-            'defaultPlacement' => ['nullable', Rule::enum(DefaultPlacement::class)],
-            'propagationMethod' => ['required', Rule::enum(PropagationMethod::class)],
-            'previewTargets' => [
-                'nullable',
-                'array',
-                function (string $attribute, array $value, Closure $fail) {
-                    $this->validatePreviewTargets($value, $fail);
-                },
-            ],
-            'siteSettings' => [
-                'required',
-                'array',
-                function (string $attribute, array $value, Closure $fail) {
-                    $this->validateSiteSettings($fail);
-                },
-            ],
-        ];
     }
 
     /**

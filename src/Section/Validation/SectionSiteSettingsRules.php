@@ -9,21 +9,28 @@ use CraftCms\Cms\Section\Validation\Rules\SingleSectionUriRule;
 use CraftCms\Cms\Validation\Rules\SiteIdRule;
 use CraftCms\Cms\Validation\Rules\UriFormatRule;
 use CraftCms\Cms\Validation\Ruleset;
+use Override;
+use Throwable;
 
 /** @extends Ruleset<\CraftCms\Cms\Section\Data\SectionSiteSettings> */
 final class SectionSiteSettingsRules extends Ruleset
 {
     #[Override]
-    #[\Override]
     public function defineRules(): array
     {
+        $sectionType = null;
+        try {
+            $sectionType = $this->component->getSection()->type;
+        } catch (Throwable) {
+        }
+
         return [
             'id' => ['nullable', 'integer'],
             'siteId' => ['nullable', 'integer', new SiteIdRule],
             'template' => ['nullable', 'string', 'max:500'],
             'uriFormat' => array_merge(
                 ['required_if:hasUrls,true', new UriFormatRule],
-                $this->component->section?->type === SectionType::Single->value
+                $sectionType === SectionType::Single
                     ? [new SingleSectionUriRule]
                     : [],
             ),
