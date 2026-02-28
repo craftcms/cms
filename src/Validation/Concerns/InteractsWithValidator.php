@@ -51,6 +51,10 @@ trait InteractsWithValidator
             $this->errors = new MessageBag;
         }
 
+        if (is_string($attributeNames)) {
+            $attributeNames = [$attributeNames];
+        }
+
         if ($ruleset = $this->getRuleset()) {
             $ruleset->prepareForValidation($attributeNames);
         }
