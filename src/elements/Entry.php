@@ -1079,6 +1079,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                     'attribute' => $this->getAttributeLabel($attribute),
                 ]));
             },
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
         ];
         $rules[] = [
             ['authorIds'],
@@ -1111,6 +1112,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                     $section->maxAuthors !== 0
                 );
             },
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
         ];
 
         return $rules;

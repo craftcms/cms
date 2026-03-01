@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where global set GraphQL query caches weren’t getting invalidated when global sets were updated. ([#18479](https://github.com/craftcms/cms/issues/18479))
+- Fixed an error that could occur when applying project config changes. ([#18477](https://github.com/craftcms/cms/issues/18477))
 
 ## 5.9.14 - 2026-02-25
 
