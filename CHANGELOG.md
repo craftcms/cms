@@ -248,6 +248,11 @@
 - The Twig `hash` filter now supports passing a hashing algorithm, such as `'md5'` or `'sha256'`. ([#17885](https://github.com/craftcms/cms/issues/17885))
 - The `@parseRefs` and `@transform` GraphQL directives are now optional for each GraphQL schema, which fixes a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) IDOR issue. (GHSA-7x43-mpfg-r9wj)
 - GraphQL API requests can now identify themselves as preview requests by passing an `X-Craft-Preview-Token` header, set to the `x-craft-preview`/`x-craft-live-preview` query param in the preview target URL.
+- Added support for referencing environment variables anywhere within settings that support them (e.g. `foo/$ENV_NAME/bar` or `foo-${ENV_NAME}-bar`). ([#17949](https://github.com/craftcms/cms/pull/17949))
+- It’s no longer possible to instantiate objects that don’t extend `yii\base\BaseObject` via the `create()` Twig function. ([GHSA-94rc-cqvm-m4pw](https://github.com/craftcms/cms/security/advisories/GHSA-94rc-cqvm-m4pw))
+- Added the `uuid()` Twig function.
+- The `@parseRefs` and `@transform` GraphQL directives are now optional for each GraphQL schema. ([GHSA-7x43-mpfg-r9wj](https://github.com/craftcms/cms/security/advisories/GHSA-7x43-mpfg-r9wj))
+
 
 ### Extensibility
 - Subnav items within the global control panel navigation can now have icons. ([#17879](https://github.com/craftcms/cms/pull/17879))
