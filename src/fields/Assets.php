@@ -564,7 +564,7 @@ class Assets extends BaseRelationField
                         $asset->avoidFilenameConflicts = true;
                         $asset->setScenario(Asset::SCENARIO_CREATE);
 
-                        if (Craft::$app->getElements()->saveElement($asset)) {
+                        if (Craft::$app->getElements()->saveElement($asset, updateSearchIndex: true)) {
                             $assetIds[] = $asset->id;
                         } else {
                             Craft::warning('Couldn’t save uploaded asset due to validation errors: ' . implode(', ', $asset->getFirstErrors()), __METHOD__);
