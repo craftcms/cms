@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Validation\Contracts;
 
-use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Contracts\Support\MessageBag;
+use Illuminate\Validation\Validator;
 
 interface Validatable
 {
@@ -23,14 +23,14 @@ interface Validatable
      */
     public function getMessages(): array;
 
-    // /**
-    //  * This method is invoked before validation starts.
-    //  * The default implementation returns true, allowing validation to proceed.
-    //  * Override this method to perform pre-validation logic or to conditionally skip validation.
-    //  *
-    //  * @return bool whether the validation should be executed.
-    //  */
-    // public function beforeValidate(): bool;
+    /**
+     * This method is invoked before validation starts.
+     * The default implementation returns true, allowing validation to proceed.
+     * Override this method to perform pre-validation logic or to conditionally skip validation.
+     *
+     * @return bool whether the validation should be executed.
+     */
+    public function beforeValidate(): bool;
 
     /**
      * Validates the attributes.
@@ -41,13 +41,15 @@ interface Validatable
      */
     public function validate(string|array|null $attributeNames = null, bool $clearErrors = true): bool;
 
-    // /**
-    //  * This method is invoked after validation ends.
-    //  * Override this method to perform additional validation or add custom errors to the validator.
-    //  *
-    //  * @param Validator $validator the validator instance that performed the validation.
-    //  */
-    // public function afterValidate(Validator $validator): void;
+    /**
+     * This method is invoked after validation ends.
+     * Override this method to perform additional validation or add custom errors to the validator.
+     *
+     * TODO: Remove optionality of validator after components no longer rely on craft/base/Model
+     *
+     * @param  ?Validator  $validator  the validator instance that performed the validation.
+     */
+    public function afterValidate(?Validator $validator = null): void;
 
     /**
      * Returns the first error message for each attribute that has errors.

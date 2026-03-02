@@ -53,7 +53,7 @@ function createValidatableComponent(array $attributes, ?string $rulesetClass = n
             return $this->rulesetClass;
         }
 
-        public function afterValidate(): void
+        public function afterValidate(?\Illuminate\Validation\Validator $validator = null): void
         {
             $this->afterValidateCalled = true;
         }
