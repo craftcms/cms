@@ -325,6 +325,19 @@ JS;
             'field' => $this,
             'value' => $value,
             'formatNumber' => $formatNumber,
+            'currencyLabel' => $this->previewFormat === self::FORMAT_CURRENCY ? $this->currencyLabel() : false,
+        ]);
+    }
+
+    /**
+     * @return string
+     * @since 5.9.15
+     */
+    public function currencyLabel(): string
+    {
+        return Craft::t('app', '({currencyCode}) {currencySymbol}', [
+            'currencyCode' => $this->previewCurrency,
+            'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->previewCurrency),
         ]);
     }
 

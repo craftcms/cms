@@ -9915,6 +9915,29 @@ body.licensing-issues {
   }
 }
 
+/* number field */
+.number-container {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+
+  .number-currency-label {
+    @include mixins.input-styles;
+    border-inline-end: none;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    align-items: center;
+    box-sizing: border-box;
+    background: transparent;
+    display: flex;
+    height: 100%;
+    padding-block: 6px;
+    padding-inline: 9px;
+    white-space: nowrap;
+  }
+}
+
 /* categories */
 .add-category-form {
   margin-block-start: 24px;
