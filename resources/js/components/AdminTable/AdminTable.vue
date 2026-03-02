@@ -158,6 +158,22 @@
                 v-else-if="header.column.getIsSorted() === 'desc'"
                 name="arrow-up"
               ></craft-icon>
+
+              <template v-if="header.column.columnDef.meta?.headerTip">
+                <c-tooltip :for="`header-info-${header.column.id}`">{{
+                  header.column.columnDef.meta.headerTip
+                }}</c-tooltip>
+
+                <craft-button
+                  type="button"
+                  :id="`header-info-${header.column.id}`"
+                  icon
+                  size="small"
+                  appearance="plain"
+                >
+                  <craft-icon name="circle-info"></craft-icon>
+                </craft-button>
+              </template>
             </div>
           </th>
         </tr>

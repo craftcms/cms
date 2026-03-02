@@ -6,6 +6,7 @@ declare module '@tanstack/vue-table' {
     // Applies classes to the cell
     cellClass?: string | Record<string, boolean>;
     cellTag?: 'td' | 'th';
+    headerTip?: string;
     headerSrOnly?: boolean;
     // Applies classes to the header
     headerClass?: string | Record<string, boolean>;

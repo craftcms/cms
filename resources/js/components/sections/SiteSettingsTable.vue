@@ -98,18 +98,33 @@
         class: 'font-mono text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
         disabled: (row) => !row.original.enabled || row.original.singleHomepage,
+        meta: {
+          headerTip: t(
+            'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.'
+          ),
+        },
       }),
       columnHelper.text('uriFormat', {
         header: t('Entry URI Format'),
         class: 'font-mono text-xs',
         placeholder: t("Leave blank if the entry doesn't have a URL"),
         disabled: (row) => !row.original.enabled,
+        meta: {
+          headerTip: t(
+            'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.'
+          ),
+        },
       }),
       columnHelper.autocomplete('template', {
         header: t('Template'),
         class: 'font-mono text-xs',
         options: templateOptions.value,
         disabled: (row) => !row.original.enabled,
+        meta: {
+          headerTip: t(
+            'Which template should be loaded when an entry’s URL is requested.'
+          ),
+        },
       }),
       columnHelper.lightswitch('enabledByDefault', {
         header: t('Default Status'),
