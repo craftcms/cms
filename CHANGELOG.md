@@ -20,7 +20,7 @@
 
 ## 4.17.6 - 2026-02-18
 
-- Added `craft\services\Tokens::getRemainingTokenUsages()`.
+- Added `craft\serviceokens::getRemainingTokenUsages()`.
 - Added `craft\web\Request::getTokenRoute()`.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-cc7p-2j3x-x7xf)
 
@@ -77,9 +77,9 @@
 
 ### Development
 - Added support for referencing environment variables anywhere within settings that support them (e.g. `foo/$ENV_NAME/bar` or `foo-${ENV_NAME}-bar`). ([#17949](https://github.com/craftcms/cms/pull/17949))
-- It’s no longer possible to instantiate objects that don’t extend `yii\base\BaseObject` via the `create()` Twig function. (GHSA-94rc-cqvm-m4pw)
+- It’s no longer possible to instantiate objects that don’t extend `yii\base\BaseObject` via the `create()` Twig function. ([GHSA-94rc-cqvm-m4pw](https://github.com/craftcms/cms/security/advisories/GHSA-94rc-cqvm-m4pw))
 - Added the `uuid()` Twig function.
-- The `@parseRefs` and `@transform` GraphQL directives are now optional for each GraphQL schema. (GHSA-7x43-mpfg-r9wj)
+- The `@parseRefs` and `@transform` GraphQL directives are now optional for each GraphQL schema. ([GHSA-7x43-mpfg-r9wj](https://github.com/craftcms/cms/security/advisories/GHSA-7x43-mpfg-r9wj))
 
 ### Extensibility
 - Added `craft\base\ElementInterface::setAttributesFromRequest()`.
@@ -111,12 +111,12 @@
 - Fixed a bug where deadlocks could occur when updating elements’ search indexes. ([#18139](https://github.com/craftcms/cms/pull/18139))
 - Fixed a bug where element index pages weren’t retaining their `search` query param if present on the initial request.
 - Fixed a bug where element search query caches weren’t getting invalidated when elements’ search keywords were indexed. ([#18275](https://github.com/craftcms/cms/issues/18275))
-- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. (GHSA-4mgv-366x-qxvx)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-v47q-jxvr-p68x)
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. (GHSA-2xfc-g69j-x2mp, GHSA-jxm3-pmm2-9gf6)
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF and SSTI vulnerability. (GHSA-5fvc-7894-ghp4)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSTI vulnerability. (GHSA-qc86-q28f-ggww)
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) user account enumeration vulnerability. (GHSA-234q-vvw3-mrfq)
+- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerabilities. ([GHSA-4mgv-366x-qxvx](https://github.com/craftcms/cms/security/advisories/GHSA-4mgv-366x-qxvx))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-v47q-jxvr-p68x](https://github.com/craftcms/cms/security/advisories/GHSA-v47q-jxvr-p68x))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerabilities. ([GHSA-2xfc-g69j-x2mp](https://github.com/craftcms/cms/security/advisories/GHSA-2xfc-g69j-x2mp), [GHSA-jxm3-pmm2-9gf6](https://github.com/craftcms/cms/security/advisories/GHSA-jxm3-pmm2-9gf6))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF and SSTI vulnerability. ([GHSA-5fvc-7894-ghp4](https://github.com/craftcms/cms/security/advisories/GHSA-5fvc-7894-ghp4))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSTI vulnerability. ([GHSA-qc86-q28f-ggww](https://github.com/craftcms/cms/security/advisories/GHSA-qc86-q28f-ggww))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) user account enumeration vulnerability. ([GHSA-234q-vvw3-mrfq](https://github.com/craftcms/cms/security/advisories/GHSA-234q-vvw3-mrfq))
 
 ## 4.16.19 - 2026-01-20
 
