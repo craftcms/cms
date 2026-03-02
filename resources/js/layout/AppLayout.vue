@@ -49,6 +49,24 @@
 
   const isLargeScreen = useMediaQuery('(min-width: 1024px)');
   const debugOpen = ref(false);
+  const skipLinks = [
+    {
+      label: t('Skip to main section'),
+      url: '#main',
+    },
+    {
+      label: t('Skip to left sidebar'),
+      url: '#sidebar-container',
+    },
+    {
+      label: t('Skip to content'),
+      url: '#content-container',
+    },
+    {
+      label: t('Skip to right sidebar'),
+      url: '#details-container',
+    },
+  ];
 
   watch(
     isLargeScreen,
@@ -96,6 +114,7 @@
   <LiveRegion :debug="true"></LiveRegion>
   <div class="cp">
     <div class="cp__header">
+      <a v-for="link in skipLinks" :href="link.url">{{ link.label }}</a>
       <div class="flex gap-2 p-2">
         <craft-button
           icon
@@ -135,7 +154,7 @@
     </div>
     <div class="cp__main">
       <slot name="main">
-        <main>
+        <main id="main" tabindex="-1">
           <slot name="breadcrumbs">
             <div
               class="px-4 py-2 border-b border-b-border-subtle"
