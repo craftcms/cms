@@ -255,23 +255,21 @@
     </template>
 
     <template #interior-nav="{state}">
-      <nav>
-        <craft-nav-list class="-mx-2">
-          <craft-nav-item :href="index.url()" :active="!group">
-            {{ t('All Sites') }}
-          </craft-nav-item>
-          <CpLink
-            as="craft-nav-item"
-            v-for="g in groups"
-            :key="g.id"
-            :href="index.url({query: {groupId: g.id}})"
-            :active="group && g.id === group.id"
-            block
-          >
-            {{ g.name }}
-          </CpLink>
-        </craft-nav-list>
-      </nav>
+      <craft-nav-list class="-mx-2">
+        <craft-nav-item :href="index.url()" :active="!group">
+          {{ t('All Sites') }}
+        </craft-nav-item>
+        <CpLink
+          as="craft-nav-item"
+          v-for="g in groups"
+          :key="g.id"
+          :href="index.url({query: {groupId: g.id}})"
+          :active="group && g.id === group.id"
+          block
+        >
+          {{ g.name }}
+        </CpLink>
+      </craft-nav-list>
 
       <div class="mt-4 flex gap-2">
         <craft-button type="button" @click="openModal('create')" size="small">

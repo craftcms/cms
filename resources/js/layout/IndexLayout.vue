@@ -47,7 +47,13 @@
     </template>
 
     <div class="index-grid">
-      <div>
+      <nav aria-labelledby="secondary-nav-label">
+        <span
+          id="secondary-nav-label"
+          aria-hidden="true"
+          class="sr-only">
+          {{ t('Secondary') }}
+        </span>
         <craft-button
           v-if="!isLarge"
           type="button"
@@ -71,7 +77,7 @@
         <div v-if="navState === 'expanded'" id="nav-container">
           <slot name="interior-nav" :state="navState"></slot>
         </div>
-      </div>
+      </nav>
       <div
         class="bg-white border border-border-subtle rounded-sm shadow-sm @container"
       >
