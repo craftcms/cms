@@ -3139,7 +3139,6 @@ JS);
     {
         Craft::$app->requireEdition(CmsEdition::Team);
         $this->requirePostRequest();
-        $this->requireCpRequest();
         $this->requirePermission('editUsers');
     }
 }
