@@ -14,7 +14,10 @@
 }
 
 .skip-link {
-  /* Copied from tailwind's sr-only class */
+  /* Based on tailwind's sr-only class */
+  --x-position: 0;
+  --y-position: 0;
+  display: inline-block;
   position: absolute;
   width: 1px;
   height: 1px;
@@ -22,7 +25,15 @@
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-  border-width: 0;
+  background-color: var(--c-bg-body);
+  text-decoration: none;
+  padding-block: var(--c-spacing-md);
+  padding-inline: var(--c-spacing-lg);
+  outline: none;
+  border: 1px dashed var(--c-form-control-border);
+  color: var(--c-fg-text);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--c-radius-md);
 
   &:focus {
     width: auto;
@@ -30,8 +41,14 @@
     overflow: visible;
     clip: auto;
     white-space: normal;
-    inset-inline-start: 0;
+    inset-inline-start: var(--x-position);
+    inset-block-start: var(--y-position);
   }
+}
+
+.skip-link--global {
+  --x-position: calc(10rem / 16);
+  --y-position: calc(5rem / 16);
 }
 
 .error-list {

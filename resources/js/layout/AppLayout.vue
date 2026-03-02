@@ -54,18 +54,6 @@
       label: t('Skip to main section'),
       url: '#main',
     },
-    {
-      label: t('Skip to left sidebar'),
-      url: '#sidebar-container',
-    },
-    {
-      label: t('Skip to content'),
-      url: '#content-container',
-    },
-    {
-      label: t('Skip to right sidebar'),
-      url: '#details-container',
-    },
   ];
 
   watch(
@@ -114,7 +102,7 @@
   <LiveRegion :debug="true"></LiveRegion>
   <div class="cp">
     <div class="cp__header">
-      <a v-for="link in skipLinks" :href="link.url">{{ link.label }}</a>
+      <a v-for="link in skipLinks" :href="link.url" class="skip-link skip-link--global">{{ link.label }}</a>
       <div class="flex gap-2 p-2">
         <craft-button
           icon
