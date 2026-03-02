@@ -2814,7 +2814,6 @@ JS,
     {
         Craft::$app->requireEdition(Craft::Pro);
         $this->requirePostRequest();
-        $this->requireCpRequest();
         $this->requirePermission('editUsers');
     }
 }
