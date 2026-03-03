@@ -6,6 +6,7 @@
   import ActionMenu from '@/components/ActionMenu.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import Text from '@/components/Text.vue';
+  import {create} from '@actions/Settings/EntryTypesController';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void;
@@ -84,7 +85,7 @@
     </template>
   </div>
 
-  <div class="flex gap-2 mt-3">
+  <div class="flex gap-2 mt-3 items-center">
     <craft-action-menu v-if="types?.length">
       <craft-button type="button" slot="invoker">
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>
@@ -127,10 +128,10 @@
         </template>
       </div>
     </craft-action-menu>
-    <craft-button type="button">
+    <a :href="create['/admin/settings/entry-types/new']().url" class="">
       <craft-icon name="plus" slot="prefix"></craft-icon>
       {{ t('Create') }}
-    </craft-button>
+    </a>
   </div>
 </template>
 
