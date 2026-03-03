@@ -43,7 +43,7 @@ export interface EntryType {
   handle: string;
   description: null;
   icon: string;
-  color: string | null;
+  color: string | {name: string; value: string} | null;
   uiLabelFormat: string;
   hasTitleField: boolean;
   titleTranslationMethod: TranslationMethod;
