@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {t} from '@craftcms/cp';
   import SystemInfo from '@/components/SystemInfo.vue';
   import MainNav from '@/components/MainNav.vue';
   import EditionInfo from '@/components/EditionInfo.vue';
@@ -35,7 +36,8 @@
 </script>
 
 <template>
-  <nav class="cp-sidebar" :data-visibility="visibility" :data-mode="mode">
+  <nav class="cp-sidebar" :data-visibility="visibility" :data-mode="mode" aria-labelledby="cp-sidebar-label">
+    <span id="cp-sidebar-label" aria-hidden class="sr-only">{{ t('Primary') }}</span>
     <template v-if="visibility === 'visible'">
       <div class="cp-sidebar__header">
         <div class="sidebar-header" v-if="mode !== 'docked'">

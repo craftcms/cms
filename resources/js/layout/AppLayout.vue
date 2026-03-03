@@ -15,7 +15,7 @@
       title?: string;
       debug?: any;
       fullWidth?: boolean;
-      additionalSkipLinks?: Array<{label: string; url: string;}>;
+      additionalSkipLinks?: Array<{label: string; target: string;}>;
     }>(),
     {fullWidth: false, crumbs: () => []}
   );
@@ -34,7 +34,7 @@
   const successFlash = computed(() => page.props.flash?.success);
   const crumbs = computed(() => page.props.crumbs ?? null);
   const skipLinks = computed(() => [
-    {label: t('Skip to main section'), url: '#main'},
+    {label: t('Skip to main section'), target: '#main'},
     ...(props.additionalSkipLinks ?? [])
   ]);
   const sidebarToggle = useTemplateRef('sidebarToggle');
@@ -101,7 +101,7 @@
   <LiveRegion :debug="true"></LiveRegion>
   <div class="cp">
     <div class="cp__header">
-      <a v-for="link in skipLinks" :href="link.url" class="skip-link skip-link--global">{{ link.label }}</a>
+      <a v-for="link in skipLinks" :href="link.target" class="skip-link skip-link--global">{{ link.label }}</a>
       <div class="flex gap-2 p-2">
         <craft-button
           icon

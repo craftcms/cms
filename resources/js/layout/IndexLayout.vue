@@ -26,6 +26,10 @@
     navState.value = navState.value === 'expanded' ? 'collapsed' : 'expanded';
   }
 
+  const skipLinks = [
+    {label: t('Skip to secondary navigation'), target: '#secondary-nav'},
+  ];
+
   watch(
     isLarge,
     (newValue) => {
@@ -40,14 +44,14 @@
 </script>
 
 <template>
-  <AppLayout :full-width="true" :title="title" :debug="debug" :additional-skip-links="[{label: 'Skip to secondary nav', url: '#secondary-nav'}]">
+  <AppLayout :full-width="true" :title="title" :debug="debug" :additional-skip-links="skipLinks">
     <!-- Forward all other slots -->
     <template v-for="(_, name) in forwardedSlots" #[name]="slotData">
       <slot :name="name" v-bind="slotData || {}"></slot>
     </template>
 
     <div class="index-grid">
-      <nav id="secondary-nav" aria-labelledby="secondary-nav-label">
+      <nav id="secondary-nav" aria-labelledby="secondary-nav-label" tabindex="-1">
         <span
           id="secondary-nav-label"
           aria-hidden="true"
