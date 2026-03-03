@@ -414,7 +414,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         // Initialize the element index
         this.elementIndex = Craft.createElementIndex(
           this.elementType,
-          this.$body,
+          this.$body.children('.element-index'),
           this.getIndexSettings()
         );
 

@@ -475,7 +475,10 @@ class ElementIndexesController extends BaseElementsController
         }
 
         if (!empty($fieldLayouts)) {
-            $condition->setFieldLayouts(array_map(fn(array $config) => FieldLayout::createFromConfig($config), $fieldLayouts));
+            $condition->setFieldLayouts(array_map(
+                fn(array $config) => FieldLayout::createFromConfig($config),
+                Component::cleanseConfig($fieldLayouts),
+            ));
         }
 
         $condition->mainTag = 'div';
