@@ -12,7 +12,7 @@ use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
@@ -61,7 +61,7 @@ class SetStatus extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        AssetRegistry::jsWithVars(fn($type) => <<<JS
+        HtmlStack::jsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,

@@ -30,6 +30,7 @@ use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
@@ -420,12 +421,10 @@ class AppController extends Controller
             }
         }
 
-        $view = Craft::$app->getView();
-
         return $this->asJson([
             'elements' => $elementHtml,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
         ]);
     }
 
@@ -486,11 +485,10 @@ class AppController extends Controller
             }
         }
 
-        $view = Craft::$app->getView();
         $data = [
             'components' => $componentHtml,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
         ];
 
         if ($withMenuItems) {

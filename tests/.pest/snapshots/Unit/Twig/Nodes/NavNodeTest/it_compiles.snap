@@ -1,0 +1,101 @@
+if (isset($context['nav'])) {
+    $_nav = $context['nav'];
+}
+// line 1
+$context['_parent'] = $context;
+$context['_seq'] = CoreExtension::ensureTraversable(($context["entries"] ?? null));
+$context['loop'] = [
+  'parent' => $context['_parent'],
+  'index0' => 0,
+  'index'  => 1,
+  'first'  => true,
+];
+if (is_array($context['_seq']) || (is_object($context['_seq']) && $context['_seq'] instanceof \Countable)) {
+    $length = count($context['_seq']);
+    $context['loop']['revindex0'] = $length - 1;
+    $context['loop']['revindex'] = $length;
+    $context['loop']['length'] = $length;
+    $context['loop']['last'] = 1 === $length;
+}
+foreach ($context['_seq'] as $context["_key"] => $context["item"]) {
+    $_thisItemLevel = (int)craft\helpers\Template::attribute($this->env, $this->getSourceContext(), $context["item"], 'level', [], Twig\Template::ANY_CALL, false, true);
+    $_thisItemLft = (int)craft\helpers\Template::attribute($this->env, $this->getSourceContext(), $context["item"], 'lft', [], Twig\Template::ANY_CALL, false, true);
+    $_thisItemRgt = (int)craft\helpers\Template::attribute($this->env, $this->getSourceContext(), $context["item"], 'rgt', [], Twig\Template::ANY_CALL, false, true);
+    if (isset($_contextsByLevel)) {
+        if (
+            $_thisItemLevel > $context['nav']['level'] + 1 ||
+            (isset($_contextsByLevel[$_thisItemLevel-1]['nav']['rgt']) && $_thisItemLft > $_contextsByLevel[$_thisItemLevel-1]['nav']['rgt'])
+        ) {
+            continue;
+        }
+        $_tmpContext = $context;
+        $context = $_contextsByLevel[$context['nav']['level']];
+        if ($_thisItemLevel > $context['nav']['level']) {
+            for ($_i = $context['nav']['level']; $_i < $_thisItemLevel; $_i++) {
+                yield "<ul>";
+            }
+        } else {
+            yield "</ul>";
+            if ($_thisItemLevel < $context['nav']['level']) {
+                for ($_i = $context['nav']['level']-1; $_i >= $_thisItemLevel; $_i--) {
+                    if (isset($_contextsByLevel[$_i])) {
+                        $context = $_contextsByLevel[$_i];
+                        yield "</ul>";
+                        yield "</ul>";
+                        unset($_contextsByLevel[$_i]);
+                    }
+                }
+            }
+        }
+        $context = $_tmpContext;
+        unset($_tmpContext);
+    } else {
+        $_firstItemLevel = $_thisItemLevel;
+    }
+    $context['nav'] = [
+        'level' => $_thisItemLevel,
+        'lft' => $_thisItemLft,
+        'rgt' => $_thisItemRgt,
+    ];
+    if (isset($_contextsByLevel[$_thisItemLevel-1])) {
+        $context['nav']['parent'] = $_contextsByLevel[$_thisItemLevel-1];
+        if (method_exists($context["item"], 'setParent')) {
+            $context["item"]->setParent($context['nav']['parent']["item"]);
+        }
+    } else {
+        $context['nav']['parent'] = null;
+    }
+    $_contextsByLevel[$_thisItemLevel] = $context;
+    yield "<li>item</li>";
+    ++$context['loop']['index0'];
+    ++$context['loop']['index'];
+    $context['loop']['first'] = false;
+    if (isset($context['loop']['revindex0'], $context['loop']['revindex'])) {
+        --$context['loop']['revindex0'];
+        --$context['loop']['revindex'];
+        $context['loop']['last'] = 0 === $context['loop']['revindex0'];
+    }
+}
+$_parent = $context['_parent'];
+unset($context['_seq'], $context['_key'], $context['item'], $context['_parent'], $context['loop']);
+$context = array_intersect_key($context, $_parent) + $_parent;
+if (isset($_thisItemLevel)) {
+    $_tmpContext = $context;
+    if ($_thisItemLevel > $_firstItemLevel) {
+        for ($_i = $_thisItemLevel; $_i > $_firstItemLevel; $_i--) {
+            if (isset($_contextsByLevel[$_i])) {
+                $context = $_contextsByLevel[$_i];
+                                yield "</ul>";
+                                yield "</ul>";
+            }
+        }
+    }
+    $context = $_contextsByLevel[$_firstItemLevel];
+    yield "</ul>";
+    $context = $_tmpContext;
+    unset($_thisItemLevel, $_firstItemLevel, $_i, $_contextsByLevel, $_tmpContext);
+}
+if (isset($_nav)) {
+    $context['nav'] = $_nav;
+    unset($_nav);
+}

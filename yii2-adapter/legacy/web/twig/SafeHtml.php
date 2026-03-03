@@ -7,12 +7,18 @@
 
 namespace craft\web\twig;
 
-/**
- * Interface that designates a class’s `__toString()` method as HTML-safe for Twig.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.2.0
- */
-interface SafeHtml
-{
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * Interface that designates a class's `__toString()` method as HTML-safe for Twig.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 5.2.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Twig\Contracts\SafeHtml} instead.
+     */
+    interface SafeHtml
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Twig\Contracts\SafeHtml::class, SafeHtml::class);

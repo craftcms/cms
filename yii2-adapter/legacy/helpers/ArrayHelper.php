@@ -275,15 +275,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function contains(iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
     {
-        foreach ($array as $element) {
-            $elementValue = static::getValue($element, $key);
-            /** @noinspection TypeUnsafeComparisonInspection */
-            if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
-                return true;
-            }
-        }
-
-        return false;
+        return Arr::contains(iterator_to_array($array), $key, $value, $strict);
     }
 
     /**

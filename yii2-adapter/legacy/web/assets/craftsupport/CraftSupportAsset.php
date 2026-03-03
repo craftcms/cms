@@ -9,7 +9,6 @@ namespace craft\web\assets\craftsupport;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use craft\web\View;
 
 /**
  * Asset bundle for the Craft Support widget
@@ -41,19 +40,4 @@ class CraftSupportAsset extends AssetBundle
     public $js = [
         'CraftSupportWidget.js',
     ];
-
-    /**
-     * @inheritdoc
-     */
-    public function registerAssetFiles($view): void
-    {
-        parent::registerAssetFiles($view);
-
-        if ($view instanceof View) {
-            $view->registerTranslations('app', [
-                'Contact Developer Support',
-                'Message sent successfully.',
-            ]);
-        }
-    }
 }

@@ -370,14 +370,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
           }
         }
-      } else if (
-        this.settings.criteria &&
-        this.settings.criteria.siteId &&
-        this.settings.criteria.siteId !== '*'
-      ) {
-        this._setSite(this.settings.criteria.siteId);
       } else {
-        this._setSite(Craft.siteId);
+        // if there's only one available site, go with that one
+        const siteIds = this.$container.data('site-ids');
+        if (siteIds?.length === 1) {
+          this._setSite(siteIds[0]);
+        } else if (
+          this.settings.criteria &&
+          this.settings.criteria.siteId &&
+          this.settings.criteria.siteId !== '*'
+        ) {
+          this._setSite(this.settings.criteria.siteId);
+        } else {
+          this._setSite(Craft.siteId);
+        }
       }
 
       // Don't let the criteria override the selected site

@@ -13,9 +13,6 @@ use function CraftCms\Cms\debugbar;
 
 class Environment extends TwigEnvironment
 {
-    /**
-     * {@inheritdoc}
-     */
     public function __construct(LoaderInterface $loader, array $options = [])
     {
         parent::__construct($loader, $options);
@@ -23,9 +20,6 @@ class Environment extends TwigEnvironment
         $this->setDefaultEscaperStrategy();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     #[\Override]
     public function compileSource(Source $source): string
     {

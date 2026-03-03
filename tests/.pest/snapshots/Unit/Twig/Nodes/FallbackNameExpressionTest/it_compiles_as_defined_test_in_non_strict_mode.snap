@@ -1,0 +1,2 @@
+// line 1
+craft\helpers\Template::resolveVariable("entry", $context, false, 1, $this->source)

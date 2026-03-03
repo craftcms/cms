@@ -16,8 +16,8 @@ use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Conditions;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -58,7 +58,6 @@ class ElementIndexSettingsController extends BaseElementsController
     {
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $this->elementType();
-        $view = Craft::$app->getView();
 
         // Global sort options
         $baseSortOptions = Collection::make($elementType::sortOptions())
@@ -154,9 +153,9 @@ class ElementIndexSettingsController extends BaseElementsController
                     $condition->queryParams = ['site', 'status'];
                     $condition->addRuleLabel = t('Add a filter');
 
-                    AssetRegistry::startJsBuffer();
+                    HtmlStack::startJsBuffer();
                     $conditionBuilderHtml = $condition->getBuilderHtml();
-                    $conditionBuilderJs = AssetRegistry::clearJsBuffer();
+                    $conditionBuilderJs = HtmlStack::clearJsBuffer();
                     $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
                 }
 
@@ -217,9 +216,9 @@ class ElementIndexSettingsController extends BaseElementsController
         $condition->queryParams = ['site', 'status'];
         $condition->addRuleLabel = t('Add a filter');
 
-        AssetRegistry::startJsBuffer();
+        HtmlStack::startJsBuffer();
         $conditionBuilderHtml = $condition->getBuilderHtml();
-        $conditionBuilderJs = AssetRegistry::clearJsBuffer();
+        $conditionBuilderJs = HtmlStack::clearJsBuffer();
 
         $userGroups = UserGroups::getAllGroups()
             ->map(fn(UserGroup $group) => [
@@ -243,8 +242,8 @@ class ElementIndexSettingsController extends BaseElementsController
             'conditionBuilderHtml' => $conditionBuilderHtml,
             'conditionBuilderJs' => $conditionBuilderJs,
             'userGroups' => $userGroups,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
         ]);
     }
 

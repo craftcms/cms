@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Data;
 
 use craft\base\Serializable;
-use craft\web\twig\AllowedInSandbox;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Stringable;
 
 /**

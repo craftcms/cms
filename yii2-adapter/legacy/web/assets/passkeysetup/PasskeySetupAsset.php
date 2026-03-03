@@ -9,7 +9,6 @@ namespace craft\web\assets\passkeysetup;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use craft\web\View;
 
 /**
  * Passkey setup asset bundle.
@@ -36,20 +35,4 @@ class PasskeySetupAsset extends AssetBundle
     public $js = [
         'PasskeySetup.js',
     ];
-
-    /**
-     * @inheritdoc
-     */
-    public function registerAssetFiles($view): void
-    {
-        parent::registerAssetFiles($view);
-
-        if ($view instanceof View) {
-            $view->registerTranslations('app', [
-                'Are you sure you want to delete the “{name}” passkey?',
-                'Enter a name for the passkey.',
-                'This browser doesn’t support passkeys.',
-            ]);
-        }
-    }
 }

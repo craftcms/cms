@@ -434,8 +434,9 @@ class Search
     {
         DB::table(Table::SEARCHINDEX, 's')
             ->whereNotExists(
-                DB::table(Table::ELEMENTS, 'e')
-                    ->whereColumn('e.id', 's.elementId'),
+                DB::table(Table::ELEMENTS_SITES, 'es')
+                    ->whereColumn('elementId', 's.elementId')
+                    ->whereColumn('siteId', 's.siteId'),
             )
             ->delete();
     }
@@ -444,8 +445,9 @@ class Search
     {
         DB::table(Table::SEARCHINDEXQUEUE, 'q')
             ->whereNotExists(
-                DB::table(Table::ELEMENTS, 'elements')
-                    ->whereColumn('elements.id', 'q.elementId'),
+                DB::table(Table::ELEMENTS_SITES, 'elements')
+                    ->whereColumn('elementId', 'q.elementId')
+                    ->whereColumn('siteId', 'q.siteId'),
             )
             ->delete();
     }

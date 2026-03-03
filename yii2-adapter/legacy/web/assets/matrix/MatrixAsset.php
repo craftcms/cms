@@ -9,7 +9,6 @@ namespace craft\web\assets\matrix;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use craft\web\View;
 
 /**
  * Asset bundle for Matrix fields
@@ -34,26 +33,4 @@ class MatrixAsset extends AssetBundle
     public $js = [
         'MatrixInput.js',
     ];
-
-    /**
-     * @inheritdoc
-     */
-    public function registerAssetFiles($view): void
-    {
-        parent::registerAssetFiles($view);
-
-        if ($view instanceof View) {
-            $view->registerTranslations('app', [
-                'Actions',
-                'Add an entry',
-                'Add {type} above',
-                'Collapse',
-                'Disable',
-                'Disabled',
-                'Enable',
-                'Entry could not be added. Maximum number of entries reached.',
-                'Expand',
-            ]);
-        }
-    }
 }

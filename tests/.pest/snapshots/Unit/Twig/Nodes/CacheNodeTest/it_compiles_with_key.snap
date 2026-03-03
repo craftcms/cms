@@ -1,0 +1,22 @@
+// line 1
+$cacheService = Craft::$app->getTemplateCaches();
+$request = request();
+$ignoreCache__v0 = ($request->isPreview() || $request->getToken());
+if (!$ignoreCache__v0) {
+    $cacheKey__v0 = "my-cache-key";
+    $cacheBody__v0 = $cacheService->getTemplateCache($cacheKey__v0, false, true);
+} else {
+    $cacheBody__v0 = null;
+}
+if ($cacheBody__v0 === null) {
+    if (!$ignoreCache__v0) {
+        $cacheService->startTemplateCache(true, false);
+    }
+    ob_start();
+    yield "cached content";
+    $cacheBody__v0 = ob_get_clean();
+    if (!$ignoreCache__v0) {
+        $cacheService->endTemplateCache($cacheKey__v0, false, null, null, $cacheBody__v0, true);
+    }
+}
+yield $cacheBody__v0;

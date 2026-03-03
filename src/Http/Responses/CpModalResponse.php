@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Responses;
 use Craft;
 use craft\web\assets\htmx\HtmxAsset;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -151,8 +152,7 @@ final class CpModalResponse implements Responsable
 
     public function toResponse($request): JsonResponse
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(HtmxAsset::class);
+        Craft::$app->getView()->registerAssetBundle(HtmxAsset::class);
 
         $namespace = Str::random(10);
 
@@ -189,8 +189,8 @@ final class CpModalResponse implements Responsable
             'submitButtonLabel' => $this->submitButtonLabel,
             'content' => $content,
             'errorSummary' => $errorSummary,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
             'deltaNames' => DeltaRegistry::getNames(),
             'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ]);
