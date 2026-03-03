@@ -621,6 +621,8 @@ class Cp extends Component
      * @phpstan-return array{label:string,data:array}[]
      *
      * @since 3.1.0
+     *
+     * @dprecated in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getTemplateSuggestions]] should be used instead.
      */
     public function getTemplateSuggestions(): array
     {

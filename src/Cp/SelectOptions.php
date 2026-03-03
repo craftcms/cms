@@ -397,7 +397,7 @@ class SelectOptions
      *
      * @phpstan-return array{array{label: string, type: 'optgroup', options: list<array{label: string, value: string, data: array{hint: string|null}}>}}
      *
-     * @since 3.1.0
+     * @since 6.0.0
      */
     public static function getTemplateSuggestions(): array
     {
