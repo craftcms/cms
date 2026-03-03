@@ -395,7 +395,7 @@ class SelectOptions
      *
      * @return array[]
      *
-     * @phpstan-return array{label:string,data:array}[]
+     * @phpstan-return array{array{label: string, type: 'optgroup', options: list<array{label: string, value: string, data: array{hint: string|null}}>}}
      *
      * @since 3.1.0
      */
