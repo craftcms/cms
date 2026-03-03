@@ -31,6 +31,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 use Stringable;
 
 use function CraftCms\Cms\t;
@@ -200,14 +201,7 @@ JS, [
     {
         $rules = [
             'id' => ['nullable', 'integer'],
-            'color' => [
-                'nullable',
-                'string',
-                Rule::in(array_merge(
-                    array_map(fn (Color $color) => $color->value, Color::cases()),
-                    ['__blank__']
-                )),
-            ],
+            'color' => ['nullable', new Enum(Color::class)],
             'fieldLayoutId' => ['nullable', 'integer', function (string $attribute, int $value, $fail) {
                 $fieldLayout = Fields::assembleLayoutFromPost();
                 $fieldLayout->reservedFieldHandles = [
