@@ -156,7 +156,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
   td {
     vertical-align: middle;
     padding-inline: var(--_cell-spacing);
-    height: var(--_cell-height);
+    min-height: var(--_cell-height);
 
     &:has(input:not([type='checkbox']):not([type='radio'])) {
       padding: 0;
@@ -173,6 +173,13 @@ Modify with `cp-table--auto` to apply table-layout: auto
     margin: 0;
     width: 100%;
     height: var(--_cell-height);
+  }
+}
+
+.cp-table--padded {
+  th,
+  td {
+    padding-block: var(--c-spacing-md);
   }
 }
 

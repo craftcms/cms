@@ -33,8 +33,31 @@
   gap: 1em;
 }
 
+.stack--horizontal {
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+}
+
 .list {
   list-style: disc;
   padding-inline-start: 1.5em;
   margin: 0;
+}
+
+.stage {
+  padding: 2rem;
+}
+
+.swatch {
+  width: 40px;
+  aspect-ratio: 4/3;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: inline-grid;
+  place-items: center;
+}
+
+.label {
+  font-family: monospace;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.5);
 }
