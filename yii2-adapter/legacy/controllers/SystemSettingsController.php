@@ -229,11 +229,6 @@ class SystemSettingsController extends Controller
     {
         $view = $this->getView();
         $view->registerAssetBundle(AdminTableAsset::class);
-        $view->registerTranslations('yii2-adapter', [
-            'Global Set Name',
-            'No global sets exist yet.',
-        ]);
-
         return $this->rendertemplate('yii2-adapter/settings/globals/_index', [
             'title' => t('Globals', category: 'yii2-adapter'),
             'crumbs' => [

@@ -11,7 +11,7 @@ use craft\web\assets\codemirror\CodeMirrorAsset;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\JsonData;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
@@ -99,9 +99,8 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
     {
         $id = $this->getInputId();
 
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(CodeMirrorAsset::class);
-        AssetRegistry::jsWithVars(fn ($id, $static) => <<<JS
+        Craft::$app->getView()->registerAssetBundle(CodeMirrorAsset::class);
+        HtmlStack::jsWithVars(fn ($id, $static) => <<<JS
 (() => {
   const textarea = document.getElementById($id)
   const init = () => {
@@ -143,7 +142,7 @@ JS, [
             Html::endTag('div');
     }
 
-    #[\Override]
+    #[Override]
     public function getElementRules(ElementInterface $element): array
     {
         return [

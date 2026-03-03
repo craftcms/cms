@@ -11,7 +11,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -323,41 +323,41 @@ class TemplateCaches extends Component
         foreach ($bufferedJs as $pos => $scripts) {
             $pos = Position::tryFrom($pos) ?? Position::BodyEnd;
             foreach ($scripts as $key => $js) {
-                AssetRegistry::js($js, $pos, $key);
+                HtmlStack::js($js, $pos, $key);
             }
         }
 
         foreach ($bufferedScripts as $pos => $tags) {
             $pos = Position::tryFrom($pos) ?? Position::BodyEnd;
             foreach ($tags as $key => [$script, $options]) {
-                AssetRegistry::script($script, $pos, $options, $key);
+                HtmlStack::script($script, $pos, $options, $key);
             }
         }
 
         foreach ($bufferedCss as $key => [$css, $options]) {
-            AssetRegistry::css($css, $options, $key);
+            HtmlStack::css($css, $options, $key);
         }
 
         foreach ($bufferedJsFiles as $pos => $tags) {
             foreach ($tags as $key => [$url, $options]) {
                 $options['position'] = $pos;
-                AssetRegistry::jsFile($url, $options, $key);
+                HtmlStack::jsFile($url, $options, $key);
             }
         }
 
         foreach ($bufferedCssFiles as $key => [$url, $options]) {
-            AssetRegistry::cssFile($url, $options, $key);
+            HtmlStack::cssFile($url, $options, $key);
         }
 
         foreach ($bufferedHtml as $pos => $tags) {
             $pos = Position::tryFrom($pos) ?? Position::BodyEnd;
             foreach ($tags as $key => $html) {
-                AssetRegistry::html($html, $pos, $key);
+                HtmlStack::html($html, $pos, $key);
             }
         }
 
         foreach ($bufferedMetaTags as $key => $options) {
-            AssetRegistry::metaTag($options, $key);
+            HtmlStack::metaTag($options, $key);
         }
 
         foreach ($bufferedAssetBundles as [$name, $position]) {
@@ -365,7 +365,7 @@ class TemplateCaches extends Component
         }
 
         foreach ($bufferedJsImports as $key => $value) {
-            AssetRegistry::jsImport($key, $value);
+            HtmlStack::jsImport($key, $value);
         }
     }
 

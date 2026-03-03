@@ -17,17 +17,11 @@ final readonly class TemplateLoader implements LoaderInterface
         private TemplateResolver $resolver,
     ) {}
 
-    /**
-     * {@inheritdoc}
-     */
     public function exists(string $name): bool
     {
         return $this->resolver->exists($name);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSourceContext(string $name): Source
     {
         $template = $this->resolveTemplate($name);

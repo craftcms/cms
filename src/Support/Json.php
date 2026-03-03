@@ -23,9 +23,9 @@ class Json
      * @param  mixed  $value  the data to be encoded.
      * @param  int  $options  The encoding options. `JSON_UNESCAPED_UNICODE` is used by default.
      */
-    public static function encode($value, $options = JSON_UNESCAPED_UNICODE): string
+    public static function encode(mixed $value, int $options = JSON_UNESCAPED_UNICODE, int $depth = 512): string|false
     {
-        return json_encode($value, $options);
+        return json_encode($value, $options, $depth);
     }
 
     /**

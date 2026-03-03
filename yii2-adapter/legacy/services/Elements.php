@@ -1516,6 +1516,7 @@ class Elements extends Component
         $newAttributes += [
             'id' => $canonical->id,
             'uid' => $canonical->uid,
+            'canonicalId' => $canonical->getCanonicalId(),
             'root' => $canonical->root,
             'lft' => $canonical->lft,
             'rgt' => $canonical->rgt,
@@ -3199,7 +3200,7 @@ class Elements extends Component
             },
             $str,
             -1,
-            $count
+            $count,
         );
 
         if ($count === 0) {
@@ -4244,7 +4245,6 @@ class Elements extends Component
                             if (is_string($content)) {
                                 $content = $content !== '' ? Json::decode($content) : [];
                             }
-                            $view = Craft::$app->getView();
                             $generatedFieldValues = [];
                             $updated = false;
 
@@ -4307,10 +4307,13 @@ class Elements extends Component
             if (!$element->propagating) {
                 // Delete the rows that don't need to be there anymore
                 if (!$isNewElement) {
-                    DB::table(Table::ELEMENTS_SITES)
+                    $deleteCondition = fn(Builder $query) => $query
                         ->where('elementId', $element->id)
-                        ->whereNotIn('siteId', array_keys($supportedSites))
-                        ->delete();
+                         ->whereNotIn('siteId', array_keys($supportedSites));
+
+                    DB::table(Table::ELEMENTS_SITES)->where($deleteCondition)->delete();
+                    DB::table(Table::SEARCHINDEX)->where($deleteCondition)->delete();
+                    DB::table(Table::SEARCHINDEXQUEUE)->where($deleteCondition)->delete();
                 }
 
                 // Invalidate any caches involving this element
@@ -4684,7 +4687,7 @@ class Elements extends Component
                     "e.$fk",
                     DB::table(new Alias($table, 't'))
                         ->select('t.id')
-                        ->where('t.canonicalId', $canonicalId)
+                        ->where('t.canonicalId', $canonicalId),
                 )
                 ->update([
                     'dateDeleted' => $delete ? now() : null,

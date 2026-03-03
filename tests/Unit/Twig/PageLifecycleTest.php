@@ -5,15 +5,15 @@ declare(strict_types=1);
 use CraftCms\Cms\Twig\Events\BeginPage;
 use CraftCms\Cms\Twig\Events\EndPage;
 use CraftCms\Cms\Twig\PageLifecycle;
-use CraftCms\Cms\View\AssetRegistry;
 use CraftCms\Cms\View\Enums\Position;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     app()->forgetScopedInstances();
 
     $this->lifecycle = app(PageLifecycle::class);
-    $this->registry = app(AssetRegistry::class);
+    $this->registry = app(HtmlStack::class);
 });
 
 describe('head, beginBody, endBody', function () {
@@ -82,7 +82,7 @@ describe('event dispatching', function () {
 });
 
 describe('placeholder replacement', function () {
-    it('replaces head placeholder with AssetRegistry output when EndPage is not overridden', function () {
+    it('replaces head placeholder with HtmlStack output when EndPage is not overridden', function () {
         $this->registry->css('body { color: red }');
 
         $output = $this->lifecycle->wrap(function () {
@@ -94,7 +94,7 @@ describe('placeholder replacement', function () {
         expect($output)->toContain('<style>body { color: red }</style>');
     });
 
-    it('replaces body begin placeholder with AssetRegistry output', function () {
+    it('replaces body begin placeholder with HtmlStack output', function () {
         $this->registry->js('var x = 1', Position::BodyBegin);
 
         $output = $this->lifecycle->wrap(function () {
@@ -106,7 +106,7 @@ describe('placeholder replacement', function () {
         expect($output)->toContain('var x = 1;');
     });
 
-    it('replaces body end placeholder with AssetRegistry output', function () {
+    it('replaces body end placeholder with HtmlStack output', function () {
         $this->registry->js('var y = 2');
 
         $output = $this->lifecycle->wrap(function () {
@@ -158,7 +158,7 @@ describe('placeholder replacement', function () {
         'body end html' => ['bodyEndHtml', PageLifecycle::BODY_END_PLACEHOLDER, '<script>console.log("end")</script>'],
     ]);
 
-    it('prefers EndPage overrides over AssetRegistry output', function () {
+    it('prefers EndPage overrides over HtmlStack output', function () {
         $this->registry->css('.from-registry {}');
 
         Event::listen(EndPage::class, function (EndPage $event) {
@@ -176,7 +176,7 @@ describe('placeholder replacement', function () {
             ->not->toContain('.from-registry');
     });
 
-    it('falls back to AssetRegistry when EndPage properties are null', function () {
+    it('falls back to HtmlStack when EndPage properties are null', function () {
         $this->registry->css('.fallback {}');
 
         $output = $this->lifecycle->wrap(function () {

@@ -5,10 +5,6 @@
     {% set bodyClass = (bodyClass ?? [])|explodeClass|push('mobile') -%}
 {% endif %}
 
-{% do view.registerTranslations('app', [
-    "Show",
-    "Hide",
-]) %}
 
 {% set localeData = craft.i18n.locale %}
 {% set orientation = localeData.getOrientation() %}

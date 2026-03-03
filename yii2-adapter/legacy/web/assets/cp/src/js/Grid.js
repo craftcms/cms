@@ -38,9 +38,8 @@ Craft.Grid = Garnish.Base.extend(
 
       this.setSettings(settings, Craft.Grid.defaults);
 
-      this.$items = this.$container.children(this.settings.itemSelector);
-      this.setItems();
-      this.refreshCols(true);
+      this.$items = $();
+      this.addItems(this.$container.children(this.settings.itemSelector));
 
       this.addListener(this.$container, 'resize', () => {
         this.refreshCols();

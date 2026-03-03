@@ -1,0 +1,2 @@
+// line 1
+\Craft::$app->getView()->registerJsFile("app.js", ['position' => 3]);

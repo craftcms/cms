@@ -13,7 +13,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Container\Attributes\Give;
@@ -34,7 +34,7 @@ final readonly class PluginStoreController
     public function index(License $license, Composer $composer, GeneralConfig $generalConfig): View
     {
         $view = $this->craft->getView();
-        AssetRegistry::jsFile('https://js.stripe.com/v2/');
+        HtmlStack::jsFile('https://js.stripe.com/v2/');
 
         $variables = [
             'craftIdEndpoint' => Api::craftIdEndpoint(),
@@ -50,7 +50,7 @@ final readonly class PluginStoreController
             'composerPhpVersion' => $composer->getConfig()['config']['platform']['php'] ?? null,
         ];
 
-        AssetRegistry::jsWithVars(
+        HtmlStack::jsWithVars(
             fn ($variables) => "Object.assign(window, $variables)",
             [$variables],
             Position::Head,

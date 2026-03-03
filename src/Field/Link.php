@@ -31,7 +31,7 @@ use CraftCms\Cms\Field\LinkTypes\Phone;
 use CraftCms\Cms\Field\LinkTypes\Sms;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -566,7 +566,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
 
         $id = $this->getInputId();
 
-        AssetRegistry::jsWithVars(fn ($id) => <<<JS
+        HtmlStack::jsWithVars(fn ($id) => <<<JS
 new Craft.LinkField($('#' + $id));
 JS, [
             InputNamespace::namespaceId($id),
@@ -586,7 +586,7 @@ $('#$namespacedId-type').on('change', e => {
     .attr('inputmode', type);
 });
 JS;
-            AssetRegistry::js($js);
+            HtmlStack::js($js);
 
             $innerHtml = Cp::selectHtml([
                 'id' => "$id-type",

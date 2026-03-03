@@ -40,17 +40,19 @@ final class EntryRules extends ElementRules
         $rules['typeId'] = [
             'required',
             'integer',
-            function (string $attribute, int $value, Closure $fail) {
-                $typeId = $this->component->getType()->id;
+            Rule::when($this->component->inScenarios(Entry::SCENARIO_DEFAULT, Entry::SCENARIO_LIVE), [
+                function (string $attribute, int $value, Closure $fail) {
+                    $typeId = $this->component->getType()->id;
 
-                if (array_any($this->component->getAvailableEntryTypes(), fn ($entryType) => $entryType->id === $typeId)) {
-                    return;
-                }
+                    if (array_any($this->component->getAvailableEntryTypes(), fn ($entryType) => $entryType->id === $typeId)) {
+                        return;
+                    }
 
-                $fail(t('{attribute} is invalid.', [
-                    'attribute' => $this->component->getAttributeLabel($attribute),
-                ]));
-            },
+                    $fail(t('{attribute} is invalid.', [
+                        'attribute' => $this->component->getAttributeLabel($attribute),
+                    ]));
+                },
+            ]),
             Rule::when($this->component->inScenarios(Entry::SCENARIO_LIVE), [
                 function (string $attribute, int $value, Closure $fail) {
                     if (! $this->component->getIsCanonical()) {
@@ -71,6 +73,10 @@ final class EntryRules extends ElementRules
             'nullable',
             'array',
             Rule::when(function () {
+                if (! $this->component->inScenarios(Entry::SCENARIO_DEFAULT, Entry::SCENARIO_LIVE)) {
+                    return false;
+                }
+
                 $section = $this->component->getSection();
 
                 return

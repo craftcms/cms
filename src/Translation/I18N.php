@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Translation;
 
 use Craft;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
@@ -18,6 +17,7 @@ use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 use ResourceBundle;
 use Stringable;
+use Yiisoft\I18n\Locale as YiisoftLocale;
 use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\Translator;
 
@@ -52,8 +52,12 @@ final class I18N
      */
     private ?Collection $appLocales = null;
 
+    /**
+     * @var array<string, list<CategorySource>>
+     */
+    private array $registeredCategories = [];
+
     public function __construct(
-        private readonly GeneralConfig $generalConfig,
         private readonly Translator $translator,
     ) {}
 
@@ -91,8 +95,8 @@ final class I18N
             }
         }
 
-        if ($this->generalConfig->defaultCpLocale) {
-            return $this->getLocaleById($this->generalConfig->defaultCpLocale);
+        if (Cms::config()->defaultCpLocale) {
+            return $this->getLocaleById(Cms::config()->defaultCpLocale);
         }
 
         return $this->getLocale();
@@ -125,7 +129,7 @@ final class I18N
         }
 
         $allLocaleIds = ResourceBundle::getLocales('');
-        $this->localeAliases = $this->generalConfig->localeAliases;
+        $this->localeAliases = Cms::config()->localeAliases;
 
         // Hyphens, not underscores
         foreach ($allLocaleIds as $i => $locale) {
@@ -315,7 +319,7 @@ final class I18N
 
         $translation = $this->translator->translate($message, $parameters, $category, $locale);
 
-        if ($this->generalConfig->translationDebugOutput) {
+        if (Cms::config()->translationDebugOutput) {
             $char = match ($category) {
                 'site' => '$',
                 'app' => '@',
@@ -345,7 +349,66 @@ final class I18N
 
     public function addCategorySources(CategorySource ...$categories): void
     {
+        foreach ($categories as $category) {
+            $this->registeredCategories[$category->getName()][] = $category;
+        }
+
         $this->translator->addCategorySources(...$categories);
+    }
+
+    /**
+     * Returns all translations for a given locale, organized by category.
+     *
+     * Only includes messages where the translation differs from the source key.
+     * Handles locale fallback (e.g., `fr-CA` → `fr`).
+     *
+     * @return array<string, array<string, string>> Nested array of `[category => [sourceMessage => translation]]`
+     */
+    public function getAllTranslationsForLocale(string $locale): array
+    {
+        $result = [];
+
+        // Normalize underscores to hyphens (BCP 47 format)
+        $locale = str_replace('_', '-', $locale);
+
+        // Build the locale fallback chain (e.g., fr-CA → fr)
+        $localesToCheck = [$locale];
+        $yiisoftLocale = new YiisoftLocale($locale);
+        $fallback = $yiisoftLocale->fallbackLocale();
+
+        if ($fallback->asString() !== $locale) {
+            // Prepend the fallback so the exact locale wins when merged on top
+            array_unshift($localesToCheck, $fallback->asString());
+        }
+
+        foreach ($this->registeredCategories as $categoryName => $sources) {
+            $categoryTranslations = [];
+
+            // Use the last source (matching Translator's LIFO resolution order)
+            $source = end($sources);
+
+            foreach ($localesToCheck as $localeToCheck) {
+                $messages = $source->getMessages($localeToCheck);
+
+                foreach ($messages as $key => $data) {
+                    // Later locale (more specific) overwrites earlier (fallback)
+                    $categoryTranslations[$key] = $data['message'];
+                }
+            }
+
+            // Filter out untranslated messages (where translation === source key)
+            $categoryTranslations = array_filter(
+                $categoryTranslations,
+                fn (string $translation, string $key) => $translation !== $key,
+                ARRAY_FILTER_USE_BOTH,
+            );
+
+            if (! empty($categoryTranslations)) {
+                $result[$categoryName] = $categoryTranslations;
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -376,6 +439,7 @@ final class I18N
             'da' => true,
             'de' => true,
             'de-CH' => true,
+            'el' => true,
             'en' => true,
             'en-GB' => true,
             'es' => true,
@@ -403,12 +467,12 @@ final class I18N
         ]);
 
         // Add in any extra locales defined by the config
-        foreach ($this->generalConfig->extraAppLocales as $localeId) {
+        foreach (Cms::config()->extraAppLocales as $localeId) {
             $this->appLocaleIds->put($localeId, true);
         }
 
-        if ($this->generalConfig->defaultCpLanguage) {
-            $this->appLocaleIds->put($this->generalConfig->defaultCpLanguage, true);
+        if (Cms::config()->defaultCpLanguage) {
+            $this->appLocaleIds->put(Cms::config()->defaultCpLanguage, true);
         }
     }
 }

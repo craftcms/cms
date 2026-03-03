@@ -9,7 +9,7 @@ namespace craft\elements\actions;
 
 use craft\base\ElementAction;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use function CraftCms\Cms\t;
 
 /**
@@ -33,7 +33,7 @@ class MoveAssets extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        AssetRegistry::jsWithVars(fn($actionClass) => <<<JS
+        HtmlStack::jsWithVars(fn($actionClass) => <<<JS
 (() => {
   const groupItems = function(\$items) {
     const \$folders = \$items.has('.element[data-is-folder]');

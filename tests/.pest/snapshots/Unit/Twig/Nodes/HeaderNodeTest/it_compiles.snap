@@ -1,0 +1,3 @@
+$_headerParts = array_map('trim', explode(':', "X-Custom: value", 2));
+Craft::$app->getResponse()->getHeaders()->set($_headerParts[0], $_headerParts[1] ?? '');
+unset($_headerParts);

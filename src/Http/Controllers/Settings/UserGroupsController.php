@@ -11,7 +11,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
 use CraftCms\Cms\User\UserGroups;
@@ -105,7 +105,7 @@ final readonly class UserGroupsController
                 'readOnly' => $this->readOnly,
             ])
             ->prepareScreen(function (CpScreenResponse $response, string $containerId) {
-                AssetRegistry::jsWithVars(
+                HtmlStack::jsWithVars(
                     fn ($containerId) => <<<JS
                         new Craft.ElevatedSessionForm('#' + $containerId, [
                             '.user-permissions input[type="checkbox"]:not(:checked)'

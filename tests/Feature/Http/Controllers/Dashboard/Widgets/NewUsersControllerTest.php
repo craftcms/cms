@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\NewUsersController;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup;
-use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\freezeTime;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -84,22 +83,17 @@ it('filters by user group', function () {
 });
 
 it('returns correct total', function () {
+    freezeTime();
+
     $startDate = now()->subDays(1);
     $endDate = now();
 
-    // The controller adds a day to endDate and starts at day of startDate
-    // So it covers [startDate->startOfDay(), endDate->addDay()->startOfDay())
-
-    $count = DB::table(Table::USERS)
-        ->whereBetween('dateCreated', [
-            $startDate->copy()->startOfDay(),
-            $endDate->copy()->addDay()->startOfDay(),
-        ])
-        ->count();
+    // Create users within the date range to assert on a known count
+    UserModel::factory()->active()->count(3)->create();
 
     postJson(action([NewUsersController::class, 'data']), [
         'startDate' => $startDate->timestamp,
         'endDate' => $endDate->timestamp,
     ])->assertOk()
-        ->assertJsonPath('total', $count);
+        ->assertJsonPath('total', 4); // 3 new + 1 admin user from Install
 });

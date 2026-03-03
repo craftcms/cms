@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
 use craft\helpers\Cp;
-use craft\web\View;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 
 trait InteractsWithWidgets
 {
-    protected readonly View $view;
-
     protected function getWidgetIconSvg(WidgetInterface $widget): ?string
     {
         $icon = $widget::icon();
@@ -32,9 +29,9 @@ trait InteractsWithWidgets
         }
 
         // Get the settings HTML + JS
-        AssetRegistry::startJsBuffer();
+        HtmlStack::startJsBuffer();
         $settingsHtml = InputNamespace::namespaceInputs(fn () => (string) $widget->getSettingsHtml(), "widget$widget->id-settings");
-        $settingsJs = AssetRegistry::clearJsBuffer(false);
+        $settingsJs = HtmlStack::clearJsBuffer(false);
 
         // Get the colspan (limited to the widget type's max allowed colspan)
         $colspan = $widget->colspan ?? 1;

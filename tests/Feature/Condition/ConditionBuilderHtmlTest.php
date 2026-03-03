@@ -7,6 +7,7 @@ use CraftCms\Cms\Element\Conditions\SlugConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
 
@@ -50,7 +51,7 @@ describe('BaseCondition::getBuilderHtml()', function () {
 
         $condition->getBuilderHtml();
 
-        $jsBuffer = Craft::$app->getView()->getBodyHtml();
+        $jsBuffer = HtmlStack::bodyHtml();
 
         expect($jsBuffer)->toContain('Craft.initUiElements');
     });
