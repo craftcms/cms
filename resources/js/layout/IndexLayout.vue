@@ -51,13 +51,7 @@
     </template>
 
     <div class="index-grid">
-      <nav id="secondary-nav" aria-labelledby="secondary-nav-label" tabindex="-1">
-        <span
-          id="secondary-nav-label"
-          aria-hidden="true"
-          class="sr-only">
-          {{ t('Secondary') }}
-        </span>
+      <nav aria-label="{{ t('Secondary') }}" tabindex="-1">
         <craft-button
           v-if="!isLarge"
           type="button"

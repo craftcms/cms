@@ -36,8 +36,7 @@
 </script>
 
 <template>
-  <nav class="cp-sidebar" :data-visibility="visibility" :data-mode="mode" aria-labelledby="cp-sidebar-label">
-    <span id="cp-sidebar-label" aria-hidden class="sr-only">{{ t('Primary') }}</span>
+  <nav class="cp-sidebar" :data-visibility="visibility" :data-mode="mode" aria-label="{{ t('Primary') }}">
     <template v-if="visibility === 'visible'">
       <div class="cp-sidebar__header">
         <div class="sidebar-header" v-if="mode !== 'docked'">
