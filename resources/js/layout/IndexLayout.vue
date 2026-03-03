@@ -28,6 +28,7 @@
 
   const skipLinks = [
     {label: t('Skip to secondary navigation'), url: '#secondary-nav'},
+    {label: t('Skip to content'), url: '#content-pane'}
   ];
 
   watch(
@@ -77,7 +78,9 @@
         </div>
       </nav>
       <div
+        id="content-pane"
         class="bg-white border border-border-subtle rounded-sm shadow-sm @container"
+        tabindex="-1"
       >
         <slot></slot>
       </div>
