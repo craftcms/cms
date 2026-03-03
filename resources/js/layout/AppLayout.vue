@@ -100,7 +100,7 @@
   <Head :title="title" />
   <LiveRegion :debug="true"></LiveRegion>
   <div class="cp">
-    <div class="cp__header">
+    <header class="cp__header">
       <a v-for="link in skipLinks" :href="link.url" class="skip-link skip-link--global">{{ link.label }}</a>
       <div class="flex gap-2 p-2">
         <craft-button
@@ -131,7 +131,7 @@
           successFlash
         }}</craft-callout>
       </template>
-    </div>
+    </header>
     <div class="cp__sidebar">
       <CpSidebar
         :mode="state.sidebar.mode"
@@ -141,15 +141,15 @@
     </div>
     <div class="cp__main">
       <slot name="main">
+        <slot name="breadcrumbs">
+          <div
+            class="px-4 py-2 border-b border-b-border-subtle"
+            v-if="crumbs"
+          >
+            <Breadcrumbs :items="crumbs" />
+          </div>
+        </slot>
         <main id="main" tabindex="-1">
-          <slot name="breadcrumbs">
-            <div
-              class="px-4 py-2 border-b border-b-border-subtle"
-              v-if="crumbs"
-            >
-              <Breadcrumbs :items="crumbs" />
-            </div>
-          </slot>
           <slot name="header">
             <div :class="{container: true, 'container--full': fullWidth}">
               <div class="index-grid index-grid--header">
