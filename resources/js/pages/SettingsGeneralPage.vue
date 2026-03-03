@@ -267,7 +267,7 @@
             v-model="form.retryDuration"
             :has-feedback-for="errors?.retryDuration ? 'error' : ''"
             inputmode="numeric"
-            size="4"
+            maxlength="4"
             :disabled="readOnly"
           >
             <div

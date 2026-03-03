@@ -293,6 +293,7 @@
           :table="sitesTable"
           :read-only="readOnly"
           :reorderable="!!group?.id"
+          spacing="relaxed"
           @reorder="handleReorder"
         >
           <template #drag-preview="{row}">
