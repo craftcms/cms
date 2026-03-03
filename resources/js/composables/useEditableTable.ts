@@ -247,7 +247,6 @@ export function useEditableTable<T extends Record<string, any>>(
     cellOptions?: AutocompleteColumnOptions<T>
   ): (ctx: CellContext<T, any>) => ReturnType<typeof h> {
     return ({row, column}) => {
-      console.log(cellOptions);
       const opts =
         typeof cellOptions?.options === 'function'
           ? (cellOptions.options as (row: Row<T>) => Array<SelectItem>)(row)

@@ -117,7 +117,7 @@
       }),
       columnHelper.autocomplete('template', {
         header: t('Template'),
-        class: 'font-mono text-xs',
+        class: 'font-mono text-xs !px-[var(--_cell-spacing)]',
         options: templateOptions.value,
         disabled: (row) => !row.original.enabled,
         meta: {
