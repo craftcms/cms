@@ -1569,7 +1569,7 @@ JS, [
                     }
                 }
             }
-            $siteIds = array_filter($siteIds, fn(int $siteId) => isset($representedSiteIds[$siteId]));
+            $siteIds = array_values(array_filter($siteIds, fn(int $siteId) => isset($representedSiteIds[$siteId])));
         }
 
         if ($config['registerJs']) {
@@ -1590,14 +1590,17 @@ JS, [
         }
 
         $html = Html::beginTag('div', [
-            'id' => $config['id'],
-            'class' => array_merge(
-                ['element-index'],
-                ($showSidebar ? ['has-sidebar'] : []),
-                ($config['context'] === 'embedded-index' ? ['pane', 'padding-s', 'hairline'] : []),
-                Html::explodeClass($config['class']),
-            ),
-        ]) .
+                'id' => $config['id'],
+                'class' => array_merge(
+                    ['element-index'],
+                    ($showSidebar ? ['has-sidebar'] : []),
+                    ($config['context'] === 'embedded-index' ? ['pane', 'padding-s', 'hairline'] : []),
+                    Html::explodeClass($config['class']),
+                ),
+                'data' => [
+                    'site-ids' => $siteIds,
+                ],
+            ]) .
             Html::beginTag('div', [
                 'class' => array_filter([
                     'sidebar',

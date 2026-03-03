@@ -40,6 +40,9 @@ final readonly class PreviewController
 
         abort_if(! $asset, 400, 'Invalid asset ID: '.$request->integer('assetId'));
 
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+
         return new JsonResponse([
             'img' => $asset->getPreviewThumbImg($request->integer('width'), $request->integer('height')),
         ]);
@@ -61,6 +64,9 @@ final readonly class PreviewController
         if (! $asset) {
             return $this->asFailure(t('Asset not found with that id'));
         }
+
+        $this->requireVolumePermissionByAsset('viewAssets', $asset);
+        $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
 
         $previewHtml = null;
         $previewHandler = $this->assets->getAssetPreviewHandler($asset);

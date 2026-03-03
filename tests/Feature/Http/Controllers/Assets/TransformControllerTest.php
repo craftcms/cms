@@ -24,7 +24,7 @@ beforeEach(function () {
 });
 
 describe('generate', function () {
-    it('allows anonymous access', function () {
+    it('forbids anonymous access', function () {
         $asset = AssetModel::factory()->create([
             'volumeId' => test()->volume->id,
             'folderId' => test()->folder->id,
@@ -32,14 +32,10 @@ describe('generate', function () {
             'kind' => 'image',
         ]);
 
-        // Anonymous access should not return 401/403
-        $response = postJson(action([TransformController::class, 'generate']), [
+        postJson(action([TransformController::class, 'generate']), [
             'assetId' => $asset->id,
             'handle' => '_100x100_crop_center-center_none',
-        ]);
-
-        expect($response->status())->not->toBe(401)
-            ->and($response->status())->not->toBe(403);
+        ])->assertForbidden();
     });
 
     it('returns error for missing asset id', function () {
@@ -75,11 +71,10 @@ describe('generateFallback', function () {
 
         $transform = Crypt::encrypt($asset->id.',_100x100_crop_center-center_none');
 
-        // Anonymous access should not return 401/403
         $response = get(action([TransformController::class, 'generateFallback'], ['transform' => $transform]));
 
-        expect($response->status())->not->toBe(401)
-            ->and($response->status())->not->toBe(403);
+        expect($response->getStatusCode())->not->toBe(401)
+            ->and($response->getStatusCode())->not->toBe(403);
     });
 
     it('returns 400 for invalid encrypted param', function () {

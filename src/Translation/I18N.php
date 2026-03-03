@@ -439,6 +439,7 @@ final class I18N
             'da' => true,
             'de' => true,
             'de-CH' => true,
+            'el' => true,
             'en' => true,
             'en-GB' => true,
             'es' => true,
