@@ -17,7 +17,7 @@
 </script>
 
 <template>
-  <nav aria-label="{{ t('Breadcrumbs' )}}">
+  <nav :aria-label="t('Breadcrumbs')">
     <ul class="breadcrumbs">
       <li
         v-for="(item, idx) in items"

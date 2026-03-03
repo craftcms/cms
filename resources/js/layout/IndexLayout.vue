@@ -27,7 +27,7 @@
   }
 
   const skipLinks = [
-    {label: t('Skip to secondary navigation'), target: '#secondary-nav'},
+    {label: t('Skip to secondary navigation'), url: '#secondary-nav'},
   ];
 
   watch(
@@ -51,7 +51,7 @@
     </template>
 
     <div class="index-grid">
-      <nav id="secondary-nav" aria-label="{{ t('Secondary') }}" tabindex="-1">
+      <nav id="secondary-nav" :aria-label="t('Secondary')" tabindex="-1">
         <craft-button
           v-if="!isLarge"
           type="button"
