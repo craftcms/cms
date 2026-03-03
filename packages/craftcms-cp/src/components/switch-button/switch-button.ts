@@ -30,7 +30,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
         .switch-button__track {
           --tw-inset-shadow-color: var(--color-slate-300);
           margin-inline: -1px;
-          background-color: var(--c-color-neutral-bg-subtle);
+          background-color: var(--c-color-neutral-fill-quiet);
           border-radius: var(--c-radius-full);
           border: 1px solid var(--c-form-control-border);
           box-shadow: var(--c-input-shadow);
@@ -42,18 +42,18 @@ export default class CraftSwitchButton extends LionSwitchButton {
           aspect-ratio: 1;
           border-radius: var(--c-radius-full);
           border: 1px solid var(--c-form-control-border);
-          background-color: var(--c-switch-thumb-bg, var(--c-bg-raised));
+          background-color: var(--c-switch-thumb-bg, var(--c-surface-raised));
           inset-block-start: calc(var(--c-switch-thumb-offset) / 2);
           inset-inline-start: calc(var(--c-switch-thumb-offset) / 2);
           inset-inline-end: auto;
         }
 
         :host([checked]) .switch-button__track {
-          background-color: var(--c-color-success-bg-emphasis);
+          background-color: var(--c-color-success-fill-loud);
         }
 
         :host([checked]) .switch-button__thumb {
-          border: 1px solid var(--c-color-success-border-emphasis);
+          border: 1px solid var(--c-color-success-border-loud);
           inset-inline-start: auto;
           inset-inline-end: calc(
             (var(--c-switch-height) - var(--c-switch-thumb-height)) / 2
@@ -69,7 +69,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
           mask-repeat: no-repeat;
           width: calc(var(--c-switch-thumb-height) - 6px);
           aspect-ratio: 1;
-          background-color: var(--c-color-success-border-emphasis);
+          background-color: var(--c-color-success-border-loud);
         }
       `,
     ];

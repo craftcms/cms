@@ -116,9 +116,9 @@
   }
 
   .pane--raised {
-    --c-pane-bg: var(--c-elevation-surface-raised);
+    --c-pane-bg: var(--c-surface-raised);
     --c-pane-border: 1px solid var(--c-color-neutral-border-subtle);
-    --c-pane-shadow: var(--c-elevation-shadow-raised);
+    --c-pane-shadow: var(--c-shadow-raised);
   }
 
   .pane--code {

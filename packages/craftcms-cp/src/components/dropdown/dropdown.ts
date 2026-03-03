@@ -10,7 +10,7 @@ export default class CraftDropdown extends WaDropdown {
         :host {
           --wa-border-style: solid;
           --wa-border-width-s: 1px;
-          --wa-color-surface-raised: var(--c-bg-raised);
+          --wa-color-surface-raised: var(--c-surface-raised);
           --wa-color-surface-border: var(--c-border-subtle);
           --wa-border-radius-m: var(--c-radius-lg);
         }
@@ -32,7 +32,7 @@ export class CraftDropdownItem extends WaDropdownItem {
           :host {
             --wa-font-weight-action: 400;
             --wa-space-s: var(--c-spacing-sm);
-            --wa-color-neutral-fill-normal: var(--c-color-neutral-bg-subtle);
+            --wa-color-neutral-fill-normal: var(--c-color-neutral-fill-quiet);
             white-space: nowrap;
             display: inline-flex;
             align-items: center;

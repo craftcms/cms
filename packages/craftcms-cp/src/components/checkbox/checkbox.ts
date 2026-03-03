@@ -29,7 +29,7 @@ export default class CraftCheckbox extends LionCheckbox {
 
         .choice-field__help-text {
           font-size: 1em;
-          color: var(--c-fg-muted);
+          color: var(--c-text-quiet);
           grid-area: help-text;
         }
       `,

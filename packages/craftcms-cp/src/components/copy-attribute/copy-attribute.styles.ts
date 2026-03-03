@@ -40,7 +40,7 @@ export default css`
       .copy-attribute--error
     ):focus {
     border-color: var(--c-border-subtle);
-    color: var(--c-fg-text);
+    color: var(--c-text-default);
   }
 
   .copy-attribute--success::part(button) {

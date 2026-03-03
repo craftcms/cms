@@ -2,7 +2,7 @@ import {css} from 'lit';
 
 export const baseInputStyles = css`
   font: inherit;
-  color: var(--c-input-fg, var(--c-fg-text));
+  color: var(--c-input-fg, var(--c-text-default));
   position: relative;
   min-height: var(--c-input-height, var(--c-size-control-md));
   border: var(--c-input-border, 1px solid var(--c-form-control-border));
@@ -28,7 +28,7 @@ export const baseFieldStyles = css`
     color: var(--c-color-danger-on-normal);
 
     ::slotted([slot='input']) {
-      border-color: var(--c-color-danger-border-emphasis);
+      border-color: var(--c-color-danger-border-loud);
     }
   }
 
@@ -40,7 +40,7 @@ export const baseFieldStyles = css`
 
   .form-field__help-text {
     font-size: 1em;
-    color: var(--c-fg-muted);
+    color: var(--c-text-quiet);
   }
 
   .form-field__group-one {

@@ -23,6 +23,6 @@ export default css`
 
   [slot='help-text'] {
     font-size: var(--c-text-base);
-    color: var(--c-fg-muted);
+    color: var(--c-text-quiet);
   }
 `;

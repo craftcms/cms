@@ -16,11 +16,11 @@ export default class CraftTooltip extends WaTooltip {
           --wa-z-index-tooltip: var(--c-tooltip-z-index, 1000);
           --wa-tooltip-background-color: var(
             --c-tooltip-bg,
-            var(--c-bg-overlay)
+            var(--c-surface-overlay)
           );
           --wa-tooltip-border-color: var(
             --c-tooltip-border,
-            var(--c-color-neutral-border-subtle)
+            var(--c-color-neutral-border-quiet)
           );
           --wa-tooltip-content-color: var(--c-tooltip-fg, currentColor);
           --wa-tooltip-padding: var(

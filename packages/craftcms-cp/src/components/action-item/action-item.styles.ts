@@ -29,14 +29,14 @@ export default css`
 
   @media (hover: hover) {
     :host(:hover) .action-item:not(:disabled) {
-      background-color: var(--c-color-accent-bg-subtle);
-      color: var(--c-color-accent-on-subtle);
+      background-color: var(--c-color-accent-fill-quiet);
+      color: var(--c-color-accent-on-quiet);
     }
   }
 
   :host([active]) .action-item {
-    background-color: var(--c-color-accent-bg-emphasis);
-    color: var(--c-color-accent-on-emphasis);
+    background-color: var(--c-color-accent-fill-loud);
+    color: var(--c-color-accent-on-loud);
   }
 
   .action-item:disabled {
@@ -62,13 +62,13 @@ export default css`
   }
 
   :host([variant='danger']) .action-item {
-    color: var(--c-color-on-subtle);
+    color: var(--c-color-on-quiet);
   }
 
   @media (hover: hover) {
     :host(:hover[variant='danger']) .action-item:not(:disabled) {
-      background-color: var(--c-color-bg-subtle);
-      color: var(--c-color-on-subtle);
+      background-color: var(--c-color-fill-quiet);
+      color: var(--c-color-on-quiet);
     }
   }
 `;
