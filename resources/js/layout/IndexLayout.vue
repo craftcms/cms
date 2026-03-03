@@ -28,7 +28,7 @@
 
   const skipLinks = [
     {label: t('Skip to secondary navigation'), url: '#secondary-nav'},
-    {label: t('Skip to content'), url: '#content-pane'}
+    {label: t('Skip to content'), url: '#content-pane'},
   ];
 
   watch(
@@ -45,7 +45,12 @@
 </script>
 
 <template>
-  <AppLayout :full-width="true" :title="title" :debug="debug" :additional-skip-links="skipLinks">
+  <AppLayout
+    :full-width="true"
+    :title="title"
+    :debug="debug"
+    :additional-skip-links="skipLinks"
+  >
     <!-- Forward all other slots -->
     <template v-for="(_, name) in forwardedSlots" #[name]="slotData">
       <slot :name="name" v-bind="slotData || {}"></slot>

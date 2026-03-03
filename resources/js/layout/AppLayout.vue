@@ -15,7 +15,7 @@
       title?: string;
       debug?: any;
       fullWidth?: boolean;
-      additionalSkipLinks?: Array<{label: string; url: string;}>;
+      additionalSkipLinks?: Array<{label: string; url: string}>;
     }>(),
     {fullWidth: false, crumbs: () => []}
   );
@@ -35,7 +35,7 @@
   const crumbs = computed(() => page.props.crumbs ?? null);
   const skipLinks = computed(() => [
     {label: t('Skip to main section'), url: '#main'},
-    ...(props.additionalSkipLinks ?? [])
+    ...(props.additionalSkipLinks ?? []),
   ]);
   const sidebarToggle = useTemplateRef('sidebarToggle');
   const {announcement} = useAnnouncer();
@@ -101,7 +101,12 @@
   <LiveRegion :debug="true"></LiveRegion>
   <div class="cp">
     <header class="cp__header">
-      <a v-for="link in skipLinks" :href="link.url" class="skip-link skip-link--global">{{ link.label }}</a>
+      <a
+        v-for="link in skipLinks"
+        :href="link.url"
+        class="skip-link skip-link--global"
+        >{{ link.label }}</a
+      >
       <div class="flex gap-2 p-2">
         <craft-button
           icon
@@ -142,10 +147,7 @@
     <div class="cp__main">
       <slot name="main">
         <slot name="breadcrumbs">
-          <div
-            class="px-4 py-2 border-b border-b-border-subtle"
-            v-if="crumbs"
-          >
+          <div class="px-4 py-2 border-b border-b-border-subtle" v-if="crumbs">
             <Breadcrumbs :items="crumbs" />
           </div>
         </slot>
