@@ -72,6 +72,7 @@
       return props.logs;
     },
     getCoreRowModel: getCoreRowModel<LogData>(),
+    enableSorting: false,
   });
 </script>
 
@@ -84,6 +85,9 @@
       spacing="relaxed"
       layout="auto"
       :table="table"
+      :from="1"
+      :to="logs.length"
+      :total="logs.length"
       :reorderable="false"
     ></AdminTable>
   </template>

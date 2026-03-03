@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
+use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigPaths;
 use CraftCms\Cms\Section\Data\SectionSiteSettings as SectionSiteSettingsData;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertSoftDeleted;
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\post;
@@ -57,6 +60,23 @@ it('requires admin changes', function () {
 test('index can be loaded', function () {
     get(action([SectionsController::class, 'index']))
         ->assertOk();
+});
+
+test('index can be sorted', function () {
+    Section::factory()->create(['name' => 'zzz Last Section']);
+    Section::factory()->create(['name' => 'aaa First Section']);
+
+    get(action([SectionsController::class, 'index'], [
+        'sort' => [
+            ['field' => 'name', 'direction' => 'asc'],
+        ],
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+            ->has('data', 3)
+            ->where('data.0.name', 'aaa First Section')
+            ->where('data.2.name', 'zzz Last Section')
+        );
 });
 
 test('create can be loaded', function () {
@@ -158,6 +178,7 @@ test('handle needs to be unique without trashed', function () {
 
 it('can delete a section', function () {
     $newSection = Section::factory()->create();
+    assertDatabaseHas(Section::class, ['id' => $newSection->id]);
 
     ProjectConfig::rebuild();
 
@@ -165,8 +186,10 @@ it('can delete a section', function () {
 
     postJson(action([SectionsController::class, 'destroy']), [
         'id' => $newSection->id,
-    ])->assertOk();
+    ])->assertRedirectBack();
 
+    assertSoftDeleted(Section::class, ['id' => $newSection->id]);
+    expect(ProjectConfig::get(ProjectConfigPaths::PATH_SECTIONS.'.'.$newSection->uid))->toBeNull();
     expect(Section::count())->toBe(1);
 });
 

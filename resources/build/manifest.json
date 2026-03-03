@@ -147,6 +147,7 @@
       "resources/js/pages/Install.vue",
       "resources/js/pages/SettingsGeneralPage.vue",
       "resources/js/pages/SettingsIndexPage.vue",
+      "resources/js/pages/SettingsSectionsIndexPage.vue",
       "resources/js/pages/SettingsSitesEdit.vue",
       "resources/js/pages/SettingsSitesIndex.vue",
       "resources/js/pages/Updater.vue",
@@ -882,6 +883,16 @@
     ],
     "css": [
       "assets/SettingsIndexPage.css"
+    ]
+  },
+  "resources/js/pages/SettingsSectionsIndexPage.vue": {
+    "file": "SettingsSectionsIndexPage.js",
+    "name": "SettingsSectionsIndexPage",
+    "src": "resources/js/pages/SettingsSectionsIndexPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_cp3.js",
+      "_AppLayout.js"
     ]
   },
   "resources/js/pages/SettingsSitesEdit.vue": {
