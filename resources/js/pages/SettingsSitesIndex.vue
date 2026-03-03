@@ -297,7 +297,7 @@
           @reorder="handleReorder"
         >
           <template #drag-preview="{row}">
-            <div class="border-border-quiet rounded p-2 bg-white">
+            <div class="border-neutral-border-quiet rounded p-2 bg-white">
               {{ row.original.name }}
             </div>
           </template>

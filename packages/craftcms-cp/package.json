@@ -45,7 +45,8 @@
     "./styles/*": "./dist/styles/*",
     "./utilities/*": "./dist/utilities/*",
     "./components/*": "./dist/components/*",
-    "./custom-elements.json": "./dist/custom-elements.json"
+    "./custom-elements.json": "./dist/custom-elements.json",
+    "./tailwind.css": "./tailwind.css"
   },
   "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
   "license": "MIT",

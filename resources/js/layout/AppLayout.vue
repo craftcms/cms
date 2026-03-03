@@ -140,7 +140,10 @@
       <slot name="main">
         <main>
           <slot name="breadcrumbs">
-            <div class="px-4 py-2 border-b border-b-border-quiet" v-if="crumbs">
+            <div
+              class="px-4 py-2 border-b border-b-neutral-border-quiet"
+              v-if="crumbs"
+            >
               <Breadcrumbs :items="crumbs" />
             </div>
           </slot>
