@@ -20,18 +20,11 @@
       "_cp3.js"
     ]
   },
-  "_DeleteSiteModal.css": {
-    "file": "assets/DeleteSiteModal.css",
-    "src": "_DeleteSiteModal.css"
-  },
   "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js": {
     "file": "DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
     "name": "DeleteSiteModal.vue_vue_type_script_setup_true_lang",
     "imports": [
       "_cp3.js"
-    ],
-    "css": [
-      "assets/DeleteSiteModal.css"
     ]
   },
   "_IndexLayout.css": {
@@ -47,6 +40,20 @@
     ],
     "css": [
       "assets/IndexLayout.css"
+    ]
+  },
+  "_InputCombobox.css": {
+    "file": "assets/InputCombobox.css",
+    "src": "_InputCombobox.css"
+  },
+  "_InputCombobox.js": {
+    "file": "InputCombobox.js",
+    "name": "InputCombobox",
+    "imports": [
+      "_cp3.js"
+    ],
+    "css": [
+      "assets/InputCombobox.css"
     ]
   },
   "_SectionsController.js": {
@@ -910,7 +917,8 @@
       "_AppLayout.js",
       "_useInputGenerator.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "_SectionsController.js"
+      "_SectionsController.js",
+      "_InputCombobox.js"
     ],
     "css": [
       "assets/SettingsSectionsEditPage.css"
@@ -937,7 +945,8 @@
       "_AppLayout.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
       "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
-      "_useInputGenerator.js"
+      "_useInputGenerator.js",
+      "_InputCombobox.js"
     ]
   },
   "resources/js/pages/SettingsSitesIndex.vue": {
@@ -949,6 +958,7 @@
       "_cp3.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
       "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
+      "_InputCombobox.js",
       "_IndexLayout.js",
       "_AppLayout.js"
     ],
