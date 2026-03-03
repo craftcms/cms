@@ -209,7 +209,7 @@
     padding-inline: var(--c-spacing-md);
     padding-block: var(--c-spacing-sm);
     color: var(--c-color-neutral-on-normal);
-    border-bottom: 1px solid var(--c-border-faint);
+    border-bottom: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   .input {
@@ -234,7 +234,7 @@
     border-radius: var(--c-radius-md);
     box-shadow: var(--c-shadow-sm);
     background-color: var(--c-bg-overlay);
-    border: 1px solid var(--c-color-neutral-border-subtle);
+    border: 1px solid var(--c-color-neutral-border-quiet);
     width: 100%;
     max-width: 100%;
     z-index: 40;
@@ -242,7 +242,7 @@
     gap: var(--c-spacing-1px);
 
     &:nth-child(even) {
-      background-color: var(--c-color-neutral-bg-subtle);
+      background-color: var(--c-color-neutral-bg-quiet);
     }
   }
 </style>

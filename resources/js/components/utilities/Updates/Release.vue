@@ -85,19 +85,19 @@
 
 <style scoped lang="scss">
   .release {
-    --_border-color: var(--c-color-neutral-border-subtle);
-    --_bg-color: var(--c-color-neutral-bg-subtle);
+    --_border-color: var(--c-color-neutral-border-quiet);
+    --_bg-color: var(--c-color-neutral-bg-quiet);
 
     background-color: var(--_bg-color);
     border: 1px solid var(--_border-color);
-    color: var(--c-color-neutral-on-subtle);
+    color: var(--c-color-neutral-on-quiet);
     border-radius: var(--c-radius-md);
     overflow: hidden;
   }
 
   .release--critical {
-    --_border-color: var(--c-color-danger-border-subtle);
-    --_bg-color: var(--c-color-danger-bg-subtle);
+    --_border-color: var(--c-color-danger-border-quiet);
+    --_bg-color: var(--c-color-danger-bg-quiet);
   }
 
   .release-trigger,

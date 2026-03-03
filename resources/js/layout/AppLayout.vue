@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import SystemInfo from '@/components/SystemInfo.vue';
-  import {computed, reactive, ref, watch, useTemplateRef} from 'vue';
+  import {computed, reactive, ref, useTemplateRef, watch} from 'vue';
   import CpSidebar from '@/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
   import {Head, usePage} from '@inertiajs/vue3';
@@ -140,10 +140,7 @@
       <slot name="main">
         <main>
           <slot name="breadcrumbs">
-            <div
-              class="px-4 py-2 border-b border-b-border-subtle"
-              v-if="crumbs"
-            >
+            <div class="px-4 py-2 border-b border-b-border-quiet" v-if="crumbs">
               <Breadcrumbs :items="crumbs" />
             </div>
           </slot>

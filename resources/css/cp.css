@@ -15,5 +15,5 @@ CP Styles
 }
 
 @theme {
-  --color-border-subtle: var(--c-color-neutral-border-subtle);
+  --color-border-quiet: var(--c-color-neutral-border-quiet);
 }

@@ -107,12 +107,6 @@
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     'Courier New', monospace;
 
-  --c-border-faint: hsl(210, 40%, 92%);
-  --c-border-subtle: var(--color-slate-300);
-  --c-border-default: hsl(209 18% 70%);
-  --c-border-strong: hsl(209 18% 30%);
-  --c-border-form: var(--color-slate-500);
-
   --c-radius-sm: 3px;
   --c-radius-md: 4px;
   --c-radius-lg: 6px;
@@ -276,8 +270,8 @@
    */
   --wa-panel-border-style: solid;
   --wa-panel-border-width: 1px;
-  --wa-color-surface-border: var(--c-border-subtle);
-  --wa-panel-border-color: var(--c-border-subtle);
+  --wa-color-surface-border: var(--c-color-neutral-border-quiet);
+  --wa-panel-border-color: var(--c-color-neutral-border-quiet);
   --wa-panel-border-radius: var(--c-radius-md);
   --wa-color-surface-raised: var(--c-surface-raised);
   --wa-shadow-l: var(--c-shadow-lg);
@@ -296,7 +290,7 @@
   --c-text-link: var(--color-blue-400);
 
   --c-border-faint: #000;
-  --c-border-subtle: #1a2744;
+  --c-color-neutral-border-quiet: #1a2744;
   --c-border-form: var(--color-slate-600);
 
   /* Semantic colors — neutral */

@@ -11,7 +11,7 @@ export default class CraftDropdown extends WaDropdown {
           --wa-border-style: solid;
           --wa-border-width-s: 1px;
           --wa-color-surface-raised: var(--c-surface-raised);
-          --wa-color-surface-border: var(--c-border-subtle);
+          --wa-color-surface-border: var(--c-color-neutral-border-quiet);
           --wa-border-radius-m: var(--c-radius-lg);
         }
 

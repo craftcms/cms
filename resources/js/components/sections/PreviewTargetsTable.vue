@@ -88,7 +88,7 @@
   </Pane>
   <div
     v-if="!disabled"
-    class="border border-dashed border-border-subtle rounded-bl-md rounded-br-md border-t-0 p-1 pt-2 -mt-1"
+    class="border border-dashed border-border-quiet rounded-bl-md rounded-br-md border-t-0 p-1 pt-2 -mt-1"
   >
     <craft-button
       type="button"

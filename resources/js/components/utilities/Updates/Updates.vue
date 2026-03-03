@@ -269,26 +269,26 @@
     margin: 0;
     padding: 0.5em 1em;
     border-radius: var(--c-radius-md);
-    border: 1px solid var(--c-color-neutral-border-subtle);
-    background-color: var(--c-color-neutral-bg-subtle);
-    color: var(--c-color-neutral-on-subtle);
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    background-color: var(--c-color-neutral-bg-quiet);
+    color: var(--c-color-neutral-on-quiet);
   }
 
   :deep(blockquote.warning) {
-    border: 1px solid var(--c-color-warning-border-subtle);
-    background-color: var(--c-color-warning-bg-subtle);
-    color: var(--c-color-warning-on-subtle);
+    border: 1px solid var(--c-color-warning-border-quiet);
+    background-color: var(--c-color-warning-bg-quiet);
+    color: var(--c-color-warning-on-quiet);
   }
 
   :deep(blockquote.note) {
-    border: 1px solid var(--c-color-info-border-subtle);
-    background-color: var(--c-color-info-bg-subtle);
-    color: var(--c-color-info-on-subtle);
+    border: 1px solid var(--c-color-info-border-quiet);
+    background-color: var(--c-color-info-bg-quiet);
+    color: var(--c-color-info-on-quiet);
   }
 
   :deep(blockquote.note.ineligible) {
-    border: 1px solid var(--c-color-warning-border-subtle);
-    background-color: var(--c-color-warning-bg-subtle);
-    color: var(--c-color-warning-on-subtle);
+    border: 1px solid var(--c-color-warning-border-quiet);
+    background-color: var(--c-color-warning-bg-quiet);
+    color: var(--c-color-warning-on-quiet);
   }
 </style>

@@ -73,7 +73,7 @@
         </div>
       </div>
       <div
-        class="bg-white border border-border-subtle rounded-sm shadow-sm @container"
+        class="bg-white border border-border-quiet rounded-sm shadow-sm @container"
       >
         <slot></slot>
       </div>

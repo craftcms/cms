@@ -182,7 +182,7 @@
     }
 
     :deep(code) {
-      background: var(--c-color-neutral-bg-subtle);
+      background: var(--c-color-neutral-bg-quiet);
       padding: 0.125em 0.375em;
       border-radius: var(--c-radius-sm);
       font-family: var(--c-font-mono);
@@ -191,11 +191,11 @@
   }
 
   .error-message {
-    color: var(--c-color-danger-on-subtle);
+    color: var(--c-color-danger-on-quiet);
   }
 
   .error-details {
-    background: var(--c-color-neutral-bg-subtle);
+    background: var(--c-color-neutral-bg-quiet);
     border: 1px solid var(--c-color-neutral-border);
     border-radius: var(--c-radius-md);
     padding: var(--c-spacing-md);

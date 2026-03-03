@@ -213,7 +213,7 @@
     align-items: center;
     justify-content: space-between;
     padding-block-end: var(--c-spacing-md);
-    border-block-end: 1px solid var(--c-border-subtle);
+    border-block-end: 1px solid var(--c-border-quiet);
     margin-block-end: var(--c-spacing-lg);
   }
 
@@ -224,14 +224,14 @@
   }
 
   .note {
-    background: var(--c-color-warning-bg-subtle);
+    background: var(--c-color-warning-bg-quiet);
     border-left: 3px solid var(--c-color-warning-border);
     padding: var(--c-spacing-md);
     margin-block-end: var(--c-spacing-md);
     border-radius: var(--c-radius-sm);
 
     &.ineligible {
-      background: var(--c-color-neutral-bg-subtle);
+      background: var(--c-color-neutral-bg-quiet);
       border-left-color: var(--c-color-neutral-border);
     }
 

@@ -76,9 +76,9 @@
   .settings-item {
     display: grid;
     justify-content: center;
-    background-color: var(--c-bg-overlay);
-    color: var(--c-fg-text);
-    border: 1px solid var(--c-color-neutral-border-subtle);
+    background-color: var(--c-surface-overlay);
+    color: var(--c-text-default);
+    border: 1px solid var(--c-color-neutral-border-quiet);
     padding: calc(var(--c-spacing-md) * 1.5) var(--c-spacing-md)
       var(--c-spacing-md);
     aspect-ratio: 5/4;
@@ -96,8 +96,8 @@
   }
 
   .settings-item:hover {
-    background-color: var(--c-color-accent-bg-subtle);
-    color: var(--c-color-accent-on-subtle);
-    border: 1px solid var(--c-color-accent-border-subtle);
+    background-color: var(--c-color-accent-bg-quiet);
+    color: var(--c-color-accent-on-quiet);
+    border: 1px solid var(--c-color-accent-border-quiet);
   }
 </style>

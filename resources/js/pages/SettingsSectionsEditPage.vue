@@ -167,7 +167,7 @@
         </craft-button-group>
       </template>
 
-      <div class="bg-white border border-border-subtle rounded-sm shadow-sm">
+      <div class="bg-white border border-border-quiet rounded-sm shadow-sm">
         <template v-if="readOnly">
           <CalloutReadOnly />
         </template>

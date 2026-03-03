@@ -117,13 +117,13 @@
 
   .pane--raised {
     --c-pane-bg: var(--c-surface-raised);
-    --c-pane-border: 1px solid var(--c-color-neutral-border-subtle);
+    --c-pane-border: 1px solid var(--c-color-neutral-border-quiet);
     --c-pane-shadow: var(--c-shadow-raised);
   }
 
   .pane--code {
-    background: var(--c-color-neutral-bg-subtle);
-    border: 1px solid var(--c-color-neutral-border-subtle);
+    background: var(--c-color-neutral-bg-quiet);
+    border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);
     margin-block-end: var(--c-spacing-md);
     max-height: 500px;
@@ -131,7 +131,7 @@
   }
 
   .pane--outline {
-    --c-pane-border: 1px solid var(--c-color-neutral-border-subtle);
+    --c-pane-border: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   .pane__header {
@@ -149,7 +149,7 @@
 
   .pane__footer {
     background-color: var(--_bg-color);
-    border-top: 1px solid var(--c-color-neutral-border-subtle);
+    border-top: 1px solid var(--c-color-neutral-border-quiet);
     padding-inline: var(--_pane-spacing);
     padding-block: calc(var(--_pane-spacing) / 2);
     position: sticky;
