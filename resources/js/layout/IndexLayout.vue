@@ -40,14 +40,14 @@
 </script>
 
 <template>
-  <AppLayout :full-width="true" :title="title" :debug="debug">
+  <AppLayout :full-width="true" :title="title" :debug="debug" :additional-skip-links="[{label: 'Skip to secondary nav', url: '#secondary-nav'}]">
     <!-- Forward all other slots -->
     <template v-for="(_, name) in forwardedSlots" #[name]="slotData">
       <slot :name="name" v-bind="slotData || {}"></slot>
     </template>
 
     <div class="index-grid">
-      <nav aria-labelledby="secondary-nav-label">
+      <nav id="secondary-nav" aria-labelledby="secondary-nav-label">
         <span
           id="secondary-nav-label"
           aria-hidden="true"

@@ -10,11 +10,12 @@
   import {useAnnouncer} from '@/composables/useAnnouncer';
   import LiveRegion from '@/components/LiveRegion.vue';
 
-  withDefaults(
+  const props = withDefaults(
     defineProps<{
       title?: string;
       debug?: any;
       fullWidth?: boolean;
+      additionalSkipLinks?: Array<{label: string; url: string;}>;
     }>(),
     {fullWidth: false, crumbs: () => []}
   );
@@ -32,6 +33,10 @@
   const errorFlash = computed(() => page.props.flash?.error);
   const successFlash = computed(() => page.props.flash?.success);
   const crumbs = computed(() => page.props.crumbs ?? null);
+  const skipLinks = computed(() => [
+    {label: t('Skip to main section'), url: '#main'},
+    ...(props.additionalSkipLinks ?? [])
+  ]);
   const sidebarToggle = useTemplateRef('sidebarToggle');
   const {announcement} = useAnnouncer();
 
@@ -49,12 +54,6 @@
 
   const isLargeScreen = useMediaQuery('(min-width: 1024px)');
   const debugOpen = ref(false);
-  const skipLinks = [
-    {
-      label: t('Skip to main section'),
-      url: '#main',
-    },
-  ];
 
   watch(
     isLargeScreen,
