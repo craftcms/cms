@@ -65,11 +65,11 @@ class RateLimiter extends YiiRateLimiter
     {
         parent::init();
 
-        $this->user = fn() => new IpRateLimitIdentity(
-            $this->limit,
-            $this->window,
-            $this->keyPrefix,
-            Craft::$app->getRequest()->getUserIP() ?? 'unknown',
-        );
+        $this->user = fn() => new IpRateLimitIdentity([
+            'limit' => $this->limit,
+            'window' => $this->window,
+            'keyPrefix' => $this->keyPrefix,
+            'ip' => Craft::$app->getRequest()->getUserIP() ?? 'unknown',
+        ]);
     }
 }

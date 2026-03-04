@@ -8,8 +8,8 @@
 namespace craft\filters;
 
 use Craft;
+use yii\base\BaseObject;
 use yii\filters\RateLimitInterface;
-use yii\web\Request;
 
 /**
  * IP-based rate limit identity for use with RateLimiter.
@@ -20,23 +20,27 @@ use yii\web\Request;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.x
  */
-class IpRateLimitIdentity implements RateLimitInterface
+class IpRateLimitIdentity extends BaseObject implements RateLimitInterface
 {
     /**
-     * Constructor.
-     *
-     * @param int $limit Maximum number of requests allowed within the window
-     * @param int $window Time window in seconds
-     * @param string $keyPrefix Cache key prefix for storing allowance data
-     * @param string $ip The IP address to rate limit
+     * @var int Maximum number of requests allowed within the window
      */
-    public function __construct(
-        private int $limit,
-        private int $window,
-        private string $keyPrefix,
-        private string $ip,
-    ) {
-    }
+    public int $limit;
+
+    /**
+     * @var int Time window in seconds
+     */
+    public int $window;
+
+    /**
+     * @var string Cache key prefix for storing allowance data
+     */
+    public string $keyPrefix;
+
+    /**
+     * @var string The IP address to rate limit
+     */
+    public string $ip;
 
     /**
      * @inheritdoc
