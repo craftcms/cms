@@ -2,6 +2,7 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import dbBackupController from '@actions/Utilities/DbBackupController';
   import {useForm} from '@inertiajs/vue3';
+  import type CraftCheckbox from '@craftcms/cp/src/components/checkbox/checkbox';
 
   const form = useForm({
     downloadBackup: false,
@@ -23,8 +24,8 @@
       <craft-checkbox
         :label="t('Download backup')"
         name="downloadBackup"
-        v-model="form.downloadBackup"
-        checked
+        .checked="form.downloadBackup"
+        @model-value-changed="form.downloadBackup = ($event.target as CraftCheckbox)?.checked === true"
       ></craft-checkbox>
 
       <div class="mt-4">
