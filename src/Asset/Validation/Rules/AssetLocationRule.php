@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Validation\Rules;
 
 use Closure;
-use Craft;
 use craft\helpers\Assets;
 use craft\helpers\Assets as AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\Assets as AssetsService;
+use CraftCms\Cms\Support\Facades\Folders;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 use function CraftCms\Cms\t;
@@ -48,7 +49,7 @@ final readonly class AssetLocationRule implements ValidationRule
             return;
         }
 
-        if (Craft::$app->getAssets()->getFolderById($folderId) === null) {
+        if (Folders::getFolderById($folderId) === null) {
             $fail(t('Invalid folder ID: {folderId}', ['folderId' => $folderId]));
 
             return;
@@ -69,7 +70,7 @@ final readonly class AssetLocationRule implements ValidationRule
         }
 
         $filename = AssetsHelper::prepareAssetName($filename);
-        $suggestedFilename = Craft::$app->getAssets()->getNameReplacementInFolder($filename, $folderId);
+        $suggestedFilename = AssetsService::getNameReplacementInFolder($filename, $folderId);
 
         if ($suggestedFilename !== $filename) {
             $this->asset->{$this->conflictingFilenameAttribute} = $filename;

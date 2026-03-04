@@ -255,7 +255,7 @@ class Volumes extends Component
      */
     public function ensureTopFolder(Volume $volume): VolumeFolder
     {
-        $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
+        $folder = app(\CraftCms\Cms\Asset\Folders::class)->getRootFolderByVolumeId($volume->id);
         if (!$folder) {
             throw new InvalidArgumentException(sprintf('Invalid volume passed to %s().', __METHOD__));
         }

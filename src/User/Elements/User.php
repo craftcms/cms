@@ -40,6 +40,7 @@ use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -1276,7 +1277,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         $photo = $this->getPhoto();
 
         if ($photo) {
-            return Craft::$app->getAssets()->getThumbUrl($photo, $size, iconFallback: false);
+            return AssetsService::getThumbUrl($photo, $size, iconFallback: false);
         }
 
         return null;
@@ -1865,7 +1866,7 @@ JS, [
                 return null;
             }
 
-            $this->_photo = Craft::$app->getAssets()->getAssetById($this->photoId) ?? false;
+            $this->_photo = AssetsService::getAssetById($this->photoId) ?? false;
         }
 
         return $this->_photo ?: null;

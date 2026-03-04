@@ -4,8 +4,6 @@ use CraftCms\Cms\Support\Str;
 
 return [
     'assets/edit/<elementId:\d+><filename:(?:-[^\/]*)?>' => 'elements/edit',
-    'assets' => 'assets/index',
-    'assets/<defaultSource:{handle}(\/.*)?>' => 'assets/index',
     'edit/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/redirect',
     'edit/<elementUid:' . Str::uuidPattern() . '>' => 'elements/redirect',
     'revisions/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/revisions',

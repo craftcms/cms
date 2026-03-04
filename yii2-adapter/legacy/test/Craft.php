@@ -19,6 +19,8 @@ use craft\errors\ElementNotFoundException;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\web\Application as WebApplication;
+use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -185,6 +187,8 @@ class Craft extends Yii2
         app()->forgetInstance(Fields::class);
         app()->forgetInstance(ProjectConfig::class);
         app()->forgetInstance(Users::class);
+        app()->forgetInstance(Assets::class);
+        app()->forgetInstance(Folders::class);
     }
 
     /**
@@ -236,9 +240,13 @@ class Craft extends Yii2
         app()->forgetInstance(Sections::class);
         app()->forgetInstance(Filesystems::class);
         app()->forgetInstance(Volumes::class);
+        app()->forgetInstance(Assets::class);
+        app()->forgetInstance(Folders::class);
 
         \CraftCms\Cms\Support\Facades\EntryTypes::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\Sections::clearResolvedInstances();
+        \CraftCms\Cms\Support\Facades\Assets::clearResolvedInstances();
+        \CraftCms\Cms\Support\Facades\Folders::clearResolvedInstances();
 
         \Craft::$app->getDb()->close();
         \Craft::$app->getDb2()->close();
