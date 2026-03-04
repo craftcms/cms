@@ -10,6 +10,7 @@ namespace crafttests\unit\filters;
 use Craft;
 use craft\filters\IpRateLimitIdentity;
 use craft\test\TestCase;
+use craft\web\Request;
 use yii\base\Action;
 use yii\web\Controller;
 
@@ -23,6 +24,7 @@ class IpRateLimitIdentityTest extends TestCase
 {
     private IpRateLimitIdentity $identity;
     private Action $action;
+    private Request $request;
 
     protected function setUp(): void
     {
@@ -39,6 +41,7 @@ class IpRateLimitIdentityTest extends TestCase
 
         $controller = $this->createMock(Controller::class);
         $this->action = new Action('test-action', $controller);
+        $this->request = Craft::$app->getRequest();
     }
 
     /**
@@ -46,7 +49,7 @@ class IpRateLimitIdentityTest extends TestCase
      */
     public function testGetRateLimit(): void
     {
-        [$limit, $window] = $this->identity->getRateLimit(null, $this->action);
+        [$limit, $window] = $this->identity->getRateLimit($this->request, $this->action);
         self::assertSame(3, $limit);
         self::assertSame(10, $window);
     }
@@ -56,7 +59,7 @@ class IpRateLimitIdentityTest extends TestCase
      */
     public function testLoadAllowanceReturnsDefaultWhenCacheEmpty(): void
     {
-        [$allowance, $timestamp] = $this->identity->loadAllowance(null, $this->action);
+        [$allowance, $timestamp] = $this->identity->loadAllowance($this->request, $this->action);
         self::assertSame(3, $allowance);
         self::assertEqualsWithDelta(time(), $timestamp, 1);
     }
@@ -66,9 +69,9 @@ class IpRateLimitIdentityTest extends TestCase
      */
     public function testSaveAndLoadAllowance(): void
     {
-        $this->identity->saveAllowance(null, $this->action, 1, 1000000);
+        $this->identity->saveAllowance($this->request, $this->action, 1, 1000000);
 
-        [$allowance, $timestamp] = $this->identity->loadAllowance(null, $this->action);
+        [$allowance, $timestamp] = $this->identity->loadAllowance($this->request, $this->action);
         self::assertSame(1, $allowance);
         self::assertSame(1000000, $timestamp);
     }
@@ -79,7 +82,7 @@ class IpRateLimitIdentityTest extends TestCase
     public function testDifferentIpsGetIndependentAllowances(): void
     {
         // Save allowance for first IP
-        $this->identity->saveAllowance(null, $this->action, 0, 1000000);
+        $this->identity->saveAllowance($this->request, $this->action, 0, 1000000);
 
         // Create identity with different IP
         $otherIdentity = new IpRateLimitIdentity([
@@ -90,12 +93,12 @@ class IpRateLimitIdentityTest extends TestCase
         ]);
 
         // Second IP should still have full allowance (cache miss = default)
-        [$allowance, $timestamp] = $otherIdentity->loadAllowance(null, $this->action);
+        [$allowance, $timestamp] = $otherIdentity->loadAllowance($this->request, $this->action);
         self::assertSame(3, $allowance);
         self::assertEqualsWithDelta(time(), $timestamp, 1);
 
         // First IP should still be exhausted
-        [$allowance] = $this->identity->loadAllowance(null, $this->action);
+        [$allowance] = $this->identity->loadAllowance($this->request, $this->action);
         self::assertSame(0, $allowance);
     }
 }
