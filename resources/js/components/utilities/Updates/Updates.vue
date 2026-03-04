@@ -270,25 +270,25 @@
     padding: 0.5em 1em;
     border-radius: var(--c-radius-md);
     border: 1px solid var(--c-color-neutral-border-quiet);
-    background-color: var(--c-color-neutral-bg-quiet);
+    background-color: var(--c-color-neutral-fill-quiet);
     color: var(--c-color-neutral-on-quiet);
   }
 
   :deep(blockquote.warning) {
     border: 1px solid var(--c-color-warning-border-quiet);
-    background-color: var(--c-color-warning-bg-quiet);
+    background-color: var(--c-color-warning-fill-quiet);
     color: var(--c-color-warning-on-quiet);
   }
 
   :deep(blockquote.note) {
     border: 1px solid var(--c-color-info-border-quiet);
-    background-color: var(--c-color-info-bg-quiet);
+    background-color: var(--c-color-info-fill-quiet);
     color: var(--c-color-info-on-quiet);
   }
 
   :deep(blockquote.note.ineligible) {
     border: 1px solid var(--c-color-warning-border-quiet);
-    background-color: var(--c-color-warning-bg-quiet);
+    background-color: var(--c-color-warning-fill-quiet);
     color: var(--c-color-warning-on-quiet);
   }
 </style>

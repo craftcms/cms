@@ -242,7 +242,7 @@
     gap: var(--c-spacing-1px);
 
     &:nth-child(even) {
-      background-color: var(--c-color-neutral-bg-quiet);
+      background-color: var(--c-color-neutral-fill-quiet);
     }
   }
 </style>

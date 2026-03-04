@@ -162,12 +162,12 @@
     }
 
     .icon-success {
-      color: var(--c-color-success-bg-emphasis);
+      color: var(--c-color-success-fill-loud);
       font-size: 4rem;
     }
 
     .icon-error {
-      color: var(--c-color-danger-bg-emphasis);
+      color: var(--c-color-danger-fill-loud);
       font-size: 4rem;
     }
   }
@@ -182,7 +182,7 @@
     }
 
     :deep(code) {
-      background: var(--c-color-neutral-bg-quiet);
+      background: var(--c-color-neutral-fill-quiet);
       padding: 0.125em 0.375em;
       border-radius: var(--c-radius-sm);
       font-family: var(--c-font-mono);
@@ -195,7 +195,7 @@
   }
 
   .error-details {
-    background: var(--c-color-neutral-bg-quiet);
+    background: var(--c-color-neutral-fill-quiet);
     border: 1px solid var(--c-color-neutral-border);
     border-radius: var(--c-radius-md);
     padding: var(--c-spacing-md);
@@ -237,7 +237,7 @@
       border-color 0.15s;
 
     &:hover {
-      background: var(--c-color-neutral-bg-hover);
+      background: var(--c-color-neutral-fill-normal);
       border-color: var(--c-color-neutral-border-hover);
     }
 
