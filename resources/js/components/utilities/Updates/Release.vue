@@ -86,7 +86,7 @@
 <style scoped lang="scss">
   .release {
     --_border-color: var(--c-color-neutral-border-quiet);
-    --_bg-color: var(--c-color-neutral-bg-quiet);
+    --_bg-color: var(--c-color-neutral-fill-quiet);
 
     background-color: var(--_bg-color);
     border: 1px solid var(--_border-color);
@@ -97,7 +97,7 @@
 
   .release--critical {
     --_border-color: var(--c-color-danger-border-quiet);
-    --_bg-color: var(--c-color-danger-bg-quiet);
+    --_bg-color: var(--c-color-danger-fill-quiet);
   }
 
   .release-trigger,
@@ -114,7 +114,7 @@
     cursor: pointer;
 
     &:hover {
-      background-color: var(--c-color-neutral-bg-hover);
+      background-color: var(--c-color-neutral-fill-normal);
     }
   }
 

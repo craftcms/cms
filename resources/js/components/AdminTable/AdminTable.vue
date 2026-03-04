@@ -315,27 +315,6 @@
     overflow: visible;
   }
 
-  :deep(.drag-handle) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: grab;
-    padding: var(--c-spacing-xs);
-    background: none;
-    border: 1px solid transparent;
-    border-radius: var(--c-border-radius-sm);
-    color: var(--c-color-neutral-text-secondary);
-    transition: background-color 0.15s ease;
-
-    &:hover {
-      background-color: var(--c-color-neutral-bg-hovered);
-    }
-
-    &:active {
-      cursor: grabbing;
-    }
-  }
-
   :deep(.row--dragging) {
     opacity: 0.4;
   }

@@ -50,7 +50,7 @@ import styles from './progress-bar.styles';
  * @cssprop [--c-progress-bar-radius=var(--c-radius-sm)] - Border radius
  * @cssprop [--c-progress-bar-track-color=var(--c-color-neutral-fill-quiet)] - Track background color
  * @cssprop [--c-progress-bar-fill-color=var(--c-color-primary-bg)] - Fill color
- * @cssprop [--c-progress-bar-pending-color=var(--c-color-neutral-bg-hover)] - Pending stripe color
+ * @cssprop [--c-progress-bar-pending-color=var(--c-color-neutral-fill-normal)] - Pending stripe color
  */
 export default class CraftProgressBar extends LitElement {
   static override styles = [styles];

@@ -27,7 +27,7 @@
     left: 0;
     width: 2000px; // Large enough to span any table
     height: 2px;
-    background-color: var(--c-color-primary-bg-normal, #2563eb);
+    background-color: var(--c-color-accent-fill-loud, #2563eb);
     pointer-events: none;
     z-index: 10;
   }

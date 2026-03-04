@@ -38,6 +38,6 @@
   .callout--danger {
     --c-callout-border-color: var(--c-color-danger-border-normal);
     --c-callout-fg: var(--c-color-danger-on-normal);
-    --c-callout-bg: var(--c-color-danger-bg-normal);
+    --c-callout-bg: var(--c-color-danger-fill-normal);
   }
 </style>

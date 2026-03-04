@@ -278,7 +278,7 @@
     display: inline-block;
     appearance: none;
     border: 1px solid var(--c-color-neutral-border-quiet);
-    background-color: var(--c-color-neutral-bg-quiet);
+    background-color: var(--c-color-neutral-fill-quiet);
     border-radius: var(--c-radius-full);
     padding: 0;
     width: calc(10rem / 16);
@@ -287,7 +287,7 @@
   }
 
   .dot--active {
-    background-color: var(--c-color-accent-bg-emphasis);
+    background-color: var(--c-color-accent-fill-loud);
     border: 1px solid var(--c-color-accent-border-emphasis);
   }
 

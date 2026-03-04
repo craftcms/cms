@@ -218,7 +218,7 @@
   .config-viewer {
     max-height: 500px;
     overflow: auto;
-    background-color: var(--c-color-neutral-bg-quiet);
+    background-color: var(--c-color-neutral-fill-quiet);
     padding: var(--c-spacing-md);
     border-radius: var(--c-radius-md);
     border: 1px solid var(--c-color-neutral-border-quiet);

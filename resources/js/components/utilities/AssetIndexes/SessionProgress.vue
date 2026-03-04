@@ -34,7 +34,7 @@
   .progress-bar-container {
     width: 100%;
     height: 0.5rem;
-    background-color: var(--c-color-neutral-bg-quiet);
+    background-color: var(--c-color-neutral-fill-quiet);
     border-radius: var(--c-radius-sm);
     overflow: hidden;
   }

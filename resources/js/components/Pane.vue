@@ -122,7 +122,7 @@
   }
 
   .pane--code {
-    background: var(--c-color-neutral-bg-quiet);
+    background: var(--c-color-neutral-fill-quiet);
     border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);
     margin-block-end: var(--c-spacing-md);
