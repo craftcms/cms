@@ -51,7 +51,6 @@
   width: 40px;
   aspect-ratio: 4/3;
   border-radius: 6px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
   display: inline-grid;
   place-items: center;
 }
