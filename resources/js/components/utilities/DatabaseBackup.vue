@@ -25,7 +25,10 @@
         :label="t('Download backup')"
         name="downloadBackup"
         .checked="form.downloadBackup"
-        @model-value-changed="form.downloadBackup = ($event.target as CraftCheckbox)?.checked === true"
+        @model-value-changed="
+          form.downloadBackup =
+            ($event.target as CraftCheckbox)?.checked === true
+        "
       ></craft-checkbox>
 
       <div class="mt-4">
