@@ -268,7 +268,7 @@ it('uses postgres default restore command variants for closure commands', functi
         restoreFormat: 'custom',
     );
 
-    expect($capturedPlainCommand)->toStartWith('psql ');
-    expect($capturedCustomFormatCommand)->toStartWith('pg_restore ');
+    expect($capturedPlainCommand)->toMatch('/^(?:\'[^\']*psql(?:\\.exe)?\'|psql(?:\\.exe)?)\\s/');
+    expect($capturedCustomFormatCommand)->toMatch('/^(?:\'[^\']*pg_restore(?:\\.exe)?\'|pg_restore(?:\\.exe)?)\\s/');
     expect($capturedCustomFormatCommand)->toContain('--single-transaction');
 });

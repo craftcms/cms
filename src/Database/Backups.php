@@ -20,6 +20,7 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 
 #[Singleton]
@@ -191,7 +192,7 @@ final readonly class Backups
         if ($connection->isPgsql()) {
             $config = $this->getConnectionConfig($connection);
             $parts = [
-                'pg_dump',
+                $this->resolveExecutable('pg_dump'),
                 '--dbname='.escapeshellarg((string) $config['database']),
                 '--host='.escapeshellarg((string) $config['host']),
                 '--port='.escapeshellarg((string) $config['port']),
@@ -223,7 +224,7 @@ final readonly class Backups
             $charset = (string) ($connection->getConfig('charset') ?? 'utf8mb4');
 
             $baseArgs = implode(' ', [
-                'mysqldump',
+                $this->resolveExecutable('mysqldump'),
                 '--defaults-file={defaultsFile}',
                 '--add-drop-table',
                 '--comments',
@@ -270,7 +271,7 @@ final readonly class Backups
             $usePgRestore = $restoreFormat !== null && $restoreFormat !== 'plain';
 
             $parts = [
-                $usePgRestore ? 'pg_restore' : 'psql',
+                $this->resolveExecutable($usePgRestore ? 'pg_restore' : 'psql'),
                 '--dbname='.escapeshellarg((string) $config['database']),
                 '--host='.escapeshellarg((string) $config['host']),
                 '--port='.escapeshellarg((string) $config['port']),
@@ -298,7 +299,7 @@ final readonly class Backups
         if ($connection->isMysql() || $connection->isMaria()) {
             $config = $this->getConnectionConfig($connection);
 
-            return 'mysql --defaults-file={defaultsFile} '.escapeshellarg((string) $config['database']).' < '.escapeshellarg($filePath);
+            return $this->resolveExecutable('mysql').' --defaults-file={defaultsFile} '.escapeshellarg((string) $config['database']).' < '.escapeshellarg($filePath);
         }
 
         throw new RuntimeException('Database restore is only supported for MySQL/MariaDB and PostgreSQL.');
@@ -360,6 +361,13 @@ final readonly class Backups
             exitCode: $process->getExitCode() ?? 1,
             error: trim($process->getErrorOutput()) ?: null,
         );
+    }
+
+    private function resolveExecutable(string $name): string
+    {
+        $path = new ExecutableFinder()->find($name) ?: $name;
+
+        return escapeshellarg($path);
     }
 
     private function createMysqlDefaultsFile(Connection $connection): string

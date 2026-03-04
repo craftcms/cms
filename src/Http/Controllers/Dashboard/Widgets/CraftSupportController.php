@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard\Widgets;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\web\Application;
+use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Api;
@@ -37,6 +38,7 @@ final readonly class CraftSupportController
         private Composer $composer,
         private License $license,
         private Api $api,
+        private Backups $backups,
     ) {}
 
     public function __invoke(Request $request, #[Give('Craft')] Application $craft): string
@@ -253,8 +255,8 @@ final readonly class CraftSupportController
             // Make a fresh database backup of the current schema/data. We want all data from all tables
             // for debugging.
             try {
-                $backupPath = Craft::$app->getDb()->backup();
-                $zip->addFile($backupPath, basename((string) $backupPath));
+                $backupPath = $this->backups->backup();
+                $zip->addFile($backupPath, basename($backupPath));
             } catch (Throwable $e) {
                 Log::warning('Error adding database backup to support request: '.$e->getMessage(), [__METHOD__]);
                 $message .= "\n\n---\n\nError adding database backup: ".$e->getMessage();

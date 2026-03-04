@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -28,7 +28,7 @@ final class MigrateController
      * services (like [DeployBot](https://deploybot.com/) or [DeployPlace](https://deployplace.com/)) to minimize site
      * downtime after a deployment.
      */
-    public function __invoke(Request $request, GeneralConfig $generalConfig, Updates $updates, ProjectConfig $projectConfig, MaintenanceModeManager $maintenance)
+    public function __invoke(Request $request, GeneralConfig $generalConfig, Updates $updates, ProjectConfig $projectConfig, MaintenanceModeManager $maintenance, Backups $backups)
     {
         $handles = $updates->pendingMigrationHandles(true);
         $runMigrations = ! empty($handles);
@@ -53,7 +53,7 @@ final class MigrateController
         // Backup the DB?
         if ($generalConfig->getBackupOnUpdate()) {
             try {
-                $backupPath = Craft::$app->getDb()->backup();
+                $backupPath = $backups->backup();
             } catch (Throwable $e) {
                 $maintenance->deactivate();
                 throw new HttpException(500, 'Error backing up the database.', $e);
@@ -83,13 +83,13 @@ final class MigrateController
             DB::rollBack();
 
             // MySQL may have implicitly committed the transaction
-            $restored = Craft::$app->getDb()->getIsPgsql();
+            $restored = DB::connection()->isPgsql();
 
             // Do we have a backup?
             if (! $restored && ! empty($backupPath)) {
                 // Attempt a restore
                 try {
-                    Craft::$app->getDb()->restore($backupPath);
+                    $backups->restore($backupPath);
                     $restored = true;
                 } catch (Throwable $restoreException) {
                     // Just log it

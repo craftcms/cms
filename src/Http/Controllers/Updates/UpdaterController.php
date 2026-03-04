@@ -10,6 +10,7 @@ use craft\helpers\UrlHelper;
 use craft\web\Application;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -83,7 +84,7 @@ final class UpdaterController extends BaseUpdaterController
         return $this->send($this->realInitialState(force: true));
     }
 
-    public function backup(): Response
+    public function backup(Backups $backups): Response
     {
         // make sure migrations are pending
         if (! $this->updates->areMigrationsPending()) {
@@ -91,7 +92,7 @@ final class UpdaterController extends BaseUpdaterController
         }
 
         try {
-            app('Craft')->getDb()->backup();
+            $backups->backup();
         } catch (Throwable $e) {
             Log::error('Error backing up the database: '.$e->getMessage(), [__METHOD__]);
 
