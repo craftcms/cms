@@ -25,7 +25,7 @@ use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
-use craft\filters\RateLimiter;
+use craft\filters\IpRateLimitIdentity;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
@@ -52,6 +52,7 @@ use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\Model;
+use yii\filters\RateLimiter;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -176,9 +177,13 @@ class UsersController extends Controller
             'rateLimiter' => [
                 'class' => RateLimiter::class,
                 'only' => ['send-password-reset-email'],
-                'limit' => 1,
-                'window' => 1,
-                'keyPrefix' => 'reset-password',
+                'enableRateLimitHeaders' => false,
+                'user' => fn() => new IpRateLimitIdentity([
+                    'limit' => 1,
+                    'window' => 1,
+                    'keyPrefix' => 'reset-password',
+                    'ip' => Craft::$app->getRequest()->getUserIP() ?? 'unknown',
+                ]),
             ],
         ];
     }
