@@ -103,6 +103,7 @@
     <header class="cp__header">
       <a
         v-for="link in skipLinks"
+        :key="link.url"
         :href="link.url"
         class="skip-link skip-link--global"
         >{{ link.label }}</a
