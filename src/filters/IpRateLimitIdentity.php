@@ -8,8 +8,10 @@
 namespace craft\filters;
 
 use Craft;
+use yii\base\Action;
 use yii\base\BaseObject;
 use yii\filters\RateLimitInterface;
+use yii\web\Request;
 
 /**
  * IP-based rate limit identity for use with RateLimiter.
@@ -71,11 +73,8 @@ class IpRateLimitIdentity extends BaseObject implements RateLimitInterface
 
     /**
      * Generates the cache key for storing rate limit allowance.
-     *
-     * @param mixed $action The action being rate limited
-     * @return string The cache key
      */
-    private function getCacheKey($action): string
+    private function getCacheKey(Action $action): string
     {
         return sprintf('%s:%s:%s', $this->keyPrefix, $action->getUniqueId(), $this->ip);
     }
