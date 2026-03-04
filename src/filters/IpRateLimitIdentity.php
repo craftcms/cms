@@ -11,7 +11,6 @@ use Craft;
 use yii\base\Action;
 use yii\base\BaseObject;
 use yii\filters\RateLimitInterface;
-use yii\web\Request;
 
 /**
  * IP-based rate limit identity for use with RateLimiter.
