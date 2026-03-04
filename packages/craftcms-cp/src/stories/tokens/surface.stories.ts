@@ -56,7 +56,6 @@ const shadowTokens = [
   {name: '--c-shadow-md', var: 'var(--c-shadow-md)'},
   {name: '--c-shadow-lg', var: 'var(--c-shadow-lg)'},
   {name: '--c-shadow-xl', var: 'var(--c-shadow-xl)'},
-  {name: '--c-shadow-2xl', var: 'var(--c-shadow-2xl)'},
 ];
 
 export const Shadows: Story = {
