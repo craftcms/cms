@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Section\Rules;
+namespace CraftCms\Cms\Section\Validation\Rules;
 
 use Closure;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use Exception;
@@ -27,10 +28,13 @@ final class SingleSectionUriRule implements DataAwareRule, ValidationRule
      */
     private array $data = [];
 
+    public function __construct(
+        private readonly ?Section $section = null,
+    ) {}
+
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $sectionId = $this->data['sectionId'];
-        $section = Sections::getSectionById($sectionId);
+        $section = $this->section ?? Sections::getSectionById($this->data['sectionId']);
 
         // Make sure no other elements are using this URI already
         $query = DB::table(Table::ELEMENTS_SITES, 'elements_sites')

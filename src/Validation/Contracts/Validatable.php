@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Validation\Contracts;
 
 use Illuminate\Contracts\Support\MessageBag;
+use Illuminate\Validation\Validator;
 
 interface Validatable
 {
     /**
-     * Returns the validation rules for attributes.
+     * Returns the validation rules or ruleset for attributes.
      *
      * @return array<string, mixed>
      */
@@ -22,14 +23,14 @@ interface Validatable
      */
     public function getMessages(): array;
 
-    // /**
-    //  * This method is invoked before validation starts.
-    //  * The default implementation returns true, allowing validation to proceed.
-    //  * Override this method to perform pre-validation logic or to conditionally skip validation.
-    //  *
-    //  * @return bool whether the validation should be executed.
-    //  */
-    // public function beforeValidate(): bool;
+    /**
+     * This method is invoked before validation starts.
+     * The default implementation returns true, allowing validation to proceed.
+     * Override this method to perform pre-validation logic or to conditionally skip validation.
+     *
+     * @return bool whether the validation should be executed.
+     */
+    public function beforeValidate(): bool;
 
     /**
      * Validates the attributes.
@@ -40,13 +41,15 @@ interface Validatable
      */
     public function validate(string|array|null $attributeNames = null, bool $clearErrors = true): bool;
 
-    // /**
-    //  * This method is invoked after validation ends.
-    //  * Override this method to perform additional validation or add custom errors to the validator.
-    //  *
-    //  * @param Validator $validator the validator instance that performed the validation.
-    //  */
-    // public function afterValidate(Validator $validator): void;
+    /**
+     * This method is invoked after validation ends.
+     * Override this method to perform additional validation or add custom errors to the validator.
+     *
+     * TODO: Remove optionality of validator after components no longer rely on craft/base/Model
+     *
+     * @param  ?Validator  $validator  the validator instance that performed the validation.
+     */
+    public function afterValidate(?Validator $validator = null): void;
 
     /**
      * Returns the first error message for each attribute that has errors.
@@ -64,9 +67,8 @@ interface Validatable
      * Sets attribute values.
      *
      * @param  array<string, mixed>  $values  attribute values to set (attribute name => value).
-     * @param  bool  $safeOnly  whether to only set safe attributes (currently unused).
      */
-    public function setAttributes(array $values, bool $safeOnly = true): void;
+    public function setAttributes(array $values): void;
 
     /**
      * Returns all attribute values.
@@ -93,4 +95,51 @@ interface Validatable
      * @return array<string, string>
      */
     public function attributeLabels(): array;
+
+    /**
+     * Sets the current validation scenario.
+     *
+     * Scenarios allow components to use different validation rules based on context.
+     * For example, a 'create' scenario might require certain fields, while an 'update'
+     * scenario might have different requirements.
+     *
+     * @param  string  $scenario  The scenario name to set
+     */
+    public function setScenario(string $scenario): void;
+
+    /**
+     * Returns the current validation scenario.
+     *
+     * @return string The active scenario name
+     */
+    public function getScenario(): string;
+
+    /**
+     * Returns a mapping of scenario names to their active attributes.
+     *
+     * Each scenario defines which attributes should be validated. The returned array
+     * maps scenario names (keys) to either:
+     * - An array of attribute names that should be validated in that scenario
+     * - null to indicate all attributes should be validated
+     *
+     * Example:
+     * ```php
+     * [
+     *     'create' => ['title', 'slug', 'body'],
+     *     'update' => ['title', 'body'],
+     *     'default' => null, // All attributes
+     * ]
+     * ```
+     *
+     * @return array<string, array<string>|null>
+     */
+    public function scenarios(): array;
+
+    /**
+     * Checks if the current scenario matches any of the provided scenarios.
+     *
+     * @param  string  ...$scenarios  One or more scenario names to check against
+     * @return bool True if the current scenario matches any provided scenario
+     */
+    public function inScenarios(string ...$scenarios): bool;
 }
