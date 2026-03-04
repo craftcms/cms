@@ -8,6 +8,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
@@ -23,6 +24,7 @@ use Throwable;
 
 final readonly class TransformController
 {
+    use EnforcesPermissions;
     use RespondsWithFlash;
 
     public function generate(Request $request): Response
@@ -38,6 +40,7 @@ final readonly class TransformController
                 abort(500, 'Image transform cannot be created.', ['exception' => $e]);
             }
         } else {
+            $this->requirePermission('accessCp');
             $assetId = $request->input('assetId');
             $handle = $request->input('handle');
             abort_if(! $assetId, 400, 'Missing assetId');

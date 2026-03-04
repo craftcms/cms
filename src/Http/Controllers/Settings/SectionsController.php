@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use Craft;
 use craft\helpers\Cp;
+use craft\helpers\UrlHelper;
 use craft\web\assets\editsection\EditSectionAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -20,9 +21,9 @@ use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -39,9 +40,46 @@ final readonly class SectionsController
         $this->readOnly = ! $generalConfig->allowAdminChanges;
     }
 
-    public function index(): View
+    public function index(Request $request, Sections $sections): \Inertia\Response
     {
-        return view('settings.sections._index', [
+        $page = $request->integer('page', 1);
+        $limit = $request->integer('per_page', 50);
+        $searchTerm = $request->input('search');
+
+        $sort = $request->array('sort') ?? [
+            ['field' => 'name', 'direction' => 'asc'],
+        ];
+
+        $orderBy = match (Arr::get($sort, '0.field')) {
+            '__slot:handle' => 'handle',
+            'type' => 'type',
+            default => 'name',
+        };
+
+        $sortDir = match (Arr::get($sort, '0.direction')) {
+            'desc' => SORT_DESC,
+            default => SORT_ASC,
+        };
+
+        [$pagination, $tableData] = $sections->getSectionTableData(
+            page: $page,
+            limit: $limit,
+            searchTerm: $searchTerm,
+            orderBy: $orderBy,
+            sortDir: $sortDir,
+        );
+
+        return Inertia::render('SettingsSectionsIndexPage', [
+            'crumbs' => fn () => [
+                ['label' => t('Settings'), 'url' => UrlHelper::cpUrl('settings')],
+                ['label' => t('Sections')],
+            ],
+            'title' => t('Sections'),
+            'data' => fn () => $tableData,
+            'pagination' => fn () => $pagination,
+            'sort' => $sort,
+            'searchTerm' => $searchTerm,
+            'emptyMessage' => t('No sections exist yet.'),
             'readOnly' => $this->readOnly,
         ]);
     }
@@ -200,9 +238,15 @@ final readonly class SectionsController
             'id' => ['required', Rule::exists(Table::SECTIONS, 'id')],
         ]);
 
-        $sections->deleteSectionById($request->input('id'));
+        $sectionId = $request->integer('id');
+        $section = $sections->getSectionById($sectionId);
 
-        return $this->asSuccess();
+        $name = $section->name;
+        $sections->deleteSectionById($sectionId);
+
+        return back()->with('success', t('Section “{name}” deleted.', [
+            'name' => $name,
+        ]));
     }
 
     public function tableData(Request $request, Sections $sections): Response

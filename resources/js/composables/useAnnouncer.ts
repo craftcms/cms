@@ -41,7 +41,11 @@ const announcerTimeout = ref(0);
  * }
  */
 export function useAnnouncer(options: Partial<AnnouncerOptions> = {}) {
-  function announce(message: string) {
+  function announce(message: string | null) {
+    if (!message) {
+      return;
+    }
+
     if (announcerTimeout.value) {
       clearTimeout(announcerTimeout.value);
     }

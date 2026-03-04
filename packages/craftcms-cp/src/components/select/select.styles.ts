@@ -8,6 +8,10 @@ export default css`
     width: 100%;
   }
 
+  :host([small]) .input-group__input {
+    --c-input-height: calc(var(--c-size-control-sm) - 2px);
+  }
+
   ::slotted(.form-control) {
     width: 100%;
     height: 100%;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
 use craft\helpers\Cp;
+use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
@@ -26,6 +27,7 @@ use function CraftCms\Cms\t;
 
 final readonly class MoveEntryToSectionController
 {
+    use EnforcesPermissions;
     use RespondsWithFlash;
 
     public function __construct(
@@ -121,6 +123,9 @@ final readonly class MoveEntryToSectionController
 
         abort_if(is_null($section), 400, 'Cannot find the section to move the entries to.');
 
+        $this->requirePermission("viewEntries:$section->uid");
+
+        /** @var \Illuminate\Support\Collection<Entry> $entries */
         $entries = Entry::find()
             ->id($entryIds)
             ->status(null)
@@ -130,6 +135,10 @@ final readonly class MoveEntryToSectionController
             ->get();
 
         abort_if($entries->isEmpty(), 400, 'Cannot find the entries to move to the new section.');
+
+        foreach ($entries as $entry) {
+            abort_if(! $entry->canMove(), 403, 'User is not authorized to perform this action.');
+        }
 
         $errors = [];
         foreach ($entries as $entry) {

@@ -29,6 +29,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Throwable;
+use Tpetry\QueryExpressions\Language\CaseGroup;
+use Tpetry\QueryExpressions\Language\CaseRule;
+use Tpetry\QueryExpressions\Operator\Comparison\Equal;
+use Tpetry\QueryExpressions\Value\Value;
 
 #[Singleton]
 final readonly class Dashboard
@@ -250,16 +254,16 @@ final readonly class Dashboard
      */
     public function reorderWidgets(array $widgetIds): bool
     {
-        $cases = '';
+        $cases = [];
 
         foreach ($widgetIds as $index => $id) {
-            $cases .= " WHEN {$id} THEN {$index}";
+            $cases[] = new CaseRule(new Value($index), new Equal('id', new Value($id)));
         }
 
         DB::table((new Models\Widget)->getTable())
             ->whereIn('id', $widgetIds)
             ->update([
-                'sortOrder' => DB::raw("CASE id {$cases} END"),
+                'sortOrder' => new CaseGroup($cases),
             ]);
 
         return true;

@@ -331,7 +331,7 @@ Route::prefix(implode('/', [
         Route::get('project-config/download', [ProjectConfigController::class, 'download']);
 
         // Project Config sync
-        Route::prefix('config-sync')->group(function () {
+        Route::prefix('config-sync')->middleware([RequireAdmin::class])->group(function () {
             Route::post('/', [ConfigSyncController::class, 'index']);
             Route::post(ConfigSyncController::ACTION_RETRY, [ConfigSyncController::class, 'retry']);
             Route::post(ConfigSyncController::ACTION_APPLY_YAML_CHANGES, [ConfigSyncController::class, 'applyYamlChanges']);

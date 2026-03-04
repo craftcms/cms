@@ -40,6 +40,11 @@ final readonly class ImageEditorController
 
         abort_if(! $asset, 400, t('The asset you’re trying to edit does not exist.'));
 
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+
+        abort_if(! $asset->getSupportsImageEditor(), 400, 'Unsupported file format');
+
         $focal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
 
         return new JsonResponse([
@@ -60,7 +65,12 @@ final readonly class ImageEditorController
 
         $asset = Asset::findOne($assetId);
 
-        abort_if(! $asset, 400, 'The Asset cannot be found');
+        abort_if(! $asset, 400, "Invalid asset ID: $asset");
+
+        $this->requireVolumePermissionByAsset('editImages', $asset);
+        $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
+
+        abort_if(! $asset->getSupportsImageEditor(), 400, 'Unsupported file format');
 
         try {
             $url = $this->assets->getImagePreviewUrl($asset, $size, $size);
