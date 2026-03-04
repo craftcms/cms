@@ -29,6 +29,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
@@ -776,7 +777,7 @@ class Assets
                 $existingSize = $subDir;
                 $existingAsset = $assetSourcesDirectory . DIRECTORY_SEPARATOR . $subDir . '/' . $assetId . '.' . $asset->getExtension();
                 if ($existingSize >= $size && is_file($existingAsset)) {
-                    Craft::$app->getImages()->loadImage($existingAsset)
+                    Images::loadImage($existingAsset)
                         ->scaleToFit($size, $size, false)
                         ->saveAs($targetFilePath);
 
@@ -795,11 +796,11 @@ class Assets
         if (!$isLocalFs && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
             $localSource = TransformHelper::getLocalImageSource($asset);
-            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
+            Images::loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
         } else {
             // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
             $localSource = $asset->getCopyOfFile();
-            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
+            Images::loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
             FileHelper::unlink($localSource);
         }
 

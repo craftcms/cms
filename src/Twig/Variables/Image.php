@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Variables;
 
-use craft\helpers\Image as ImageHelper;
+use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Support\Html;
 use Symfony\Component\Mime\MimeTypes;
 

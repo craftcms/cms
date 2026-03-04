@@ -424,6 +424,55 @@ describe('extendTransform', function () {
 
         expect($extended->width)->toBe(400);
     });
+
+    test('matches legacy extendTransform provider cases', function (ImageTransform $transform, array $parameters, array $expected) {
+        $extended = ImageTransformHelper::extendTransform($transform, $parameters);
+
+        foreach ($expected as $property => $value) {
+            expect($extended->{$property})->toBe($value);
+        }
+    })->with([
+        'adds format without changing dimensions' => [
+            new ImageTransform(['width' => 200, 'height' => 200]),
+            ['format' => 'jpg'],
+            ['width' => 200, 'height' => 200, 'format' => 'jpg'],
+        ],
+        'no-op when parameters are empty' => [
+            new ImageTransform(['width' => 200, 'height' => 200]),
+            [],
+            ['width' => 200, 'height' => 200],
+        ],
+        'allows nullable width override' => [
+            new ImageTransform(['width' => 200, 'height' => 200]),
+            ['width' => null],
+            ['width' => null, 'height' => 200],
+        ],
+        'nullifies handle even when override is provided' => [
+            new ImageTransform(['width' => 200, 'height' => 200, 'handle' => 'square']),
+            ['format' => 'jpg', 'handle' => 'rectangle'],
+            ['width' => 200, 'height' => 200, 'format' => 'jpg', 'handle' => null],
+        ],
+        'nullifies identity fields for cloned transform' => [
+            new ImageTransform([
+                'width' => 200,
+                'height' => 200,
+                'id' => 88,
+                'uid' => 'legacy-uid',
+                'handle' => 'square',
+                'parameterChangeTime' => new \DateTime,
+            ]),
+            ['format' => 'jpg'],
+            [
+                'width' => 200,
+                'height' => 200,
+                'format' => 'jpg',
+                'handle' => null,
+                'id' => null,
+                'uid' => null,
+                'parameterChangeTime' => null,
+            ],
+        ],
+    ]);
 });
 
 describe('normalizeTransform', function () {

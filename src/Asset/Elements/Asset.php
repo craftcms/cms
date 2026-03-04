@@ -28,7 +28,6 @@ use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Image;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\services\ElementSources;
@@ -59,6 +58,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Search\SearchQuery;
@@ -1757,7 +1757,7 @@ JS, [
 
         if (
             ($transform !== null || $this->_transform) &&
-            Image::canManipulateAsImage($this->getExtension())
+            ImageHelper::canManipulateAsImage($this->getExtension())
         ) {
             $transform = ImageTransformHelper::normalizeTransform($transform ?? $this->_transform);
         } else {
@@ -1981,7 +1981,7 @@ JS, [
                 // otherwise - we can proceed and rely on the FallbackTransformer (e.g. for thumbs in the CP)
                 // see https://github.com/craftcms/cms/issues/13306 and https://github.com/craftcms/cms/issues/13624 for more info
                 (request()->isSiteRequest() && ! $this->allowTransforms()) ||
-                ! Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
+                ! ImageHelper::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))
             )
         ) {
             $transform = null;
@@ -2069,7 +2069,7 @@ JS, [
         }
 
         $extension = $this->getExtension();
-        if (! Image::canManipulateAsImage($extension)) {
+        if (! ImageHelper::canManipulateAsImage($extension)) {
             return $extension;
         }
 
@@ -2213,7 +2213,7 @@ JS, [
     {
         $ext = $this->getExtension();
 
-        if (! Image::canManipulateAsImage($ext)) {
+        if (! ImageHelper::canManipulateAsImage($ext)) {
             return $ext;
         }
 
@@ -2409,7 +2409,7 @@ JS, [
     {
         $ext = $this->getExtension();
 
-        return strcasecmp($ext, 'svg') !== 0 && Image::canManipulateAsImage($ext);
+        return strcasecmp($ext, 'svg') !== 0 && ImageHelper::canManipulateAsImage($ext);
     }
 
     /**
@@ -2952,7 +2952,7 @@ JS;
                     Cms::config()->sanitizeCpImageUploads
                 ))
             ) {
-                Image::cleanImageByPath($this->tempFilePath);
+                ImageHelper::cleanImageByPath($this->tempFilePath);
             }
 
             // if we're creating or replacing and image, get the width or height via getimagesize
@@ -3190,13 +3190,13 @@ JS;
 
         $transform ??= $this->_transform;
 
-        if ($transform === null || ! Image::canManipulateAsImage($this->getExtension())) {
+        if ($transform === null || ! ImageHelper::canManipulateAsImage($this->getExtension())) {
             return [$this->_width, $this->_height];
         }
 
         $transform = ImageTransformHelper::normalizeTransform($transform);
 
-        return Image::targetDimensions(
+        return ImageHelper::targetDimensions(
             $this->_width,
             $this->_height,
             $transform->width,
@@ -3311,7 +3311,7 @@ JS;
             $this->kind = Assets::getFileKindByExtension($filename);
 
             if ($this->kind === self::KIND_IMAGE) {
-                [$this->_width, $this->_height] = Image::imageSize($tempPath);
+                [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);
             } else {
                 $this->_width = null;
                 $this->_height = null;

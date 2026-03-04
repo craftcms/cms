@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image;
 
 use Craft;
-use craft\base\Image as BaseImage;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
-use craft\helpers\Image;
-use craft\image\Raster;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
@@ -80,7 +77,7 @@ final class ImageTransformHelper
     {
         $ext = strtolower($asset->getExtension());
 
-        if (Image::isWebSafe($ext)) {
+        if (ImageHelper::isWebSafe($ext)) {
             return $ext;
         }
 
@@ -338,8 +335,8 @@ final class ImageTransformHelper
         $maxCachedImageSize = Cms::config()->maxCachedCloudImageSize;
 
         // Resize if constrained by maxCachedImageSizes setting
-        if ($maxCachedImageSize > 0 && Image::canManipulateAsImage(pathinfo($source, PATHINFO_EXTENSION))) {
-            $image = Craft::$app->getImages()->loadImage($source);
+        if ($maxCachedImageSize > 0 && ImageHelper::canManipulateAsImage(pathinfo($source, PATHINFO_EXTENSION))) {
+            $image = app(Images::class)->loadImage($source);
 
             if ($image instanceof Raster) {
                 $image->setQuality(100);
@@ -357,9 +354,9 @@ final class ImageTransformHelper
      * @param  Asset  $asset  The asset
      * @param  ImageTransform  $transform  The image transform
      * @param  callable|null  $heartbeat  A callback that should be called while the transform is being generated
-     * @param  BaseImage|null  $image  The image object loaded for the transform
+     * @param  Image|null  $image  The image object loaded for the transform
      *
-     * @param-out BaseImage $image The image object loaded for the transform
+     * @param-out Image $image The image object loaded for the transform
      *
      * @return string The temp path that the transform was saved to
      *
@@ -369,16 +366,16 @@ final class ImageTransformHelper
         Asset $asset,
         ImageTransform $transform,
         ?callable $heartbeat = null,
-        ?BaseImage &$image = null,
+        ?Image &$image = null,
     ): string {
         $ext = strtolower($asset->getExtension());
 
-        if (! Image::canManipulateAsImage($ext)) {
+        if (! ImageHelper::canManipulateAsImage($ext)) {
             throw new ImageTransformException("Transforming .$ext files is not supported.");
         }
 
         $format = $transform->format ?: self::detectTransformFormat($asset);
-        $imagesService = Craft::$app->getImages();
+        $imagesService = app(Images::class);
 
         $supported = match ($format) {
             Format::ID_WEBP => $imagesService->getSupportsWebP(),
@@ -446,7 +443,7 @@ final class ImageTransformHelper
 
         // Save it!
 
-        // It's important that the temp filename has the target file extension, as craft\image\Raster::saveAs() uses it
+        // It's important that the temp filename has the target file extension, as CraftCms\Cms\Image\Raster::saveAs() uses it
         // to determine the options that should be passed to Imagine\Image\ManipulatorInterface::save().
         $tempFilename = FileHelper::uniqueName(sprintf('%s.%s', $asset->getFilename(false), $format));
         $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;

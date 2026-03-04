@@ -12,6 +12,7 @@ namespace craft\helpers;
 use craft\base\Image as BaseImage;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Image;
 use CraftCms\Cms\Image\ImageTransformHelper;
 
 /**
@@ -86,7 +87,7 @@ class ImageTransforms
     }
 
     /**
-     * Generates an image transform for an asset.
+     * @param-out Image|null $image
      */
     public static function generateTransform(
         Asset $asset,

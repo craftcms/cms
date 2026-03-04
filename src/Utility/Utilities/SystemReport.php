@@ -9,6 +9,7 @@ use Craft;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\PHP;
@@ -157,7 +158,7 @@ final class SystemReport extends Utility
      */
     private static function imageDriver(): string
     {
-        $imagesService = Craft::$app->getImages();
+        $imagesService = app(Images::class);
 
         $driverName = $imagesService->getIsGd()
             ? 'GD'

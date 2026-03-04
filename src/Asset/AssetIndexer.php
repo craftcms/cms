@@ -8,7 +8,6 @@ use Craft;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Image;
 use CraftCms\Cms\Asset\Data\AssetIndexEntry;
 use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -24,6 +23,7 @@ use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Data\FsListing;
+use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -643,14 +643,14 @@ final class AssetIndexer
 
                 if ($isLocalFs) {
                     $transformSourcePath = $asset->getImageTransformSourcePath();
-                    $dimensions = Image::imageSize($transformSourcePath);
+                    $dimensions = ImageHelper::imageSize($transformSourcePath);
                 } else {
                     if (! $cacheImages) {
                         try {
                             $stream = $asset->getStream();
 
                             if (is_resource($stream)) {
-                                $dimensions = Image::imageSizeByStream($stream);
+                                $dimensions = ImageHelper::imageSizeByStream($stream);
                                 fclose($stream);
                             }
                         } catch (VolumeException $e) {
@@ -661,7 +661,7 @@ final class AssetIndexer
                     if (! is_array($dimensions)) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
                         AssetsHelper::downloadFile($volume->sourceDisk(), $indexEntry->uri, $tempPath);
-                        $dimensions = Image::imageSize($tempPath);
+                        $dimensions = ImageHelper::imageSize($tempPath);
 
                         $asset->setMimeType(FileHelper::getMimeType($tempPath));
                     }
