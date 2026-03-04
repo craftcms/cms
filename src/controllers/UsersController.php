@@ -26,7 +26,6 @@ use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
 use craft\filters\IpRateLimitIdentity;
-use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
