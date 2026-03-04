@@ -8,71 +8,58 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
-use craft\base\MemoizableArray;
-use craft\db\Connection;
 use craft\events\AssetEvent;
 use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\FileHelper;
-use craft\helpers\ImageTransforms as TransformHelper;
-use craft\imagetransforms\ImageTransformer;
-use craft\models\ImageTransform;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
+use CraftCms\Cms\Image\Data\ImageTransform as ImageTransformData;
+use CraftCms\Cms\Image\Events\ApplyingTransformDelete;
+use CraftCms\Cms\Image\Events\DeletingTransform;
+use CraftCms\Cms\Image\Events\InvalidatingAssetTransforms;
+use CraftCms\Cms\Image\Events\RegisterImageTransformers;
+use CraftCms\Cms\Image\Events\SavingTransform;
+use CraftCms\Cms\Image\Events\TransformDeleted;
+use CraftCms\Cms\Image\Events\TransformSaved;
+use CraftCms\Cms\Image\ImageTransforms as ImageTransformsService;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Query;
-use CraftCms\Cms\Support\Str;
-use DateTime;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use InvalidArgumentException;
-use Throwable;
+use Illuminate\Support\Facades\Event as EventFacade;
 use yii\base\Component;
-use yii\base\InvalidConfigException;
-use yii\db\Exception;
-use yii\di\Instance;
 
 /**
  * Image Transforms service.
  *
  * An instance of the service is available via [[\craft\base\ApplicationTrait::getImageTransforms()|`Craft::$app->getImageTransforms()`]].
  *
- * @property-read ImageTransform[] $allTransforms
- * @property-read array $pendingTransformIndexIds
+ * @property-read ImageTransformData[] $allTransforms
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see ImageTransformsService} instead.
  */
 class ImageTransforms extends Component
 {
     /**
-     * @event AssetTransformEvent The event that is triggered before an image transform is saved
+     * @event ImageTransformEvent The event that is triggered before an image transform is saved
      */
     public const EVENT_BEFORE_SAVE_IMAGE_TRANSFORM = 'beforeSaveImageTransform';
 
     /**
-     * @event AssetTransformEvent The event that is triggered after an image transform is saved
+     * @event ImageTransformEvent The event that is triggered after an image transform is saved
      */
     public const EVENT_AFTER_SAVE_IMAGE_TRANSFORM = 'afterSaveImageTransform';
 
     /**
-     * @event AssetTransformEvent The event that is triggered before an image transform is deleted
+     * @event ImageTransformEvent The event that is triggered before an image transform is deleted
      */
     public const EVENT_BEFORE_DELETE_IMAGE_TRANSFORM = 'beforeDeleteImageTransform';
 
     /**
-     * @event AssetTransformEvent The event that is triggered before a transform delete is applied to the database.
+     * @event ImageTransformEvent The event that is triggered before a transform delete is applied to the database.
      */
     public const EVENT_BEFORE_APPLY_TRANSFORM_DELETE = 'beforeApplyTransformDelete';
 
     /**
-     * @event AssetTransformEvent The event that is triggered after an image transform is deleted
+     * @event ImageTransformEvent The event that is triggered after an image transform is deleted
      */
     public const EVENT_AFTER_DELETE_IMAGE_TRANSFORM = 'afterDeleteImageTransform';
 
@@ -87,150 +74,66 @@ class ImageTransforms extends Component
     public const EVENT_REGISTER_IMAGE_TRANSFORMERS = 'registerImageTransformers';
 
     /**
-     * @var Connection|array|string The database connection to use
-     */
-    public string|array|Connection $db = 'db';
-
-    /**
-     * @var MemoizableArray<ImageTransform>|null
-     * @see _transforms()
-     */
-    private ?MemoizableArray $_transforms = null;
-
-    /**
-     * @var ImageTransformerInterface[]
-     */
-    private array $_imageTransformers = [];
-
-    /**
      * Serializer
      */
-    public function __serialize()
+    public function __serialize(): array
     {
-        $vars = get_object_vars($this);
-        unset($vars['_transforms']);
-        return $vars;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-        $this->db = Instance::ensure($this->db, Connection::class);
-    }
-
-    /**
-     * Returns a memoizable array of all named asset transforms.
-     *
-     * @return MemoizableArray<ImageTransform>
-     */
-    private function _transforms(): MemoizableArray
-    {
-        if (!isset($this->_transforms)) {
-            $this->_transforms = new MemoizableArray(
-                $this->_createTransformQuery()->get()->all(),
-                function(object $result) {
-                    $result = (array) $result;
-                    return Craft::createObject([
-                        'class' => ImageTransform::class,
-                        ...$result,
-                    ]);
-                },
-            );
-        }
-
-        return $this->_transforms;
+        return get_object_vars($this);
     }
 
     /**
      * Returns all named asset transforms.
      *
-     * @return ImageTransform[]
+     * @return ImageTransformData[]
      */
     public function getAllTransforms(): array
     {
-        return $this->_transforms()->all();
+        return $this->service()->getAllTransforms()->all();
     }
 
     /**
      * Returns an asset transform by its handle.
      *
      * @param string $handle
-     *
-     * @return ImageTransform|null
+     * @return ImageTransformData|null
      */
-    public function getTransformByHandle(string $handle): ?ImageTransform
+    public function getTransformByHandle(string $handle): ?ImageTransformData
     {
-        return $this->_transforms()->firstWhere('handle', $handle, true);
+        return $this->service()->getTransformByHandle($handle);
     }
 
     /**
      * Returns an asset transform by its ID.
      *
      * @param int $id
-     *
-     * @return ImageTransform|null
+     * @return ImageTransformData|null
      */
-    public function getTransformById(int $id): ?ImageTransform
+    public function getTransformById(int $id): ?ImageTransformData
     {
-        return $this->_transforms()->firstWhere('id', $id);
+        return $this->service()->getTransformById($id);
     }
 
     /**
      * Returns an asset transform by its UID.
      *
      * @param string $uid
-     *
-     * @return ImageTransform|null
+     * @return ImageTransformData|null
      */
-    public function getTransformByUid(string $uid): ?ImageTransform
+    public function getTransformByUid(string $uid): ?ImageTransformData
     {
-        return $this->_transforms()->firstWhere('uid', $uid, true);
+        return $this->service()->getTransformByUid($uid);
     }
 
     /**
      * Saves an asset transform.
      *
-     * @param ImageTransform $transform The transform to be saved
+     * @param ImageTransformData $transform The transform to be saved
      * @param bool $runValidation Whether the transform should be validated
-     *
      * @return bool
-     * @throws ImageTransformException If attempting to update a non-existing transform.
      */
-    public function saveTransform(ImageTransform $transform, bool $runValidation = true): bool
+    public function saveTransform(ImageTransformData $transform, bool $runValidation = true): bool
     {
-        $isNewTransform = !$transform->id;
-
-        // Fire a 'beforeSaveImageTransform' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_IMAGE_TRANSFORM)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_IMAGE_TRANSFORM, new ImageTransformEvent([
-                'imageTransform' => $transform,
-                'isNew' => $isNewTransform,
-            ]));
-        }
-
-        if ($runValidation && !$transform->validate()) {
-            Log::info('Asset transform not saved due to validation error.', [__METHOD__]);
-            return false;
-        }
-
-        if ($isNewTransform) {
-            $transform->uid = Str::uuid()->toString();
-        } elseif (!$transform->uid) {
-            $transform->uid = DB::table(Table::IMAGETRANSFORMS)->uidById($transform->id);
-        }
-
-        $projectConfig = app(ProjectConfig::class);
-        $configPath = ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid;
-        $projectConfig->set($configPath, $transform->getConfig(), "Saving transform “{$transform->handle}”");
-
-        if ($isNewTransform) {
-            $transform->id = DB::table(Table::IMAGETRANSFORMS)->idByUid($transform->uid);
-        }
-
-        return true;
+        return $this->service()->saveTransform($transform, $runValidation);
     }
 
     /**
@@ -240,252 +143,61 @@ class ImageTransforms extends Component
      */
     public function handleChangedTransform(ConfigEvent $event): void
     {
-        $transformUid = $event->tokenMatches[0];
-        $data = $event->newValue;
-
-        DB::beginTransaction();
-
-        try {
-            $transformModel = $this->getImageTransformModel($transformUid);
-            $isNewTransform = !$transformModel->exists;
-
-            $transformModel->name = $data['name'];
-            $transformModel->handle = $data['handle'];
-
-            $heightChanged = $transformModel->width !== $data['width'] || $transformModel->height !== $data['height'];
-            $modeChanged = $transformModel->mode !== $data['mode'] || $transformModel->position !== $data['position'];
-            $qualityChanged = $transformModel->quality !== $data['quality'];
-            $interlaceChanged = $transformModel->interlace !== $data['interlace'];
-            $fillChanged = $transformModel->fill !== ($data['fill'] ?? null);
-            $upscaleChanged = ($transformModel->upscale !== null ? (bool)$transformModel->upscale : null) !== ($data['upscale'] ?? null);
-
-            if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
-                $transformModel->parameterChangeTime = Query::prepareDateForDb(new DateTime());
-            }
-
-            $transformModel->mode = $data['mode'];
-            $transformModel->position = $data['position'];
-            $transformModel->width = $data['width'];
-            $transformModel->height = $data['height'];
-            $transformModel->quality = $data['quality'];
-            $transformModel->interlace = $data['interlace'];
-            $transformModel->format = $data['format'];
-            $transformModel->fill = $data['fill'] ?? null;
-            $transformModel->upscale = $data['upscale'] ?? true;
-            $transformModel->uid = $transformUid;
-
-            $transformModel->save();
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-
-        // Clear caches
-        $this->_transforms = null;
-
-        // Fire an 'afterSaveImageTransform' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_IMAGE_TRANSFORM)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_IMAGE_TRANSFORM, new ImageTransformEvent([
-                'imageTransform' => $this->getTransformById($transformModel->id),
-                'isNew' => $isNewTransform,
-            ]));
-        }
-
-        // Invalidate asset caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
+        $this->service()->handleChangedTransform($event);
     }
 
     /**
      * Deletes an asset transform by its ID.
      *
      * @param int $transformId The transform's ID
-     *
      * @return bool Whether the transform was deleted.
-     * @throws Exception on DB error
      */
     public function deleteTransformById(int $transformId): bool
     {
-        $transform = $this->getTransformById($transformId);
-
-        if (!$transform) {
-            return false;
-        }
-
-        return $this->deleteTransform($transform);
+        return $this->service()->deleteTransformById($transformId);
     }
 
     /**
      * Deletes an asset transform.
      *
-     * Note that passing an ID to this function is now deprecated. Use [[deleteTransformById()]] instead.
-     *
-     * @param ImageTransform $transform The transform
-     *
+     * @param ImageTransformData $transform The transform
      * @return bool Whether the transform was deleted
      */
-    public function deleteTransform(ImageTransform $transform): bool
+    public function deleteTransform(ImageTransformData $transform): bool
     {
-        // Fire a 'beforeDeleteImageTransform' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM, new ImageTransformEvent([
-                'imageTransform' => $transform,
-            ]));
-        }
-
-        app(ProjectConfig::class)->remove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid,
-            "Delete transform “{$transform->handle}”");
-        return true;
+        return $this->service()->deleteTransform($transform);
     }
 
     /**
-     * Handle transform being deleted
+     * Handle transform being deleted.
      *
      * @param ConfigEvent $event
      */
     public function handleDeletedTransform(ConfigEvent $event): void
     {
-        $transformUid = $event->tokenMatches[0];
-
-        $transform = $this->getTransformByUid($transformUid);
-
-        if (!$transform) {
-            return;
-        }
-
-        // Fire a 'beforeApplyTransformDelete' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE)) {
-            $this->trigger(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE, new ImageTransformEvent([
-                'imageTransform' => $transform,
-            ]));
-        }
-
-        DB::table(Table::IMAGETRANSFORMS)->where('uid',
-            $transformUid)->delete();
-
-        // Clear caches
-        $this->_transforms = null;
-
-        // Fire an 'afterDeleteImageTransform' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_IMAGE_TRANSFORM)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_IMAGE_TRANSFORM, new ImageTransformEvent([
-                'imageTransform' => $transform,
-            ]));
-        }
-
-        // Invalidate asset caches
-        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
+        $this->service()->handleDeletedTransform($event);
     }
 
     /**
      * Eager-loads transform indexes the given list of assets.
      *
-     * You can include `srcset`-style sizes (e.g. `100w` or `2x`) following a normal transform definition, for example:
-     *
-     * ::: code
-     *
-     * ```twig
-     * [{width: 1000, height: 600}, '1.5x', '2x', '3x']
-     * ```
-     *
-     * ```php
-     * [['width' => 1000, 'height' => 600], '1.5x', '2x', '3x']
-     * ```
-     *
-     * :::
-     *
-     * When a `srcset`-style size is encountered, the preceding normal transform definition will be used as a
-     * reference when determining the resulting transform dimensions.
-     *
-     * @param Asset[]|array $assets The assets or asset data to eager-load transforms for
+     * @param array $assets The assets or asset data to eager-load transforms for
      * @param array $transforms The transform definitions to eager-load
      */
     public function eagerLoadTransforms(array $assets, array $transforms): void
     {
-        if (empty($assets) || empty($transforms)) {
-            return;
-        }
-
-        // Get the index conditions
-        $transformsByTransformer = [];
-
-        /** @var ImageTransform|null $refTransform */
-        $refTransform = null;
-
-        foreach ($transforms as $transform) {
-            // Is this a srcset-style size (2x, 100w, etc.)?
-            try {
-                [$sizeValue, $sizeUnit] = AssetsHelper::parseSrcsetSize($transform);
-            } catch (InvalidArgumentException) {
-                // All good.
-                $sizeValue = $sizeUnit = null;
-            }
-
-            if (isset($sizeValue, $sizeUnit)) {
-                if ($refTransform === null || !$refTransform->width) {
-                    throw new InvalidArgumentException("Can’t eager-load transform “{$transform}” without a prior transform that specifies the base width");
-                }
-
-                $transform = Craft::createObject([
-                    'class' => ImageTransform::class,
-                    ...$refTransform->toArray(),
-                ]);
-
-                unset($transform->name, $transform->handle);
-
-                if ($sizeUnit === 'w') {
-                    $transform->width = (int)$sizeValue;
-                } else {
-                    $transform->width = (int)ceil($refTransform->width * $sizeValue);
-                }
-
-                // Only set the height if the reference transform has a height set on it
-                if ($refTransform->height) {
-                    if ($sizeUnit === 'w') {
-                        $transform->height = (int)ceil($refTransform->height * $transform->width / $refTransform->width);
-                    } else {
-                        $transform->height = (int)ceil($refTransform->height * $sizeValue);
-                    }
-                }
-            }
-
-            $transform = TransformHelper::normalizeTransform($transform);
-            $transformsByTransformer[$transform->getTransformer()][] = $transform;
-
-            if (!isset($sizeValue)) {
-                // Use this as the reference transform in case any srcset-style transforms follow it
-                $refTransform = $transform;
-            }
-        }
-
-        foreach ($transformsByTransformer as $type => $typeTransforms) {
-            $transformer = $this->getImageTransformer($type);
-            if ($transformer instanceof EagerImageTransformerInterface) {
-                $transformer->eagerLoadTransforms($typeTransforms, $assets);
-            }
-        }
+        $this->service()->eagerLoadTransforms($assets, $transforms);
     }
 
     /**
      * @template T of ImageTransformerInterface
      * @param class-string<T> $type
      * @param array $config
-     *
      * @return T
-     * @throws InvalidConfigException
      */
     public function getImageTransformer(string $type, array $config = []): ImageTransformerInterface
     {
-        if (!array_key_exists($type, $this->_imageTransformers)) {
-            if (!is_subclass_of($type, ImageTransformerInterface::class)) {
-                throw new ImageTransformException("Invalid image transformer: $type");
-            }
-
-            $this->_imageTransformers[$type] = Craft::createObject(array_merge(['class' => $type], $config));
-        }
-
-        return $this->_imageTransformers[$type];
+        return $this->service()->getImageTransformer($type, $config);
     }
 
     /**
@@ -495,15 +207,7 @@ class ImageTransforms extends Component
      */
     public function deleteAllTransformData(Asset $asset): void
     {
-        $this->deleteResizedAssetVersion($asset);
-        $this->deleteCreatedTransformsForAsset($asset);
-
-        $file = Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $asset->id . '.' . pathinfo($asset->getFilename(),
-                PATHINFO_EXTENSION);
-
-        if (file_exists($file)) {
-            FileHelper::unlink($file);
-        }
+        $this->service()->deleteAllTransformData($asset);
     }
 
     /**
@@ -513,26 +217,7 @@ class ImageTransforms extends Component
      */
     public function deleteResizedAssetVersion(Asset $asset): void
     {
-        $dirs = [
-            Craft::$app->getPath()->getImageEditorSourcesPath() . '/' . $asset->id,
-        ];
-
-        foreach ($dirs as $dir) {
-            if (file_exists($dir)) {
-                $files = glob($dir . '/[0-9]*/' . $asset->id . '.[a-z]*');
-
-                if (!is_array($files)) {
-                    Log::info('Could not list files in ' . $dir . ' when deleting resized asset versions.');
-                    continue;
-                }
-
-                foreach ($files as $path) {
-                    if (!FileHelper::unlink($path)) {
-                        Log::warning("Unable to delete the asset thumbnail \"$path\".", [__METHOD__]);
-                    }
-                }
-            }
-        }
+        $this->service()->deleteResizedAssetVersion($asset);
     }
 
     /**
@@ -542,19 +227,7 @@ class ImageTransforms extends Component
      */
     public function deleteCreatedTransformsForAsset(Asset $asset): void
     {
-        // Fire a 'beforeInvalidateAssetTransforms' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS)) {
-            $this->trigger(self::EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS, new AssetEvent([
-                'asset' => $asset,
-            ]));
-        }
-
-        $transformers = $this->getAllImageTransformers();
-
-        foreach ($transformers as $type) {
-            $transformer = $this->getImageTransformer($type);
-            $transformer->invalidateAssetTransforms($asset);
-        }
+        $this->service()->deleteCreatedTransformsForAsset($asset);
     }
 
     /**
@@ -565,47 +238,86 @@ class ImageTransforms extends Component
      */
     public function getAllImageTransformers(): array
     {
-        $transformers = [
-            ImageTransformer::class,
-        ];
-
-        // Fire a 'registerImageTransformers' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_IMAGE_TRANSFORMERS)) {
-            $event = new RegisterComponentTypesEvent(['types' => $transformers]);
-            $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
-            return $event->types;
-        }
-
-        return $transformers;
+        return $this->service()->getAllImageTransformers();
     }
 
-    private function _createTransformQuery(): Builder
+    public static function registerEvents(): void
     {
-        return DB::table(Table::IMAGETRANSFORMS)
-            ->select([
-                'id',
-                'name',
-                'handle',
-                'mode',
-                'position',
-                'height',
-                'width',
-                'format',
-                'quality',
-                'interlace',
-                'fill',
-                'upscale',
-                'parameterChangeTime',
-                'uid',
-            ])
-            ->orderBy('name');
+        EventFacade::listen(SavingTransform::class, function(SavingTransform $event) {
+            if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_BEFORE_SAVE_IMAGE_TRANSFORM)) {
+                return;
+            }
+
+            Craft::$app->getImageTransforms()->trigger(self::EVENT_BEFORE_SAVE_IMAGE_TRANSFORM, new ImageTransformEvent([
+                'imageTransform' => $event->transform,
+                'isNew' => $event->isNew,
+            ]));
+        });
+
+        EventFacade::listen(TransformSaved::class, function(TransformSaved $event) {
+            if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_AFTER_SAVE_IMAGE_TRANSFORM)) {
+                return;
+            }
+
+            Craft::$app->getImageTransforms()->trigger(self::EVENT_AFTER_SAVE_IMAGE_TRANSFORM, new ImageTransformEvent([
+                'imageTransform' => $event->transform,
+                'isNew' => $event->isNew,
+            ]));
+        });
+
+        EventFacade::listen(DeletingTransform::class, function(DeletingTransform $event) {
+            if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM)) {
+                return;
+            }
+
+            Craft::$app->getImageTransforms()->trigger(self::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM, new ImageTransformEvent([
+                'imageTransform' => $event->transform,
+            ]));
+        });
+
+        EventFacade::listen(ApplyingTransformDelete::class, function(ApplyingTransformDelete $event) {
+            if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE)) {
+                return;
+            }
+
+            Craft::$app->getImageTransforms()->trigger(self::EVENT_BEFORE_APPLY_TRANSFORM_DELETE, new ImageTransformEvent([
+                'imageTransform' => $event->transform,
+            ]));
+        });
+
+        EventFacade::listen(TransformDeleted::class, function(TransformDeleted $event) {
+            if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_AFTER_DELETE_IMAGE_TRANSFORM)) {
+                return;
+            }
+
+            Craft::$app->getImageTransforms()->trigger(self::EVENT_AFTER_DELETE_IMAGE_TRANSFORM, new ImageTransformEvent([
+                'imageTransform' => $event->transform,
+            ]));
+        });
+
+        EventFacade::listen(InvalidatingAssetTransforms::class, function(InvalidatingAssetTransforms $event) {
+            if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS)) {
+                return;
+            }
+
+            Craft::$app->getImageTransforms()->trigger(self::EVENT_BEFORE_INVALIDATE_ASSET_TRANSFORMS, new AssetEvent([
+                'asset' => $event->asset,
+            ]));
+        });
+
+        EventFacade::listen(RegisterImageTransformers::class, function(RegisterImageTransformers $event) {
+            if (!Craft::$app->getImageTransforms()->hasEventHandlers(self::EVENT_REGISTER_IMAGE_TRANSFORMERS)) {
+                return;
+            }
+
+            $legacyEvent = new RegisterComponentTypesEvent(['types' => $event->types]);
+            Craft::$app->getImageTransforms()->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $legacyEvent);
+            $event->types = $legacyEvent->types;
+        });
     }
 
-    /**
-     * Gets a transform's record by uid.
-     */
-    private function getImageTransformModel(string $uid): ImageTransformModel
+    private function service(): ImageTransformsService
     {
-        return ImageTransformModel::findByUid($uid) ?? new ImageTransformModel();
+        return app(ImageTransformsService::class);
     }
 }

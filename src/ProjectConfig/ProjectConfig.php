@@ -8,7 +8,6 @@ use Craft;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use craft\models\ImageTransform;
 use craft\services\ElementSources;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Data\ProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
@@ -1885,7 +1885,7 @@ final class ProjectConfig
      */
     private function _getTransformData(): array
     {
-        return collect(Craft::$app->getImageTransforms()->getAllTransforms())
+        return app(\CraftCms\Cms\Image\ImageTransforms::class)->getAllTransforms()
             ->mapWithKeys(fn (ImageTransform $transform) => [$transform->uid => $transform->getConfig()])
             ->all();
     }

@@ -19,6 +19,7 @@ use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
@@ -164,6 +165,9 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('settings/assets', [VolumesController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/assets/volumes/new', [VolumesController::class, 'create']);
         Route::get('settings/assets/volumes/{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
+        Route::get('settings/assets/transforms', [ImageTransformsController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/assets/transforms/new', [ImageTransformsController::class, 'create']);
+        Route::get('settings/assets/transforms/{transformHandle}', [ImageTransformsController::class, 'edit']);
 
         // Sites
         Route::get('settings/sites', [SitesController::class, 'index'])

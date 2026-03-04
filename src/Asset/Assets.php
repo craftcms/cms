@@ -13,8 +13,6 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\imagetransforms\FallbackTransformer;
-use craft\models\ImageTransform;
 use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -29,6 +27,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\FallbackTransformer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Str;
@@ -143,8 +143,7 @@ final class Assets
             return $iconFallback ? AssetsHelper::iconUrl($extension) : null;
         }
 
-        $transform = Craft::createObject([
-            'class' => ImageTransform::class,
+        $transform = Craft::createObject(ImageTransform::class, [
             'width' => $width,
             'height' => $height,
             'mode' => 'crop',

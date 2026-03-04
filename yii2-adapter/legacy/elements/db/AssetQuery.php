@@ -16,8 +16,10 @@ use craft\helpers\Assets;
 use craft\helpers\Db;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ImageTransforms;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
@@ -876,7 +878,7 @@ class AssetQuery extends ElementQuery
                 $transforms = is_string($transforms) ? str($transforms)->explode(',')->all() : [$transforms];
             }
 
-            Craft::$app->getImageTransforms()->eagerLoadTransforms($elements, $transforms);
+            ImageTransforms::eagerLoadTransforms($elements, $transforms);
         }
 
         return $elements;
@@ -946,7 +948,7 @@ class AssetQuery extends ElementQuery
 
             $folderCondition = Db::parseNumericParam('assets.folderId', $this->folderId);
             if (is_numeric($this->folderId) && $this->includeSubfolders) {
-                $folders = app(\CraftCms\Cms\Asset\Folders::class);
+                $folders = app(Folders::class);
                 $descendants = $folders->getAllDescendantFolders($folders->getFolderById($this->folderId));
                 $folderCondition = ['or', $folderCondition, ['in', 'assets.folderId', array_keys($descendants)]];
             }

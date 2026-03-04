@@ -81,4 +81,27 @@ describe('generateFallback', function () {
         get(action([TransformController::class, 'generateFallback'], ['transform' => 'invalid-data']))
             ->assertStatus(400);
     });
+
+    it('serves fallback transform files for valid encrypted transforms', function () {
+        $asset = AssetModel::factory()->create([
+            'volumeId' => test()->volume->id,
+            'folderId' => test()->folder->id,
+            'filename' => 'fallback-test.jpg',
+            'kind' => 'image',
+        ]);
+
+        $transformString = '_101x99_crop_center-center_none';
+        $transform = Crypt::encrypt($asset->id.','.$transformString);
+        $path = implode(DIRECTORY_SEPARATOR, [
+            \Craft::$app->getPath()->getImageTransformsPath(),
+            $transformString,
+            sprintf('%s.jpg', $asset->id),
+        ]);
+
+        @mkdir(dirname($path), 0777, true);
+        file_put_contents($path, 'transform-bytes');
+
+        get(action([TransformController::class, 'generateFallback'], ['transform' => $transform]))
+            ->assertOk();
+    });
 });

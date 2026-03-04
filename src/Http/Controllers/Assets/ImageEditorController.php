@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use Craft;
-use craft\helpers\ImageTransforms;
-use craft\imagetransforms\ImageTransformer;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Image\ImageTransformer;
+use CraftCms\Cms\Image\ImageTransformHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -78,7 +78,7 @@ final readonly class ImageEditorController
             return redirect($url);
         } catch (NotSupportedException) {
             // just output the file contents
-            $path = ImageTransforms::getLocalImageSource($asset);
+            $path = ImageTransformHelper::getLocalImageSource($asset);
 
             return response()->file($path, [
                 'Content-Disposition' => 'inline; filename="'.$asset->getFilename().'"',
@@ -204,8 +204,7 @@ final readonly class ImageEditorController
             $asset->setFocalPoint($focal);
 
             if ($focalChanged) {
-                $transforms = Craft::$app->getImageTransforms();
-                $transforms->deleteCreatedTransformsForAsset($asset);
+                app(\CraftCms\Cms\Image\ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
             }
 
             // Only replace file if it changed, otherwise just save changed focal points
@@ -263,7 +262,7 @@ final readonly class ImageEditorController
 
         $asset->setFocalPoint($focalData);
         Craft::$app->getElements()->saveElement($asset);
-        Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
+        app(\CraftCms\Cms\Image\ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
 
         return $this->asSuccess();
     }

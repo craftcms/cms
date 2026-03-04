@@ -6,13 +6,13 @@ namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use Craft;
 use craft\helpers\FileHelper;
-use craft\helpers\ImageTransforms;
-use craft\imagetransforms\ImageTransformer;
-use craft\models\ImageTransform;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransformer;
+use CraftCms\Cms\Image\ImageTransformHelper;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +30,7 @@ final readonly class TransformController
     public function generate(Request $request): Response
     {
         if ($transformId = $request->integer('transformId')) {
-            $transformer = Craft::createObject(ImageTransformer::class);
+            $transformer = new ImageTransformer;
             $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
             abort_if(! $transformIndexModel, 400, "Invalid transform ID: $transformId");
             $assetId = $transformIndexModel->assetId;
@@ -46,7 +46,7 @@ final readonly class TransformController
             abort_if(! $assetId, 400, 'Missing assetId');
             abort_if(! is_string($handle), 400, 'Invalid transform handle.');
             try {
-                $transform = ImageTransforms::normalizeTransform($handle);
+                $transform = ImageTransformHelper::normalizeTransform($handle);
             } catch (Throwable $e) {
                 abort(500, 'Image transform cannot be created.', ['exception' => $e]);
             }
@@ -107,13 +107,8 @@ final readonly class TransformController
         if ($useOriginal) {
             $ext = $asset->getExtension();
         } else {
-            /** @var ImageTransform $transform */
-            $transform = Craft::createObject([
-                'class' => ImageTransform::class,
-                ...ImageTransforms::parseTransformString($transformString),
-            ]);
-
-            $ext = $transform->format ?: ImageTransforms::detectTransformFormat($asset);
+            $transform = new ImageTransform(ImageTransformHelper::parseTransformString($transformString));
+            $ext = $transform->format ?: ImageTransformHelper::detectTransformFormat($asset);
         }
 
         $filename = sprintf('%s.%s', $asset->id, $ext);
@@ -127,7 +122,7 @@ final readonly class TransformController
             if ($useOriginal) {
                 $tempPath = $asset->getCopyOfFile();
             } else {
-                $tempPath = ImageTransforms::generateTransform($asset, $transform);
+                $tempPath = ImageTransformHelper::generateTransform($asset, $transform);
             }
 
             FileHelper::createDirectory(dirname($path));
