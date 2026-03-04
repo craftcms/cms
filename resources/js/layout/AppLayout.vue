@@ -17,7 +17,7 @@
       fullWidth?: boolean;
       additionalSkipLinks?: Array<{label: string; url: string}>;
     }>(),
-    {fullWidth: false, crumbs: () => []}
+    {fullWidth: false}
   );
 
   const page = usePage<{
