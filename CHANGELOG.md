@@ -7,6 +7,7 @@
 - Fixed a bug where flipping an image within the Image Editor didn’t always work. ([#18486](https://github.com/craftcms/cms/issues/18486))
 - Fixed a bug where SVG files missing their `width` and `height` attributes weren’t getting them set as expected.
 - Fixed an error that could occur when applying project config changes. ([#18477](https://github.com/craftcms/cms/issues/18477))
+- Fixed a bug where Content Block fields’ nested values weren’t always getting set correctly via `resave` commands. ([#18453](https://github.com/craftcms/cms/issues/18453))
 
 ## 5.9.14 - 2026-02-25
 
