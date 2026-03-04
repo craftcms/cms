@@ -89,8 +89,8 @@ async function generateStyles() {
 
 async function generateVueWrappers() {
   spinner.start('Generating Vue Wrappers');
-
   createVueWrappers();
+  spinner.succeed();
   return Promise.resolve();
 }
 
