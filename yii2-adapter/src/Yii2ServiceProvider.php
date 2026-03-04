@@ -8,6 +8,7 @@ use craft\base\Event as YiiEvent;
 use craft\base\FieldLayoutComponent;
 use craft\console\controllers\HelpController;
 use craft\controllers\UsersController;
+use craft\db\Connection as LegacyDbConnection;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
@@ -635,6 +636,7 @@ class Yii2ServiceProvider extends ServiceProvider
         /**
          * Services
          */
+        LegacyDbConnection::registerEvents();
         Addresses::registerEvents();
         Auth::registerEvents();
         Drafts::registerEvents();
