@@ -275,6 +275,12 @@ describe('createDbQuery', function () {
 
         expect($query)->toBeFalse();
     });
+
+    test('supports terms with quotes via bound parameters', function () {
+        createIndexedEntry("John's Favorite Entry");
+
+        expect(entryQuery()->search("John's")->count())->toBe(1);
+    });
 });
 
 describe('queueIndexElement', function () {

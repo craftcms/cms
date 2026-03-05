@@ -26,6 +26,7 @@ use craft\web\assets\iframeresizer\IframeResizerAsset;
 use craft\web\assets\jquerypayment\JqueryPaymentAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\jqueryui\JqueryUiAsset;
+use craft\web\assets\picturefill\PicturefillAsset;
 use craft\web\assets\selectize\SelectizeAsset;
 use craft\web\assets\tailwindreset\TailwindResetAsset;
 use craft\web\assets\theme\ThemeAsset;
@@ -44,6 +45,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -57,6 +59,7 @@ use CraftCms\Cms\Utility\Utilities\QueueManager;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Support\Facades\Auth;
+use stdClass;
 use yii\web\JqueryAsset;
 use function CraftCms\Cms\t;
 
@@ -91,6 +94,7 @@ class CpAsset extends AssetBundle
         FabricAsset::class,
         IframeResizerAsset::class,
         ThemeAsset::class,
+        PicturefillAsset::class,
     ];
 
     /**
@@ -200,7 +204,7 @@ JS;
             'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
             'timezone' => app()->getTimezone(),
             'tokenParam' => $generalConfig->tokenParam,
-            'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new \stdClass(),
+            'translations' => I18N::getAllTranslationsForLocale(app()->getLocale()) ?: new stdClass(),
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,
             'usePathInfo' => $generalConfig->usePathInfo,
         ];
@@ -258,7 +262,7 @@ JS;
             'fieldsWithoutContent' => app(Fields::class)->getFieldsWithoutContent(false)->pluck('handle')->all(),
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => $this->_httpProxy($generalConfig),
-            'isImagick' => Craft::$app->getImages()->getIsImagick(),
+            'isImagick' => Images::getIsImagick(),
             'isMultiSite' => Sites::isMultiSite(),
             'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),

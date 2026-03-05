@@ -19,6 +19,8 @@ use craft\errors\ElementNotFoundException;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\web\Application as WebApplication;
+use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -27,6 +29,7 @@ use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -185,6 +188,8 @@ class Craft extends Yii2
         app()->forgetInstance(Fields::class);
         app()->forgetInstance(ProjectConfig::class);
         app()->forgetInstance(Users::class);
+        app()->forgetInstance(Assets::class);
+        app()->forgetInstance(Folders::class);
     }
 
     /**
@@ -236,9 +241,15 @@ class Craft extends Yii2
         app()->forgetInstance(Sections::class);
         app()->forgetInstance(Filesystems::class);
         app()->forgetInstance(Volumes::class);
+        app()->forgetInstance(Assets::class);
+        app()->forgetInstance(Folders::class);
+        app()->forgetInstance(ImageTransforms::class);
 
         \CraftCms\Cms\Support\Facades\EntryTypes::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\Sections::clearResolvedInstances();
+        \CraftCms\Cms\Support\Facades\Assets::clearResolvedInstances();
+        \CraftCms\Cms\Support\Facades\Folders::clearResolvedInstances();
+        \CraftCms\Cms\Support\Facades\ImageTransforms::clearResolvedInstances();
 
         \Craft::$app->getDb()->close();
         \Craft::$app->getDb2()->close();

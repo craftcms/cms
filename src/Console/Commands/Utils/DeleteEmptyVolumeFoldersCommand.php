@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console\Commands\Utils;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -66,7 +66,7 @@ final class DeleteEmptyVolumeFoldersCommand extends Command
         );
 
         $this->components->task($message, function () use ($emptyFolderIds) {
-            Craft::$app->getAssets()->deleteFoldersByIds($emptyFolderIds);
+            Folders::deleteFoldersByIds($emptyFolderIds);
         });
 
         return self::SUCCESS;

@@ -1,9 +1,12 @@
 <script setup lang="ts">
   import {FlexRender} from '@tanstack/vue-table';
-  import {nextTick, onMounted, onUnmounted, ref, watch} from 'vue';
+  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {computed, nextTick, onMounted, onUnmounted, ref, watch} from 'vue';
   import {useTableDragAndDrop} from '@/composables/useTableDragAndDrop';
   import ReorderButton from '@/components/ReorderButton.vue';
   import DropIndicator from '@/components/DropIndicator.vue';
+  import Select from '@/components/form/Select.vue';
+  import Text from '@/components/Text.vue';
 
   const props = withDefaults(
     defineProps<{
@@ -13,9 +16,21 @@
       readOnly?: boolean;
       layout?: 'auto' | 'fixed';
       spacing?: 'compact' | 'relaxed';
+      from?: number;
+      to?: number;
+      total?: number;
+      enableAdjustPageSize?: boolean;
+      pageSizeOptions?: Array<number>;
     }>(),
 
-    {reorderable: true, selectable: true, layout: 'auto', spacing: 'compact'}
+    {
+      reorderable: true,
+      selectable: true,
+      layout: 'auto',
+      spacing: 'compact',
+      enableAdjustPageSize: false,
+      pageSizeOptions: () => [50, 100, 250],
+    }
   );
 
   const emit = defineEmits<{
@@ -70,6 +85,37 @@
     {deep: true}
   );
 
+  const pageIndexProxy = computed({
+    get() {
+      return props.table.getState().pagination.pageIndex + 1;
+    },
+    set(newValue) {
+      if (newValue) {
+        props.table.setPageIndex(parseInt(newValue) - 1);
+      }
+    },
+  });
+
+  const pageSizeProxy = computed({
+    get() {
+      return props.table.getState().pagination.pageSize;
+    },
+    set(newValue) {
+      if (newValue) {
+        props.table.setPageSize(parseInt(newValue));
+      }
+    },
+  });
+
+  const showPagination = computed(() => props.table.getPageCount() > 1);
+  const showPageSize = computed(() => props.enableAdjustPageSize);
+  const showDisplayedRows = computed(
+    () => props.from && props.to && props.total
+  );
+  const showFooter = computed(
+    () => showPagination.value || showPageSize.value || showDisplayedRows.value
+  );
+
   onMounted(() => {
     nextTick(registerRows);
   });
@@ -81,6 +127,9 @@
 
 <template>
   <div class="admin-table-wrapper">
+    <div class="cp-table-header" v-if="$slots['search-form']">
+      <slot name="search-form"></slot>
+    </div>
     <table
       :class="{
         'cp-table': true,
@@ -104,13 +153,34 @@
             :key="header.id"
             :colSpan="header.colSpan"
             :style="{width: `${header.getSize()}px`}"
-            class="cell cell--header"
+            :class="{
+              cell: true,
+              'cell--header': true,
+              'cursor-pointer select-none': header.column.getCanSort(),
+            }"
+            @click="header.column.getToggleSortingHandler()?.($event)"
           >
-            <FlexRender
-              v-if="!header.isPlaceholder"
-              :render="header.column.columnDef.header"
-              :props="header.getContext()"
-            />
+            <div class="flex gap-1 items-center">
+              <FlexRender
+                v-if="!header.isPlaceholder"
+                :render="header.column.columnDef.header"
+                :props="header.getContext()"
+              />
+              <craft-icon
+                v-if="
+                  header.column.getCanSort() && !header.column.getIsSorted()
+                "
+                name="arrow-up-arrow-down"
+              ></craft-icon>
+              <craft-icon
+                v-else-if="header.column.getIsSorted() === 'asc'"
+                name="arrow-down"
+              ></craft-icon>
+              <craft-icon
+                v-else-if="header.column.getIsSorted() === 'desc'"
+                name="arrow-up"
+              ></craft-icon>
+            </div>
           </th>
         </tr>
       </thead>
@@ -120,7 +190,8 @@
           :key="row.id"
           :ref="(el) => setRowRef(el as HTMLTableRowElement, row.id)"
           :class="{
-            'row--dragging': !readOnly && getDragState(row.id) === 'dragging',
+            'row--dragging':
+              !readOnly && getDragState(row.id).type === 'dragging',
           }"
         >
           <template v-if="reorderable && !readOnly">
@@ -157,6 +228,67 @@
         </tr>
       </tbody>
     </table>
+
+    <div class="cp-table-footer" v-if="showFooter">
+      <div>
+        <Text
+          v-if="showDisplayedRows"
+          template="{from} – {to} of {total, plural, =1{# item} other{# items}}"
+          :params="{from, to, total}"
+        />
+      </div>
+      <div class="flex gap-1">
+        <template v-if="showPagination">
+          <craft-button
+            type="button"
+            @click="table.previousPage()"
+            :disabled="!table.getCanPreviousPage()"
+            icon
+          >
+            <craft-icon
+              name="chevron-left"
+              :label="t('Previous page')"
+            ></craft-icon>
+          </craft-button>
+          <div class="flex items-center gap-1 mx-2">
+            Page
+            <craft-input
+              type="text"
+              v-model="pageIndexProxy"
+              size="3"
+              :label="t('Current page')"
+              label-sr-only
+              center
+              small
+            >
+            </craft-input>
+            of
+            {{ table.getPageCount() }}
+          </div>
+          <craft-button
+            type="button"
+            @click="table.nextPage()"
+            :disabled="!table.getCanNextPage()"
+            icon
+          >
+            <craft-icon
+              name="chevron-right"
+              :label="t('Next page')"
+            ></craft-icon>
+          </craft-button>
+        </template>
+      </div>
+      <div class="flex gap-2 items-center">
+        <template v-if="showPageSize">
+          {{ t('Items per page:') }}
+          <Select
+            :options="pageSizeOptions"
+            v-model="pageSizeProxy"
+            class="w-auto"
+          />
+        </template>
+      </div>
+    </div>
   </div>
 </template>
 

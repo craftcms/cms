@@ -806,7 +806,7 @@ JS, [
         return $query;
     }
 
-    protected function fetchRelationsFromDbTable(?Elementinterface $element): bool
+    protected function fetchRelationsFromDbTable(?ElementInterface $element): bool
     {
         if ($this->layoutElement?->uid === null) {
             return false;

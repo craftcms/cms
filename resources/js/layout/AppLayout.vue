@@ -38,7 +38,10 @@
     ...(props.additionalSkipLinks ?? []),
   ]);
   const sidebarToggle = useTemplateRef('sidebarToggle');
-  const {announcement} = useAnnouncer();
+  const {announcement, announce} = useAnnouncer();
+
+  watch(successFlash, (newMessage) => announce(newMessage));
+  watch(errorFlash, (newMessage) => announce(newMessage));
 
   const state = reactive<{
     sidebar: {

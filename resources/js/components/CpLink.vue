@@ -1,16 +1,17 @@
 <script setup lang="ts">
-  import {Link} from '@inertiajs/vue3';
+  import {type InertiaLinkProps, Link} from '@inertiajs/vue3';
   import type {Component} from 'vue';
 
   withDefaults(
-    defineProps<{
-      as?: string | Component;
-      href: string;
-      variant?: 'default' | 'primary' | 'danger';
-      size?: 'zero' | 'small' | 'medium' | 'large';
-      appearance?: 'button' | 'inline';
-      block?: boolean;
-    }>(),
+    defineProps<
+      InertiaLinkProps & {
+        as?: string | Component;
+        variant?: 'default' | 'primary' | 'danger';
+        size?: 'zero' | 'small' | 'medium' | 'large';
+        appearance?: 'button' | 'inline';
+        block?: boolean;
+      }
+    >(),
     {
       as: 'a',
       variant: 'default',

@@ -23,7 +23,7 @@ trait HasScenarios
         return [];
     }
 
-    final public function inScenarios(string ...$scenarios): bool
+    public function inScenarios(string ...$scenarios): bool
     {
         return in_array($this->_scenario, $scenarios, true);
     }

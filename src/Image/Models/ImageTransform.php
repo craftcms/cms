@@ -7,15 +7,16 @@ namespace CraftCms\Cms\Image\Models;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
+use Override;
 
 final class ImageTransform extends BaseModel
 {
     use HasUid;
 
-    #[\Override]
+    #[Override]
     protected $table = Table::IMAGETRANSFORMS;
 
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [

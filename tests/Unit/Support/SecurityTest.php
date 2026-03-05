@@ -6,12 +6,8 @@ namespace CraftCms\Cms\Tests\Feature\Support;
 
 use CraftCms\Cms\Support\Security;
 
-beforeEach(function () {
-    $this->security = app(Security::class);
-});
-
 test('isSensitive', function (string $key, bool $expected) {
-    expect($this->security->isSensitive($key))->toBe($expected);
+    expect(new Security()->isSensitive($key))->toBe($expected);
 })->with([
     ['password', true],
     ['password_reset', true],
@@ -26,23 +22,38 @@ test('isSensitive', function (string $key, bool $expected) {
     ['handle', false],
 ]);
 
-test('redactIfSensitive', function (string $key, mixed $value, mixed $expected) {
-    expect($this->security->redactIfSensitive($key, $value))->toBe($expected);
+test('redactIfSensitive', function (mixed $expected, string $name, mixed $value, array $sensitiveKeywords) {
+    expect(new Security($sensitiveKeywords)->redactIfSensitive($name, $value))->toBe($expected);
 })->with([
-    ['password', 'secret123', '•••••••••'],
-    ['apiToken', 'abc-123', '•••••••'],
-    ['firstName', 'John', 'John'],
-    ['user', ['password' => 'secret123', 'name' => 'John'], ['password' => '•••••••••', 'name' => 'John']],
-    ['nested', ['data' => ['token' => 'secret']], ['data' => ['token' => '••••••']]],
+    ['••••••••••••••••••••', 'Name', 'test stuff craft cms', []],
+    ['test stuff craft cms', 'Name', 'test stuff craft cms', ['Foo']],
+    ['••••••••••••••••••••', 'Name', 'test stuff craft cms', ['Name']],
+    ['••••••••••••••••••••', 'Name', 'test stuff craft cms', ['Name', 'Raaaa']],
+    ['••••••••••••••••••••', 'Name Addition', 'test stuff craft cms', ['Name']],
+    ['••••••••••••••••••••', 'Name Addition', 'test stuff craft cms', ['Name', 'Addition']],
+    ['••••••••••••••••••••', 'not', 'test stuff craft cms', ['not', 'Naaah']],
+    ['test stuff craft cms', 'naah', 'test stuff craft cms', ['not', 'naaah']],
+    ['••••••••••••••••••••', 'Not', 'test stuff craft cms', ['not', 'Naaah']],
+    ['••••••••••••••••••••', 'not', 'test stuff craft cms', ['Not', 'Naaah']],
+    ['••••••••••••••••••••', 'not naaah', 'test stuff craft cms', ['Not', 'Naaah']],
+    ['••••••••••••••••••••', 'not naaah', 'test stuff craft cms', ['not', 'naaah']],
+    ['••••••••••••••••••••', 'name addition', 'test stuff craft cms', ['Name', 'Addition']],
+    ['test stuff craft cms', ' ', 'test stuff craft cms', ['   ']],
+    ['test stuff craft cms', '😀', 'test stuff craft cms', ['😀😘']],
+    ['test stuff craft cms', '😀 😘', 'test stuff craft cms', ['😀', '😘']],
+    ['••••••••••••••••••••', '😀⛄', 'test stuff craft cms', []],
+    ['not stuff craft cms', '', 'not stuff craft cms', ['not']],
+    ['•••••••••••••••••••', 'NOT_STUFF_CRAFT_CMS', 'not stuff craft cms', ['NOT_STUFF']],
 ]);
 
 test('isSystemDir', function () {
     $configPath = config_path('craft');
     $vendorPath = base_path('vendor');
+    $security = new Security;
 
-    expect($this->security->isSystemDir($configPath))->toBeTrue();
-    expect($this->security->isSystemDir($vendorPath))->toBeTrue();
-    expect($this->security->isSystemDir('/tmp/random-path'))->toBeFalse();
+    expect($security->isSystemDir($configPath))->toBeTrue();
+    expect($security->isSystemDir($vendorPath))->toBeTrue();
+    expect($security->isSystemDir('/tmp/random-path'))->toBeFalse();
 });
 
 test('custom sensitive keywords', function () {

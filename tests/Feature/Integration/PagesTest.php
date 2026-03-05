@@ -37,13 +37,6 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
     ['url' => '/users', 'title' => 'Users'],
 
     [
-        'url' => '/settings/sections',
-        'title' => 'Sections',
-        'extraContent' => [
-            ['rendered' => 'New section'],
-        ],
-    ],
-    [
         'url' => '/settings/users',
         'title' => 'User Settings',
         'extraContent' => [
@@ -112,6 +105,24 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
         'extraContent' => [
             ['rendered' => 'New image transform'],
         ],
+    ],
+]);
+
+it('renders inertia pages', function (string $url, string $component, string $title) {
+    $response = get("/{$this->cpTrigger}{$url}");
+
+    if ($response->status() === 404) {
+        $this->markTestIncomplete('Page not found: '.$url);
+    }
+
+    $response->assertInertia(fn (AssertableInertia $page) => $page
+        ->component($component)
+        ->where('title', $title));
+})->with([
+    [
+        'url' => '/settings/sections',
+        'component' => 'SettingsSectionsIndexPage',
+        'title' => 'Sections',
     ],
 ]);
 

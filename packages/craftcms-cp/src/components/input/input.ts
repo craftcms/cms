@@ -9,6 +9,8 @@ export default class CraftInput extends LionInput {
   }
 
   @property({type: Number, reflect: true}) size?: string;
+  @property({reflect: true, type: Boolean}) small = false;
+  @property({reflect: true, type: Boolean}) center = false;
 
   override connectedCallback() {
     super.connectedCallback();

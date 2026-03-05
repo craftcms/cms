@@ -3,10 +3,7 @@
   import findAndReplaceController from '@actions/Utilities/FindAndReplaceController.ts';
   import {useForm} from '@inertiajs/vue3';
   import TransitionFade from '@/components/TransitionFade.vue';
-  import {useAnnouncer} from '@/composables/useAnnouncer';
   import Input from '@/components/form/Input.vue';
-
-  const {announce} = useAnnouncer();
 
   const form = useForm({
     find: '',
@@ -18,7 +15,6 @@
     form.submit(findAndReplaceController(), {
       onSuccess: () => {
         form.reset();
-        announce(t('Success'));
       },
     });
   }

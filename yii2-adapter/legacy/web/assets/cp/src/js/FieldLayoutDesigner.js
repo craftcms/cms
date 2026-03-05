@@ -389,7 +389,6 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       const element = tab.initElement($element);
       element.onSelect();
       element.updatePositionInConfig();
-      this.tabGrid.refreshCols(true);
     },
   },
   {
@@ -496,6 +495,11 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
 
     // initialize the elements
     const $tabContent = this.$container.children('.fld-tabcontent');
+
+    $tabContent.on('resize', () => {
+      this.designer.tabGrid.refreshCols(true);
+    });
+
     this.$addBtn = $tabContent.children('.fld-add-btn');
 
     const hud = new Garnish.HUD(this.$addBtn, {
@@ -1270,7 +1274,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     designer.refreshSelectedFields();
     designer.elementDrag.removeItems($oldContainer);
     designer.elementDrag.addItems($newContainer);
-    designer.tabGrid.refreshCols(true);
 
     if (this.slideout) {
       this.slideout.close();
@@ -1550,7 +1553,6 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
     if (this.designer.tabGrid.$items.length > 0) {
       this.$items = $().add(this.$items.add(this.$insertion));
       this.showingInsertion = true;
-      this.designer.tabGrid.refreshCols(true);
       this.setMidpoints();
     }
   },
@@ -1564,8 +1566,6 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
     }
 
     this.removeCaboose();
-
-    this.designer.tabGrid.refreshCols(true);
 
     // return the helpers to the draggees
     let offset = this.$draggee.offset();
@@ -1742,7 +1742,6 @@ Craft.FieldLayoutDesigner.ElementDrag =
         this.$insertion.remove();
         this.$items = $().add(this.$items.not(this.$insertion));
         this.showingInsertion = false;
-        this.designer.tabGrid.refreshCols(true);
         this.setMidpoints();
       }
 

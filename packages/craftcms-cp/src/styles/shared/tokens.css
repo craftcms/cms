@@ -24,6 +24,14 @@
   --c-fg-on-accent-subtle: var(--color-slate-800);
   --c-fg-on-sunken: var(--c-fg-text);
 
+  /* Elevations */
+  --c-elevation-surface-sunken: var(--color-slate-100);
+  --c-elevation-surface-raised: var(--color-white);
+  --c-elevation-surface-overlay: var(--color-white);
+  --c-elevation-shadow-sunken: var(--inset-shadow-sm);
+  --c-elevation-shadow-raised: var(--shadow-sm);
+  --c-elevation-shadow-overlay: var(--shadow-lg);
+
   /* Semantic colors */
   --c-color-neutral-bg-emphasis: var(--color-slate-600);
   --c-color-neutral-bg-normal: var(--color-slate-100);

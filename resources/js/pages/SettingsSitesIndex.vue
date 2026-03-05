@@ -184,6 +184,7 @@
     },
     getCoreRowModel: getCoreRowModel<Site>(),
     getRowId: (row) => row.id.toString(),
+    enableSorting: false,
     defaultColumn: {
       // @ts-ignore this is technically invalid, but gives us the behavior we want
       size: 'auto',

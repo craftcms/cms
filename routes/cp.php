@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Assets\IndexController as AssetsIndexController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
@@ -102,6 +104,12 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::get('users/{slug?}', [UsersController::class, 'index']);
 
     /**
+     * Assets
+     */
+    Route::get('assets/{defaultSource?}', AssetsIndexController::class)
+        ->where('defaultSource', '.*');
+
+    /**
      * Routes that require admin, but do not require admin changes
      */
     Route::middleware([
@@ -157,6 +165,9 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('settings/assets', [VolumesController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/assets/volumes/new', [VolumesController::class, 'create']);
         Route::get('settings/assets/volumes/{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
+        Route::get('settings/assets/transforms', [ImageTransformsController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/assets/transforms/new', [ImageTransformsController::class, 'create']);
+        Route::get('settings/assets/transforms/{transformHandle}', [ImageTransformsController::class, 'edit']);
 
         // Sites
         Route::get('settings/sites', [SitesController::class, 'index'])

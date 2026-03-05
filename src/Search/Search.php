@@ -372,12 +372,11 @@ class Search
 
         $where = $this->getWhereClause($elementQuery->siteId, $customFields);
 
-        if (empty($where)) {
+        if ($where === false) {
             return false;
         }
 
-        $query = DB::table(Table::SEARCHINDEX)
-            ->whereRaw($where);
+        $query = DB::table(Table::SEARCHINDEX)->whereRaw($where['sql'], $where['bindings']);
 
         if ($elementQuery->siteId !== null) {
             $query->whereIn('siteId', Arr::wrap($elementQuery->siteId));
@@ -434,8 +433,9 @@ class Search
     {
         DB::table(Table::SEARCHINDEX, 's')
             ->whereNotExists(
-                DB::table(Table::ELEMENTS, 'e')
-                    ->whereColumn('e.id', 's.elementId'),
+                DB::table(Table::ELEMENTS_SITES, 'es')
+                    ->whereColumn('elementId', 's.elementId')
+                    ->whereColumn('siteId', 's.siteId'),
             )
             ->delete();
     }
@@ -444,8 +444,9 @@ class Search
     {
         DB::table(Table::SEARCHINDEXQUEUE, 'q')
             ->whereNotExists(
-                DB::table(Table::ELEMENTS, 'elements')
-                    ->whereColumn('elements.id', 'q.elementId'),
+                DB::table(Table::ELEMENTS_SITES, 'elements')
+                    ->whereColumn('elementId', 'q.elementId')
+                    ->whereColumn('siteId', 'q.siteId'),
             )
             ->delete();
     }
@@ -560,8 +561,9 @@ class Search
     /**
      * @param  int|int[]|null  $siteId
      * @param  Collection<int, FieldInterface>|null  $customFields
+     * @return array{sql: string, bindings: list<int|float|string|bool|null>}|false
      */
-    private function getWhereClause(array|int|null $siteId, ?Collection $customFields): string|false
+    private function getWhereClause(array|int|null $siteId, ?Collection $customFields): array|false
     {
         $where = [];
 
@@ -585,11 +587,16 @@ class Search
             $where[] = $condition;
         }
 
-        return implode(' AND ', $where);
+        $where = $this->combineSqlConditions($where, ' AND ');
+
+        return $where ?? false;
     }
 
-    /** @param  Collection<int, FieldInterface>|null  $customFields */
-    private function processTokens(array $tokens, bool $inclusive, array|int|null $siteId, ?Collection $customFields): string|false
+    /**
+     * @param  Collection<int, FieldInterface>|null  $customFields
+     * @return array{sql: string, bindings: list<int|float|string|bool|null>}|false
+     */
+    private function processTokens(array $tokens, bool $inclusive, array|int|null $siteId, ?Collection $customFields): array|false
     {
         $glue = $inclusive ? ' AND ' : ' OR ';
         $where = [];
@@ -617,20 +624,23 @@ class Search
             $where[] = $this->sqlFullText($words, true, $glue);
         }
 
-        if (! empty($where)) {
-            $where = implode($glue, $where);
+        $where = $this->combineSqlConditions($where, $glue);
 
-            if (! $inclusive) {
-                $where = "($where)";
-            }
-        } else {
-            $where = false;
+        if ($where === null) {
+            return false;
+        }
+
+        if (! $inclusive) {
+            $where['sql'] = "({$where['sql']})";
         }
 
         return $where;
     }
 
-    /** @param  Collection<int, FieldInterface>|null  $customFields */
+    /**
+     * @param  Collection<int, FieldInterface>|null  $customFields
+     * @return array{0: array{sql: string, bindings: list<int|float|string|bool|null>}|false|null, 1: string|null}
+     */
     private function getSqlFromTerm(SearchQueryTerm $term, array|int|null $siteId, ?Collection $customFields): array
     {
         $sql = null;
@@ -648,11 +658,12 @@ class Search
             }
 
             if (is_array($val)) {
-                $where = [];
-                foreach ($val as $v) {
-                    $where[] = $this->sqlWhere($attr, '=', $v);
+                $where = array_map(fn (int $v) => $this->sqlWhere($attr, '=', $v), $val);
+                $subSelect = $this->combineSqlConditions($where, ' OR ');
+
+                if ($subSelect !== null) {
+                    $subSelect['sql'] = "({$subSelect['sql']})";
                 }
-                $subSelect = '('.implode(' OR ', $where).')';
             } else {
                 $subSelect = $this->sqlWhere($attr, '=', $val);
             }
@@ -714,7 +725,13 @@ class Search
         }
 
         if ($subSelect !== null && $sql !== null) {
-            $sql = $this->sqlSubSelect($subSelect.' AND '.$sql, $siteId);
+            $subSelectCondition = $this->combineSqlConditions([$subSelect, $sql], ' AND ');
+
+            if ($subSelectCondition === null) {
+                return [false, null];
+            }
+
+            $sql = $this->sqlSubSelect($subSelectCondition, $siteId);
 
             $keywords = null;
         }
@@ -756,19 +773,27 @@ class Search
         return $field->id ?? null;
     }
 
-    private function sqlWhere(string $key, string $oper, string|int $val): string
+    /** @return array{sql: string, bindings: list<int|float|string|bool|null>} */
+    private function sqlWhere(string $key, string $oper, string|int $val): array
     {
         $key = DB::connection()->getQueryGrammar()->wrap($key);
 
-        return sprintf("(%s %s '%s')", $key, $oper, $val);
+        return [
+            'sql' => sprintf('(%s %s ?)', $key, $oper),
+            'bindings' => [$val],
+        ];
     }
 
-    private function sqlFullText(mixed $val, bool $bool = true, string $glue = ' AND '): string
+    /** @return array{sql: string, bindings: list<int|float|string|bool|null>} */
+    private function sqlFullText(mixed $val, bool $bool = true, string $glue = ' AND '): array
     {
         $grammar = DB::connection()->getQueryGrammar();
 
         if ($this->isMysql) {
-            return sprintf("MATCH(%s) AGAINST('%s'%s)", $grammar->wrap('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
+            return [
+                'sql' => sprintf('MATCH(%s) AGAINST(?%s)', $grammar->wrap('keywords'), ($bool ? ' IN BOOLEAN MODE' : '')),
+                'bindings' => [is_array($val) ? implode(' ', $val) : $val],
+            ];
         }
 
         if ($glue === ' AND ') {
@@ -791,14 +816,21 @@ class Search
             }
         }
 
-        return sprintf("%s @@ '%s'::tsquery", $grammar->wrap('keywords_vector'), (is_array($val) ? implode($glue, $val) : $val));
+        return [
+            'sql' => sprintf('%s @@ ?::tsquery', $grammar->wrap('keywords_vector')),
+            'bindings' => [is_array($val) ? implode($glue, $val) : $val],
+        ];
     }
 
-    /** @param  int|int[]|null  $siteId */
-    private function sqlSubSelect(string $where, array|int|null $siteId): string|false
+    /**
+     * @param  array{sql: string, bindings: list<int|float|string|bool|null>}  $where
+     * @param  int|int[]|null  $siteId
+     * @return array{sql: string, bindings: list<int|float|string|bool|null>}|false
+     */
+    private function sqlSubSelect(array $where, array|int|null $siteId): array|false
     {
         $elementIds = DB::table(Table::SEARCHINDEX)
-            ->whereRaw($where)
+            ->whereRaw($where['sql'], $where['bindings'])
             ->when(
                 $siteId !== null,
                 fn (Builder $query) => $query->whereIn('siteId', Arr::wrap($siteId)),
@@ -806,7 +838,15 @@ class Search
             ->pluck('elementId');
 
         if ($elementIds->isNotEmpty()) {
-            return DB::connection()->getQueryGrammar()->wrap('elementId').' IN ('.$elementIds->join(', ').')';
+            $ids = $elementIds
+                ->map(fn (int|string $id) => (int) $id)
+                ->all();
+            $placeholders = implode(', ', array_fill(0, count($ids), '?'));
+
+            return [
+                'sql' => sprintf('%s IN (%s)', DB::connection()->getQueryGrammar()->wrap('elementId'), $placeholders),
+                'bindings' => $ids,
+            ];
         }
 
         return false;
@@ -825,12 +865,32 @@ class Search
             ! str_contains($keywords, ' ');
     }
 
-    private function sqlPhraseExactMatch(string $val): string
+    /** @return array{sql: string, bindings: list<int|float|string|bool|null>} */
+    private function sqlPhraseExactMatch(string $val): array
     {
         $ftVal = implode(' & ', explode(' ', $val));
         $grammar = DB::connection()->getQueryGrammar();
 
-        return sprintf("%s @@ '%s'::tsquery AND %s LIKE ' %s '", $grammar->wrap('keywords_vector'), $ftVal, $grammar->wrap('keywords'), $val);
+        return [
+            'sql' => sprintf('%s @@ ?::tsquery AND %s LIKE ?', $grammar->wrap('keywords_vector'), $grammar->wrap('keywords')),
+            'bindings' => [$ftVal, " $val "],
+        ];
+    }
+
+    /**
+     * @param  array<int, array{sql: string, bindings: list<int|float|string|bool|null>}>  $conditions
+     * @return array{sql: string, bindings: list<int|float|string|bool|null>}|null
+     */
+    private function combineSqlConditions(array $conditions, string $glue): ?array
+    {
+        if (empty($conditions)) {
+            return null;
+        }
+
+        return [
+            'sql' => implode($glue, array_column($conditions, 'sql')),
+            'bindings' => array_merge(...array_column($conditions, 'bindings')),
+        ];
     }
 
     private function truncateSearchIndexKeywords(string $keywords, int $maxSize): string

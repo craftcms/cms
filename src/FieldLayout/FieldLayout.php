@@ -39,6 +39,7 @@ use Generator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
+use Override;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -176,7 +177,7 @@ class FieldLayout extends Component
         return $layout;
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return [
@@ -187,7 +188,7 @@ class FieldLayout extends Component
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function getAttributes(): array
     {
         return array_merge($this->traitGetAttributes(), [
