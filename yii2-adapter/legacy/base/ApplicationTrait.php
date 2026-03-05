@@ -1070,6 +1070,7 @@ trait ApplicationTrait
      * Returns the current mailer.
      *
      * @return Mailer The mailer component
+     * @deprecated 6.0.0 use Laravel mailers/drivers and system-message mailables.
      */
     public function getMailer(): Mailer
     {
