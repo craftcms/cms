@@ -79,7 +79,7 @@
               },
             ]"
           />
-          <ReorderButton></ReorderButton>
+          <ReorderButton variant="inherit"></ReorderButton>
         </div>
       </craft-chip>
     </template>

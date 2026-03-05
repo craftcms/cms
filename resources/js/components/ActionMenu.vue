@@ -42,6 +42,7 @@
       slot="invoker"
       icon
       size="small"
+      variant="inherit"
       appearance="plain"
     >
       <craft-icon :name="icon" :label="label"></craft-icon>

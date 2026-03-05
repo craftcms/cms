@@ -82,7 +82,16 @@ export const Colors: Story = {
       >
         ${Object.entries(Color).map(
           ([name, value]) =>
-            html`<craft-chip data-color="${value}"> ${name} </craft-chip>`
+            html`<craft-chip data-color="${value}">
+              ${name}
+              <craft-button
+                size="small"
+                slot="suffix"
+                variant="inherit"
+                appearance="plain"
+                >Button</craft-button
+              >
+            </craft-chip>`
         )}
       </div>
     </div>

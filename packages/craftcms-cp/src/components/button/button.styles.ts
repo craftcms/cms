@@ -37,7 +37,7 @@ export default css`
       background-color: color-mix(
         in oklab,
         var(--c-color-fill-loud, var(--c-button-default-fill)),
-        var(--c-color-mix-hover)
+        var(--c-color-on-loud) 10%
       );
       color: var(--c-color-on-loud);
     }
@@ -124,7 +124,7 @@ export default css`
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-button-default-fill)),
-      var(--c-color-mix-hover)
+      var(--c-color-on-quiet) 10%
     );
     color: var(--c-color-on-quiet);
   }
@@ -134,7 +134,7 @@ export default css`
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
-      var(--c-color-mix-active)
+      var(--c-color-on-quiet) 20%
     );
   }
 
@@ -152,7 +152,7 @@ export default css`
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)),
-      var(--c-color-mix-active)
+      var(--c-color-on-normal) 10%
     );
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
@@ -162,7 +162,7 @@ export default css`
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
-      var(--c-color-mix-active)
+      var(--c-color-on-normal) 20%
     );
   }
 
@@ -175,8 +175,21 @@ export default css`
   }
 
   :host([appearance~='dashed']:hover) {
-    background-color: rgba(from var(--c-button-fill-hover) r g b / 0.4);
-    color: var(--c-button-text-hover);
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-quiet, var(--c-button-default-fill)),
+      var(--c-color-on-quiet) 10%
+    );
+    color: var(--c-color-on-quiet);
+  }
+
+  :host([appearance~='dashed']:active) {
+    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
+      var(--c-color-on-quiet) 20%
+    );
   }
 
   /*

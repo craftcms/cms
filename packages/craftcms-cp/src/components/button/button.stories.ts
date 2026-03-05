@@ -4,6 +4,7 @@ import {html} from 'lit';
 
 import './button.js';
 import '../icon/icon.js';
+import '../chip/chip.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
@@ -18,7 +19,9 @@ const meta = {
       ${['primary', 'default', 'danger'].map(
         (variant) => html`
           <div class="flex gap-2">
-            <craft-button variant="${variant}">${variant}</craft-button>
+            <craft-button variant="${variant}"
+              >${variant ?? 'None'}</craft-button
+            >
             <craft-button appearance="filled" variant="${variant}"
               >${variant} filled</craft-button
             >
@@ -31,6 +34,19 @@ const meta = {
           </div>
         `
       )}
+
+      <craft-chip data-color="violet">
+        <div class="flex gap-2">
+          <craft-button variant="inherit">Chip buttons</craft-button>
+          <craft-button appearance="filled" variant="inherit"
+            >Filled</craft-button
+          >
+          <craft-button appearance="dashed" variant="inherit"
+            >Dashed</craft-button
+          >
+          <craft-button appearance="plain" variant="inherit">lain</craft-button>
+        </div>
+      </craft-chip>
     </div>
   `,
 } satisfies Meta<any>;
