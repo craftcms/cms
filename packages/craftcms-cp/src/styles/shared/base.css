@@ -132,11 +132,12 @@ Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
  */
 .cp-table {
-  --_cell-spacing: var(--c-spacing-md);
-  --_cell-height: var(--c-size-control-md);
+  --_cell-spacing-inline: var(--c-spacing-md);
+  --_cell-spacing-block: var(--c-spacing-md);
   text-align: left;
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-variant-numeric: tabular-nums;
 
   @container (width >= 840px) {
@@ -152,12 +153,13 @@ Modify with `cp-table--auto` to apply table-layout: auto
     background-color: var(--c-color-neutral-bg-normal);
   }
 
-  th,
-  td {
+  .cell {
+    padding: 0;
     vertical-align: middle;
     padding-inline: var(--_cell-spacing);
     height: var(--_cell-height);
 
+    &:has(textarea),
     &:has(input:not([type='checkbox']):not([type='radio'])) {
       padding: 0;
     }
@@ -167,12 +169,19 @@ Modify with `cp-table--auto` to apply table-layout: auto
     border-bottom: 1px solid var(--c-color-neutral-border-subtle);
   }
 
+  textarea,
   input:not([type='checkbox']):not([type='radio']) {
     border: 0;
-    padding: 0 var(--_cell-spacing);
+    padding-block: var(--_cell-spacing-block);
+    padding-inline: var(--_cell-spacing-inline);
     margin: 0;
     width: 100%;
-    height: var(--_cell-height);
+    height: 100%;
+  }
+
+  textarea {
+    resize: none;
+    line-height: 1.2;
   }
 }
 
@@ -186,12 +195,11 @@ Modify with `cp-table--auto` to apply table-layout: auto
 
 .cp-table--collapsed,
 .cp-table--borderless {
-  --_cell-spacing: 0;
+  --_cell-spacing-block: 0;
 }
 
 .cp-table--compact {
-  --_cell-spacing: var(--c-spacing-sm);
-  --_cell-height: var(--c-size-control-sm);
+  --_cell-spacing-block: var(--c-spacing-sm);
 }
 
 .cp-table-header,
