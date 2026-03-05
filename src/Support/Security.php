@@ -41,6 +41,10 @@ final class Security
      */
     public function isSensitive(string $key): bool
     {
+        if (empty($this->sensitiveKeywords)) {
+            return true;
+        }
+
         return (bool) preg_match('/\b('.implode('|', $this->sensitiveKeywords).')\b/', Str::camel2words($key, false));
     }
 

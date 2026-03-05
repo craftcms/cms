@@ -123,7 +123,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Globals $globals The globals service
  * @property-read Gql $gql The GraphQl service
  * @property-read I18N $i18n The internationalization (i18n) component
- * @property-read Images $images The images service
+ * @property-read Images $images The images service (deprecated)
  * @property-read ImageTransforms $imageTransforms The image transforms service
  * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read Locale $locale The Locale object for the target language
@@ -784,6 +784,7 @@ trait ApplicationTrait
      * Returns the assets service.
      *
      * @return Assets The assets service
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Asset\Assets} or {@see \CraftCms\Cms\Asset\Folders} instead.
      */
     public function getAssets(): Assets
     {
@@ -817,6 +818,7 @@ trait ApplicationTrait
      * Returns the image transforms service.
      *
      * @return ImageTransforms The asset transforms service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\ImageTransforms} instead.
      */
     public function getImageTransforms(): ImageTransforms
     {
@@ -1044,6 +1046,8 @@ trait ApplicationTrait
      * Returns the images service.
      *
      * @return Images The images service
+     *
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\Images} instead.
      */
     public function getImages(): Images
     {

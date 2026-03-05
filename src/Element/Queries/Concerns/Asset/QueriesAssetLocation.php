@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
-use Craft;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Database\Query\Builder;
@@ -96,8 +96,7 @@ trait QueriesAssetLocation
                         ->when(
                             is_numeric($assetQuery->folderId) && $assetQuery->includeSubfolders,
                             function (Builder $query) use ($assetQuery) {
-                                $assetsService = Craft::$app->getAssets();
-                                $descendants = $assetsService->getAllDescendantFolders($assetsService->getFolderById($assetQuery->folderId));
+                                $descendants = Folders::getAllDescendantFolders(Folders::getFolderById($assetQuery->folderId));
 
                                 $query->orWhereIn('assets.folderId', array_keys($descendants));
                             }

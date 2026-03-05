@@ -63,7 +63,8 @@ class Asset extends ElementMutationResolver
         $elementService = Craft::$app->getElements();
 
         $newFolderId = $arguments['newFolderId'] ?? null;
-        $assetService = Craft::$app->getAssets();
+        // Legacy service, tests depend on it
+        $folders = Craft::$app->getAssets();
 
         if ($canIdentify) {
             $this->requireSchemaAction('volumes.' . $volume->uid, 'save');
@@ -90,7 +91,7 @@ class Asset extends ElementMutationResolver
             }
 
             if (empty($newFolderId)) {
-                $newFolderId = $assetService->getRootFolderByVolumeId($volume->id)->id;
+                $newFolderId = $folders->getRootFolderByVolumeId($volume->id)->id;
             }
 
             $asset = $elementService->createElement([
@@ -103,10 +104,10 @@ class Asset extends ElementMutationResolver
         if (empty($newFolderId)) {
             if (!$canIdentify) {
                 /** @var \CraftCms\Cms\Asset\Elements\Asset $asset */
-                $asset->newFolderId = $assetService->getRootFolderByVolumeId($volume->id)->id;
+                $asset->newFolderId = $folders->getRootFolderByVolumeId($volume->id)->id;
             }
         } else {
-            $folder = $assetService->getFolderById($newFolderId);
+            $folder = $folders->getFolderById($newFolderId);
 
             if (!$folder || $folder->volumeId != $volume->id) {
                 throw new UserError('Invalid folder id provided');
@@ -117,16 +118,19 @@ class Asset extends ElementMutationResolver
         $asset->setVolumeId($volume->id);
 
         $asset = $this->populateElementWithData($asset, $arguments, $resolveInfo);
+
+        // Legacy Yii2 event handling — must remain on legacy service
+        $legacyAssets = Craft::$app->getAssets();
         $triggerReplaceEvents = (
             $asset->getScenario() === AssetElement::SCENARIO_REPLACE &&
             (
-                $assetService->hasEventHandlers(Assets::EVENT_BEFORE_REPLACE_ASSET) ||
-                $assetService->hasEventHandlers(Assets::EVENT_AFTER_REPLACE_ASSET)
+                $legacyAssets->hasEventHandlers(Assets::EVENT_BEFORE_REPLACE_ASSET) ||
+                $legacyAssets->hasEventHandlers(Assets::EVENT_AFTER_REPLACE_ASSET)
             )
         );
 
         if ($triggerReplaceEvents) {
-            $assetService->trigger(Assets::EVENT_BEFORE_REPLACE_ASSET, new ReplaceAssetEvent([
+            $legacyAssets->trigger(Assets::EVENT_BEFORE_REPLACE_ASSET, new ReplaceAssetEvent([
                 'asset' => $asset,
                 'replaceWith' => $asset->tempFilePath,
                 'filename' => $this->filename,
@@ -136,7 +140,7 @@ class Asset extends ElementMutationResolver
         $asset = $this->saveElement($asset);
 
         if ($triggerReplaceEvents) {
-            $assetService->trigger(Assets::EVENT_AFTER_REPLACE_ASSET, new ReplaceAssetEvent([
+            $legacyAssets->trigger(Assets::EVENT_AFTER_REPLACE_ASSET, new ReplaceAssetEvent([
                 'asset' => $asset,
                 'filename' => $this->filename,
             ]));

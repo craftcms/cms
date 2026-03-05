@@ -40,6 +40,8 @@ final class Volumes
 
     public function __construct(
         private readonly ProjectConfig $projectConfig,
+        private readonly Assets $assets,
+        private readonly Folders $folders,
     ) {}
 
     /** @return Collection<int, int> */
@@ -103,7 +105,7 @@ final class Volumes
             'name' => t('Temporary Uploads'),
         ]);
 
-        $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
+        $fs = $this->assets->getTempAssetUploadFs();
         $volume->setFs($fs);
 
         return $volume;
@@ -192,8 +194,7 @@ final class Volumes
 
             $volumeModel->save();
 
-            $assetsService = Craft::$app->getAssets();
-            $rootFolder = $assetsService->findFolder([
+            $rootFolder = $this->folders->findFolder([
                 'volumeId' => $volumeModel->id,
                 'parentId' => ':empty:',
             ]);
@@ -207,7 +208,7 @@ final class Volumes
                 ]);
             } else {
                 $rootFolder->name = $volumeModel->name;
-                $assetsService->storeFolderRecord($rootFolder);
+                $this->folders->storeFolderModel($rootFolder);
             }
 
             DB::commit();
