@@ -45,10 +45,6 @@ export const baseFieldStyles = css`
     color: var(--c-text-quiet);
   }
 
-  .form-field__group-one {
-    margin-block-end: var(--c-spacing-sm);
-  }
-
   .input-group__after {
     margin-block-start: var(--c-spacing-sm);
   }

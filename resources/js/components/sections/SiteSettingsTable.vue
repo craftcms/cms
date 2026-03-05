@@ -2,7 +2,7 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import {computed, h} from 'vue';
-  import type {SectionSiteSettingsData} from '@/types';
+  import {type SectionSiteSettingsData, TableSpacing} from '@/types';
   import Pane from '@/components/Pane.vue';
   import {useEditableTable} from '@/composables/useEditableTable';
   import {usePage} from '@inertiajs/vue3';
@@ -136,9 +136,12 @@
 </script>
 
 <template>
-  <VarDump :data="templateOptions" />
   <Pane :padding="0" appearance="raised">
-    <AdminTable :table="table" spacing="relaxed" :reorderable="false" />
+    <AdminTable
+      :table="table"
+      :spacing="TableSpacing.Relaxed"
+      :reorderable="false"
+    />
   </Pane>
 </template>
 

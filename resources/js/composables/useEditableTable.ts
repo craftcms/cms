@@ -176,10 +176,15 @@ export function useEditableTable<T extends Record<string, any>>(
     >
   ): (ctx: CellContext<T, any>) => ReturnType<typeof h> {
     return ({row, column, getValue}) =>
-      h('input', {
+      h('textarea', {
+        rows: 1,
         type: inputType,
         value: getValue(),
         class: cellOptions?.class,
+        autocomplete: 'off',
+        autocorrect: 'off',
+        autocapitalize: 'off',
+        spellcheck: false,
         placeholder: cellOptions?.placeholder,
         disabled: resolveDisabled(cellOptions?.disabled, row),
         name: cellOptions?.name
