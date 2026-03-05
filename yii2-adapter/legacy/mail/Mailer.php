@@ -149,13 +149,10 @@ class Mailer extends \yii\symfonymailer\Mailer
                 $message->language = $rendered->language;
                 $message->setSubject($rendered->subject);
                 $message->setTextBody(view('mail.system-message-text', [
-                    'body' => $rendered->textBody,
+                    'textBody' => $rendered->textBody,
                     'variables' => $rendered->variables,
                 ])->render());
-                $message->setHtmlBody(view('mail.system-message', [
-                    'body' => $rendered->htmlBody,
-                    'variables' => $rendered->variables,
-                ])->render());
+                $message->setHtmlBody($rendered->htmlBody)->render();
             }
 
             // Set the default sender if there isn't one already.

@@ -70,16 +70,15 @@ final class SystemMessageMailable extends Mailable
     {
         $message = $this->renderedMessage();
 
+        $data = array_merge($message->variables, [
+            'textBody' => $message->textBody,
+            'htmlBody' => $message->htmlBody,
+        ]);
+
         return $this
             ->subject($message->subject)
-            ->view('mail.system-message', [
-                'body' => $message->htmlBody,
-                'variables' => $message->variables,
-            ])
-            ->text('mail.system-message-text', [
-                'body' => $message->textBody,
-                'variables' => $message->variables,
-            ]);
+            ->markdown('mail.system-message', $data)
+            ->text('mail.system-message-text', $data);
     }
 
     private function resolveLanguage(?string $language, ?int $siteId): string
