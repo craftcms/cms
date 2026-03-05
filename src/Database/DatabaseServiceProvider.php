@@ -5,7 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Database\Commands\BackupCommand;
+use CraftCms\Cms\Database\Commands\ConvertCharsetCommand;
+use CraftCms\Cms\Database\Commands\DropAllTablesCommand;
+use CraftCms\Cms\Database\Commands\DropTablePrefixCommand;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
+use CraftCms\Cms\Database\Commands\RepairCommand;
+use CraftCms\Cms\Database\Commands\RestoreCommand;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;
@@ -49,7 +55,13 @@ final class DatabaseServiceProvider extends ServiceProvider
         Aliases::set('@migrations', '@package/Database/Migrations');
 
         $this->commands([
+            BackupCommand::class,
+            ConvertCharsetCommand::class,
+            DropAllTablesCommand::class,
+            DropTablePrefixCommand::class,
             MigrateCommand::class,
+            RepairCommand::class,
+            RestoreCommand::class,
         ]);
 
         if ($db->getDriverName() === 'sqlite') {

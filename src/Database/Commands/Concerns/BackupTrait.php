@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Database\Commands;
+namespace CraftCms\Cms\Database\Commands\Concerns;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Backups;
@@ -30,7 +30,7 @@ trait BackupTrait
                 try {
                     $this->backupPath = app(Backups::class)->backup();
                 } catch (Throwable $e) {
-                    error('error: '.$e->getMessage());
+                    error($e->getMessage());
 
                     if (! $this->backupWarning()) {
                         error('Aborting. ');
@@ -104,7 +104,7 @@ trait BackupTrait
         try {
             app(Backups::class)->restore($this->backupPath);
         } catch (Throwable $e) {
-            $this->error('error: '.$e->getMessage());
+            $this->error($e->getMessage());
             $this->error('You can manually restore the backup file located at '.$this->backupPath);
 
             return false;
