@@ -152,7 +152,7 @@ class Mailer extends \yii\symfonymailer\Mailer
                     'textBody' => $rendered->textBody,
                     'variables' => $rendered->variables,
                 ])->render());
-                $message->setHtmlBody($rendered->htmlBody)->render();
+                $message->setHtmlBody($rendered->htmlBody);
             }
 
             // Set the default sender if there isn't one already.
