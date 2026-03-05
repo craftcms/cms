@@ -22,8 +22,19 @@ export default class CraftCheckbox extends LionCheckbox {
         }
 
         ::slotted([slot='input']) {
-          background-color: var(--c-input-bg, var(--c-form-control-bg));
-          border: var(--c-input-border, 1px solid var(--c-form-control-border));
+          background-color: var(--c-input-fill, var(--c-form-control-fill));
+          border-width: var(
+            --c-input-border-width,
+            var(--c-form-control-border-width)
+          );
+          border-style: var(
+            --c-input-border-style,
+            var(--c-form-control-border-style)
+          );
+          border-color: var(
+            --c-input-border-color,
+            var(--c-form-control-border-color)
+          );
           border-radius: var(--c-input-radius, var(--c-radius-sm));
         }
 

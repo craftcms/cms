@@ -28,16 +28,16 @@
 
 <style scoped lang="scss">
   .callout {
-    background-color: var(--c-callout-bg);
+    background-color: var(--c-callout-fill);
     padding: var(--c-callout-padding, var(--c-spacing-md));
     border: 1px solid var(--c-callout-border-color);
-    color: var(--c-callout-fg);
+    color: var(--c-callout-text);
     border-radius: var(--c-callout-radius);
   }
 
   .callout--danger {
     --c-callout-border-color: var(--c-color-danger-border-normal);
-    --c-callout-fg: var(--c-color-danger-on-normal);
-    --c-callout-bg: var(--c-color-danger-fill-normal);
+    --c-callout-text: var(--c-color-danger-on-normal);
+    --c-callout-fill: var(--c-color-danger-fill-normal);
   }
 </style>

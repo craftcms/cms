@@ -26,8 +26,8 @@ export default css`
       1px solid hsla(209, 20%, 25%, 0.1)
     );
     border-radius: var(--c-copy-attribute-radius, 4px);
-    background-color: var(--c-copy-attribute-bg, transparent);
-    color: var(--c-copy-attribute-fg, inherit);
+    background-color: var(--c-copy-attribute-fill, transparent);
+    color: var(--c-copy-attribute-text, inherit);
     border: var(--_border);
     padding-inline: 5px;
     min-height: calc(20rem / 16);
@@ -45,19 +45,19 @@ export default css`
 
   .copy-attribute--success::part(button) {
     background-color: var(
-      --c-copy-attribute-success-bg,
-      var(--c-copy-attribute-bg)
+      --c-copy-attribute-success-fill,
+      var(--c-copy-attribute-fill)
     );
-    color: var(--c-copy-attribute-success-fg, var(--c-copy-attribute-fg));
+    color: var(--c-copy-attribute-success-text, var(--c-copy-attribute-text));
     border: var(--c-copy-attribute-success-border, var(--_border));
   }
 
   .copy-attribute--error::part(button) {
     background-color: var(
-      --c-copy-attribute-error-bg,
-      var(--c-copy-attribute-bg)
+      --c-copy-attribute-error-fill,
+      var(--c-copy-attribute-fill)
     );
-    color: var(--c-copy-attribute-error-fg, var(--c-copy-attribute-fg));
+    color: var(--c-copy-attribute-error-text, var(--c-copy-attribute-text));
     border: var(--c-copy-attribute-error-border, var(--_border));
   }
 

@@ -64,9 +64,9 @@
     cursor: pointer;
     font: inherit;
     border: 1px solid var(--c-button-border, var(--c-button-default-border));
-    background-color: var(--c-button-bg, var(--c-button-default-bg));
+    background-color: var(--c-button-fill, var(--c-button-default-fill));
     border-radius: var(--c-button-radius, var(--c-radius-sm));
-    color: var(--c-button-fg, inherit);
+    color: var(--c-button-text, inherit);
     padding-inline: var(--c-button-spacing-inline, var(--c-spacing-md));
     padding-block: 0;
     width: auto;
@@ -77,14 +77,14 @@
     @media (hover: hover) {
       &:hover {
         background-color: var(
-          --c-button-bg-hover,
-          var(--c-button-default-bg-hover)
+          --c-button-fill-hover,
+          var(--c-button-default-fill-hover)
         );
         border-color: var(
           --c-button-border-hover,
           var(--c-button-default-border-hover)
         );
-        color: var(--c-button-fg-hover, var(--c-button-default-fg-hover));
+        color: var(--c-button-text-hover, var(--c-button-default-text-hover));
       }
     }
 

@@ -105,9 +105,9 @@
   --color-danger-on-quiet: var(--c-color-danger-on-quiet);
 
   /* ——— Border utilities ——— */
-  --color-border-faint: var(--c-border-faint);
+  --color-border-faint: var(--c-color-neutral-border-quiet);
   --color-border-subtle: var(--c-color-neutral-border-quiet);
   --color-border-default: var(--c-color-neutral-border-normal);
   --color-border-strong: var(--c-color-neutral-border-loud);
-  --color-border-form: var(--c-border-form);
+  --color-border-form: var(--c-form-control-border-color);
 }

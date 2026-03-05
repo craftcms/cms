@@ -138,8 +138,8 @@
   }
 
   .release-badge {
-    background: var(--c-color-danger-bg);
-    color: var(--c-color-danger-on);
+    background: var(--c-color-danger-fill-loud);
+    color: var(--c-color-danger-on-loud);
     padding: 0.125em 0.5em;
     border-radius: var(--c-radius-sm);
     font-size: 0.75em;
@@ -148,14 +148,14 @@
   }
 
   .release-date {
-    color: var(--c-color-neutral-text-muted);
+    color: var(--c-text-quiet);
     font-size: 0.875em;
   }
 
   .release-notes {
     padding: var(--c-spacing-md);
     border-top: 1px solid var(--_border-color);
-    background-color: var(--c-bg-overlay);
+    background-color: var(--c-surface-overlay);
   }
 
   .release-notes:deep(blockquote) {

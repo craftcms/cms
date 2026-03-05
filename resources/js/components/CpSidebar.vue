@@ -3,7 +3,7 @@
   import MainNav from '@/components/MainNav.vue';
   import EditionInfo from '@/components/EditionInfo.vue';
   import DevModeIndicator from '@/components/DevModeIndicator.vue';
-  import {watch, computed, nextTick} from 'vue';
+  import {computed, nextTick, watch} from 'vue';
 
   const emit = defineEmits<{
     (e: 'close'): void;
@@ -61,7 +61,7 @@
   .cp-sidebar {
     height: 100%;
     width: var(--global-sidebar-width);
-    background-color: var(--c-bg-overlay);
+    background-color: var(--c-surface-overlay);
     display: grid;
     grid-template-rows: minmax(0, auto) 1fr minmax(0, auto);
   }

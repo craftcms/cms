@@ -233,7 +233,7 @@
     overflow: auto;
     border-radius: var(--c-radius-md);
     box-shadow: var(--c-shadow-sm);
-    background-color: var(--c-bg-overlay);
+    background-color: var(--c-surface-overlay);
     border: 1px solid var(--c-color-neutral-border-quiet);
     width: 100%;
     max-width: 100%;

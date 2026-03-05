@@ -7,7 +7,7 @@ export default css`
 
   .card {
     color: var(--c-card-color, var(--c-color-neutral-on-quiet));
-    background-color: var(--c-card-bg, var(--c-color-neutral-fill-quiet));
+    background-color: var(--c-card-fill, var(--c-color-neutral-fill-quiet));
     border: 1px solid var(--c-card-border, var(--c-color-neutral-border-quiet));
     border-radius: var(--c-card-radius, var(--c-radius-md));
     box-shadow: var(--c-card-shadow, var(--c-shadow-sm));
@@ -20,8 +20,11 @@ export default css`
     padding-block: var(--c-card-padding-block, var(--c-spacing-sm));
     padding-inline-start: var(--c-card-padding-inline, var(--c-spacing-md));
     padding-inline-end: var(--c-card-padding-inline, var(--c-spacing-sm));
-    color: var(--c-card-bars-fg, var(--c-color-neutral-on-quiet));
-    background-color: var(--c-card-bars-bg, var(--c-color-neutral-fill-quiet));
+    color: var(--c-card-bars-text, var(--c-color-neutral-on-quiet));
+    background-color: var(
+      --c-card-bars-fill,
+      var(--c-color-neutral-fill-quiet)
+    );
     border-width: 0;
     border-color: var(--c-card-border, var(--c-color-neutral-border-quiet));
     border-style: solid;

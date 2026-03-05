@@ -16,14 +16,14 @@ export default css`
     box-shadow: var(--c-chip-shadow, var(--c-shadow-sm));
 
     /* colorable styles */
-    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiei));
+    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     border-width: var(--c-chip-border-width, 1px);
     border-style: var(--c-chip-border-style, solid);
     border-color: var(
       --c-color-border-quiet,
       var(--c-color-neutral-border-quiet)
     );
-    background-color: var(--c-color-fill-quiet, var(--c-color-white));
+    background-color: var(--c-color-fill-quiet, var(--c-surface-raised));
   }
 
   .chip[appearance='plain'],

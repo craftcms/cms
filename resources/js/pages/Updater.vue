@@ -151,7 +151,7 @@
     min-height: 100vh;
     padding: var(--c-spacing-xl);
     text-align: center;
-    background: var(--c-color-neutral-bg);
+    background: var(--c-color-neutral-fill-quiet);
   }
 
   .updater-graphic {
@@ -196,7 +196,7 @@
 
   .error-details {
     background: var(--c-color-neutral-fill-quiet);
-    border: 1px solid var(--c-color-neutral-border);
+    border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);
     padding: var(--c-spacing-md);
     font-family: var(--c-font-mono);
@@ -228,9 +228,9 @@
     border-radius: var(--c-radius-md);
     font-weight: 500;
     text-decoration: none;
-    background: var(--c-color-neutral-bg);
-    border: 1px solid var(--c-color-neutral-border);
-    color: var(--c-color-neutral-on);
+    background: var(--c-color-neutral-fill-quiet);
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    color: var(--c-color-neutral-on-normal);
     cursor: pointer;
     transition:
       background-color 0.15s,
@@ -238,7 +238,7 @@
 
     &:hover {
       background: var(--c-color-neutral-fill-normal);
-      border-color: var(--c-color-neutral-border-hover);
+      border-color: var(--c-color-neutral-border-normal);
     }
 
     &.big {

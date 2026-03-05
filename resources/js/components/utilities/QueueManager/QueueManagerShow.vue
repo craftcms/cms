@@ -144,6 +144,6 @@
 
 <style scoped lang="scss">
   tr {
-    border-bottom: 1px solid var(--c-border-quiet);
+    border-bottom: 1px solid var(--c-color-neutral-border-quiet);
   }
 </style>

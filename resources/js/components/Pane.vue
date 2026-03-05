@@ -104,20 +104,22 @@
 <style scoped lang="scss">
   .pane {
     --_pane-spacing: v-bind(computedPadding);
-    --_bg-color: var(--c-pane-bg);
+    --_bg-color: var(--c-pane-fill);
     --_radius: var(--c-pane-radius);
 
     background-color: var(--_bg-color);
     -webkit-overflow-scrolling: touch;
     border-radius: var(--_radius);
-    border: var(--c-pane-border);
+    border-width: var(--c-pane-border-width);
+    border-style: var(--c-pane-border-style);
+    border-color: var(--c-pane-border-color);
     box-shadow: var(--c-pane-shadow);
     overflow: hidden;
   }
 
   .pane--raised {
-    --c-pane-bg: var(--c-surface-raised);
-    --c-pane-border: 1px solid var(--c-color-neutral-border-quiet);
+    --c-pane-fill: var(--c-surface-raised);
+    --c-pane-border-color: var(--c-color-neutral-border-quiet);
     --c-pane-shadow: var(--c-shadow-raised);
   }
 
@@ -131,7 +133,7 @@
   }
 
   .pane--outline {
-    --c-pane-border: 1px solid var(--c-color-neutral-border-quiet);
+    --c-pane-border-color: var(--c-color-neutral-border-quiet);
   }
 
   .pane__header {

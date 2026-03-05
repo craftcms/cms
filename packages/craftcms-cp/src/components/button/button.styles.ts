@@ -36,7 +36,7 @@ export default css`
     :host(:hover) {
       background-color: color-mix(
         in oklab,
-        var(--c-color-fill-loud, var(--c-button-default-bg)),
+        var(--c-color-fill-loud, var(--c-button-default-fill)),
         var(--c-color-mix-hover)
       );
       color: var(--c-color-on-loud);
@@ -123,7 +123,7 @@ export default css`
   :host([appearance~='plain']:hover) {
     background-color: color-mix(
       in oklab,
-      var(--c-color-fill-quiet, var(--c-button-default-bg)),
+      var(--c-color-fill-quiet, var(--c-button-default-fill)),
       var(--c-color-mix-hover)
     );
     color: var(--c-color-on-quiet);
@@ -175,8 +175,8 @@ export default css`
   }
 
   :host([appearance~='dashed']:hover) {
-    background-color: rgba(from var(--c-button-bg-hover) r g b / 0.4);
-    color: var(--c-button-fg-hover);
+    background-color: rgba(from var(--c-button-fill-hover) r g b / 0.4);
+    color: var(--c-button-text-hover);
   }
 
   /*

@@ -158,28 +158,28 @@
    */
 
   /* Live */
-  --c-status-live-bg: var(--color-emerald-500);
+  --c-status-live-fill: var(--color-emerald-500);
   --c-status-live-border: var(--color-emerald-700);
-  --c-status-live-fg: var(--color-emerald-700);
+  --c-status-live-text: var(--color-emerald-700);
 
   /* Enabled */
-  --c-status-enabled-bg: var(--color-emerald-500);
+  --c-status-enabled-fill: var(--color-emerald-500);
   --c-status-enabled-border: var(--color-emerald-700);
-  --c-status-enabled-fg: var(--color-emerald-700);
+  --c-status-enabled-text: var(--color-emerald-700);
 
   /* Pending */
-  --c-status-pending-bg: var(--color-orange-400);
-  --c-status-pending-fg: var(--color-orange-700);
+  --c-status-pending-fill: var(--color-orange-400);
+  --c-status-pending-text: var(--color-orange-700);
   --c-status-pending-border: var(--color-orange-700);
 
   /* Expired */
-  --c-status-expired-bg: var(--color-red-400);
-  --c-status-expired-fg: var(--color-red-700);
+  --c-status-expired-fill: var(--color-red-400);
+  --c-status-expired-text: var(--color-red-700);
   --c-status-expired-border: var(--color-red-700);
 
   /* Disabled */
-  --c-status-disabled-bg: var(--color-slate-200);
-  --c-status-disabled-fg: var(--color-slate-600);
+  --c-status-disabled-fill: var(--color-slate-200);
+  --c-status-disabled-text: var(--color-slate-600);
   --c-status-disabled-border: var(--color-slate-600);
 
   /**
@@ -192,29 +192,33 @@
   they should be inherited from these styles.
    */
   /* Form Controls */
-  --c-form-control-bg: var(--c-surface-form);
-  --c-form-control-fg: var(--c-text-default);
-  --c-form-control-border: var(--color-slate-500);
+  --c-form-control-fill: var(--c-surface-form);
+  --c-form-control-text: var(--c-text-default);
+  --c-form-control-border-color: var(--color-slate-500);
+  --c-form-control-border-width: 1px;
+  --c-form-control-border-style: solid;
   --c-form-control-radius: var(--c-radius-md);
   --c-form-control-spacing-inline: var(--c-spacing-md);
   --c-form-control-spacing-block: var(--c-spacing-sm);
   --c-form-control-height: var(--c-size-control-md);
 
   /* Input */
-  --c-input-bg: var(--c-form-control-bg);
-  --c-input-fg: var(--c-form-control-fg);
-  --c-input-border-color: var(--c-form-control-border);
-  --c-input-border: 1px solid var(--c-input-border-color);
+  --c-input-fill: var(--c-form-control-fill);
+  --c-input-text: var(--c-form-control-text);
+  --c-input-border-color: var(--c-form-control-border-color);
+  --c-input-border-width: var(--c-form-control-border-width);
+  --c-input-border-style: var(--c-form-control-border-style);
   --c-input-radius: var(--c-form-control-radius);
   --c-input-spacing-inline: var(--c-form-control-spacing-inline);
   --c-input-spacing-block: var(--c-form-control-spacing-block);
   --c-input-shadow: var(--inset-shadow-sm);
 
   /* Select */
-  --c-select-bg: var(--c-form-control-bg);
-  --c-select-fg: var(--c-form-control-fg);
-  --c-select-border-color: var(--c-form-control-border);
-  --c-select-border: 1px solid var(--c-select-border-color);
+  --c-select-fill: var(--c-form-control-fill);
+  --c-select-text: var(--c-form-control-text);
+  --c-select-border-color: var(--c-form-control-border-color);
+  --c-select-border-width: var(--c-form-control-border-width);
+  --c-select-border-style: var(--c-form-control-border-style);
   --c-select-radius: var(--c-form-control-radius);
   --c-select-spacing-inline: var(--c-form-control-spacing-inline);
   --c-select-spacing-block: var(--c-form-control-spacing-block);
@@ -226,35 +230,37 @@
 
   /** Variants **/
   /* Default */
-  --c-button-default-bg: var(--color-slate-200);
-  --c-button-default-bg-hover: var(--color-slate-300);
-  --c-button-default-fg: var(--c-text-default);
-  --c-button-default-fg-hover: var(--c-button-default-fg);
+  --c-button-default-fill: var(--color-slate-200);
+  --c-button-default-fill-hover: var(--color-slate-300);
+  --c-button-default-text: var(--c-text-default);
+  --c-button-default-text-hover: var(--c-button-default-text);
   --c-button-default-border: var(--color-slate-300);
   --c-button-default-border-hover: var(--c-button-default-border);
 
   /* Primary */
-  --c-button-primary-bg: var(--color-red-600);
+  --c-button-primary-fill: var(--color-red-600);
   --c-button-primary-border: var(--color-red-700);
-  --c-button-primary-fg: var(--color-white);
-  --c-button-primary-bg-hover: var(--color-red-700);
+  --c-button-primary-text: var(--color-white);
+  --c-button-primary-fill-hover: var(--color-red-700);
   --c-button-primary-border-hover: var(--c-button-primary-border);
-  --c-button-primary-fg-hover: var(--c-button-primary-fg);
+  --c-button-primary-text-hover: var(--c-button-primary-text);
 
   /* Danger */
-  --c-button-danger-bg: var(--color-red-600);
+  --c-button-danger-fill: var(--color-red-600);
   --c-button-danger-border: var(--color-red-700);
-  --c-button-danger-fg: var(--color-white);
-  --c-button-danger-bg-hover: var(--color-red-700);
+  --c-button-danger-text: var(--color-white);
+  --c-button-danger-fill-hover: var(--color-red-700);
   --c-button-danger-border-hover: var(--c-button-danger-border);
-  --c-button-danger-fg-hover: var(--c-button-danger-fg);
+  --c-button-danger-text-hover: var(--c-button-danger-text);
 
   /** Appearances **/
   /* Generic Panes */
-  --c-pane-bg: var(--c-surface-overlay);
-  --c-pane-fg: var(--c-text-default);
+  --c-pane-fill: var(--c-surface-overlay);
+  --c-pane-text: var(--c-text-default);
   --c-pane-padding: var(--c-spacing-lg);
-  --c-pane-border: 1px solid transparent;
+  --c-pane-border-width: 1px;
+  --c-pane-border-style: solid;
+  --c-pane-border-color: transparent;
   --c-pane-radius: var(--c-radius-md);
   --c-pane-shadow:
     0 0 0 1px var(--gray-200), 0 2px 12px hsl(from var(--gray-200) h s l / 50%);
@@ -263,10 +269,12 @@
   --c-callout-radius: var(--c-pane-radius);
 
   /* Modals */
-  --c-modal-bg: var(--c-pane-bg);
-  --c-modal-fg: var(--c-pane-fg);
+  --c-modal-fill: var(--c-pane-fill);
+  --c-modal-text: var(--c-pane-text);
   --c-modal-radius: var(--c-radius-lg);
-  --c-modal-border: var(--c-pane-border);
+  --c-modal-border-width: var(--c-pane-border-width);
+  --c-modal-border-style: var(--c-pane-border-style);
+  --c-modal-border-color: var(--c-pane-border-color);
   --c-modal-padding: var(--c-pane-padding);
   --c-modal-shadow:
     0 0 0 1px hsl(from var(--color-gray-400) h s l / 25%),
@@ -296,9 +304,7 @@
   --c-text-quiet: var(--color-slate-400);
   --c-text-link: var(--color-blue-400);
 
-  --c-border-faint: #000;
   --c-color-neutral-border-quiet: #1a2744;
-  --c-border-form: var(--color-slate-600);
 
   /* Semantic colors — neutral */
   --c-color-neutral-fill-loud: var(--color-slate-400);
@@ -356,7 +362,7 @@
   --c-color-danger-on-quiet: var(--color-red-400);
 
   /* Button */
-  --c-button-default-bg: var(--color-slate-800);
+  --c-button-default-fill: var(--color-slate-800);
   --c-button-default-border: var(--color-slate-700);
-  --c-button-default-bg-hover: var(--color-slate-700);
+  --c-button-default-fill-hover: var(--color-slate-700);
 }

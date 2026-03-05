@@ -32,7 +32,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
           margin-inline: -1px;
           background-color: var(--c-color-neutral-fill-quiet);
           border-radius: var(--c-radius-full);
-          border: 1px solid var(--c-form-control-border);
+          border: 1px solid var(--c-form-control-border-color);
           box-shadow: var(--c-input-shadow);
         }
 
@@ -41,8 +41,8 @@ export default class CraftSwitchButton extends LionSwitchButton {
           width: auto;
           aspect-ratio: 1;
           border-radius: var(--c-radius-full);
-          border: 1px solid var(--c-form-control-border);
-          background-color: var(--c-switch-thumb-bg, var(--c-surface-raised));
+          border: 1px solid var(--c-form-control-border-color);
+          background-color: var(--c-switch-thumb-fill, var(--c-surface-raised));
           inset-block-start: calc(var(--c-switch-thumb-offset) / 2);
           inset-inline-start: calc(var(--c-switch-thumb-offset) / 2);
           inset-inline-end: auto;

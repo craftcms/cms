@@ -288,7 +288,7 @@
 
   .dot--active {
     background-color: var(--c-color-accent-fill-loud);
-    border: 1px solid var(--c-color-accent-border-emphasis);
+    border: 1px solid var(--c-color-accent-border-loud);
   }
 
   .license {

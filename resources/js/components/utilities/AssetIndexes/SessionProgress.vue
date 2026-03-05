@@ -41,12 +41,12 @@
 
   .progress-bar {
     height: 100%;
-    background-color: var(--c-color-primary-bg);
+    background-color: var(--c-color-accent-fill-loud);
     transition: width 0.2s ease;
   }
 
   .progress-info {
-    font-size: var(--c-font-size-sm);
+    font-size: var(--c-text-sm);
     color: var(--c-color-neutral-on-quiet);
   }
 </style>
