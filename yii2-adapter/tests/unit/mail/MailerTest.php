@@ -12,7 +12,6 @@ use craft\mail\Message;
 use craft\test\TestCase;
 use craft\test\TestMailer;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -137,13 +136,11 @@ class MailerTest extends TestCase
      */
     public function testSendMessageCustomTemplate(): void
     {
-        Edition::set(Edition::Pro);
-        $this->mailer->template = 'withvar';
-
         $this->_sendMail('test@craft.test');
 
         $lastMessage = $this->tester->grabLastSentEmail();
-        self::assertStringContainsString('Hello iam This is a name', $lastMessage->toString());
+        self::assertStringContainsString('https://craftcms.com', $lastMessage->toString());
+        self::assertStringContainsString('activate your account', $lastMessage->toString());
     }
 
     /**

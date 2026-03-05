@@ -12,13 +12,13 @@ use craft\behaviors\EnvAttributeParserBehavior;
 use CraftCms\Cms\Support\Env;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 transport adapters are ignored; use Laravel mail drivers.
  */
 class Gmail extends BaseTransportAdapter
 {
@@ -96,10 +96,7 @@ class Gmail extends BaseTransportAdapter
 
     private function settingsHtml(bool $readOnly): string
     {
-        return template('_components/mailertransportadapters/Gmail/settings', [
-            'adapter' => $this,
-            'readOnly' => $readOnly,
-        ]);
+        return t('Legacy mail transport adapter settings are ignored. Configure Laravel mail drivers instead.');
     }
 
     /**
