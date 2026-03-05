@@ -1,5 +1,6 @@
 import {defineConfig, loadEnv} from 'vite';
 import laravel from 'laravel-vite-plugin';
+import inertia from '@inertiajs/vite';
 import fs from 'fs';
 import vue from '@vitejs/plugin-vue';
 import tsconfigPaths from 'vite-tsconfig-paths';
@@ -80,6 +81,7 @@ export default defineConfig(({mode}) => {
         ],
         detectTls: env.VITE_DETECT_TLS ?? undefined,
       }),
+      inertia(),
     ],
   };
 });

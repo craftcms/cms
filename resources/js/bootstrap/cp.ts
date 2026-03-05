@@ -1,8 +1,7 @@
 import {ConfigService} from '@craftcms/cp/src/services/Config.js';
 import {QueueService} from '@craftcms/cp/src/services/Queue.js';
 import {createInertiaApp} from '@inertiajs/vue3';
-import {resolvePageComponent} from 'laravel-vite-plugin/inertia-helpers';
-import {createApp, type DefineComponent, h} from 'vue';
+import {createApp, h} from 'vue';
 import QueueManager from '@/components/utilities/QueueManager/QueueManager.vue';
 import {Axios, Config, Queue} from '@/types/keys';
 import axios from 'axios';
@@ -77,11 +76,7 @@ const Cp = {
     bootingCallbacks = [];
 
     await createInertiaApp({
-      resolve: (name) =>
-        resolvePageComponent(
-          `../pages/${name}.vue`,
-          import.meta.glob<DefineComponent>('../pages/**/*.vue')
-        ),
+      pages: '../pages',
       setup({el, App, props, plugin}) {
         const app = createApp({render: () => h(App, props)}).use(plugin);
 
