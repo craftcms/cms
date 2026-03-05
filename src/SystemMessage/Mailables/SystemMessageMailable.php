@@ -146,39 +146,16 @@ final class SystemMessageMailable extends Mailable
 
     private function fromEmail(): ?string
     {
-        return $this->mailConfigValue('from.address', fallbackEnvs: ['MAIL_FROM_ADDRESS', 'FROM_EMAIL_ADDRESS']);
+        return Env::configValue('mail.from.address', fallbackEnvs: ['MAIL_FROM_ADDRESS', 'FROM_EMAIL_ADDRESS']);
     }
 
     private function fromName(): ?string
     {
-        return $this->mailConfigValue('from.name', fallbackEnvs: ['MAIL_FROM_NAME', 'FROM_EMAIL_NAME']);
+        return Env::configValue('mail.from.name', fallbackEnvs: ['MAIL_FROM_NAME', 'FROM_EMAIL_NAME']);
     }
 
     private function replyToEmail(): ?string
     {
-        return $this->mailConfigValue('reply_to.address');
-    }
-
-    private function mailConfigValue(string $key, array $fallbackEnvs = []): ?string
-    {
-        $value = data_get(config('mail'), $key);
-
-        if (is_string($value) && $value !== '') {
-            return $value;
-        }
-
-        foreach ($fallbackEnvs as $fallbackEnv) {
-            $value = Env::get($fallbackEnv);
-
-            if (is_string($value) && $value !== '') {
-                return $value;
-            }
-
-            if (is_bool($value)) {
-                return $value ? 'true' : 'false';
-            }
-        }
-
-        return null;
+        return Env::configValue('mail.reply_to.address');
     }
 }

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\Utility\Utility;
 use Override;
-use Symfony\Component\Mime\Address;
 
 use function CraftCms\Cms\t;
 
@@ -46,10 +46,13 @@ final class MailSettings extends Utility
     {
         $defaultMailer = data_get(config('mail'), 'default', 'default');
         $mailerConfig = data_get(config('mail'), sprintf('mailers.%s', $defaultMailer), []);
+        $fromAddress = Env::configValue('mail.from.address', fallbackEnvs: ['MAIL_FROM_ADDRESS', 'FROM_EMAIL_ADDRESS']);
+        $fromName = Env::configValue('mail.from.name', fallbackEnvs: ['MAIL_FROM_NAME', 'FROM_EMAIL_NAME']);
 
         $settings = [
             t('Mailer') => $defaultMailer,
-            t('From') => new Address(config('mail.from.address'), config('mail.from.name'))->toString(),
+            t('From address') => $fromAddress,
+            t('From name') => $fromName,
         ];
 
         foreach (['host', 'port', 'encryption', 'scheme', 'username', 'password', 'path', 'url'] as $configKey) {
