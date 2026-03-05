@@ -108,20 +108,25 @@ export default class CraftNavItem extends LitElement {
         <slot name="suffix">
           ${hasSubnav
             ? html`
-                <craft-button
-                  @click="${this.toggleSubnav}"
-                  icon
-                  size="small"
-                  aria-controls="${this.id}-subnav"
-                  aria-expanded="${this.subnavState === 'open'
-                    ? 'true'
-                    : 'false'}"
-                >
-                  <craft-icon
-                    name="${this.subnavState === 'closed'
-                      ? 'chevron-down'
-                      : 'chevron-up'}"
-                    style="font-size: calc(10rem / 16)"
+                  <craft-button
+                    @click="${this.toggleSubnav}"
+                    icon
+                    size="small"
+                    aria-controls="${this.id}-subnav"
+                    aria-expanded="${
+                      this.subnavState === 'open' ? 'true' : 'false'
+                    }"
+                    aria-labelledby="${this.id}-toggle-icon ${this.id}-label"
+                  >
+                    <craft-icon
+                      id="${this.id}-toggle-icon""
+                      name="${
+                        this.subnavState === 'closed'
+                          ? 'chevron-down'
+                          : 'chevron-up'
+                      }"
+                      style="font-size: calc(10rem / 16)"
+                      label="${t('Toggle subnavigation')}"
                   ></craft-icon>
                 </craft-button>
               `
@@ -143,7 +148,7 @@ export default class CraftNavItem extends LitElement {
         aria-current="${this.active ? 'page' : false}"
       >
         ${hasPrefix ? this.renderPrefix() : nothing}
-        <slot></slot>
+        <slot id="${this.id}-label"></slot>
         ${this.renderSuffix(hasSubnav)}
       </a>
     `;

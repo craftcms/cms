@@ -127,7 +127,10 @@
           </craft-button>
           <craft-action-menu>
             <craft-button slot="invoker" variant="primary" type="button" icon>
-              <craft-icon name="chevron-down"></craft-icon>
+              <craft-icon
+                name="chevron-down"
+                :label="t('More actions')"
+              ></craft-icon>
             </craft-button>
 
             <div slot="content">

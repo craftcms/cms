@@ -48,7 +48,11 @@
           <SystemInfo />
           <div class="ml-auto"></div>
           <craft-button size="small" icon @click="emit('close')" type="button">
-            <craft-icon name="x" style="font-size: 0.7em"></craft-icon>
+            <craft-icon
+              name="x"
+              style="font-size: 0.7em"
+              :label="t('Close')"
+            ></craft-icon>
           </craft-button>
         </div>
       </div>
