@@ -7,12 +7,12 @@ namespace CraftCms\Cms\Support;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
-use craft\image\SvgAllowedAttributes;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Image\SvgAllowedAttributes;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
@@ -126,11 +126,11 @@ final class Html
     {
         if (is_callable($html)) {
             // Call it to get the HTML, but disregard the JS
-            AssetRegistry::startJsBuffer();
+            HtmlStack::startJsBuffer();
             try {
                 $html = $html();
             } finally {
-                AssetRegistry::clearJsBuffer();
+                HtmlStack::clearJsBuffer();
             }
         }
 
@@ -182,17 +182,12 @@ final class Html
         if (! $async) {
             Craft::$app->getResponse()->setNoCacheHeaders();
 
-            return self::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options)->render();
+            return self::hiddenInput($request->csrfParam, csrf_token(), $options)->render();
         }
 
-        Craft::$app->getView()->registerHtml(
-            template(
-                '_special/async-csrf-input',
-                [
-                    'url' => UrlHelper::actionUrl('users/session-info'),
-                ], templateMode: TemplateMode::Cp,
-            )
-        );
+        HtmlStack::html(template('_special/async-csrf-input', [
+            'url' => UrlHelper::actionUrl('users/session-info'),
+        ], templateMode: TemplateMode::Cp));
 
         return self::tag('craft-csrf-input');
     }
@@ -561,6 +556,13 @@ final class Html
 
         foreach ($attributes as $name => $value) {
             if (empty($name)) {
+                continue;
+            }
+
+            // Vue prop bindings need booleans rendered as "true"/"false" strings
+            if (is_bool($value) && str_starts_with((string) $name, ':')) {
+                $normalized[$name] = $value ? 'true' : 'false';
+
                 continue;
             }
 

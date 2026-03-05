@@ -13,15 +13,15 @@ use craft\gql\types\TableRow;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -338,11 +338,9 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             return $column;
         }, $this->columns);
 
-        $view = Craft::$app->getView();
-
-        $view->registerAssetBundle(TimepickerAsset::class);
-        $view->registerAssetBundle(TableSettingsAsset::class);
-        AssetRegistry::js('new Craft.TableFieldSettings('.
+        Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
+        Craft::$app->getView()->registerAssetBundle(TableSettingsAsset::class);
+        HtmlStack::js('new Craft.TableFieldSettings('.
             Json::encode(InputNamespace::namespaceInputName('columns')).', '.
             Json::encode(InputNamespace::namespaceInputName('defaults')).', '.
             Json::encode($columns).', '.
@@ -645,7 +643,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
                 // can't call parent::serializeValueForDb() here because that calls $this->serializeValue()
                 // see https://github.com/craftcms/cms/pull/17091
                 if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
-                    $serializedRow[$colId] = Db::prepareDateForDb($value);
+                    $serializedRow[$colId] = Query::prepareDateForDb($value);
                 } else {
                     $serializedRow[$colId] = parent::serializeValue($value, $element);
                 }

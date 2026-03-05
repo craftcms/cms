@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use Craft;
-use craft\base\FsInterface;
 use craft\helpers\Assets;
-use craft\models\Volume;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Translation\Locale;
@@ -271,13 +273,36 @@ class SelectOptions
      */
     public static function getFsOptions(): array
     {
-        return Collection::make(Craft::$app->getFs()->getAllFilesystems())
+        $craftFilesystemOptions = Filesystems::getAllFilesystems()
             ->reject(fn (FsInterface $fs): bool => Assets::isTempUploadFs($fs))
             ->map(fn (FsInterface $fs) => [
                 'label' => t($fs->name, category: 'site'),
                 'value' => $fs->handle,
-            ])
+            ]);
+
+        $diskOptions = Collection::make(config('filesystems.disks', []))
+            ->keys()
+            ->filter(function (mixed $diskName): bool {
+                if (! is_string($diskName)) {
+                    return false;
+                }
+
+                if (in_array($diskName, FilesystemsService::INTERNAL_DISK_NAMES, true)) {
+                    return false;
+                }
+
+                return ! str_starts_with($diskName, FilesystemsService::DISK_PREFIX);
+            })
+            ->map(fn (string $diskName) => [
+                'label' => $diskName,
+                'value' => "disk:$diskName",
+            ]);
+
+        return $craftFilesystemOptions
+            ->concat($diskOptions)
+            ->unique('value')
             ->sortBy(fn (array $option) => $option['label'])
+            ->values()
             ->all();
     }
 

@@ -17,10 +17,9 @@ use craft\db\Table;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Money as MoneyHelper;
+use CraftCms\Cms\Support\Query as QueryHelper;
 use DateTimeInterface;
-use DateTimeZone;
 use Illuminate\Support\Facades\DB as DbFacade;
 use InvalidArgumentException;
 use Money\Money;
@@ -31,7 +30,6 @@ use yii\base\NotSupportedException;
 use yii\db\BatchQueryResult;
 use yii\db\Exception as DbException;
 use yii\db\ExpressionInterface;
-use yii\db\pgsql\Schema as YiiPgqslSchema;
 use yii\db\Query as YiiQuery;
 use yii\db\QueryInterface;
 use yii\db\Schema;
@@ -41,6 +39,7 @@ use yii\db\Schema;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Support\Query} or {@see DbFacade} instead.
  */
 class Db
 {
@@ -51,34 +50,6 @@ class Db
      * @var string[]
      */
     private static array $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
-
-    /**
-     * @var string[] Numeric column types
-     */
-    private static array $_numericColumnTypes = [
-        Schema::TYPE_TINYINT,
-        Schema::TYPE_SMALLINT,
-        Schema::TYPE_INTEGER,
-        Schema::TYPE_BIGINT,
-        Schema::TYPE_FLOAT,
-        Schema::TYPE_DOUBLE,
-        Schema::TYPE_DECIMAL,
-    ];
-
-    /**
-     * @var string[] Textual column types
-     */
-    private static array $_textualColumnTypes = [
-        Schema::TYPE_CHAR,
-        Schema::TYPE_STRING,
-        Schema::TYPE_TEXT,
-
-        // MySQL-specific ones:
-        MysqlSchema::TYPE_TINYTEXT,
-        MysqlSchema::TYPE_MEDIUMTEXT,
-        MysqlSchema::TYPE_LONGTEXT,
-        MysqlSchema::TYPE_ENUM,
-    ];
 
     /**
      * @var array Types of integer columns and how many bytes they can store
@@ -104,6 +75,7 @@ class Db
      *
      * @param mixed $values The values to be prepared
      * @return array The prepared values
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::prepareValuesForDb()} instead.
      */
     public static function prepareValuesForDb(mixed $values): array
     {
@@ -111,7 +83,7 @@ class Db
         $values = Arr::toArray($values, [], false);
 
         foreach ($values as $key => $value) {
-            $values[$key] = static::prepareValueForDb($value);
+            $values[$key] = self::prepareValueForDb($value);
         }
 
         return $values;
@@ -123,6 +95,7 @@ class Db
      * @param mixed $value The value to be prepared
      * @param string|null $columnType The type of column the value will be stored in
      * @return mixed The prepped value
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::prepareValueForDb()} instead.
      */
     public static function prepareValueForDb(mixed $value, ?string $columnType = null): mixed
     {
@@ -136,24 +109,7 @@ class Db
             return $value->serialize();
         }
 
-        // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
-            return static::prepareDateForDb($value);
-        }
-
-        // If this isn’t a JSON column and the value is an object or array, JSON-encode it
-        if (is_object($value) || is_array($value)) {
-            if (in_array($columnType, [Schema::TYPE_JSON, YiiPgqslSchema::TYPE_JSONB])) {
-                return Arr::toArray($value);
-            }
-            return JsonHelper::encode($value);
-        }
-
-        if ($columnType && static::isNumericColumnType($columnType) && is_bool($value)) {
-            return (int)$value;
-        }
-
-        return $value;
+        return QueryHelper::prepareValueForDb($value, $columnType);
     }
 
     /**
@@ -161,18 +117,11 @@ class Db
      *
      * @param mixed $date The date to be prepared
      * @return string|null The prepped date, or `null` if it could not be prepared
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::prepareDateForDb()} instead.
      */
     public static function prepareDateForDb(mixed $date): ?string
     {
-        $date = DateTimeHelper::toDateTime($date);
-
-        if ($date === false) {
-            return null;
-        }
-
-        $date = clone $date;
-        $date->setTimezone(new DateTimeZone('UTC'));
-        return $date->format('Y-m-d H:i:s');
+        return QueryHelper::prepareDateForDb($date);
     }
 
     /**
@@ -368,14 +317,11 @@ class Db
      *
      * @param string $columnType
      * @return string|null
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::parseColumnType()} instead.
      */
     public static function parseColumnType(string $columnType): ?string
     {
-        if (!preg_match('/^\w+/', $columnType, $matches)) {
-            return null;
-        }
-
-        return strtolower($matches[0]);
+        return QueryHelper::parseColumnType($columnType);
     }
 
     /**
@@ -383,14 +329,11 @@ class Db
      *
      * @param string $columnType
      * @return int|null
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::parseColumnLength()} instead.
      */
     public static function parseColumnLength(string $columnType): ?int
     {
-        if (!preg_match('/^\w+\((\d+)\)/', $columnType, $matches)) {
-            return null;
-        }
-
-        return (int)$matches[1];
+        return QueryHelper::parseColumnLength($columnType);
     }
 
     /**
@@ -399,14 +342,11 @@ class Db
      * @param string $columnType
      * @return array{0:int,1:int}|null
      * @since 5.2.2
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::parseColumnPrecisionAndScale()} instead.
      */
     public static function parseColumnPrecisionAndScale(string $columnType): ?array
     {
-        if (!preg_match('/^\w+\((\d+),\s*(\d+)\)/', $columnType, $matches)) {
-            return null;
-        }
-
-        return [(int)$matches[1], (int)$matches[2]];
+        return QueryHelper::parseColumnPrecisionAndScale($columnType);
     }
 
     /**
@@ -414,24 +354,11 @@ class Db
      *
      * @param string $columnType
      * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::getSimplifiedColumnType()} instead.
      */
     public static function getSimplifiedColumnType(string $columnType): string
     {
-        if (($shortColumnType = self::parseColumnType($columnType)) === null) {
-            return $columnType;
-        }
-
-        // Numeric?
-        if (in_array($shortColumnType, self::$_numericColumnTypes, true)) {
-            return self::SIMPLE_TYPE_NUMERIC;
-        }
-
-        // Textual?
-        if (in_array($shortColumnType, self::$_textualColumnTypes, true)) {
-            return self::SIMPLE_TYPE_TEXTUAL;
-        }
-
-        return $shortColumnType;
+        return QueryHelper::getSimplifiedColumnType($columnType);
     }
 
     /**
@@ -440,10 +367,11 @@ class Db
      * @param string $typeA
      * @param string $typeB
      * @return bool
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::areColumnTypesCompatible()} instead.
      */
     public static function areColumnTypesCompatible(string $typeA, string $typeB): bool
     {
-        return static::getSimplifiedColumnType($typeA) === static::getSimplifiedColumnType($typeB);
+        return QueryHelper::areColumnTypesCompatible($typeA, $typeB);
     }
 
     /**
@@ -451,10 +379,11 @@ class Db
      *
      * @param string $columnType
      * @return bool
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::isNumericColumnType()} instead.
      */
     public static function isNumericColumnType(string $columnType): bool
     {
-        return in_array(self::parseColumnType($columnType), self::$_numericColumnTypes, true);
+        return QueryHelper::isNumericColumnType($columnType);
     }
 
     /**
@@ -462,10 +391,11 @@ class Db
      *
      * @param string $columnType
      * @return bool
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::isTextualColumnType()} instead.
      */
     public static function isTextualColumnType(string $columnType): bool
     {
-        return in_array(self::parseColumnType($columnType), self::$_textualColumnTypes, true);
+        return QueryHelper::isTextualColumnType($columnType);
     }
 
     /**
@@ -474,10 +404,11 @@ class Db
      *
      * @param string $value The param value.
      * @return string The escaped param value.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::escapeParam()} instead.
      */
     public static function escapeParam(string $value): string
     {
-        return \CraftCms\Cms\Support\Query::escapeParam($value);
+        return QueryHelper::escapeParam($value);
     }
 
     /**
@@ -486,20 +417,11 @@ class Db
      * @param string $value The param value.
      * @return string The escaped param value.
      * @since 4.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::unescapeParam()} instead.
      */
     public static function unescapeParam(string $value): string
     {
-        $value = preg_replace('/\\\([,*:])/', '$1', $value);
-
-        // If the value starts with an escaped operator, unescape that too.
-        foreach (self::$_operators as $operator) {
-            if (stripos($value, "\\$operator") === 0) {
-                $value = ltrim($value, '\\');
-                break;
-            }
-        }
-
-        return $value;
+        return QueryHelper::unescapeParam($value);
     }
 
     /**
@@ -508,10 +430,11 @@ class Db
      * @param string $value The param value.
      * @return string The escaped param value.
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::escapeCommas()} instead.
      */
     public static function escapeCommas(string $value): string
     {
-        return preg_replace('/(?<!\\\),/', '\\\$0', $value);
+        return QueryHelper::escapeCommas($value);
     }
 
     /**
@@ -520,10 +443,11 @@ class Db
      * @param string $value The value
      * @return string The escaped value
      * @since 4.3.7
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Query::escapeForLike()} instead.
      */
     public static function escapeForLike(string $value): string
     {
-        return preg_replace('/(?<!\\\)_/', '\\_', $value);
+        return QueryHelper::escapeForLike($value);
     }
 
     /**
@@ -749,7 +673,7 @@ class Db
             // Assume that date params are set in the system timezone
             $val = DateTimeHelper::toDateTime($val, true);
 
-            $normalizedValues[] = $operator . static::prepareDateForDb($val);
+            $normalizedValues[] = $operator . QueryHelper::prepareDateForDb($val);
         }
 
         return static::parseParam($column, $normalizedValues, $defaultOperator, false, Schema::TYPE_DATETIME);
@@ -766,6 +690,7 @@ class Db
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @return array|null
      * @since 4.0.0
+     * @deprecated 6.0.0
      */
     public static function parseMoneyParam(
         string $column,
@@ -823,6 +748,7 @@ class Db
      * @param string $columnType The database column type the param is targeting
      * @return array
      * @since 3.4.14
+     * @deprecated 6.0.0
      */
     public static function parseBooleanParam(
         string $column,
@@ -890,6 +816,7 @@ class Db
      * @return array|null
      * @throws InvalidArgumentException if the param value isn’t numeric
      * @since 4.0.0
+     * @deprecated 6.0.0
      */
     public static function parseNumericParam(
         string $column,
@@ -918,6 +845,7 @@ class Db
      * @return array|null
      * @throws InvalidArgumentException if the param value isn’t numeric
      * @since 5.1.0
+     * @deprecated 6.0.0
      */
     public static function parseTimestampParam(
         string $column,
@@ -937,10 +865,11 @@ class Db
      * @param callable $resolver Method to resolve non-model values to models
      * @return bool Whether the value was normalized
      * @since 3.7.40
+     * @deprecated 6.0.0 use {@see QueryHelper::normalizeParam()} instead
      */
     public static function normalizeParam(&$value, callable $resolver): bool
     {
-        return \CraftCms\Cms\Support\Query::normalizeParam($value, $resolver);
+        return QueryHelper::normalizeParam($value, $resolver);
     }
 
     /**

@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use craft\web\Application;
 use craft\web\assets\updater\UpdaterAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Exceptions\MigrateException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Updates\Updates;
@@ -22,7 +21,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -77,7 +75,7 @@ abstract class BaseUpdaterController
         }
     }
 
-    public function index(#[Give('Craft')] Application $craft): View
+    public function index(#[Give('Craft')] Application $craft): Response|View
     {
         // Load the updater JS
         $view = $craft->getView();
@@ -90,7 +88,7 @@ abstract class BaseUpdaterController
         $segments = $this->request->actionSegments();
         $idJs = Json::encode(implode('/', $segments));
         $stateJs = Json::encode($state);
-        AssetRegistry::js("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
+        HtmlStack::js("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
 
         return view('_special/updater', [
             'title' => $this->pageTitle(),
@@ -200,7 +198,7 @@ abstract class BaseUpdaterController
     public function finish(): Response
     {
         // Disable maintenance mode
-        Craft::$app->disableMaintenanceMode();
+        app()->maintenanceMode()->deactivate();
 
         return $this->send([
             'finished' => true,

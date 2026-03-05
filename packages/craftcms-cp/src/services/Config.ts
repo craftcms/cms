@@ -22,6 +22,21 @@ export class ConfigService {
     this.#config = new Map(Object.entries(initialConfig));
   }
 
+  #buildUrl(baseUrl: string, path: string): string {
+    const url = new URL(baseUrl);
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    url.pathname = `${url.pathname}/${cleanPath}`;
+    return url.toString();
+  }
+
+  getCpUrl(path: string) {
+    return this.#buildUrl(this.#config.get('cpUrl'), path);
+  }
+
+  getActionUrl(path: string) {
+    return this.#buildUrl(this.#config.get('actionUrl'), path);
+  }
+
   all() {
     return this.#config;
   }

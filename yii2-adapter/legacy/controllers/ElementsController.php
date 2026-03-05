@@ -11,12 +11,9 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\errors\InvalidTypeException;
-use craft\errors\UnsupportedSiteException;
 use craft\events\DefineElementEditorHtmlEvent;
 use craft\helpers\Component;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -33,6 +30,8 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
+use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\FieldLayout\FieldLayoutForm;
@@ -40,12 +39,14 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
@@ -552,7 +553,7 @@ class ElementsController extends Controller
         // Screen prep
         $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? ElementHelper::postEditUrl($element);
 
-        AssetRegistry::jsWithVars(fn(
+        HtmlStack::jsWithVars(fn(
             $elementType,
             $elementId,
             $draftId,
@@ -713,7 +714,7 @@ JS, [
                     ->preferSites([$element->siteId])
                     ->unique()
                     ->status(null)
-                    ->where('elements.dateCreated', '!=', Db::prepareDateForDb($element->dateUpdated))
+                    ->where('elements.dateCreated', '!=', Query::prepareDateForDb($element->dateUpdated))
                     ->with(['revisionCreator']),
             ]);
     }
@@ -1146,13 +1147,13 @@ JS, [
         $settings = $jsSettingsFn($form);
 
         if ($this->_isSlideout()) {
-            AssetRegistry::jsWithVars(fn($settings) => <<<JS
+            HtmlStack::jsWithVars(fn($settings) => <<<JS
 $('#$containerId').data('elementEditorSettings', $settings)
 JS, [
                 $settings,
             ]);
         } else {
-            AssetRegistry::jsWithVars(fn($settings) => <<<JS
+            HtmlStack::jsWithVars(fn($settings) => <<<JS
 new Craft.ElementEditor($('#$containerId'), $settings)
 JS, [
                 $settings,
@@ -2043,8 +2044,8 @@ JS, [
                 'title' => $title,
                 'previewTargets' => $previewTargets,
                 'previewParamValue' => $previewTargets ? Crypt::encrypt(Str::random(10)) : null,
-                'deltaNames' => Craft::$app->getView()->getDeltaNames(),
-                'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
+                'deltaNames' => DeltaRegistry::getNames(),
+                'initialDeltaValues' => DeltaRegistry::getInitialValues(),
                 'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
                 'canonicalUpdatedTimestamp' => $element->getCanonical()->dateUpdated->getTimestamp(),
             ];
@@ -2402,7 +2403,7 @@ JS, [
         $data = $this->_fieldLayoutData($this->element);
 
         $data += [
-            'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
+            'initialDeltaValues' => DeltaRegistry::getInitialValues(),
         ];
 
         return $this->_asSuccess('Field layout updated.', $element, $data, true);
@@ -2410,7 +2411,6 @@ JS, [
 
     private function _fieldLayoutData(ElementInterface $element, array $formConfig = []): array
     {
-        $view = Craft::$app->getView();
         $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
         $fieldLayout = $element->getFieldLayout();
         $form = $fieldLayout->createForm($element, false, $formConfig + [
@@ -2458,8 +2458,8 @@ JS, [
         return [
             'tabs' => $tabHtml,
             'missingElements' => $missingElements,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
         ];
     }
 

@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use craft\helpers\Cp;
-use craft\web\Application;
-use craft\web\assets\utilities\UtilitiesAsset;
+use craft\helpers\UrlHelper;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates;
 use CraftCms\Cms\Utility\Utilities\Upgrade;
 use CraftCms\Cms\Utility\Utility;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
+use Inertia\Inertia;
 use InvalidArgumentException;
 
 use function CraftCms\Cms\cp_redirect;
@@ -23,7 +22,6 @@ final readonly class UtilitiesController
 {
     public function __construct(
         private Utilities $utilitiesService,
-        #[Give('Craft')] private Application $craft,
     ) {}
 
     public function badgeCount(): JsonResponse
@@ -60,11 +58,13 @@ final readonly class UtilitiesController
             abort(403, sprintf('User not permitted to access the “%s” utility.', $class::displayName()));
         }
 
-        $this->craft->getView()->registerAssetBundle(UtilitiesAsset::class);
-
-        return view('utilities/_index', [
+        return Inertia::render('UtilitiesShowPage', [
+            'crumbs' => [
+                ['label' => 'Utilities', 'url' => UrlHelper::cpUrl('utilities')],
+                ['label' => $class::displayName(), 'url' => null],
+            ],
             'id' => $id,
-            'displayName' => $class::displayName(),
+            'title' => $class::displayName(),
             'contentHtml' => $class::contentHtml(),
             'toolbarHtml' => $class::toolbarHtml(),
             'footerHtml' => $class::footerHtml(),
@@ -83,6 +83,7 @@ final readonly class UtilitiesController
              */
             ->map(fn (string $class) => [
                 'id' => $class::id(),
+                'url' => UrlHelper::cpUrl('utilities/'.$class::id()),
                 'iconSvg' => $this->utilityIconSvg($class),
                 'displayName' => $class::displayName(),
                 'iconPath' => $class::icon(),

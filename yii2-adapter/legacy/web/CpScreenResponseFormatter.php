@@ -10,6 +10,8 @@ namespace craft\web;
 use Craft;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
@@ -63,7 +65,6 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $response->format = Response::FORMAT_JSON;
 
         $namespace = Str::random(10);
-        $view = Craft::$app->getView();
 
         if ($behavior->prepareScreen) {
             $containerId = $request->getHeaders()->get('X-Craft-Container-Id');
@@ -115,10 +116,10 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'content' => $content,
             'sidebar' => $sidebar,
             'errorSummary' => $errorSummary,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
-            'deltaNames' => $view->getDeltaNames(),
-            'initialDeltaValues' => $view->getInitialDeltaValues(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
+            'deltaNames' => DeltaRegistry::getNames(),
+            'initialDeltaValues' => DeltaRegistry::getInitialValues(),
             'data' => $response->data,
         ];
 

@@ -7,6 +7,13 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\AnnouncementsController;
 use CraftCms\Cms\Http\Controllers\ApiController;
+use CraftCms\Cms\Http\Controllers\Assets\ActionController as AssetsActionController;
+use CraftCms\Cms\Http\Controllers\Assets\FolderController as AssetsFolderController;
+use CraftCms\Cms\Http\Controllers\Assets\IconController as AssetsIconController;
+use CraftCms\Cms\Http\Controllers\Assets\ImageEditorController;
+use CraftCms\Cms\Http\Controllers\Assets\PreviewController as AssetsPreviewController;
+use CraftCms\Cms\Http\Controllers\Assets\TransformController;
+use CraftCms\Cms\Http\Controllers\Assets\UploadController as AssetsUploadController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\PasskeyController;
 use CraftCms\Cms\Http\Controllers\Auth\SessionInfoController;
@@ -22,7 +29,6 @@ use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
-use CraftCms\Cms\Http\Controllers\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
@@ -32,10 +38,13 @@ use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\PreviewController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
+use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
+use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\StructuresController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
@@ -107,6 +116,10 @@ foreach ([
         Route::any('users/get-elevated-session-timeout', [SessionInfoController::class, 'confirmTimeout']);
         Route::middleware('throttle:1,1')->post('users/send-password-reset-email', [PasswordController::class, 'sendPasswordResetEmail']);
         Route::post('users/save-user', SaveUserController::class);
+
+        // Asset Transforms (anonymous access)
+        Route::any('assets/generate-transform', [TransformController::class, 'generate']);
+        Route::get('assets/generate-fallback-transform', [TransformController::class, 'generateFallback']);
     });
 }
 
@@ -251,6 +264,26 @@ Route::prefix(implode('/', [
         Route::post('asset-indexes/indexing-session-overview', [AssetIndexesController::class, 'indexingSessionOverview']);
         Route::post('asset-indexes/finish-indexing-session', [AssetIndexesController::class, 'finishIndexingSession']);
 
+        // Assets
+        Route::post('assets/upload', [AssetsUploadController::class, 'upload']);
+        Route::post('assets/replace-file', [AssetsUploadController::class, 'replaceFile']);
+        Route::post('assets/delete-asset', [AssetsActionController::class, 'deleteAsset']);
+        Route::post('assets/move-asset', [AssetsActionController::class, 'moveAsset']);
+        Route::post('assets/download-asset', [AssetsActionController::class, 'downloadAsset']);
+        Route::any('assets/show-in-folder', [AssetsActionController::class, 'showInFolder']);
+        Route::post('assets/move-info', [AssetsActionController::class, 'moveInfo']);
+        Route::post('assets/preview-thumb', [AssetsPreviewController::class, 'previewThumb']);
+        Route::post('assets/preview-file', [AssetsPreviewController::class, 'previewFile']);
+        Route::post('assets/create-folder', [AssetsFolderController::class, 'create']);
+        Route::post('assets/delete-folder', [AssetsFolderController::class, 'delete']);
+        Route::post('assets/rename-folder', [AssetsFolderController::class, 'rename']);
+        Route::post('assets/move-folder', [AssetsFolderController::class, 'move']);
+        Route::post('assets/image-editor', [ImageEditorController::class, 'show']);
+        Route::get('assets/edit-image', [ImageEditorController::class, 'editImage']);
+        Route::post('assets/save-image', [ImageEditorController::class, 'save']);
+        Route::post('assets/update-focal-position', [ImageEditorController::class, 'updateFocalPoint']);
+        Route::get('assets/icon/{extension?}', AssetsIconController::class);
+
         // Preview
         Route::any('preview/create-token', [PreviewController::class, 'createToken']);
 
@@ -271,6 +304,15 @@ Route::prefix(implode('/', [
             Route::post('fs/remove', [FilesystemsController::class, 'delete']);
         });
 
+        // Volumes
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('volumes/save-volume', [VolumesController::class, 'save']);
+            Route::post('volumes/delete-volume', [VolumesController::class, 'delete']);
+            Route::post('volumes/reorder-volumes', [VolumesController::class, 'reorder']);
+            Route::post('image-transforms/save', [ImageTransformsController::class, 'save']);
+            Route::post('image-transforms/delete', [ImageTransformsController::class, 'delete']);
+        });
+
         // Plugins
         Route::middleware([RequireAdminChanges::class])->group(function () {
             Route::post('plugins/install-plugin', [PluginsController::class, 'install']);
@@ -289,7 +331,7 @@ Route::prefix(implode('/', [
         Route::get('project-config/download', [ProjectConfigController::class, 'download']);
 
         // Project Config sync
-        Route::prefix('config-sync')->group(function () {
+        Route::prefix('config-sync')->middleware([RequireAdmin::class])->group(function () {
             Route::post('/', [ConfigSyncController::class, 'index']);
             Route::post(ConfigSyncController::ACTION_RETRY, [ConfigSyncController::class, 'retry']);
             Route::post(ConfigSyncController::ACTION_APPLY_YAML_CHANGES, [ConfigSyncController::class, 'applyYamlChanges']);

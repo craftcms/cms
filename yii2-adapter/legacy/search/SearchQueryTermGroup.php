@@ -1,33 +1,20 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\search;
 
-/**
- * Search Query Term Group class
- * Contains multiple SearchQueryTerm instances, each representing a term in the search query that was combined by "OR".
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class SearchQueryTermGroup
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @var SearchQueryTerm[]
-     */
-    public array $terms;
-
-    /**
-     * Constructor
+     * Search Query Term Group class
+     * Contains multiple SearchQueryTerm instances, each representing a term in the search query that was combined by "OR".
      *
-     * @param SearchQueryTerm[] $terms
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 3.0.0
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Search\SearchQueryTermGroup} instead.
      */
-    public function __construct(array $terms = [])
+    class SearchQueryTermGroup
     {
-        $this->terms = $terms;
     }
 }
+
+class_alias(\CraftCms\Cms\Search\SearchQueryTermGroup::class, SearchQueryTermGroup::class);

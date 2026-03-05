@@ -15,26 +15,26 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Describable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Contracts\Indicative;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Validation\EntryTypeRules;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\Validation\Rules\HandleRule;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Stringable;
 
 use function CraftCms\Cms\t;
 
+#[Ruleset(EntryTypeRules::class)]
 final class EntryType extends Component implements Actionable, Chippable, Colorable, CpEditable, Describable, FieldLayoutProviderInterface, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
 {
     use HasFieldLayout;
@@ -181,7 +181,7 @@ final class EntryType extends Component implements Actionable, Chippable, Colora
             'label' => t('Entry type settings'),
         ]];
 
-        AssetRegistry::jsWithVars(fn ($id, $params) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $params) => <<<JS
 $('#' + $id).on('click', () => {
 new Craft.CpScreenSlideout('entry-types/edit', {
 params: $params,
@@ -193,52 +193,6 @@ JS, [
         ]);
 
         return $items;
-    }
-
-    #[\Override]
-    public function getRules(): array
-    {
-        $rules = [
-            'id' => ['nullable', 'integer'],
-            'color' => [
-                'nullable',
-                'string',
-                Rule::in(array_merge(
-                    array_map(fn (Color $color) => $color->value, Color::cases()),
-                    ['__blank__']
-                )),
-            ],
-            'fieldLayoutId' => ['nullable', 'integer', function (string $attribute, int $value, $fail) {
-                $fieldLayout = Fields::assembleLayoutFromPost();
-                $fieldLayout->reservedFieldHandles = [
-                    'author',
-                    'authorId',
-                    'authorIds',
-                    'authors',
-                    'section',
-                    'sectionId',
-                    'type',
-                    'postDate',
-                ];
-
-                if (! $fieldLayout->validate()) {
-                    $fail(t('The field layout is invalid.'));
-                }
-            }],
-            'name' => ['required', 'string', 'max:255'],
-            'handle' => [
-                'required',
-                'string',
-                'max:255',
-                new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-            ],
-        ];
-
-        if ($this->validateHandleUniqueness) {
-            $rules['handle'][] = Rule::unique(Table::ENTRYTYPES, 'handle')->ignore($this->id)->withoutTrashed('dateDeleted');
-        }
-
-        return $rules;
     }
 
     /**

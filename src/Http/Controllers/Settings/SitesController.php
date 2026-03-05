@@ -168,7 +168,7 @@ final readonly class SitesController
             $isNew = true;
         }
 
-        $site->groupId = $request->input('group');
+        $site->groupId = $request->has('group') ? $request->integer('group') : null;
         $site->name = $request->input('name');
         $site->handle = $request->input('handle');
         $site->language = $request->input('language');

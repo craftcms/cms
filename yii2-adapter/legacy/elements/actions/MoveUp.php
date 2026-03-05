@@ -9,7 +9,7 @@ namespace craft\elements\actions;
 
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use function CraftCms\Cms\t;
 
 /**
@@ -47,7 +47,7 @@ class MoveUp extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        AssetRegistry::jsWithVars(
+        HtmlStack::jsWithVars(
             fn($type, $params) => <<<JS
 (() => {
   new Craft.ElementActionTrigger({

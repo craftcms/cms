@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Validation\Concerns;
 
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Validation\Contracts\ValidatableWithRuleset;
 use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
 
@@ -52,8 +51,12 @@ trait InteractsWithValidator
             $this->errors = new MessageBag;
         }
 
-        if ($this instanceof ValidatableWithRuleset) {
-            $this->getRuleset()->prepareForValidation($attributeNames);
+        if (is_string($attributeNames)) {
+            $attributeNames = [$attributeNames];
+        }
+
+        if ($ruleset = $this->getRuleset()) {
+            $ruleset->prepareForValidation($attributeNames);
         }
 
         $validator = $this->getValidator($attributeNames)

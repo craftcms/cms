@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 use Craft;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
-use craft\helpers\Image;
 use craft\helpers\UrlHelper;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Auth\Auth;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Flash;
@@ -250,7 +250,7 @@ final readonly class SaveUserController
 
         $photo = UploadedFile::getInstanceByName('photo');
 
-        if ($photo && ! Image::canManipulateAsImage($photo->getExtension())) {
+        if ($photo && ! ImageHelper::canManipulateAsImage($photo->getExtension())) {
             $user->errors()->add('photo', t('The user photo provided is not an image.'));
         }
 

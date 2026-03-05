@@ -123,7 +123,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Globals $globals The globals service
  * @property-read Gql $gql The GraphQl service
  * @property-read I18N $i18n The internationalization (i18n) component
- * @property-read Images $images The images service
+ * @property-read Images $images The images service (deprecated)
  * @property-read ImageTransforms $imageTransforms The image transforms service
  * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read Locale $locale The Locale object for the target language
@@ -601,7 +601,7 @@ trait ApplicationTrait
      */
     public function getIsInMaintenanceMode(): bool
     {
-        return \CraftCms\Cms\Shared\Models\Info::fetch()->maintenance;
+        return app()->isDownForMaintenance();
     }
 
     /**
@@ -612,7 +612,9 @@ trait ApplicationTrait
      */
     public function enableMaintenanceMode(): bool
     {
-        return $this->_setMaintenanceMode(true);
+        app()->maintenanceMode()->activate([]);
+
+        return true;
     }
 
     /**
@@ -623,7 +625,9 @@ trait ApplicationTrait
      */
     public function disableMaintenanceMode(): bool
     {
-        return $this->_setMaintenanceMode(false);
+        app()->maintenanceMode()->deactivate();
+
+        return true;
     }
 
     /**
@@ -780,6 +784,7 @@ trait ApplicationTrait
      * Returns the assets service.
      *
      * @return Assets The assets service
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Asset\Assets} or {@see \CraftCms\Cms\Asset\Folders} instead.
      */
     public function getAssets(): Assets
     {
@@ -813,6 +818,7 @@ trait ApplicationTrait
      * Returns the image transforms service.
      *
      * @return ImageTransforms The asset transforms service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\ImageTransforms} instead.
      */
     public function getImageTransforms(): ImageTransforms
     {
@@ -980,6 +986,7 @@ trait ApplicationTrait
      * @return Fs The filesystems service
      *
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Filesystems} instead.
      */
     public function getFs(): Fs
     {
@@ -1039,6 +1046,8 @@ trait ApplicationTrait
      * Returns the images service.
      *
      * @return Images The images service
+     *
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\Images} instead.
      */
     public function getImages(): Images
     {
@@ -1165,6 +1174,7 @@ trait ApplicationTrait
      * Returns the search service.
      *
      * @return Search The search service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Search\Search} instead.
      */
     public function getSearch(): Search
     {
@@ -1363,20 +1373,6 @@ trait ApplicationTrait
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
         }
-    }
-
-    /**
-     * Enables or disables Maintenance Mode
-     */
-    private function _setMaintenanceMode(bool $value): bool
-    {
-        $info = \CraftCms\Cms\Shared\Models\Info::fetch();
-        if ($info->maintenance === $value) {
-            return true;
-        }
-        $info->maintenance = $value;
-
-        return $info->save();
     }
 
     /**

@@ -9,8 +9,9 @@ use craft\web\Application;
 use craft\web\assets\craftsupport\CraftSupportAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Support\Facades\Auth;
 use Override;
@@ -24,6 +25,7 @@ final class CraftSupport extends Widget
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly Plugins $plugins,
+        private readonly Images $images,
         array $config = []
     ) {
         parent::__construct($config);
@@ -85,7 +87,7 @@ final class CraftSupport extends Widget
         $db = $craft->getDb();
         $dbDriver = $db->getDriverLabel();
 
-        $imagesService = $craft->getImages();
+        $imagesService = $this->images;
         if ($imagesService->getIsGd()) {
             $imageDriver = 'GD';
         } else {
@@ -110,7 +112,7 @@ final class CraftSupport extends Widget
 
 EOD;
 
-        AssetRegistry::jsWithVars(fn ($id, $settings) => <<<JS
+        HtmlStack::jsWithVars(fn ($id, $settings) => <<<JS
 new Craft.CraftSupportWidget($id, $settings)
 JS, [
             $this->id,

@@ -45,7 +45,6 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
             throw new InvalidConfigException('TemplateResponseFormatter can only be used on responses with a TemplateResponseBehavior.');
         }
 
-        $view = Craft::$app->getView();
         $generalConfig = Cms::config();
 
         // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
@@ -53,7 +52,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
             Craft::$app->getRequest()->getQueryParam('x-craft-live-preview') !== null &&
             $generalConfig->useIframeResizer
         ) {
-            $view->registerAssetBundle(ContentWindowAsset::class);
+            Craft::$app->getView()->registerAssetBundle(ContentWindowAsset::class);
         }
 
         // Render and return the template

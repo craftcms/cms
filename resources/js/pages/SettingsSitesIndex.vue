@@ -184,6 +184,7 @@
     },
     getCoreRowModel: getCoreRowModel<Site>(),
     getRowId: (row) => row.id.toString(),
+    enableSorting: false,
     defaultColumn: {
       // @ts-ignore this is technically invalid, but gives us the behavior we want
       size: 'auto',
@@ -257,7 +258,7 @@
     <template #interior-nav="{state}">
       <nav>
         <craft-nav-list class="-mx-2">
-          <craft-nav-item :url="index.url()" :active="!group">
+          <craft-nav-item :href="index.url()" :active="!group">
             {{ t('All Sites') }}
           </craft-nav-item>
           <CpLink

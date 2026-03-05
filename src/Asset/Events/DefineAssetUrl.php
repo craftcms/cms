@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Events;
 
-use craft\models\ImageTransform;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Events\DefineUrl;
+use CraftCms\Cms\Image\Data\ImageTransform;
 
 /**
  * @event DefineAssetUrl The event that is triggered when defining the asset’s URL.

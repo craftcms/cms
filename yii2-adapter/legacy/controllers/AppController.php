@@ -19,6 +19,8 @@ use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Data\Volume as LegacyVolume;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -28,6 +30,7 @@ use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
@@ -418,12 +421,10 @@ class AppController extends Controller
             }
         }
 
-        $view = Craft::$app->getView();
-
         return $this->asJson([
             'elements' => $elementHtml,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
         ]);
     }
 
@@ -455,7 +456,12 @@ class AppController extends Controller
                 throw new BadRequestHttpException('Missing component ID');
             }
 
-            $component = $componentType::get($id);
+            $component = null;
+            if (is_callable([$componentType, 'get'])) {
+                $component = $componentType::get($id);
+            } elseif (is_a($componentType, LegacyVolume::class, true)) {
+                $component = app(Volumes::class)->getVolumeById((int)$id);
+            }
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
                     if (!empty($config['overrides'])) {
@@ -479,11 +485,10 @@ class AppController extends Controller
             }
         }
 
-        $view = Craft::$app->getView();
         $data = [
             'components' => $componentHtml,
-            'headHtml' => $view->getHeadHtml(),
-            'bodyHtml' => $view->getBodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+            'bodyHtml' => HtmlStack::bodyHtml(),
         ];
 
         if ($withMenuItems) {

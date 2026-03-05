@@ -8,15 +8,15 @@ use ArrayIterator;
 use BadMethodCallException;
 use craft\base\Component;
 use craft\base\ElementInterface;
-use craft\web\twig\AllowedInSandbox;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Utils;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
-use CraftCms\Cms\Validation\Concerns\ValidatesWithRuleset;
+use CraftCms\Cms\Validation\Concerns\Validates;
 use DateTime;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Traits\Macroable;
@@ -66,7 +66,7 @@ abstract class Element extends Component implements ElementInterface
     use Macroable {
         __call as macroCall;
     }
-    use ValidatesWithRuleset;
+    use Validates;
 
     /**
      * @since 3.3.6
@@ -405,13 +405,13 @@ abstract class Element extends Component implements ElementInterface
         $attributes = $this->attributes();
         $values = [];
 
-        try {
-            foreach ($attributes as $attribute) {
+        foreach ($attributes as $attribute) {
+            try {
                 $values[$attribute] = $this->$attribute;
+            } catch (Throwable) {
+                // Skip attributes that throw errors during access (e.g., lazy-loaded relations that fail)
+                // This is expected for attributes that may not be accessible in all contexts
             }
-        } catch (Throwable) {
-            // Skip attributes that throw errors during access (e.g., lazy-loaded relations that fail)
-            // This is expected for attributes that may not be accessible in all contexts
         }
 
         return $values;
@@ -494,7 +494,7 @@ abstract class Element extends Component implements ElementInterface
         return $fields;
     }
 
-    #[\Override]
+    #[Override]
     public function toArray(array $fields = [], array $expand = [], $recursive = true): array
     {
         if ($recursive) {

@@ -24,6 +24,14 @@
   --c-fg-on-accent-subtle: var(--color-slate-800);
   --c-fg-on-sunken: var(--c-fg-text);
 
+  /* Elevations */
+  --c-elevation-surface-sunken: var(--color-slate-100);
+  --c-elevation-surface-raised: var(--color-white);
+  --c-elevation-surface-overlay: var(--color-white);
+  --c-elevation-shadow-sunken: var(--inset-shadow-sm);
+  --c-elevation-shadow-raised: var(--shadow-sm);
+  --c-elevation-shadow-overlay: var(--shadow-lg);
+
   /* Semantic colors */
   --c-color-neutral-bg-emphasis: var(--color-slate-600);
   --c-color-neutral-bg-normal: var(--color-slate-100);
@@ -114,7 +122,7 @@
   --c-radius-xl: 12px;
   --c-radius-full: calc(Infinity * 1px);
 
-  --c-spacing: 0.125rem;
+  --c-spacing: 0.25rem; /* 4px */
   --c-spacing-1px: 1px;
   --c-spacing-xs: calc(var(--c-spacing) * 0.5);
   --c-spacing-sm: calc(var(--c-spacing) * 1);
@@ -122,10 +130,6 @@
   --c-spacing-lg: calc(var(--c-spacing) * 4);
   --c-spacing-xl: calc(var(--c-spacing) * 8);
   --c-spacing-2xl: calc(var(--c-spacing) * 16);
-
-  @media screen and (min-width: 1024px) {
-    --c-spacing: 0.25rem;
-  }
 
   --c-size-touch-target: calc(34rem / 16);
 
@@ -135,6 +139,7 @@
   --c-size-icon-lg: calc(22rem / 16);
   --c-size-icon-xl: calc(30rem / 16);
 
+  --c-size-control-xs: calc(16rem / 16);
   --c-size-control-sm: calc(24rem / 16);
   --c-size-control-md: calc(34rem / 16);
   --c-size-control-lg: calc(44rem / 16);
@@ -255,8 +260,11 @@
   /* Generic Panes */
   --c-pane-bg: var(--c-bg-overlay);
   --c-pane-fg: var(--c-fg-text);
+  --c-pane-padding: var(--c-spacing-lg);
   --c-pane-border: 1px solid transparent;
   --c-pane-radius: var(--c-radius-md);
+  --c-pane-shadow:
+    0 0 0 1px var(--gray-200), 0 2px 12px hsl(from var(--gray-200) h s l / 50%);
 
   /* Callouts */
   --c-callout-radius: var(--c-pane-radius);
@@ -266,6 +274,7 @@
   --c-modal-fg: var(--c-pane-fg);
   --c-modal-radius: var(--c-radius-lg);
   --c-modal-border: var(--c-pane-border);
+  --c-modal-padding: var(--c-pane-padding);
   --c-modal-shadow:
     0 0 0 1px hsl(from var(--color-gray-400) h s l / 25%),
     0 25px 100px hsl(from var(--color-gray-900) h s l / 50%);

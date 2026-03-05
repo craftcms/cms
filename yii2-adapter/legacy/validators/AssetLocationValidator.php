@@ -7,10 +7,10 @@
 
 namespace craft\validators;
 
-use Craft;
 use craft\helpers\Assets;
 use craft\helpers\Assets as AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Cms;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
@@ -110,7 +110,7 @@ class AssetLocationValidator extends Validator
         }
 
         // Get the folder
-        if (Craft::$app->getAssets()->getFolderById($folderId) === null) {
+        if (app(Folders::class)->getFolderById($folderId) === null) {
             throw new InvalidConfigException('Invalid folder ID: ' . $folderId);
         }
 
@@ -124,7 +124,7 @@ class AssetLocationValidator extends Validator
 
         // Prepare the filename
         $filename = AssetsHelper::prepareAssetName($filename);
-        $suggestedFilename = Craft::$app->getAssets()->getNameReplacementInFolder($filename, $folderId);
+        $suggestedFilename = app(\CraftCms\Cms\Asset\Assets::class)->getNameReplacementInFolder($filename, $folderId);
 
         if ($suggestedFilename !== $filename) {
             $model->{$this->conflictingFilenameAttribute} = $filename;

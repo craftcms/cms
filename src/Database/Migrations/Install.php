@@ -479,7 +479,6 @@ class Install extends Migration
             $table->integer('id', true);
             $table->string('version', 50);
             $table->string('schemaVersion', 15);
-            $table->boolean('maintenance')->default(false);
             $table->char('configVersion', 12)->default('000000000000');
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -960,7 +959,7 @@ class Install extends Migration
             Schema::table(Table::SEARCHINDEX, function (Blueprint $table) {
                 $table->fullText('keywords');
             });
-        } else {
+        } elseif (DB::isPgsql()) {
             // Postgres is case-sensitive
             DB::statement('CREATE INDEX sites_uri_siteid_index ON '.DB::getTablePrefix().Table::ELEMENTS_SITES.' (lower(uri), "siteId")');
             DB::statement('CREATE INDEX users_email_index ON '.DB::getTablePrefix().Table::USERS.' (lower(email))');
@@ -972,6 +971,11 @@ class Install extends Migration
 
             DB::statement('CREATE INDEX keywords_gin ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING GIN(keywords_vector) WITH (FASTUPDATE=YES)');
             DB::statement('CREATE INDEX keywords_index ON '.DB::getTablePrefix().Table::SEARCHINDEX.' USING btree(keywords)');
+        } else {
+            // SQLite: basic indexes only, no full-text or tsvector
+            Schema::createIndex(Table::ELEMENTS_SITES, ['uri', 'siteId']);
+            Schema::createIndex(Table::USERS, ['email']);
+            Schema::createIndex(Table::USERS, ['username']);
         }
     }
 
@@ -1063,7 +1067,6 @@ class Install extends Migration
                 'id' => 1,
                 'version' => Cms::VERSION,
                 'schemaVersion' => Cms::SCHEMA_VERSION,
-                'maintenance' => false,
                 'configVersion' => Str::random(12),
             ]);
         });

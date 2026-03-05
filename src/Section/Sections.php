@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Section;
 
 use Craft;
 use craft\base\MemoizableArray;
-use craft\errors\SectionNotFoundException;
 use craft\helpers\AdminTable;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
@@ -27,6 +26,7 @@ use CraftCms\Cms\Section\Events\DeletingSection;
 use CraftCms\Cms\Section\Events\SavingSection;
 use CraftCms\Cms\Section\Events\SectionDeleted;
 use CraftCms\Cms\Section\Events\SectionSaved;
+use CraftCms\Cms\Section\Exceptions\SectionNotFoundException;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Models\SectionSiteSettings as SectionSiteSettingsModel;
 use CraftCms\Cms\Site\Data\Site;
@@ -1088,7 +1088,7 @@ final class Sections
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        [$results, $total] = $this->prepTableData($this->createSectionQuery(), $page, $limit, $searchTerm, $orderBy,
+        [$results, $total] = $this->prepTableData($this->createSectionQuery()->reorder(), $page, $limit, $searchTerm, $orderBy,
             $sortDir);
 
         /** @var Collection<Section> $sections */

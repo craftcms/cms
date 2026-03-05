@@ -36,9 +36,9 @@ use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -532,7 +532,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     {
         $variables = $this->settingsTemplateVariables();
 
-        AssetRegistry::jsWithVars(fn ($args) => <<<JS
+        HtmlStack::jsWithVars(fn ($args) => <<<JS
 new Craft.ElementFieldSettings(...$args)
 JS, [
             [
@@ -806,7 +806,7 @@ JS, [
         return $query;
     }
 
-    protected function fetchRelationsFromDbTable(?Elementinterface $element): bool
+    protected function fetchRelationsFromDbTable(?ElementInterface $element): bool
     {
         if ($this->layoutElement?->uid === null) {
             return false;

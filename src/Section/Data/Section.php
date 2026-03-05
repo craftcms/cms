@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Data;
 
-use Closure;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Component;
@@ -17,19 +16,20 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Validation\SectionRules;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Validation\Rules\HandleRule;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Stringable;
 
 use function CraftCms\Cms\t;
 
+#[Ruleset(SectionRules::class)]
 final class Section extends Component implements Chippable, CpEditable, Iconic, Stringable
 {
     /**
@@ -109,91 +109,6 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    #[\Override]
-    public function getRules(): array
-    {
-        return [
-            'id' => ['nullable', 'integer'],
-            'structureId' => ['nullable', 'integer'],
-            'maxLevels' => ['nullable', 'integer', 'min:0', 'max:32767'],
-            'maxAuthors' => ['nullable', 'integer', 'min:0', 'max:32767'],
-            'name' => ['required', 'string', 'max:255'],
-            'handle' => [
-                'required',
-                'string',
-                'max:255',
-                new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                Rule::unique(Table::SECTIONS)->ignore($this->id)->withoutTrashed('dateDeleted'),
-            ],
-            'entryTypes' => ['required'],
-            'type' => ['required', Rule::enum(SectionType::class)],
-            'defaultPlacement' => ['nullable', Rule::enum(DefaultPlacement::class)],
-            'propagationMethod' => ['required', Rule::enum(PropagationMethod::class)],
-            'previewTargets' => [
-                'nullable',
-                'array',
-                function (string $attribute, array $value, Closure $fail) {
-                    $this->validatePreviewTargets($value, $fail);
-                },
-            ],
-            'siteSettings' => [
-                'required',
-                'array',
-                function (string $attribute, array $value, Closure $fail) {
-                    $this->validateSiteSettings($fail);
-                },
-            ],
-        ];
-    }
-
-    private function validateSiteSettings(Closure $fail): void
-    {
-        // If this is an existing section, make sure they aren't moving it to a
-        // completely different set of sites in one fell swoop
-        if ($this->id) {
-            $currentSiteIds = DB::table(Table::SECTIONS_SITES)
-                ->where('sectionId', $this->id)
-                ->pluck('siteId')
-                ->all();
-
-            if (empty(array_intersect($currentSiteIds, array_keys($this->getSiteSettings())))) {
-                $fail('siteSettings', t('At least one currently-enabled site must remain enabled.'));
-            }
-        }
-
-        foreach ($this->getSiteSettings() as $i => $siteSettings) {
-            if ($siteSettings->validate()) {
-                continue;
-            }
-
-            foreach ($siteSettings->errors()->getMessages() as $a => $errors) {
-                foreach ($errors as $error) {
-                    $this->errors()->add("siteSettings[$i].$a", $error);
-                }
-            }
-        }
-    }
-
-    private function validatePreviewTargets(array $value, Closure $fail): void
-    {
-        $hasErrors = false;
-
-        foreach ($value as &$target) {
-            $target['label'] = trim((string) $target['label']);
-            $target['urlFormat'] = trim((string) $target['urlFormat']);
-
-            if ($target['label'] === '') {
-                $target['label'] = ['value' => $target['label'], 'hasErrors' => true];
-                $hasErrors = true;
-            }
-        }
-        unset($target);
-
-        if ($hasErrors) {
-            $fail(t('All targets must have a label.'));
-        }
     }
 
     /**

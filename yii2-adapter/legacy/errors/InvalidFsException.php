@@ -7,19 +7,27 @@
 
 namespace craft\errors;
 
-/**
- * Class InvalidVolumeException
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-class InvalidFsException extends FsException
-{
+use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * Class InvalidVolumeException
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Filesystem\Exceptions\InvalidFsException} instead.
      */
-    public function getName(): string
+    class InvalidFsException extends FilesystemException
     {
-        return 'Invalid filesystem';
+        /**
+         * @inheritdoc
+         */
+        public function getName(): string
+        {
+            return 'Invalid filesystem';
+        }
     }
 }
+
+class_alias(\CraftCms\Cms\Filesystem\Exceptions\InvalidFsException::class, InvalidFsException::class);

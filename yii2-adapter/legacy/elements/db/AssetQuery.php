@@ -14,9 +14,12 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Folders;
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ImageTransforms;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
@@ -315,7 +318,7 @@ class AssetQuery extends ElementQuery
     {
         if (Db::normalizeParam($value, function($item) {
             if (is_string($item)) {
-                $item = Craft::$app->getVolumes()->getVolumeByHandle($item);
+                $item = app(Volumes::class)->getVolumeByHandle($item);
             }
             return $item instanceof Volume ? $item->id : null;
         })) {
@@ -875,7 +878,7 @@ class AssetQuery extends ElementQuery
                 $transforms = is_string($transforms) ? str($transforms)->explode(',')->all() : [$transforms];
             }
 
-            Craft::$app->getImageTransforms()->eagerLoadTransforms($elements, $transforms);
+            ImageTransforms::eagerLoadTransforms($elements, $transforms);
         }
 
         return $elements;
@@ -945,8 +948,8 @@ class AssetQuery extends ElementQuery
 
             $folderCondition = Db::parseNumericParam('assets.folderId', $this->folderId);
             if (is_numeric($this->folderId) && $this->includeSubfolders) {
-                $assetsService = Craft::$app->getAssets();
-                $descendants = $assetsService->getAllDescendantFolders($assetsService->getFolderById($this->folderId));
+                $folders = app(Folders::class);
+                $descendants = $folders->getAllDescendantFolders($folders->getFolderById($this->folderId));
                 $folderCondition = ['or', $folderCondition, ['in', 'assets.folderId', array_keys($descendants)]];
             }
             $this->subQuery->andWhere($folderCondition);
@@ -1076,7 +1079,7 @@ class AssetQuery extends ElementQuery
         $partiallyAuthorizedVolumeIds = [];
         $unauthorizedVolumeIds = [];
 
-        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
+        foreach (app(Volumes::class)->getAllVolumes() as $volume) {
             if ($user->can("$peerPermissionPrefix:$volume->uid")) {
                 $fullyAuthorizedVolumeIds[] = $volume->id;
             } elseif ($user->can("$permissionPrefix:$volume->uid")) {
@@ -1186,7 +1189,7 @@ class AssetQuery extends ElementQuery
     {
         if ($this->volumeId && $this->volumeId !== ':empty:') {
             $fieldLayouts = [];
-            $volumesService = Craft::$app->getVolumes();
+            $volumesService = app(Volumes::class);
             foreach ($this->volumeId as $volumeId) {
                 $volume = $volumesService->getVolumeById($volumeId);
                 if ($volume) {

@@ -15,7 +15,6 @@ use craft\db\Command;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
-use craft\errors\MissingComponentException;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
@@ -27,6 +26,7 @@ use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
@@ -40,6 +40,7 @@ use CraftCms\Yii2Adapter\Cache;
 use InvalidArgumentException;
 use yii\base\Event;
 use yii\base\Exception;
+use yii\db\sqlite\Schema as SqliteSchema;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
@@ -632,16 +633,21 @@ class App
             $dbConfig = Craft::$app->getConfig()->getDb();
         }
 
-        $driver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
+        $driver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : config('database.default');
 
         if ($driver === Connection::DRIVER_MYSQL) {
             $schemaConfig = [
                 'class' => MysqlSchema::class,
             ];
-        } else {
+        } elseif ($driver === Connection::DRIVER_PGSQL) {
             $schemaConfig = [
                 'class' => PgsqlSchema::class,
                 'defaultSchema' => $dbConfig->schema,
+            ];
+        } else {
+            // SQLite or other: use Yii2's built-in schema support
+            $schemaConfig = [
+                'class' => SqliteSchema::class,
             ];
         }
 
@@ -867,15 +873,12 @@ class App
             'enableCsrfValidation' => $generalConfig->enableCsrfProtection,
             'enableCsrfCookie' => $generalConfig->enableCsrfCookie,
             'csrfParam' => $generalConfig->csrfTokenName,
+            'trustedHosts' => $generalConfig->trustedHosts,
             'parsers' => [
                 'application/json' => JsonParser::class,
             ],
             'isCpRequest' => static::parseBooleanEnv('$CRAFT_CP'),
         ];
-
-        if ($generalConfig->trustedHosts !== null) {
-            $config['trustedHosts'] = $generalConfig->trustedHosts;
-        }
 
         if ($generalConfig->secureHeaders !== null) {
             $config['secureHeaders'] = $generalConfig->secureHeaders;

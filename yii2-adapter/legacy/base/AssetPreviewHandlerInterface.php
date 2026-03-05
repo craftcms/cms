@@ -9,20 +9,26 @@ namespace craft\base;
 
 use yii\base\NotSupportedException;
 
-/**
- * AssetPreviewHandlerInterface defines the common interface to be implemented by classes that provide asset previewing functionality.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4.0
- */
-interface AssetPreviewHandlerInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Returns the asset preview HTML.
+     * AssetPreviewHandlerInterface defines the common interface to be implemented by classes that provide asset previewing functionality.
      *
-     * @param array $variables Additional variables to pass to the template.
-     * @return string The preview modal HTML
-     * @throws NotSupportedException if the asset can’t be previewed
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 3.4.0
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface} instead.
      */
-    public function getPreviewHtml(array $variables = []): string;
+    interface AssetPreviewHandlerInterface
+    {
+        /**
+         * Returns the asset preview HTML.
+         *
+         * @param array $variables Additional variables to pass to the template.
+         * @return string The preview modal HTML
+         * @throws NotSupportedException if the asset can’t be previewed
+         */
+        public function getPreviewHtml(array $variables = []): string;
+    }
 }
+
+class_alias(\CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface::class, AssetPreviewHandlerInterface::class);

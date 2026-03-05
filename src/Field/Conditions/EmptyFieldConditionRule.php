@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Field\Conditions;
 
 use craft\base\conditions\BaseConditionRule;
 use craft\base\ElementInterface;
-use craft\errors\InvalidFieldException;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
+use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 

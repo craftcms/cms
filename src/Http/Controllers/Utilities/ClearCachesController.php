@@ -9,10 +9,10 @@ use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 final readonly class ClearCachesController
@@ -24,7 +24,7 @@ final readonly class ClearCachesController
         }
     }
 
-    public function clearCaches(Request $request, Application $app): JsonResponse
+    public function clearCaches(Request $request, Application $app): Response
     {
         $caches = $request->validate([
             'caches' => ['required'],
@@ -52,10 +52,10 @@ final readonly class ClearCachesController
             }
         }
 
-        return new JsonResponse;
+        return back();
     }
 
-    public function invalidateTags(Request $request): JsonResponse
+    public function invalidateTags(Request $request): Response
     {
         $tags = $request->validate([
             'tags' => ['required', 'array'],
@@ -66,6 +66,6 @@ final readonly class ClearCachesController
             TagDependency::invalidate($tag);
         }
 
-        return new JsonResponse;
+        return back();
     }
 }

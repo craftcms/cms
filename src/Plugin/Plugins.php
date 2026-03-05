@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Plugin;
 
 use Craft;
 use craft\base\Plugin;
-use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
@@ -27,6 +26,7 @@ use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
+use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -224,7 +224,7 @@ final class Plugins
             }
 
             // If we're not updating, check if the plugin’s version number changed, but not its schema version.
-            if (! app('Craft')->getIsInMaintenanceMode() && $hasVersionChanged && ! $this->isPluginUpdatePending($plugin)) {
+            if (! app()->isDownForMaintenance() && $hasVersionChanged && ! $this->isPluginUpdatePending($plugin)) {
                 // Update our record of the plugin’s version number
                 DB::table(Table::PLUGINS)
                     ->where('id', $row['id'])
@@ -670,7 +670,7 @@ final class Plugins
         }
 
         // Save the settings on the plugin
-        $pluginSettings->setAttributes($settings, false);
+        $pluginSettings->setAttributes($settings);
 
         // Validate them, now that it's a model
         if ($pluginSettings->validate() === false) {

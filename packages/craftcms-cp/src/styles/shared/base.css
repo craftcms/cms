@@ -54,4 +54,136 @@ hr {
   width: 100%;
   border: 0;
   border-top: 1px solid var(--c-color-neutral-border-subtle);
+  margin-block: var(--c-spacing-xl);
+}
+
+.index-grid {
+  display: grid;
+  gap: var(--c-spacing-md);
+
+  @container (width >= 768px) {
+    grid-template-columns:
+      clamp(calc(120rem / 16), 20%, calc(220rem / 16))
+      6fr;
+    align-items: start;
+  }
+}
+
+.index-grid__aside,
+.index-grid__main {
+  display: flex;
+  gap: var(--c-spacing-md);
+  align-items: center;
+}
+
+.index-grid--header {
+  align-items: center;
+  min-height: calc(40rem / 16);
+  padding-block: var(--c-spacing-lg);
+
+  @container (width >= 768px) {
+    padding-block-end: var(--c-spacing-md);
+  }
+}
+
+.index-grid--header .index-grid__main {
+  @container (width >= 768px) {
+    justify-self: end;
+  }
+}
+
+/**
+Prose class, wrap around WYSIWYG text or markdown text.
+Previously `.readable`
+ */
+.prose {
+  > *:first-child {
+    margin-block-start: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-block: 0.5rem;
+  }
+
+  ol,
+  ul {
+    padding-inline-start: 1.5em;
+    display: grid;
+    gap: 0.25em;
+  }
+
+  ul {
+    list-style: disc;
+  }
+}
+
+/**
+CP Table
+
+Applies some basic styling to table elements.
+
+Modify with `cp-table--compact` to reduce the vertical cell padding
+Modify with `cp-table--borderless` to remove the inline cell padding
+Modify with `cp-table--auto` to apply table-layout: auto
+ */
+.cp-table {
+  text-align: left;
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+
+  @container (width >= 840px) {
+    table-layout: fixed;
+  }
+
+  thead {
+    background-color: var(--c-color-neutral-bg-normal);
+  }
+
+  th,
+  td {
+    vertical-align: top;
+    padding-block: var(--c-spacing-md);
+    padding-inline: var(--c-spacing-md);
+  }
+
+  tr:not(:last-child) {
+    border-bottom: 1px solid var(--c-color-neutral-border-subtle);
+  }
+}
+
+.cp-table--auto {
+  table-layout: auto;
+}
+
+.cp-table--fixed {
+  table-layout: fixed;
+}
+
+.cp-table--borderless {
+  th,
+  td {
+    padding-inline: 0;
+  }
+}
+
+.cp-table--compact {
+  th,
+  td {
+    padding-block: var(--c-spacing-sm);
+  }
+}
+
+.cp-table-header,
+.cp-table-footer {
+  padding: var(--c-spacing-md);
+  background-color: var(--c-color-neutral-bg-normal);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

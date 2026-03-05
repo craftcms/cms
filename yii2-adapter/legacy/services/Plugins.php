@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\errors\InvalidLicenseKeyException;
 use craft\events\PluginEvent;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Events\DisablingPlugin;
@@ -23,6 +22,7 @@ use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
+use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins as PluginsService;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;

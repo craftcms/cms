@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User;
 
 use Craft;
-use craft\errors\ImageException;
-use craft\errors\InvalidSubpathException;
-use craft\errors\VolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Image;
 use craft\helpers\UrlHelper;
-use craft\models\Volume;
 use craft\web\Request;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Exceptions\ImageException;
+use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -22,10 +20,15 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
+use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Assets as AssetsService;
+use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -335,22 +338,21 @@ final class Users
     ): void {
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
-        if (! Image::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
+        if (! ImageHelper::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
             throw new ImageException(t('User photo must be an image that Craft can manipulate.'));
         }
 
-        $assetsService = Craft::$app->getAssets();
         $photoId = $user->photoId;
 
         event($event = new SavingUserPhoto($user, $photoId));
 
         // If the photo exists, just replace the file.
-        if ($event->photoId && ($photo = Craft::$app->getAssets()->getAssetById($event->photoId)) !== null) {
-            $assetsService->replaceAssetFile($photo, $fileLocation, $filename, $mimeType);
+        if ($event->photoId && ($photo = AssetsService::getAssetById($event->photoId)) !== null) {
+            AssetsService::replaceAssetFile($photo, $fileLocation, $filename, $mimeType);
         } else {
             $volume = $this->userPhotoVolume();
             $folderId = $this->userPhotoFolderId($user, $volume);
-            $filename = $assetsService->getNameReplacementInFolder($filename, $folderId);
+            $filename = AssetsService::getNameReplacementInFolder($filename, $folderId);
 
             $photo = new Asset;
             $photo->setScenario(Asset::SCENARIO_CREATE);
@@ -406,7 +408,7 @@ final class Users
             throw new VolumeException('No user photo volume is set.');
         }
 
-        $volume = Craft::$app->getVolumes()->getVolumeByUid($uid);
+        $volume = Volumes::getVolumeByUid($uid);
         if ($volume === null) {
             throw new VolumeException("Invalid volume UID: $uid");
         }
@@ -434,7 +436,7 @@ final class Users
             }
         }
 
-        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume)->id;
+        return Folders::ensureFolderByFullPathAndVolume($subpath, $volume)->id;
     }
 
     /**

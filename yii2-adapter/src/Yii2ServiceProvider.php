@@ -3,6 +3,7 @@
 namespace CraftCms\Yii2Adapter;
 
 use Craft;
+use craft\base\BaseFsInterface;
 use craft\base\Event as YiiEvent;
 use craft\base\FieldLayoutComponent;
 use craft\console\controllers\HelpController;
@@ -30,6 +31,7 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\linktypes\Category as CategoryLinkType;
 use craft\fields\Tags as TagsField;
+use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\gql\ArgumentManager;
 use craft\gql\base\ElementArguments;
 use craft\gql\ElementQueryConditionBuilder;
@@ -56,12 +58,14 @@ use craft\services\Drafts;
 use craft\services\Elements;
 use craft\services\Entries;
 use craft\services\Fields;
+use craft\services\Fs;
 use craft\services\Gc;
 use craft\services\Gql;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig as LegacyProjectConfig;
 use craft\services\Revisions;
 use craft\services\Routes;
+use craft\services\Search as LegacySearch;
 use craft\services\Sites;
 use craft\services\Structures;
 use craft\services\SystemMessages;
@@ -69,15 +73,20 @@ use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Users;
 use craft\services\Utilities;
+use craft\services\Volumes;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
+use craft\web\twig\Extension;
 use craft\web\twig\GlobalsExtension;
 use craft\web\twig\variables\Cp;
 use craft\web\twig\variables\Cp as CpVariable;
 use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\Data\FolderCriteria as AssetFolderCriteria;
+use CraftCms\Cms\Asset\Data\Volume as AssetVolume;
+use CraftCms\Cms\Asset\Data\VolumeFolder as AssetVolumeFolder;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
@@ -93,6 +102,9 @@ use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\Events\DefineNativeFields;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
+use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Filesystem\Data\FsListing as FilesystemFsListing;
+use CraftCms\Cms\Filesystem\Filesystems\Filesystem as FilesystemComponent;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
@@ -103,6 +115,8 @@ use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -123,27 +137,32 @@ use CraftCms\Yii2Adapter\Mixins\ElementMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
+use CraftCms\Yii2Adapter\Mixins\VolumeMixin;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Console\Application as ConsoleApplication;
+use Illuminate\Filesystem\FilesystemAdapter as LaravelFilesystemAdapter;
+use Illuminate\Filesystem\FilesystemManager;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
+use League\Flysystem\Filesystem as Flysystem;
+use League\Flysystem\PathPrefixing\PathPrefixedAdapter;
 use PDOException;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
+use Throwable;
 use yii\BaseYii;
 use yii\caching\TagDependency as YiiTagDependency;
 use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\IntlMessageFormatter;
 use Yiisoft\Translator\Message\Php\MessageSource;
-use Yiisoft\Translator\Translator;
-
 use function CraftCms\Cms\t;
 
 class Yii2ServiceProvider extends ServiceProvider
@@ -154,10 +173,112 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->registerConstants();
         $this->registerMacros();
         $this->registerLegacyApp();
+        $this->registerFilesystemBridgeDriver();
 
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
         $this->setLaravelDefaults();
+    }
+
+    private function registerFilesystemBridgeDriver(): void
+    {
+        $this->app->make(FilesystemManager::class)->extend(LegacyFsFlysystemAdapter::DISK_DRIVER, function($app, array $config) {
+            $handle = $config['fsHandle'] ?? null;
+            if (!is_string($handle) || $handle === '') {
+                throw new InvalidArgumentException('Missing `fsHandle` configuration for craft-fs-bridge disk.');
+            }
+
+            $filesystem = Filesystems::getFilesystemByHandle($handle);
+            if (!$filesystem instanceof FsInterface) {
+                throw new InvalidArgumentException("Craft filesystem [$handle] is not registered.");
+            }
+
+            try {
+                $diskConfig = $filesystem->getDiskConfig();
+                if (
+                    ($diskConfig['driver'] ?? null) === LegacyFsFlysystemAdapter::DISK_DRIVER &&
+                    ($diskConfig['fsHandle'] ?? null) === $handle
+                ) {
+                    if (!$filesystem instanceof BaseFsInterface) {
+                        throw new InvalidArgumentException(
+                            "Filesystem [$handle] does not provide a usable Laravel disk configuration.",
+                        );
+                    }
+
+                    return $this->legacyFilesystemAdapter($filesystem, array_merge($config, $diskConfig));
+                }
+
+                $disk = $app->make(FilesystemManager::class)->build($diskConfig);
+
+                if (!$disk instanceof LaravelFilesystemAdapter) {
+                    throw new InvalidArgumentException("Filesystem [$handle] returned an invalid disk configuration.");
+                }
+
+                return $this->filesystemWithPrefix($disk, $config);
+            } catch (Throwable $e) {
+                if (!$filesystem instanceof BaseFsInterface) {
+                    throw new InvalidArgumentException(
+                        "Filesystem [$handle] does not provide a usable Laravel disk configuration.",
+                        previous: $e,
+                    );
+                }
+
+                Deprecator::log(
+                    sprintf('filesystem-bridge-fallback:%s', $filesystem::class),
+                    sprintf(
+                        'Filesystem [%s] is using a legacy operation fallback. Implement `%s::getDiskConfig()` so it can be used as a native Laravel disk.',
+                        $handle,
+                        $filesystem::class,
+                    ),
+                );
+
+                return $this->legacyFilesystemAdapter($filesystem, $config);
+            }
+        });
+    }
+
+    private function filesystemWithPrefix(LaravelFilesystemAdapter $disk, array $config): LaravelFilesystemAdapter
+    {
+        $prefix = $config['prefix'] ?? null;
+        if (!is_string($prefix) || $prefix === '') {
+            return $disk;
+        }
+
+        $flysystemAdapter = new PathPrefixedAdapter($disk->getAdapter(), $prefix);
+
+        return new LaravelFilesystemAdapter(
+            new Flysystem($flysystemAdapter, Arr::only($config, [
+                'directory_visibility',
+                'disable_asserts',
+                'retain_visibility',
+                'temporary_url',
+                'url',
+                'visibility',
+            ])),
+            $flysystemAdapter,
+            array_merge($disk->getConfig(), $config),
+        );
+    }
+
+    private function legacyFilesystemAdapter(BaseFsInterface $filesystem, array $config): LaravelFilesystemAdapter
+    {
+        $adapter = new LegacyFsFlysystemAdapter($filesystem);
+        $flysystemAdapter = !empty($config['prefix'])
+            ? new PathPrefixedAdapter($adapter, $config['prefix'])
+            : $adapter;
+
+        return new LaravelFilesystemAdapter(
+            new Flysystem($flysystemAdapter, Arr::only($config, [
+                'directory_visibility',
+                'disable_asserts',
+                'retain_visibility',
+                'temporary_url',
+                'url',
+                'visibility',
+            ])),
+            $flysystemAdapter,
+            $config,
+        );
     }
 
     protected function registerMultiEnvironmentConfigs(): void
@@ -238,9 +359,17 @@ class Yii2ServiceProvider extends ServiceProvider
         Element::mixin(new ElementMixin());
         Field::mixin(new ValidateMixin());
         FieldLayoutComponent::mixin(new ValidateMixin());
+        FilesystemComponent::mixin(new ValidateMixin());
         ElementQuery::mixin(new ElementQueryMixin());
         User::mixin(new UserMixin());
+        AssetFolderCriteria::mixin(new ValidateMixin());
+        AssetVolume::mixin(new ValidateMixin());
+        AssetVolume::mixin(new VolumeMixin());
+        AssetVolumeFolder::mixin(new ValidateMixin());
+        FilesystemFsListing::mixin(new ValidateMixin());
         Widget::mixin(new ValidateMixin());
+        \CraftCms\Cms\Image\Data\ImageTransform::mixin(new ValidateMixin());
+        \CraftCms\Cms\Image\Data\ImageTransformIndex::mixin(new ValidateMixin());
     }
 
     protected function registerLegacyApp(): void
@@ -341,8 +470,7 @@ class Yii2ServiceProvider extends ServiceProvider
         if (is_dir(base_path('translations'))) {
             Deprecator::log('translations-path', 'Storing site translations in `/translations` is deprecated. Rename the folder to `lang` instead.');
 
-            $translator = app(Translator::class);
-            $translator->addCategorySources(new CategorySource(
+            I18N::addCategorySources(new CategorySource(
                 'site',
                 new MessageSource(base_path('translations')),
                 new IntlMessageFormatter(),
@@ -352,8 +480,7 @@ class Yii2ServiceProvider extends ServiceProvider
         /**
          * Load legacy translations
          */
-        $translator = app(Translator::class);
-        $translator->addCategorySources(new CategorySource(
+        I18N::addCategorySources(new CategorySource(
             'yii2-adapter',
             new MessageSource(dirname(__DIR__) . '/resources/translations'),
             new IntlMessageFormatter(),
@@ -513,7 +640,9 @@ class Yii2ServiceProvider extends ServiceProvider
         Drafts::registerEvents();
         Entries::registerEvents();
         Fields::registerEvents();
+        Fs::registerEvents();
         Gc::registerEvents();
+        LegacySearch::registerEvents();
         Utilities::registerEvents();
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();
@@ -527,6 +656,9 @@ class Yii2ServiceProvider extends ServiceProvider
         UserPermissions::registerEvents();
         Users::registerEvents();
         View::registerEvents();
+        Volumes::registerEvents();
+        \craft\services\ImageTransforms::registerEvents();
+        \craft\imagetransforms\ImageTransformer::registerEvents();
 
         /**
          * Controllers
@@ -977,6 +1109,9 @@ class Yii2ServiceProvider extends ServiceProvider
 
             Twig::registerExtension(new GlobalsExtension(), TemplateMode::Site);
         }
+
+        // Legacy `view` global remains available through the adapter layer only.
+        Twig::registerExtension(new Extension());
 
         Event::listen(function(DefineNativeFields $event) {
             switch ($event->fieldLayout->type) {

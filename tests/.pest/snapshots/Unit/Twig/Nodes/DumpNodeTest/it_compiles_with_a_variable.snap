@@ -1,0 +1,2 @@
+// line 1
+craft\debug\DumpPanel::dump(($context["entry"] ?? null), '', 1);

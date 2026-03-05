@@ -7,6 +7,7 @@ namespace CraftCms\Cms\ProjectConfig;
 use Craft;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\ProjectConfig\Commands\ApplyCommand;
 use CraftCms\Cms\ProjectConfig\Commands\DiffCommand;
 use CraftCms\Cms\ProjectConfig\Commands\ExportCommand;
@@ -19,12 +20,14 @@ use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\ImageTransforms;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Support\Facades\Event;
@@ -81,14 +84,18 @@ final class ProjectConfigServiceProvider extends ServiceProvider
             ->onAdd(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleChangedField($event))
             ->onUpdate(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleChangedField($event))
             ->onRemove(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleDeletedField($event))
+            // Filesystems
+            ->onAdd(ProjectConfig::PATH_FS.'.{uid}', fn (ConfigEvent $event) => app(Filesystems::class)->handleChangedFilesystem($event))
+            ->onUpdate(ProjectConfig::PATH_FS.'.{uid}', fn (ConfigEvent $event) => app(Filesystems::class)->handleChangedFilesystem($event))
+            ->onRemove(ProjectConfig::PATH_FS.'.{uid}', fn (ConfigEvent $event) => app(Filesystems::class)->handleDeletedFilesystem($event))
             // Volumes
-            ->onAdd(ProjectConfig::PATH_VOLUMES.'.{uid}', $this->proxy('volumes', 'handleChangedVolume'))
-            ->onUpdate(ProjectConfig::PATH_VOLUMES.'.{uid}', $this->proxy('volumes', 'handleChangedVolume'))
-            ->onRemove(ProjectConfig::PATH_VOLUMES.'.{uid}', $this->proxy('volumes', 'handleDeletedVolume'))
+            ->onAdd(ProjectConfig::PATH_VOLUMES.'.{uid}', fn (ConfigEvent $event) => Volumes::handleChangedVolume($event))
+            ->onUpdate(ProjectConfig::PATH_VOLUMES.'.{uid}', fn (ConfigEvent $event) => Volumes::handleChangedVolume($event))
+            ->onRemove(ProjectConfig::PATH_VOLUMES.'.{uid}', fn (ConfigEvent $event) => Volumes::handleDeletedVolume($event))
             // Transforms
-            ->onAdd(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', $this->proxy('imageTransforms', 'handleChangedTransform'))
-            ->onUpdate(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', $this->proxy('imageTransforms', 'handleChangedTransform'))
-            ->onRemove(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', $this->proxy('imageTransforms', 'handleDeletedTransform'))
+            ->onAdd(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', fn (ConfigEvent $event) => ImageTransforms::handleChangedTransform($event))
+            ->onUpdate(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', fn (ConfigEvent $event) => ImageTransforms::handleChangedTransform($event))
+            ->onRemove(ProjectConfig::PATH_IMAGE_TRANSFORMS.'.{uid}', fn (ConfigEvent $event) => ImageTransforms::handleDeletedTransform($event))
             // Site groups
             ->onAdd(ProjectConfig::PATH_SITE_GROUPS.'.{uid}', fn (ConfigEvent $event) => SiteGroups::handleChangedGroup($event))
             ->onUpdate(ProjectConfig::PATH_SITE_GROUPS.'.{uid}', fn (ConfigEvent $event) => SiteGroups::handleChangedGroup($event))

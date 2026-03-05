@@ -1,28 +1,15 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\base\imagetransforms;
 
-use craft\models\ImageTransform;
-use CraftCms\Cms\Asset\Elements\Asset;
-
-/**
- * EagerLoadTransformerInterface defines the common interface to be implemented by all image drivers that can eager-load transforms.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
-interface EagerImageTransformerInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Eager-loads the given transforms for the given assets.
-     *
-     * @param ImageTransform[] $transforms
-     * @param Asset[] $assets
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface} instead.
      */
-    public function eagerLoadTransforms(array $transforms, array $assets): void;
+    interface EagerImageTransformerInterface extends \CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Image\Contracts\EagerImageTransformerInterface::class, EagerImageTransformerInterface::class);

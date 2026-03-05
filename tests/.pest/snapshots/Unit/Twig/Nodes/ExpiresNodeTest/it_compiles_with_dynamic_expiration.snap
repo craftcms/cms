@@ -1,0 +1,3 @@
+$expiration = // line 1
+($context["expiresAt"] ?? null);
+$duration = craft\helpers\DateTimeHelper::toDateTime($expiration)->getTimestamp() - craft\helpers\DateTimeHelper::currentTimeStamp();Craft::$app->getResponse()->setCacheHeaders($duration);

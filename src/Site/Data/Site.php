@@ -4,26 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Site\Data;
 
-use craft\web\twig\AllowedInSandbox;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Chippable;
-use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Site\Validation\SiteRules;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\Locale;
-use CraftCms\Cms\Validation\Rules\HandleRule;
-use CraftCms\Cms\Validation\Rules\LanguageRule;
+use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
+use CraftCms\Cms\Validation\Attributes\Ruleset;
 use DateTimeInterface;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Unique;
+use Override;
 use RuntimeException;
 use Stringable;
 
 use function CraftCms\Cms\t;
 
+#[Ruleset(SiteRules::class)]
 final class Site extends Component implements Chippable, Stringable
 {
     private ?string $_baseUrl = null;
@@ -89,34 +87,6 @@ final class Site extends Component implements Chippable, Stringable
     public static function get(int|string $id): ?static
     {
         return Sites::getSiteById($id);
-    }
-
-    #[\Override]
-    public function getRules(): array
-    {
-        return [
-            'language' => [
-                'required',
-                new LanguageRule(false, parseValue: true),
-            ],
-            'handle' => [
-                'required',
-                'string',
-                new HandleRule(['id', 'dateCreated', 'dateUpdated', 'uid', 'title']),
-                Rule::when(
-                    Cms::isInstalled(),
-                    [new Unique(Table::SITES, 'handle')->ignore($this->id)->withoutTrashed('dateDeleted')],
-                ),
-            ],
-            'name' => [
-                'required',
-                'string',
-                Rule::when(
-                    Cms::isInstalled(),
-                    [new Unique(Table::SITES, 'name')->ignore($this->id)->withoutTrashed('dateDeleted')],
-                ),
-            ],
-        ];
     }
 
     public function getId(): ?int
@@ -258,7 +228,7 @@ final class Site extends Component implements Chippable, Stringable
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function toArray(array $fields = [], array $expand = [], bool $recursive = true): array
     {
         return array_merge(parent::toArray($fields, $expand, $recursive), [

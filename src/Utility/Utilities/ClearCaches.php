@@ -6,12 +6,12 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\helpers\FileHelper;
-use craft\web\assets\clearcaches\ClearCachesAsset;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\AssetRegistry;
+use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
 use CraftCms\Cms\Utility\Events\RegisterTagOptions;
 use CraftCms\Cms\Utility\Utility;
@@ -23,7 +23,6 @@ use Override;
 use Symfony\Component\Filesystem\Path;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * ClearCaches represents a ClearCaches dashboard widget.
@@ -58,7 +57,7 @@ final class ClearCaches extends Utility
             $cacheOptions[] = [
                 'label' => $cacheOption['label'],
                 'value' => $cacheOption['key'],
-                'info' => $cacheOption['info'] ?? null,
+                'info' => isset($cacheOption['info']) ? Str::markdown($cacheOption['info']) : null,
             ];
         }
 
@@ -70,14 +69,10 @@ final class ClearCaches extends Utility
         }
 
         $cacheOptions = Arr::sort($cacheOptions, 'label');
-        $view = Craft::$app->getView();
 
-        $view->registerAssetBundle(ClearCachesAsset::class);
-        AssetRegistry::js('new Craft.ClearCachesUtility(\'clear-caches\');');
-
-        return template('_components/utilities/ClearCaches', [
-            'cacheOptions' => $cacheOptions,
-            'tagOptions' => $tagOptions,
+        return Html::tag('ClearCaches', attributes: [
+            ':cacheOptions' => $cacheOptions,
+            ':tagOptions' => $tagOptions,
         ]);
     }
 

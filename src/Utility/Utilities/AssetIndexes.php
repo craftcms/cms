@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use Craft;
 use craft\helpers\App;
-use craft\models\Volume;
-use craft\web\assets\assetindexes\AssetIndexesAsset;
+use CraftCms\Cms\Asset\Data\Volume;
+use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Events\ListVolumes;
@@ -16,7 +16,6 @@ use CraftCms\Cms\Utility\Utility;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
@@ -48,7 +47,7 @@ final class AssetIndexes extends Utility
      */
     public static function volumes(): array
     {
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
+        $volumes = Volumes::getAllVolumes()->all();
 
         event($event = new ListVolumes($volumes));
 
@@ -67,25 +66,14 @@ final class AssetIndexes extends Utility
             ];
         }
 
-        $view = Craft::$app->getView();
-        $checkboxSelectHtml = template('_includes/forms/checkboxSelect', [
-            'class' => 'first',
-            'name' => 'volumes',
-            'options' => $volumeOptions,
-            'showAllOption' => true,
-            'values' => '*',
-        ]);
-
-        $view->registerAssetBundle(AssetIndexesAsset::class);
         $dateFormat = I18N::getLocale()->getDateTimeFormat('short', Locale::FORMAT_PHP);
+        $existingIndexingSessions = AssetIndexer::getExistingIndexingSessions();
 
-        $existingIndexingSessions = Craft::$app->getAssetIndexer()->getExistingIndexingSessions();
-
-        return template('_components/utilities/AssetIndexes', [
-            'existingSessions' => $existingIndexingSessions,
-            'checkboxSelectHtml' => $checkboxSelectHtml,
+        return Html::tag('AssetIndexes', attributes: [
+            ':existingSessions' => $existingIndexingSessions,
+            ':volumeOptions' => $volumeOptions,
             'dateFormat' => $dateFormat,
-            'isEphemeral' => App::isEphemeral(),
+            ':isEphemeral' => App::isEphemeral(),
         ]);
     }
 }

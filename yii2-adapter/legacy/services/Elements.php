@@ -20,7 +20,6 @@ use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\errors\ElementNotFoundException;
-use craft\errors\UnsupportedSiteException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\BulkOpEvent;
 use craft\events\DeleteElementEvent;
@@ -48,6 +47,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Events\AfterPropagate;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Models\ElementSiteSettings;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -63,10 +63,12 @@ use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Structure\Models\StructureElement as StructureElementModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -1514,6 +1516,7 @@ class Elements extends Component
         $newAttributes += [
             'id' => $canonical->id,
             'uid' => $canonical->uid,
+            'canonicalId' => $canonical->getCanonicalId(),
             'root' => $canonical->root,
             'lft' => $canonical->lft,
             'rgt' => $canonical->rgt,
@@ -2853,10 +2856,9 @@ class Elements extends Component
                 $this->_cascadeDeleteDraftsAndRevisions($element->id, false);
 
                 // Restore its search indexes
-                $searchService = Craft::$app->getSearch();
-                $searchService->indexElementAttributes($element);
+                Search::indexElementAttributes($element);
                 foreach ($siteElements as $siteElement) {
-                    $searchService->indexElementAttributes($siteElement);
+                    Search::indexElementAttributes($siteElement);
                 }
 
                 // Invalidate caches
@@ -3198,7 +3200,7 @@ class Elements extends Component
             },
             $str,
             -1,
-            $count
+            $count,
         );
 
         if ($count === 0) {
@@ -4018,15 +4020,15 @@ class Elements extends Component
                     $elementModel->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
                     $elementModel->enabled = (bool)$element->enabled;
                     $elementModel->archived = (bool)$element->archived;
-                    $elementModel->dateLastMerged = DbHelper::prepareDateForDb($element->dateLastMerged);
-                    $elementModel->dateDeleted = DbHelper::prepareDateForDb($element->dateDeleted);
+                    $elementModel->dateLastMerged = Query::prepareDateForDb($element->dateLastMerged);
+                    $elementModel->dateDeleted = Query::prepareDateForDb($element->dateDeleted);
 
                     if ($isNewElement) {
                         if (isset($element->dateCreated)) {
-                            $elementModel->dateCreated = DbHelper::prepareValueForDb($element->dateCreated);
+                            $elementModel->dateCreated = Query::prepareDateForDb($element->dateCreated);
                         }
                         if (isset($element->dateUpdated)) {
-                            $elementModel->dateUpdated = DbHelper::prepareValueForDb($element->dateUpdated);
+                            $elementModel->dateUpdated = Query::prepareDateForDb($element->dateUpdated);
                         }
                     } elseif (!$element->resaving || $forceTouch) {
                         // Force a new dateUpdated value
@@ -4243,7 +4245,6 @@ class Elements extends Component
                             if (is_string($content)) {
                                 $content = $content !== '' ? Json::decode($content) : [];
                             }
-                            $view = Craft::$app->getView();
                             $generatedFieldValues = [];
                             $updated = false;
 
@@ -4306,10 +4307,13 @@ class Elements extends Component
             if (!$element->propagating) {
                 // Delete the rows that don't need to be there anymore
                 if (!$isNewElement) {
-                    DB::table(Table::ELEMENTS_SITES)
+                    $deleteCondition = fn(Builder $query) => $query
                         ->where('elementId', $element->id)
-                        ->whereNotIn('siteId', array_keys($supportedSites))
-                        ->delete();
+                         ->whereNotIn('siteId', array_keys($supportedSites));
+
+                    DB::table(Table::ELEMENTS_SITES)->where($deleteCondition)->delete();
+                    DB::table(Table::SEARCHINDEX)->where($deleteCondition)->delete();
+                    DB::table(Table::SEARCHINDEXQUEUE)->where($deleteCondition)->delete();
                 }
 
                 // Invalidate any caches involving this element
@@ -4403,9 +4407,9 @@ class Elements extends Component
         ?bool $updateForOwner = null,
     ): void {
         if ($element->updateSearchIndexImmediately ?? Craft::$app->getRequest()->getIsConsoleRequest()) {
-            Craft::$app->getSearch()->indexElementAttributes($element, $searchableDirtyFields);
+            Search::indexElementAttributes($element, $searchableDirtyFields);
         } else {
-            Craft::$app->getSearch()->queueIndexElement($element, $searchableDirtyFields);
+            Search::queueIndexElement($element, $searchableDirtyFields);
         }
 
         $updateForOwner = (
@@ -4683,7 +4687,7 @@ class Elements extends Component
                     "e.$fk",
                     DB::table(new Alias($table, 't'))
                         ->select('t.id')
-                        ->where('t.canonicalId', $canonicalId)
+                        ->where('t.canonicalId', $canonicalId),
                 )
                 ->update([
                     'dateDeleted' => $delete ? now() : null,

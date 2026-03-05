@@ -43,22 +43,6 @@
 
 {# The control panel only supports queue components that implement QueueInterface #}
 {% set queue = craft.app.queue %}
-{% js %}
-{% if queue is instance of("craft\\queue\\QueueInterface") %}
-    window.bootedCallbacks.push(({$queue}) => {
-      Craft.cp.QueueService = $queue;
-
-      Craft.cp.setJobInfo({{ queue.getJobInfo(100)|json_encode|raw }}, false);
-      {% if queue.getHasReservedJobs() %}
-          Craft.cp.trackJobProgress(true);
-      {% elseif queue.getHasWaitingJobs() %}
-          Craft.cp.runQueue();
-      {% endif %}
-    });
-{% else %}
-    Craft.cp.enableQueue = false;
-{% endif %}
-{% endjs %}
 
 {% set sidebarState = craft.app.request.rawCookies.value("Craft-#{craft.app.systemUid}_sidebar") ?? 'expanded' %}
 {% set bodyAttributes = {

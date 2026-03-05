@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Assets\IndexController as AssetsIndexController;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\Controllers\Auth\SetPasswordController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
@@ -12,12 +13,13 @@ use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
-use CraftCms\Cms\Http\Controllers\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
+use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
 use CraftCms\Cms\Http\Controllers\Settings\RoutesController;
 use CraftCms\Cms\Http\Controllers\Settings\SectionsController;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
@@ -25,6 +27,7 @@ use CraftCms\Cms\Http\Controllers\Settings\SiteGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\SitesController;
 use CraftCms\Cms\Http\Controllers\Settings\UserGroupsController;
 use CraftCms\Cms\Http\Controllers\Settings\UserSettingsController;
+use CraftCms\Cms\Http\Controllers\Settings\VolumesController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Users\AddressesController;
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
@@ -59,7 +62,9 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     Route::get('dashboard', DashboardController::class);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
-    Route::get('utilities/{id}', [UtilitiesController::class, 'show']);
+    Route::get('utilities/{id}/{extra?}', [UtilitiesController::class, 'show'])
+        ->where('extra', '.*')
+        ->name('utilities.show');
 
     Route::middleware(RequireAdminChanges::class)->group(function () {
         Route::view('settings/addresses', 'settings/addresses/_fields');
@@ -97,6 +102,12 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     });
 
     Route::get('users/{slug?}', [UsersController::class, 'index']);
+
+    /**
+     * Assets
+     */
+    Route::get('assets/{defaultSource?}', AssetsIndexController::class)
+        ->where('defaultSource', '.*');
 
     /**
      * Routes that require admin, but do not require admin changes
@@ -149,6 +160,14 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::get('settings/sections', [SectionsController::class, 'index']);
         Route::middleware(RequireAdminChanges::class)->get('settings/sections/new', [SectionsController::class, 'create']);
         Route::get('settings/sections/{section}', [SectionsController::class, 'edit']);
+
+        // Volumes
+        Route::get('settings/assets', [VolumesController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/assets/volumes/new', [VolumesController::class, 'create']);
+        Route::get('settings/assets/volumes/{volumeId}', [VolumesController::class, 'edit'])->whereNumber('volumeId');
+        Route::get('settings/assets/transforms', [ImageTransformsController::class, 'index']);
+        Route::middleware(RequireAdminChanges::class)->get('settings/assets/transforms/new', [ImageTransformsController::class, 'create']);
+        Route::get('settings/assets/transforms/{transformHandle}', [ImageTransformsController::class, 'edit']);
 
         // Sites
         Route::get('settings/sites', [SitesController::class, 'index'])

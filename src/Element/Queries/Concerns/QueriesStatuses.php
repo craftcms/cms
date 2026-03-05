@@ -37,7 +37,7 @@ trait QueriesStatuses
     {
         $this->beforeQuery(function (ElementQuery $elementQuery) {
             if ($elementQuery->archived) {
-                $elementQuery->subQuery->where('elements.archived', true);
+                $elementQuery->subQuery->whereBool('elements.archived', true);
 
                 return;
             }
@@ -47,7 +47,7 @@ trait QueriesStatuses
             // only set archived=false if 'archived' doesn't show up in the status param
             // (_applyStatusParam() will normalize $this->status to an array if applicable)
             if (! is_array($elementQuery->status) || ! in_array($elementQuery->elementType::STATUS_ARCHIVED, $elementQuery->status)) {
-                $elementQuery->subQuery->where('elements.archived', false);
+                $elementQuery->subQuery->whereBool('elements.archived', false);
             }
         });
     }
@@ -167,9 +167,9 @@ trait QueriesStatuses
         $status = strtolower($status);
 
         return match ($status) {
-            Element::STATUS_ENABLED => fn (Builder $q) => $q->where('elements.enabled', true)->where('elements_sites.enabled', true),
-            Element::STATUS_DISABLED => fn (Builder $q) => $q->where('elements.enabled', false)->orWhere('elements_sites.enabled', false),
-            Element::STATUS_ARCHIVED => fn (Builder $q) => $q->where('elements.archived', true),
+            Element::STATUS_ENABLED => fn (Builder $q) => $q->whereBool('elements.enabled', true)->whereBool('elements_sites.enabled', true),
+            Element::STATUS_DISABLED => fn (Builder $q) => $q->whereBool('elements.enabled', false)->orWhereBool('elements_sites.enabled', false),
+            Element::STATUS_ARCHIVED => fn (Builder $q) => $q->whereBool('elements.archived', true),
             default => throw new QueryAbortedException('Unsupported status: '.$status),
         };
     }

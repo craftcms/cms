@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\elements\GlobalSet;
-use craft\errors\MissingComponentException;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\MailerHelper;
@@ -21,6 +20,7 @@ use craft\models\MailSettings;
 use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -229,11 +229,6 @@ class SystemSettingsController extends Controller
     {
         $view = $this->getView();
         $view->registerAssetBundle(AdminTableAsset::class);
-        $view->registerTranslations('yii2-adapter', [
-            'Global Set Name',
-            'No global sets exist yet.',
-        ]);
-
         return $this->rendertemplate('yii2-adapter/settings/globals/_index', [
             'title' => t('Globals', category: 'yii2-adapter'),
             'crumbs' => [

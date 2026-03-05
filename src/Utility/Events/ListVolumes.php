@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Events;
 
-use craft\models\Volume;
+use CraftCms\Cms\Asset\Data\Volume;
 
 /**
  * @event ListVolumes The event that is triggered when listing the available volumes to index.

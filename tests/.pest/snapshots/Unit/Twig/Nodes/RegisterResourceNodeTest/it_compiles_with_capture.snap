@@ -1,0 +1,4 @@
+// line 1
+ob_start();
+yield "body { color: red; }";
+\Craft::$app->getView()->registerCss(ob_get_clean());

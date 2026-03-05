@@ -17,6 +17,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0
  */
 class ImageTransformerOperationEvent extends Event
 {

@@ -26,6 +26,12 @@ uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
 ```
 
+### Yii2 adapter compatibility tests
+
+- Put backwards-compatibility tests in `yii2-adapter/tests-laravel/`.
+- These include assertions for legacy aliases and adapter mixins (for example `ValidateMixin` helpers like `hasErrors()`).
+- Keep `tests/Feature/` and `tests/Unit/` focused on non-adapter behavior in the core codebase.
+
 ### UnitTestCase (`tests/Unit/`)
 
 `CraftCms\Cms\Tests\UnitTestCase` extends `Orchestra\Testbench\TestCase` and provides only the Laravel service container. It sets the edition to Pro, template mode to Cp, locale, and timezone — but does **not** touch the database.

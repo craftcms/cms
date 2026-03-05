@@ -6,12 +6,6 @@
 {% set tokens = craft.app.gql.tokens %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
-{% do view.registerTranslations('app', [
-    'No GraphQL tokens exist yet.',
-    'Never',
-    'Last Used',
-    'Expires',
-]) %}
 
 {% block actionButton %}
     <a class="btn submit add icon" href="{{ url('graphql/tokens/new') }}">{{ "New token"|t('app') }}</a>
