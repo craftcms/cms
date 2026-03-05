@@ -17,6 +17,7 @@ use Twig\Node\Node;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
+ * @deprecated in 4.17.9
  */
 class FallbackNameExpression extends ContextVariable
 {
