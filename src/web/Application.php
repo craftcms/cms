@@ -9,7 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ApplicationTrait;
-use craft\db\Query;
 use craft\db\Table;
 use craft\debug\DeprecatedPanel;
 use craft\debug\DumpPanel;
@@ -38,7 +37,6 @@ use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
-use yii\db\Exception as DbException;
 use yii\debug\Module as YiiDebugModule;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
@@ -523,25 +521,11 @@ class Application extends \yii\web\Application
         }
 
         $resourceUri = substr($requestPath, strlen($resourceBaseUri));
-        $slash = strpos($resourceUri, '/');
-        $hash = substr($resourceUri, 0, $slash);
-        $sourcePath = $this->resourceSourcePathByHash($hash);
 
-        if (!$sourcePath) {
-            return;
-        }
-
-        $filePath = substr($resourceUri, strlen($hash) + 1);
-        if (!Path::ensurePathIsContained($filePath)) {
-            throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
-        }
-
-        // Publish the directory
-        [$publishedDir] = $this->getAssetManager()->publish(Craft::getAlias($sourcePath));
-
-        $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
-        if (!file_exists($publishedPath)) {
-            throw new NotFoundHttpException("$filePath does not exist.");
+        try {
+            $publishedPath = App::resourcePathByUri($resourceUri);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), previous: $e);
         }
 
         $response = $this->getResponse();
@@ -556,20 +540,6 @@ class Application extends \yii\web\Application
             'inline' => true,
         ]);
         $this->end();
-    }
-
-    private function resourceSourcePathByHash(string $hash): string|false
-    {
-        try {
-            return (new Query())
-                ->select(['path'])
-                ->from(Table::RESOURCEPATHS)
-                ->where(['hash' => $hash])
-                ->scalar();
-        } catch (DbException) {
-            // Craft isn't installed yet. See if it's cached as a fallback.
-            return Craft::$app->getCache()->get(Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash));
-        }
     }
 
     /**
