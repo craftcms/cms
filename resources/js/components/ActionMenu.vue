@@ -37,7 +37,13 @@
 
 <template>
   <craft-action-menu>
-    <craft-button type="button" slot="invoker" icon size="small">
+    <craft-button
+      type="button"
+      slot="invoker"
+      icon
+      size="small"
+      appearance="plain"
+    >
       <craft-icon :name="icon" :label="label"></craft-icon>
     </craft-button>
 

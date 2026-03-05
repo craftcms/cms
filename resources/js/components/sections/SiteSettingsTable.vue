@@ -66,7 +66,7 @@
         header: t('Enabled'),
         size: 80,
         meta: {
-          cellClass: 'bg-[var(--c-color-neutral-fill-normal)]',
+          cellClass: 'bg-[var(--c-color-neutral-fill-quiet)]',
         },
         label: t('Enabled'),
       }),

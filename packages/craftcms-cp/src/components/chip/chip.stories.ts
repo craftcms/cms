@@ -1,6 +1,7 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 
 import {html} from 'lit';
+import {Color} from '../../constants/colors';
 
 import './chip.js';
 import '../status/status.js';
@@ -70,5 +71,20 @@ export const SuffixOnly: Story = {
       </craft-button>
       This is a chip
     </craft-chip>
+  `,
+};
+
+export const Colors: Story = {
+  render: () => html`
+    <div class="stage">
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem"
+      >
+        ${Object.entries(Color).map(
+          ([name, value]) =>
+            html`<craft-chip data-color="${value}"> ${name} </craft-chip>`
+        )}
+      </div>
+    </div>
   `,
 };

@@ -6,37 +6,37 @@ export default css`
   }
 
   .action-item {
+    border-color: var(--c-color-border-quiet, transparent);
+    color: var(--c-color-on-quiet, inherit);
+    background-color: transparent;
+
     font: inherit;
     text-align: left;
-    display: grid;
+    display: flex;
     width: 100%;
-    gap: var(--c-spacing-md);
-    grid-template-columns: auto 1fr auto;
-    align-items: start;
+    align-items: center;
     text-decoration: none;
-    color: inherit;
     padding-inline: var(--c-spacing-sm);
     padding-block: var(--c-spacing-sm);
     border-radius: var(--c-radius-md);
     position: relative;
-    background-color: transparent;
-    border: 1px solid transparent;
-  }
-
-  .action-item--checkbox {
-    grid-template-columns: 1rem auto 1fr auto;
+    border-width: 0;
+    border-style: solid;
   }
 
   @media (hover: hover) {
     :host(:hover) .action-item:not(:disabled) {
-      background-color: var(--c-color-accent-fill-quiet);
-      color: var(--c-color-accent-on-quiet);
+      background-color: var(
+        --c-color-fill-quiet,
+        var(--c-color-neutral-fill-quiet)
+      );
+      color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
     }
   }
 
   :host([active]) .action-item {
-    background-color: var(--c-color-accent-fill-loud);
-    color: var(--c-color-accent-on-loud);
+    background-color: var(--c-color-fill-loud);
+    color: var(--c-color-on-loud);
   }
 
   .action-item:disabled {
@@ -47,18 +47,35 @@ export default css`
     cursor: pointer;
   }
 
-  .action-item__prefix,
+  .action-item__check,
+  .action-item__icon,
   .action-item__suffix {
-    height: 1lh;
+    min-height: 1lh;
   }
 
-  .action-item__prefix {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  .action-item__check,
+  .action-item__icon {
+    min-width: 1lh;
+    display: inline-grid;
+    place-items: center;
+    align-self: start;
+  }
+
+  .action-item__check {
     aspect-ratio: 1;
-    width: 100%;
+  }
+
+  .action-item__suffix {
+    align-self: center;
+  }
+
+  .action-item__label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-inline: var(--c-spacing-sm);
   }
 
   :host([variant='danger']) .action-item {

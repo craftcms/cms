@@ -25,12 +25,16 @@
   --c-shadow-raised: var(--shadow-sm);
   --c-shadow-overlay: var(--shadow-lg);
 
+  /* Color mixes */
+  --c-color-mix-hover: black 10%;
+  --c-color-mix-active: black 20%;
+
   /* Semantic colors — neutral */
   --c-color-neutral-fill-loud: var(--color-slate-600);
-  --c-color-neutral-fill-normal: var(--color-slate-100);
-  --c-color-neutral-fill-quiet: var(--color-slate-50);
+  --c-color-neutral-fill-normal: var(--color-slate-200);
+  --c-color-neutral-fill-quiet: var(--color-slate-100);
   --c-color-neutral-border-loud: var(--color-slate-800);
-  --c-color-neutral-border-normal: var(--color-slate-400);
+  --c-color-neutral-border-normal: var(--color-slate-600);
   --c-color-neutral-border-quiet: var(--color-slate-300);
   --c-color-neutral-on-loud: var(--color-slate-50);
   --c-color-neutral-on-normal: var(--color-slate-700);
@@ -38,10 +42,13 @@
 
   /* Semantic colors — brand */
   --c-color-brand-fill-loud: var(--color-red-600);
+  --c-color-brand-fill-normal: var(--color-red-200);
   --c-color-brand-fill-quiet: var(--color-red-100);
   --c-color-brand-border-loud: var(--color-red-600);
+  --c-color-brand-border-normal: var(--color-red-500);
   --c-color-brand-border-quiet: var(--color-red-600);
   --c-color-brand-on-loud: var(--color-red-100);
+  --c-color-brand-on-normal: var(--color-red-700);
   --c-color-brand-on-quiet: var(--color-red-800);
 
   /* Semantic colors — accent (interactive blue) */

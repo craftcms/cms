@@ -58,7 +58,7 @@
 <template>
   <div>
     <template v-for="type in selectedTypes">
-      <craft-chip v-if="type" :icon="type.icon">
+      <craft-chip v-if="type" :icon="type.icon" :data-color="type.color?.value">
         <div :data-id="type.id">
           <div class="font-bold">{{ type.name }}</div>
           <code>{{ type.handle }}</code>
@@ -87,7 +87,7 @@
 
   <div class="flex gap-2 mt-3 items-center">
     <craft-action-menu v-if="types?.length">
-      <craft-button type="button" slot="invoker">
+      <craft-button type="button" slot="invoker" appearance="filled">
         <craft-icon name="chevron-down" slot="prefix"></craft-icon>
         {{ t('Choose') }}
       </craft-button>
@@ -117,8 +117,9 @@
             :key="type.id"
             @click="handleTypeSelect(type)"
             type="checkbox"
-            :icon="type.icon"
+            :icon="type.icon ?? 'empty'"
             :checked="modelValue.includes(type.id)"
+            :data-color="type.color?.value"
           >
             <div>
               {{ type.name }}

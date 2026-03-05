@@ -50,9 +50,19 @@
 .swatch {
   width: 40px;
   aspect-ratio: 4/3;
-  border-radius: 6px;
+  border-radius: var(--c-radius-md);
   display: inline-grid;
   place-items: center;
+}
+
+.swatch--border {
+  box-shadow: var(--c-shadow-raised);
+}
+
+.swatch--large {
+  width: auto;
+  max-width: 180px;
+  padding: var(--c-spacing-lg);
 }
 
 .label {

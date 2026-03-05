@@ -19,6 +19,12 @@ const meta = {
         (variant) => html`
           <div class="flex gap-2">
             <craft-button variant="${variant}">${variant}</craft-button>
+            <craft-button appearance="filled" variant="${variant}"
+              >${variant} filled</craft-button
+            >
+            <craft-button appearance="dashed" variant="${variant}"
+              >${variant} dashed</craft-button
+            >
             <craft-button appearance="plain" variant="${variant}"
               >${variant} plain</craft-button
             >

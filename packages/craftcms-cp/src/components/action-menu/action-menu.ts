@@ -23,7 +23,7 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
       box-shadow: var(--c-shadow-sm);
       padding: var(--c-spacing-sm);
       min-width: calc(180rem / 16);
-      max-width: calc(240rem / 16);
+      max-width: calc(320rem / 16);
     }
 
     ::slotted(hr) {
