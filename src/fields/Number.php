@@ -329,11 +329,7 @@ JS;
         ]);
     }
 
-    /**
-     * @return string
-     * @since 5.9.15
-     */
-    public function currencyLabel(): string
+    private function currencyLabel(): string
     {
         return Craft::t('app', '({currencyCode}) {currencySymbol}', [
             'currencyCode' => $this->previewCurrency,
