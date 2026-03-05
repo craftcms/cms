@@ -58,7 +58,11 @@
 <template>
   <div>
     <template v-for="type in selectedTypes">
-      <craft-chip v-if="type" :icon="type.icon" :data-color="type.color?.value">
+      <craft-chip
+        v-if="type"
+        :icon="type.icon"
+        :data-color="type.color?.value ?? 'white'"
+      >
         <div :data-id="type.id">
           <div class="font-bold">{{ type.name }}</div>
           <code>{{ type.handle }}</code>
@@ -112,20 +116,20 @@
           </div>
         </template>
         <template v-else>
-          <craft-action-item
-            v-for="type in selectableTypes"
-            :key="type.id"
-            @click="handleTypeSelect(type)"
-            type="checkbox"
-            :icon="type.icon ?? 'empty'"
-            :checked="modelValue.includes(type.id)"
-            :data-color="type.color?.value"
-          >
-            <div>
-              {{ type.name }}
-              <pre>{{ type.handle }}</pre>
-            </div>
-          </craft-action-item>
+          <template v-for="type in selectableTypes" :key="type.id">
+            <craft-action-item
+              @click="handleTypeSelect(type)"
+              type="checkbox"
+              :icon="type.icon ?? 'empty'"
+              :checked="modelValue.includes(type.id)"
+              :data-color="type.color?.value ?? 'white'"
+            >
+              <div>
+                {{ type.name }}
+                <pre>{{ type.handle }}</pre>
+              </div>
+            </craft-action-item>
+          </template>
         </template>
       </div>
     </craft-action-menu>

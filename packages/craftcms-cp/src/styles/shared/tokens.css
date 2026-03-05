@@ -26,8 +26,8 @@
   --c-shadow-overlay: var(--shadow-lg);
 
   /* Color mixes */
-  --c-color-mix-hover: black 10%;
-  --c-color-mix-active: black 20%;
+  --c-color-mix-hover: currentColor 10%;
+  --c-color-mix-active: currentColor 20%;
 
   /* Semantic colors — neutral */
   --c-color-neutral-fill-loud: var(--color-slate-600);
