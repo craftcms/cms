@@ -134,6 +134,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
   --_cell-spacing-block: var(--c-spacing-md);
+  --_cell-height: var(--c-size-control-md);
   text-align: left;
   width: 100%;
   border-collapse: separate;
@@ -156,7 +157,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
   .cell {
     padding: 0;
     vertical-align: middle;
-    padding-inline: var(--_cell-spacing);
+    padding-inline: var(--_cell-spacing-inline);
     height: var(--_cell-height);
 
     &:has(textarea),
@@ -199,6 +200,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
 }
 
 .cp-table--compact {
+  --_cell-height: var(--c-size-control-sm);
   --_cell-spacing-block: var(--c-spacing-sm);
 }
 
