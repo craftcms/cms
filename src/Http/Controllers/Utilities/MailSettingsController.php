@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\SystemMessage\SystemMessages;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\SystemMessage\Actions\SendTestMailAction;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\MailSettings;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -28,23 +26,14 @@ final readonly class MailSettingsController
         }
     }
 
-    public function __invoke(Request $request, SystemMessages $systemMessages): Response
+    public function __invoke(Request $request, SendTestMailAction $sendTestMail): Response
     {
         $data = $request->validate([
             'to' => ['required', 'email:strict'],
         ]);
 
-        $to = $data['to'];
-
-        $message = $systemMessages->mailable(
-            key: 'test_email',
-            user: new User(['username' => $to, 'email' => $to]),
-            variables: [
-                'settings' => MailSettings::settingsReport(),
-            ])->to($to);
-
         try {
-            Mail::sendNow($message);
+            $sendTestMail->handle($data['to']);
         } catch (Throwable $e) {
             return back()->withErrors(['to' => $e->getMessage()]);
         }
