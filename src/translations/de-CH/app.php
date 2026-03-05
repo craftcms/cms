@@ -1744,7 +1744,7 @@ return [
     'The primary site will be loaded by default on the front end.' => 'Die primäre Site wird standardmässig im Front-End geladen.',
     'The request could not be understood by the server due to malformed syntax.' => 'Der Server konnte deine Anfrage aufgrund fehlerhafter Syntax nicht verarbeiten.',
     'The requested URL was not found on this server.' => 'Die angeforderte URL wurde auf diesem Server nicht gefunden.',
-    'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.' => 'Das ausgewählte {relatedType} enthält {count, plural, one {einen Validierungsfehler} other {# Validierungsfehler}}, wodurch das Speichern dieses {type} verhindert wird. {relatedType} bearbeiten, um das Problem zu beheben.',
+    'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.' => 'Das ausgewählte {relatedType} enthält {count, plural, one {einen Validierungsfehler} other {{count} Validierungsfehler}}, wodurch das Speichern dieses {type} verhindert wird. {relatedType} bearbeiten, um das Problem zu beheben.',
     'The server doesn’t meet Craft’s new requirements:' => 'Der Server erfüllt die neuen Anforderungen von Craft nicht:',
     'The subpath cannot overlap with any other volumes sharing the same filesystem.' => 'Der Unterpfad darf sich nicht mit anderen Volumen überschneiden, die dasselbe Dateisystem nutzen.',
     'The table name prefix' => 'Präfix des Tabellennamens',

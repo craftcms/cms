@@ -846,7 +846,9 @@ JS, [
                 if ($saveAll || !$element->id || $element->forceSave) {
                     $element->setOwner($owner);
                     $element->setSortOrder($sortOrder);
-                    $element->resaving = $owner->resaving;
+                    // Only set $resaving=true if the element isn’t new.
+                    // Otherwise NestedElementTrait::saveOwnership() won’t do its thing.
+                    $element->resaving = $owner->resaving && $element->id;
                     $elementsService->saveElement($element, false);
 
                     // If this element's primary owner is $owner, and it’s a draft of another element whose owner is
