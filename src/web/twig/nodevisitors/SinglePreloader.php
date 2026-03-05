@@ -7,7 +7,6 @@
 
 namespace craft\web\twig\nodevisitors;
 
-use craft\web\twig\nodes\FallbackNameExpression;
 use craft\web\twig\nodes\PreloadSinglesNode;
 use Twig\Environment;
 use Twig\Node\BodyNode;
@@ -48,12 +47,6 @@ class SinglePreloader implements NodeVisitorInterface
         ) {
             $variables = &$this->_foundVariables[0];
             $variables[$node->getAttribute('name')] = true;
-
-            // swap the node with a FallbackNameExpression
-            $node = new FallbackNameExpression($node->getAttribute('name'), [
-                'is_defined_test' => $node->getAttribute('is_defined_test'),
-                'ignore_strict_check' => $node->getAttribute('ignore_strict_check'),
-            ], $node->getTemplateLine());
         }
 
         return $node;
