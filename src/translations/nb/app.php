@@ -2335,6 +2335,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{type} deleted for site.' => '{type} slettet for siden.',
     '{type} deleted.' => '{type} slettet.',
     '{type} duplicated.' => '{type} duplisert.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '{type}-oppføringer er ikke lenger tillatt i denne seksjonen. Velg en annen oppføringstype.',
     '{type} not restored.' => '{type} ikke gjenopprettet.',
     '{type} restored.' => '{type} gjenopprettet.',
