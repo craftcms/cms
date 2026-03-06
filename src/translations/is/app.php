@@ -2333,6 +2333,7 @@ return [
     '{type} deleted for site.' => '{type} eytt fyrir síðuna.',
     '{type} deleted.' => '{type} eytt.',
     '{type} duplicated.' => '{type} tvítekið.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '{type} færslur eru ekki lengur leyfðar í þessu svæði. Vinsamlegast veldu aðra færslutegund.',
     '{type} not restored.' => '{type} ekki endurheimt.',
     '{type} restored.' => '{type} endurheimt.',
