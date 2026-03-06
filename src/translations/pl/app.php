@@ -2335,6 +2335,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{type} deleted for site.' => '{type} usunięto dla witryny.',
     '{type} deleted.' => '{type} usunięto.',
     '{type} duplicated.' => '{type} zduplikowano.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'Wpisy {type} nie są już dozwolone w tej sekcji. Wybierz inny typ wpisu.',
     '{type} not restored.' => '{type} nie przywrócono.',
     '{type} restored.' => '{type} przywrócono.',
