@@ -12,6 +12,8 @@
 - Fixed a bug where Content Block fields’ nested values weren’t always getting set correctly via `resave` commands. ([#18453](https://github.com/craftcms/cms/issues/18453))
 - Fixed a bug where addresses without labels weren’t getting chip labels. ([#18481](https://github.com/craftcms/cms/issues/18481))
 - Fixed a JavaScript error that could occur on element edit pages.
+- Fixed a bug where cross-site validation errors weren’t preventing elements from getting saved. ([#18292](https://github.com/craftcms/cms/issues/18292))
+- Fixed a bug where failure messages when pasting elements weren’t getting displayed properly.
 
 ## 5.9.14 - 2026-02-25
 
