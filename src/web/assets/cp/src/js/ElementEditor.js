@@ -1801,7 +1801,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.httpError = e.response.data ? e.response.data.message : null;
           }
           this._showFailStatus();
-          reject(e);
+          throw e;
         }
       }
 
