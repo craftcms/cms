@@ -2334,6 +2334,7 @@ return [
     '{type} deleted for site.' => '{type} supprimé(e) pour le site.',
     '{type} deleted.' => '{type} supprimé.',
     '{type} duplicated.' => '{type} dupliqué.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'Les entrées {type} ne sont plus autorisées dans cette section. Veuillez choisir un autre type d\'entrée.',
     '{type} not restored.' => '{type} non restauré.',
     '{type} restored.' => '{type} restauré.',
