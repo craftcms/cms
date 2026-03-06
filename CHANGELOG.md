@@ -6,9 +6,12 @@
 - Fixed a bug where `users/suspend-user` and `users/unsuspend-user` actions required that the logged-in user have control panel access. ([#18485](https://github.com/craftcms/cms/issues/18485))
 - Fixed a bug where flipping an image within the Image Editor didn’t always work. ([#18486](https://github.com/craftcms/cms/issues/18486))
 - Fixed a bug where SVG files missing their `width` and `height` attributes weren’t getting them set as expected.
+- Fixed an error that occurred if a template referenced a preloaded Single entry followed by a null coalescing operator. ([#18503](https://github.com/craftcms/cms/issues/18503))
+- Fixed a bug where links within Redactor fields were getting `target="_blank"` added to them. ([#18500](https://github.com/craftcms/cms/issues/18500))
 - Fixed an error that could occur when applying project config changes. ([#18477](https://github.com/craftcms/cms/issues/18477))
 - Fixed a bug where Content Block fields’ nested values weren’t always getting set correctly via `resave` commands. ([#18453](https://github.com/craftcms/cms/issues/18453))
 - Fixed a bug where addresses without labels weren’t getting chip labels. ([#18481](https://github.com/craftcms/cms/issues/18481))
+- Fixed a JavaScript error that could occur on element edit pages.
 
 ## 5.9.14 - 2026-02-25
 
