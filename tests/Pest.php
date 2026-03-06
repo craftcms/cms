@@ -12,12 +12,21 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestCase;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin;
 use CraftCms\Cms\Tests\UnitTestCase;
+use CraftCms\Cms\User\Elements\User;
+use Pest\Browser\Api\ArrayablePendingAwaitablePage;
+use Pest\Browser\Api\PendingAwaitablePage;
+
+use function CraftCms\Cms\cp_url;
+use function Pest\Laravel\actingAs;
 
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
 uses(TestCase::class)->beforeEach(function () {
     $this->withVite();
+    configureBrowserUrls();
 })->in('Browser');
+
+pest()->browser()->timeout(10000);
 
 beforeEach(function () {
     app()->forgetInstance(GeneralConfig::class);
@@ -36,6 +45,27 @@ function configureBrowserUrls(): void
     if (\Craft::$app) {
         \Craft::$app->getAssetManager()->baseUrl = $serverUrl.'/cpresources';
     }
+}
+
+/**
+ * Log in to the Control Panel via the browser login form.
+ */
+function loginToCp(CraftCms\Cms\Tests\TestCase $test): void
+{
+    $test->visit('/admin/login')
+        ->fill('.login-form [name="username"]', 'craftcms')
+        ->fill('.login-form [name="password"]', 'craftcms2018!!')
+        ->press('Sign in')
+        ->waitForText('Dashboard');
+}
+
+function visitCpAsAdmin(string $path = ''): ArrayablePendingAwaitablePage|PendingAwaitablePage
+{
+    if (! auth()->check()) {
+        actingAs(User::findOne());
+    }
+
+    return visit('/'.cp_url($path));
 }
 
 function loadTestPlugin(): void

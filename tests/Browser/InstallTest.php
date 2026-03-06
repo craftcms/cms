@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 
+use function Pest\Laravel\assertDatabaseHas;
+
 beforeEach(function () {
     $this->artisan('db:wipe', ['--force' => true]);
     Cms::setIsInstalled(false);
@@ -27,8 +29,6 @@ afterEach(function () {
 });
 
 it('can install Craft CMS', function () {
-    configureBrowserUrls();
-
     $page = $this->visit('/admin/install');
 
     $page->click('Install Craft CMS')
@@ -42,4 +42,18 @@ it('can install Craft CMS', function () {
         ->select('Language', 'en')
         ->click('Finish up')
         ->assertPathBeginsWith('/admin');
+
+    assertDatabaseHas('users', [
+        'username' => 'admin',
+        'email' => 'playwright@craftcms.com',
+    ]);
+
+    assertDatabaseHas('sites', [
+        'name' => 'Craft 6 Pest Browser',
+        'handle' => 'default',
+        'primary' => 1,
+        'enabled' => 'true', // This seems wrong
+        'hasUrls' => 1,
+        'language' => 'en',
+    ]);
 });
