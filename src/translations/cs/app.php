@@ -2335,6 +2335,7 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{type} deleted for site.' => '{type} byl pro stránku smazán.',
     '{type} deleted.' => '{type} byl smazán.',
     '{type} duplicated.' => '{type} je duplicitní.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'V této sekci již nejsou povoleny položky {type}. Zvolte prosím jiný typ záznamu.',
     '{type} not restored.' => 'Nedošlo k obnovení {type}.',
     '{type} restored.' => 'Došlo k obnovení {type}.',
