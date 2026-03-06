@@ -2333,6 +2333,7 @@ return [
     '{type} deleted for site.' => 'تم حذف {type} لهذا الموقع.',
     '{type} deleted.' => 'تم حذف {type}.',
     '{type} duplicated.' => 'تم تكرار {type}.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'لم تعُد إدخالات {type} مسموح بها في هذا القسم. يُرجى اختيار نوع إدخال مختلف.',
     '{type} not restored.' => 'لم تتم استعادة {type}.',
     '{type} restored.' => 'تمت استعادة {type}.',
