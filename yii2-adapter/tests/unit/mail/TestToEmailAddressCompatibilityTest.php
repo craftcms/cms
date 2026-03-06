@@ -9,6 +9,7 @@ namespace crafttests\unit\mail;
 
 use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\test\TestCase;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use Illuminate\Mail\Events\MessageSending;
@@ -20,9 +21,13 @@ use Symfony\Component\Mime\Email;
 
 class TestToEmailAddressCompatibilityTest extends TestCase
 {
+    private $oldConfig;
+
     protected function _before(): void
     {
         parent::_before();
+
+        $this->oldConfig = Cms::config();
 
         $config = LegacyGeneralConfig::create();
         Config::set('craft.general', $config);
@@ -30,6 +35,13 @@ class TestToEmailAddressCompatibilityTest extends TestCase
 
         $reflection = new ReflectionProperty(Mail::mailer(), 'to');
         $reflection->setValue(Mail::mailer(), null);
+    }
+
+    protected function _after()
+    {
+        parent::_after();
+
+        app()->instance(GeneralConfig::class, $this->oldConfig);
     }
 
     public function testReroutesOutgoingMailToConfiguredTestRecipients(): void
