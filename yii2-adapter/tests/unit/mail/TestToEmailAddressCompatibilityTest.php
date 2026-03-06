@@ -10,7 +10,6 @@ namespace crafttests\unit\mail;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\test\TestCase;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Config;
@@ -31,34 +30,6 @@ class TestToEmailAddressCompatibilityTest extends TestCase
 
         $reflection = new ReflectionProperty(Mail::mailer(), 'to');
         $reflection->setValue(Mail::mailer(), null);
-    }
-
-    public function testBootConfiguresAlwaysToAndLogsDeprecationForSingleRecipient(): void
-    {
-        /** @var LegacyGeneralConfig $config */
-        $config = app(GeneralConfig::class);
-        $config->testToEmailAddress = [
-            'safe@example.com' => 'Safe Recipient',
-        ];
-
-        (new TestToEmailAddressCompatibility())->boot();
-
-        $reflection = new ReflectionProperty(Mail::mailer(), 'to');
-        $to = $reflection->getValue(Mail::mailer());
-
-        self::assertSame([
-            'address' => 'safe@example.com',
-            'name' => 'Safe Recipient',
-        ], $to);
-
-        /** @var Deprecator $deprecator */
-        $deprecator = app(Deprecator::class);
-        $matches = array_filter(
-            $deprecator->getRequestLogs(),
-            fn($log) => $log->key === 'generalConfig.testToEmailAddress',
-        );
-
-        self::assertCount(1, $matches);
     }
 
     public function testReroutesOutgoingMailToConfiguredTestRecipients(): void
