@@ -2333,6 +2333,7 @@ return [
     '{type} deleted for site.' => '사이트에 대한 {type}이(가) 삭제되었습니다.',
     '{type} deleted.' => '{type} 삭제됨.',
     '{type} duplicated.' => '{type}이(가) 복제되었습니다.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '이 섹션에서는 {type} 항목이 더 이상 허용되지 않습니다. 다른 항목 유형을 선택하십시오.',
     '{type} not restored.' => '{type}이(가) 복원되지 않았습니다.',
     '{type} restored.' => '{type}이(가) 복원되었습니다.',
