@@ -2334,6 +2334,7 @@ return [
     '{type} deleted for site.' => '{type} ถูกลบสำหรับไซต์',
     '{type} deleted.' => 'ลบ {type} แล้ว',
     '{type} duplicated.' => 'ทำซ้ำ {type} แล้ว',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'ไม่อนุญาตรายการ {type} ในส่วนนี้อีกต่อไป โปรดเลือกประเภทรายการอื่น',
     '{type} not restored.' => '{type} ยังไม่ได้รับการกู้คืน',
     '{type} restored.' => 'กู้คืน {type} แล้ว',
