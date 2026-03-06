@@ -713,7 +713,7 @@ class App
             );
         }
 
-        if (!empty($settings?->siteOverrides)) {
+        if ($settings && !empty($settings->siteOverrides)) {
             Deprecator::log(
                 'craft\\models\\MailSettings::$siteOverrides',
                 '`craft\\models\\MailSettings::$siteOverrides` is deprecated and no longer has any effect. Configure Laravel mailers per environment instead.',
