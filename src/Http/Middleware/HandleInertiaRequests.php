@@ -75,6 +75,9 @@ class HandleInertiaRequests extends Middleware
             $systemIcon = $rebrand->getImage('icon');
         }
 
+        $language = app()->getLocale();
+        view()->share('language', $language);
+
         return [
             ...parent::share($request),
             'flash' => fn () => [
@@ -94,6 +97,7 @@ class HandleInertiaRequests extends Middleware
                 'app' => [
                     'version' => Cms::VERSION,
                     'edition' => Edition::get()->toArray(),
+                    'language' => $language,
                 ],
                 'site' => [
                     'url' => $currentSite->getBaseUrl(),
