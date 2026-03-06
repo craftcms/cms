@@ -164,6 +164,25 @@ export default css`
   craft-button-reset,
   craft-button-submit {
     /* Temporarily make it very obvious when these are used */
-    outline: 10px solid red;
+    outline: 10px solid var(--c-button-danger-border);
+  }
+
+  .a11y-error {
+    position: relative;
+    outline: 2px solid var(--c-color-danger-border-normal) !important;
+    background-color: rgba(255, 0, 0, 0.1) !important;
+
+    &:after {
+      content: '!';
+      position: absolute;
+      display: inline-flex;
+      font-size: calc(11rem / 16);
+      padding: 0.125em 0.5em 0.25em;
+      inset-block-start: -2px;
+      inset-inline-start: 0;
+      background: var(--c-color-danger-bg-emphasis);
+      color: white;
+      transform: translateX(-100%);
+    }
   }
 `;
