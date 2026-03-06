@@ -2339,30 +2339,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             $row['title'] = (string)($row['title'] ?? '');
         }
 
-        // Set the field values
-        $content = ArrayHelper::remove($row, 'content');
-        $row['fieldValues'] = [];
-
-        if (!empty($content) && (!empty($this->customFields) || !empty($this->generatedFields))) {
-            if (is_string($content)) {
-                $content = Json::decode($content);
-            }
-
-            foreach ($this->customFields as $field) {
-                if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
-                    $handle = $field->layoutElement->handle ?? $field->handle;
-                    $row['fieldValues'][$handle] = $content[$field->layoutElement->uid];
-                }
-            }
-
-            foreach ($this->generatedFields as $field) {
-                if (isset($content[$field['uid']])) {
-                    $row['generatedFieldValues'][$field['uid']] = $content[$field['uid']];
-                    if (($field['handle'] ?? '') !== '') {
-                        $row['generatedFieldValues'][$field['handle']] = $content[$field['uid']];
-                    }
-                }
-            }
+        // Remove the field values
+        // (We'll set them after the element bas been created, and we have its field layout.)
+        $content = ArrayHelper::remove($row, 'content') ?? [];
+        if (is_string($content)) {
+            $content = Json::decode($content);
         }
 
         if (array_key_exists('dateDeleted', $row)) {
@@ -2411,6 +2392,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->hasEventHandlers(self::EVENT_BEFORE_POPULATE_ELEMENT)) {
             $event = new PopulateElementEvent([
                 'row' => $row,
+                'content' => $content,
             ]);
             $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
             $row = $event->row ?? $row;
@@ -2422,11 +2404,36 @@ class ElementQuery extends Query implements ElementQueryInterface
         $element ??= new $class($row);
         $element->attachBehaviors($behaviors);
 
+        // Set the custom field values
+        if (!empty($content)) {
+            $fieldLayout = $element->getFieldLayout();
+            if ($fieldLayout) {
+                foreach ($fieldLayout->getCustomFields() as $field) {
+                    if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
+                        $handle = $field->layoutElement->handle ?? $field->handle;
+                        $element->setFieldValue($handle, $content[$field->layoutElement->uid]);
+                    }
+                }
+
+                $generatedFieldValues = [];
+                foreach ($fieldLayout->getGeneratedFields() as $field) {
+                    if (isset($content[$field['uid']])) {
+                        $generatedFieldValues[$field['uid']] = $content[$field['uid']];
+                        if (($field['handle'] ?? '') !== '') {
+                            $generatedFieldValues[$field['handle']] = $content[$field['uid']];
+                        }
+                    }
+                }
+                $element->setGeneratedFieldValues($generatedFieldValues);
+            }
+        }
+
         // Fire an 'afterPopulateElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
             $event = new PopulateElementEvent([
                 'element' => $element,
                 'row' => $row,
+                'content' => $content,
             ]);
             $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, $event);
             return $event->element;

@@ -6,5 +6,10 @@
 ### Administration
 - Newlines in system message bodies are now replaced with `<br>` tags. ([#18058](https://github.com/craftcms/cms/discussions/18058))
 
+### Extensibility
+- Added `craft\elements\PopulateElementEvent::$content`.
+- `craft\elements\PopulateElementEvent::$row` no longer includes `fieldValues` or `generatedFieldValues` keys.
+
 ### System
 - Updated Twig to 3.23. ([#18259](https://github.com/craftcms/cms/discussions/18259))
+- Fixed a bug where nested entries weren’t getting loaded with their content, if they had an entry type that was no longer allowed by their Matrix field.
