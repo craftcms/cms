@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import SystemInfo from '@/components/SystemInfo.vue';
+  import useCraftData from '@/composables/useCraftData';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed, reactive, ref, watch, useTemplateRef} from 'vue';
   import CpSidebar from '@/components/CpSidebar.vue';
@@ -10,7 +11,7 @@
   import {useAnnouncer} from '@/composables/useAnnouncer';
   import LiveRegion from '@/components/LiveRegion.vue';
 
-  withDefaults(
+  const props = withDefaults(
     defineProps<{
       title?: string;
       debug?: any;
@@ -18,6 +19,8 @@
     }>(),
     {fullWidth: false, crumbs: () => []}
   );
+
+  const {system} = useCraftData();
 
   const page = usePage<{
     flash: {
@@ -34,6 +37,9 @@
   const crumbs = computed(() => page.props.crumbs ?? null);
   const sidebarToggle = useTemplateRef('sidebarToggle');
   const {announcement, announce} = useAnnouncer();
+  const fullPageTitle = computed(() => {
+    return `${props.title} - ${system.name}`;
+  });
 
   watch(successFlash, (newMessage) => announce(newMessage));
   watch(errorFlash, (newMessage) => announce(newMessage));
@@ -95,7 +101,7 @@
 </script>
 
 <template>
-  <Head :title="title" />
+  <Head :title="fullPageTitle" />
   <LiveRegion :debug="true"></LiveRegion>
   <div class="cp">
     <div class="cp__header">
