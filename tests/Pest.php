@@ -15,10 +15,28 @@ use CraftCms\Cms\Tests\UnitTestCase;
 
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
+uses(TestCase::class)->beforeEach(function () {
+    $this->withVite();
+})->in('Browser');
 
 beforeEach(function () {
     app()->forgetInstance(GeneralConfig::class);
 });
+
+/**
+ * Sync @web alias and Yii2 asset manager base URL to match the Pest browser
+ * test server URL. Must be called in the test closure (after the browser
+ * server has bootstrapped) before the first visit() call.
+ */
+function configureBrowserUrls(): void
+{
+    $serverUrl = rtrim((string) config('app.url'), '/');
+    \CraftCms\Aliases\Aliases::set('@web', $serverUrl);
+
+    if (\Craft::$app) {
+        \Craft::$app->getAssetManager()->baseUrl = $serverUrl.'/cpresources';
+    }
+}
 
 function loadTestPlugin(): void
 {

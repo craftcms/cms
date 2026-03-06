@@ -1,0 +1,61 @@
+{
+    "_hash": "cd418fce9dba0de394c58a1017a72ac098ad3e6d1e2be3e9c209693e6bb95a11",
+    "patches": {
+        "pestphp/pest-plugin-browser": [
+            {
+                "package": "pestphp/pest-plugin-browser",
+                "description": "Fix JS asset serving truncation in Amp event loop (https://github.com/pestphp/pest-plugin-browser/pull/199)",
+                "url": "patches/pest-plugin-browser-fix-js-asset-serving.patch",
+                "sha256": "d927e8d18cc42c610a745e24df9600efaa688dcfcf9331852cfdcc50f5a90e55",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "phpunit/phpunit": [
+            {
+                "package": "phpunit/phpunit",
+                "description": "Fix PHP 7 compatibility",
+                "url": "https://yiisoft.github.io/phpunit-patches/phpunit_php7.patch",
+                "sha256": "5c42e5eb2173404d68bae2e9ed3be0b1560cd9d59bf53415c731cea8385d407e",
+                "depth": 1,
+                "extra": {
+                    "provenance": "dependency:phpunit/phpunit"
+                }
+            },
+            {
+                "package": "phpunit/phpunit",
+                "description": "Fix PHP 8 compatibility",
+                "url": "https://yiisoft.github.io/phpunit-patches/phpunit_php8.patch",
+                "sha256": "30c86a06d7628d0e6da8bb9b9f6b650afed1c48ec7442d9a66875f15b555ecc6",
+                "depth": 1,
+                "extra": {
+                    "provenance": "dependency:phpunit/phpunit"
+                }
+            },
+            {
+                "package": "phpunit/phpunit",
+                "description": "Fix PHP 8.1 compatibility",
+                "url": "https://yiisoft.github.io/phpunit-patches/phpunit_php81.patch",
+                "sha256": "8a4492a11a7dd625eb8552dca4ccaa395c1fa57cff6fa59bfe8a34abdcc237b8",
+                "depth": 1,
+                "extra": {
+                    "provenance": "dependency:phpunit/phpunit"
+                }
+            }
+        ],
+        "phpunit/phpunit-mock-objects": [
+            {
+                "package": "phpunit/phpunit-mock-objects",
+                "description": "Fix PHP 7 and 8 compatibility",
+                "url": "https://yiisoft.github.io/phpunit-patches/phpunit_mock_objects.patch",
+                "sha256": "5053d9f2fe2b084da593648d112c2e5dde328887d94d18cc6e4625d92c2278cd",
+                "depth": 1,
+                "extra": {
+                    "provenance": "dependency:phpunit/phpunit-mock-objects"
+                }
+            }
+        ]
+    }
+}

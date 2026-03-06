@@ -75,6 +75,7 @@
     "yiisoft/translator-message-php": "^1.1"
   },
   "require-dev": {
+    "cweagans/composer-patches": "^2.0",
     "dg/bypass-finals": "^1.9",
     "driftingly/rector-laravel": "^2.1",
     "fakerphp/faker": "^1.19.0",
@@ -83,6 +84,7 @@
     "orchestra/testbench": "^10.3",
     "pestphp/pest": "^4.0",
     "pestphp/pest-plugin-arch": "^4.0",
+    "pestphp/pest-plugin-browser": "^4.3",
     "pestphp/pest-plugin-laravel": "^4.0",
     "phpstan/phpstan": "^2.1",
     "rector/rector": "^2.3"
@@ -149,7 +151,8 @@
     "allow-plugins": {
       "craftcms/plugin-installer": true,
       "pestphp/pest-plugin": true,
-      "yiisoft/yii2-composer": true
+      "yiisoft/yii2-composer": true,
+      "cweagans/composer-patches": true
     }
   },
   "extra": {
@@ -157,6 +160,11 @@
       "providers": [
         "CraftCms\\Cms\\Providers\\CraftServiceProvider"
       ]
+    },
+    "patches": {
+      "pestphp/pest-plugin-browser": {
+        "Fix asset serving truncation in Amp event loop (https://github.com/pestphp/pest-plugin-browser/pull/199)": "patches/pest-plugin-browser-fix-js-asset-serving.patch"
+      }
     }
   },
   "minimum-stability": "dev",

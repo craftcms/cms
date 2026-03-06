@@ -27,3 +27,4 @@ database/*.sqlite
 resources/js/actions
 resources/js/routes
 resources/js/wayfinder
+tests/Browser/Screenshots

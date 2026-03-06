@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Updates\Updates;
@@ -22,7 +23,7 @@ final readonly class CheckSchemaVersion
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if ($this->updates->isCraftSchemaVersionCompatible()) {
+        if (! Cms::isInstalled() || $this->updates->isCraftSchemaVersionCompatible()) {
             return $next($request);
         }
 
