@@ -2333,6 +2333,7 @@ return [
     '{type} deleted for site.' => 'Об\'єкт ({type}) видалено для сайту.',
     '{type} deleted.' => 'Об\'єкт ({type}) видалено.',
     '{type} duplicated.' => 'Об\'єкт ({type}) продубльовано.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'Записи типу {type} більше не можна використовувати в цьому розділі. Виберіть інший тип запису.',
     '{type} not restored.' => 'Не відновлено: {type}.',
     '{type} restored.' => 'Відновлено: {type}.',
