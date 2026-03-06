@@ -2806,7 +2806,6 @@ JS,
     }
 
     /**
-     * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @throws WrongEditionException
      */
