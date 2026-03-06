@@ -2333,6 +2333,7 @@ return [
     '{type} deleted for site.' => 'Το {type} διαγράφηκε για τον ιστότοπο.',
     '{type} deleted.' => 'Το {type} διαγράφηκε.',
     '{type} duplicated.' => 'Το {type} διπλοτυπήθηκε.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'Οι καταχωρήσεις {type} δεν επιτρέπονται πλέον σε αυτή την ενότητα. Παρακαλούμε επιλέξτε διαφορετικό τύπο καταχώρησης.',
     '{type} not restored.' => 'Το {type} δεν επαναφέρθηκε.',
     '{type} restored.' => 'Το {type} επαναφέρθηκε.',
