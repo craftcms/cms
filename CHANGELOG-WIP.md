@@ -13,3 +13,4 @@
 ### System
 - Updated Twig to 3.23. ([#18259](https://github.com/craftcms/cms/discussions/18259))
 - Fixed a bug where nested entries weren’t getting loaded with their content, if they had an entry type that was no longer allowed by their Matrix field.
+- Fixed the wording of the validation error when saving a nested entry with an invalid entry type. ([#18506](https://github.com/craftcms/cms/issues/18506))

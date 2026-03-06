@@ -1033,9 +1033,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             ['typeId'],
             function(string $attribute) {
                 if (!$this->isEntryTypeAllowed()) {
-                    $this->addError($attribute, Craft::t('app', '{type} entries are no longer allowed in this section. Please choose a different entry type.', [
-                        'type' => $this->getType()->getUiLabel(),
-                    ]));
+                    if (isset($this->sectionId)) {
+                        $this->addError($attribute, Craft::t('app', '{type} entries are no longer allowed in this section. Please choose a different entry type.', [
+                            'type' => $this->getType()->getUiLabel(),
+                        ]));
+                    } else {
+                        $this->addError($attribute, Craft::t('app', '{type} entries are no longer allowed in this field. Please choose a different entry type.', [
+                            'type' => $this->getType()->getUiLabel(),
+                        ]));
+                    }
                 }
             },
             'skipOnEmpty' => false,
