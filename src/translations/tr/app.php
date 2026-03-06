@@ -2335,6 +2335,7 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{type} deleted for site.' => '{type}, site için silindi.',
     '{type} deleted.' => '{type} silindi.',
     '{type} duplicated.' => '{type} kopyalandı.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'Bu bölümde artık {type} kayıtlara izin verilmiyor. Lütfen farklı bir giriş türü seçin.',
     '{type} not restored.' => '{type} geri yüklenmedi.',
     '{type} restored.' => '{type} geri yüklendi.',
