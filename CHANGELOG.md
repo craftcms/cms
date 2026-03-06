@@ -1,5 +1,22 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Added `craft\filters\IpRateLimitIdentity`. ([#18510](https://github.com/craftcms/cms/pull/18510))
+- Removed thamtech/yii2-ratelimiter-advanced. ([#18510](https://github.com/craftcms/cms/pull/18510))
+- Fixed a bug where global set GraphQL query caches weren’t getting invalidated when global sets were updated. ([#18479](https://github.com/craftcms/cms/issues/18479))
+- Fixed a bug where `users/suspend-user` and `users/unsuspend-user` actions required that the logged-in user have control panel access. ([#18485](https://github.com/craftcms/cms/issues/18485))
+- Fixed a bug where flipping an image within the Image Editor didn’t always work. ([#18486](https://github.com/craftcms/cms/issues/18486))
+- Fixed a bug where SVG files missing their `width` and `height` attributes weren’t getting them set as expected.
+- Fixed an error that occurred if a template referenced a preloaded Single entry followed by a null coalescing operator. ([#18503](https://github.com/craftcms/cms/issues/18503))
+- Fixed a bug where links within Redactor fields were getting `target="_blank"` added to them. ([#18500](https://github.com/craftcms/cms/issues/18500))
+- Fixed an error that could occur when applying project config changes, or editing entries with an invalid entry type. ([#18477](https://github.com/craftcms/cms/issues/18477), [#18505](https://github.com/craftcms/cms/issues/18505))
+- Fixed a bug where Content Block fields’ nested values weren’t always getting set correctly via `resave` commands. ([#18453](https://github.com/craftcms/cms/issues/18453))
+- Fixed a bug where addresses without labels weren’t getting chip labels. ([#18481](https://github.com/craftcms/cms/issues/18481))
+- Fixed a JavaScript error that could occur on element edit pages.
+- Fixed a bug where cross-site validation errors weren’t preventing elements from getting saved. ([#18292](https://github.com/craftcms/cms/issues/18292))
+- Fixed a bug where failure messages when pasting elements weren’t getting displayed properly.
+
 ## 5.9.14 - 2026-02-25
 
 - The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is no longer set by default for database connections. ([#18474](https://github.com/craftcms/cms/issues/18474))
@@ -243,6 +260,11 @@
 - The Twig `hash` filter now supports passing a hashing algorithm, such as `'md5'` or `'sha256'`. ([#17885](https://github.com/craftcms/cms/issues/17885))
 - The `@parseRefs` and `@transform` GraphQL directives are now optional for each GraphQL schema, which fixes a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) IDOR issue. (GHSA-7x43-mpfg-r9wj)
 - GraphQL API requests can now identify themselves as preview requests by passing an `X-Craft-Preview-Token` header, set to the `x-craft-preview`/`x-craft-live-preview` query param in the preview target URL.
+- Added support for referencing environment variables anywhere within settings that support them (e.g. `foo/$ENV_NAME/bar` or `foo-${ENV_NAME}-bar`). ([#17949](https://github.com/craftcms/cms/pull/17949))
+- It’s no longer possible to instantiate objects that don’t extend `yii\base\BaseObject` via the `create()` Twig function. ([GHSA-94rc-cqvm-m4pw](https://github.com/craftcms/cms/security/advisories/GHSA-94rc-cqvm-m4pw))
+- Added the `uuid()` Twig function.
+- The `@parseRefs` and `@transform` GraphQL directives are now optional for each GraphQL schema. ([GHSA-7x43-mpfg-r9wj](https://github.com/craftcms/cms/security/advisories/GHSA-7x43-mpfg-r9wj))
+
 
 ### Extensibility
 - Subnav items within the global control panel navigation can now have icons. ([#17879](https://github.com/craftcms/cms/pull/17879))

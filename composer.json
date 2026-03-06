@@ -65,7 +65,6 @@
     "symfony/serializer": "^6.4",
     "symfony/var-dumper": "^5.0|^6.0|^7.0",
     "symfony/yaml": "^5.2.3|^6.0|^7.0",
-    "thamtech/yii2-ratelimiter-advanced": "^0.5.0",
     "theiconic/name-parser": "^1.2",
     "twig/twig": "~3.21.1",
     "voku/portable-ascii": "^2.0",

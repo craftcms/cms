@@ -1714,9 +1714,9 @@ JS, [
 
         $newElementInfo = [];
 
-        Craft::$app->getDb()->transaction(function() use ($elementInfo, $newAttributes, &$newElementInfo) {
+        $result = Craft::$app->getDb()->transaction(function() use ($elementInfo, $newAttributes, &$newElementInfo) {
             $elementsService = Craft::$app->getElements();
-            $elementsService->ensureBulkOp(function() use ($elementInfo, $newAttributes, &$newElementInfo, $elementsService) {
+            return $elementsService->ensureBulkOp(function() use ($elementInfo, $newAttributes, &$newElementInfo, $elementsService) {
                 foreach ($elementInfo as $info) {
                     $element = $this->_element($info);
 
@@ -1748,8 +1748,14 @@ JS, [
 
                     $newElementInfo[] = $newElement->toArray($newElement->attributes());
                 }
+
+                return null;
             });
         });
+
+        if ($result !== null) {
+            return $result;
+        }
 
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $elementInfo[0]['type'];
