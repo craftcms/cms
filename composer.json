@@ -52,7 +52,6 @@
     "symfony/http-client": "^6.0.3|^7.0",
     "symfony/var-dumper": "^5.0|^6.0",
     "symfony/yaml": "^5.2.3",
-    "thamtech/yii2-ratelimiter-advanced": "^0.5.0",
     "theiconic/name-parser": "^1.2",
     "twig/twig": "~3.19.0",
     "voku/stringy": "^6.4.0",
