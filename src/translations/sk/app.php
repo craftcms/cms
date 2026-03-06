@@ -2333,6 +2333,7 @@ return [
     '{type} deleted for site.' => '{type} pre web zmazaný.',
     '{type} deleted.' => '{type} zmazané.',
     '{type} duplicated.' => '{type} duplikované.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'V tejto časti už nie sú povolené záznamy typu {type}. Vyberte iný typ záznamu.',
     '{type} not restored.' => '{type} neobnovené.',
     '{type} restored.' => '{type} obnovené.',
