@@ -1,0 +1,119 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace crafttests\unit\mail;
+
+use craft\config\GeneralConfig as LegacyGeneralConfig;
+use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Deprecator\Deprecator;
+use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
+use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Mail;
+use ReflectionProperty;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
+
+class TestToEmailAddressCompatibilityTest extends TestCase
+{
+    protected function _before(): void
+    {
+        parent::_before();
+
+        $config = LegacyGeneralConfig::create();
+        Config::set('craft.general', $config);
+        app()->instance(GeneralConfig::class, $config);
+
+        $reflection = new ReflectionProperty(Mail::mailer(), 'to');
+        $reflection->setValue(Mail::mailer(), null);
+    }
+
+    public function testBootConfiguresAlwaysToAndLogsDeprecationForSingleRecipient(): void
+    {
+        /** @var LegacyGeneralConfig $config */
+        $config = app(GeneralConfig::class);
+        $config->testToEmailAddress = [
+            'safe@example.com' => 'Safe Recipient',
+        ];
+
+        (new TestToEmailAddressCompatibility())->boot();
+
+        $reflection = new ReflectionProperty(Mail::mailer(), 'to');
+        $to = $reflection->getValue(Mail::mailer());
+
+        self::assertSame([
+            'address' => 'safe@example.com',
+            'name' => 'Safe Recipient',
+        ], $to);
+
+        /** @var Deprecator $deprecator */
+        $deprecator = app(Deprecator::class);
+        $matches = array_filter(
+            $deprecator->getRequestLogs(),
+            fn($log) => $log->key === 'generalConfig.testToEmailAddress',
+        );
+
+        self::assertCount(1, $matches);
+    }
+
+    public function testReroutesOutgoingMailToConfiguredTestRecipients(): void
+    {
+        /** @var LegacyGeneralConfig $config */
+        $config = app(GeneralConfig::class);
+        $config->testToEmailAddress = [
+            'safe@example.com' => 'Safe Recipient',
+            'other@example.com' => 'Other Recipient',
+        ];
+
+        (new TestToEmailAddressCompatibility())->boot();
+
+        $message = (new Email())
+            ->to(new Address('real@example.com', 'Real Recipient'))
+            ->cc(new Address('cc@example.com', 'Copied Recipient'))
+            ->bcc(new Address('bcc@example.com', 'Blind Recipient'));
+
+        event(new MessageSending($message));
+
+        self::assertSame([
+            'safe@example.com' => 'Safe Recipient',
+            'other@example.com' => 'Other Recipient',
+        ], collect($message->getTo())->mapWithKeys(
+            fn(Address $address) => [$address->getAddress() => $address->getName()],
+        )->all());
+        self::assertSame([], $message->getCc());
+        self::assertSame([], $message->getBcc());
+    }
+
+    public function testLeavesOutgoingMailRecipientsUntouchedWhenTestRecipientsAreNotConfigured(): void
+    {
+        (new TestToEmailAddressCompatibility())->boot();
+
+        $message = (new Email())
+            ->to(new Address('real@example.com', 'Real Recipient'))
+            ->cc(new Address('cc@example.com', 'Copied Recipient'))
+            ->bcc(new Address('bcc@example.com', 'Blind Recipient'));
+
+        event(new MessageSending($message));
+
+        self::assertSame([
+            'real@example.com' => 'Real Recipient',
+        ], collect($message->getTo())->mapWithKeys(
+            fn(Address $address) => [$address->getAddress() => $address->getName()],
+        )->all());
+        self::assertSame([
+            'cc@example.com' => 'Copied Recipient',
+        ], collect($message->getCc())->mapWithKeys(
+            fn(Address $address) => [$address->getAddress() => $address->getName()],
+        )->all());
+        self::assertSame([
+            'bcc@example.com' => 'Blind Recipient',
+        ], collect($message->getBcc())->mapWithKeys(
+            fn(Address $address) => [$address->getAddress() => $address->getName()],
+        )->all());
+    }
+}

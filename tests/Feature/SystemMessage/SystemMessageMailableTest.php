@@ -50,3 +50,19 @@ it('uses the site language when rendering from a site context', function () {
 
     expect($message->language)->toBe($site->getLanguage());
 });
+
+it('uses the affiliated site when building mail outside site requests', function () {
+    $site = Sites::getPrimarySite();
+    $user = UserModel::factory()->createElement([
+        'affiliatedSiteId' => $site->id,
+    ]);
+    $user = User::find()->id($user->id)->one();
+
+    $mailable = app(SystemMessages::class)->mailable(
+        key: 'forgot_password',
+        user: $user,
+        variables: ['link' => 'https://example.test/reset'],
+    );
+
+    expect($mailable->siteId)->toBe($site->id);
+});

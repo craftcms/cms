@@ -42,12 +42,14 @@ class MailSettings extends Model
 
     /**
      * @var string|null The template that emails should be sent with
+     * @deprecated 6.0.0 use a Laravel mailable view instead.
      */
     public ?string $template = null;
 
     /**
      * @var array Site-specific overrides
      * @since 5.6.0
+     * @deprecated 6.0.0 configure Laravel mailers per environment instead.
      */
     public array $siteOverrides = [];
 
@@ -133,6 +135,7 @@ class MailSettings extends Model
      *
      * @param array $siteOverrides
      * @since 5.6.0
+     * @deprecated 6.0.0 configure Laravel mailers per environment instead.
      */
     public function setSiteOverrides(array $siteOverrides): void
     {

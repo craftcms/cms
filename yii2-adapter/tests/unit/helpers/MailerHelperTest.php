@@ -12,6 +12,7 @@ use craft\helpers\MailerHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\test\TestCase;
+use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Deprecator\Deprecator;
 use yii\base\Event;
 
@@ -41,5 +42,13 @@ class MailerHelperTest extends TestCase
         self::assertCount(1, $matches);
 
         Event::off(MailerHelper::class, MailerHelper::EVENT_REGISTER_MAILER_TRANSPORTS);
+    }
+
+    public function testCreateTransportAdapterFailsLoudlyForUnsupportedTypes(): void
+    {
+        $this->expectException(MissingComponentException::class);
+        $this->expectExceptionMessage('Configure a Laravel mailer/driver in your application config or environment instead.');
+
+        MailerHelper::createTransportAdapter(\stdClass::class);
     }
 }

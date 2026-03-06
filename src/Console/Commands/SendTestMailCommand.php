@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Console\Commands;
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\SystemMessage\Actions\SendTestMailAction;
 use CraftCms\Cms\Utility\Utilities\MailSettings;
@@ -42,7 +41,6 @@ final class SendTestMailCommand extends Command
 
             $to = text(
                 label: 'Which email address should the test email be sent to?',
-                default: array_key_first(Cms::config()->getTestToEmailAddress()) ?? '',
                 required: true,
                 validate: ['email:strict'],
             );

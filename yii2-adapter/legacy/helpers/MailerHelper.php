@@ -84,8 +84,7 @@ class MailerHelper
     public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface
     {
         if (!in_array($type, self::allMailerTransportTypes(), true)) {
-            self::_warnIgnoredTransports();
-            $type = Sendmail::class;
+            throw self::_unsupportedTransportException($type);
         }
 
         try {
@@ -93,10 +92,7 @@ class MailerHelper
                 'type' => $type,
             ], TransportAdapterInterface::class);
         } catch (MissingComponentException) {
-            self::_warnIgnoredTransports();
-            $component = Component::createComponent([
-                'type' => Sendmail::class,
-            ], TransportAdapterInterface::class);
+            throw self::_unsupportedTransportException($type);
         }
 
         if ($settings) {
@@ -221,5 +217,13 @@ class MailerHelper
             'MailerHelper::EVENT_REGISTER_MAILER_TRANSPORTS',
             'Custom mailer transport adapters are ignored. Configure Laravel mail drivers instead.',
         );
+    }
+
+    private static function _unsupportedTransportException(string $type): MissingComponentException
+    {
+        return new MissingComponentException(sprintf(
+            'Mailer transport adapter "%s" is no longer supported. Configure a Laravel mailer/driver in your application config or environment instead.',
+            $type,
+        ));
     }
 }

@@ -29,6 +29,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
@@ -705,6 +706,20 @@ class App
      */
     public static function mailerConfig(?MailSettings $settings = null): array
     {
+        if ($settings?->template) {
+            Deprecator::log(
+                'craft\\models\\MailSettings::$template',
+                '`craft\\models\\MailSettings::$template` is deprecated and no longer has any effect. Use a Laravel mailable view instead.',
+            );
+        }
+
+        if (!empty($settings?->siteOverrides)) {
+            Deprecator::log(
+                'craft\\models\\MailSettings::$siteOverrides',
+                '`craft\\models\\MailSettings::$siteOverrides` is deprecated and no longer has any effect. Configure Laravel mailers per environment instead.',
+            );
+        }
+
         $fromEmail = data_get(config('mail'), 'from.address');
         $fromName = data_get(config('mail'), 'from.name');
         $replyTo = data_get(config('mail'), 'reply_to.address');

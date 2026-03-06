@@ -48,6 +48,7 @@ use craft\gql\queries\GlobalSet as GlobalSetQuery;
 use craft\gql\queries\Tag as TagQuery;
 use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\TagRelation;
+use craft\imagetransforms\ImageTransformer;
 use craft\models\CategoryGroup;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
@@ -61,6 +62,7 @@ use craft\services\Fields;
 use craft\services\Fs;
 use craft\services\Gc;
 use craft\services\Gql;
+use craft\services\ImageTransforms;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig as LegacyProjectConfig;
 use craft\services\Revisions;
@@ -109,6 +111,8 @@ use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
 use CraftCms\Cms\GarbageCollection\Actions\HardDelete;
 use CraftCms\Cms\GarbageCollection\Events\RunningGarbageCollection;
+use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Events\SiteSaved;
@@ -133,6 +137,7 @@ use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
+use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\ElementMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
@@ -368,8 +373,8 @@ class Yii2ServiceProvider extends ServiceProvider
         AssetVolumeFolder::mixin(new ValidateMixin());
         FilesystemFsListing::mixin(new ValidateMixin());
         Widget::mixin(new ValidateMixin());
-        \CraftCms\Cms\Image\Data\ImageTransform::mixin(new ValidateMixin());
-        \CraftCms\Cms\Image\Data\ImageTransformIndex::mixin(new ValidateMixin());
+        ImageTransform::mixin(new ValidateMixin());
+        ImageTransformIndex::mixin(new ValidateMixin());
     }
 
     protected function registerLegacyApp(): void
@@ -490,6 +495,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Load legacy Craft
          */
         app('Craft');
+        new TestToEmailAddressCompatibility()->boot();
 
         /**
          * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.
@@ -657,8 +663,8 @@ class Yii2ServiceProvider extends ServiceProvider
         Users::registerEvents();
         View::registerEvents();
         Volumes::registerEvents();
-        \craft\services\ImageTransforms::registerEvents();
-        \craft\imagetransforms\ImageTransformer::registerEvents();
+        ImageTransforms::registerEvents();
+        ImageTransformer::registerEvents();
 
         /**
          * Controllers

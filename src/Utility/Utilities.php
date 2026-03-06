@@ -103,6 +103,10 @@ final readonly class Utilities
             return false;
         }
 
+        if ($class === MailSettings::class && ! $user?->isAdmin()) {
+            return false;
+        }
+
         $utilityId = $class::id();
 
         if (! $user?->can("utility:$utilityId")) {

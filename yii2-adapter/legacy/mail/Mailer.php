@@ -9,6 +9,7 @@ namespace craft\mail;
 
 use Craft;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
@@ -36,6 +37,7 @@ class Mailer extends \yii\symfonymailer\Mailer
 
     /**
      * @var string|null The email template that should be used
+     * @deprecated 6.0.0 use a Laravel mailable view instead.
      */
     public ?string $template = null;
 
@@ -53,6 +55,7 @@ class Mailer extends \yii\symfonymailer\Mailer
     /**
      * @var array Site overrides
      * @since 5.6.0
+     * @deprecated 6.0.0 configure Laravel mailers per environment instead.
      */
     public array $siteOverrides = [];
 
@@ -101,6 +104,20 @@ class Mailer extends \yii\symfonymailer\Mailer
         $this->trigger(self::EVENT_BEFORE_PREP, new MailEvent([
             'message' => $message,
         ]));
+
+        if ($this->template) {
+            Deprecator::log(
+                'craft\\mail\\Mailer::$template',
+                '`craft\\mail\\Mailer::$template` is deprecated and no longer has any effect. Use a Laravel mailable view instead.',
+            );
+        }
+
+        if (!empty($this->siteOverrides)) {
+            Deprecator::log(
+                'craft\\mail\\Mailer::$siteOverrides',
+                '`craft\\mail\\Mailer::$siteOverrides` is deprecated and no longer has any effect. Configure Laravel mailers per environment instead.',
+            );
+        }
 
         $generalConfig = Cms::config();
         $currentSite = $messageSite = $twig = null;
@@ -165,11 +182,13 @@ class Mailer extends \yii\symfonymailer\Mailer
             }
 
             // Apply the testToEmailAddress config setting.
-            $testToEmailAddress = $generalConfig->getTestToEmailAddress();
-            if (!empty($testToEmailAddress)) {
-                $message->setTo($testToEmailAddress);
-                $message->setCc([]);
-                $message->setBcc([]);
+            if ($generalConfig instanceof \craft\config\GeneralConfig) {
+                $testToEmailAddress = $generalConfig->getTestToEmailAddress();
+                if (!empty($testToEmailAddress)) {
+                    $message->setTo($testToEmailAddress);
+                    $message->setCc([]);
+                    $message->setBcc([]);
+                }
             }
 
             return parent::send($message);

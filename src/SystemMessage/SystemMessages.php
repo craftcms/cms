@@ -210,7 +210,10 @@ final class SystemMessages
 
         if (
             isset($user->affiliatedSiteId) &&
-            request()->isCpRequest()
+            (
+                app()->runningInConsole() ||
+                request()->isCpRequest()
+            )
         ) {
             $siteId = $user->affiliatedSiteId;
         }

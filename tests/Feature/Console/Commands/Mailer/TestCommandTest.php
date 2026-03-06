@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
 use Illuminate\Support\Facades\Mail;
 
@@ -24,7 +23,6 @@ test('sends a test email to the provided recipient', function () {
 
 test('prompts for recipient email when no recipient option is provided', function () {
     Mail::fake();
-    Cms::config()->testToEmailAddress = ['configured@example.com' => 'Configured Recipient'];
 
     $this->artisan('craft:mailer:test')
         ->expectsQuestion('Which email address should the test email be sent to?', 'prompted@example.com')
