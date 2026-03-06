@@ -594,7 +594,7 @@ class UrlHelper
         }
 
         // to ensure we're comparing uris strip base cp url and query string from the referrer first
-        $referrerFullUri = ltrim(str_replace(self::baseCpUrl(), '', $referrer), '/');
+        $referrerFullUri = ltrim(StringHelper::removeLeft($referrer, self::baseCpUrl()), '/');
         $referrerFullUri = substr($referrerFullUri, 0, strpos($referrerFullUri, '?') ?: null);
 
         // Make sure it didn't refer itself
