@@ -2334,6 +2334,7 @@ return [
     '{type} deleted for site.' => '{type} для сайта удален.',
     '{type} deleted.' => '{type} удален.',
     '{type} duplicated.' => 'Элемент «{type}» дублирован.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'Записи типа {type} больше нельзя использовать в этом разделе. Выберите другой тип записи.',
     '{type} not restored.' => 'Восстановление не выполнено: {type}.',
     '{type} restored.' => 'Восстановление выполнено: {type}.',
