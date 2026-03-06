@@ -2335,6 +2335,7 @@ Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazion
     '{type} deleted for site.' => '{type} cancellato per il sito.',
     '{type} deleted.' => '{type} eliminato.',
     '{type} duplicated.' => '{type} duplicato.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'Gli articoli {type} non sono più consentiti in questa sezione. Scegli un altro tipo di articolo.',
     '{type} not restored.' => '{type} non ripristinati.',
     '{type} restored.' => '{type} ripristinati.',
