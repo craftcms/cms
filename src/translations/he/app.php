@@ -2333,6 +2333,7 @@ return [
     '{type} deleted for site.' => '{type} נמחק עבור האתר.',
     '{type} deleted.' => '{type} נמחק.',
     '{type} duplicated.' => '{type} שוכפל.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'רשומות {type} אינן מותרות עוד בסקשן הזה. בחר סוג רשומה אחר.',
     '{type} not restored.' => '{type} לא שוחזרו.',
     '{type} restored.' => '{type} שוחזרו.',
