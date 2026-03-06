@@ -25,6 +25,7 @@ use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
+use craft\filters\IpRateLimitIdentity;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
@@ -46,14 +47,11 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
-use thamtech\ratelimiter\Context;
-use thamtech\ratelimiter\handlers\TooManyRequestsHttpExceptionHandler;
-use thamtech\ratelimiter\limit\RateLimit;
-use thamtech\ratelimiter\RateLimiter;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\Model;
+use yii\filters\RateLimiter;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -178,26 +176,13 @@ class UsersController extends Controller
             'rateLimiter' => [
                 'class' => RateLimiter::class,
                 'only' => ['send-password-reset-email'],
-                'components' => [
-                    'rateLimit' => [
-                        'definitions' => [
-                            'reset-password' => [
-                                'class' => RateLimit::class,
-                                'limit' => 1,
-                                'window' => 1,
-                                'identifier' => fn(Context $context, $rateLimitId) => sprintf(
-                                    '%s:%s',
-                                    $rateLimitId,
-                                    $context->request->getUserIP(),
-                                ),
-                            ],
-                        ],
-                    ],
-                    'allowanceStorage' => [
-                        'cache' => 'cache',
-                    ],
-                ],
-                'as tooManyRequestsException' => TooManyRequestsHttpExceptionHandler::class,
+                'enableRateLimitHeaders' => false,
+                'user' => fn() => new IpRateLimitIdentity([
+                    'limit' => 1,
+                    'window' => 1,
+                    'keyPrefix' => 'reset-password',
+                    'ip' => Craft::$app->getRequest()->getUserIP() ?? 'unknown',
+                ]),
             ],
         ];
     }
