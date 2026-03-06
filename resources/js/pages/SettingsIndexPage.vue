@@ -44,10 +44,9 @@
                         <craft-icon
                           :name="item.icon"
                           style="font-size: calc(40rem / 16)"
-                          :label="`${item.label} - ${t('Settings')}`"
                         ></craft-icon>
                       </div>
-                      {{ item.label }}
+                      {{ item.label }}<span class="sr-only"> - {{ t('Settings') }}</span>
                     </div>
                   </a>
                 </li>
