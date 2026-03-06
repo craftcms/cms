@@ -2333,6 +2333,7 @@ return [
     '{type} deleted for site.' => '已删除站点的{type}。',
     '{type} deleted.' => '已删除{type}。',
     '{type} duplicated.' => '{type}已复制。',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => '此版块不再允许使用{type}条目。请选择其他条目类型。',
     '{type} not restored.' => '{type}未恢复。',
     '{type} restored.' => '{type}已恢复。',
