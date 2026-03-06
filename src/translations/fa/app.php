@@ -2333,6 +2333,7 @@ return [
     '{type} deleted for site.' => '{type} برای سایت حذف شد.',
     '{type} deleted.' => '{type} حذف گردید.',
     '{type} duplicated.' => '{type} کپی برداری شد.',
+    '{type} entries are no longer allowed in this field. Please choose a different entry type.' => '{type} entries are no longer allowed in this field. Please choose a different entry type.',
     '{type} entries are no longer allowed in this section. Please choose a different entry type.' => 'ورودی های {type} دیگر در این بخش مجاز نیستند. لطفاً نوع ورودی دیگری را انتخاب کنید.',
     '{type} not restored.' => '{type} بازگردانده نشد.',
     '{type} restored.' => '{type} بازگردانده شد.',
