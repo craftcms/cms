@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -33,7 +34,12 @@ use yii\helpers\Markdown;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Number extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+class Number extends Field implements
+    InlineEditableFieldInterface,
+    SortableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface
 {
     /**
      * @since 3.5.11
@@ -214,6 +220,14 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
             'field' => $this,
             'readOnly' => $readOnly,
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue(): int|null|float
+    {
+        return $this->defaultValue;
     }
 
     /**

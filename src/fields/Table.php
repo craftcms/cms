@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
@@ -39,7 +40,7 @@ use yii\validators\EmailValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Table extends Field implements CrossSiteCopyableFieldInterface
+class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface
 {
     private static array $typeOptions;
 
@@ -438,6 +439,14 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
     public function useFieldset(): bool
     {
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue(): ?array
+    {
+        return $this->defaults;
     }
 
     /**
