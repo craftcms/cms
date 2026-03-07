@@ -21,7 +21,6 @@ interface DefaultableFieldInterface extends FieldInterface
      * Returns the default value that should be set on existing elements.
      *
      * @return mixed
-     * @since 5.10.0
      */
     public function getDefaultValue(): mixed;
 }
