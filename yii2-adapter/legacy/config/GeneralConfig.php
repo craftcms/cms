@@ -307,7 +307,10 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
             ->cooldownDuration($this->cooldownDuration)
             ->defaultTokenDuration($this->defaultTokenDuration)
             ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
-            ->previewTokenDuration($this->previewTokenDuration ?? $this->defaultTokenDuration)
+            ->previewTokenDuration($this->previewTokenDuration ?? $this->defaultTokenDuration);
+
+        $this
+            // legacy-only durations
             ->purgeStaleUserSessionDuration($this->purgeStaleUserSessionDuration)
             ->purgePendingUsersDuration($this->purgePendingUsersDuration)
             ->purgeUnsavedDraftsDuration($this->purgeUnsavedDraftsDuration)

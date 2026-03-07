@@ -181,9 +181,12 @@ class Config extends Component
             Craft::configure($existingConfig, $config);
             $config = $existingConfig;
         } else {
-            $config = $category === self::CATEGORY_GENERAL
-                ? $configClass::__set_state($config)
-                : new $configClass($config);
+            if ($category === self::CATEGORY_GENERAL) {
+                $config = $configClass::__set_state($config);
+            } else {
+                /** @var class-string<DbConfig> $configClass */
+                $config = new $configClass($config);
+            }
         }
 
         $this->_loadingConfigFile = $loadingConfig;
