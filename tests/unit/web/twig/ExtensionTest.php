@@ -1120,6 +1120,16 @@ class ExtensionTest extends TestCase
     public function testTagFunction(): void
     {
         $this->testRenderResult(
+            '<p>Hello</p>',
+            '{{ tag("p", "Hello") }}'
+        );
+
+        $this->testRenderResult(
+            '<p>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</p>',
+            '{{ tag("p", "<script>alert(\'Hello\');</script>") }}'
+        );
+
+        $this->testRenderResult(
             '<p class="foo">Hello</p>',
             '{{ tag("p", {text: "Hello", class: "foo"}) }}'
         );
