@@ -12,6 +12,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Twig;
+use CraftCms\Cms\SystemMessage\Actions\RenderSystemMessageAction;
 use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
@@ -161,7 +162,12 @@ class Mailer extends \yii\symfonymailer\Mailer
                     siteId: $message->siteId,
                 );
 
-                $rendered = $mailable->renderedMessage();
+                $rendered = app(RenderSystemMessageAction::class)->handle(
+                    key: $mailable->key,
+                    variables: $mailable->variables,
+                    language: $mailable->language,
+                    siteId: $mailable->siteId,
+                );
 
                 $message->language = $rendered->language;
                 $message->setSubject($rendered->subject);
