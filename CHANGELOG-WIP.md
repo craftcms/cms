@@ -8,6 +8,8 @@
 - Added the `--to-default` option to `resave` commands. ([#18522](https://github.com/craftcms/cms/pull/18522))
 
 ### Development
+- Added the `heading()`/`h()` and `h1()`…`h6()` Twig functions. ([#18524](https://github.com/craftcms/cms/pull/18524))
+- The `tag()` function now accepts a string for its second argument. ([#18524](https://github.com/craftcms/cms/pull/18524)) 
 - `delete` GraphQL queries now have a `hardDelete` argument. ([#18511](https://github.com/craftcms/cms/pull/18511))
 
 ### Extensibility
