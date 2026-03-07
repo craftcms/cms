@@ -247,7 +247,7 @@ JS;
             'apiParams' => app(Api::class)->apiParams,
             'appId' => Craft::$app->id,
             'autofocusPreferred' => $currentUser->getAutofocusPreferred(),
-            'autosaveDrafts' => $generalConfig->autosaveDrafts,
+            'autosaveDrafts' => Craft::$app->getConfig()->getGeneral()->autosaveDrafts,
             'canAccessQueueManager' => app(Utilities::class)->checkAuthorization(QueueManager::class),
             'dataAttributes' => Html::$dataAttributes,
             'defaultIndexCriteria' => [],

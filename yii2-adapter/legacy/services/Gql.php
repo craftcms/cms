@@ -1565,7 +1565,7 @@ class Gql extends Component
             }
 
             if (
-                !Cms::config()->disableGraphqlTransformDirective &&
+                !Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective &&
                 in_array('directive:transform', $schema->scope)
             ) {
                 $directiveClasses[] = Transform::class;
