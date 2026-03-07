@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
+use craft\base\DefaultableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -30,7 +31,11 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Color extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
+class Color extends Field implements
+    InlineEditableFieldInterface,
+    MergeableFieldInterface,
+    CrossSiteCopyableFieldInterface,
+    DefaultableFieldInterface
 {
     /**
      * @inheritdoc
@@ -114,8 +119,17 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
      *
      * @return string|null
      * @since 5.6.0
+     * @deprecated in 5.10.0. [[getDefaultValue()]] should be used instead.
      */
     public function getDefaultColor(): ?string
+    {
+        return $this->getDefaultValue();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDefaultValue(): ?string
     {
         $color = Arr::first($this->palette, fn(array $color) => $color['default'] ?? false);
         return $color ? $color['color'] : null;
@@ -279,7 +293,7 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
 
         // If this is a new entry, look for any default options
         if ($value === null && $this->isFresh($element)) {
-            $defaultColor = $this->getDefaultColor();
+            $defaultColor = $this->getDefaultValue();
             if ($defaultColor) {
                 $value = $defaultColor;
             }
