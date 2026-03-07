@@ -1120,6 +1120,16 @@ class ExtensionTest extends TestCase
     public function testTagFunction(): void
     {
         $this->testRenderResult(
+            '<p>Hello</p>',
+            '{{ tag("p", "Hello") }}'
+        );
+
+        $this->testRenderResult(
+            '<p>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</p>',
+            '{{ tag("p", "<script>alert(\'Hello\');</script>") }}'
+        );
+
+        $this->testRenderResult(
             '<p class="foo">Hello</p>',
             '{{ tag("p", {text: "Hello", class: "foo"}) }}'
         );
@@ -1133,6 +1143,62 @@ class ExtensionTest extends TestCase
             '<p><script>alert(\'Hello\');</script></p>',
             '{{ tag("p", {html: "<script>alert(\'Hello\');</script>"}) }}'
         );
+    }
+
+    /**
+     *
+     */
+    public function testHeadingFunctions(): void
+    {
+        for ($i = 1; $i <= 6; $i++) {
+            $this->testRenderResult(
+                "<h$i>Hello</h$i>",
+                "{{ heading($i, 'Hello') }}"
+            );
+            $this->testRenderResult(
+                "<h$i>Hello</h$i>",
+                "{{ h($i, 'Hello') }}"
+            );
+            $this->testRenderResult(
+                "<h$i>Hello</h$i>",
+                "{{ h$i('Hello') }}"
+            );
+        }
+
+        $this->testRenderResult(
+            '<h1>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</h1>',
+            '{{ h1("<script>alert(\'Hello\');</script>") }}'
+        );
+
+        $this->testRenderResult(
+            '<h1 class="foo">Hello</h1>',
+            '{{ h1({text: "Hello", class: "foo"}) }}'
+        );
+
+        $this->testRenderResult(
+            '<h1>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</h1>',
+            '{{ h1({text: "<script>alert(\'Hello\');</script>"}) }}'
+        );
+
+        $this->testRenderResult(
+            '<h1><script>alert(\'Hello\');</script></h1>',
+            '{{ h1({html: "<script>alert(\'Hello\');</script>"}) }}'
+        );
+
+        $this->testRenderResult(
+            '<h3>Hello</h3>',
+            '{{ h1("Hello") }}',
+            ['baseHeadingLevel' => 3],
+        );
+
+        $this->testRenderResult(
+            '<h4>Hello</h4>',
+            '{{ h2("Hello") }}',
+            ['baseHeadingLevel' => 3],
+        );
+
+        self::expectException(RuntimeError::class);
+        $this->view->renderString("{{ heading(7, 'Hello') }}");
     }
 
     /**
