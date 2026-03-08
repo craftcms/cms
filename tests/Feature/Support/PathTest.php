@@ -6,6 +6,7 @@ use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\File;
 
@@ -35,7 +36,7 @@ beforeEach(function () {
 
     $this->originalRebrandPath = getenv('CRAFT_REBRAND_PATH');
     putenv('CRAFT_REBRAND_PATH');
-    unset($_SERVER['CRAFT_REBRAND_PATH'], \Illuminate\Support\Env::get('CRAFT_REBRAND_PATH'));
+    unset($_SERVER['CRAFT_REBRAND_PATH']);
 
     $this->laravelPath = function (): \CraftCms\Cms\Support\Path {
         $laravelPathClass = \CraftCms\Cms\Support\Path::class;
@@ -56,11 +57,10 @@ afterEach(function () {
 
     if ($this->originalRebrandPath === false) {
         putenv('CRAFT_REBRAND_PATH');
-        unset($_SERVER['CRAFT_REBRAND_PATH'], \Illuminate\Support\Env::get('CRAFT_REBRAND_PATH'));
+        unset($_SERVER['CRAFT_REBRAND_PATH']);
     } else {
         putenv("CRAFT_REBRAND_PATH={$this->originalRebrandPath}");
         $_SERVER['CRAFT_REBRAND_PATH'] = $this->originalRebrandPath;
-        \Illuminate\Support\Env::get('CRAFT_REBRAND_PATH') = $this->originalRebrandPath;
     }
 
     File::deleteDirectory($this->sandboxPath);
@@ -105,7 +105,6 @@ test('rebrand path uses storage by default and env override when present', funct
     $customPath = $this->sandboxPath.'/custom-rebrand';
     putenv("CRAFT_REBRAND_PATH={$customPath}");
     $_SERVER['CRAFT_REBRAND_PATH'] = $customPath;
-    \Illuminate\Support\Env::get('CRAFT_REBRAND_PATH') = $customPath;
 
     $overridePathService = ($this->laravelPath)();
 
@@ -179,9 +178,9 @@ test('system paths return the expected ordered list', function () {
 test('laravel path service and facade return the same values', function () {
     $laravelPath = ($this->laravelPath)();
 
-    expect(\CraftCms\Cms\Support\Facades\Path::projectConfigFile())->toBe($laravelPath->projectConfigFile())
-        ->and(\CraftCms\Cms\Support\Facades\Path::temp(create: false))->toBe($laravelPath->temp(create: false))
-        ->and(\CraftCms\Cms\Support\Facades\Path::system())->toBe($laravelPath->system());
+    expect(Path::projectConfigFile())->toBe($laravelPath->projectConfigFile())
+        ->and(Path::temp(create: false))->toBe($laravelPath->temp(create: false))
+        ->and(Path::system())->toBe($laravelPath->system());
 });
 
 test('laravel path service falls back to application paths when aliases are unavailable', function () {
