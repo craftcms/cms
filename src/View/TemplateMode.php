@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
-use Craft;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\View\Events\RegisterCpTemplateRoots;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use Illuminate\Support\Facades\Context;
@@ -84,8 +84,8 @@ enum TemplateMode: string
     public function templatesPath(): string
     {
         return rtrim((string) match ($this) {
-            self::Cp => Craft::$app->getPath()->getCpTemplatesPath(),
-            self::Site => Craft::$app->getPath()->getSiteTemplatesPath(),
+            self::Cp => Path::cpTemplates(),
+            self::Site => Path::siteTemplates(),
         }, '/\\');
     }
 

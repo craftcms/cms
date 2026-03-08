@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use Craft;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
@@ -145,8 +145,8 @@ final class ImageTransformHelper
                     $prefix = pathinfo($asset->getFilename(), PATHINFO_FILENAME).'.delimiter.';
                     $extension = $asset->getExtension();
                     $tempFilename = uniqid($prefix, true).'.'.$extension;
-                    $tempPath = Craft::$app->getPath()->getTempPath();
-                    $tempFilePath = $tempPath.DIRECTORY_SEPARATOR.$tempFilename;
+                    $tempPath = Path::temp();
+                    $tempFilePath = Path::temp($tempFilename);
 
                     // Fetch a list of existing temp files for this image.
                     $files = FileHelper::findFiles($tempPath, [
@@ -446,7 +446,7 @@ final class ImageTransformHelper
         // It's important that the temp filename has the target file extension, as CraftCms\Cms\Image\Raster::saveAs() uses it
         // to determine the options that should be passed to Imagine\Image\ManipulatorInterface::save().
         $tempFilename = FileHelper::uniqueName(sprintf('%s.%s', $asset->getFilename(false), $format));
-        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+        $tempPath = Path::temp($tempFilename);
         $image->saveAs($tempPath);
         clearstatcache(true, $tempPath);
 
