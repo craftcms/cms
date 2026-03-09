@@ -5,12 +5,10 @@ declare(strict_types=1);
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Yii2Adapter\Tests\TestCase;
 use Illuminate\Support\Facades\Cache;
+use yii\web\AssetBundle;
 
-uses(TestCase::class);
-
-final class TestAssetBundle extends \yii\web\AssetBundle
+final class TestAssetBundle extends AssetBundle
 {
 }
 
