@@ -17,6 +17,8 @@ use craft\db\Command;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
@@ -46,6 +48,7 @@ use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
+use yii\db\Exception as DbException;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
@@ -1602,6 +1605,71 @@ class App
     {
         foreach ($properties as $name => $value) {
             $object->$name = $value;
+        }
+    }
+
+    /**
+     * Returns the path for a CP resource by its URI.
+     *
+     * @param string $uri
+     * @return string|null
+     * @throws InvalidArgumentException
+     * @since 5.9.15
+     */
+    public static function resourcePathByUri(string $uri): ?string
+    {
+        if (!Path::ensurePathIsContained($uri)) {
+            throw new InvalidArgumentException("Invalid resource: $uri");
+        }
+
+        $assetManager = Craft::$app->getAssetManager();
+
+        // If the file already exists, return that
+        $path = "$assetManager->basePath/$uri";
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        // Otherwise, publish it
+        $slash = strpos($uri, '/');
+        $hash = substr($uri, 0, $slash);
+        $sourcePath = self::resourceSourcePathByHash($hash, $assetManager);
+
+        if (!$sourcePath) {
+            return null;
+        }
+
+        $filePath = substr($uri, strlen($hash) + 1);
+
+        // Publish the directory
+        [$publishedDir] = $assetManager->publish(Craft::getAlias($sourcePath));
+
+        $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
+        if (!file_exists($publishedPath)) {
+            throw new InvalidArgumentException("$filePath does not exist.");
+        }
+
+        return $publishedPath;
+    }
+
+    /**
+     * Returns the source path for a CP resource by its hash.
+     *
+     * @param string $hash
+     * @return string|false
+     * @since 4.17.9
+     */
+    private static function resourceSourcePathByHash(string $hash, AssetManager $assetManager): string|false
+    {
+        try {
+            return (new Query())
+                ->select(['path'])
+                ->from(Table::RESOURCEPATHS)
+                ->where(['hash' => $hash])
+                ->scalar();
+        } catch (DbException) {
+            // Craft isn't installed yet. See if it's cached as a fallback.
+            return Craft::$app->getCache()->get($assetManager->getCacheKeyForPathHash($hash));
         }
     }
 }
