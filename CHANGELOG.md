@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Added `craft\filters\IpRateLimitIdentity`. ([#18510](https://github.com/craftcms/cms/pull/18510))
+- Added `craft\helpers\App::resourcePathByUri()`.
 - Removed thamtech/yii2-ratelimiter-advanced. ([#18510](https://github.com/craftcms/cms/pull/18510))
 - Fixed a bug where global set GraphQL query caches weren’t getting invalidated when global sets were updated. ([#18479](https://github.com/craftcms/cms/issues/18479))
 - Fixed a bug where `users/suspend-user` and `users/unsuspend-user` actions required that the logged-in user have control panel access. ([#18485](https://github.com/craftcms/cms/issues/18485))
@@ -10,6 +11,7 @@
 - Fixed a bug where SVG files missing their `width` and `height` attributes weren’t getting them set as expected.
 - Fixed an error that occurred if a template referenced a preloaded Single entry followed by a null coalescing operator. ([#18503](https://github.com/craftcms/cms/issues/18503))
 - Fixed a bug where links within Redactor fields were getting `target="_blank"` added to them. ([#18500](https://github.com/craftcms/cms/issues/18500))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerabilities. (GHSA-3m9m-24vh-39wx, GHSA-95wr-3f2v-v2wh)
 
 ## 4.17.8 - 2026-02-25
 

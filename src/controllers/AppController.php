@@ -23,6 +23,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Session;
+use craft\helpers\StringHelper;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
@@ -32,6 +33,7 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use DateInterval;
 use Throwable;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
@@ -110,17 +112,23 @@ class AppController extends Controller
     {
         $this->requireCpRequest();
 
-        if (!str_starts_with($url, Craft::$app->getAssetManager()->baseUrl)) {
+        $assetManager = Craft::$app->getAssetManager();
+        $baseUrl = StringHelper::ensureRight($assetManager->baseUrl, '/');
+        if (!str_starts_with($url, $baseUrl)) {
             throw new BadRequestHttpException("$url does not appear to be a resource URL");
         }
 
-        // Close the PHP session in case this takes a while
-        Session::close();
+        $resourceUri = preg_replace('/^(.*)\?.*/', '$1', substr($url, strlen($baseUrl)));
 
-        $response = Craft::createGuzzleClient()->get($url);
-        $this->response->setCacheHeaders();
-        $this->response->getHeaders()->set('content-type', 'application/javascript');
-        return $this->asRaw($response->getBody());
+        try {
+            $publishedPath = App::resourcePathByUri($resourceUri);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), previous: $e);
+        }
+
+        return $this->response->sendFile($publishedPath, null, [
+            'inline' => true,
+        ]);
     }
 
     /**
