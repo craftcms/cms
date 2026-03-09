@@ -252,6 +252,10 @@ class Asset extends ElementMutationResolver
         } elseif (!empty($fileInformation['url'])) {
             $url = $fileInformation['url'];
 
+            if (!$this->validateScheme($url)) {
+                throw new UserError("$url contains an invalid scheme.");
+            }
+
             if (!$this->validateHostname($url)) {
                 throw new UserError("$url contains an invalid hostname.");
             }
@@ -297,6 +301,13 @@ class Asset extends ElementMutationResolver
         $asset->avoidFilenameConflicts = true;
 
         return true;
+    }
+
+    private function validateScheme(string $url): bool
+    {
+        // block Gopher/File/FTP Smuggling
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        return in_array(strtolower($scheme), ['http', 'https'], true);
     }
 
     private function validateHostname(string $url): bool
