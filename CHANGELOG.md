@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.15 - 2026-03-09
 
 - Element edit pages once again redirect to their referral URL on save. ([#18483](https://github.com/craftcms/cms/pull/18483))
 - Added `craft\filters\IpRateLimitIdentity`. ([#18510](https://github.com/craftcms/cms/pull/18510))
