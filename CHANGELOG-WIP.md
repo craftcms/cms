@@ -649,6 +649,7 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 ## Request
 
 - Added `Request::isPreview()` macro for detecting preview requests via `x-craft-preview` or `x-craft-live-preview` parameters.
+- Added `Request::isCpRequest()`, `Request::isSiteRequest()`, `Request::isActionRequest()`, `Request::actionSegments()`, `Request::actionSegmentsToRoute()`, `Request::pageNumber()`, `Request::duplicateWithUri()`, `Request::getToken()`, and `Request::getSigned()` macros.
 
 ## Security
 
@@ -923,6 +924,13 @@ Moved the following controllers:
 - Added `CraftCms\Cms\View\TemplateMode` enum.
 - Added `CraftCms\Cms\View\Events\RegisterCpTemplateRoots`.
 - Added `CraftCms\Cms\View\Events\RegisterSiteTemplateRoots`.
+- Added `CraftCms\Cms\View\TemplateCaches`.
+- Added `CraftCms\Cms\View\CacheCollectors\DependencyCollector`.
+- Added `CraftCms\Cms\View\CacheCollectors\ResourceCollector`.
+- Added `CraftCms\Cms\View\Contracts\CacheCollectorInterface`.
+- Added `CraftCms\Cms\View\Data\TemplateCacheContext`.
+- Added `CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors`.
+- Deprecated `craft\services\TemplateCaches`. `CraftCms\Cms\View\TemplateCaches` should be used instead.
 - Deprecated `craft\web\View::registerJs()`. `CraftCms\Cms\View\HtmlStack::js()` should be used instead.
 - Deprecated `craft\web\View::registerJsWithVars()`. `CraftCms\Cms\View\HtmlStack::jsWithVars()` should be used instead.
 - Deprecated `craft\web\View::registerJsFile()`. `CraftCms\Cms\View\HtmlStack::jsFile()` should be used instead.
