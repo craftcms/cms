@@ -17,7 +17,6 @@ use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateTime;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 
 use function request;
@@ -47,7 +46,7 @@ final class TemplateCaches
         }
 
         $context = $this->context($key, $global, $registerResources);
-        $data = $this->normalizeCachedValue(Cache::get($context->cacheKey));
+        $data = $this->normalizeCachedValue(DependencyCache::get($context->cacheKey));
 
         if ($data === null) {
             return null;
