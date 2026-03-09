@@ -1185,18 +1185,6 @@ class ExtensionTest extends TestCase
             '{{ h1({html: "<script>alert(\'Hello\');</script>"}) }}'
         );
 
-        $this->testRenderResult(
-            '<h3>Hello</h3>',
-            '{{ h1("Hello") }}',
-            ['baseHeadingLevel' => 3],
-        );
-
-        $this->testRenderResult(
-            '<h4>Hello</h4>',
-            '{{ h2("Hello") }}',
-            ['baseHeadingLevel' => 3],
-        );
-
         self::expectException(RuntimeError::class);
         $this->view->renderString("{{ heading(7, 'Hello') }}");
     }

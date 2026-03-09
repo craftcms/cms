@@ -1417,14 +1417,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('attr', [Html::class, 'renderTagAttributes'], ['is_safe' => ['html']]),
             new TwigFunction('csrfInput', [Html::class, 'csrfInput'], ['is_safe' => ['html']]),
             new TwigFunction('failMessageInput', [Html::class, 'failMessageInput'], ['is_safe' => ['html']]),
-            new TwigFunction('h', [$this, 'headingFunction'], ['is_safe' => ['html'], 'needs_context' => true]),
-            new TwigFunction('h1', fn($c, $a) => $this->headingFunction($c, 1, $a), ['is_safe' => ['html'], 'needs_context' => true]),
-            new TwigFunction('h2', fn($c, $a) => $this->headingFunction($c, 2, $a), ['is_safe' => ['html'], 'needs_context' => true]),
-            new TwigFunction('h3', fn($c, $a) => $this->headingFunction($c, 3, $a), ['is_safe' => ['html'], 'needs_context' => true]),
-            new TwigFunction('h4', fn($c, $a) => $this->headingFunction($c, 4, $a), ['is_safe' => ['html'], 'needs_context' => true]),
-            new TwigFunction('h5', fn($c, $a) => $this->headingFunction($c, 5, $a), ['is_safe' => ['html'], 'needs_context' => true]),
-            new TwigFunction('h6', fn($c, $a) => $this->headingFunction($c, 6, $a), ['is_safe' => ['html'], 'needs_context' => true]),
-            new TwigFunction('heading', [$this, 'headingFunction'], ['is_safe' => ['html'], 'needs_context' => true]),
+            new TwigFunction('h', [$this, 'headingFunction'], ['is_safe' => ['html']]),
+            new TwigFunction('h1', fn(array|string $attributes = '') => $this->headingFunction(1, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h2', fn(array|string $attributes = '') => $this->headingFunction(2, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h3', fn(array|string $attributes = '') => $this->headingFunction(3, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h4', fn(array|string $attributes = '') => $this->headingFunction(4, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h5', fn(array|string $attributes = '') => $this->headingFunction(5, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('h6', fn(array|string $attributes = '') => $this->headingFunction(6, $attributes), ['is_safe' => ['html']]),
+            new TwigFunction('heading', [$this, 'headingFunction'], ['is_safe' => ['html']]),
             new TwigFunction('hiddenInput', [Html::class, 'hiddenInput'], ['is_safe' => ['html']]),
             new TwigFunction('input', [Html::class, 'input'], ['is_safe' => ['html']]),
             new TwigFunction('ol', [Html::class, 'ol'], ['is_safe' => ['html']]),
@@ -1679,15 +1679,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return $arr;
     }
 
-    public function headingFunction(array $context, int $level, array|string $attributes = ''): string
+    public function headingFunction(int $level, array|string $attributes = ''): string
     {
         if ($level < 1 || $level > 6) {
             throw new InvalidArgumentException("Invalid heading level: $level");
-        }
-
-        // Increment from the base heading level?
-        if (isset($context['baseHeadingLevel']) && is_int($context['baseHeadingLevel'])) {
-            $level = min($level + ($context['baseHeadingLevel'] - 1), 6);
         }
 
         return $this->tagFunction("h$level", $attributes);
