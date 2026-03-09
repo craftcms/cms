@@ -1235,6 +1235,7 @@ trait ApplicationTrait
      * Returns the template cache service.
      *
      * @return TemplateCaches The template caches service
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\View\TemplateCaches} instead.
      */
     public function getTemplateCaches(): TemplateCaches
     {
