@@ -2,11 +2,11 @@
   import type {EntryType} from '@/types';
   import {computed, ref} from 'vue';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
-  import ReorderButton from '@/components/ReorderButton.vue';
-  import ActionMenu from '@/components/ActionMenu.vue';
+  import {type ActionItem} from '@/components/ActionMenu.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import Text from '@/components/Text.vue';
   import {create} from '@actions/Settings/EntryTypesController';
+  import EntryTypeChip from '@/components/Entry/EntryTypeChip.vue';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void;
@@ -14,8 +14,10 @@
   const props = defineProps<{
     modelValue: Array<number>;
     types: Array<EntryType>;
-    actions?: Array<any>;
+    actions?: Array<ActionItem>;
   }>();
+
+  const settingsSlideoutOpen = ref(false);
 
   const selectedTypes = computed(() => {
     return props.modelValue
@@ -53,39 +55,16 @@
     }
     emit('update:modelValue', newValue);
   }
+
+  function openSlideout() {
+    settingsSlideoutOpen.value = true;
+  }
 </script>
 
 <template>
   <div>
-    <template v-for="type in selectedTypes">
-      <craft-chip
-        v-if="type"
-        :icon="type.icon"
-        :data-color="type.color?.value ?? 'white'"
-      >
-        <div :data-id="type.id">
-          <div class="font-bold">{{ type.name }}</div>
-          <code>{{ type.handle }}</code>
-        </div>
-
-        <div slot="suffix" class="flex gap-1 items-center">
-          <ActionMenu
-            :actions="[
-              {
-                label: t('Settings'),
-                icon: 'gear',
-              },
-              {
-                label: t('Remove'),
-                variant: 'danger',
-                icon: 'x',
-                onClick: () => removeItem(type.id),
-              },
-            ]"
-          />
-          <ReorderButton variant="inherit"></ReorderButton>
-        </div>
-      </craft-chip>
+    <template v-for="type in selectedTypes" :key="type?.id">
+      <EntryTypeChip v-if="type" :type="type" @click:remove="removeItem" />
     </template>
   </div>
 
@@ -140,16 +119,4 @@
   </div>
 </template>
 
-<style scoped lang="scss">
-  craft-chip::part(chip) {
-    min-width: 200px;
-  }
-
-  // Some special styles for nice icon alignment. We might want to move this
-  // into chips, but for right now this is the only spot
-  craft-chip::part(prefix) {
-    align-self: start;
-    height: 1lh;
-    justify-content: center;
-  }
-</style>
+<style scoped lang="scss"></style>

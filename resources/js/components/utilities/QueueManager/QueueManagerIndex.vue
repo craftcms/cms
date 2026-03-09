@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
-  import Pane from '@/components/Pane.vue';
+  import Pane from '@/components/Pane/Pane.vue';
   import {h, ref} from 'vue';
   import {
     createColumnHelper,

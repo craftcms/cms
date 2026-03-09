@@ -13,7 +13,7 @@
   import {create, edit, index} from '@actions/Settings/SectionsController';
   import {Form, router} from '@inertiajs/vue3';
   import AppLayout from '@/layout/AppLayout.vue';
-  import Pane from '@/components/Pane.vue';
+  import Pane from '@/components/Pane/Pane.vue';
   import CpLink from '@/components/CpLink.vue';
 
   export interface SectionModel {

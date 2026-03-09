@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {ref} from 'vue';
   import SystemMessageEditModal from './SystemMessageEditModal.vue';
-  import Pane from '@/components/Pane.vue';
+  import Pane from '@/components/Pane/Pane.vue';
 
   interface SystemMessageData {
     key: string;

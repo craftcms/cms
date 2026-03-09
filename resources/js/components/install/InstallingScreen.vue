@@ -3,7 +3,7 @@
   import {defineProps, onMounted} from 'vue';
   import {usePost} from '@/composables/useFetch';
   import {usePage} from '@inertiajs/vue3';
-  import Pane from '@/components/Pane.vue';
+  import Pane from '@/components/Pane/Pane.vue';
 
   const {props: pageProps} = usePage();
 

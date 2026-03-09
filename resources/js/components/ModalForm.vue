@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/cp';
   import Modal, {type ModalProps} from '@/components/Modal.vue';
-  import Pane from '@/components/Pane.vue';
+  import Pane from '@/components/Pane/Pane.vue';
 
   const emit = defineEmits<{
     (e: 'close'): void;

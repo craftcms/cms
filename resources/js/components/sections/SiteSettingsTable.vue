@@ -3,7 +3,7 @@
   import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import {computed, h} from 'vue';
   import {type SectionSiteSettingsData, TableSpacing} from '@/types';
-  import Pane from '@/components/Pane.vue';
+  import Pane from '@/components/Pane/Pane.vue';
   import {useEditableTable} from '@/composables/useEditableTable';
   import {usePage} from '@inertiajs/vue3';
 

@@ -12,7 +12,7 @@
   import DbFields from '@/components/install/DbFields.vue';
   import axios from 'axios';
   import InstallingScreen from '@/components/install/InstallingScreen.vue';
-  import Pane from '@/components/Pane.vue';
+  import Pane from '@/components/Pane/Pane.vue';
   import Modal from '@/components/Modal.vue';
   import StepScreen from '@/components/install/StepScreen.vue';
 

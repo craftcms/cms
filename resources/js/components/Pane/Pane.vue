@@ -5,8 +5,8 @@
   const props = withDefaults(
     defineProps<{
       as?: Component | string;
-      variant?: 'plain' | 'error' | 'code';
-      appearance?: 'plain' | 'outline' | 'raised';
+      variant?: 'plain' | 'code';
+      appearance?: 'plain' | 'outline' | 'raised' | 'slideout';
       hideHeader?: boolean;
       hideFooter?: boolean;
       title?: string;
@@ -67,6 +67,7 @@
       'pane--error': variant === 'error',
       'pane--outline': appearance === 'outline',
       'pane--raised': appearance === 'raised',
+      'pane--slideout': appearance === 'slideout',
     }"
     v-bind="$attrs"
   >
@@ -136,7 +137,28 @@
     --c-pane-border-color: var(--c-color-neutral-border-quiet);
   }
 
+  .pane--slideout {
+    display: flex;
+    flex-direction: column;
+
+    .pane__header,
+    .pane__footer {
+      background-color: var(--c-color-neutral-fill-quiet);
+      padding-inline: var(--_pane-spacing);
+      padding-block: calc(var(--_pane-spacing) / 2);
+    }
+
+    .pane__header {
+      border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    }
+
+    .pane__footer {
+      border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+    }
+  }
+
   .pane__header {
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -147,6 +169,9 @@
   .pane__body {
     padding-inline: var(--_pane-spacing);
     padding-block: var(--_pane-spacing) calc(var(--_pane-spacing) * 1.5);
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .pane__footer {
@@ -156,9 +181,7 @@
     padding-block: calc(var(--_pane-spacing) / 2);
     position: sticky;
     inset-block-end: 0;
-    //inset-inline: 0;
-    //inset-block-end: 0;
-    //z-index: 10;
+    flex-shrink: 0;
   }
 
   .actions {
