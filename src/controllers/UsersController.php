@@ -1261,6 +1261,10 @@ class UsersController extends Controller
     {
         $this->requireCpRequest();
 
+        if (!$this->showPermissionsScreen()) {
+            throw new ForbiddenHttpException('User not authorized to perform this action.');
+        }
+
         $currentUser = static::currentUser();
         $user = $this->editedUser((int)$this->request->getRequiredBodyParam('userId'));
 
@@ -2784,6 +2788,10 @@ JS);
      */
     private function _saveUserGroups(User $user, User $currentUser): void
     {
+        if (!$currentUser->canAssignUserGroups()) {
+            return;
+        }
+
         $groupIds = $this->request->getBodyParam('groups');
 
         if ($groupIds === null) {
