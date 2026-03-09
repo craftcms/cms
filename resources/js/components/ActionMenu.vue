@@ -52,7 +52,6 @@
       <craft-action-item
         v-for="(action, idx) in safeActions"
         :key="`safe-${idx}`"
-        @click="action.onClick?.()"
         v-bind="action"
         >{{ action.label }}</craft-action-item
       >
@@ -60,7 +59,6 @@
       <craft-action-item
         v-for="(action, idx) in dangerousActions"
         :key="`dangerous-${idx}`"
-        @click="action.onClick?.()"
         v-bind="action"
         >{{ action.label }}</craft-action-item
       >
