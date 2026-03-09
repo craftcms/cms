@@ -18,6 +18,7 @@
 - Fixed a bug where cross-site validation errors weren’t preventing elements from getting saved. ([#18292](https://github.com/craftcms/cms/issues/18292))
 - Fixed a bug where failure messages when pasting elements weren’t getting displayed properly.
 - Fixed a bug where `craft\helpers\UrlHelper::cpReferralUrl()` was returning the referrer URL even if it had the same URI as the current page. ([#18483](https://github.com/craftcms/cms/pull/18483))
+- Fixed a bug where Matrix field’ grouped entry type menu labels weren’t translatable. ([#18528](https://github.com/craftcms/cms/issues/18528))
 
 ## 5.9.14 - 2026-02-25
 
