@@ -616,6 +616,7 @@
     staticLayoutElements: null,
     cancelToken: null,
     ignoreFailedRequest: false,
+    uiLabel: null,
 
     isNew: null,
     id: null,
@@ -648,6 +649,8 @@
 
       this.$actionMenu = actionDisclosure.$container;
       this.actionDisclosure = actionDisclosure;
+
+      this.uiLabel = this.$container.data('ui-label');
 
       actionDisclosure.on('show', () => {
         this.$container.addClass('active');
@@ -747,6 +750,47 @@
 
       this.$container.addClass('collapsed');
 
+      this.$previewContainer.html(this.previewHtml());
+
+      this.$fieldsContainer.velocity('stop');
+      this.$container.velocity('stop');
+
+      if (animate && !Garnish.prefersReducedMotion()) {
+        this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
+        this.$container.velocity({height: 30}, 'fast');
+      } else {
+        this.$previewContainer.show();
+        this.$fieldsContainer.hide();
+        this.$container.css({height: 30});
+      }
+
+      this.$tabContainer.hide();
+
+      // Remember that?
+      if (!this.isNew) {
+        Craft.MatrixInput.rememberCollapsedEntryId(this.id);
+      } else {
+        if (!this.$collapsedInput) {
+          this.$collapsedInput = $(
+            '<input type="hidden" name="' +
+              this.matrix.inputNamePrefix +
+              '[entries][' +
+              this.id +
+              '][collapsed]" value="1"/>'
+          ).appendTo(this.$container);
+        } else {
+          this.$collapsedInput.val('1');
+        }
+      }
+
+      this.collapsed = true;
+    },
+
+    previewHtml: function () {
+      if (this.uiLabel) {
+        return Craft.escapeHtml(this.uiLabel);
+      }
+
       let previewHtml = '';
       const $fields = this.$fieldsContainer.children().children();
 
@@ -803,40 +847,7 @@
         }
       }
 
-      this.$previewContainer.html(previewHtml);
-
-      this.$fieldsContainer.velocity('stop');
-      this.$container.velocity('stop');
-
-      if (animate && !Garnish.prefersReducedMotion()) {
-        this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
-        this.$container.velocity({height: 30}, 'fast');
-      } else {
-        this.$previewContainer.show();
-        this.$fieldsContainer.hide();
-        this.$container.css({height: 30});
-      }
-
-      this.$tabContainer.hide();
-
-      // Remember that?
-      if (!this.isNew) {
-        Craft.MatrixInput.rememberCollapsedEntryId(this.id);
-      } else {
-        if (!this.$collapsedInput) {
-          this.$collapsedInput = $(
-            '<input type="hidden" name="' +
-              this.matrix.inputNamePrefix +
-              '[entries][' +
-              this.id +
-              '][collapsed]" value="1"/>'
-          ).appendTo(this.$container);
-        } else {
-          this.$collapsedInput.val('1');
-        }
-      }
-
-      this.collapsed = true;
+      return previewHtml;
     },
 
     _inputPreviewText: function ($input) {
@@ -1344,6 +1355,11 @@
             this.tabManager.selectTab(this.tabManager.$tabs.first());
           }
         }
+      }
+
+      this.uiLabel = response.data.uiLabel;
+      if (this.collapsed) {
+        this.$previewContainer.html(this.previewHtml());
       }
 
       await Craft.appendHeadHtml(response.data.headHtml);

@@ -2396,6 +2396,7 @@ JS, [
 
         $data += [
             'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
+            'uiLabel' => $this->element->getUiLabel(),
         ];
 
         return $this->_asSuccess('Field layout updated.', $element, $data, true);
