@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where `craft\fields\data\LinkData::getUrl()` was returning the URL suffix rather than an empty string, if the rendered base URL was an empty string.
+
 ## 5.9.15 - 2026-03-09
 
 - Element edit pages once again redirect to their referral URL on save. ([#18483](https://github.com/craftcms/cms/pull/18483))
@@ -88,8 +92,8 @@
 - Added `craft\helpers\ElementHelper::cleanseQueryCriteria()`.
 - Fixed an error that could occur when editing an element with a Table field. ([#18408](https://github.com/craftcms/cms/pull/18408))
 - Fixed an error that occurred when editing a Table field with no default rows. ([#18407](https://github.com/craftcms/cms/issues/18407))
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-fp5j-j7j4-mcxc)
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. (GHSA-g7j6-fmwx-7vp8)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-fp5j-j7j4-mcxc](https://github.com/craftcms/cms/security/advisories/GHSA-fp5j-j7j4-mcxc))
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. ([GHSA-g7j6-fmwx-7vp8](https://github.com/craftcms/cms/security/advisories/GHSA-g7j6-fmwx-7vp8))
 
 ## 5.9.8 - 2026-02-10
 
@@ -118,8 +122,8 @@
 - Fixed a bug where pressing <kbd>Return</kbd> on a textarea when bulk-editing elements would submit the changes.
 - Fixed a bug where it wasn’t possible to save an entry with a pre-selected author that is no longer allowed to author entries for the section. ([#18397](https://github.com/craftcms/cms/issues/18397))
 - Fixed a bug where the “View all revisions” button wasn’t working for nested entries. ([#18398](https://github.com/craftcms/cms/issues/18398))
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-fvwq-45qv-xvhv)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-vg3j-hpm9-8v5v)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. ([GHSA-fvwq-45qv-xvhv](https://github.com/craftcms/cms/security/advisories/GHSA-fvwq-45qv-xvhv))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-vg3j-hpm9-8v5v](https://github.com/craftcms/cms/security/advisories/GHSA-vg3j-hpm9-8v5v))
 
 ## 5.9.6 - 2026-02-03
 
