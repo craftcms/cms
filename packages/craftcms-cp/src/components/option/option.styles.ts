@@ -1,8 +1,8 @@
 import {css} from 'lit';
 export default css`
   :host([checked]) {
-    background-color: var(--c-color-neutral-bg-emphasis);
-    color: var(--c-color-neutral-on-emphasis);
+    background-color: var(--c-color-neutral-fill-loud);
+    color: var(--c-color-neutral-on-loud);
   }
 
   :host {
@@ -13,18 +13,18 @@ export default css`
   }
 
   :host(:hover) {
-    background-color: var(--c-color-neutral-bg-normal);
+    background-color: var(--c-color-neutral-fill-normal);
     color: var(--c-color-neutral-on-normal);
   }
 
   :host([active]) {
-    background-color: var(--c-color-neutral-bg-emphasis);
-    color: var(--c-color-neutral-on-emphasis);
+    background-color: var(--c-color-neutral-fill-loud);
+    color: var(--c-color-neutral-on-loud);
   }
 
   :host([checked]) {
-    background-color: var(--c-color-neutral-bg-emphasis);
-    color: var(--c-color-neutral-on-emphasis);
+    background-color: var(--c-color-neutral-fill-loud);
+    color: var(--c-color-neutral-on-loud);
   }
 
   :host([disabled]) {
@@ -37,7 +37,7 @@ export default css`
   }
 
   :host([active]) .hint {
-    color: var(--c-color-neutral-on-emphasis);
+    color: var(--c-color-neutral-on-loud);
   }
 
   .choice-field__label {

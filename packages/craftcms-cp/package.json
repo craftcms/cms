@@ -28,7 +28,8 @@
     "storybook": "storybook dev -p 6006",
     "build:storybook": "storybook build",
     "build:manifest": "custom-elements-manifest analyze --litelement --outdir dist",
-    "generate:vue-wrappers": "node ./scripts/generate-vue-wrappers.js"
+    "generate:vue-wrappers": "node ./scripts/generate-vue-wrappers.js",
+    "generate:colors": "node ./scripts/generate-colors.js"
   },
   "exports": {
     "./package.json": "./package.json",
@@ -45,7 +46,8 @@
     "./styles/*": "./dist/styles/*",
     "./utilities/*": "./dist/utilities/*",
     "./components/*": "./dist/components/*",
-    "./custom-elements.json": "./dist/custom-elements.json"
+    "./custom-elements.json": "./dist/custom-elements.json",
+    "./tailwind.css": "./tailwind.css"
   },
   "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
   "license": "MIT",

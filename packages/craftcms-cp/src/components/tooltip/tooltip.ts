@@ -15,14 +15,14 @@ export default class CraftTooltip extends WaTooltip {
         wa-popup {
           --wa-z-index-tooltip: var(--c-tooltip-z-index, 1000);
           --wa-tooltip-background-color: var(
-            --c-tooltip-bg,
-            var(--c-bg-overlay)
+            --c-tooltip-fill,
+            var(--c-surface-overlay)
           );
           --wa-tooltip-border-color: var(
             --c-tooltip-border,
-            var(--c-color-neutral-border-subtle)
+            var(--c-color-neutral-border-quiet)
           );
-          --wa-tooltip-content-color: var(--c-tooltip-fg, currentColor);
+          --wa-tooltip-content-color: var(--c-tooltip-text, currentColor);
           --wa-tooltip-padding: var(
             --c-tooltip-padding,
             calc(4rem / 16) calc(8rem / 16)
@@ -40,7 +40,7 @@ export default class CraftTooltip extends WaTooltip {
             var(--c-radius-sm)
           );
           font-weight: 400;
-          color: var(--c-tooltip-fg, currentColor);
+          color: var(--c-tooltip-text, currentColor);
           box-shadow: var(--c-shadow-md);
         }
       `,

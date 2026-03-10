@@ -2,15 +2,15 @@ import {css} from 'lit';
 
 export default css`
   :host {
-    --c-color-bg-emphasis: var(--c-color-neutral-bg-emphasis);
-    --c-color-bg-normal: var(--c-color-neutral-bg-normal);
-    --c-color-bg-subtle: var(--c-color-neutral-bg-subtle);
-    --c-color-border-emphasis: var(--c-color-neutral-border-emphasis);
+    --c-color-fill-loud: var(--c-color-neutral-fill-loud);
+    --c-color-fill-normal: var(--c-color-neutral-fill-normal);
+    --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
+    --c-color-border-loud: var(--c-color-neutral-border-loud);
     --c-color-border-normal: var(--c-color-neutral-border-normal);
-    --c-color-border-subtle: var(--c-color-neutral-border-subtle);
-    --c-color-on-emphasis: var(--c-color-neutral-on-emphasis);
+    --c-color-border-quiet: var(--c-color-neutral-border-quiet);
+    --c-color-on-loud: var(--c-color-neutral-on-loud);
     --c-color-on-normal: var(--c-color-neutral-on-normal);
-    --c-color-on-subtle: var(--c-color-neutral-on-subtle);
+    --c-color-on-quiet: var(--c-color-neutral-on-quiet);
     --_radius: var(--c-callout-radius, var(--c-radius-md));
     display: flex;
     gap: var(--c-spacing-sm);
@@ -73,37 +73,37 @@ export default css`
   }
 
   :host([appearance~='accent']) {
-    --c-fg-link: var(--c-color-on-emphasis);
-    background-color: var(--c-color-bg-emphasis);
-    color: var(--c-color-on-emphasis);
-    border-color: var(--c-color-border-emphasis);
+    --c-text-link: var(--c-color-on-loud);
+    background-color: var(--c-color-fill-loud);
+    color: var(--c-color-on-loud);
+    border-color: var(--c-color-border-loud);
   }
 
   :host([appearance~='fill']) {
-    --c-fg-link: var(--c-color-on-normal);
+    --c-text-link: var(--c-color-on-normal);
     border-color: transparent;
-    background-color: var(--c-color-bg-normal);
+    background-color: var(--c-color-fill-normal);
     color: var(--c-color-on-normal);
   }
 
   :host([appearance~='outline-fill']) {
-    --c-fg-link: var(--c-color-on-normal);
+    --c-text-link: var(--c-color-on-normal);
     border-color: var(--c-color-border-normal);
-    background-color: var(--c-color-bg-normal);
+    background-color: var(--c-color-fill-normal);
     color: var(--c-color-on-normal);
   }
 
   :host([appearance~='outline']) {
-    --c-fg-link: var(--c-color-on-subtle);
-    border-color: var(--c-color-border-subtle);
+    --c-text-link: var(--c-color-on-quiet);
+    border-color: var(--c-color-border-quiet);
     background-color: transparent;
-    color: var(--c-color-on-subtle);
+    color: var(--c-color-on-quiet);
   }
 
   :host([appearance~='plain']) {
-    --c-fg-link: var(--c-color-on-subtle);
+    --c-text-link: var(--c-color-on-quiet);
     background-color: transparent;
     border-color: transparent;
-    color: var(--c-color-on-subtle);
+    color: var(--c-color-on-quiet);
   }
 `;

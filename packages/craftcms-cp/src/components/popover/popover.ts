@@ -9,9 +9,9 @@ export default class CraftPopover extends WaPopover {
         :host {
           --wa-border-style: solid;
           --wa-border-width-s: 1px;
-          --wa-color-surface-default: var(--c-bg-raised);
-          --wa-color-surface-raised: var(--c-bg-raised);
-          --wa-color-surface-border: var(--c-border-subtle);
+          --wa-color-surface-default: var(--c-surface-raised);
+          --wa-color-surface-raised: var(--c-surface-raised);
+          --wa-color-surface-border: var(--c-color-neutral-border-quiet);
           --wa-border-radius-m: var(--c-radius-lg);
         }
 
