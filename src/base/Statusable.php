@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use craft\web\twig\AllowedInSandbox;
+
 /**
  * Statusable defines the common interface to be implemented by components that
  * can have statuses within the control panel.
@@ -34,5 +36,6 @@ interface Statusable
      *
      * @return string|null
      */
+    #[AllowedInSandbox]
     public function getStatus(): ?string;
 }

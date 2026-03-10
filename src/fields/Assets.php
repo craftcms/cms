@@ -9,7 +9,6 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\ThumbableFieldInterface;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\AssetQuery;
@@ -38,8 +37,6 @@ use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
-use Twig\Error\RuntimeError;
-use yii\base\InvalidConfigException;
 
 /**
  * Assets represents an Assets field.
@@ -47,7 +44,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Assets extends BaseRelationField implements ThumbableFieldInterface
+class Assets extends BaseRelationField
 {
     /**
      * @since 3.5.11
@@ -87,6 +84,14 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     public static function elementType(): string
     {
         return Asset::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function canShowSiteMenu(): bool
+    {
+        return false;
     }
 
     /**
@@ -241,9 +246,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
         $rules = parent::defineRules();
 
         $rules[] = [
-            ['allowedKinds'], 'required', 'when' => function(self $field): bool {
-                return (bool)$field->restrictFiles;
-            },
+            ['allowedKinds'], 'required', 'when' => fn(self $field): bool => (bool)$field->restrictFiles,
         ];
 
         $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
@@ -399,11 +402,11 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If data strings are passed along, make sure the array keys are retained.
-        if (is_array($value) && isset($value['data']) && !empty($value['data'])) {
+        if (is_array($value) && !empty($value['data'])) {
             $this->_uploadedDataFiles = ['data' => $value['data'], 'filename' => $value['filename']];
             unset($value['data'], $value['filename']);
 
-            /** @var Asset $class */
+            /** @var class-string<Asset> $class */
             $class = static::elementType();
             $query = $class::find();
 
@@ -417,18 +420,15 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                     ->preferSites([$targetSite]);
             }
 
-            // $value might be an array of element IDs
-            if (is_array($value)) {
-                $query
-                    ->id(array_values(array_filter($value)))
-                    ->fixedOrder();
+            $query
+                ->id(array_values(array_filter($value)))
+                ->fixedOrder();
 
-                if ($this->allowLimit && $this->maxRelations) {
-                    $query->limit($this->maxRelations);
-                }
-
-                return $query;
+            if ($this->allowLimit && $this->maxRelations) {
+                $query->limit($this->maxRelations);
             }
+
+            return $query;
         }
 
         return parent::normalizeValue($value, $element);
@@ -490,15 +490,22 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
-        /** @var AssetQuery|ElementCollection $value */
-        if ($value instanceof AssetQuery) {
-            $handle = sprintf('%s-%s', preg_replace('/:+/', '-', __METHOD__), $size);
-            $value = (clone $value)->eagerly($handle);
+        $asset = new Asset();
+        $asset->title = Craft::t('app', 'Related {type} Title', ['type' => $asset->displayName()]);
+
+        if ($this->restrictFiles) {
+            $extensions = $this->_getAllowedExtensions();
+            $filename = 'test.' . $extensions[0];
+        } else {
+            $filename = 'test.txt';
         }
 
-        return $value->one()?->getThumbHtml($size);
+        $asset->filename = $filename;
+        $collection = new ElementCollection([$asset]);
+
+        return $this->previewHtml($collection);
     }
 
     // Events
@@ -507,22 +514,22 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew): void
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
-        // No special treatment for revisions
-        $rootElement = ElementHelper::rootElement($element);
-        if (!$rootElement->getIsRevision()) {
-            // Figure out what we're working with and set up some initial variables.
-            $isCanonical = $rootElement->getIsCanonical();
-            $query = $element->getFieldValue($this->handle);
-            $assetsService = Craft::$app->getAssets();
+        // Only handle file uploads for the initial site
+        if (!$element->propagating) {
+            // No special treatment for revisions
+            $rootElement = $element->getRootOwner();
+            if (!$rootElement->getIsRevision()) {
+                // Figure out what we're working with and set up some initial variables.
+                $isCanonical = $rootElement->getIsCanonical();
+                $query = $element->getFieldValue($this->handle);
+                $assetsService = Craft::$app->getAssets();
 
-            $getUploadFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
-                return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
-            };
+                $getUploadFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
+                    return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
+                };
 
-            // Only handle file uploads for the initial site
-            if (!$element->propagating) {
                 // Were there any uploaded files?
                 $uploadedFiles = $this->_getUploadedFiles($element);
 
@@ -550,6 +557,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                         $asset = new Asset();
                         $asset->tempFilePath = $tempPath;
                         $asset->setFilename($file['filename']);
+                        $asset->setMimeType(FileHelper::getMimeType($tempPath, checkExtension: false) ?? $file['mimeType']);
                         $asset->newFolderId = $uploadFolderId;
                         $asset->setVolumeId($uploadFolder->volumeId);
                         $asset->uploaderId = Craft::$app->getUser()->getId();
@@ -567,6 +575,8 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                         // Add the newly uploaded IDs to the mix.
                         if (is_array($query->id)) {
                             $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
+                        } elseif (isset($query->where['elements.id']) && ArrayHelper::isNumeric($query->where['elements.id'])) {
+                            $query = $this->normalizeValue(array_merge($query->where['elements.id'], $assetIds), $element);
                         } else {
                             $query = $this->normalizeValue($assetIds, $element);
                         }
@@ -578,54 +588,77 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                     }
                 }
             }
+        }
 
-            // Are there any related assets?
-            /** @var AssetQuery $query */
-            /** @var Asset[] $assets */
-            $assets = $query->all();
+        return parent::beforeElementSave($element, $isNew);
+    }
 
-            if (!empty($assets)) {
-                // Only enforce the restricted asset location for canonical elements
-                if ($this->restrictLocation && $isCanonical) {
-                    if (!$this->allowSubfolders) {
-                        $rootRestrictedFolderId = $getUploadFolderId();
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, bool $isNew): void
+    {
+        // No special treatment for revisions
+        $rootElement = ElementHelper::rootElement($element);
+        if (!$rootElement->getIsRevision()) {
+            // Figure out what we're working with and set up some initial variables.
+            $isCanonical = $rootElement->getIsCanonical();
+            $query = $element->getFieldValue($this->handle);
+            $assetsService = Craft::$app->getAssets();
+
+            $getUploadFolderId = function() use ($element, $isCanonical, &$_targetFolderId): int {
+                return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
+            };
+
+            if (!$element->propagating || $this->localizeRelations) {
+                // Are there any related assets?
+                /** @var AssetQuery $query */
+                /** @var Asset[] $assets */
+                $assets = $query->all();
+
+                if (!empty($assets)) {
+                    // Only enforce the restricted asset location for canonical elements
+                    if ($this->restrictLocation && $isCanonical) {
+                        if (!$this->allowSubfolders) {
+                            $rootRestrictedFolderId = $getUploadFolderId();
+                        } else {
+                            $rootRestrictedFolderId = $this->_uploadFolder($element, true, false)->id;
+                        }
+
+                        $assetsToMove = array_filter($assets, function(Asset $asset) use ($rootRestrictedFolderId, $assetsService) {
+                            if ($asset->folderId === $rootRestrictedFolderId) {
+                                return false;
+                            }
+                            if (!$this->allowSubfolders) {
+                                return true;
+                            }
+                            $rootRestrictedFolder = $assetsService->getFolderById($rootRestrictedFolderId);
+                            return (
+                                $asset->volumeId !== $rootRestrictedFolder->volumeId ||
+                                !str_starts_with($asset->folderPath, $rootRestrictedFolder->path)
+                            );
+                        });
                     } else {
-                        $rootRestrictedFolderId = $this->_uploadFolder($element, true, false)->id;
+                        // Find the files with temp sources and just move those.
+                        /** @var Asset[] $assetsToMove */
+                        $assetsToMove = $assetsService->createTempAssetQuery()
+                            ->id(array_map(fn(Asset $asset) => $asset->id, $assets))
+                            ->all();
                     }
 
-                    $assetsToMove = array_filter($assets, function(Asset $asset) use ($rootRestrictedFolderId, $assetsService) {
-                        if ($asset->folderId === $rootRestrictedFolderId) {
-                            return false;
-                        }
-                        if (!$this->allowSubfolders) {
-                            return true;
-                        }
-                        $rootRestrictedFolder = $assetsService->getFolderById($rootRestrictedFolderId);
-                        return (
-                            $asset->volumeId !== $rootRestrictedFolder->volumeId ||
-                            !str_starts_with($asset->folderPath, $rootRestrictedFolder->path)
-                        );
-                    });
-                } else {
-                    // Find the files with temp sources and just move those.
-                    /** @var Asset[] $assetsToMove */
-                    $assetsToMove = $assetsService->createTempAssetQuery()
-                        ->id(array_map(fn(Asset $asset) => $asset->id, $assets))
-                        ->all();
-                }
+                    if (!empty($assetsToMove)) {
+                        $uploadFolder = $assetsService->getFolderById($getUploadFolderId());
 
-                if (!empty($assetsToMove)) {
-                    $uploadFolder = $assetsService->getFolderById($getUploadFolderId());
-
-                    // Resolve all conflicts by keeping both
-                    foreach ($assetsToMove as $asset) {
-                        $asset->avoidFilenameConflicts = true;
-                        try {
-                            $assetsService->moveAsset($asset, $uploadFolder);
-                        } catch (FsObjectNotFoundException $e) {
-                            // Don't freak out about that.
-                            Craft::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage());
-                            Craft::$app->getErrorHandler()->logException($e);
+                        // Resolve all conflicts by keeping both
+                        foreach ($assetsToMove as $asset) {
+                            $asset->avoidFilenameConflicts = true;
+                            try {
+                                $assetsService->moveAsset($asset, $uploadFolder);
+                            } catch (FsObjectNotFoundException $e) {
+                                // Don't freak out about that.
+                                Craft::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage());
+                                Craft::$app->getErrorHandler()->logException($e);
+                            }
                         }
                     }
                 }
@@ -753,10 +786,13 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                 $baseUploadFolder = $this->restrictLocation ? $this->_uploadFolder($element, false, false) : null;
                 $folders = $this->_folderWithAncestors($uploadFolder, $baseUploadFolder);
                 $variables['defaultSource'] = $this->_sourceKeyByFolder($folders[0]);
-                $variables['defaultSourcePath'] = array_map(function(VolumeFolder $folder) {
-                    return $folder->getSourcePathInfo();
-                }, $folders);
+                $variables['defaultSourcePath'] = array_map(fn(VolumeFolder $folder) => $folder->getSourcePathInfo(), $folders);
             }
+        }
+
+        if (isset($variables['searchCriteria'])) {
+            // Include subfolders in the inline search results
+            $variables['searchCriteria']['includeSubfolders'] = true;
         }
 
         return $variables;
@@ -788,6 +824,25 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function showSearchInput(?ElementInterface $element): bool
+    {
+        if (!$this->showSearchInput || $this->sources === '*') {
+            return false;
+        }
+
+        $sources = $this->getInputSources($element);
+
+        if (!is_array($sources)) {
+            return false;
+        }
+
+        ArrayHelper::removeValue($sources, 'temp');
+        return count($sources) === 1;
+    }
+
+    /**
      * Returns any files that were uploaded to the field.
      *
      * @param ElementInterface $element
@@ -805,7 +860,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
         if (isset($this->_uploadedDataFiles['data']) && is_array($this->_uploadedDataFiles['data'])) {
             foreach ($this->_uploadedDataFiles['data'] as $index => $dataString) {
                 if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+\-\.]+);base64,(?<data>.+)/i', $dataString, $matches)) {
-                    $type = $matches['type'];
+                    $mimeType = $matches['type'];
                     $data = base64_decode($matches['data']);
 
                     if (!$data) {
@@ -815,7 +870,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                     if (!empty($this->_uploadedDataFiles['filename'][$index])) {
                         $filename = $this->_uploadedDataFiles['filename'][$index];
                     } else {
-                        $extensions = FileHelper::getExtensionsByMimeType($type);
+                        $extensions = FileHelper::getExtensionsByMimeType($mimeType);
 
                         if (empty($extensions)) {
                             continue;
@@ -826,6 +881,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
 
                     $files[] = [
                         'filename' => $filename,
+                        'mimeType' => $mimeType,
                         'data' => $data,
                         'type' => 'data',
                     ];
@@ -842,6 +898,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
             foreach ($uploadedFiles as $uploadedFile) {
                 $files[] = [
                     'filename' => $uploadedFile->name,
+                    'mimeType' => $uploadedFile->type,
                     'path' => $uploadedFile->tempName,
                     'type' => 'upload',
                 ];
@@ -880,51 +937,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
             throw new InvalidFsException("Invalid source key: $sourceKey");
         }
 
-        $assetsService = Craft::$app->getAssets();
-        $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
-
-        // Are we looking for the root folder?
-        $subpath = trim($subpath ?? '', '/');
-        if ($subpath === '') {
-            return $rootFolder;
-        }
-
-        $isDynamic = preg_match('/\{|\}/', $subpath);
-
-        if ($isDynamic) {
-            // Prepare the path by parsing tokens and normalizing slashes.
-            try {
-                $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
-            } catch (InvalidConfigException|RuntimeError $e) {
-                throw new InvalidSubpathException($subpath, null, 0, $e);
-            }
-
-            // Did any of the tokens return null?
-            if (
-                $renderedSubpath === '' ||
-                trim($renderedSubpath, '/') != $renderedSubpath ||
-                str_contains($renderedSubpath, '//')
-            ) {
-                throw new InvalidSubpathException($subpath);
-            }
-
-            // Sanitize the subpath
-            $segments = array_filter(explode('/', $renderedSubpath), function(string $segment): bool {
-                return $segment !== ':ignore:';
-            });
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-            $segments = array_map(function(string $segment) use ($generalConfig): string {
-                return FileHelper::sanitizeFilename($segment, [
-                    'asciiOnly' => $generalConfig->convertFilenamesToAscii,
-                ]);
-            }, $segments);
-            $subpath = implode('/', $segments);
-        }
-
-        $folder = $assetsService->findFolder([
-            'volumeId' => $volume->id,
-            'path' => $subpath . '/',
-        ]);
+        [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, $subpath, $element);
 
         // Ensure that the folder exists
         if (!$folder) {
@@ -932,7 +945,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
                 throw new InvalidSubpathException($subpath);
             }
 
-            $folder = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
+            $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
         }
 
         return $folder;
@@ -1067,7 +1080,7 @@ class Assets extends BaseRelationField implements ThumbableFieldInterface
     {
         if (!$folder->volumeId) {
             // Probably the user's temp folder
-            return "folder:$folder->uid";
+            return "temp";
         }
 
         $segments = array_map(function(VolumeFolder $folder) {

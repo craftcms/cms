@@ -60,7 +60,7 @@ class DateTimeHelper
      * @var string[] Supported relative time units.
      * @see relativeTimeStatement()
      * @see relativeTimeToSeconds()
-     * @since 4.10.0
+     * @since 5.2.0
      */
     public const RELATIVE_TIME_UNITS = [
         'sec',
@@ -287,17 +287,25 @@ class DateTimeHelper
      * Converts a date to an ISO-8601 string.
      *
      * @param mixed $date The date, in any format that [[toDateTime()]] supports.
+     * @param bool $setToUtc Whether the resulting string should be set to UTC.
      * @return string|false The date formatted as an ISO-8601 string, or `false` if $date was not a valid date
      */
-    public static function toIso8601(mixed $date): string|false
+    public static function toIso8601(mixed $date, bool $setToUtc = false): string|false
     {
-        $date = static::toDateTime($date);
-
-        if ($date !== false) {
-            return $date->format(DateTime::ATOM);
+        if ($date instanceof DateTime && $setToUtc) {
+            $date = clone $date;
+        } else {
+            $date = static::toDateTime($date);
+            if (!$date) {
+                return false;
+            }
         }
 
-        return false;
+        if ($setToUtc) {
+            $date->setTimezone(new DateTimeZone('UTC'));
+        }
+
+        return $date->format(DateTime::ATOM);
     }
 
     /**
@@ -524,9 +532,7 @@ class DateTimeHelper
      */
     public static function currentTimeStamp(): int
     {
-        $date = static::currentUTCDateTime();
-
-        return $date->getTimestamp();
+        return static::now()->getTimestamp();
     }
 
     /**
@@ -671,9 +677,7 @@ class DateTimeHelper
      */
     public static function isInThePast(mixed $date): bool
     {
-        $date = static::toDateTime($date);
-
-        return $date->getTimestamp() < time();
+        return static::toDateTime($date)->getTimestamp() < static::currentTimeStamp();
     }
 
     /**
@@ -759,10 +763,11 @@ class DateTimeHelper
      *
      * @param mixed $dateInterval The value, represented as either a [[\DateInterval]] object, an interval duration string, or a number of seconds.
      * @param bool|null $showSeconds Whether the duration string should include the number of seconds
+     * @param string|null $language The language code that should be used. (Defaults to the current application language.)
      * @return string
      * @since 4.2.0
      */
-    public static function humanDuration(mixed $dateInterval, ?bool $showSeconds = null): string
+    public static function humanDuration(mixed $dateInterval, ?bool $showSeconds = null, ?string $language = null): string
     {
         $dateInterval = static::toDateInterval($dateInterval) ?: new DateInterval('PT0S');
         $secondsOnly = !$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$dateInterval->i;
@@ -774,24 +779,34 @@ class DateTimeHelper
         $timeComponents = [];
 
         if ($dateInterval->y) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{year} other{years}}', ['num' => $dateInterval->y]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{year} other{years}}', [
+                'num' => $dateInterval->y,
+            ], $language);
         }
 
         if ($dateInterval->m) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{month} other{months}}', ['num' => $dateInterval->m]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{month} other{months}}', [
+                'num' => $dateInterval->m,
+            ], $language);
         }
 
         if ($dateInterval->d) {
             // Is it an exact number of weeks?
             if ($dateInterval->d % 7 === 0) {
-                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', ['num' => $dateInterval->d / 7]);
+                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', [
+                    'num' => $dateInterval->d / 7,
+                ], $language);
             } else {
-                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', ['num' => $dateInterval->d]);
+                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', [
+                    'num' => $dateInterval->d,
+                ], $language);
             }
         }
 
         if ($dateInterval->h) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{hour} other{hours}}', ['num' => $dateInterval->h]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{hour} other{hours}}', [
+                'num' => $dateInterval->h,
+            ], $language);
         }
 
         $minutes = $dateInterval->i;
@@ -806,11 +821,15 @@ class DateTimeHelper
         }
 
         if ($minutes) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', ['num' => $minutes]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', [
+                'num' => $minutes,
+            ], $language);
         }
 
         if ($showSeconds && ($dateInterval->s || empty($timeComponents))) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', ['num' => $dateInterval->s]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', [
+                'num' => $dateInterval->s,
+            ], $language);
         }
 
         $last = array_pop($timeComponents);
@@ -819,10 +838,11 @@ class DateTimeHelper
             if (count($timeComponents) > 1) {
                 $string .= ',';
             }
-            $string .= ' ' . Craft::t('app', 'and') . ' ';
+            $string .= ' ' . Craft::t('app', 'and', language: $language) . ' ';
         } else {
             $string = '';
         }
+
         $string .= $last;
         return $string;
     }
@@ -847,7 +867,7 @@ class DateTimeHelper
      * @param int $number
      * @param string $unit
      * @return string
-     * @since 4.10.0
+     * @since 5.2.0
      */
     public static function relativeTimeStatement(int $number, string $unit): string
     {
@@ -870,7 +890,7 @@ class DateTimeHelper
      * @param int $number
      * @param string $unit
      * @return int
-     * @since 4.10.0
+     * @since 5.2.0
      */
     public static function relativeTimeToSeconds(int $number, string $unit): int
     {

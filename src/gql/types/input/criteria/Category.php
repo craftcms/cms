@@ -28,9 +28,7 @@ class Category extends InputObjectType
 
         return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
             'name' => $typeName,
-            'fields' => function() {
-                return CategoryArguments::getArguments();
-            },
+            'fields' => fn() => CategoryArguments::getArguments(),
         ]));
     }
 }

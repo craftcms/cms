@@ -21,8 +21,12 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
     $fields: null,
     $createFieldBtn: null,
 
+    libraryPicker: null,
     tabGrid: null,
     elementDrag: null,
+
+    cvd: null,
+    $cvd: null,
 
     _config: null,
     _$selectedFields: null,
@@ -49,16 +53,19 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         this.$libraryContainer.children('.fld-field-library');
       let $fieldSearchContainer = this.$fieldLibrary.children('.search');
       this.$fieldSearch = $fieldSearchContainer.children('input');
-      this.$clearFieldSearchBtn = $fieldSearchContainer.children('.clear');
+      this.$clearFieldSearchBtn = $fieldSearchContainer.children('.clear-btn');
       this.$fieldGroups = this.$libraryContainer.find('.fld-field-group');
       this.$fields = this.$fieldGroups.children('.fld-element');
       this.$uiLibrary = this.$libraryContainer.children('.fld-ui-library');
       this.$uiLibraryElements = this.$uiLibrary.children();
 
+      if (this.settings.readOnly) {
+        this.$fieldLibrary.attr('tabindex', '-1');
+      }
       // Set up the layout grids
       this.tabGrid = new Craft.Grid(this.$tabContainer, {
         itemSelector: '.fld-tab',
-        minColWidth: 24 * 11,
+        minColWidth: 24 * 13,
         fillMode: 'grid',
         snapToGrid: 24,
       });
@@ -69,7 +76,9 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       }
 
       this.elementDrag = new Craft.FieldLayoutDesigner.ElementDrag(this);
-      this.initLibraryElements(this.$libraryContainer.find('.fld-element'));
+      if (!this.settings.readOnly) {
+        this.initLibraryElements(this.$libraryContainer.find('.fld-element'));
+      }
 
       if (this.settings.customizableTabs) {
         this.tabDrag = new Craft.FieldLayoutDesigner.TabDrag(this);
@@ -80,7 +89,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       // Set up the library
       if (this.settings.customizableUi) {
         const $libraryPicker = this.$libraryContainer.children('.btngroup');
-        new Craft.Listbox($libraryPicker, {
+        this.libraryPicker = new Craft.Listbox($libraryPicker, {
           onChange: ($selectedOption) => {
             const library = $selectedOption.data('library');
             switch (library) {
@@ -117,7 +126,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 
       // Clear the search when the X button is clicked
       this.addListener(this.$clearFieldSearchBtn, 'click', () => {
-        this.$fieldSearch.val('').trigger('input');
+        this.clearSearch();
       });
 
       this.refreshSelectedFields();
@@ -127,12 +136,21 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         .createButton({
           label: Craft.t('app', 'New field'),
           class: 'mt-m fullwidth add icon dashed',
+          disabled: this.settings.readOnly,
         })
         .appendTo(this.$libraryContainer);
 
       this.addListener(this.$createFieldBtn, 'activate', async () => {
         this.createField();
       });
+
+      // initiate Card Attributes Designer
+      if (this.settings.withCardViewDesigner) {
+        this.$cvd = this.$container
+          .parents('.fld-cvd')
+          .find('.card-view-designer');
+        this.initCvd();
+      }
     },
 
     updateFieldSearchResults() {
@@ -165,6 +183,31 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       }
     },
 
+    clearSearch: function () {
+      this.$fieldSearch.val('').trigger('input');
+    },
+
+    initCvd: function () {
+      this.cvd = new Craft.FieldLayoutDesigner.CardViewDesigner(
+        this,
+        this.$cvd
+      );
+
+      // Add skip link
+      const skipLinkAnchor = this.cvd.$container.attr('id');
+
+      if (skipLinkAnchor) {
+        const $skipLink = $('<a/>', {
+          class: 'skip-link btn',
+          text: Craft.t('app', 'Skip to card view designer'),
+          href: `#${skipLinkAnchor}`,
+        });
+
+        this.cvd.$container.attr('tabindex', '-1');
+        this.$innerContainer.prepend($skipLink);
+      }
+    },
+
     initTab: function ($tab) {
       return new Craft.FieldLayoutDesigner.Tab(this, $tab);
     },
@@ -194,19 +237,17 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         return;
       }
 
-      const menuId = `menu-${Math.floor(Math.random() * 1000000)}`;
       const $tab = $(`
 <div class="fld-tab">
   <div class="tabs">
     <div class="tab sel draggable">
-      <span>${name}</span>
+      <h3 class="fld-tab__name">${name}</h3>
     </div>
   </div>
   <div class="fld-tabcontent">
-    <button class="btn add icon dashed fullwidth fld-add-btn" type="button" aria-controls="${menuId}">
+    <button class="btn add icon dashed fullwidth fld-add-btn" type="button">
       ${Craft.t('app', 'Add')}
     </button>
-    <div id="${menuId}" class="menu menu--disclosure fld-library-menu"></div>
   </div>
 </div>
 `);
@@ -283,9 +324,12 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         this.refreshLibraryFields();
         this.initLibraryElements($selector);
 
-        // set the search value to the new field name
-        this.$fieldSearch.val(response.data.field.name);
-        this.updateFieldSearchResults();
+        // add it to the active tab
+        this.addLibraryElementToActiveTab($selector);
+
+        Garnish.requestAnimationFrame(() => {
+          this.getActiveHud()?.hide();
+        });
       });
     },
 
@@ -293,28 +337,23 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       this.elementDrag.addItems($elements);
 
       this.addListener($elements, 'activate', (ev) => {
-        // if the library is in a disclosure menu, go ahead and add it to the tab
-        const $parent = this.$libraryContainer.parent();
-        if ($parent.is('.fld-library-menu')) {
-          const disclosureMenu = $parent.data('disclosureMenu');
-          const $libraryElement = $(ev.currentTarget);
-          const $element =
-            this.cloneLibraryElementForSelection($libraryElement);
-          const tab = disclosureMenu.$trigger
-            .closest('.fld-tab')
-            .data('fld-tab');
-          $element.insertBefore(disclosureMenu.$trigger);
-          const element = tab.initElement($element);
-          element.updatePositionInConfig();
-          this.tabGrid.refreshCols(true);
-          disclosureMenu.hide();
+        // ignore if is on a dragged element
+        if (ev.currentTarget.style.visibility === 'hidden') {
+          return;
         }
+        ev.stopPropagation();
+        ev.originalEvent.preventDefault();
+        this.addLibraryElementToActiveTab(ev.currentTarget);
       });
     },
 
-    cloneLibraryElementForSelection($libraryElement) {
+    cloneLibraryElementForSelection(libraryElement) {
       // Create a new element based on that one
-      const $element = $libraryElement.clone().removeClass('unused');
+      const $libraryElement = $(libraryElement);
+      const $element = $libraryElement
+        .clone()
+        .removeClass('unused')
+        .removeAttr('tabindex');
 
       if (!Garnish.hasAttr($libraryElement, 'data-is-multi-instance')) {
         // Hide the library element
@@ -333,15 +372,36 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 
       return $element;
     },
+
+    getActiveHud: function () {
+      return this.$libraryContainer.closest('.fld-library-hud').data('hud');
+    },
+
+    addLibraryElementToActiveTab: function (libraryElement) {
+      const hud = this.getActiveHud();
+      if (!hud) {
+        return;
+      }
+
+      const $element = this.cloneLibraryElementForSelection(libraryElement);
+      const tab = hud.$trigger.closest('.fld-tab').data('fld-tab');
+      $element.insertBefore(hud.$trigger);
+      const element = tab.initElement($element);
+      element.onSelect();
+      element.updatePositionInConfig();
+    },
   },
   {
     defaults: {
       elementType: null,
       customizableTabs: true,
       customizableUi: true,
+      withCardViewDesigner: false,
+      alwaysShowThumbAlignmentBtns: false,
+      readOnly: false,
     },
 
-    async createSlideout(data, js) {
+    async createSlideout(data, js, settings = {}) {
       const $body = $('<div/>', {class: 'fld-element-settings-body'});
       $('<div/>', {class: 'fields', html: data.settingsHtml}).appendTo($body);
       const $footer = $('<div/>', {class: 'fld-element-settings-footer'});
@@ -361,20 +421,26 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
         .appendTo($footer);
       const $contents = $body.add($footer);
 
-      const slideout = new Craft.Slideout($contents, {
-        containerElement: 'form',
-        containerAttributes: {
-          action: '',
-          method: 'post',
-          novalidate: '',
-          class: 'fld-element-settings',
-        },
-      });
+      const slideout = new Craft.Slideout(
+        $contents,
+        Object.assign(
+          {
+            containerElement: 'form',
+            containerAttributes: {
+              action: '',
+              method: 'post',
+              novalidate: '',
+              class: 'fld-element-settings',
+            },
+          },
+          settings
+        )
+      );
       slideout.on('open', () => {
         // Hold off a sec until it's positioned...
         Garnish.requestAnimationFrame(() => {
           // Focus on the first text input
-          slideout.$container.find('.text:first').trigger('focus');
+          slideout.$container.find('.text:first').focus();
         });
       });
 
@@ -418,7 +484,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
       this.uid = Craft.uuid();
       this.config = {
         uid: this.uid,
-        name: this.$container.find('.tabs .tab span').text(),
+        name: this.$container.find('.tabs .tab .fld-tab__name').text(),
         elements: [],
       };
     }
@@ -429,18 +495,32 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
 
     // initialize the elements
     const $tabContent = this.$container.children('.fld-tabcontent');
+
+    $tabContent.on('resize', () => {
+      this.designer.tabGrid.refreshCols(true);
+    });
+
     this.$addBtn = $tabContent.children('.fld-add-btn');
 
-    const disclosureMenu = this.$addBtn
-      .disclosureMenu({
-        position: 'below',
-      })
-      .data('disclosureMenu');
-    disclosureMenu.on('beforeShow', () => {
-      this.designer.$libraryContainer.appendTo(disclosureMenu.$container);
+    const hud = new Garnish.HUD(this.$addBtn, {
+      hudClass: 'hud fld-library-hud',
+      listenToMainResize: false,
+      showOnInit: false,
+      orientations: ['right', 'bottom', 'left'],
     });
-    disclosureMenu.on('hide', () => {
-      this.designer.$libraryContainer.appendTo(this.designer.$innerContainer);
+    hud.on('show', () => {
+      this.designer.$libraryContainer.appendTo(hud.$main);
+      this.designer.libraryPicker?.select(0);
+      this.designer.$fieldSearch.focus();
+      this.designer.clearSearch();
+      this.designer.$fieldLibrary.scrollTop(0);
+    });
+    hud.on('hide', () => {
+      this.$addBtn.focus();
+    });
+
+    this.$addBtn.on('activate', () => {
+      hud.show();
     });
 
     const $elements = $tabContent.children().not(this.$addBtn);
@@ -461,6 +541,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
       'aria-haspopup': 'true',
       'aria-label': Craft.t('app', 'Actions'),
       title: Craft.t('app', 'Actions'),
+      disabled: this.designer.settings.readOnly,
     }).appendTo($tab);
     const $menu = $('<div/>', {
       id: menuId,
@@ -473,7 +554,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     disclosureMenu.addItem(
       {
         label: Craft.t('app', 'Settings'),
-        icon: 'gear',
+        icon: async () => await Craft.ui.icon('gear'),
         onActivate: () => {
           this.createSettings();
         },
@@ -488,7 +569,10 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
           Craft.orientation === 'ltr'
             ? Craft.t('app', 'Move to the left')
             : Craft.t('app', 'Move to the right'),
-        icon: Craft.orientation === 'ltr' ? 'arrow-left' : 'arrow-right',
+        icon: async () =>
+          await Craft.ui.icon(
+            Craft.orientation === 'ltr' ? 'arrow-left' : 'arrow-right'
+          ),
         onActivate: () => {
           this.moveLeft();
         },
@@ -502,7 +586,10 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
           Craft.orientation === 'ltr'
             ? Craft.t('app', 'Move to the right')
             : Craft.t('app', 'Move to the left'),
-        icon: Craft.orientation === 'ltr' ? 'arrow-right' : 'arrow-left',
+        icon: async () =>
+          await Craft.ui.icon(
+            Craft.orientation === 'ltr' ? 'arrow-right' : 'arrow-left'
+          ),
         onActivate: () => {
           this.moveRight();
         },
@@ -513,7 +600,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     disclosureMenu.addItem(
       {
         label: Craft.t('app', 'Remove'),
-        icon: 'xmark',
+        icon: async () => await Craft.ui.icon('xmark'),
         destructive: true,
         onActivate: () => {
           this.destroy();
@@ -555,7 +642,9 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     }
 
     this.settingsNamespace = data.namespace;
-    this.slideout = await Craft.FieldLayoutDesigner.createSlideout(data);
+    this.slideout = await Craft.FieldLayoutDesigner.createSlideout(data, null, {
+      triggerElement: this.$actionBtn,
+    });
 
     this.slideout.$container.on('submit', (ev) => {
       ev.preventDefault();
@@ -656,7 +745,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
 
     // Is the name changing?
     if (config.name && config.name !== this.config.name) {
-      this.$container.find('.tabs .tab span').text(config.name);
+      this.$container.find('.tabs .tab .fld-tab__name').text(config.name);
     }
 
     const designerConfig = this.designer.config;
@@ -726,6 +815,14 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
       $elements.eq(i).data('fld-element').destroy();
     }
 
+    // Set focus to the closest tab's first focusable element
+    const $focusElement = this.$container.siblings().find(':focusable:first');
+    if ($focusElement.length) {
+      $focusElement.focus();
+    } else {
+      this.designer.$newTabBtn.focus();
+    }
+
     this.designer.tabGrid.removeItems(this.$container);
     this.designer.tabDrag.removeItems(this.$container);
     this.$container.remove();
@@ -738,6 +835,7 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
 Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   tab: null,
   $container: null,
+  $actionBtn: null,
 
   uid: null,
   isMandatory: false,
@@ -746,7 +844,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   attribute: null,
   requirable: false,
   thumbable: false,
-  previewable: false,
   hasCustomWidth: false,
   hasSettings: false,
   settingsNamespace: null,
@@ -804,7 +901,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     if (this.isField) {
       this.requirable = Garnish.hasAttr(this.$container, 'data-requirable');
       this.thumbable = Garnish.hasAttr(this.$container, 'data-thumbable');
-      this.previewable = Garnish.hasAttr(this.$container, 'data-previewable');
       this.attribute = this.$container.data('attribute');
       this.defaultHandle = this.$container.data('default-handle');
     }
@@ -827,13 +923,14 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
             return config;
           });
         },
+        readOnly: this.tab.designer.settings.readOnly,
       });
       widthSlider.$container.appendTo(this.$container);
     }
 
     // create the action menu
     const menuId = `actionmenu${Math.floor(Math.random() * 1000000)}`;
-    const $actionBtn = $('<button/>', {
+    this.$actionBtn = $('<button/>', {
       type: 'button',
       class: 'btn action-btn',
       'data-disclosure-trigger': 'true',
@@ -841,27 +938,25 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       'aria-haspopup': 'true',
       'aria-label': Craft.t('app', 'Actions'),
       title: Craft.t('app', 'Actions'),
+      disabled: this.tab.designer.settings.readOnly,
     }).appendTo(this.$container);
     $('<div/>', {
       id: menuId,
       class: 'menu menu--disclosure',
       'data-disclosure-menu': 'true',
     }).appendTo(this.$container);
-    const disclosureMenu = $actionBtn.disclosureMenu().data('disclosureMenu');
+    const disclosureMenu = this.$actionBtn
+      .disclosureMenu()
+      .data('disclosureMenu');
 
-    let makeRequiredBtn,
-      dropRequiredBtn,
-      makeThumbnailBtn,
-      dropThumbnailBtn,
-      showInCardsBtn,
-      omitFromCardsBtn;
+    let makeRequiredBtn, dropRequiredBtn;
 
     this.hasSettings = Garnish.hasAttr(this.$container, 'data-has-settings');
 
-    if (this.hasSettings) {
+    if (this.hasSettings && !this.tab.designer.settings.readOnly) {
       disclosureMenu.addItem({
         label: Craft.t('app', 'Settings'),
-        icon: 'gear',
+        icon: async () => await Craft.ui.icon('gear'),
         onActivate: () => {
           this.createSettings();
         },
@@ -872,24 +967,17 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       });
     }
 
-    if (this.fieldId) {
-      disclosureMenu.addItem({
-        label: Craft.t('app', 'Edit field'),
-        icon: 'pencil',
-        onActivate: () => {
-          this.showFieldEditor();
-        },
-      });
-    }
-
-    if (this.requirable || this.thumbable || this.previewable) {
+    if (
+      this.requirable ||
+      (!this.tab.designer.settings.withCardViewDesigner && this.thumbable)
+    ) {
       const actionUl = disclosureMenu.addGroup();
 
       if (this.requirable) {
         makeRequiredBtn = disclosureMenu.addItem(
           {
             label: Craft.t('app', 'Make required'),
-            icon: 'asterisk',
+            icon: async () => await Craft.ui.icon('asterisk'),
             iconColor: 'rose',
             onActivate: () => {
               this.makeRequired();
@@ -901,60 +989,10 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         dropRequiredBtn = disclosureMenu.addItem(
           {
             label: Craft.t('app', 'Make optional'),
-            icon: 'asterisk-slash',
+            icon: async () => await Craft.ui.icon('asterisk-slash'),
             iconColor: 'gray',
             onActivate: () => {
               this.dropRequired();
-            },
-          },
-          actionUl
-        );
-      }
-
-      if (this.thumbable) {
-        makeThumbnailBtn = disclosureMenu.addItem(
-          {
-            label: Craft.t('app', 'Use for element thumbnails'),
-            icon: 'image',
-            iconColor: 'violet',
-            onActivate: () => {
-              this.makeThumbnail();
-            },
-          },
-          actionUl
-        );
-        dropThumbnailBtn = disclosureMenu.addItem(
-          {
-            label: Craft.t('app', 'Don’t use for element thumbnails'),
-            icon: 'image-slash',
-            iconColor: 'gray',
-            onActivate: () => {
-              this.dropThumbnail();
-            },
-          },
-          actionUl
-        );
-      }
-
-      if (this.previewable) {
-        showInCardsBtn = disclosureMenu.addItem(
-          {
-            label: Craft.t('app', 'Show in element cards'),
-            icon: 'eye',
-            iconColor: 'blue',
-            onActivate: () => {
-              this.showInCards();
-            },
-          },
-          actionUl
-        );
-        omitFromCardsBtn = disclosureMenu.addItem(
-          {
-            label: Craft.t('app', 'Don’t show in element cards'),
-            icon: 'eye-slash',
-            iconColor: 'gray',
-            onActivate: () => {
-              this.omitFromCards();
             },
           },
           actionUl
@@ -966,7 +1004,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     const moveUpBtn = disclosureMenu.addItem(
       {
         label: Craft.t('app', 'Move up'),
-        icon: 'arrow-up',
+        icon: async () => await Craft.ui.icon('arrow-up'),
         onActivate: () => {
           this.moveUp();
         },
@@ -976,7 +1014,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     const moveDownBtn = disclosureMenu.addItem(
       {
         label: Craft.t('app', 'Move down'),
-        icon: 'arrow-down',
+        icon: async () => await Craft.ui.icon('arrow-down'),
         onActivate: () => {
           this.moveDown();
         },
@@ -988,7 +1026,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       disclosureMenu.addItem(
         {
           label: Craft.t('app', 'Remove'),
-          icon: 'xmark',
+          icon: async () => await Craft.ui.icon('xmark'),
           destructive: true,
           onActivate: () => {
             this.destroy();
@@ -1004,19 +1042,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         disclosureMenu.toggleItem(dropRequiredBtn, this.config.required);
       }
 
-      if (this.thumbable) {
-        disclosureMenu.toggleItem(
-          makeThumbnailBtn,
-          !this.config.providesThumbs
-        );
-        disclosureMenu.toggleItem(dropThumbnailBtn, this.config.providesThumbs);
-      }
-
-      if (this.previewable) {
-        disclosureMenu.toggleItem(showInCardsBtn, !this.config.includeInCards);
-        disclosureMenu.toggleItem(omitFromCardsBtn, this.config.includeInCards);
-      }
-
       disclosureMenu.toggleItem(
         moveUpBtn,
         this.$container.prev('.fld-element').length
@@ -1026,6 +1051,29 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         this.$container.next('.fld-element').length
       );
     });
+  },
+
+  onSelect() {
+    this.$container.attr('data-uid', this.uid);
+
+    const previewOptions = this.$container.data('preview-options');
+    if (previewOptions) {
+      const cvd = this.tab.designer.cvd;
+      if (cvd) {
+        previewOptions.forEach((option) => {
+          cvd.addCheckbox({
+            value: option.value.replace(/\{uid}/g, this.uid),
+            label: option.label,
+          });
+        });
+        cvd.updateThumbnailsDropdown(this, 'add');
+      }
+    }
+  },
+
+  getLabel() {
+    const label = this.$container.find('.fld-element-label').text();
+    return label !== '' ? label : this.$container.data('attribute');
   },
 
   async createSettings() {
@@ -1049,7 +1097,9 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     }
 
     this.settingsNamespace = data.namespace;
-    this.slideout = await Craft.FieldLayoutDesigner.createSlideout(data);
+    this.slideout = await Craft.FieldLayoutDesigner.createSlideout(data, null, {
+      triggerElement: this.$actionBtn,
+    });
 
     this.slideout.$container.on('submit', (ev) => {
       ev.preventDefault();
@@ -1128,34 +1178,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     });
   },
 
-  async makeThumbnail() {
-    await this.applyConfig((config) => {
-      config.providesThumbs = true;
-      return config;
-    });
-  },
-
-  async dropThumbnail() {
-    await this.applyConfig((config) => {
-      config.providesThumbs = false;
-      return config;
-    });
-  },
-
-  async showInCards() {
-    await this.applyConfig((config) => {
-      config.includeInCards = true;
-      return config;
-    });
-  },
-
-  async omitFromCards() {
-    await this.applyConfig((config) => {
-      config.includeInCards = false;
-      return config;
-    });
-  },
-
   moveUp() {
     const $prev = this.$container.prev('.fld-element');
     if ($prev.length) {
@@ -1203,18 +1225,19 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       );
       data = response.data;
     } catch (e) {
-      let errors = e?.response?.data?.errors;
-
-      if (errors) {
-        Object.entries(errors).forEach(([name, fieldErrors]) => {
-          const $field = this.slideout.$container.find(
-            `[data-error-key="${name}"]`
-          );
-          if ($field) {
-            Craft.ui.addErrorsToField($field, fieldErrors);
-            this.fieldsWithErrors.push($field);
-          }
-        });
+      if (withSettings) {
+        let errors = e?.response?.data?.errors;
+        if (errors) {
+          Object.entries(errors).forEach(([name, fieldErrors]) => {
+            const $field = this.slideout.$container.find(
+              `[data-error-key="${name}"]`
+            );
+            if ($field.length) {
+              Craft.ui.addErrorsToField($field, fieldErrors);
+              this.fieldsWithErrors.push($field);
+            }
+          });
+        }
       }
 
       Craft.cp.displayError(e?.response?.data?.message);
@@ -1228,11 +1251,29 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     this.$container = $newContainer;
     this.initUi();
 
+    if (this.tab.designer.settings.withCardViewDesigner) {
+      const cvd = this.tab.designer.cvd;
+      if (cvd) {
+        const previewOptions = $newContainer.data('preview-options');
+        if (previewOptions) {
+          // update labels in cvd checkboxes
+          previewOptions.forEach((option) => {
+            cvd.updateCheckboxLabel(
+              option.value.replace(/\{uid}/g, this.uid),
+              option.label
+            );
+          });
+        }
+
+        // update label in the element thumbnails dropdown
+        cvd.updateThumbnailsDropdownOptionLabel(this.$container);
+      }
+    }
+
     const designer = this.tab.designer;
     designer.refreshSelectedFields();
     designer.elementDrag.removeItems($oldContainer);
     designer.elementDrag.addItems($newContainer);
-    designer.tabGrid.refreshCols(true);
 
     if (this.slideout) {
       this.slideout.close();
@@ -1321,6 +1362,21 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   },
 
   destroy: function () {
+    if (this.tab.designer.settings.withCardViewDesigner) {
+      const cvd = this.tab.designer.cvd;
+      if (cvd) {
+        // this needs to be called before removeCheckbox()
+        cvd.updateThumbnailsDropdown(this, 'remove');
+
+        const previewOptions = this.$container.data('preview-options');
+        if (previewOptions?.length) {
+          previewOptions.forEach((option) => {
+            cvd.removeCheckbox(option.value.replace(/\{uid}/g, this.uid));
+          });
+        }
+      }
+    }
+
     this.tab.updateConfig((config) => {
       const index = this.index;
       if (index === -1) {
@@ -1329,6 +1385,14 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
       config.elements.splice(index, 1);
       return config;
     });
+
+    // Set focus to the closest element's first focusable element
+    const $focusElement = this.$container.siblings().find(':focusable:first');
+    if ($focusElement.length) {
+      $focusElement.focus();
+    } else {
+      this.tab.$addBtn.focus();
+    }
 
     this.tab.designer.elementDrag.removeItems(this.$container);
     this.$container.remove();
@@ -1340,6 +1404,16 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         this.tab.designer.removeFieldByHandle(
           this.defaultHandle || this.attribute
         );
+      }
+    } else {
+      // if it's not a field (so a ui element) and it's not multi instance, make it visible for selection again
+      if (!this.isMultiInstance) {
+        let uiLibraryElement = this.tab.designer.$uiLibraryElements.filter(
+          `[data-type="${this.$container.data('type')}"]:first`
+        );
+        if (uiLibraryElement.length) {
+          $(uiLibraryElement[0]).removeClass('hidden');
+        }
       }
     }
 
@@ -1479,7 +1553,6 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
     if (this.designer.tabGrid.$items.length > 0) {
       this.$items = $().add(this.$items.add(this.$insertion));
       this.showingInsertion = true;
-      this.designer.tabGrid.refreshCols(true);
       this.setMidpoints();
     }
   },
@@ -1493,8 +1566,6 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
     }
 
     this.removeCaboose();
-
-    this.designer.tabGrid.refreshCols(true);
 
     // return the helpers to the draggees
     let offset = this.$draggee.offset();
@@ -1671,7 +1742,6 @@ Craft.FieldLayoutDesigner.ElementDrag =
         this.$insertion.remove();
         this.$items = $().add(this.$items.not(this.$insertion));
         this.showingInsertion = false;
-        this.designer.tabGrid.refreshCols(true);
         this.setMidpoints();
       }
 
@@ -1780,6 +1850,7 @@ Craft.FieldLayoutDesigner.ElementDrag =
 
         if (this.draggingLibraryElement) {
           element = tab.initElement(this.$draggee);
+          element.onSelect();
         } else {
           element = this.$draggee.data('fld-element');
 
@@ -1805,3 +1876,310 @@ Craft.FieldLayoutDesigner.ElementDrag =
       }
     },
   });
+
+Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
+  designer: null,
+  $container: null,
+  $previewContainer: null,
+  $libraryContainer: null,
+  sortableCheckboxSelect: null,
+  $thumbManagementContainer: null,
+  alwaysShowThumbAlignmentBtns: false,
+  cancelToken: null,
+
+  init: function (designer, container) {
+    this.designer = designer;
+    this.$container = $(container);
+    this.$container.data('cvd', this);
+
+    this.$previewContainer = this.$container.find('.cvd-preview');
+    this.$libraryContainer = this.$container.find(
+      '.cvd-library .checkbox-select'
+    );
+    this.sortableCheckboxSelect = this.$libraryContainer.data(
+      'sortableCheckboxSelect'
+    );
+    this.$thumbManagementContainer = this.$container.find('.thumb-management');
+    this.alwaysShowThumbAlignmentBtns =
+      designer.settings.alwaysShowThumbAlignmentBtns;
+
+    let $thumbSelectDropdown = this.$thumbManagementContainer.find(
+      'select[id$="thumb-source"]'
+    );
+    this.addListener($thumbSelectDropdown, 'change', (ev) => {
+      this.manageThumbnails(ev.target);
+    });
+
+    if (this.alwaysShowThumbAlignmentBtns) {
+      // always show the thumbnail alignment buttons
+      this.showThumbAlignment();
+    }
+
+    let $thumbAlignmentBtns = this.$thumbManagementContainer.find(
+      'div.btngroup[id$="thumb-alignment"] .btn'
+    );
+    this.addListener($thumbAlignmentBtns, 'activate', (ev) => {
+      this.manageThumbnailAlignment(ev.target);
+    });
+
+    this.listenToCheckboxEvents();
+    this.disablePreviewLinks();
+  },
+
+  initDrag: function ($draggable) {
+    this.sortableCheckboxSelect.initDrag();
+    this.sortableCheckboxSelect.initItem($draggable);
+
+    // trigger preview update when items are dragged into new position
+    this.sortableCheckboxSelect.dragSort?.on('dragStop', () => {
+      this.updatePreview();
+    });
+
+    this.listenToCheckboxEvents();
+  },
+
+  listenToCheckboxEvents: function () {
+    // trigger preview update when items are checked/unchecked
+    this.$libraryContainer.on('change', (ev) => {
+      if ($(ev.target).is('input[type=checkbox]')) {
+        this.updateCardViewConfig();
+        this.updatePreview();
+      }
+    });
+    this.sortableCheckboxSelect.on('sortChange', () => {
+      this.updateCardViewConfig();
+      this.updatePreview();
+    });
+  },
+
+  updateCardViewConfig: function () {
+    this.designer.updateConfig((config) => {
+      // can't rely on :checked
+      config.cardView = this.$libraryContainer
+        .find('input[type=checkbox]')
+        .toArray()
+        .filter((el) => el.checked)
+        .map((e) => e.value);
+      return config;
+    });
+  },
+
+  updatePreview: async function () {
+    this.$previewContainer.addClass('loading');
+    Craft.cp.announce(Craft.t('app', 'Loading'));
+
+    if (this.cancelToken) {
+      this.cancelToken.cancel();
+    }
+
+    this.cancelToken = axios.CancelToken.source();
+
+    let response;
+    try {
+      response = await Craft.sendActionRequest(
+        'POST',
+        'fields/render-card-preview',
+        {
+          cancelToken: this.cancelToken.token,
+          data: {
+            fieldLayoutConfig: this.designer.config,
+          },
+        }
+      );
+    } catch (e) {
+      if (!axios.isCancel(e)) {
+        Craft.cp.displayError(e?.response?.data?.message);
+        throw e;
+      } else {
+        console.log('cancelled');
+      }
+    } finally {
+      this.$previewContainer.removeClass('loading');
+      Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      this.cancelToken = null;
+    }
+
+    if (response) {
+      this.$previewContainer.html(response.data.previewHtml);
+      this.disablePreviewLinks();
+    }
+  },
+
+  disablePreviewLinks: function () {
+    // add aria-disabled to the preview links
+    this.$previewContainer.find('a').each((key, anchor) => {
+      $(anchor).attr('aria-disabled', true);
+    });
+
+    // prevent the preview links from being clickable
+    this.$previewContainer.find('a').on('click', (ev) => {
+      ev.preventDefault();
+    });
+  },
+
+  addCheckbox: function (config = {}) {
+    if (!this.$libraryContainer.length) {
+      return;
+    }
+
+    const $draggable = $('<div class="checkbox-select-item"/>');
+    if (Craft.hasMousePointerEvents()) {
+      $('<a class="move icon draggable-handle disabled"/>').appendTo(
+        $draggable
+      );
+    }
+    Craft.ui
+      .createCheckbox(
+        Object.assign(
+          {
+            checked: false,
+          },
+          config
+        )
+      )
+      .appendTo($draggable);
+
+    $draggable.appendTo(this.$libraryContainer);
+
+    // re-init dragging
+    this.initDrag($draggable);
+  },
+
+  updateCheckboxLabel: function (value, label) {
+    const $draggable = this.findCheckboxByValue(value);
+    if ($draggable?.length) {
+      $draggable.find('label').text(label);
+    }
+  },
+
+  removeCheckbox: function (value) {
+    const $draggable = this.findCheckboxByValue(value);
+
+    if ($draggable?.length) {
+      const updateConfig = $draggable
+        .find('input[type="checkbox"]')
+        .prop('checked');
+      $draggable.remove();
+
+      // and now make a call to update the card preview
+      if (updateConfig) {
+        this.updateCardViewConfig();
+        this.updatePreview();
+      }
+    }
+  },
+
+  findCheckboxByValue: function (value) {
+    if (!this.$libraryContainer.length) {
+      return null;
+    }
+
+    return this.$libraryContainer
+      .find(`input[value="${value}"]`)
+      .parents('.checkbox-select-item');
+  },
+
+  /** THUMBNAILS **/
+  manageThumbnailAlignment: function (target) {
+    let $btn = $(target);
+    let alignment = $btn.data('value');
+
+    if (alignment !== this.designer.config.thumbAlignment) {
+      this.designer.updateConfig((config) => {
+        config.cardThumbAlignment = alignment;
+        return config;
+      });
+      this.updatePreview();
+    }
+  },
+
+  manageThumbnails: function (target) {
+    const $select = $(target);
+    let thumbFieldKey = null;
+
+    if ($select.val() === '__none__' || $select.val() === '__default__') {
+      if (
+        $select.val() === '__none__' &&
+        !this.designer.settings.alwaysShowThumbAlignmentBtns
+      ) {
+        // hide the alignment buttons
+        this.hideThumbAlignment();
+      }
+    } else {
+      thumbFieldKey = $select.val();
+      // show the alignment buttons
+      this.showThumbAlignment();
+    }
+
+    if (thumbFieldKey !== this.designer.config.thumbFieldKey) {
+      this.designer.updateConfig((config) => {
+        config.thumbFieldKey = thumbFieldKey;
+        return config;
+      });
+      this.updatePreview();
+    }
+  },
+
+  updateThumbnailsDropdown: function (element, action) {
+    const $select = this.$thumbManagementContainer.find(
+      'select[id$="thumb-source"]'
+    );
+    if (!$select.length) {
+      return;
+    }
+
+    const thumbOptions = element.$container.data('thumb-options');
+    if (!thumbOptions?.length) {
+      return;
+    }
+
+    thumbOptions.forEach((option) => {
+      const value = option.value.replace(/\{uid}/g, element.uid);
+      switch (action) {
+        case 'add':
+          $('<option/>', {
+            value,
+            text: option.label,
+          }).appendTo($select);
+          break;
+        case 'remove':
+          const $option = $select.find(`option[value="${value}"]`);
+          if ($option.length) {
+            const selected = $option.prop('selected');
+            $option.remove();
+            if (selected) {
+              this.manageThumbnails($select);
+            }
+          }
+          break;
+      }
+    });
+  },
+
+  updateThumbnailsDropdownOptionLabel: function ($container) {
+    let uid = $container.data('uid');
+    let $select = this.$thumbManagementContainer.find(
+      'select[id$="thumb-source"]'
+    );
+    let $option = $select.find('option[value="' + uid + '"]');
+
+    if ($option === null) {
+      return null;
+    }
+
+    let label = $container.find('.fld-element-label').text() ?? this.attribute;
+    $option.text(label);
+  },
+
+  showThumbAlignment: function () {
+    this.$thumbManagementContainer
+      .find('[data-attribute="thumb-alignment"]')
+      .removeClass('hidden');
+  },
+
+  hideThumbAlignment: function () {
+    this.$thumbManagementContainer
+      .find('[data-attribute="thumb-alignment"]')
+      .addClass('hidden');
+  },
+});

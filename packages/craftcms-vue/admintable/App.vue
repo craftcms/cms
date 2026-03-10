@@ -125,7 +125,10 @@
               <span
                 v-if="props.rowData.status !== undefined"
                 class="status"
-                :class="{enabled: props.rowData.status}"
+                :class="{
+                  enabled: props.rowData.status,
+                  disabled: !props.rowData.status,
+                }"
               ></span>
               <a
                 :class="{'cell-bold': props.rowData.status === undefined}"
@@ -495,7 +498,8 @@
         isEmpty: false,
         isLoading: true,
         searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
-        searchTerm: '',
+        searchTerm:
+          new URL(window.location.href).searchParams.get('search') || '',
         selectAll: null,
         sortable: null,
         tableBodySelector: '.vuetable-body',
@@ -714,6 +718,14 @@
           }
           this.reload();
         }
+
+        const url = new URL(window.location.href);
+        if (this.searchTerm) {
+          url.searchParams.set('search', this.searchTerm);
+        } else {
+          url.searchParams.delete('search');
+        }
+        window.history.replaceState({}, '', url);
       }, 500),
 
       resetSearch: function () {
@@ -1179,6 +1191,13 @@
     margin-top: 14px;
     position: sticky;
     min-height: 44px;
+    z-index: 1;
+
+    .so-body & {
+      margin: 0;
+      padding: 0;
+      position: static;
+    }
   }
 
   .vue-admin-tablepane + .vue-admin-table-footer {

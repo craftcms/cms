@@ -27,8 +27,7 @@ use Throwable;
 class ResaveElements extends BaseBatchedElementJob
 {
     /**
-     * @var string The element type that should be resaved
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface> The element type that should be resaved
      */
     public string $elementType;
 
@@ -63,7 +62,7 @@ class ResaveElements extends BaseBatchedElementJob
 
     /**
      * @var bool Whether the [[set]] attribute should only be set if the current value doesn’t validate.
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public bool $ifInvalid = false;
 
@@ -78,10 +77,7 @@ class ResaveElements extends BaseBatchedElementJob
      */
     protected function loadData(): Batchable
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType;
-        $query = $elementType::find()
+        $query = $this->elementType::find()
             ->orderBy(['elements.id' => SORT_ASC]);
 
         if (!empty($this->criteria)) {
@@ -122,6 +118,7 @@ class ResaveElements extends BaseBatchedElementJob
             Craft::$app->getElements()->saveElement($item,
                 updateSearchIndex: $this->updateSearchIndex,
                 forceTouch: $this->touch,
+                saveContent: true,
             );
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
@@ -133,11 +130,8 @@ class ResaveElements extends BaseBatchedElementJob
      */
     protected function defaultDescription(): ?string
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType;
         return Translation::prep('app', 'Resaving {type}', [
-            'type' => $elementType::pluralLowerDisplayName(),
+            'type' => $this->elementType::pluralLowerDisplayName(),
         ]);
     }
 }

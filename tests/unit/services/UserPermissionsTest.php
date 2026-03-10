@@ -132,7 +132,7 @@ class UserPermissionsTest extends TestCase
     {
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::find()
             ->admin(false)
             ->one();
@@ -148,7 +148,18 @@ class UserPermissionsTest extends TestCase
         );
 
         $this->tester->expectEvent(UserPermissions::class, UserPermissions::EVENT_AFTER_SAVE_USER_PERMISSIONS, function() use ($user) {
-            $this->userPermissions->saveUserPermissions($user->id, ['editUsers']);
+            $this->userPermissions->saveUserPermissions($user->id, ['viewUsers']);
+        }, UserPermissionsEvent::class);
+
+        self::assertTrue(
+            $this->userPermissions->doesUserHavePermission($user->id, 'viewUsers')
+        );
+        self::assertFalse(
+            $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
+        );
+
+        $this->tester->expectEvent(UserPermissions::class, UserPermissions::EVENT_AFTER_SAVE_USER_PERMISSIONS, function() use ($user) {
+            $this->userPermissions->saveUserPermissions($user->id, ['viewUsers', 'editUsers']);
         }, UserPermissionsEvent::class);
 
         self::assertTrue(
@@ -168,7 +179,7 @@ class UserPermissionsTest extends TestCase
         $this->userPermissions->saveGroupPermissions(1001, ['utility:php-info']);
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp', 'utility:updates']);
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::find()
             ->admin(false)
             ->one();
@@ -199,7 +210,7 @@ class UserPermissionsTest extends TestCase
             $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
         }, UserGroupPermissionsEvent::class);
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::find()
             ->admin(false)
             ->one();
@@ -228,5 +239,6 @@ class UserPermissionsTest extends TestCase
         parent::_before();
 
         $this->userPermissions = Craft::$app->getUserPermissions();
+        $this->userPermissions->reset();
     }
 }

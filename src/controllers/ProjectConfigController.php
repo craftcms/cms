@@ -8,9 +8,11 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\filters\UtilityAccess;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
 use craft\helpers\StringHelper;
+use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use craft\web\Controller;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Exception;
@@ -29,14 +31,14 @@ class ProjectConfigController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action): bool
+    public function behaviors(): array
     {
-        if (!parent::beforeAction($action)) {
-            return false;
-        }
-
-        $this->requirePermission('utility:project-config');
-        return true;
+        return array_merge(parent::behaviors(), [
+            [
+                'class' => UtilityAccess::class,
+                'utility' => ProjectConfigUtility::class,
+            ],
+        ]);
     }
 
     /**

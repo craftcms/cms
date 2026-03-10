@@ -24,6 +24,7 @@ class AddressCondition extends ElementCondition
             AdministrativeAreaConditionRule::class,
             CountryConditionRule::class,
             DependentLocalityConditionRule::class,
+            FieldConditionRule::class,
             FullNameConditionRule::class,
             LocalityConditionRule::class,
             OrganizationConditionRule::class,

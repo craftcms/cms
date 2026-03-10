@@ -8,9 +8,9 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
+use craft\base\Event;
 use craft\models\FieldLayoutForm;
 use craft\models\FieldLayoutTab;
-use yii\base\Event;
 
 /**
  * CreateFieldLayoutFormEvent event class.

@@ -30,7 +30,7 @@ class MoveElementEvent extends ElementEvent
      * [[element]] is being appended/prepended to the root of the structure.
      * @since 4.5.0
      */
-    public ?int $targetElementId;
+    public ?int $targetElementId = null;
 
     /**
      * @var string The type of structure action being performed (one of [[Structures::ACTION_PREPEND]],

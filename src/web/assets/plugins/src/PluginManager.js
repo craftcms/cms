@@ -5,9 +5,41 @@ import './plugins.scss';
   /** global: Garnish */
   Craft.PluginManager = Garnish.Base.extend(
     {
+      $table: null,
+
       init: function () {
+        this.$table = $('#plugins');
+
+        if (this.$table.length) {
+          this.$table.find('tbody tr').each((i, tr) => {
+            const $tr = $(tr);
+            const disclosureMenu = $tr
+              .find('.action-btn')
+              .disclosureMenu()
+              .data('disclosureMenu');
+            if (disclosureMenu) {
+              disclosureMenu.$container
+                .find('[data-action="copy-plugin-handle"]')
+                .on('activate', () => {
+                  Craft.ui.createCopyTextPrompt({
+                    label: Craft.t('app', 'Plugin Handle'),
+                    value: $tr.data('handle'),
+                  });
+                });
+              disclosureMenu.$container
+                .find('[data-action="copy-package-name"]')
+                .on('activate', () => {
+                  Craft.ui.createCopyTextPrompt({
+                    label: Craft.t('app', 'Package Name'),
+                    value: $tr.data('package-name'),
+                  });
+                });
+            }
+          });
+        }
+
         this.getPluginLicenseInfo().then((response) => {
-          for (let handle in response) {
+          for (const handle in response) {
             if (response.hasOwnProperty(handle)) {
               if (!response[handle].isComposerInstalled) {
                 this.addUninstalledPluginRow(handle, response[handle]);
@@ -47,14 +79,13 @@ import './plugins.scss';
       },
 
       addUninstalledPluginRow: function (handle, info) {
-        const $table = $('#plugins');
-        if (!$table.length) {
-          $table = $('<table/>', {
+        if (!this.$table.length) {
+          this.$table = $('<table/>', {
             id: 'plugins',
             class: 'data fullwidth collapsible',
             html: '<tbody></tbody>',
           });
-          $('#no-plugins').replaceWith($table);
+          $('#no-plugins').replaceWith(this.$table);
         }
 
         const $row = $('<tr/>', {
@@ -62,7 +93,7 @@ import './plugins.scss';
             handle: handle,
           },
         })
-          .appendTo($table.children('tbody'))
+          .appendTo(this.$table.children('tbody'))
           .append(
             $('<th/>').append(
               $('<div/>', {class: 'plugin-infos'})
@@ -114,96 +145,79 @@ import './plugins.scss';
               class: 'nowrap',
               'data-title': Craft.t('app', 'Status'),
             })
-              .append($('<span/>', {class: 'status'}))
+              .append($('<span/>', {class: 'status disabled'}))
               .append(
                 $('<span/>', {class: 'light', text: Craft.t('app', 'Missing')})
               )
           )
           .append(
-            info.latestVersion
-              ? $('<td/>', {
-                  class: 'nowrap thin',
-                  'data-title': Craft.t('app', 'Action'),
-                }).append(
-                  $('<form/>', {
-                    method: 'post',
-                    'accept-charset': 'UTF-8',
-                  })
-                    .append(
-                      $('<input/>', {
-                        type: 'hidden',
-                        name: 'action',
-                        value: 'pluginstore/install',
-                      })
-                    )
-                    .append(
-                      $('<input/>', {
-                        type: 'hidden',
-                        name: 'packageName',
-                        value: info.packageName,
-                      })
-                    )
-                    .append(
-                      $('<input/>', {
-                        type: 'hidden',
-                        name: 'handle',
-                        value: handle,
-                      })
-                    )
-                    .append(
-                      $('<input/>', {
-                        type: 'hidden',
-                        name: 'edition',
-                        value: info.licensedEdition,
-                      })
-                    )
-                    .append(
-                      $('<input/>', {
-                        type: 'hidden',
-                        name: 'version',
-                        value: info.latestVersion,
-                      })
-                    )
-                    .append(
-                      $('<input/>', {
-                        type: 'hidden',
-                        name: 'licenseKey',
-                        value: info.licenseKey,
-                      })
-                    )
-                    .append(
-                      $('<input/>', {
-                        type: 'hidden',
-                        name: 'return',
-                        value: 'settings/plugins',
-                      })
-                    )
-                    .append(Craft.getCsrfInput())
-                    .append(
-                      $('<button/>', {
-                        type: 'button',
-                        class: 'btn menubtn action-btn hairline',
-                      })
-                    )
-                    .append(
-                      $('<div/>', {
-                        class: 'menu',
-                        'data-align': 'right',
-                      }).append(
-                        $('<ul/>').append(
-                          $('<li/>').append(
-                            $('<a/>', {
-                              class: 'formsubmit',
-                              text: Craft.t('app', 'Install'),
-                            })
-                          )
-                        )
-                      )
-                    )
-                )
-              : $()
+            $('<td/>', {
+              class: 'nowrap thin actions-cell',
+            })
           );
+
         Craft.initUiElements($row);
+
+        if (info.latestVersion) {
+          const $actionCell = $row.find('.actions-cell');
+          $actionCell.attr('data-title', Craft.t('app', 'Actions'));
+
+          const menuId = `menu-${Math.floor(Math.random() * 1000000)}`;
+          const $actionBtn = $('<button/>', {
+            type: 'button',
+            class: 'btn menubtn action-btn hairline',
+            'aria-label': Craft.t('app', 'Actions'),
+            'aria-controls': menuId,
+            title: Craft.t('app', 'Actions'),
+            'data-disclosure-trigger': '',
+          }).appendTo($actionCell);
+          $('<div/>', {
+            id: menuId,
+            class: 'menu menu--disclosure',
+          }).appendTo($actionCell);
+
+          const disclosureMenu = $actionBtn
+            .disclosureMenu()
+            .data('disclosureMenu');
+
+          disclosureMenu.addItems([
+            {
+              icon: async () => await Craft.ui.icon('clipboard'),
+              label: Craft.t('app', 'Copy plugin handle'),
+              onActivate: () => {
+                Craft.ui.createCopyTextPrompt({
+                  label: Craft.t('app', 'Plugin Handle'),
+                  value: handle,
+                });
+              },
+            },
+            {
+              icon: async () => await Craft.ui.icon('clipboard'),
+              label: Craft.t('app', 'Copy package name'),
+              onActivate: () => {
+                Craft.ui.createCopyTextPrompt({
+                  label: Craft.t('app', 'Package Name'),
+                  value: info.packageName,
+                });
+              },
+            },
+          ]);
+          disclosureMenu.addHr();
+          disclosureMenu.addGroup();
+          disclosureMenu.addItem({
+            icon: async () => await Craft.ui.icon('plus'),
+            label: Craft.t('app', 'Install'),
+            action: 'pluginstore/install',
+            params: {
+              packageName: info.packageName,
+              handle: handle,
+              edition: info.licensedEdition,
+              version: info.latestVersion,
+              licenseKey: info.licenseKey,
+              return: 'settings/plugins',
+            },
+          });
+        }
       },
     },
     {

@@ -7,24 +7,13 @@
 
 namespace craft\web\assets\elementresizedetector;
 
-use craft\web\AssetBundle;
+use yii\web\AssetBundle;
 
 /**
  * ElementResizeDetector asset bundle.
+ *
+ * @deprecated in 4.11.0
  */
 class ElementResizeDetectorAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        $this->sourcePath = __DIR__ . '/dist';
-
-        $this->js = [
-            'element-resize-detector.js',
-        ];
-
-        parent::init();
-    }
 }

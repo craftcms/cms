@@ -117,7 +117,7 @@ import './system_messages.scss';
         this.addListener(this.$cancelBtn, 'click', 'cancel');
 
         setTimeout(() => {
-          this.$subjectInput.trigger('focus');
+          this.$subjectInput.focus();
         }, 100);
       });
     },

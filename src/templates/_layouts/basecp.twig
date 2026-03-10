@@ -14,11 +14,14 @@
 {% set orientation = localeData.getOrientation() %}
 
 {% macro noAccessMessage(message) %}
-    <div class="message-container no-access">
-        <div class="pane">
-            <p>{{ message }}</p>
+    <div class="modal-shade visible"></div>
+    <main class="message-container">
+        <div class="modal">
+            <div class="body">
+                <p>{{ message }}</p>
+            </div>
         </div>
-    </div>
+    </main>
 {% endmacro %}
 
 {% block foot %}

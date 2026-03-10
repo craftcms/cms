@@ -10,8 +10,12 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\console\Controller;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
+use craft\helpers\Component;
 use craft\helpers\Console;
+use craft\helpers\Db;
 use craft\models\Section;
 use yii\console\ExitCode;
 
@@ -29,6 +33,12 @@ class ElementsController extends Controller
     public bool $hard = false;
 
     /**
+     * @var bool Whether to only do a dry run of the prune elements of type process.
+     * @since 5.6.0
+     */
+    public bool $dryRun = false;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID): array
@@ -37,6 +47,9 @@ class ElementsController extends Controller
         switch ($actionID) {
             case 'delete':
                 $options[] = 'hard';
+                break;
+            case 'delete-all-of-type':
+                $options[] = 'dryRun';
                 break;
         }
         return $options;
@@ -87,6 +100,77 @@ class ElementsController extends Controller
         }
 
         $this->stdout("done\n", Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Deletes all elements of a given type.
+     *
+     * @param class-string<ElementInterface> $type The element type to delete.
+     * @since 5.6.0
+     */
+    public function actionDeleteAllOfType(string $type): int
+    {
+        // get the elements of that type
+        $query = (new Query())
+            ->select('id')
+            ->from(Table::ELEMENTS)
+            ->where(['type' => $type]);
+
+        // exclude single entries
+        if ($type === Entry::class) {
+            $singleSections = Craft::$app->getEntries()->getSectionsByType(Section::TYPE_SINGLE);
+            if (!empty($singleSections)) {
+                $singleEntryIds = Entry::find()
+                    ->sectionId(array_map(fn(Section $section) => $section->id, $singleSections))
+                    ->status(null)
+                    ->site('*')
+                    ->unique()
+                    ->ids();
+                if (!empty($singleEntryIds)) {
+                    $query->andWhere(['not', ['id' => $singleEntryIds]]);
+                }
+            }
+        }
+
+        $total = $query->count();
+
+        $isValid = Component::validateComponentClass($type, ElementInterface::class);
+        if ($isValid) {
+            $typeLabel = $total == 1 ? $type::lowerDisplayName() : $type::pluralLowerDisplayName();
+        } else {
+            $typeLabel = sprintf('`%s` %s', $type, $total == 1 ? 'element' : 'elements');
+        }
+
+        if (!$total) {
+            $this->stdout(sprintf("%s\n", $this->markdownToAnsi("No $typeLabel found.")));
+            return ExitCode::OK;
+        }
+
+        $this->stdout(sprintf("%s\n", $this->markdownToAnsi("$total $typeLabel found.")));
+
+        if (!$this->dryRun && !$this->confirm('Continue?')) {
+            $this->stdout("Aborting.\n");
+            return ExitCode::OK;
+        }
+
+        foreach (Db::each($query) as $element) {
+            $elementId = $element['id'];
+            $message = sprintf('Deleting %s %s', $isValid ? $type::lowerDisplayName() : 'element', $elementId);
+            $this->do($message, function() use ($elementId) {
+                if (!$this->dryRun) {
+                    Db::delete(Table::ELEMENTS, [
+                        'id' => $elementId,
+                    ]);
+                    Db::delete(Table::SEARCHINDEX, [
+                        'elementId' => $elementId,
+                    ]);
+                }
+            });
+        }
+
+        $dryRunLabel = $this->dryRun ? '**[DRY RUN]** ' : '';
+        $this->stdout(sprintf("%s\n", $this->markdownToAnsi("$dryRunLabel$total $typeLabel deleted.")));
         return ExitCode::OK;
     }
 

@@ -13,15 +13,17 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\caching\TagDependency;
+use yii\web\AssetBundle;
 
 /**
  * Template Caches service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getTemplateCaches()|`Craft::$app->templateCaches`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getTemplateCaches()|`Craft::$app->getTemplateCaches()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -69,7 +71,7 @@ class TemplateCaches extends Component
             return null;
         }
 
-        [$body, $cacheInfo, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags] = array_pad($data, 9, null);
+        [$body, $cacheInfo, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags, $bufferedAssetBundles, $bufferedJsImports] = array_pad($data, 11, null);
 
         // If we're actively collecting element cache info, register this cache's tags and duration
         $elementsService = Craft::$app->getElements();
@@ -91,7 +93,9 @@ class TemplateCaches extends Component
                 $bufferedJsFiles ?? [],
                 $bufferedCssFiles ?? [],
                 $bufferedHtml ?? [],
-                $bufferedMetaTags ?? []
+                $bufferedMetaTags ?? [],
+                $bufferedAssetBundles ?? [],
+                $bufferedJsImports ?? []
             );
         }
 
@@ -126,6 +130,8 @@ class TemplateCaches extends Component
             $view->startCssFileBuffer();
             $view->startHtmlBuffer();
             $view->startMetaTagBuffer();
+            $view->startAssetBundleBuffer();
+            $view->startJsImportBuffer();
         }
     }
 
@@ -162,6 +168,8 @@ class TemplateCaches extends Component
             $bufferedCssFiles = $view->clearCssFileBuffer();
             $bufferedHtml = $view->clearHtmlBuffer();
             $bufferedMetaTags = $view->clearMetaTagBuffer();
+            $bufferedAssetBundles = $view->clearAssetBundleBuffer();
+            $bufferedJsImports = $view->clearJsImportBuffer();
         }
 
         // If there are any transform generation URLs in the body, don't cache it.
@@ -197,12 +205,38 @@ class TemplateCaches extends Component
             $bufferedCssFiles = $this->_parseExternalResourceTags($bufferedCssFiles, 'href');
             $bufferedMetaTags = $this->_parseSelfClosingTags($bufferedMetaTags);
 
+            $bufferedAssetBundles = Collection::make($bufferedAssetBundles)
+                ->map(fn(AssetBundle $bundle, string $name) => [$name, $bundle->jsOptions['position'] ?? null])
+                ->values()
+                ->all();
+
             if ($saveCache) {
-                array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags);
+                array_push(
+                    $cacheValue,
+                    $bufferedJs,
+                    $bufferedScripts,
+                    $bufferedCss,
+                    $bufferedJsFiles,
+                    $bufferedCssFiles,
+                    $bufferedHtml,
+                    $bufferedMetaTags,
+                    $bufferedAssetBundles,
+                    $bufferedJsImports
+                );
             }
 
             // Re-register the JS and CSS
-            $this->_registerResources($bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags);
+            $this->_registerResources(
+                $bufferedJs,
+                $bufferedScripts,
+                $bufferedCss,
+                $bufferedJsFiles,
+                $bufferedCssFiles,
+                $bufferedHtml,
+                $bufferedMetaTags,
+                $bufferedAssetBundles,
+                $bufferedJsImports
+            );
         }
 
         if (!$saveCache) {
@@ -216,7 +250,7 @@ class TemplateCaches extends Component
             $expiration = (new DateTime($duration));
         }
         if ($expiration !== null) {
-            $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - time();
+            $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - DateTimeHelper::currentTimeStamp();
         }
 
         if ($duration <= 0) {
@@ -248,9 +282,7 @@ class TemplateCaches extends Component
      */
     private function _parseSelfClosingTags(array $tags): array
     {
-        return array_map(function($tag) {
-            return Html::parseTagAttributes($tag);
-        }, $tags);
+        return array_map(fn($tag) => Html::parseTagAttributes($tag), $tags);
     }
 
     private function _parseExternalResourceTags(array $tags, string $urlAttribute): array
@@ -279,6 +311,8 @@ class TemplateCaches extends Component
         array $bufferedCssFiles,
         array $bufferedHtml,
         array $bufferedMetaTags,
+        array $bufferedAssetBundles,
+        array $bufferedJsImports,
     ): void {
         $view = Craft::$app->getView();
 
@@ -318,6 +352,14 @@ class TemplateCaches extends Component
         foreach ($bufferedMetaTags as $key => $options) {
             $view->registerMetaTag($options, $key);
         }
+
+        foreach ($bufferedAssetBundles as [$name, $position]) {
+            $view->registerAssetBundle($name, $position);
+        }
+
+        foreach ($bufferedJsImports as $key => $value) {
+            $view->registerJsImport($key, $value);
+        }
     }
 
     /**
@@ -332,9 +374,9 @@ class TemplateCaches extends Component
             if (!Craft::$app->getConfig()->getGeneral()->enableTemplateCaching) {
                 $this->_enabled = $this->_enabledGlobally = false;
             } else {
-                // Don't enable template caches for tokenized requests
+                // Don't enable template caches for Live Preview/tokenized requests
                 $request = Craft::$app->getRequest();
-                if ($request->getHadToken()) {
+                if ($request->getIsPreview() || $request->getHadToken()) {
                     $this->_enabled = $this->_enabledGlobally = false;
                 } else {
                     $this->_enabled = !$request->getIsConsoleRequest();

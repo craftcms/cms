@@ -20,12 +20,16 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
+use craft\helpers\Session as SessionHelper;
+use craft\helpers\User as UserHelper;
 use craft\models\UserGroup;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\Session;
+use craft\web\View;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
 use ParagonIE\ConstantTime\Base64UrlSafe;
+use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
@@ -42,7 +46,7 @@ use yii\base\InvalidArgumentException;
 /**
  * User authentication service.
  *
- * An instance of the service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAuth()|`Craft::$app->auth`]].
+ * An instance of the service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAuth()|`Craft::$app->getAuth()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
@@ -149,14 +153,13 @@ class Auth extends Component
     {
         $this->_user = $user ?? false;
         $this->_sessionDuration = $user ? ($sessionDuration ?? Craft::$app->getConfig()->getGeneral()->userSessionDuration) : false;
-        $session = Craft::$app->getSession();
 
         if ($user) {
-            $session->set($this->userIdParam, $user->id);
-            $session->set($this->sessionDurationParam, $this->_sessionDuration);
+            SessionHelper::set($this->userIdParam, $user->id);
+            SessionHelper::set($this->sessionDurationParam, $this->_sessionDuration);
         } else {
-            $session->remove($this->userIdParam);
-            $session->remove($this->sessionDurationParam);
+            SessionHelper::remove($this->userIdParam);
+            SessionHelper::remove($this->sessionDurationParam);
         }
     }
 
@@ -174,7 +177,19 @@ class Auth extends Component
         }
 
         $method = $this->getAvailableMethods()[0] ?? null;
-        return $method?->getAuthFormHtml();
+        if (!$method) {
+            return '';
+        }
+
+        $view = Craft::$app->getView();
+        $templateMode = $view->getTemplateMode();
+        $view->setTemplateMode(View::TEMPLATE_MODE_CP);
+
+        try {
+            return $method->getAuthFormHtml();
+        } finally {
+            $view->setTemplateMode($templateMode);
+        }
     }
 
     /**
@@ -191,16 +206,53 @@ class Auth extends Component
         $user = $this->getUser($sessionDuration);
 
         if (!$this->getMethod($methodClass, $user)->verify(...$args)) {
+            $user?->handleInvalidLoginParam();
             return false;
         }
 
         // success!
         if ($user) {
             $this->setUser(null);
-            Craft::$app->getUser()->login($user, $sessionDuration);
+
+            // if we're impersonating, pass the user we're impersonating to the complete the login
+            $userSession = Craft::$app->getUser();
+            if ($userSession->getImpersonator() !== null) {
+                /** @var User $user */
+                $user = Craft::$app->getUser()->getIdentity();
+            }
+
+            $userSession->login($user, $sessionDuration);
         }
 
         return true;
+    }
+
+    /**
+     * Returns an authentication error message based on the authentication error value.
+     * If a default message was passed and the authentication error value is for invalid credentials,
+     * that default message will be used.
+     *
+     * @param string|null $defaultMessage
+     * @return string
+     * @since 5.7.11
+     */
+    public function getAuthErrorMessage(?string $defaultMessage = null): string
+    {
+        $user = $this->getUser();
+        $authError = null;
+        if ($user) {
+            $authError = UserHelper::getAuthStatus($user);
+        }
+        if ($authError == User::AUTH_INVALID_CREDENTIALS || !$authError) {
+            if ($defaultMessage) {
+                return $defaultMessage;
+            }
+
+            return Craft::t('app', 'Invalid verification code.');
+        }
+
+        [, $message] = UserHelper::getLoginFailureInfo($authError, $user);
+        return $message;
     }
 
     /**
@@ -428,7 +480,7 @@ class Auth extends Component
             excludeCredentials: $excludeCredentials
         );
 
-        Craft::$app->getSession()->set($this->passkeyCreationOptionsParam, Json::encode($publicKeyCredentialCreationOptions));
+        SessionHelper::set($this->passkeyCreationOptionsParam, Json::encode($publicKeyCredentialCreationOptions));
 
         return $publicKeyCredentialCreationOptions;
     }
@@ -532,7 +584,7 @@ class Auth extends Component
             return false;
         }
 
-        $serverRequest = ServerRequest::fromGlobals();
+        $serverRequest = $this->buildServerRequest(ServerRequest::fromGlobals());
         try {
             $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $publicKeyCredential->rawId,
@@ -600,5 +652,34 @@ class Auth extends Component
             Craft::$app->getSystemName(),
             Craft::$app->getRequest()->getHostName(),
         );
+    }
+
+    /**
+     * Builds server request using the Craft-provided data, e.g. host name.
+     *
+     *
+     * @param ServerRequestInterface $defaultServerRequest
+     * @return ServerRequestInterface
+     */
+    private function buildServerRequest(ServerRequestInterface $defaultServerRequest): ServerRequestInterface
+    {
+        $uri = $defaultServerRequest->getUri();
+        $uri = $uri->withHost(Craft::$app->getRequest()->getHostName());
+
+        $serverRequest = new ServerRequest(
+            $defaultServerRequest->getMethod(),
+            $uri,
+            $defaultServerRequest->getHeaders(),
+            $defaultServerRequest->getBody(),
+            $defaultServerRequest->getProtocolVersion(),
+            $_SERVER
+        );
+
+
+        return $serverRequest
+            ->withCookieParams($_COOKIE)
+            ->withQueryParams($_GET)
+            ->withParsedBody($_POST)
+            ->withUploadedFiles(ServerRequest::normalizeFiles($_FILES));
     }
 }

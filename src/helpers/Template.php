@@ -12,8 +12,11 @@ use craft\base\ElementInterface;
 use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
+use Stringable;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
+use Twig\Extension\CoreExtension;
+use Twig\Extension\SandboxExtension;
 use Twig\Markup;
 use Twig\Source;
 use Twig\Template as TwigTemplate;
@@ -24,7 +27,6 @@ use yii\base\UnknownMethodException;
 use yii\base\UnknownPropertyException;
 use yii\db\Query;
 use yii\db\QueryInterface;
-use function twig_get_attribute;
 
 /**
  * Class Template
@@ -67,6 +69,7 @@ class Template
      * @param string $name
      * @return bool
      * @since 4.4.0
+     * @deprecated in 5.9.15
      */
     public static function fallbackExists(string $name): bool
     {
@@ -79,6 +82,7 @@ class Template
      * @param string $name
      * @throws UnknownPropertyException if `$name` isn’t defined as a fallback variable.
      * @since 4.4.0
+     * @deprecated in 5.9.15
      */
     public static function fallback(string $name): mixed
     {
@@ -127,7 +131,13 @@ class Template
             $object instanceof BaseObject &&
             $object->canGetProperty($item)
         ) {
-            return $isDefinedTest ? true : $object->$item;
+            if ($isDefinedTest) {
+                return true;
+            }
+            if ($sandboxed) {
+                $env->getExtension(SandboxExtension::class)->checkPropertyAllowed($object, $item, $lineno, $source);
+            }
+            return $object->$item;
         }
 
         // Convert any \Twig\Markup arguments back to strings (unless the class *extends* \Twig\Markup)
@@ -138,7 +148,12 @@ class Template
         }
 
         try {
-            return twig_get_attribute(
+            // workaround for https://github.com/twigphp/Twig/issues/4701
+            if ($type !== TwigTemplate::METHOD_CALL && $item instanceof Stringable) {
+                $item = (string) $item;
+            }
+
+            return CoreExtension::getAttribute(
                 $env,
                 $source,
                 $object,
@@ -387,8 +402,18 @@ class Template
      * @param string[] $handles
      * @since 4.4.0
      */
-    public static function preloadSingles(array $handles): void
+    public static function preloadSingles(array $handles, ?array &$context = null): void
     {
-        self::$_fallbacks += Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
+        // Ignore handles that are defined Twig globals
+        $globals = Craft::$app->view->getTwig()->getGlobals();
+        $handles = array_diff($handles, array_keys($globals));
+
+        if (!empty($handles)) {
+            $singles = Craft::$app->getEntries()->getSingleEntriesByHandle($handles);
+            self::$_fallbacks += $singles;
+            if ($context !== null) {
+                $context += $singles;
+            }
+        }
     }
 }

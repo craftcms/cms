@@ -183,6 +183,7 @@ export default {
           params: {
             withInstallHistory: true,
             withIssueStats: true,
+            withReviewStats: true,
           },
         })
         .then((responseData) => {
@@ -385,6 +386,16 @@ export default {
           }
         });
     });
+  },
+
+  getPluginReviews(handle, params = {}) {
+    return api
+      .sendApiRequest('GET', `plugin/${handle}/reviews`, {params})
+      .catch((error) => {
+        if (!axios.isCancel(error)) {
+          console.error(error);
+        }
+      });
   },
 
   /**

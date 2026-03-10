@@ -1,0 +1,22 @@
+{% if CraftEdition == CraftSolo %}
+    {% exit 404 %}
+{% endif %}
+
+{% extends "_layouts/elementindex" %}
+{% set elementType = 'craft\\elements\\User' %}
+
+{% set canHaveDrafts = craft.users().drafts().draftOf(false).savedDraftsOnly().exists() %}
+
+{% block actionButton %}
+    {% if currentUser.canRegisterUsers() %}
+        <a class="btn submit add icon" href="{{ url('users/new') }}">
+            {{ buttonLabel }}
+        </a>
+    {% endif %}
+{% endblock %}
+
+{% if source ?? false %}
+    {% js %}
+    window.defaultSourceSlug = "{{ source|e('js') }}";
+    {% endjs %}
+{% endif %}

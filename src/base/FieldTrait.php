@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\fieldlayoutelements\CustomField;
+use DateTime;
 
 /**
  * FieldTrait implements the common methods and properties for field classes.
@@ -90,8 +91,20 @@ trait FieldTrait
     public ?bool $required = null;
 
     /**
+     * @var DateTime|null The date that the field was trashed
+     * @since 5.3.0
+     */
+    public ?DateTime $dateDeleted = null;
+
+    /**
      * @var CustomField|null The field layout element
      * @since 5.0.0
      */
     public ?CustomField $layoutElement = null;
+
+    /**
+     * @var bool Whether the field is being displayed statically.
+     * @since 5.7.0
+     */
+    public bool $static = false;
 }

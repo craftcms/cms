@@ -74,7 +74,7 @@ class PhotoField extends BaseNativeField
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && !$element instanceof User) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', __CLASS__));
+            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
         }
 
         if (!$element?->id) {
@@ -109,5 +109,19 @@ JS, [
             'id' => $inputId,
             'user' => $element,
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        $items = [];
+
+        if (Craft::$app->getUser()->getIsAdmin()) {
+            $items[] = $this->copyAttributeAction();
+        }
+
+        return $items;
     }
 }

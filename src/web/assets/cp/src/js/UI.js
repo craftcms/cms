@@ -15,13 +15,28 @@ Craft.ui = {
     if (config.ariaLabel) {
       $btn.attr('aria-label', config.ariaLabel);
     }
+    if (config.ariaDescribedBy) {
+      $btn.attr('aria-describedby', config.ariaDescribedBy);
+    }
     if (config.role) {
       $btn.attr('role', config.role);
     }
-    if (config.html) {
-      $btn.html(config.html);
-    } else if (config.label) {
-      $btn.append($('<div class="label"/>').text(config.label));
+    let $iconContainer;
+    if (config.icon || config.label || config.html) {
+      const $labelContainer = $('<div class="inline-flex gap-xs"/>').appendTo(
+        $btn
+      );
+      if (config.icon) {
+        $iconContainer = $('<div class="cp-icon"/>').prependTo($labelContainer);
+      }
+      if (config.label || config.html) {
+        const $label = $('<div class="label"/>').appendTo($labelContainer);
+        if (config.label) {
+          $label.text(config.label);
+        } else {
+          $label.html(config.html);
+        }
+      }
     } else {
       $btn.addClass('btn-empty');
     }
@@ -31,21 +46,52 @@ Craft.ui = {
     if (config.controls) {
       $btn.attr('aria-controls', config.controls);
     }
+    if (config.data) {
+      Object.entries(config.data).forEach((item) => {
+        $btn.attr('data-' + item[0], item[1]);
+      });
+    }
     if (config.spinner) {
       $btn.append($('<div class="spinner spinner-absolute"/>'));
     }
+
+    if (config.disabled) {
+      $btn.attr('disabled', 'disabled');
+    }
+
+    // todo: make this function async so we can add await here
+    if (config.icon) {
+      this.icon(config.icon).then((svg) => {
+        $iconContainer.append(svg);
+      });
+    }
+
     return $btn;
   },
 
-  createSubmitButton: function (config) {
-    const $btn = this.createButton(
+  createSubmitButton: function (config = {}) {
+    return this.createButton(
       Object.assign({}, config, {
         type: 'submit',
         label: config.label || Craft.t('app', 'Submit'),
       })
-    );
-    $btn.addClass('submit');
-    return $btn;
+    ).addClass('submit');
+  },
+
+  createPasteButton: function (config = {}) {
+    return this.createButton(
+      Object.assign({}, config, {
+        icon: 'duplicate',
+        label:
+          config.label ||
+          Craft.uppercaseFirst(
+            Craft.t('app', 'Paste {type}', {
+              type: Craft.t('app', 'elements'),
+            })
+          ),
+        spinner: true,
+      })
+    ).addClass('paste-btn');
   },
 
   createTextInput: function (config) {
@@ -73,6 +119,7 @@ Craft.ui = {
               : 'off'
             : config.autocomplete,
         disabled: this.getDisabledValue(config.disabled),
+        'aria-describedby': this.getDescribedByValue(config),
         readonly: config.readonly,
         title: config.title,
         placeholder: config.placeholder,
@@ -96,6 +143,12 @@ Craft.ui = {
     }
     if (!config.size) {
       $input.addClass('fullwidth');
+    }
+    if (config.describedBy) {
+      $input.attr('aria-describedby', config.describedBy);
+    }
+    if (config.inputAttributes) {
+      this.addAttributes($input, config.inputAttributes);
     }
 
     if (config.showCharsLeft && config.maxlength) {
@@ -149,11 +202,15 @@ Craft.ui = {
       class: 'copytext',
     });
 
-    let $input = this.createTextInput(
-      $.extend({}, config, {
-        readonly: true,
-      })
-    ).appendTo($container);
+    const inputConfig = $.extend({}, config, {
+      readonly: true,
+    });
+    if (config.textarea) {
+    }
+    const $input = config.textarea
+      ? this.createTextarea(inputConfig)
+      : this.createTextInput(inputConfig);
+    $input.appendTo($container);
 
     let $btn = $('<button/>', {
       type: 'button',
@@ -179,9 +236,7 @@ Craft.ui = {
     let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
     let value = config.value;
 
-    const $wrapper = $('<div/>', {
-      class: 'copytextbtn-wrapper',
-    });
+    const $wrapper = $('<craft-copy-attribute/>');
 
     let $btn = $('<div/>', {
       id,
@@ -195,50 +250,7 @@ Craft.ui = {
       $btn.addClass(config.class);
     }
 
-    let $input = $('<input/>', {
-      value,
-      readonly: true,
-      size: value.length,
-      tabindex: '-1',
-      'aria-hidden': 'true',
-      class: 'visually-hidden',
-    }).insertBefore($btn);
-
-    const $value = $('<span/>', {
-      text: value,
-      class: 'copytextbtn__value',
-    }).appendTo($btn);
-
-    $('<span/>', {
-      class: 'visually-hidden',
-      text: Craft.t('app', 'Copy to clipboard'),
-    }).appendTo($btn);
-
-    let $icon = $('<span/>', {
-      class: 'copytextbtn__icon',
-      'data-icon': 'clipboard',
-      'aria-hidden': 'true',
-    }).appendTo($btn);
-
-    const copyValue = function () {
-      $input[0].select();
-      document.execCommand('copy');
-      Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
-      $btn.trigger('copy');
-      $input[0].setSelectionRange(0, 0);
-      $btn.focus();
-    };
-
-    $btn.on('activate', () => {
-      copyValue();
-    });
-
-    $btn.on('keydown', (ev) => {
-      if (ev.keyCode === Garnish.SPACE_KEY) {
-        copyValue();
-        ev.preventDefault();
-      }
-    });
+    $btn.text(value);
 
     return $wrapper;
   },
@@ -378,13 +390,18 @@ Craft.ui = {
           label: option.optgroup,
         }).appendTo($select);
       } else {
-        $('<option/>', {
+        const $option = $('<option/>', {
           value: option.value,
           selected: option.value == config.value,
           disabled:
             typeof option.disabled !== 'undefined' ? option.disabled : false,
-          html: option.label,
         }).appendTo($optgroup || $select);
+
+        if (option.labelHtml) {
+          $option.html(option.labelHtml);
+        } else if (option.label) {
+          $option.text(option.label);
+        }
       }
     }
 
@@ -423,6 +440,18 @@ Craft.ui = {
       $input.addClass(config.class);
     }
 
+    if (config.data) {
+      Object.entries(config.data).forEach((item) => {
+        $input.attr('data-' + item[0], item[1]);
+      });
+    }
+
+    if (config.aria) {
+      Object.entries(config.aria).forEach((item) => {
+        $input.attr('aria-' + item[0], item[1]);
+      });
+    }
+
     if (config.toggle || config.reverseToggle) {
       $input.addClass('fieldtoggle');
       new Craft.FieldToggle($input);
@@ -430,8 +459,13 @@ Craft.ui = {
 
     var $label = $('<label/>', {
       for: id,
-      html: config.label,
     });
+
+    if (config.labelHtml) {
+      $label.html(config.labelHtml);
+    } else if (config.label) {
+      $label.text(config.label);
+    }
 
     // Should we include a hidden input first?
     if (
@@ -457,7 +491,11 @@ Craft.ui = {
       config.id = 'checkbox' + Math.floor(Math.random() * 1000000000);
     }
 
-    var $field = $('<div class="field checkboxfield"/>', {
+    var fieldClass = ['field', 'checkboxfield'];
+    if (config.fieldClass.length > 0) {
+      fieldClass = fieldClass.concat(config.fieldClass);
+    }
+    var $field = $('<div class="' + fieldClass.join(' ') + '"/>', {
       id: `${config.id}-field`,
     });
 
@@ -480,7 +518,7 @@ Craft.ui = {
   },
 
   createCheckboxSelect: function (config) {
-    const $container = $('<fieldset class="checkbox-select"/>');
+    const $container = $('<div class="checkbox-select"/>');
 
     if (config.class) {
       $container.addClass(config.class);
@@ -504,11 +542,13 @@ Craft.ui = {
           this.createCheckbox({
             id: config.id,
             class: 'all',
-            label: '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
+            labelHtml:
+              '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
             name: config.name,
             value: allValue,
             checked: allChecked,
             autofocus: config.autofocus,
+            disabled: config.disabled,
           })
         );
 
@@ -546,7 +586,7 @@ Craft.ui = {
       }).appendTo($container);
 
       if (config.sortable) {
-        $('<div/>', {class: 'icon move'}).appendTo($option);
+        $('<div/>', {class: 'icon move draggable-handle'}).appendTo($option);
       }
 
       this.createCheckbox({
@@ -554,18 +594,26 @@ Craft.ui = {
         name: config.name ? Craft.ensureEndsWith(config.name, '[]') : null,
         value: option.value,
         checked: allChecked || values.includes(option.value),
-        disabled: allChecked,
+        disabled: allChecked || config.disabled,
       }).appendTo($option);
     }
 
-    new Garnish.CheckboxSelect($container);
+    // todo: just check config.sortable when BC isn't a concern
+    if (config.includeSortActions) {
+      new Craft.SortableCheckboxSelect($container);
+    } else {
+      new Garnish.CheckboxSelect($container);
 
-    if (config.sortable) {
-      const dragSort = new Garnish.DragSort($container.children(':not(.all)'), {
-        handle: '.move',
-        axis: 'y',
-      });
-      $container.data('dragSort', dragSort);
+      if (config.sortable) {
+        const dragSort = new Garnish.DragSort(
+          $container.children(':not(.all)'),
+          {
+            handle: '.move',
+            axis: 'y',
+          }
+        );
+        $container.data('dragSort', dragSort);
+      }
     }
 
     return $container;
@@ -577,6 +625,22 @@ Craft.ui = {
       config.id = 'checkboxselect' + Math.floor(Math.random() * 1000000000);
     }
     return this.createField(this.createCheckboxSelect(config), config);
+  },
+
+  createSortableCheckboxSelect: function (config) {
+    return this.createCheckboxSelect({
+      ...config,
+      sortable: true,
+      includeSortActions: true,
+    });
+  },
+
+  createSortableCheckboxSelectField: function (config) {
+    return this.createCheckboxSelectField({
+      ...config,
+      sortable: true,
+      includeSortActions: true,
+    });
   },
 
   createLightswitch: function (config) {
@@ -654,6 +718,69 @@ Craft.ui = {
     }
     return this.createField(this.createLightswitch(config), config).addClass(
       'lightswitch-field'
+    );
+  },
+
+  createIconPicker: function (config) {
+    const $container = $('<div/>', {
+      id: config.id,
+      class: 'icon-picker',
+    });
+
+    const $iconContainer = $('<div/>', {
+      class: 'icon-picker--icon',
+      lang: Craft.language,
+    }).appendTo($container);
+
+    if (config.small) {
+      $container.addClass('small');
+      $iconContainer.addClass('small');
+    }
+
+    if (!config.static) {
+      const $chooseBtn = this.createButton({
+        class: 'icon-picker--choose-btn',
+        label: Craft.t('app', 'Choose'),
+      }).appendTo($container);
+
+      const $removeBtn = this.createButton({
+        class: 'icon-picker--remove-btn hidden',
+        label: Craft.t('app', 'Remove'),
+      }).appendTo($container);
+
+      if (config.small) {
+        $chooseBtn.addClass('small');
+        $removeBtn.addClass('small');
+      }
+
+      if (config.name) {
+        $('<input/>', {
+          type: 'hidden',
+          name: config.name,
+        }).appendTo($container);
+      }
+    }
+
+    const iconPicker = new Craft.IconPicker($container, {
+      freeOnly: config.freeOnly,
+    });
+
+    if (config.value) {
+      iconPicker.selectIcon(config.value);
+    }
+
+    return $container;
+  },
+
+  createIconPickerField: function (config) {
+    if (!config.id) {
+      config.id = 'iconpicker' + Math.floor(Math.random() * 1000000000);
+    }
+    if (!config.labelId) {
+      config.labelId = `${config.id}-label`;
+    }
+    return this.createField(this.createIconPicker(config), config).addClass(
+      'iconpicker-field'
     );
   },
 
@@ -1093,6 +1220,97 @@ Craft.ui = {
     return $btn;
   },
 
+  /**
+   * Updates an input using the timepicker plugin for accessibility.
+   *
+   * @param {Object} $input - The input element
+   */
+  remediateTimepickerA11y: function (input) {
+    const $input = $(input);
+    let $listWrapper = null;
+    let listboxObserver = null;
+    const id = $input.attr('id');
+    const wrapperId = `${id}-wrapper-${Math.floor(Math.random() * 1000000000)}`;
+
+    const getInstance = () => {
+      return $input[0]?.timepickerObj;
+    };
+
+    const getTimepickerListbox = () => {
+      const instance = getInstance();
+      return $(instance.list);
+    };
+
+    getAccessibleName = () => {
+      return $input.attr('aria-label');
+    };
+
+    const callback = (mutationList, observer) => {
+      for (const mutation of mutationList) {
+        const {target} = mutation;
+
+        if ($(target).hasClass('ui-timepicker-selected')) {
+          const optionId = target.id;
+          $input.attr('aria-activedescendant', optionId);
+          $(target).attr('aria-selected', 'true');
+        } else {
+          $(target).attr('aria-selected', 'false');
+        }
+      }
+    };
+
+    if (!getInstance()) return;
+
+    // Add aria-controls to input
+    $input.attr('aria-controls', wrapperId);
+
+    $input.on('showTimepicker', () => {
+      $input.attr('aria-expanded', 'true');
+      $listWrapper = getTimepickerListbox();
+
+      setTimeout(() => {
+        $listWrapper.attr({
+          role: 'listbox',
+          id: wrapperId,
+          'aria-label': getAccessibleName(),
+        });
+
+        // Apply option roles to child elements
+        $listWrapper.find('li').each(function (index) {
+          const isSelected = $(this).hasClass('ui-timepicker-selected');
+          const optionId = `${id}-option-${index}`;
+
+          $(this).attr({
+            id: optionId,
+            role: 'option',
+            'aria-selected': isSelected,
+          });
+
+          if (isSelected) {
+            $input.attr('aria-activedescendant', optionId);
+          }
+        });
+
+        // Watch for updates to the listbox
+        if (!listboxObserver) {
+          listboxObserver = new MutationObserver(callback);
+        }
+
+        listboxObserver.observe($listWrapper[0], {
+          subtree: true,
+          attributeFilter: ['class'],
+        });
+      }, 0);
+    });
+
+    $input.on('hideTimepicker', () => {
+      $input.attr('aria-expanded', 'false');
+      if (listboxObserver) {
+        listboxObserver.disconnect();
+      }
+    });
+  },
+
   createTimeInput: function (config) {
     const isMobile = Garnish.isMobileBrowser();
     const id =
@@ -1138,6 +1356,7 @@ Craft.ui = {
       $input.datetimeinput();
     } else {
       $input.timepicker(Craft.timepickerOptions);
+      this.remediateTimepickerA11y($input);
       if (value) {
         $input.timepicker(
           'setTime',
@@ -1167,6 +1386,9 @@ Craft.ui = {
     const $field = $(config.fieldset ? '<fieldset/>' : '<div/>', {
       class: 'field',
       id: config.fieldId || (config.id ? config.id + '-field' : null),
+      'aria-describedby': config.fieldset
+        ? this.getDescribedByValue(config)
+        : null,
     });
 
     if (config.first) {
@@ -1188,21 +1410,32 @@ Craft.ui = {
     if (label) {
       const $heading = $('<div class="heading"/>').appendTo($field);
 
-      $(config.fieldset ? '<legend/>' : '<label/>', {
+      const $label = $(config.fieldset ? '<legend/>' : '<label/>', {
         id:
           config.labelId ||
           (config.id
             ? `${config.id}-${config.fieldset ? 'legend' : 'label'}`
             : null),
-        class: config.required ? 'required' : null,
         for: (!config.fieldset && config.id) || null,
         text: label,
       }).appendTo($heading);
+
+      if (config.required) {
+        $('<span/>', {
+          class: 'visually-hidden',
+          text: Craft.t('app', 'Required'),
+        }).appendTo($label);
+        $('<span/>', {
+          class: 'required',
+          'aria-hidden': 'true',
+        }).appendTo($label);
+      }
     }
 
     if (config.instructions) {
       $('<div class="instructions"/>')
         .text(config.instructions)
+        .attr('id', this.getInstructionsId(config))
         .appendTo($field);
     }
 
@@ -1235,6 +1468,38 @@ Craft.ui = {
     return $field;
   },
 
+  addAttributes: function ($element, attributes) {
+    for (const name in attributes) {
+      const value = attributes[name];
+      if (typeof value === 'boolean') {
+        if (value) {
+          $element.attr(name, '');
+        }
+      } else if ($.isPlainObject(value)) {
+        if (['aria', 'data', 'data-ng', 'ng'].includes(name)) {
+          for (const n in value) {
+            let v = value[n];
+            if (typeof v === 'object') {
+              $element.attr(`${name}-${n}`, JSON.stringify(v));
+            } else if (typeof v === 'boolean') {
+              if (v) {
+                $element.attr(`${name}-${n}`, '');
+              }
+            } else if (v !== null) {
+              $element.attr(`${name}-${n}`, v);
+            }
+          }
+        } else if (name === 'class') {
+          $element.addClass(value);
+        } else if (name === 'style') {
+          $element.css(value);
+        } else {
+          $element.attr(name, value);
+        }
+      }
+    }
+  },
+
   createErrorList: function (errors, fieldErrorsId) {
     const $list = $('<ul class="errors" tabindex="-1"/>');
     if (fieldErrorsId) {
@@ -1259,8 +1524,10 @@ Craft.ui = {
       return;
     }
 
+    this.clearErrorsFromField($field);
+
     $field.addClass('has-errors');
-    $field.children('.input').addClass('errors');
+    $field.children('.input').addClass('errors prevalidate');
 
     const fieldId = $field.attr('id');
     let fieldErrorsId = '';
@@ -1279,7 +1546,7 @@ Craft.ui = {
 
   clearErrorsFromField: function ($field) {
     $field.removeClass('has-errors');
-    $field.children('.input').removeClass('errors');
+    $field.children('.input').removeClass('errors prevalidate');
     $field.children('ul.errors').remove();
   },
 
@@ -1290,7 +1557,7 @@ Craft.ui = {
   setFocusOnErrorSummary: function ($body) {
     const errorSummaryContainer = $body.find('.error-summary');
     if (errorSummaryContainer.length > 0) {
-      errorSummaryContainer.trigger('focus');
+      errorSummaryContainer.focus();
 
       // start listening for clicks on summary errors
       errorSummaryContainer.find('a').on('click', (ev) => {
@@ -1357,11 +1624,11 @@ Craft.ui = {
       // focus on the field container that contains the error
       let $field = $fieldErrorsContainer.parents('.field:first');
       if ($field.is(':visible')) {
-        $field.attr('tabindex', '-1').trigger('focus');
+        $field.attr('tabindex', '-1').focus();
       } else {
         // wait in case the field isn't yet visible; (MatrixInput.expand() has a timeout of 200)
         setTimeout(() => {
-          $field.attr('tabindex', '-1').trigger('focus');
+          $field.attr('tabindex', '-1').focus();
         }, 201);
       }
     }
@@ -1383,11 +1650,54 @@ Craft.ui = {
     return fieldTabAnchors;
   },
 
+  getInstructionsId: function (config) {
+    return config.id
+      ? `${config.id}-instructions`
+      : `${Math.floor(Math.random() * 1000000000)}-instructions`;
+  },
+
   getAutofocusValue: function (autofocus) {
     return autofocus && !Garnish.isMobileBrowser(true) ? 'autofocus' : null;
   },
 
   getDisabledValue: function (disabled) {
     return disabled ? 'disabled' : null;
+  },
+
+  getDescribedByValue: function (config) {
+    let value = '';
+
+    if (config.instructions) {
+      value += this.getInstructionsId(config);
+    }
+
+    if (value.length) {
+      return value;
+    }
+
+    return null;
+  },
+
+  icon: async function (icon) {
+    if (!Craft.icons) {
+      Craft.icons = {};
+    }
+
+    if (!Craft.icons[icon]) {
+      await Craft.queue.push(async () => {
+        // maybe something else loaded it by now
+        if (Craft.icons[icon]) {
+          return;
+        }
+
+        const {data} = await Craft.sendActionRequest('POST', 'app/icon-svg', {
+          data: {icon},
+        });
+
+        Craft.icons[icon] = data.iconSvg;
+      });
+    }
+
+    return $(Craft.icons[icon])[0];
   },
 };

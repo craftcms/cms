@@ -170,7 +170,7 @@ class Connection extends \yii\db\Connection
      */
     public function open(): void
     {
-        if (App::env('CRAFT_NO_DB')) {
+        if (App::normalizeBooleanValue(App::env('CRAFT_NO_DB'))) {
             throw new DbConnectException('Craft CMS can’t connect to the database.');
         }
 
@@ -222,9 +222,10 @@ class Connection extends \yii\db\Connection
     public function getBackupFilePath(): string
     {
         // Determine the backup file path
-        $systemName = mb_strtolower(FileHelper::sanitizeFilename(Craft::$app->getSystemName(), [
+        $systemName = FileHelper::sanitizeFilename(Craft::$app->getSystemName(), [
             'asciiOnly' => true,
-        ]));
+        ]);
+        $systemName = str_replace(['\'', '"'], '', strtolower($systemName));
         $version = Craft::$app->getInfo()->version ?? Craft::$app->getVersion();
         $filename = ($systemName ? "$systemName--" : '') . gmdate('Y-m-d-His') . "--v$version";
         $backupPath = Craft::$app->getPath()->getDbBackupPath();
@@ -321,15 +322,14 @@ class Connection extends \yii\db\Connection
             $backupPath = Craft::$app->getPath()->getDbBackupPath();
 
             // Grab all .sql/.dump files in the backup folder.
+            /** @var string[] $files */
             $files = array_merge(
-                glob($backupPath . DIRECTORY_SEPARATOR . "*.{$this->_getDumpExtension()}"),
-                glob($backupPath . DIRECTORY_SEPARATOR . "*.{$this->_getDumpExtension()}.zip"),
+                glob($backupPath . DIRECTORY_SEPARATOR . "*{$this->_getDumpExtension()}"),
+                glob($backupPath . DIRECTORY_SEPARATOR . "*{$this->_getDumpExtension()}.zip"),
             );
 
             // Sort them by file modified time descending (newest first).
-            usort($files, static function($a, $b) {
-                return filemtime($b) <=> filemtime($a);
-            });
+            usort($files, static fn($a, $b) => filemtime($b) <=> filemtime($a));
 
             if (count($files) >= $generalConfig->maxBackups) {
                 $backupsToDelete = array_slice($files, $generalConfig->maxBackups);
@@ -552,7 +552,8 @@ class Connection extends \yii\db\Connection
             '{port}' => $parsed['port'] ?? '',
             '{server}' => $parsed['host'] ?? '',
             '{user}' => $username,
-            '{password}' => str_replace('$', '\\$', addslashes($password)),
+            // h/t https://stackoverflow.com/a/1250279/1688568
+            '{password}' => str_replace("'", "'\"'\"'", $password),
             '{database}' => $parsed['dbname'] ?? '',
             '{schema}' => $this->getSchema()->defaultSchema ?? '',
         ];
@@ -595,9 +596,7 @@ class Connection extends \yii\db\Connection
 
             // Redact the PGPASSWORD
             if ($this->getIsPgsql()) {
-                $execCommand = preg_replace_callback('/(PGPASSWORD=")([^"]+)"/i', function($match) {
-                    return $match[1] . str_repeat('•', strlen($match[2])) . '"';
-                }, $execCommand);
+                $execCommand = preg_replace_callback('/(PGPASSWORD=")([^"]+)"/i', fn($match) => $match[1] . str_repeat('•', strlen($match[2])) . '"', $execCommand);
             }
 
             throw new ShellCommandException($execCommand, $command->getExitCode(), $command->getStdErr());

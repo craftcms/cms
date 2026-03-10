@@ -39,10 +39,10 @@
               (entry.dateCreated ? Craft.formatDate(entry.dateCreated) : '') +
                 (entry.dateCreated &&
                 entry.username &&
-                Craft.edition == Craft.Pro
+                Craft.edition !== Craft.Solo
                   ? ', '
                   : '') +
-                (entry.username && Craft.edition == Craft.Pro
+                (entry.username && Craft.edition !== Craft.Solo
                   ? entry.username
                   : '')
             ) +

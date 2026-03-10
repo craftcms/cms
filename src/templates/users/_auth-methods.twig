@@ -6,6 +6,7 @@
 } %}
   {% for method in craft.app.auth.getAvailableMethods() %}
     {% set isActive = method.isActive() %}
+    {% set headingId = "auth-method-heading-#{loop.index0}" %}
 
     {% tag 'div' with {
       class: 'auth-method',
@@ -15,7 +16,7 @@
       },
     } %}
       <div class="auth-method-details">
-        <h3>{{ method.displayName() }}</h3>
+        <h3 id="{{ headingId }}">{{ method.displayName() }}</h3>
         <div class="instructions">
           {{ method.description() }}
         </div>
@@ -42,6 +43,8 @@
               buttonAttributes: {
                 class: ['auth-method-action-btn', 'action-btn', 'hairline'],
                 title: 'Actions'|t('app'),
+                'aria-label': 'Actions'|t('app'),
+                'aria-describedby': headingId,
               },
             }) }}
           </div>

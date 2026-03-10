@@ -92,6 +92,19 @@ class Schema extends \yii\db\mysql\Schema
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function findTableNames($schema = ''): array
+    {
+        $sql = 'SHOW FULL TABLES';
+        if ($schema !== '') {
+            $sql .= ' FROM ' . $this->quoteSimpleTableName($schema);
+        }
+        $sql .= " WHERE `Table_Type` = 'BASE TABLE'";
+        return $this->db->createCommand($sql)->queryColumn();
+    }
+
+    /**
      * Creates a query builder for the database.
      *
      * This method may be overridden by child classes to create a DBMS-specific query builder.
@@ -113,6 +126,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @param string $name
      * @return string
+     * @deprecated in 5.4.0
      */
     public function quoteDatabaseName(string $name): string
     {
@@ -190,14 +204,14 @@ class Schema extends \yii\db\mysql\Schema
             ->addArg('--dump-date')
             ->addArg('--no-autocommit')
             ->addArg('--routines')
-            ->addArg('--default-character-set=', Craft::$app->getConfig()->getDb()->charset)
+            ->addArg('--default-character-set=', Craft::$app->getConfig()->getDb()->getCharset())
             ->addArg('--set-charset')
             ->addArg('--triggers')
             ->addArg('--no-tablespaces');
 
         $serverVersion = App::normalizeVersion(Craft::$app->getDb()->getServerVersion());
         $isMySQL8 = version_compare($serverVersion, '8', '>=');
-        $ignoreTables = $ignoreTables ?? Craft::$app->getDb()->getIgnoredBackupTables();
+        $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
         $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
         // https://bugs.mysql.com/bug.php?id=109685
@@ -213,6 +227,7 @@ class Schema extends \yii\db\mysql\Schema
 
         $schemaDump = (clone $baseCommand)
             ->addArg('--no-data')
+            ->addArg('--skip-triggers')
             ->addArg('--result-file=', '{file}')
             ->addArg('{database}');
 
@@ -475,5 +490,37 @@ SQL;
         FileHelper::writeToFile($this->tempMyCnfPath, $contents, ['append']);
 
         return $this->tempMyCnfPath;
+    }
+
+    /**
+     * Returns the row format for the given table, if known.
+     *
+     * @param string $table
+     * @return string|null
+     * @throws Exception
+     * @since 5.9.6
+     */
+    public function getRowFormat(string $table): ?string
+    {
+        $sql = sprintf('SHOW CREATE TABLE %s', $this->quoteTableName($table));
+        $result = $this->db->createCommand($sql)->queryOne();
+        if (!preg_match('/\bROW_FORMAT=(\w+)\b/i', $result['Create Table'], $match)) {
+            return null;
+        }
+        return strtoupper($match[1]);
+    }
+
+    /**
+     * Sets the row format for the given table.
+     *
+     * @param string $table
+     * @param string $rowFormat
+     * @throws Exception
+     * @since 5.9.6
+     */
+    public function setRowFormat(string $table, string $rowFormat): void
+    {
+        $sql = sprintf('ALTER TABLE %s ROW_FORMAT = %s', $this->quoteTableName($table), $rowFormat);
+        $this->db->createCommand($sql)->execute();
     }
 }

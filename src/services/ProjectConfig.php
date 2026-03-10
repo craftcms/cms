@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Address;
 use craft\elements\User;
 use craft\errors\BusyResourceException;
 use craft\errors\OperationAbortedException;
@@ -40,7 +41,7 @@ use yii\web\ServerErrorHttpException;
 /**
  * Project Config service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getProjectConfig()|`Craft::$app->projectConfig`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getProjectConfig()|`Craft::$app->getProjectConfig()`]].
  *
  * @property-read bool $isApplyingExternalChanges
  * @property-read bool $isApplyingYamlChanges
@@ -57,6 +58,7 @@ class ProjectConfig extends Component
      * The cache key that is used to store the modified time of the project config files, at the time they were last applied or ignored.
      *
      * @since 3.5.0
+     * @deprecated in 5.6.6
      */
     public const IGNORE_CACHE_KEY = 'projectConfig:ignore';
     /**
@@ -107,6 +109,8 @@ class ProjectConfig extends Component
     public const PATH_CATEGORY_GROUPS = 'categoryGroups';
     public const PATH_DATE_MODIFIED = 'dateModified';
     public const PATH_ELEMENT_SOURCES = 'elementSources';
+    /** @since 5.9.0 */
+    public const PATH_ELEMENT_SOURCE_PAGES = 'elementSourcesPages';
     public const PATH_ENTRY_TYPES = 'entryTypes';
     public const PATH_FIELDS = 'fields';
     public const PATH_GLOBAL_SETS = 'globalSets';
@@ -280,7 +284,7 @@ class ProjectConfig extends Component
     private array $_configFileList = [];
 
     /**
-     * @var int|null The project config cache duration. If null, the <config4:cacheDuration> config setting will be used.
+     * @var int|null The project config cache duration. If null, the <config5:cacheDuration> config setting will be used.
      * @since 4.5.0
      */
     public ?int $cacheDuration = null;
@@ -386,7 +390,7 @@ class ProjectConfig extends Component
     {
         if (isset($config['maxBackups'])) {
             $config['maxDeltas'] = ArrayHelper::remove($config, 'maxBackups');
-            Craft::$app->getDeprecator()->log(__CLASS__ . '::maxBackups', '`' . __CLASS__ . '::maxBackups` has been deprecated. Use `maxDeltas` instead.');
+            Craft::$app->getDeprecator()->log(self::class . '::maxBackups', '`' . self::class . '::maxBackups` has been deprecated. Use `maxDeltas` instead.');
         }
 
         parent::__construct($config);
@@ -407,7 +411,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Saves the modified project confgi state and writes out updated YAML files, if needed.
+     * Saves the modified project config state and writes out updated YAML files, if needed.
      *
      * @since 5.0.0
      */
@@ -487,7 +491,7 @@ class ProjectConfig extends Component
         foreach ($config as $key => $item) {
             if (is_array($item)) {
                 $itemPath = sprintf('%s%s', ($path !== null) ? "$path." : '', $key);
-                if ($callback($item)) {
+                if ($callback($item, $itemPath)) {
                     $items[$itemPath] = $item;
                 } else {
                     $this->findInternal($item, $callback, $itemPath, $items);
@@ -620,7 +624,6 @@ class ProjectConfig extends Component
         $this->_applyingExternalChanges = true;
         $cache = Craft::$app->getCache();
         $cache->delete(self::CACHE_KEY);
-        $cache->delete(self::IGNORE_CACHE_KEY);
 
         $changes = $this->_getPendingChanges();
 
@@ -701,9 +704,15 @@ class ProjectConfig extends Component
             return false;
         }
 
-        // If the file modification date hasn't changed, then no need to check the contents
-        if (!$this->_areConfigFilesModified($force)) {
-            return false;
+        if (!$force) {
+            // If the file modification date hasn't changed, then no need to check the contents
+            $cachedModifiedTime = Craft::$app->getCache()->get(self::CACHE_KEY);
+            if (
+                $cachedModifiedTime &&
+                $cachedModifiedTime === $this->_getConfigFileModifiedTime()
+            ) {
+                return false;
+            }
         }
 
         if ($path !== null) {
@@ -759,15 +768,10 @@ class ProjectConfig extends Component
      * Ignores any pending changes in the project config files.
      *
      * @since 3.5.0
+     * @deprecated in 5.6.6
      */
     public function ignorePendingChanges(): void
     {
-        Craft::$app->getCache()->set(
-            self::IGNORE_CACHE_KEY,
-            $this->_getConfigFileModifiedTime(),
-            self::CACHE_DURATION,
-            $this->getCacheDependency()
-        );
     }
 
     /**
@@ -777,11 +781,11 @@ class ProjectConfig extends Component
      */
     public function updateParsedConfigTimes(): bool
     {
-        $time = $this->_getConfigFileModifiedTime();
-        return !empty(Craft::$app->getCache()->multiSet([
-            self::CACHE_KEY => $time,
-            self::IGNORE_CACHE_KEY => $time,
-        ], self::CACHE_DURATION));
+        return Craft::$app->getCache()->set(
+            self::CACHE_KEY,
+            $this->_getConfigFileModifiedTime(),
+            self::CACHE_DURATION,
+        );
     }
 
     /**
@@ -939,7 +943,7 @@ class ProjectConfig extends Component
      * Get the list of applied changes
      *
      * @return array
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public function getAppliedChanges(): array
     {
@@ -1226,6 +1230,7 @@ class ProjectConfig extends Component
         // don't touch `meta`
         unset($config[self::PATH_META]);
 
+        $config[self::PATH_ADDRESSES] = $this->_getAddressesData();
         $config[self::PATH_CATEGORY_GROUPS] = $this->_getCategoryGroupData();
         $config[self::PATH_DATE_MODIFIED] = DateTimeHelper::currentTimeStamp();
         $config[self::PATH_ELEMENT_SOURCES] = $this->_getElementSourceData($config[self::PATH_ELEMENT_SOURCES] ?? []);
@@ -1286,7 +1291,11 @@ class ProjectConfig extends Component
     {
         Craft::info('Looking for pending changes', __METHOD__);
 
-        $processChanges = fn($path, $triggerUpdate = false) => $this->getCurrentWorkingConfig()->commitChanges($existingConfig->get($path), $incomingConfig->get($path), $path, $triggerUpdate, null, true);
+        $processChanges = function($path, $triggerUpdate = false) use ($existingConfig, $incomingConfig) {
+            $oldValue = $existingConfig->get($path);
+            $newValue = $incomingConfig->get($path);
+            $this->getCurrentWorkingConfig()->commitChanges($oldValue, $newValue, $path, $triggerUpdate, null, true);
+        };
 
         // If we're parsing all the changes, we better work the actual config map.
         if (!empty($changes['removedItems'])) {
@@ -1480,12 +1489,7 @@ class ProjectConfig extends Component
         $sorter = function($a, $b) {
             $aDepth = substr_count($a, '.');
             $bDepth = substr_count($b, '.');
-
-            if ($aDepth === $bDepth) {
-                return 0;
-            }
-
-            return $aDepth > $bDepth ? -1 : 1;
+            return $bDepth <=> $aDepth;
         };
 
         $newItems = array_unique($newItems);
@@ -1497,22 +1501,6 @@ class ProjectConfig extends Component
         uasort($changedItems, $sorter);
 
         return compact('newItems', 'removedItems', 'changedItems');
-    }
-
-    /**
-     * Return true if the config files have been modified since last we checked.
-     *
-     * @param bool $force Whether to check for changes even if it doesn’t look like anything has changed since
-     * the last time [[ignorePendingChanges()]] has been called.
-     * @return bool
-     */
-    private function _areConfigFilesModified(bool $force): bool
-    {
-        $cachedModifiedTime = Craft::$app->getCache()->get($force ? self::CACHE_KEY : self::IGNORE_CACHE_KEY);
-        return (
-            !$cachedModifiedTime ||
-            $this->_getConfigFileModifiedTime() !== $cachedModifiedTime
-        );
     }
 
     /**
@@ -1674,6 +1662,8 @@ class ProjectConfig extends Component
 
         // Let plugins know about it
         $this->trigger(self::EVENT_AFTER_WRITE_YAML_FILES);
+
+        $this->_updateYaml = false;
     }
 
     /**
@@ -1861,6 +1851,7 @@ class ProjectConfig extends Component
                 $segments = explode('.', $path);
                 foreach ($segments as $segment) {
                     // If we're still traversing, enforce array to avoid errors.
+                    /** @phpstan-ignore-next-line */
                     if (!is_array($current)) {
                         $current = [];
                     }
@@ -2038,8 +2029,10 @@ class ProjectConfig extends Component
      */
     private function _getUserData(array $data): array
     {
-        $fieldLayout = Craft::$app->getFields()->getLayoutByType(User::class);
-        if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
+        $fieldLayout = Craft::$app->getFields()->getLayoutByType(User::class, false);
+        $fieldLayoutConfig = $fieldLayout?->getConfig();
+
+        if ($fieldLayoutConfig) {
             $data['fieldLayouts'] = [
                 $fieldLayout->uid => $fieldLayoutConfig,
             ];
@@ -2051,6 +2044,28 @@ class ProjectConfig extends Component
 
         foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
             $data['groups'][$group->uid] = $group->getConfig();
+        }
+
+        return $data;
+    }
+
+
+
+    /**
+     * Return addresses data config array.
+     *
+     * @return array
+     */
+    private function _getAddressesData(): array
+    {
+        $data = [];
+        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Address::class, false);
+        $fieldLayoutConfig = $fieldLayout?->getConfig();
+
+        if ($fieldLayoutConfig) {
+            $data['fieldLayouts'] = [
+                $fieldLayout->uid => $fieldLayoutConfig,
+            ];
         }
 
         return $data;

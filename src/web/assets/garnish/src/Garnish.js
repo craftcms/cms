@@ -41,6 +41,8 @@ Garnish.ltr = !Garnish.rtl;
 
 Garnish = $.extend(Garnish, {
   $scrollContainer: Garnish.$win,
+  activateEventsMuted: false,
+  resizeEventsMuted: false,
 
   // Key code constants
   BACKSPACE_KEY: 8,
@@ -462,6 +464,7 @@ Garnish = $.extend(Garnish, {
    */
   trapFocusWithin: function (container) {
     const $container = $(container);
+    this.releaseFocusWithin($container);
     $container.on('keydown.focus-trap', function (ev) {
       if (ev.keyCode === Garnish.TAB_KEY) {
         const $focusableElements = $container.find(':focusable');
@@ -473,14 +476,22 @@ Garnish = $.extend(Garnish, {
         if (index === 0 && ev.shiftKey) {
           ev.preventDefault();
           ev.stopPropagation();
-          $focusableElements.last().trigger('focus');
+          $focusableElements.last().focus();
         } else if (index === $focusableElements.length - 1 && !ev.shiftKey) {
           ev.preventDefault();
           ev.stopPropagation();
-          $focusableElements.first().trigger('focus');
+          $focusableElements.first().focus();
         }
       }
     });
+  },
+
+  /**
+   * Releases focus within a container.
+   * @param {Object} container
+   */
+  releaseFocusWithin: function (container) {
+    $(container).off('.focus-trap');
   },
 
   /**
@@ -489,14 +500,30 @@ Garnish = $.extend(Garnish, {
    */
   setFocusWithin: function (container) {
     const $container = $(container);
-    const $firstFocusable = $(container).find(
-      ':focusable:not(.checkbox):first'
+    if ($container.has(document.activeElement).length) {
+      return;
+    }
+
+    let $firstFocusable = $(container).find(
+      ':focusable:not(.checkbox):not(.prevent-autofocus):first'
     );
 
+    // if the first visible .field container is not the parent of the first focusable element we found
+    // just focus on the container;
+    // this can happen if e.g. you have an entry without a title and the first field is a ckeditor field;
+    // in such case the second (or further) element would get focus on initial load, which can be confusing
+    // see https://github.com/craftcms/cms/issues/15245
+    if (
+      $container.find('.field:visible:first')[0] !==
+      $firstFocusable.parents('.field')[0]
+    ) {
+      $firstFocusable = [];
+    }
+
     if ($firstFocusable.length > 0) {
-      $firstFocusable.trigger('focus');
+      $firstFocusable.focus();
     } else {
-      $container.attr('tabindex', '-1').trigger('focus');
+      $container.attr('tabindex', '-1').focus();
     }
   },
 
@@ -709,32 +736,34 @@ Garnish = $.extend(Garnish, {
    * @return {(string|string[])}
    */
   getInputPostVal: function ($input) {
-    var type = $input.attr('type'),
-      val = $input.val();
+    const type = $input.attr('type');
+    const val = $input.val();
 
     // Is this an unchecked checkbox or radio button?
     if (type === 'checkbox' || type === 'radio') {
       if ($input.prop('checked')) {
         return val;
-      } else {
-        return null;
       }
+      return null;
     }
 
     // Flatten any array values whose input name doesn't end in "[]"
     //  - e.g. a multi-select
-    else if (Array.isArray(val) && $input.attr('name').slice(-2) !== '[]') {
+    if (Array.isArray(val) && $input.attr('name').slice(-2) !== '[]') {
       if (val.length) {
         return val[val.length - 1];
-      } else {
-        return null;
       }
+      return null;
+    }
+
+    // If it's a dropdown with a null value, return an empty string instead
+    // (consistent with element.value)
+    if (val === null && $input.prop('nodeName') === 'SELECT') {
+      return '';
     }
 
     // Just return the value
-    else {
-      return val;
-    }
+    return val;
   },
 
   /**
@@ -754,14 +783,14 @@ Garnish = $.extend(Garnish, {
    * @return {array}
    */
   getPostData: function (container) {
-    var postData = {},
-      arrayInputCounters = {},
-      $inputs = Garnish.findInputs(container);
+    const postData = {};
+    const arrayInputCounters = {};
+    const $inputs = Garnish.findInputs(container);
 
-    var inputName;
+    let inputName;
 
-    for (var i = 0; i < $inputs.length; i++) {
-      var $input = $inputs.eq(i);
+    for (let i = 0; i < $inputs.length; i++) {
+      const $input = $inputs.eq(i);
 
       if ($input.prop('disabled')) {
         continue;
@@ -772,16 +801,17 @@ Garnish = $.extend(Garnish, {
         continue;
       }
 
-      var inputVal = Garnish.getInputPostVal($input);
+      let inputVal = Garnish.getInputPostVal($input);
       if (inputVal === null) {
         continue;
       }
 
-      var isArrayInput = inputName.slice(-2) === '[]';
+      const isArrayInput = inputName.slice(-2) === '[]';
+      let croppedName;
 
       if (isArrayInput) {
         // Get the cropped input name
-        var croppedName = inputName.substring(0, inputName.length - 2);
+        croppedName = inputName.substring(0, inputName.length - 2);
 
         // Prep the input counter
         if (typeof arrayInputCounters[croppedName] === 'undefined') {
@@ -793,7 +823,7 @@ Garnish = $.extend(Garnish, {
         inputVal = [inputVal];
       }
 
-      for (var j = 0; j < inputVal.length; j++) {
+      for (let j = 0; j < inputVal.length; j++) {
         if (isArrayInput) {
           inputName = croppedName + '[' + arrayInputCounters[croppedName] + ']';
           arrayInputCounters[croppedName]++;
@@ -908,6 +938,44 @@ Garnish = $.extend(Garnish, {
       }
     }
   },
+
+  once: function (target, events, data, handler) {
+    if (typeof target === 'undefined') {
+      console.warn('Garnish.once() called for an invalid target class.');
+      return;
+    }
+
+    if (typeof data === 'function') {
+      handler = data;
+      data = {};
+    }
+
+    const onceler = (event) => {
+      this.off(target, events, onceler);
+      handler(event);
+    };
+    this.on(target, events, data, onceler);
+  },
+
+  muteResizeEvents: function (callback) {
+    const resizeEventsMuted = Garnish.resizeEventsMuted;
+    Garnish.resizeEventsMuted = true;
+    callback();
+    Garnish.resizeEventsMuted = resizeEventsMuted;
+  },
+
+  /**
+   * Ensures that the given number is within a min/max range, and returns it.
+   *
+   * @param {number} num
+   * @param {number} min
+   * @param {number} max
+   */
+  within: function (num, min, max) {
+    num = Math.max(num, min);
+    num = Math.min(num, max);
+    return num;
+  },
 });
 
 Object.assign(Garnish, {
@@ -944,20 +1012,27 @@ Object.assign(Garnish, {
 // Custom events
 // -----------------------------------------------------------------------------
 
-var erd;
-
-function getErd() {
-  if (typeof erd === 'undefined') {
-    erd = elementResizeDetectorMaker({
-      callOnAdd: false,
-    });
-  }
-
-  return erd;
-}
-
-function triggerResizeEvent(elem) {
-  $(elem).trigger('resize');
+let resizeObserver;
+/**
+ * @returns {ResizeObserver}
+ */
+function getResizeObserver() {
+  return (resizeObserver =
+    resizeObserver ||
+    new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const size = $.data(entry.target, 'size');
+        if (size) {
+          const {width, height} = entry.target.getBoundingClientRect();
+          if (width !== size.width || height !== size.height) {
+            $.data(entry.target, 'size', {width, height});
+            if (!Garnish.resizeEventsMuted) {
+              $(entry.target).trigger('resize');
+            }
+          }
+        }
+      }
+    }));
 }
 
 // Work them into jQuery's event system
@@ -977,6 +1052,11 @@ $.extend($.event.special, {
           }
         },
         'click.garnish-activate': function (e) {
+          // Ignore if activate events are muted
+          if (Garnish.activateEventsMuted) {
+            return;
+          }
+
           const disabled = $elem.hasClass('disabled');
 
           // Don't interfere if this is a link and it was a Ctrl-click
@@ -998,12 +1078,16 @@ $.extend($.event.special, {
           }
 
           if (!disabled) {
-            $elem.trigger('activate');
+            $elem.trigger({
+              type: 'activate',
+              originalEvent: e,
+            });
           }
         },
         'keydown.garnish-activate': function (e) {
-          // Ignore if the event was bubbled up, or if it wasn't the Space/Return key
+          // Ignore if activate events are muted, or the event was bubbled up, or if it wasn't the Space/Return key
           if (
+            Garnish.activateEventsMuted ||
             this !== $elem[0] ||
             ![Garnish.SPACE_KEY, Garnish.RETURN_KEY].includes(e.keyCode)
           ) {
@@ -1018,15 +1102,24 @@ $.extend($.event.special, {
           }
 
           if (!$elem.hasClass('disabled')) {
-            $elem.trigger('activate');
+            $elem.trigger({
+              type: 'activate',
+              originalEvent: e,
+            });
           }
         },
       });
 
       if (!$elem.hasClass('disabled')) {
-        $elem.attr('tabindex', '0');
+        // Make it focusable, unless the event is bubbling up to the body element
+        if ($elem[0] !== Garnish.$bod[0]) {
+          $elem.attr('tabindex', '0');
+        }
       } else {
-        $elem.removeAttr('tabindex');
+        // allow setting of tabindex attr if the element has a "read-only" class
+        if (!$elem.hasClass('read-only')) {
+          $elem.removeAttr('tabindex');
+        }
       }
     },
     teardown: function () {
@@ -1081,15 +1174,16 @@ $.extend($.event.special, {
         return false;
       }
 
-      $('> :last-child', this).addClass('last');
-      getErd().listenTo(this, triggerResizeEvent);
+      const {width, height} = this.getBoundingClientRect();
+      $.data(this, 'size', {width, height});
+      getResizeObserver().observe(this);
     },
     teardown: function () {
       if (this === window) {
         return false;
       }
 
-      getErd().removeListener(this, triggerResizeEvent);
+      getResizeObserver().unobserve(this);
     },
   },
 });

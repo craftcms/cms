@@ -17,6 +17,8 @@ use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\services\Sites;
+use craft\services\Tokens;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
 use yii\di\Instance;
@@ -150,11 +152,13 @@ class Request extends \yii\web\Request
 
     /**
      * @var bool|null
+     * @phpstan-ignore property.unusedType
      */
     private ?bool $_isMobileBrowser = null;
 
     /**
      * @var bool|null
+     * @phpstan-ignore property.unusedType
      */
     private ?bool $_isMobileOrTabletBrowser = null;
 
@@ -185,6 +189,12 @@ class Request extends \yii\web\Request
     private bool $_setBodyParams = false;
 
     /**
+     * @var bool Whether the request has an invalid token.
+     * @see getHasInvalidToken())
+     */
+    private bool $_hasInvalidToken;
+
+    /**
      * @var bool|null Whether the request initially had a token
      * @see getHadToken()
      */
@@ -195,6 +205,12 @@ class Request extends \yii\web\Request
      * @see getToken()
      */
     public ?string $_token = null;
+
+    /**
+     * @var array|null
+     * @see getTokenRoute()
+     */
+    public ?array $_tokenRoute = null;
 
     /**
      * @inheritdoc
@@ -263,7 +279,7 @@ class Request extends \yii\web\Request
                     }
                     $testBaseCpUrls[] = $this->getBaseUrl() . "/{$this->generalConfig->cpTrigger}";
                 }
-                $siteScore = $siteScore ?? (isset($site) ? $this->_scoreSite($site) : 0);
+                $siteScore ??= isset($site) ? $this->_scoreSite($site) : 0;
                 foreach ($testBaseCpUrls as $testUrl) {
                     $cpScore = $this->_scoreUrl($testUrl);
                     if ($cpScore > $siteScore) {
@@ -285,9 +301,8 @@ class Request extends \yii\web\Request
         if ($this->_isCpRequest && $this->generalConfig->cpTrigger && str_starts_with($this->_path . '/', $this->generalConfig->cpTrigger . '/')) {
             $this->_path = ltrim(substr($this->_path, strlen($this->generalConfig->cpTrigger)), '/');
         }
-
         // Trim off any leading path segments that are part of the base URL
-        if ($this->_path !== '' && isset($baseUrl) && ($basePath = parse_url($baseUrl, PHP_URL_PATH)) !== null) {
+        elseif ($this->_path !== '' && isset($baseUrl) && ($basePath = parse_url($baseUrl, PHP_URL_PATH)) !== null) {
             $basePath = $this->_normalizePath($basePath);
 
             // If Craft is running from a subfolder, chop the subfolder path off of the base path first
@@ -411,8 +426,8 @@ class Request extends \yii\web\Request
      * Returns the segments of the requested path.
      *
      * ::: tip
-     * Note that the segments will not include the [control panel trigger](config4:cpTrigger)
-     * if it’s a control panel request, or the [page trigger](config4:pageTrigger)
+     * Note that the segments will not include the [control panel trigger](config5:cpTrigger)
+     * if it’s a control panel request, or the [page trigger](config5:pageTrigger)
      * or page number if it’s a paginated request.
      * :::
      *
@@ -429,11 +444,7 @@ class Request extends \yii\web\Request
      */
     public function getSegments(): array
     {
-        if (isset($this->_segments)) {
-            return $this->_segments;
-        }
-
-        return $this->_segments = $this->_segments($this->_path);
+        return $this->_segments ?? ($this->_segments = $this->_segments($this->_path));
     }
 
     /**
@@ -493,7 +504,6 @@ class Request extends \yii\web\Request
      * Returns whether the request initially had a token.
      *
      * @return bool
-     * @throws BadRequestHttpException
      * @since 3.6.0
      */
     public function getHadToken(): bool
@@ -505,12 +515,11 @@ class Request extends \yii\web\Request
     /**
      * Returns the token submitted with the request, if there is one.
      *
-     * Tokens must be sent either as a query string param named after the <config4:tokenParam> config setting (`token` by
+     * Tokens must be sent either as a query string param named after the <config5:tokenParam> config setting (`token` by
      * default), or an `X-Craft-Token` HTTP header on the request.
      *
      * @return string|null The token, or `null` if there isn’t one.
-     * @throws BadRequestHttpException if an invalid token is supplied
-     * @see \craft\services\Tokens::createToken()
+     * @see Tokens::createToken()
      * @see Controller::requireToken()
      */
     public function getToken(): ?string
@@ -520,48 +529,83 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns the route the request’s token resolves to.
+     *
+     * @return array|null The route, or `null` if there isn’t one.
+     * @see getToken())
+     * @see Tokens::createToken()
+     * @since 5.9.12
+     */
+    public function getTokenRoute(): ?array
+    {
+        $this->_findToken();
+        return $this->_tokenRoute;
+    }
+
+    /**
      * Sets the token value.
      *
-     * @param ?string $token
+     * @param string|null $token
      * @since 3.6.0
      */
     public function setToken(?string $token): void
     {
         // Make sure $this->_hadToken has been set
-        try {
-            $this->_findToken();
-        } catch (BadRequestHttpException) {
-        }
+        $this->_findToken();
 
         $this->_token = $token;
     }
 
     /**
-     * Looks for a token on the request.
+     * Returns whether there is an invalid token on the request.
      *
-     * @throws BadRequestHttpException
+     * @return bool
+     * @since 5.9.0
+     */
+    public function getHasInvalidToken(): bool
+    {
+        $this->_findToken();
+        return $this->_hasInvalidToken;
+    }
+
+    /**
+     * Looks for a token on the request.
      */
     private function _findToken(): void
     {
-        if (isset($this->_hadToken)) {
+        if (isset($this->_hasInvalidToken)) {
             return;
         }
 
-        $this->_token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
+        $this->_hadToken = false;
+        $this->_hasInvalidToken = false;
 
-        if ($this->_token && !preg_match('/^[A-Za-z0-9_-]+$/', $this->_token)) {
-            $this->_token = null;
-            $this->_hadToken = false;
-            throw new BadRequestHttpException('Invalid token');
+        $token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
+
+        if (!$token) {
+            return;
         }
 
-        $this->_hadToken = isset($this->_token);
+        if (!preg_match('/^[A-Za-z0-9_-]+$/', $token)) {
+            $this->_hasInvalidToken = true;
+            return;
+        }
+
+        $this->_tokenRoute = Craft::$app->getTokens()->getTokenRoute($token) ?: null;
+
+        if (!$this->_tokenRoute) {
+            $this->_hasInvalidToken = true;
+            return;
+        }
+
+        $this->_token = $token;
+        $this->_hadToken = true;
     }
 
     /**
      * Returns the site token submitted with the request, if there is one.
      *
-     * Tokens must be sent either as a query string param named after the <config4:siteToken> config setting
+     * Tokens must be sent either as a query string param named after the <config5:siteToken> config setting
      * (`siteToken` by default), or an `X-Craft-Site-Token` HTTP header on the request.
      *
      * @return string|null The token, or `null` if there isn’t one.
@@ -582,7 +626,7 @@ class Request extends \yii\web\Request
     {
         try {
             return $this->_validateSiteToken() !== null;
-        } catch (BadRequestHttpException $e) {
+        } catch (BadRequestHttpException) {
             return false;
         }
     }
@@ -591,7 +635,7 @@ class Request extends \yii\web\Request
      * Returns whether the control panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
-     * [control panel trigger](config4:cpTrigger).
+     * [control panel trigger](config5:cpTrigger).
      *
      * @return bool Whether the current request should be routed to the control panel.
      */
@@ -628,7 +672,7 @@ class Request extends \yii\web\Request
      *
      * There are several ways that this method could return `true`:
      *
-     * - If the first segment in the Craft path matches the [action trigger](config4:actionTrigger)
+     * - If the first segment in the Craft path matches the [action trigger](config5:actionTrigger)
      * - If there is an `action` param in either the POST data or query string
      * - If the Craft path matches the Login path, the Logout path, or the Set Password path
      *
@@ -696,11 +740,16 @@ class Request extends \yii\web\Request
      */
     public function getIsPreview(): bool
     {
-        return (
-            ($this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview')) !== null &&
-            // If there's a token but it expired, they're looking at the live site
-            (!$this->getHadToken() || $this->getToken() !== null)
-        );
+        $previewParamValue = $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview') ?? $this->getHeaders()->get('X-Craft-Preview-Token');
+        if (!$previewParamValue) {
+            return false;
+        }
+        if (!Craft::$app->getSecurity()->validateData($previewParamValue)) {
+            return false;
+        }
+
+        // If there's a token but it expired, they're looking at the live site
+        return !$this->getHadToken() || $this->getToken() !== null;
     }
 
     /**
@@ -1066,6 +1115,32 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Validates and returns the named request query parameter value, or bails on the request with a 400 error if that parameter doesn’t pass validation.
+     *
+     * @param string $name The parameter name.
+     * @return string|null The parameter value
+     * @throws BadRequestHttpException if the param value doesn’t pass validation
+     * @see getQueryParam()
+     * @since 5.8.0
+     */
+    public function getValidatedQueryParam(string $name): ?string
+    {
+        $value = $this->getQueryParam($name);
+
+        if ($value === null) {
+            return null;
+        }
+
+        $value = Craft::$app->getSecurity()->validateData($value);
+
+        if ($value === false) {
+            throw new BadRequestHttpException('Request contained an invalid query param');
+        }
+
+        return $value;
+    }
+
+    /**
      * Returns the named parameter value from either GET or the request body.
      *
      * If the parameter does not exist, the second parameter to this method will be returned.
@@ -1242,7 +1317,7 @@ class Request extends \yii\web\Request
      * Returns the `Bearer` token value from the `X-Craft-Authorization` or `Authorization` header, if present.
      *
      * @return string|null
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public function getBearerToken(): ?string
     {
@@ -1307,6 +1382,9 @@ class Request extends \yii\web\Request
      */
     public function getCsrfToken($regenerate = false): string
     {
+        // Ensure the response is not cached by the browser or static cache proxies.
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
         if (!isset($this->_craftCsrfToken) || $regenerate) {
             $token = $this->loadCsrfToken();
 
@@ -1333,24 +1411,58 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns whether the request will accept a given content type3
+     * Returns whether the request will accept a given content type.
      *
-     * @param string $contentType
+     * @param string $contentType The MIME type. Can include `*` as a wildcard character,
+     * to check for a range of MIME types, e.g. `application/*+json`.
      * @return bool
      */
     public function accepts(string $contentType): bool
     {
+        return $this->acceptsInternal($contentType, $this->getAcceptableContentTypes());
+    }
+
+    /**
+     * Returns whether the request primarily wants a given content type.
+     *
+     * @since 5.9.11
+     */
+    public function wants(string $contentType): bool
+    {
         $acceptableContentTypes = $this->getAcceptableContentTypes();
 
-        // then check if the actual key exists
+        if (empty($acceptableContentTypes)) {
+            return false;
+        }
+
+        $firstType = array_key_first($acceptableContentTypes);
+
+        return $this->acceptsInternal($contentType, [
+            $firstType => $acceptableContentTypes[$firstType],
+        ]);
+    }
+
+    private function acceptsInternal(string $contentType, array $acceptableContentTypes): bool
+    {
         if (array_key_exists($contentType, $acceptableContentTypes)) {
             return true;
         }
 
         // check for cases where acceptable content type contains mimeType/*
-        foreach (array_keys($acceptableContentTypes) as $mime) {
+        $acceptableContentTypes = array_keys($acceptableContentTypes);
+        foreach ($acceptableContentTypes as $mime) {
             if (str_ends_with($mime, '/*') && str_starts_with($contentType, substr($mime, 0, -1))) {
                 return true;
+            }
+        }
+
+        if (str_contains($contentType, '*')) {
+            $parts = explode('*', $contentType);
+            $pattern = sprintf('/^%s$/', implode('.*', array_map(fn(string $part) => preg_quote($part, '/'), $parts)));
+            foreach ($acceptableContentTypes as $mime) {
+                if (preg_match($pattern, $mime)) {
+                    return true;
+                }
             }
         }
 
@@ -1364,7 +1476,18 @@ class Request extends \yii\web\Request
      */
     public function getAcceptsJson(): bool
     {
-        return $this->accepts('application/json');
+        return $this->accepts('application/json') || $this->accepts('application/*+json');
+    }
+
+    /**
+     * Returns whether the request primarily wants a JSON response.
+     *
+     * @return bool
+     * @since 5.9.11
+     */
+    public function getWantsJson(): bool
+    {
+        return $this->wants('application/json') || $this->wants('application/*+json');
     }
 
     /**
@@ -1376,6 +1499,17 @@ class Request extends \yii\web\Request
     public function getAcceptsImage(): bool
     {
         return $this->accepts('image/*');
+    }
+
+    /**
+     * Returns whether the request primarily wants an image response.
+     *
+     * @return bool
+     * @since 5.9.11
+     */
+    public function getWantsImage(): bool
+    {
+        return $this->wants('image/*');
     }
 
     /**
@@ -1417,6 +1551,9 @@ class Request extends \yii\web\Request
      */
     protected function generateCsrfToken(): string
     {
+        // Ensure the response is not cached by the browser or static cache proxies.
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
         $existingToken = $this->loadCsrfToken();
 
         // They have an existing CSRF token.
@@ -1528,6 +1665,20 @@ class Request extends \yii\web\Request
         // Was a site token provided?
         $site = $this->_validateSiteToken();
         if ($site !== null) {
+            return $site;
+        }
+
+        // Is CRAFT_SITE or X-Craft-Site present?
+        $siteId = App::env('CRAFT_SITE') ?? $this->getHeaders()->get('X-Craft-Site');
+        if ($siteId !== null) {
+            if (is_numeric($siteId)) {
+                $site = $this->sites->getSiteById($siteId, false);
+            } else {
+                $site = $this->sites->getSiteByHandle($siteId, false);
+            }
+            if (!$site && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+                throw new InvalidArgumentException("Invalid site: $siteId");
+            }
             return $site;
         }
 
@@ -1730,10 +1881,7 @@ class Request extends \yii\web\Request
         }
 
         // Special path?
-        if (
-            $checkSpecialPaths &&
-            ($this->_isCpRequest || !$this->generalConfig->headlessMode)
-        ) {
+        if ($checkSpecialPaths) {
             $specialPaths = [
                 [
                     $this->_isCpRequest ? self::CP_PATH_LOGIN : $this->generalConfig->getLoginPath(),

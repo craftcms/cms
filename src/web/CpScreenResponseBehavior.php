@@ -16,7 +16,7 @@ use yii\base\Behavior;
 /**
  * Control panel screen response behavior.
  *
- * @property Response $owner
+ * @extends Behavior<Response>
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
@@ -162,6 +162,14 @@ class CpScreenResponseBehavior extends Behavior
      * @since 5.0.0
      */
     public $contextMenuItems = null;
+
+    /**
+     * @var string|callable|null Toolbar HTML
+     * @see toolbarHtml()
+     * @see toolbarTemplate()
+     * @since 5.7.0
+     */
+    public $toolbarHtml = null;
 
     /**
      * @var callable|null Action menu items factory.
@@ -536,6 +544,34 @@ class CpScreenResponseBehavior extends Behavior
     {
         $this->contextMenuItems = $value;
         return $this->owner;
+    }
+
+    /**
+     * Sets the toolbar HTML.
+     *
+     * @param callable|string|null $value
+     * @return Response
+     * @since 5.7.0
+     */
+    public function toolbarHtml(callable|string|null $value): Response
+    {
+        $this->toolbarHtml = $value;
+        return $this->owner;
+    }
+
+    /**
+     * Sets a template that should be used to render the toolbar HTML.
+     *
+     * @param string $template
+     * @param array $variables
+     * @return Response
+     * @since 5.7.0
+     */
+    public function toolbarTemplate(string $template, array $variables = []): Response
+    {
+        return $this->toolbarHtml(
+            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+        );
     }
 
     /**

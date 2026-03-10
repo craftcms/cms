@@ -101,7 +101,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             Garnish.$bod.addClass('dragging');
             this.itemDrag.$draggee.closest('tr,li').addClass('draggee');
           },
-          onDragStop: () => {
+          onDragStop: async () => {
             Garnish.$bod.removeClass('dragging');
 
             const $draggee = this.itemDrag.$draggee;
@@ -127,30 +127,39 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             });
 
             const mover = new Craft.AssetMover();
-            mover
-              .moveFolders(folderIds, targetFolderId)
-              .then((totalFoldersMoved) => {
-                mover
-                  .moveAssets(assetIds, targetFolderId)
-                  .then((totalAssetsMoved) => {
-                    const totalItemsMoved =
-                      totalFoldersMoved + totalAssetsMoved;
-                    if (totalItemsMoved) {
-                      Craft.cp.displayNotice(
-                        Craft.t(
-                          'app',
-                          '{totalItems, plural, =1{Item} other{Items}} moved.',
-                          {
-                            totalItems: totalItemsMoved,
-                          }
-                        )
-                      );
-                      Craft.elementIndex.updateElements(true);
-                    } else {
-                      $draggee.closest('tr,li').removeClass('draggee');
-                    }
-                  });
-              });
+
+            const moveParams = await mover.getMoveParams(folderIds, assetIds);
+            if (!moveParams.proceed) {
+              $draggee.closest('tr,li').removeClass('draggee');
+              return;
+            }
+
+            const totalFoldersMoved = await mover.moveFolders(
+              folderIds,
+              targetFolderId,
+              this.currentFolderId
+            );
+            const totalAssetsMoved = await mover.moveAssets(
+              assetIds,
+              targetFolderId,
+              this.currentFolderId
+            );
+            const totalItemsMoved = totalFoldersMoved + totalAssetsMoved;
+            if (totalItemsMoved) {
+              mover.successNotice(
+                moveParams,
+                Craft.t(
+                  'app',
+                  '{totalItems, plural, =1{Item} other{Items}} moved.',
+                  {
+                    totalItems: totalItemsMoved,
+                  }
+                )
+              );
+              Craft.elementIndex.updateElements(true);
+            } else {
+              $draggee.closest('tr,li').removeClass('draggee');
+            }
           },
         });
 
@@ -204,6 +213,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
       if (!this.settings.foldersOnly) {
         this.initForFiles();
       }
+
+      // Double-clicking or double-tapping on folders should open them
+      this.addListener(this.$elements, 'doubletap', function (ev, touchData) {
+        // Make sure the touch targets are the same
+        // (they may be different if Command/Ctrl/Shift-clicking on multiple elements quickly)
+        if (touchData.firstTap.target === touchData.secondTap.target) {
+          const $element = $(touchData.firstTap.target)
+            .closest('tr,ul.thumbsview > li')
+            .find('.element:first');
+          if (Garnish.hasAttr($element, 'data-is-folder')) {
+            $element.find('a').trigger('activate');
+          }
+        }
+      });
 
       this.base();
     },
@@ -665,12 +688,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         }
         const sourcePath = $folder.data('source-path');
         if (sourcePath) {
-          $link.attr({
-            href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
-            role: 'button',
-            'aria-label': label,
-          });
-          this.addListener($link, 'activate', (ev) => {
+          const $newLink = $('<a class="label-link"/>')
+            .html($link.html())
+            .attr({
+              href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
+              role: 'button',
+              'aria-label': label,
+            });
+          $link.replaceWith($newLink);
+          this.addListener($newLink, 'activate', (ev) => {
             this.sourcePath = sourcePath;
             this.clearSearch(false);
             this.updateElements().then(() => {

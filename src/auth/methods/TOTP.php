@@ -12,12 +12,14 @@ use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Craft;
+use craft\helpers\Session as SessionHelper;
 use craft\records\Authenticator as AuthenticatorRecord;
 use craft\web\assets\totp\TotpAsset;
 use craft\web\Session;
 use craft\web\View;
 use PragmaRX\Google2FA\Exceptions\Google2FAException;
 use PragmaRX\Google2FA\Google2FA;
+use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
 
 /**
@@ -92,7 +94,7 @@ JS, [
         ]);
 
         return $view->renderTemplate('_components/auth/methods/TOTP/setup.twig', [
-            'secret' => $secret,
+            'secret' => rtrim(chunk_split($secret, 4, ' ')),
             'user' => $this->user,
             'qrCode' => $this->generateQrCode($secret),
             'totpFormId' => $totpFormId,
@@ -126,8 +128,10 @@ JS, [
             return false;
         }
 
+        $google2fa = new Google2FA();
         try {
-            $verified = (new Google2FA())->verifyKey($secret, $code);
+            $lastUsedTimestamp = $this->lastUsedTimestamp($this->user->id);
+            $verified = $google2fa->verifyKeyNewer($secret, $code, $lastUsedTimestamp);
         } catch (Google2FAException) {
             return false;
         }
@@ -139,6 +143,8 @@ JS, [
         if (!$storedSecret) {
             $this->storeSecret($this->user->id, $secret);
             Craft::$app->getSession()->remove($this->secretParam);
+        } else {
+            $this->storeLastUsedTimestamp($this->user->id, $verified === true ? $google2fa->getTimestamp() : $verified);
         }
 
         return true;
@@ -154,6 +160,12 @@ JS, [
         ]);
     }
 
+    /**
+     * Returns User's 2FA secret from the database
+     * or generates a new one.
+     *
+     * @return string
+     */
     private function secret(): string
     {
         $google2fa = new Google2FA();
@@ -162,15 +174,21 @@ JS, [
         if (empty($secret)) {
             try {
                 $secret = $google2fa->generateSecretKey(32);
-                Craft::$app->getSession()->set($this->secretParam, $secret);
+                SessionHelper::set($this->secretParam, $secret);
             } catch (\Exception $e) {
                 Craft::$app->getErrorHandler()->logException($e);
             }
         }
 
-        return chunk_split($secret, 4, ' ');
+        return $secret;
     }
 
+    /**
+     * Returns user's 2fa secret from the database.
+     *
+     * @param int $userId
+     * @return string|null
+     */
     private static function secretFromDb(int $userId): ?string
     {
         $record = AuthenticatorRecord::find()
@@ -181,6 +199,14 @@ JS, [
         return $record ? $record['auth2faSecret'] : null;
     }
 
+    /**
+     * Stores user's 2fa secret in the database.
+     *
+     * @param int $userId
+     * @param string $secret
+     * @return void
+     * @throws ForbiddenHttpException
+     */
     private function storeSecret(int $userId, string $secret): void
     {
         // Make sure they have an elevated session first
@@ -199,9 +225,62 @@ JS, [
         }
 
         $record->auth2faSecret = $secret;
+        // whenever we store the secret, we should ensure the oldTimestamp is accurate too
+        $record->oldTimestamp = (new Google2FA())->getTimestamp();
         $record->save();
     }
 
+    /**
+     * Returns the totp's old timestamp.
+     *
+     * @param int $userId
+     * @return int|null
+     */
+    private function lastUsedTimestamp(int $userId): ?int
+    {
+        $record = AuthenticatorRecord::find()
+            ->select(['oldTimestamp'])
+            ->where(['userId' => $userId])
+            ->one();
+
+        if (!$record) {
+            return null;
+        }
+
+        // old timestamp is the current Unix Timestamp divided by the $keyRegeneration period
+        // so we store it as int and don't mess with it
+        return $record['oldTimestamp'];
+    }
+
+    /**
+     * Saves totp's old timestamp.
+     *
+     * @param int $userId
+     * @param int $timestamp
+     * @return void
+     */
+    private function storeLastUsedTimestamp(int $userId, int $timestamp): void
+    {
+        /** @var AuthenticatorRecord|null $record */
+        $record = AuthenticatorRecord::find()
+            ->where(['userId' => $userId])
+            ->one();
+
+        if (!$record) {
+            // you shouldn't be able to get here without having a record, so let's throw an exception
+            throw new Exception('Couldn\'t find authenticator record.');
+        }
+
+        $record->oldTimestamp = $timestamp;
+        $record->save();
+    }
+
+    /**
+     * Generates and returns a QR code based on given 2fa secret.
+     *
+     * @param string $secret
+     * @return string
+     */
     private function generateQrCode(string $secret): string
     {
         $qrCodeUrl = (new Google2FA())->getQRCodeUrl(

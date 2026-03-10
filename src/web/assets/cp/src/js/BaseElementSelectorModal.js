@@ -31,7 +31,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     init: function (elementType, settings) {
       this.elementType = elementType;
       this.setSettings(settings, Craft.BaseElementSelectorModal.defaults);
-      const headingId = 'elementSelectorModalHeading-' + Date.now();
+      const headingId =
+        'elementSelectorModalHeading-' + Math.floor(Math.random() * 1000000);
 
       // Build the modal
       const $container = $('<div/>', {
@@ -192,22 +193,24 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       Garnish.uiLayerManager.addLayer(this.$sidebar);
       Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
         this.closeSidebar();
-
-        // If the focus is currently inside the sidebar, refocus the toggle
-        const $focusedEl = Garnish.getFocusedElement();
-        if ($.contains(this.$sidebar.get(0), $focusedEl.get(0)))
-          this.$sidebarToggleBtn.focus();
       });
     },
 
     closeSidebar: function () {
       if (!this.$sidebarToggleBtn) return;
 
+      // Remove the sidebar layer when applicable
       if (this.sidebarIsOpen()) {
         Garnish.uiLayerManager.removeLayer();
-        this.$sidebar.addClass('hidden');
-        this.$sidebarToggleBtn.attr('aria-expanded', 'false');
       }
+
+      this.$sidebar.addClass('hidden');
+      this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+
+      // If the focus is currently inside the sidebar, refocus the toggle
+      const $focusedEl = Garnish.getFocusedElement();
+      if ($.contains(this.$sidebar.get(0), $focusedEl.get(0)))
+        this.$sidebarToggleBtn.focus();
 
       this.$body.removeClass('has-sidebar');
       this.$content.removeClass('has-sidebar');
@@ -227,7 +230,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
         // Auto-focus the Search box
         if (!Garnish.isMobileBrowser(true)) {
-          this.elementIndex.$search.trigger('focus');
+          this.elementIndex.$search.focus();
         }
       }
 
@@ -251,12 +254,16 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     updateSelectBtnState: function () {
       if (this.$selectBtn) {
-        if (this.hasSelection()) {
+        if (this.shouldEnableSelectBtn()) {
           this.enableSelectBtn();
         } else {
           this.disableSelectBtn();
         }
       }
+    },
+
+    shouldEnableSelectBtn: function () {
+      return this.hasSelection();
     },
 
     hasSelection: function () {
@@ -341,6 +348,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
       this.updateModalBottomPadding();
       this.updateSidebarView();
+
+      if (this.elementIndex?.searching) {
+        this.elementIndex.clearSearch(true);
+      }
+
       this.base();
     },
 
@@ -375,6 +387,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         context: 'modal',
         elementType: this.elementType,
         sources: this.settings.sources,
+        condition: this.settings.condition,
       };
 
       if (
@@ -401,7 +414,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         // Initialize the element index
         this.elementIndex = Craft.createElementIndex(
           this.elementType,
-          this.$body,
+          this.$body.children('.element-index'),
           this.getIndexSettings()
         );
 
@@ -442,6 +455,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           storageKey: this.settings.storageKey,
           condition: this.settings.condition,
           referenceElementId: this.settings.referenceElementId,
+          referenceElementOwnerId: this.settings.referenceElementOwnerId,
           referenceElementSiteId: this.settings.referenceElementSiteId,
           criteria: Object.assign({}, this.settings.criteria),
           disabledElementIds: this.settings.disabledElementIds,
@@ -479,6 +493,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       sources: null,
       condition: null,
       referenceElementId: null,
+      referenceElementOwnerId: null,
       referenceElementSiteId: null,
       criteria: null,
       multiSelect: false,

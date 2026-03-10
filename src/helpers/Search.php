@@ -59,12 +59,16 @@ class Search
         }
 
         // Remove ignore-words?
-        if (is_array($ignore) && !empty($ignore)) {
+        if (!empty($ignore)) {
             foreach ($ignore as $word) {
                 $word = preg_quote(static::normalizeKeywords($word, [], true, $language), '/');
                 $str = preg_replace("/\b$word\b/u", '', $str);
             }
         }
+
+        // Get rid of invisible Unicode special characters
+        // (see https://github.com/craftcms/cms/issues/16430)
+        $str = preg_replace(StringHelper::invisibleCharsRegex(), '', $str);
 
         // Strip out new lines and superfluous spaces
         return trim(preg_replace(['/[\n\r]+/u', '/\s{2,}/u'], ' ', $str));

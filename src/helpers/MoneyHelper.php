@@ -14,6 +14,7 @@ use Money\Formatter\DecimalMoneyFormatter;
 use Money\Formatter\IntlMoneyFormatter;
 use Money\Money;
 use Money\Parser\DecimalMoneyParser;
+use Money\Parser\IntlMoneyParser;
 use NumberFormatter;
 
 /**
@@ -112,6 +113,23 @@ class MoneyHelper
 
         $numberFormatter = new NumberFormatter($locale, NumberFormatter::DECIMAL);
         return (new IntlMoneyFormatter($numberFormatter, self::_getIsoCurrencies()))->format($value);
+    }
+
+    /**
+     * @param string $value
+     * @param Currency|null $fallbackCurrency
+     * @return string
+     * @since 5.2.9
+     */
+    public static function normalizeString(string $value, ?Currency $fallbackCurrency = null): string
+    {
+        $locale = Craft::$app->getFormattingLocale()->id;
+        $numberFormatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
+        $moneyParser = new IntlMoneyParser($numberFormatter, self::_getIsoCurrencies());
+
+        $money = $moneyParser->parse($value, $fallbackCurrency);
+
+        return $money->getAmount();
     }
 
     /**

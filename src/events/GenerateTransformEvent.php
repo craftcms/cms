@@ -7,9 +7,9 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\elements\Asset;
 use craft\models\ImageTransform;
-use yii\base\Event;
 
 /**
  * Asset generate transform event class.
@@ -22,12 +22,12 @@ class GenerateTransformEvent extends Event
     /**
      * @var Asset|null The asset which the transform should be for.
      */
-    public ?Asset $asset;
+    public ?Asset $asset = null;
 
     /**
      * @var ImageTransform|null Image transform representing the transform.
      */
-    public ?ImageTransform $transform;
+    public ?ImageTransform $transform = null;
 
     /**
      * @var string|null Url to requested Asset that should be used instead.

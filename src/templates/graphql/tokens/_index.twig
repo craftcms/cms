@@ -29,7 +29,7 @@
         url: url('graphql/tokens/' ~ token.id),
         status: token.enabled ? true : false,
         lastUsed: { value: token.lastUsed , date: token.lastUsed ? token.lastUsed|timestamp : null },
-        expiryDate: token.expiryDate ? token.expiryDate|timestamp : 'Never'|t()
+        expiryDate: { value: token.expiryDate, date: token.expiryDate ? token.expiryDate|timestamp : null }
     }]) %}
 {% endfor %}
 

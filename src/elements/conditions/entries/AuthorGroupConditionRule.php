@@ -69,7 +69,8 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */
-        $groupUids = array_map(fn(UserGroup $group) => $group->uid, $element->getAuthor()->getGroups());
+        $groups = $element->getAuthor()?->getGroups() ?? [];
+        $groupUids = array_map(fn(UserGroup $group) => $group->uid, $groups);
         return $this->matchValue($groupUids);
     }
 }

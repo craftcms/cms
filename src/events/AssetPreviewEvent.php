@@ -8,8 +8,8 @@
 namespace craft\events;
 
 use craft\base\AssetPreviewHandlerInterface;
+use craft\base\Event;
 use craft\elements\Asset;
-use yii\base\Event;
 
 /**
  * Asset preview event class.

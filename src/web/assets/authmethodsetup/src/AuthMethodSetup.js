@@ -5,6 +5,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 Craft.AuthMethodSetup = Garnish.Base.extend(
   {
     methodListings: null,
+    showingSlideout: false,
 
     init(settings) {
       this.setSettings(settings, Craft.AuthMethodSetup.defaults);
@@ -17,7 +18,7 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
         (container) => container.getAttribute('data-method')
       );
 
-      for (let container of Object.values(this.methodListings)) {
+      for (const container of Object.values(this.methodListings)) {
         this.initListing(container);
       }
     },
@@ -30,7 +31,14 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
       });
     },
 
+    focusMethodButton(method) {
+      this.methodListings[method].querySelector('button').focus();
+    },
+
     showSetupSlideout(method) {
+      if (this.showingSlideout) {
+        return;
+      }
       const button = this.methodListings[method].querySelector(
         '.auth-method-setup-btn'
       );
@@ -39,6 +47,7 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
       }
 
       button.classList.add('loading');
+      Craft.cp.announce(Craft.t('app', 'Loading'));
 
       Craft.elevatedSessionManager.requireElevatedSession(
         () => {
@@ -46,7 +55,11 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
             data: {method},
           })
             .then(async ({data}) => {
+              this.showingSlideout = true;
               const slideout = new Craft.AuthMethodSetup.Slideout(data);
+              slideout.on('close', () => {
+                this.showingSlideout = false;
+              });
               await Craft.appendHeadHtml(data.headHtml);
               await Craft.appendBodyHtml(data.bodyHtml);
               this.addListener(
@@ -54,6 +67,7 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
                 'activate',
                 () => {
                   slideout.close();
+                  this.focusMethodButton(method);
                 }
               );
 
@@ -130,6 +144,16 @@ Craft.AuthMethodSetup.Slideout = Craft.Slideout.extend({
         id: data.containerId,
       },
     });
+
+    // Add alt text to QR code image
+    const $qrCodeImg = this.$container.find('[id*="qr-code-wrapper"] svg');
+
+    if ($qrCodeImg.length) {
+      $qrCodeImg.attr({
+        role: 'img',
+        'aria-label': Craft.t('app', 'QR Code'),
+      });
+    }
   },
 
   showSuccess() {
@@ -138,9 +162,11 @@ Craft.AuthMethodSetup.Slideout = Craft.Slideout.extend({
     });
     this.$container.find('.so-body').addClass('auth-method-setup-success')
       .html(`
-<div class="auth-method-setup-success-graphic" data-icon="check"></div>
-<h1 class="auth-method-setup-success-message">${message}</h1>
-`);
+        <div class="auth-method-setup-success-graphic" data-icon="check" aria-hidden="true"></div>
+        <h1 class="auth-method-setup-success-message" tabindex="-1">${message}</h1>
+      `);
+
+    this.$container.find('.auth-method-setup-success-message').focus();
     this.$container
       .find('.auth-method-close-btn')
       .text(Craft.t('app', 'Close'));

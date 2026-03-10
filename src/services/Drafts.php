@@ -11,11 +11,13 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
+use craft\behaviors\EventBehavior;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
+use craft\events\ModelEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -30,7 +32,7 @@ use yii\di\Instance;
 /**
  * Drafts service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getDrafts()|`Craft::$app->drafts`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getDrafts()|`Craft::$app->getDrafts()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
@@ -164,23 +166,29 @@ class Drafts extends Component
                 'trackChanges' => $canonical::trackChanges(),
                 'markAsSaved' => $markAsSaved,
             ];
+            $newAttributes['behaviors']['duplicateOwnershipAfterPropagate'] = new EventBehavior([
+                Element::EVENT_AFTER_PROPAGATE => function(ModelEvent $event) use ($canonical) {
+                    /** @var ElementInterface $draft */
+                    $draft = $event->sender;
 
-            $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
-
-            // Duplicate nested element ownership
-            Craft::$app->getDb()->createCommand(sprintf(
-                <<<SQL
+                    // Duplicate nested element ownership
+                    Craft::$app->getDb()->createCommand(sprintf(
+                        <<<SQL
 INSERT INTO %s ([[elementId]], [[ownerId]], [[sortOrder]])
 SELECT [[o.elementId]], :draftId, [[o.sortOrder]]
 FROM %s AS [[o]]
 WHERE [[o.ownerId]] = :canonicalId
 SQL,
-                Table::ELEMENTS_OWNERS,
-                Table::ELEMENTS_OWNERS,
-            ), [
-                ':draftId' => $draft->id,
-                ':canonicalId' => $canonical->id,
-            ])->execute();
+                        Table::ELEMENTS_OWNERS,
+                        Table::ELEMENTS_OWNERS,
+                    ), [
+                        ':draftId' => $draft->id,
+                        ':canonicalId' => $canonical->id,
+                    ])->execute();
+                },
+            ], true);
+
+            $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
 
             $transaction->commit();
         } catch (Throwable $e) {
@@ -275,7 +283,7 @@ SQL,
      */
     public function applyDraft(ElementInterface $draft, array $newAttributes = []): ElementInterface
     {
-        /** @var ElementInterface|DraftBehavior $draft */
+        /** @var ElementInterface&DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
         $canonical = $draft->getCanonical(true);
@@ -399,7 +407,7 @@ SQL,
         try {
             // no need to propagate or save content here – and it could end up overriding any
             // content changes made to other sites from a previous onAfterPropagate(), etc.
-            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false, false, saveContent: false)) {
+            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false, false)) {
                 throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
             }
             Db::delete(Table::DRAFTS, [
@@ -443,7 +451,7 @@ SQL,
         $elementsService = Craft::$app->getElements();
 
         foreach ($drafts as $draftInfo) {
-            /** @var ElementInterface|string $elementType */
+            /** @var class-string<ElementInterface> $elementType */
             $elementType = $draftInfo['type'];
             $draft = $elementType::find()
                 ->draftId($draftInfo['draftId'])

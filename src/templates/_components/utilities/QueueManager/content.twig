@@ -17,6 +17,9 @@
                     <template v-else-if="name == 'ttr'">
                         [[ttrValue(value)]]
                     </template>
+                    <template v-else-if="name == 'class'">
+                        <code>[[value]]</code>
+                    </template>
                     <template v-else>
                         [[value]]
                     </template>

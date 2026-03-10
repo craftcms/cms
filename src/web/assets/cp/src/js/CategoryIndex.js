@@ -74,9 +74,11 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
       if (selectedGroup) {
         const visibleLabel =
           this.settings.context === 'index'
-            ? Craft.t('app', 'New {type}', {
-                type: Craft.t('app', 'category'),
-              })
+            ? Craft.uppercaseFirst(
+                Craft.t('app', 'New {type}', {
+                  type: Craft.elementTypeNames['craft\\elements\\Category'][2],
+                })
+              )
             : Craft.t('app', 'New {group} category', {
                 group: selectedGroup.name,
               });
@@ -127,9 +129,11 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
       } else {
         this.$newCategoryBtn = $menuBtn = Craft.ui
           .createButton({
-            label: Craft.t('app', 'New {type}', {
-              type: Craft.t('app', 'category'),
-            }),
+            label: Craft.uppercaseFirst(
+              Craft.t('app', 'New {type}', {
+                type: Craft.elementTypeNames['craft\\elements\\Category'][2],
+              })
+            ),
             ariaLabel: Craft.t('app', 'New category, choose a category group'),
             spinner: true,
           })
@@ -210,6 +214,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
     }
 
     this.$newCategoryBtn.addClass('loading');
+    Craft.cp.announce(Craft.t('app', 'Loading'));
 
     Craft.sendActionRequest('POST', 'elements/create', {
       data: {
@@ -218,28 +223,33 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
         groupId: groupId,
       },
     })
-      .then((ev) => {
+      .then(({data}) => {
         if (this.settings.context === 'index') {
-          document.location.href = Craft.getUrl(ev.data.cpEditUrl, {fresh: 1});
+          document.location.href = Craft.getUrl(data.cpEditUrl, {fresh: 1});
         } else {
           const slideout = Craft.createElementEditor(this.elementType, {
             siteId: this.siteId,
-            elementId: ev.data.element.id,
-            draftId: ev.data.element.draftId,
+            elementId: data.element.id,
+            draftId: data.element.draftId,
             params: {
               fresh: 1,
+              updateSearchIndexImmediately: 1,
             },
           });
-          slideout.on('submit', () => {
+          slideout.on('submit', async (ev) => {
             // Make sure the right group is selected
             const groupSourceKey = `group:${group.uid}`;
 
             if (this.sourceKey !== groupSourceKey) {
-              this.selectSourceByKey(groupSourceKey);
+              await this.asyncSelectSourceByKey(groupSourceKey);
             }
 
-            this.clearSearch();
-            this.selectElementAfterUpdate(ev.data.element.id);
+            this.clearSearch(false);
+            this.startSearching();
+            this.$search.val(ev.data.title);
+            this.searchText = ev.data.title;
+
+            this.selectElementAfterUpdate(data.element.id);
             this.updateElements();
           });
         }

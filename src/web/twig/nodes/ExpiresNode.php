@@ -15,7 +15,7 @@ use Twig\Node\Node;
  * Class ExpiresNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.10.0
+ * @since 5.2.0
  */
 class ExpiresNode extends Node
 {
@@ -31,7 +31,11 @@ class ExpiresNode extends Node
                 ->write('$expiration = ')
                 ->subcompile($expiration)
                 ->raw(";\n")
-                ->write('$duration = \craft\helpers\DateTimeHelper::toDateTime($expiration)->getTimestamp() - time();');
+                ->write(sprintf(
+                    '$duration = %s::toDateTime($expiration)->getTimestamp() - %s::currentTimeStamp();',
+                    DateTimeHelper::class,
+                    DateTimeHelper::class,
+                ));
         } else {
             $duration = DateTimeHelper::relativeTimeToSeconds(
                 $this->getAttribute('durationNum'),

@@ -383,6 +383,8 @@ new Vue({
       switch (name) {
         case 'id':
           return Craft.t('app', 'ID');
+        case 'class':
+          return Craft.t('app', 'Class');
         case 'status':
           return Craft.t('app', 'Status');
         case 'progress':

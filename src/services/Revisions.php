@@ -27,7 +27,7 @@ use yii\base\InvalidArgumentException;
 /**
  * Revisions service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getRevisions()|`Craft::$app->revisions`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getRevisions()|`Craft::$app->getRevisions()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
@@ -36,6 +36,9 @@ class Revisions extends Component
 {
     /**
      * @event RevisionEvent The event that is triggered before a revision is created.
+     *
+     * You may set [[\yii\base\ModelEvent::$handled]] to `true` to prevent the revision from getting created, but
+     * only if at least one revision for the element already exists.
      */
     public const EVENT_BEFORE_CREATE_REVISION = 'beforeCreateRevision';
 
@@ -67,8 +70,13 @@ class Revisions extends Component
      * @return int The revision ID
      * @throws Throwable
      */
-    public function createRevision(ElementInterface $canonical, ?int $creatorId = null, ?string $notes = null, array $newAttributes = [], bool $force = false): int
-    {
+    public function createRevision(
+        ElementInterface $canonical,
+        ?int $creatorId = null,
+        ?string $notes = null,
+        array $newAttributes = [],
+        bool $force = false,
+    ): int {
         // Make sure the source isn't a draft or revision
         if ($canonical->getIsDraft() || $canonical->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a revision from another revision or draft.');
@@ -83,105 +91,120 @@ class Revisions extends Component
         $db = Craft::$app->getDb();
 
         $num = ArrayHelper::remove($newAttributes, 'revisionNum');
+        $lastRevisionInfo = null;
 
-        if (!$force || !$num) {
-            $lastRevisionInfo = Craft::$app->getDb()->usePrimary(function() use ($canonical) {
-                return (new Query())
+        try {
+            if (!$force || !$num) {
+                $lastRevisionInfo = Craft::$app->getDb()->usePrimary(fn() => (new Query())
                     ->select(['e.id', 'r.num', 'e.dateCreated'])
                     ->from(['e' => Table::ELEMENTS])
                     ->innerJoin(['r' => Table::REVISIONS], '[[r.id]] = [[e.revisionId]]')
                     ->where(['r.canonicalId' => $canonical->id])
                     ->orderBy(['r.num' => SORT_DESC])
-                    ->one();
-            });
+                    ->one());
 
-            if (
-                !$force &&
-                $lastRevisionInfo &&
-                DateTimeHelper::toDateTime($lastRevisionInfo['dateCreated'])->getTimestamp() === $canonical->dateUpdated->getTimestamp() &&
-                // Make sure all its data is in-tact
-                $canonical::find()->id($lastRevisionInfo['id'])->revisions()->status(null)->siteId($canonical->siteId)->exists()
-            ) {
-                // The canonical element hasn't been updated since the last revision's creation date,
-                // so there's no need to create a new one
-                $mutex->release($lockKey);
-                return $lastRevisionInfo['id'];
+                if (
+                    !$force &&
+                    $lastRevisionInfo &&
+                    DateTimeHelper::toDateTime($lastRevisionInfo['dateCreated'])->getTimestamp() === $canonical->dateUpdated->getTimestamp() &&
+                    // Make sure all its data is in-tact
+                    $canonical::find()->id($lastRevisionInfo['id'])->revisions()->status(null)->siteId($canonical->siteId)->exists()
+                ) {
+                    // The canonical element hasn't been updated since the last revision's creation date,
+                    // so there's no need to create a new one
+                    return $lastRevisionInfo['id'];
+                }
+
+                // Get the next revision number for this element
+                if ($lastRevisionInfo) {
+                    $num = $lastRevisionInfo['num'] + 1;
+                } else {
+                    $num = 1;
+                }
             }
 
-            // Get the next revision number for this element
-            if ($lastRevisionInfo) {
-                $num = $lastRevisionInfo['num'] + 1;
-            } else {
-                $num = 1;
-            }
-        }
-
-        if ($creatorId === null) {
-            // Default to the logged-in user ID if there is one
-            $creatorId = Craft::$app->getUser()->getId();
-        }
-
-        // Fire a 'beforeCreateRevision' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_REVISION)) {
-            $event = new RevisionEvent([
-                'canonical' => $canonical,
-                'creatorId' => $creatorId,
-                'revisionNum' => $num,
-                'revisionNotes' => $notes,
-            ]);
-            $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
-            $notes = $event->revisionNotes;
-            $creatorId = $event->creatorId;
-            $canonical = $event->canonical;
-        }
-
-        $elementsService = Craft::$app->getElements();
-
-        $transaction = $db->beginTransaction();
-        try {
-            // Create the revision row
-            Db::insert(Table::REVISIONS, [
-                'canonicalId' => $canonical->id,
-                'creatorId' => $creatorId,
-                'num' => $num,
-                'notes' => $notes,
-            ]);
-
-            // Duplicate the element
-            $newAttributes['canonicalId'] = $canonical->id;
-            $newAttributes['revisionId'] = $db->getLastInsertID(Table::REVISIONS);
-            $newAttributes['behaviors']['revision'] = [
-                'class' => RevisionBehavior::class,
-                'creatorId' => $creatorId,
-                'revisionNum' => $num,
-                'revisionNotes' => $notes,
-            ];
-
-            if (!isset($newAttributes['dateCreated'])) {
-                $newAttributes['dateCreated'] = $canonical->dateUpdated;
+            if ($creatorId === null) {
+                // Default to the logged-in user ID if there is one
+                $creatorId = Craft::$app->getUser()->getId();
             }
 
-            $revision = $elementsService->duplicateElement($canonical, $newAttributes);
+            // Fire a 'beforeCreateRevision' event
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_REVISION)) {
+                $event = new RevisionEvent([
+                    'canonical' => $canonical,
+                    'creatorId' => $creatorId,
+                    'revisionNum' => $num,
+                    'revisionNotes' => $notes,
+                ]);
+                $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
 
-            $transaction->commit();
-        } catch (Throwable $e) {
-            $transaction->rollBack();
+                // only bail early if we have at least one revision
+                if ($event->handled && $lastRevisionInfo) {
+                    return $lastRevisionInfo['id'];
+                }
+
+                $notes = $event->revisionNotes;
+                $creatorId = $event->creatorId;
+                $canonical = $event->canonical;
+            }
+
+            $elementsService = Craft::$app->getElements();
+
+            $transaction = $db->beginTransaction();
+            try {
+                // Even if no existing revision info was found, there could be an orphaned row in there
+                Db::delete(Table::REVISIONS, [
+                    'canonicalId' => $canonical->id,
+                    'num' => $num,
+                ]);
+
+                // Create the revision row
+                Db::insert(Table::REVISIONS, [
+                    'canonicalId' => $canonical->id,
+                    'creatorId' => $creatorId,
+                    'num' => $num,
+                    'notes' => $notes,
+                ]);
+
+                // Duplicate the element
+                $newAttributes['canonicalId'] = $canonical->id;
+                $newAttributes['revisionId'] = $db->getLastInsertID(Table::REVISIONS);
+                $newAttributes['behaviors']['revision'] = [
+                    'class' => RevisionBehavior::class,
+                    'creatorId' => $creatorId,
+                    'revisionNum' => $num,
+                    'revisionNotes' => $notes,
+                ];
+
+                if (!isset($newAttributes['dateCreated'])) {
+                    $newAttributes['dateCreated'] = $canonical->dateUpdated;
+                }
+
+                $revision = $elementsService->duplicateElement(
+                    $canonical,
+                    $newAttributes,
+                    copyModifiedFields: true,
+                );
+
+                $transaction->commit();
+            } catch (Throwable $e) {
+                $transaction->rollBack();
+                throw $e;
+            }
+
+            // Fire an 'afterCreateRevision' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_REVISION)) {
+                $this->trigger(self::EVENT_AFTER_CREATE_REVISION, new RevisionEvent([
+                    'canonical' => $canonical,
+                    'creatorId' => $creatorId,
+                    'revisionNum' => $num,
+                    'revisionNotes' => $notes,
+                    'revision' => $revision,
+                ]));
+            }
+        } finally {
             $mutex->release($lockKey);
-            throw $e;
         }
-
-        // Fire an 'afterCreateRevision' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_REVISION)) {
-            $this->trigger(self::EVENT_AFTER_CREATE_REVISION, new RevisionEvent([
-                'canonical' => $canonical,
-                'creatorId' => $creatorId,
-                'revisionNum' => $num,
-                'revisionNotes' => $notes,
-                'revision' => $revision,
-            ]));
-        }
-
-        $mutex->release($lockKey);
 
         // Prune any excess revisions
         if (Craft::$app->getConfig()->getGeneral()->maxRevisions) {
@@ -206,7 +229,7 @@ class Revisions extends Component
      */
     public function revertToRevision(ElementInterface $revision, int $creatorId): ElementInterface
     {
-        /** @var ElementInterface|RevisionBehavior $revision */
+        /** @var ElementInterface&RevisionBehavior $revision */
         $canonical = $revision->getCanonical();
 
         // Fire a 'beforeRevertToRevision' event

@@ -182,7 +182,7 @@ class TagQuery extends ElementQuery
 
         $this->joinElementTable(Table::TAGS);
 
-        $this->query->select([
+        $this->query->addSelect([
             'tags.groupId',
         ]);
 

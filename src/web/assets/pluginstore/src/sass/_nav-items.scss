@@ -5,17 +5,17 @@
     li {
       position: relative;
 
-      &:before,
-      &:last-child:after {
+      &::before,
+      &:last-child::after {
         @apply tw-absolute tw-left-0 tw-right-0;
         content: '';
       }
 
-      &:before {
+      &::before {
         @apply tw-top-0;
       }
 
-      &:last-child:after {
+      &:last-child::after {
         @apply tw-bottom-0;
       }
 

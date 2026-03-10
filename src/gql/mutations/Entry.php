@@ -182,6 +182,9 @@ class Entry extends Mutation
         EntryTypeModel $entryType,
         bool $createSaveDraftMutation,
     ): array {
+        // Don't use override data
+        $entryType = $entryType->original ?? $entryType;
+
         $mutations = [];
 
         $entryMutationArguments = EntryMutationArguments::getArguments();
@@ -251,6 +254,9 @@ class Entry extends Mutation
         EntryTypeModel $entryType,
         bool $createSaveDraftMutation,
     ): array {
+        // Don't use override data
+        $entryType = $entryType->original ?? $entryType;
+
         $mutations = [];
 
         $entryMutationArguments = NestedEntry::getArguments();
@@ -282,7 +288,7 @@ class Entry extends Mutation
         // This gets created only if allowed to save entries
         if ($createSaveDraftMutation) {
             $mutations[] = [
-                'name' => "save_{$field->handle}_{$entryType->handle}_Draft",
+                'name' => "save_{$field->handle}Field_{$entryType->handle}_Draft",
                 'description' => $draftDescription,
                 'args' => $draftMutationArguments,
                 'resolve' => [$resolver, 'saveEntry'],

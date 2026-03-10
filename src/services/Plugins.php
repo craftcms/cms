@@ -36,7 +36,7 @@ use yii\web\HttpException;
 /**
  * The Plugins service provides APIs for managing plugins.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getPlugins()|`Craft::$app->plugins`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getPlugins()|`Craft::$app->getPlugins()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -223,6 +223,8 @@ class Plugins extends Component
             $this->_storedPluginInfo[$handle] = $row;
         }
 
+        $anyVersionsChanged = false;
+
         foreach ($this->_storedPluginInfo as $handle => $row) {
             // Skip disabled plugins
             if (!$row['enabled']) {
@@ -262,12 +264,19 @@ class Plugins extends Component
                     ], [
                         'id' => $row['id'],
                     ]);
+
+                    $anyVersionsChanged = true;
                 }
 
                 $this->_registerPlugin($plugin);
             }
         }
         unset($row);
+
+        if ($anyVersionsChanged) {
+            // Clear the license info cache
+            Craft::$app->getCache()->delete(App::CACHE_KEY_LICENSE_INFO);
+        }
 
         // Sort enabled plugins by their names
         ArrayHelper::multisort($this->_plugins, 'name', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
@@ -301,11 +310,7 @@ class Plugins extends Component
     {
         $this->loadPlugins();
 
-        if (isset($this->_plugins[$handle])) {
-            return $this->_plugins[$handle];
-        }
-
-        return null;
+        return $this->_plugins[$handle] ?? null;
     }
 
     /**
@@ -332,8 +337,7 @@ class Plugins extends Component
      *
      * The plugin may not actually be installed.
      *
-     * @param string $class
-     * @phpstan-param class-string $class
+     * @param class-string $class
      * @return string|null The plugin handle, or null if it can’t be determined
      */
     public function getPluginHandleByClass(string $class): ?string
@@ -685,8 +689,7 @@ class Plugins extends Component
     {
         $info = $this->getPluginInfo($handle);
 
-        /** @var string|PluginInterface $class */
-        /** @phpstan-var class-string<PluginInterface>|PluginInterface $class */
+        /** @var class-string<PluginInterface> $class */
         $class = $info['class'];
 
         if (!in_array($edition, $class::editions(), true)) {
@@ -737,7 +740,9 @@ class Plugins extends Component
 
         // Update the plugin’s settings in the project config
         $pluginSettings = $plugin->getSettings();
-        $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArrays($pluginSettings->toArray()) : [];
+        $pluginSettings = $pluginSettings
+            ? ProjectConfigHelper::packAssociativeArrays($pluginSettings->toArray(array_keys($settings)))
+            : [];
         Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS . '.' . $plugin->handle . '.settings', $pluginSettings, "Change settings for plugin “{$plugin->handle}”");
 
         $plugin->afterSaveSettings();
@@ -856,14 +861,14 @@ class Plugins extends Component
             $this->_storedPluginInfo[$plugin->id]['schemaVersion'] = $plugin->schemaVersion;
         }
 
-        // Only update the schema version if it's changed from what's in the file,
-        // so we don't accidentally overwrite other pending changes
-        $projectConfig = Craft::$app->getProjectConfig();
-        $key = ProjectConfig::PATH_PLUGINS . ".$plugin->id.schemaVersion";
+        Craft::$app->getProjectConfig()->set(
+            sprintf('%s.%s.schemaVersion', ProjectConfig::PATH_PLUGINS, $plugin->id),
+            $plugin->schemaVersion,
+            "Update plugin schema version for “{$plugin->handle}”",
+        );
 
-        if ($projectConfig->get($key, true) !== $plugin->schemaVersion) {
-            Craft::$app->getProjectConfig()->set($key, $plugin->schemaVersion, "Update plugin schema version for “{$plugin->handle}”");
-        }
+        // Clear the license info cache
+        Craft::$app->getCache()->delete(App::CACHE_KEY_LICENSE_INFO);
     }
 
     /**
@@ -905,8 +910,7 @@ class Plugins extends Component
             unset($config['aliases']);
         }
 
-        /** @var string|PluginInterface $class */
-        /** @phpstan-var class-string<PluginInterface>|PluginInterface $class */
+        /** @var class-string<PluginInterface>|class-string<object> $class */
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
@@ -1013,10 +1017,11 @@ class Plugins extends Component
         $info['moduleId'] = $handle;
         $info['edition'] = $edition;
         $info['hasMultipleEditions'] = count($editions) > 1;
-        $info['hasCpSettings'] = ($plugin !== null && $plugin->hasCpSettings);
+        $info['hasCpSettings'] = $plugin->hasCpSettings ?? false;
+        $info['hasReadOnlyCpSettings'] = $plugin->hasReadOnlyCpSettings ?? false;
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
 
-        $licenseInfo = Craft::$app->getCache()->get('licenseInfo') ?? [];
+        $licenseInfo = Craft::$app->getCache()->get(App::CACHE_KEY_LICENSE_INFO) ?? [];
         $pluginCacheKey = StringHelper::ensureLeft($handle, 'plugin-');
         $info['licenseId'] = $licenseInfo[$pluginCacheKey]['id'] ?? null;
         $info['licensedEdition'] = $licenseInfo[$pluginCacheKey]['edition'] ?? null;
@@ -1156,8 +1161,15 @@ class Plugins extends Component
      */
     public function getPluginLicenseKey(string $handle): ?string
     {
-        $licenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
-        return $this->normalizePluginLicenseKey(App::parseEnv($licenseKey));
+        $licenseKey = App::parseEnv($this->getStoredPluginInfo($handle)['licenseKey'] ?? null);
+
+        // also check if pc has the license key
+        if ($licenseKey === null) {
+            $pcPlugins = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_PLUGINS);
+            $licenseKey = App::parseEnv($pcPlugins[$handle]['licenseKey'] ?? null);
+        }
+
+        return $this->normalizePluginLicenseKey($licenseKey);
     }
 
     /**
@@ -1181,7 +1193,7 @@ class Plugins extends Component
         // https://github.com/craftcms/cms/issues/12687 - check if the .env file exists first
         if (
             preg_match('/^\$(\w+)$/', $oldLicenseKey, $matches) &&
-            App::env($matches[1]) === '' &&
+            in_array(App::env($matches[1]), ['', null], true) &&
             file_exists(Craft::$app->getConfig()->getDotEnvPath())
         ) {
             Craft::$app->getConfig()->setDotEnvVar($matches[1], $normalizedLicenseKey);
@@ -1196,13 +1208,8 @@ class Plugins extends Component
             }
         }
 
-        // Clear the plugin's cached license key status
-        $cache = Craft::$app->getCache();
-        $licenseInfo = $cache->get('licenseInfo') ?? [];
-        if (isset($licenseInfo[$handle])) {
-            unset($licenseInfo[$handle]);
-            $cache->set('licenseInfo', $licenseInfo);
-        }
+        // Clear the license info cache
+        Craft::$app->getCache()->delete(App::CACHE_KEY_LICENSE_INFO);
 
         return true;
     }

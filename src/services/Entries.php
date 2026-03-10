@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\MemoizableArray;
 use craft\db\Query;
@@ -16,15 +17,19 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\errors\EntryTypeNotFoundException;
+use craft\errors\InvalidElementException;
 use craft\errors\SectionNotFoundException;
+use craft\errors\UnsupportedSiteException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
+use craft\events\MoveEntryEvent;
 use craft\events\SectionEvent;
 use craft\helpers\AdminTable;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
@@ -46,11 +51,15 @@ use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
+use yii\caching\TagDependency;
+use yii\helpers\Markdown;
 
 /**
  * The Entries service provides APIs for managing entries in Craft.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getEntries()|`Craft::$app->entries`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getEntries()|`Craft::$app->getEntries()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -116,6 +125,18 @@ class Entries extends Component
      * @since 5.0.0
      */
     public const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
+
+    /**
+     * @event MoveEntryEvent The event that is triggered before an entry is move to a different section.
+     * @since 5.3.0
+     */
+    public const EVENT_BEFORE_MOVE_TO_SECTION = 'beforeMoveToSection';
+
+    /**
+     * @event MoveEntryEvent The event that is triggered before an entry is move to a different section.
+     * @since 5.3.0
+     */
+    public const EVENT_AFTER_MOVE_TO_SECTION = 'afterMoveToSection';
 
     /**
      * @var bool Whether entries should be resaved after a section or entry type has been updated.
@@ -324,9 +345,7 @@ class Entries extends Component
             return [];
         }
 
-        return ArrayHelper::where($this->getAllSections(), function(Section $section) use ($user) {
-            return $user->can("viewEntries:$section->uid");
-        }, true, true, false);
+        return ArrayHelper::where($this->getAllSections(), fn(Section $section) => $user->can("viewEntries:$section->uid"), true, true, false);
     }
 
     /**
@@ -553,7 +572,9 @@ class Entries extends Component
         }
 
         if ($isNewSection) {
-            $section->uid = StringHelper::UUID();
+            if (!$section->uid) {
+                $section->uid = StringHelper::UUID();
+            }
         } elseif (!$section->uid) {
             $section->uid = Db::uidById(Table::SECTIONS, $section->id);
         }
@@ -628,7 +649,7 @@ class Entries extends Component
             $sectionRecord->handle = $data['handle'];
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
-            $sectionRecord->maxAuthors = $data['maxAuthors'] ?? 1;
+            $sectionRecord->maxAuthors = $data['maxAuthors'] ?? null;
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
             $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
             $sectionRecord->previewTargets = isset($data['previewTargets']) && is_array($data['previewTargets'])
@@ -639,12 +660,26 @@ class Entries extends Component
             $propagationMethodChanged = $sectionRecord->propagationMethod != $sectionRecord->getOldAttribute('propagationMethod');
 
             if ($data['type'] === Section::TYPE_STRUCTURE) {
+                $structuresService = Craft::$app->getStructures();
+
                 // Save the structure
                 $structureUid = $data['structure']['uid'];
-                $structure = Craft::$app->getStructures()->getStructureByUid($structureUid, true) ?? new Structure(['uid' => $structureUid]);
+                $structure = $structuresService->getStructureByUid($structureUid, true) ?? new Structure(['uid' => $structureUid]);
                 $isNewStructure = empty($structure->id);
                 $structure->maxLevels = $data['structure']['maxLevels'];
-                Craft::$app->getStructures()->saveStructure($structure);
+
+                // check if we need to soft-delete an old structure
+                // see https://github.com/craftcms/cms/issues/16450
+                if (
+                    $isNewStructure &&
+                    ($event->oldValue['type'] ?? null) === Section::TYPE_STRUCTURE &&
+                    ($event->oldValue['structure']['uid'] ?? null) !== $structureUid &&
+                    $sectionRecord->structureId
+                ) {
+                    $structuresService->deleteStructureById($sectionRecord->structureId);
+                }
+
+                $structuresService->saveStructure($structure);
                 $sectionRecord->structureId = $structure->id;
             } else {
                 if ($sectionRecord->structureId) {
@@ -663,7 +698,8 @@ class Entries extends Component
                 $sectionRecord->structureId != $sectionRecord->getOldAttribute('structureId')
             );
 
-            if ($sectionRecord->dateDeleted) {
+            $wasTrashed = $sectionRecord->dateDeleted;
+            if ($wasTrashed) {
                 $sectionRecord->restore();
                 $resaveEntries = true;
             } else {
@@ -673,20 +709,22 @@ class Entries extends Component
             // Update the entry type relations
             // -----------------------------------------------------------------
 
-            $entryTypeIds = array_filter(array_map(
-                fn(string $uid) => $this->getEntryTypeByUid($uid)?->id,
-                $data['entryTypes'] ?? [],
-            ));
-
             Db::delete(Table::SECTIONS_ENTRYTYPES, ['sectionId' => $sectionRecord->id]);
             Db::batchInsert(
                 Table::SECTIONS_ENTRYTYPES,
-                ['sectionId', 'typeId', 'sortOrder'],
-                Collection::make($entryTypeIds)->map(fn(int $id, int $i) => [
-                    $sectionRecord->id,
-                    $id,
-                    $i + 1,
-                ])->all(),
+                ['sectionId', 'typeId', 'sortOrder', 'name', 'handle', 'description'],
+                Collection::make($data['entryTypes'] ?? [])
+                    ->map(fn($entryType) => $this->getEntryType($entryType))
+                    ->filter()
+                    ->map(fn(EntryType $entryType, int $i) => [
+                        $sectionRecord->id,
+                        $entryType->id,
+                        $i + 1,
+                        isset($entryType->original) && $entryType->name !== $entryType->original->name ? $entryType->name : null,
+                        isset($entryType->original) && $entryType->handle !== $entryType->original->handle ? $entryType->handle : null,
+                        isset($entryType->original) && $entryType->description !== $entryType->original->description ? $entryType->description : null,
+                    ])
+                    ->all(),
             );
 
             // Update the site settings
@@ -811,6 +849,32 @@ class Entries extends Component
         // Clear caches
         $this->_sections = null;
 
+        if ($wasTrashed) {
+            /** @var Entry[] $entries */
+            $entries = Entry::find()
+                ->sectionId($sectionRecord->id)
+                ->drafts(null)
+                ->draftOf(false)
+                ->status(null)
+                ->trashed()
+                ->site('*')
+                ->unique()
+                ->andWhere(['entries.deletedWithSection' => true])
+                ->all();
+            /** @var Entry[][] $entriesByType */
+            $entriesByType = ArrayHelper::index($entries, null, ['typeId']);
+            foreach ($entriesByType as $typeEntries) {
+                try {
+                    array_walk($typeEntries, function(Entry $entry) {
+                        $entry->deletedWithSection = false;
+                    });
+                    Craft::$app->getElements()->restoreElements($typeEntries);
+                } catch (InvalidConfigException) {
+                    // the entry type probably wasn't restored
+                }
+            }
+        }
+
         /** @var Section $section */
         $section = $this->getSectionById($sectionRecord->id);
 
@@ -881,10 +945,9 @@ class Entries extends Component
             throw new Exception('No site settings exist for section ' . $section->id);
         }
 
-        $sites = ArrayHelper::where(Craft::$app->getSites()->getAllSites(), function(Site $site) use ($siteSettings) {
+        $sites = ArrayHelper::where(Craft::$app->getSites()->getAllSites(), fn(Site $site) =>
             // Only include it if it's one of this section's sites
-            return isset($siteSettings[$site->uid]);
-        }, true, true, false);
+            isset($siteSettings[$site->uid]), true, true, false);
 
         $siteIds = array_map(fn(Site $site) => $site->id, $sites);
 
@@ -904,16 +967,49 @@ class Entries extends Component
         // Get/save the entry with updated title, slug, and URI format
         // ---------------------------------------------------------------------
 
-        // If there are any existing entries, find the first one with a valid typeId
-        /** @var Entry|null $entry */
-        $entry = Entry::find()
-            ->typeId($entryTypeIds)
+        $baseEntryQuery = Entry::find()
             ->sectionId($section->id)
             ->siteId($siteIds)
-            ->status(null)
+            ->status(null);
+
+        // If there are any existing entries, find the first one with a valid typeId
+        /** @var Entry|null $entry */
+        $entry = $baseEntryQuery
+            ->typeId($entryTypeIds)
             ->one();
 
-        // Otherwise create a new one
+        // if we didn't find any, look for any entry in this section
+        // regardless of type ID, and potentially even soft-deleted
+        if ($entry === null) {
+            $entry = $baseEntryQuery
+                ->typeId(null)
+                ->trashed(null)
+                ->one();
+
+            if ($entry !== null) {
+                if (isset($entry->dateDeleted)) {
+                    Craft::$app->getElements()->restoreElement($entry);
+                }
+
+                $entry->setTypeId($entryTypeIds[0]);
+            }
+        }
+
+        // if we still don't have any,
+        // try without the typeId with trashed where they were deleted with entry type
+        if ($entry === null) {
+            $entry = $baseEntryQuery
+                ->typeId(null)
+                ->trashed(null)
+                ->where(['entries.deletedWithEntryType' => true])
+                ->one();
+
+            if ($entry !== null) {
+                $entry->setTypeId($entryTypeIds[0]);
+            }
+        }
+
+        // Finally, if we still don't have an entry, create a new one
         if ($entry === null) {
             // Create one
             $entry = new Entry();
@@ -1043,8 +1139,7 @@ class Entries extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // All entries *should* be deleted by now via their entry types, but loop through all the sites in case
-            // there are any lingering entries from unsupported sites
+            // Delete the entries
             $elementsTable = Table::ELEMENTS;
             $entriesTable = Table::ENTRIES;
             $now = Db::prepareDateForDb(new DateTime());
@@ -1062,10 +1157,18 @@ SQL;
                 $db->createCommand(<<<SQL
 UPDATE $elementsTable [[elements]]
 INNER JOIN $entriesTable [[entries]] ON [[entries.id]] = [[elements.id]]
-SET [[elements.dateDeleted]] = '$now'
+SET [[elements.dateDeleted]] = '$now',
+  [[entries.deletedWithSection]] = 1
 WHERE $conditionSql
 SQL)->execute();
             } else {
+                // Not possible to update two tables simultaneously with Postgres
+                $db->createCommand(<<<SQL
+UPDATE $entriesTable [[entries]]
+SET [[deletedWithSection]] = TRUE
+FROM $elementsTable [[elements]]
+WHERE [[entries.id]] = [[elements.id]] AND $conditionSql
+SQL)->execute();
                 $db->createCommand(<<<SQL
 UPDATE $elementsTable [[elements]]
 SET [[dateDeleted]] = '$now'
@@ -1148,6 +1251,100 @@ SQL)->execute();
     {
     }
 
+    /**
+     * Returns data for the Sections index page in the control panel.
+     *
+     * @param int $page
+     * @param int $limit
+     * @param string|null $searchTerm
+     * @param string $orderBy
+     * @param int $sortDir
+     * @return array
+     * @since 5.5.0
+     */
+    public function getSectionTableData(
+        int $page,
+        int $limit,
+        ?string $searchTerm,
+        string $orderBy = 'name',
+        int $sortDir = SORT_ASC,
+    ): array {
+        [$results, $total] = $this->prepTableData($this->_createSectionQuery(), $page, $limit, $searchTerm, $orderBy, $sortDir);
+
+        /** @var Section[] $sections */
+        $sections = array_values(array_filter(
+            array_map(fn(array $result) => $this->_sections()->firstWhere('id', $result['id']), $results)
+        ));
+
+        $tableData = [];
+
+        foreach ($sections as $section) {
+            $label = $section->getUiLabel();
+            $tableData[] = [
+                'id' => $section->id,
+                'title' => $label,
+                'name' => $label,
+                'url' => $section->getCpEditUrl(),
+                'handle' => $section->handle,
+                'type' => match ($section->type) {
+                    Section::TYPE_SINGLE => Craft::t('app', 'Single'),
+                    Section::TYPE_CHANNEL => Craft::t('app', 'Channel'),
+                    Section::TYPE_STRUCTURE => Craft::t('app', 'Structure'),
+                    null => null,
+                },
+            ];
+        }
+
+        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+
+        return [$pagination, $tableData];
+    }
+
+    /**
+     * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
+     *
+     * @param Query $query
+     * @param int $page
+     * @param int $limit
+     * @param string|null $searchTerm
+     * @param string $orderBy
+     * @param int $sortDir
+     * @return array
+     * @since 5.5.0
+     */
+    private function prepTableData(
+        Query $query,
+        int $page,
+        int $limit,
+        ?string $searchTerm,
+        string $orderBy = 'name',
+        int $sortDir = SORT_ASC,
+    ): array {
+        $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+
+        $offset = ($page - 1) * $limit;
+        $query = $query
+            ->orderBy([$orderBy => $sortDir]);
+
+        if ($orderBy === 'name') {
+            $query->addOrderBy(['name' => $sortDir]);
+        }
+
+        if ($searchTerm !== null && $searchTerm !== '') {
+            $searchParams = $this->_getSearchParams($searchTerm);
+            if (!empty($searchParams)) {
+                $query->andWhere(['or', ...$searchParams]);
+            }
+        }
+
+        $total = $query->count();
+
+        $query->limit($limit);
+        $query->offset($offset);
+
+        return [$query->all(), $total];
+    }
+
     // Entry Types
     // -------------------------------------------------------------------------
 
@@ -1167,7 +1364,8 @@ SQL)->execute();
     public function getEntryTypesBySectionId(int $sectionId): array
     {
         // todo: remove this after the next breakpoint
-        if (!Craft::$app->getDb()->tableExists(Table::SECTIONS_ENTRYTYPES)) {
+        $db = Craft::$app->getDb();
+        if ($db->columnExists(Table::ENTRYTYPES, 'sectionId')) {
             $results = $this->_createEntryTypeQuery()
                 ->where([
                     'sectionId' => $sectionId,
@@ -1178,15 +1376,21 @@ SQL)->execute();
             return array_map(fn(array $result) => new EntryType($result), $results);
         }
 
-        $ids = (new Query())
-            ->select('typeId')
+        $query = (new Query())
+            ->select(['id' => 'typeId', 'name', 'handle'])
             ->from(Table::SECTIONS_ENTRYTYPES)
             ->where(['sectionId' => $sectionId])
-            ->orderBy(['sortOrder' => SORT_ASC])
-            ->column();
+            ->orderBy(['sortOrder' => SORT_ASC]);
+
+        // todo: remove after the next breakpoint
+        if ($db->columnExists(Table::ENTRYTYPES, 'description')) {
+            $query->addSelect('description');
+        }
+
+        $entryTypes = $query->all();
 
         return array_values(array_filter(
-            array_map(fn(int $id) => $this->_entryTypes()->firstWhere('id', $id), $ids),
+            array_map(fn($entryType) => $this->getEntryType($entryType), $entryTypes),
         ));
     }
 
@@ -1239,11 +1443,20 @@ SQL)->execute();
         if ($db->columnExists(Table::ENTRYTYPES, 'showSlugField')) {
             $query->addSelect('showSlugField');
         }
+        if ($db->columnExists(Table::ENTRYTYPES, 'description')) {
+            $query->addSelect('description');
+        }
         if ($db->columnExists(Table::ENTRYTYPES, 'icon')) {
             $query->addSelect('icon');
         }
         if ($db->columnExists(Table::ENTRYTYPES, 'color')) {
             $query->addSelect('color');
+        }
+        if ($db->columnExists(Table::ENTRYTYPES, 'uiLabelFormat')) {
+            $query->addSelect('uiLabelFormat');
+        }
+        if ($db->columnExists(Table::ENTRYTYPES, 'allowLineBreaksInTitles')) {
+            $query->addSelect('allowLineBreaksInTitles');
         }
 
         return $query;
@@ -1276,12 +1489,31 @@ SQL)->execute();
      * ```
      *
      * @param int $entryTypeId
+     * @param bool $withTrashed
      * @return EntryType|null
      * @since 5.0.0
      */
-    public function getEntryTypeById(int $entryTypeId): ?EntryType
+    public function getEntryTypeById(int $entryTypeId, bool $withTrashed = false): ?EntryType
     {
-        return $this->_entryTypes()->firstWhere('id', $entryTypeId);
+        $entryType = $this->_entryTypes()->firstWhere('id', $entryTypeId);
+        if (!$entryType && $withTrashed) {
+            $record = $this->_getEntryTypeRecord($entryTypeId, true);
+            if (!$record->getIsNewRecord()) {
+                return new EntryType($record->toArray([
+                    'id',
+                    'fieldLayoutId',
+                    'name',
+                    'handle',
+                    'description',
+                    'hasTitleField',
+                    'titleTranslationMethod',
+                    'titleTranslationKeyFormat',
+                    'titleFormat',
+                    'uid',
+                ]));
+            }
+        }
+        return $entryType;
     }
 
     /**
@@ -1315,6 +1547,58 @@ SQL)->execute();
     }
 
     /**
+     * Returns an entry type by its usage config.
+     *
+     * @param EntryType|int|string|array{id?:int,uid?:string,name?:string,handle?:string} $entryType
+     * @return EntryType|null
+     * @since 5.6.0
+     */
+    public function getEntryType(mixed $entryType): ?EntryType
+    {
+        if ($entryType instanceof EntryType) {
+            return $entryType;
+        }
+
+        if (is_numeric($entryType)) {
+            return $this->getEntryTypeById($entryType);
+        }
+
+        if (is_string($entryType)) {
+            try {
+                $config = Json::decode($entryType);
+            } catch (InvalidArgumentException) {
+                return $this->getEntryTypeByUid($entryType);
+            }
+        } else {
+            $config = $entryType;
+        }
+
+        if (isset($config['id'])) {
+            $entryType = $this->getEntryTypeById($config['id']);
+        } elseif (isset($config['uid'])) {
+            $entryType = $this->getEntryTypeByUid($config['uid']);
+        } else {
+            throw new InvalidArgumentException('Invalid entry type.');
+        }
+
+        if (!$entryType) {
+            return null;
+        }
+
+        if (isset($config['name']) || isset($config['handle']) || isset($config['description']) || isset($config['group'])) {
+            $original = $entryType;
+            $entryType = clone $original;
+            $entryType->name = $config['name'] ?? $original->name;
+            $entryType->handle = $config['handle'] ?? $original->handle;
+            $entryType->description = $config['description'] ?? $original->description;
+            $entryType->group = $config['group'] ?? null;
+            $entryType->original = $original;
+        }
+
+        return $entryType;
+    }
+
+    /**
      * Saves an entry type.
      *
      * @param EntryType $entryType The entry type to be saved
@@ -1335,6 +1619,8 @@ SQL)->execute();
                 'isNew' => $isNewEntryType,
             ]));
         }
+
+        $entryType->hasTitleField = $entryType->getFieldLayout()->isFieldIncluded('title');
 
         if ($runValidation && !$entryType->validate()) {
             Craft::info('Entry type not saved due to validation error.', __METHOD__);
@@ -1392,6 +1678,18 @@ SQL)->execute();
             $entryTypeRecord->showStatusField = $data['showStatusField'] ?? true;
             $entryTypeRecord->uid = $entryTypeUid;
 
+            // todo: remove after the next breakpoint
+            $db = Craft::$app->getDb();
+            if ($db->columnExists(Table::ENTRYTYPES, 'description')) {
+                $entryTypeRecord->description = $data['description'] ?? null;
+            }
+            if ($db->columnExists(Table::ENTRYTYPES, 'uiLabelFormat')) {
+                $entryTypeRecord->uiLabelFormat = $data['uiLabelFormat'] ?? '{title}';
+            }
+            if ($db->columnExists(Table::ENTRYTYPES, 'allowLineBreaksInTitles')) {
+                $entryTypeRecord->allowLineBreaksInTitles = $data['allowLineBreaksInTitles'] ?? false;
+            }
+
             if (!empty($data['fieldLayouts'])) {
                 // Save the field layout
                 $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
@@ -1414,7 +1712,8 @@ SQL)->execute();
             );
 
             // Save the entry type
-            if ($wasTrashed = (bool)$entryTypeRecord->dateDeleted) {
+            $wasTrashed = (bool)$entryTypeRecord->dateDeleted;
+            if ($wasTrashed) {
                 $entryTypeRecord->restore();
                 $resaveEntries = true;
             } else {
@@ -1431,19 +1730,30 @@ SQL)->execute();
         $this->_entryTypes = null;
 
         if ($wasTrashed) {
-            // Restore the entries that were deleted with the entry type
-            /** @var Entry[] $entries */
-            $entries = Entry::find()
-                ->typeId($entryTypeRecord->id)
-                ->drafts(null)
-                ->draftOf(false)
-                ->status(null)
-                ->trashed()
-                ->site('*')
-                ->unique()
-                ->andWhere(['entries.deletedWithEntryType' => true])
-                ->all();
-            Craft::$app->getElements()->restoreElements($entries);
+            // Restore the entries at the end of the request in case the section isn't restored yet
+            // (see https://github.com/craftcms/cms/issues/15787)
+            Craft::$app->onAfterRequest(function() use ($entryTypeRecord) {
+                /** @var Entry[] $entries */
+                $entries = Entry::find()
+                    ->typeId($entryTypeRecord->id)
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null)
+                    ->trashed()
+                    ->site('*')
+                    ->unique()
+                    ->andWhere(['entries.deletedWithEntryType' => true])
+                    ->all();
+                /** @var Entry[][] $entriesBySection */
+                $entriesBySection = ArrayHelper::index($entries, null, ['sectionId']);
+                foreach ($entriesBySection as $sectionEntries) {
+                    try {
+                        Craft::$app->getElements()->restoreElements($sectionEntries);
+                    } catch (InvalidConfigException) {
+                        // the section probably wasn't restored
+                    }
+                }
+            });
         }
 
         /** @var EntryType $entryType */
@@ -1640,58 +1950,87 @@ SQL)->execute();
      * @param int $page
      * @param int $limit
      * @param string|null $searchTerm
+     * @param string $orderBy
+     * @param int $sortDir
      * @return array
      * @since 5.0.0
      * @internal
      */
-    public function getTableData(int $page, int $limit, ?string $searchTerm): array
-    {
-        $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
-
-        $offset = ($page - 1) * $limit;
-        $query = $this->_createEntryTypeQuery();
-
-        if ($searchTerm !== null && $searchTerm !== '') {
-            $searchParams = $this->_getSearchParams($searchTerm);
-            if (!empty($searchParams)) {
-                $query->where(['or', ...$searchParams]);
-            }
-        }
-
-        $total = $query->count();
-
-        $query->limit($limit);
-        $query->offset($offset);
-
-        $results = $query->all();
+    public function getTableData(
+        int $page,
+        int $limit,
+        ?string $searchTerm,
+        string $orderBy = 'name',
+        int $sortDir = SORT_ASC,
+    ): array {
+        [$results, $total] = $this->prepTableData($this->_createEntryTypeQuery(), $page, $limit, $searchTerm, $orderBy, $sortDir);
 
         /** @var EntryType[] $entryTypes */
         $entryTypes = array_values(array_filter(
             array_map(fn(array $result) => $this->_entryTypes()->firstWhere('id', $result['id']), $results)
         ));
 
-        usort($entryTypes,
-            fn(EntryType $a, EntryType $b) => Craft::t('site', $a->name) <=> Craft::t('site', $b->name)
-        );
-
-        $entryTypeIds = array_map(fn(EntryType $entryType) => $entryType->id, $entryTypes);
-
         $tableData = [];
+        $usages = $this->allEntryTypeUsages();
+
         foreach ($entryTypes as $entryType) {
+            $label = Html::encode($entryType->getUiLabel());
+            $chipCellContent = Html::beginTag('div', ['class' => 'inline-chips']) .
+                Cp::chipHtml($entryType, [
+                    'labelHtml' => Html::a($label, $entryType->getCpEditUrl(), [
+                        'class' => ['chip-label', 'cell-bold'],
+                    ]),
+                ]);
+            if ($entryType->description) {
+                $chipCellContent .= Html::tag('span',
+                    Html::decodeDoubles(Markdown::process(Html::encodeInvalidTags(Html::encode($entryType->description)), 'gfm-comment')),
+                    ['class' => 'info']);
+            }
+            $chipCellContent .= Html::endTag('div');
+
             $tableData[] = [
                 'id' => $entryType->id,
-                'title' => Craft::t('site', $entryType->name),
-                'icon' => $entryType->icon ? Cp::iconSvg($entryType->icon) : null,
-                'iconColor' => $entryType->color?->value,
-                'url' => $entryType->getCpEditUrl(),
-                'name' => Craft::t('site', $entryType->name),
+                'title' => $label,
+                'chip' => $chipCellContent,
                 'handle' => $entryType->handle,
+                'usages' => Cp::componentPreviewHtml($usages[$entryType->id] ?? []),
             ];
         }
 
         $pagination = AdminTable::paginationLinks($page, $total, $limit);
 
         return [$pagination, $tableData];
+    }
+
+    /**
+     * @return array<int,array<Section|ElementContainerFieldInterface>>
+     */
+    private function allEntryTypeUsages(): array
+    {
+        $usages = [];
+
+        // Sections
+        foreach ($this->getAllSections() as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $usages[$entryType->id][] = $section;
+            }
+        }
+
+        // Fields
+        $fieldsService = Craft::$app->getFields();
+        foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
+            /** @var ElementContainerFieldInterface[] $fields */
+            $fields = $fieldsService->getFieldsByType($type);
+            foreach ($fields as $field) {
+                foreach ($field->getFieldLayoutProviders() as $provider) {
+                    if ($provider instanceof EntryType) {
+                        $usages[$provider->id][] = $field;
+                    }
+                }
+            }
+        }
+
+        return $usages;
     }
 
     /**
@@ -1717,14 +2056,18 @@ SQL)->execute();
     /**
      * Gets an entry type's record by uid.
      *
-     * @param string $uid
+     * @param int|string $id
      * @param bool $withTrashed Whether to include trashed entry types in search
      * @return EntryTypeRecord
      */
-    private function _getEntryTypeRecord(string $uid, bool $withTrashed = false): EntryTypeRecord
+    private function _getEntryTypeRecord(int|string $id, bool $withTrashed = false): EntryTypeRecord
     {
         $query = $withTrashed ? EntryTypeRecord::findWithTrashed() : EntryTypeRecord::find();
-        $query->andWhere(['uid' => $uid]);
+        if (is_int($id)) {
+            $query->andWhere(['id' => $id]);
+        } else {
+            $query->andWhere(['uid' => $id]);
+        }
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         /** @var EntryTypeRecord */
         return $query->one() ?? new EntryTypeRecord();
@@ -1795,7 +2138,7 @@ SQL)->execute();
         if (!empty($missingEntries)) {
             /** @var array<string,Section> $singleSections */
             $singleSections = ArrayHelper::index(
-                Craft::$app->getEntries()->getSectionsByType(Section::TYPE_SINGLE),
+                $this->getSectionsByType(Section::TYPE_SINGLE),
                 fn(Section $section) => $section->handle,
             );
             $fetchSectionIds = [];
@@ -1827,5 +2170,165 @@ SQL)->execute();
         }
 
         return $entries;
+    }
+
+    /**
+     * Move entry to a different section.
+     *
+     * @param Entry $entry
+     * @param Section $section
+     * @return bool
+     * @throws Exception
+     * @throws InvalidElementException
+     * @throws Throwable
+     * @throws UnsupportedSiteException
+     * @since 5.3.0
+     */
+    public function moveEntryToSection(Entry $entry, Section $section): bool
+    {
+        // todo: what about revisions or drafts that might be of a type that's not compatible with the new section?
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_MOVE_TO_SECTION)) {
+            $this->trigger(self::EVENT_BEFORE_MOVE_TO_SECTION, new MoveEntryEvent([
+                'entry' => $entry,
+                'section' => $section,
+            ]));
+        }
+
+        // Make sure the element exists
+        if (!$entry->id) {
+            throw new Exception('Attempting to move an unsaved element.');
+        }
+
+        // and that it's not a nested entry
+        if ($entry->getPrimaryOwnerId() !== null) {
+            throw new Exception('Attempting to move a nested element.');
+        }
+
+        // Ensure all fields have been normalized
+        $entry->getFieldValues();
+
+        $oldSection = $entry->getSection();
+
+        // move to new section
+        $entry->sectionId = $section->id;
+
+        // Validate
+        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        $entry->validate();
+
+        // If there are any errors on the URI, re-validate as disabled
+        if ($entry->hasErrors('uri') && $entry->enabled) {
+            $entry->enabled = false;
+            $entry->validate();
+        }
+
+        // When moving to a section that allows for less authors than the entry has, allow the move.
+        // The error will be shown the next time that entry is saved.
+        if ($entry->hasErrors('authorIds')) {
+            $entry->clearErrors('authorIds');
+        }
+
+        if ($entry->hasErrors()) {
+            throw new InvalidElementException($entry, 'Element ' . $entry->id . ' could not be moved because it doesn\'t validate.');
+        }
+
+        // prevents revision from being created
+        $entry->resaving = true;
+
+        $elementsService = Craft::$app->getElements();
+        $elementsService->ensureBulkOp(function() use (
+            $entry,
+            $section,
+            $oldSection,
+            $elementsService,
+        ) {
+            $transaction = Craft::$app->getDb()->beginTransaction();
+            try {
+                // Start with $entry’s site
+                if (!$elementsService->saveElement($entry, false, false)) {
+                    throw new InvalidElementException($entry, 'Element ' . $entry->id . ' could not be moved for site ' . $entry->siteId);
+                }
+
+                $draftsQuery = Entry::find()
+                    ->draftOf($entry)
+                    ->provisionalDrafts(null)
+                    ->status(null)
+                    ->site('*')
+                    ->unique();
+
+                $revisionsQuery = Entry::find()
+                    ->revisionOf($entry)
+                    ->status(null)
+                    ->site('*')
+                    ->unique();
+
+                if (
+                    $entry->getIsCanonical() &&
+                    in_array(Section::TYPE_STRUCTURE, [$oldSection->type, $section->type])
+                ) {
+                    $structuresService = Craft::$app->getStructures();
+
+                    // if we're moving it from a Structure section, remove it from the structure
+                    if ($oldSection->type === Section::TYPE_STRUCTURE) {
+                        $structuresService->remove($oldSection->structureId, $entry);
+
+                        // remove drafts and revisions from the structure, too
+                        foreach (Db::each($draftsQuery) as $draft) {
+                            /** @var Entry $draft */
+                            if ($draft->lft) {
+                                $structuresService->remove($oldSection->structureId, $draft);
+                            }
+                        }
+
+                        foreach (Db::each($revisionsQuery) as $revision) {
+                            /** @var Entry $revision */
+                            if ($revision->lft) {
+                                $structuresService->remove($oldSection->structureId, $revision);
+                            }
+                        }
+                    }
+
+                    // if we're moving it to a Structure section, place it at the root
+                    if ($section->type === Section::TYPE_STRUCTURE) {
+                        if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
+                            $structuresService->prependToRoot($section->structureId, $entry, Structures::MODE_INSERT);
+                        } else {
+                            $structuresService->appendToRoot($section->structureId, $entry, Structures::MODE_INSERT);
+                        }
+                    }
+                }
+
+                $entry->newSiteIds = [];
+                $entry->afterPropagate(false);
+
+                // now assign drafts & revisions to the new section too
+                $ids = array_merge($draftsQuery->ids(), $revisionsQuery->ids());
+                if (!empty($ids)) {
+                    Db::update(Table::ENTRIES, [
+                        'sectionId' => $section->id,
+                    ], [
+                        'id' => $ids,
+                    ]);
+                }
+
+                $transaction->commit();
+
+                // Invalidate caches for the old section
+                $tag = sprintf('element::%s::section:%s', Entry::class, $oldSection->id);
+                TagDependency::invalidate(Craft::$app->getCache(), $tag);
+            } catch (Throwable $e) {
+                $transaction->rollBack();
+                throw $e;
+            }
+        });
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_TO_SECTION)) {
+            $this->trigger(self::EVENT_AFTER_MOVE_TO_SECTION, new MoveEntryEvent([
+                'entry' => $entry,
+                'section' => $section,
+            ]));
+        }
+
+        return true;
     }
 }

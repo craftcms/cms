@@ -78,6 +78,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
     if (
       this.elementIndex.isAdministrative &&
+      !this.elementIndex.settings.static &&
       this.elementIndex.settings.inlineEditable !== false &&
       this.$elementContainer.has('> tr[data-id] > th .element[data-editable]')
     ) {
@@ -87,17 +88,17 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // Set up the broadcast listener
     if (Craft.messageReceiver) {
       this._broadcastListener = (ev) => {
-        if (ev.data.event === 'saveElement') {
+        if (
+          ev.data.event === 'saveElement' ||
+          ev.data.event === 'replaceFile'
+        ) {
           const $rows = this.$table.find(
             `> tbody > tr[data-id="${ev.data.id}"]`
           );
           if ($rows.length) {
-            const data = {
-              elementType: this.elementIndex.elementType,
-              source: this.elementIndex.sourceKey,
+            const data = Object.assign(this.elementIndex.getViewParams(), {
               id: ev.data.id,
-              siteId: this.elementIndex.siteId,
-            };
+            });
             Craft.sendActionRequest(
               'POST',
               'element-indexes/element-table-html',
@@ -105,7 +106,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             ).then(({data}) => {
               for (let i = 0; i < $rows.length; i++) {
                 const $row = $rows.eq(i);
-                for (let attribute in data.attributeHtml) {
+                for (const attribute in data.attributeHtml) {
                   if (data.attributeHtml.hasOwnProperty(attribute)) {
                     $row
                       .find(`> td[data-attr="${attribute}"]`)
@@ -146,15 +147,17 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
       this.addListener(this.$saveBtn, 'activate', () => {
         this.$saveBtn.addClass('loading');
+        this.closeDateTimeFields();
+
         this.saveChanges()
           .then((data) => {
             if (data.errors) {
-              for (let elementId in data.errors) {
+              for (const elementId in data.errors) {
                 if (data.errors.hasOwnProperty(elementId)) {
                   const $row = this.$elementContainer.children(
                     `[data-id="${elementId}"]`
                   );
-                  for (let attribute in data.errors[elementId]) {
+                  for (const attribute in data.errors[elementId]) {
                     $row
                       .find(`[name*="${attribute}"]`)
                       .closest('td')
@@ -194,6 +197,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         ) {
           this.$cancelBtn.addClass('loading');
           this.elementIndex.inlineEditing = false;
+          this.closeDateTimeFields();
+
           this.elementIndex.updateElements(true, false).then(() => {
             this.elementIndex.$elements.removeClass('inline-editing');
           });
@@ -203,7 +208,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this.addListener(this.$elementContainer, 'keydown', (event) => {
         if (
           event.keyCode === Garnish.RETURN_KEY &&
-          Garnish.isCtrlKeyPressed(event)
+          (event.target.nodeName !== 'TEXTAREA' ||
+            Garnish.isCtrlKeyPressed(event))
         ) {
           this.$saveBtn.trigger('click');
         } else if (
@@ -232,10 +238,23 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
   },
 
+  closeDateTimeFields: function () {
+    // ensure opened date/time pickers don't linger after activating the Cancel btn
+    this.elementIndex.$elements
+      .find('.datewrapper input')
+      .datepicker('destroy');
+
+    if ($().timepicker) {
+      this.elementIndex.$elements
+        .find('.timewrapper input')
+        .timepicker('remove');
+    }
+  },
+
   serializeInputs: function () {
     const data = Garnish.getPostData(this.$elementContainer);
     const serialized = [];
-    for (let i in data) {
+    for (const i in data) {
       serialized.push(encodeURIComponent(`${i}=${data[i]}`));
     }
     return serialized.join('&');
@@ -288,7 +307,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   initTableHeaders: function () {
-    if (this.settings.sortable || this.elementIndex.inlineEditing) {
+    if (this.elementIndex.inlineEditing) {
       return;
     }
 
@@ -630,7 +649,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     this.elementIndex.updateElements();
 
     // No need for two spinners
-    this.elementIndex.setIndexAvailable();
+    this.elementIndex.hideIndexLoadingStyles();
   },
 
   _updateTableAttributes: function ($element, tableAttributes) {

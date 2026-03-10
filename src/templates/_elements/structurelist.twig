@@ -9,7 +9,7 @@
         <div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
           {{ elementChip(element, {
             context: context ?? 'index',
-            inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
+            inputName: inputName ?? ((name ?? false) ? ((single ?? false) ? name : "#{name}[]") : null),
             showActionMenu: showActionMenu ?? false,
             checkbox: selectable ?? false,
           }) }}

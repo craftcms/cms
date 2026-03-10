@@ -18,22 +18,28 @@ use craft\elements\db\ElementQuery;
 use craft\events\IndexKeywordsEvent;
 use craft\events\SearchEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Queue;
 use craft\helpers\Search as SearchHelper;
 use craft\helpers\StringHelper;
+use craft\queue\jobs\UpdateSearchIndex;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use Throwable;
 use yii\base\Component;
+use yii\base\Exception;
+use yii\caching\TagDependency;
+use yii\db\Exception as DbException;
 use yii\db\Expression;
 use yii\db\Schema;
 
 /**
  * Search service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getSearch()|`Craft::$app->search`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getSearch()|`Craft::$app->getSearch()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -204,7 +210,171 @@ class Search extends Component
         // Release the lock
         $mutex->release($lockKey);
 
+        // Invalidate search query caches for this element type
+        TagDependency::invalidate(Craft::$app->getCache(), [
+            sprintf('element-search-query:%s', get_class($element)),
+        ]);
+
         return true;
+    }
+
+    /**
+     * Queues up an element to be indexed.
+     *
+     * @param ElementInterface $element
+     * @param string[] $fieldHandles
+     * @since 5.7.0
+     */
+    public function queueIndexElement(ElementInterface $element, array $fieldHandles): void
+    {
+        try {
+            $this->createOrUpdateIndexJob($element, $fieldHandles);
+        } catch (DbException) {
+            // the job was probably just cascade-deleted
+            return;
+        }
+
+        Queue::push(new UpdateSearchIndex([
+            'elementType' => get_class($element),
+            'elementId' => $element->id,
+            'siteId' => $element->siteId,
+            'queued' => true,
+        ]), 2048);
+    }
+
+    /**
+     * @throws DbException
+     */
+    private function createOrUpdateIndexJob(ElementInterface $element, array $fieldHandles): void
+    {
+        $jobId = $this->pendingIndexJobId($element->id, $element->siteId);
+
+        if ($jobId) {
+            if (empty($fieldHandles)) {
+                // nothing more to do
+                return;
+            }
+
+            // get a lock on the job and make sure it still exists && is pending
+            $mutex = Craft::$app->getMutex();
+            $lockName = "searchqueue:$jobId";
+
+            if ($mutex->acquire($lockName)) {
+                try {
+                    if ($this->isIndexJobPending($jobId)) {
+                        foreach ($fieldHandles as $fieldHandle) {
+                            Db::upsert(Table::SEARCHINDEXQUEUE_FIELDS, [
+                                'jobId' => $jobId,
+                                'fieldHandle' => $fieldHandle,
+                            ]);
+                        }
+                        return;
+                    }
+                } finally {
+                    $mutex->release($lockName);
+                }
+            }
+        }
+
+        $db = Craft::$app->getDb();
+        $db->transaction(function() use ($element, $fieldHandles, $db) {
+            Db::insert(Table::SEARCHINDEXQUEUE, [
+                'elementId' => $element->id,
+                'siteId' => $element->siteId,
+            ], $db);
+            $jobId = $db->getLastInsertID(Table::SEARCHINDEXQUEUE);
+            $fieldData = array_map(fn(string $fieldHandle) => [$jobId, $fieldHandle], $fieldHandles);
+            Db::batchInsert(Table::SEARCHINDEXQUEUE_FIELDS, ['jobId', 'fieldHandle'], $fieldData, $db);
+        });
+    }
+
+    /**
+     * Indexes the attributes of a given element, only if it’s queued.
+     *
+     * @param int $elementId
+     * @param int $siteId
+     * @param class-string<ElementInterface>|null $elementType
+     * @since 5.7.0
+     */
+    public function indexElementIfQueued(int $elementId, int $siteId, ?string $elementType = null): void
+    {
+        $jobId = $this->pendingIndexJobId($elementId, $siteId);
+
+        if (!$jobId) {
+            // no pending jobs
+            return;
+        }
+
+        // get a lock on the job and then mark it as reserved,
+        // so there's no chance another process reserves it/modifies it, overlapping with this one
+        $mutex = Craft::$app->getMutex();
+        $lockName = "searchqueue:$jobId";
+        if (!$mutex->acquire($lockName, 5)) {
+            throw new Exception("Unable to acquire a mutex lock for search queue job $jobId");
+        }
+
+        try {
+            if (!Db::update(Table::SEARCHINDEXQUEUE, ['reserved' => true], ['id' => $jobId])) {
+                // another process must be handling the same job
+                return;
+            }
+        } finally {
+            $mutex->release($lockName);
+        }
+
+        try {
+            // Figure out which fields need to be updated for the element
+            $fieldHandles = (new Query())
+                ->select(['fieldHandle'])
+                ->from(Table::SEARCHINDEXQUEUE_FIELDS)
+                ->where(['jobId' => $jobId])
+                ->column();
+
+            $elementType ??= Craft::$app->getElements()->getElementTypeById($elementId);
+
+            if ($elementType && ComponentHelper::validateComponentClass($elementType, ElementInterface::class)) {
+                $element = $elementType::find()
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
+                    ->id($elementId)
+                    ->siteId($siteId)
+                    ->status(null)
+                    ->one();
+
+                if ($element) {
+                    $this->indexElementAttributes($element, $fieldHandles);
+                }
+            }
+
+            Db::delete(Table::SEARCHINDEXQUEUE, ['id' => $jobId]);
+        } catch (Throwable $e) {
+            Db::update(Table::SEARCHINDEXQUEUE, ['reserved' => false], ['id' => $jobId]);
+            throw $e;
+        }
+    }
+
+    private function pendingIndexJobId(int $elementId, int $siteId): ?int
+    {
+        return (new Query())
+            ->select('id')
+            ->from(Table::SEARCHINDEXQUEUE)
+            ->where([
+                'elementId' => $elementId,
+                'siteId' => $siteId,
+                'reserved' => false,
+            ])
+            ->scalar();
+    }
+
+    private function isIndexJobPending(int $jobId): bool
+    {
+        $job = (new Query())
+            ->select('reserved')
+            ->from(Table::SEARCHINDEXQUEUE)
+            ->where(['id' => $jobId])
+            ->one();
+
+        return $job && !$job['reserved'];
     }
 
     /**
@@ -258,7 +428,13 @@ class Search extends Component
 
         $results = $query
             ->andWhere(['elementId' => $elementQuery])
-            ->cache(true, new ElementQueryTagDependency($elementQuery))
+            ->cache(true, new ElementQueryTagDependency($elementQuery, [
+                'tags' => [
+                    'element-index-query',
+                    "element-index-query::$elementQuery->elementType",
+                    "element-search-query::$elementQuery->elementType",
+                ],
+            ]))
             ->all();
 
         // Score the results
@@ -405,20 +581,49 @@ class Search extends Component
     {
         $db = Craft::$app->getDb();
         $searchIndexTable = Table::SEARCHINDEX;
-        $elementsTable = Table::ELEMENTS;
+        $elementsSitesTable = Table::ELEMENTS_SITES;
 
         if ($db->getIsMysql()) {
             $sql = <<<SQL
 DELETE s.* FROM $searchIndexTable s
-LEFT JOIN $elementsTable e ON e.id = s.elementId
-WHERE e.id IS NULL
+LEFT JOIN $elementsSitesTable es ON es.elementId = s.elementId AND es.siteId = s.siteId
+WHERE es.elementId IS NULL
 SQL;
         } else {
             $sql = <<<SQL
 DELETE FROM $searchIndexTable s
 WHERE NOT EXISTS (
-    SELECT * FROM $elementsTable
-    WHERE id = s."elementId"
+    SELECT * FROM $elementsSitesTable
+    WHERE "elementId" = s."elementId" AND "siteId" = s."siteId"
+)
+SQL;
+        }
+        $db->createCommand($sql)->execute();
+    }
+
+    /**
+     * Deletes any search indexes that belong to elements that don’t exist anymore.
+     *
+     * @since 5.9.0
+     */
+    public function deleteOrphanedIndexJobs(): void
+    {
+        $db = Craft::$app->getDb();
+        $searchIndexQueueTable = Table::SEARCHINDEXQUEUE;
+        $elementsSitesTable = Table::ELEMENTS_SITES;
+
+        if ($db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE q.* FROM $searchIndexQueueTable q
+LEFT JOIN $elementsSitesTable es ON es.elementId = q.elementId AND es.siteId = q.siteId
+WHERE es.elementId IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $searchIndexQueueTable q
+WHERE NOT EXISTS (
+    SELECT * FROM $elementsSitesTable
+    WHERE "elementId" = q."elementId" AND "siteId" = q."siteId"
 )
 SQL;
         }
@@ -491,7 +696,20 @@ SQL;
         }
 
         // Insert/update the row in searchindex
-        Db::insert(Table::SEARCHINDEX, $columns);
+        for ($try = 0; $try < 3; $try++) {
+            try {
+                Db::insert(Table::SEARCHINDEX, $columns);
+                return;
+            } catch (DbException $e) {
+                if (str_contains($e->getPrevious()?->getMessage(), 'deadlock')) {
+                    // A gap lock was probably hit. Try again in one second
+                    // https://github.com/craftcms/cms/issues/15221
+                    sleep(1);
+                } else {
+                    throw $e;
+                }
+            }
+        }
     }
 
     /**
@@ -567,9 +785,9 @@ SQL;
                 $mod = 50;
             }
 
-            // If this is a title, 5X it
+            // If this is a title, 100X it
             if ($row['attribute'] === 'title') {
-                $mod *= 5;
+                $mod *= 100;
             }
 
             $score = ($score / $wordCount) * $mod * $weight;
@@ -729,66 +947,62 @@ SQL;
             // unless it's meant to search for *anything* (e.g. if they entered 'attribute:*').
             if ($keywords !== '' || $term->subLeft) {
                 // If we're on PostgreSQL and this is a phrase or exact match, we have to special case it.
-                if (!$isMysql && $term->phrase) {
-                    $sql = $this->_sqlPhraseExactMatch($keywords, $term->exact);
-                } else {
-                    // Create fulltext clause from term
-                    if ($this->_doFullTextSearch($keywords, $term)) {
-                        if ($term->subRight) {
-                            if ($isMysql) {
-                                $keywords .= '*';
-                            } else {
-                                $keywords .= ':*';
-                            }
-                        }
-
-                        // Add quotes for exact match
-                        if ($isMysql && StringHelper::contains($keywords, ' ')) {
-                            if (StringHelper::first($keywords, 1) === '*') {
-                                $keywords = StringHelper::insert($keywords, '"', 1);
-                            } else {
-                                $keywords = '"' . $keywords;
-                            }
-
-                            if (StringHelper::last($keywords, 1) === '*') {
-                                $keywords = StringHelper::insert($keywords, '"', StringHelper::length($keywords) - 1);
-                            } else {
-                                $keywords .= '"';
-                            }
-                        }
-
-                        // Determine prefix for the full-text keyword
-                        if ($term->exclude) {
-                            $keywords = '-' . $keywords;
-                        }
-
-                        // Only create an SQL clause if there's a subselect. Otherwise, return the keywords.
-                        if ($subSelect !== null) {
-                            // If there is a subselect, create the full text SQL bit
-                            $sql = $this->_sqlFullText($keywords);
-                        }
-                    } // Create LIKE clause from term
-                    else {
-                        if ($term->exact) {
-                            // Create exact clause from term
-                            $operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-                            $keywords = ($term->subLeft ? '%' : ' ') . $keywords . ($term->subRight ? '%' : ' ');
+                $pgsqlPhrase = !$isMysql && $term->phrase;
+                if ($pgsqlPhrase && $term->exact) {
+                    $sql = $this->_sqlPhraseExactMatch($keywords);
+                } elseif (!$pgsqlPhrase && $this->_doFullTextSearch($keywords, $term)) {
+                    if ($term->subRight) {
+                        if ($isMysql) {
+                            $keywords .= '*';
                         } else {
-                            // Create LIKE clause from term
-                            $operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-                            $keywords = ($term->subLeft ? '%' : '% ') . $keywords . ($term->subRight ? '%' : ' %');
+                            $keywords .= ':*';
+                        }
+                    }
+
+                    // Add quotes for exact match
+                    if ($isMysql && StringHelper::contains($keywords, ' ')) {
+                        if (StringHelper::first($keywords, 1) === '*') {
+                            $keywords = StringHelper::insert($keywords, '"', 1);
+                        } else {
+                            $keywords = '"' . $keywords;
                         }
 
-                        // Generate the SQL
-                        $sql = $this->_sqlWhere('keywords', $operator, $keywords);
+                        if (StringHelper::last($keywords, 1) === '*') {
+                            $keywords = StringHelper::insert($keywords, '"', StringHelper::length($keywords) - 1);
+                        } else {
+                            $keywords .= '"';
+                        }
                     }
+
+                    // Determine prefix for the full-text keyword
+                    if ($term->exclude) {
+                        $keywords = '-' . $keywords;
+                    }
+
+                    // Only create an SQL clause if there's a subselect. Otherwise, return the keywords.
+                    if ($subSelect !== null) {
+                        // If there is a subselect, create the full text SQL bit
+                        $sql = $this->_sqlFullText($keywords);
+                    }
+                } else {
+                    // Create LIKE clause from term
+                    if ($term->exact) {
+                        // Create exact clause from term
+                        $operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
+                        $keywords = ($term->subLeft ? '%' : ' ') . $keywords . ($term->subRight ? '%' : ' ');
+                    } else {
+                        // Create LIKE clause from term
+                        $operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
+                        $keywords = ($term->subLeft ? '%' : '% ') . $keywords . ($term->subRight ? '%' : ' %');
+                    }
+
+                    // Generate the SQL
+                    $sql = $this->_sqlWhere('keywords', $operator, $keywords);
                 }
             }
-        } else {
+        } elseif ($term->subLeft) {
             // Support for attribute:* syntax to just check if something has *any* keyword value.
-            if ($term->subLeft) {
-                $sql = $this->_sqlWhere('keywords', '!=', '');
-            }
+            $sql = $this->_sqlWhere('keywords', '!=', '');
         }
 
         // If we have a where clause in the subselect, add the keyword bit to it.
@@ -952,18 +1166,13 @@ SQL;
      * This method will return PostgreSQL specific SQL necessary to find an exact phrase search.
      *
      * @param string $val The phrase or exact value to search for.
-     * @param bool $exact Whether this should be an exact match or not.
      * @return string The SQL to perform the search.
      */
-    private function _sqlPhraseExactMatch(string $val, bool $exact = false): string
+    private function _sqlPhraseExactMatch(string $val): string
     {
-        $ftVal = explode(' ', $val);
-        $ftVal = implode(' & ', $ftVal);
-        $likeVal = !$exact ? '%' . $val . '%' : " $val ";
-
+        $ftVal = implode(' & ', explode(' ', $val));
         $db = Craft::$app->getDb();
-
-        return sprintf("%s @@ '%s'::tsquery AND %s LIKE '%s'", $db->quoteColumnName('keywords_vector'), $ftVal, $db->quoteColumnName('keywords'), $likeVal);
+        return sprintf("%s @@ '%s'::tsquery AND %s LIKE ' %s '", $db->quoteColumnName('keywords_vector'), $ftVal, $db->quoteColumnName('keywords'), $val);
     }
 
     /**

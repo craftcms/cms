@@ -84,8 +84,13 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return false;
       }
 
-      if (this.settings.requireId && this.$selectedItems.is('[data-id=""]')) {
-        return false;
+      if (this.settings.requireId) {
+        for (let i = 0; i < this.$selectedItems.length; i++) {
+          const $item = this.$selectedItems.eq(i);
+          if (!Garnish.hasAttr($item, 'data-id') || $item.is('[data-id=""]')) {
+            return false;
+          }
+        }
       }
 
       if (typeof this.settings.validateSelection === 'function') {
@@ -105,7 +110,10 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return;
       }
 
-      this.$trigger.removeClass('disabled').removeAttr('aria-disabled');
+      const $button = this.$trigger.has('button,.btn').length
+        ? this.$trigger.find('button,.btn')
+        : this.$trigger;
+      $button.removeClass('disabled').removeAttr('aria-disabled');
       this.triggerEnabled = true;
     },
 
@@ -114,7 +122,10 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return;
       }
 
-      this.$trigger.addClass('disabled').attr('aria-disabled', 'true');
+      const $button = this.$trigger.has('button,.btn').length
+        ? this.$trigger.find('button,.btn')
+        : this.$trigger;
+      $button.addClass('disabled').attr('aria-disabled', 'true');
       this.triggerEnabled = false;
     },
 

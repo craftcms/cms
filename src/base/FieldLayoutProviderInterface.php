@@ -16,16 +16,8 @@ use craft\models\FieldLayout;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-interface FieldLayoutProviderInterface
+interface FieldLayoutProviderInterface extends Grippable
 {
-    /**
-     * Returns the provider’s handle, which could be used to identify custom fields with ambiguous handles.
-     *
-     * @return string|null
-     * @since 5.0.0
-     */
-    public function getHandle(): ?string;
-
     /**
      * Returns the field layout defined by this component.
      *

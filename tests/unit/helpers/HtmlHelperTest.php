@@ -43,6 +43,16 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider disableInputsDataProvider
+     * @param string|null $expected
+     * @param callable|string|null $html
+     */
+    public function testDisableInputs(?string $expected, callable|string|null $html): void
+    {
+        self::assertSame($expected, Html::disableInputs($html));
+    }
+
+    /**
      * @dataProvider parseTagDataProvider
      * @param array|false $expected
      * @param string $tag
@@ -225,6 +235,16 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider decodeDoublesDataProvider
+     * @param string $expected
+     * @param string $html
+     */
+    public function testDecodeDoubles(string $expected, string $html): void
+    {
+        self::assertSame($expected, Html::decodeDoubles($html));
+    }
+
+    /**
      *
      */
     public function testUnwrapCondition(): void
@@ -325,6 +345,64 @@ class HtmlHelperTest extends TestCase
         return [
             ['foo%20bar', 'foo bar'],
             ['foo%20%20bar', 'foo  bar'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function disableInputsDataProvider(): array
+    {
+        return [
+            [
+                null,
+                null,
+            ],
+            [
+                '',
+                '',
+            ],
+            [
+                '<input type="text" name="foo" disabled>',
+                '<input type="text" name="foo">',
+            ],
+            [
+                '<input type="text" name="foo" disabled>',
+                '<input type="text" name="foo" disabled>',
+            ],
+            [
+                '<input type="text" disabled>',
+                '<input type="text">',
+            ],
+            [
+                '<div class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></div>',
+                '<div class="field"><div class="input ltr"><input type="text" name="foo"></div></div>',
+            ],
+            [
+                '<fieldset class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></fieldset>',
+                '<fieldset class="field"><div class="input ltr"><input type="text" name="foo"></div></fieldset>',
+            ],
+            [
+                '<div class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></div>',
+                '<div class="field"><div class="input ltr disabled"><input type="text" name="foo"></div></div>',
+            ],
+            [
+                null,
+                fn() => null,
+            ],
+            [
+                '',
+                fn() => '',
+            ],
+            [
+                '<input type="text" name="foo" disabled>',
+                fn() => '<input type="text" name="foo">',
+            ],
+            // https://github.com/nystudio107/craft-retour/issues/329
+            [
+                '<style>foo { color: red; }</style><input type="text" name="foo" disabled>',
+                '<style>foo { color: red; }</style><input type="text" name="foo">',
+            ],
         ];
     }
 
@@ -499,7 +577,7 @@ class HtmlHelperTest extends TestCase
     {
         return [
             ['foo', '-foo-'],
-            ['foo-bar', 'foo--bar'],
+            ['foo--bar', 'foo--bar'],
             ['foo-bar-baz', 'foo[bar][baz]'],
             ['foo-bar-baz', 'foo bar baz'],
             ['foo.bar', 'foo.bar'],
@@ -621,6 +699,18 @@ class HtmlHelperTest extends TestCase
             ['foo&lt;p&gt;bar<br>baz', 'foo<p>bar<br>baz'],
             ['This text goes within the &lt;title&gt; tag in the &lt;head&gt; of the HTML file.', 'This text goes within the <title> tag in the <head> of the HTML file.'],
             ['Foo &lt;p&gt; bar <input type="hidden"', 'Foo <p> bar <input type="hidden"'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function decodeDoublesDataProvider(): array
+    {
+        return [
+            ['&lt;p&gt;', '&lt;p&gt;'],
+            ['&lt;p&gt;', '&amp;lt;p&amp;gt;'],
+            ['&amp;lt;p&amp;gt;', '&amp;amp;lt;p&amp;amp;gt;'],
         ];
     }
 }

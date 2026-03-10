@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\models\FieldLayout;
+use DateTime;
 
 /**
  * FieldLayoutElement is the base class for classes representing field layout elements in terms of objects.
@@ -22,6 +23,12 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      * @var int The width (%) of the field
      */
     public int $width = 100;
+
+    /**
+     * @var DateTime|null The date that the element was added to the field layout.
+     * @since 5.3.0
+     */
+    public ?DateTime $dateAdded = null;
 
     /**
      * @inheritdoc
@@ -75,6 +82,17 @@ abstract class FieldLayoutElement extends FieldLayoutComponent
      * @return string|null
      */
     abstract public function formHtml(?ElementInterface $element = null, bool $static = false): ?string;
+
+    /**
+     * Returns whether the layout element should always be re-rendered, even if it’s already included in the form.
+     *
+     * @return bool
+     * @since 5.7.0
+     */
+    public function alwaysRefresh(): bool
+    {
+        return false;
+    }
 
     /**
      * Returns the element container HTML attributes.

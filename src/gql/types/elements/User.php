@@ -40,10 +40,10 @@ class User extends Element
         /** @var UserElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        if ($fieldName === 'preferences') {
-            return Json::encode($source->getPreferences());
-        }
-
-        return parent::resolve($source, $arguments, $context, $resolveInfo);
+        return match ($fieldName) {
+            'preferences' => Json::encode($source->getPreferences()),
+            'affiliatedSiteHandle' => $source->getAffiliatedSite()?->handle,
+            default => parent::resolve($source, $arguments, $context, $resolveInfo),
+        };
     }
 }

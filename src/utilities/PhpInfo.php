@@ -37,6 +37,14 @@ class PhpInfo extends Utility
     /**
      * @inheritdoc
      */
+    public static function isSelectable(): bool
+    {
+        return function_exists('phpinfo');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function icon(): ?string
     {
         return 'circle-info';
@@ -121,7 +129,6 @@ class PhpInfo extends Utility
             $heading = substr($section, 0, strpos($section, '</h2>'));
 
             if (preg_match_all('#%S%(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?%E%#', $section, $matches, PREG_SET_ORDER) !== 0) {
-                /** @var array[] $matches */
                 foreach ($matches as $row) {
                     if (!isset($row[2])) {
                         continue;

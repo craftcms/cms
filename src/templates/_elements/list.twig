@@ -1,12 +1,16 @@
 {% set elements = elements ?? [] %}
 {% set disabled = disabled ?? null %}
 {% set viewMode = viewMode ?? null %}
+{% set size = size ?? (viewMode in ['thumbs', 'large'] ? 'large' : 'small') %}
+
+{% dump {viewMode, inline: inline ?? null} %}
 
 {% apply spaceless %}
   {% tag 'ul' with {
     class: [
       'elements',
       'chips',
+      "chips-#{size}",
       (inline ?? false) ? 'inline-chips' : null,
     ]|filter,
   } %}
@@ -14,8 +18,8 @@
       <li>
         {% set element = elementChip(element, {
           context: context ?? 'index',
-          size: size ?? (viewMode == 'large' ? 'large' : 'small'),
-          inputName: inputName ?? ((name ?? false) ? "#{name}[]" : null),
+          size,
+          inputName: inputName ?? ((name ?? false) ? ((single ?? false) ? name : "#{name}[]") : null),
           showActionMenu: showActionMenu ?? false,
           checkbox: selectable ?? false,
         }) %}

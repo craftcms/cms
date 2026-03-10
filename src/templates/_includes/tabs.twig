@@ -67,13 +67,15 @@
             'disclosure-trigger': true,
         }
     } %}
-        {% if tabsHaveErrors %}
-            {{ tag('span', {
-                data: {
-                    icon: 'alert',
-                }
-            }) }}
-        {% endif %}
+        {%- apply spaceless %}
+            {% if tabsHaveErrors %}
+                {{ tag('span', {
+                    data: {
+                        icon: 'alert',
+                    }
+                }) }}
+            {% endif %}
+        {% endapply -%}
     {% endtag %}
     <div id="tab-menu" class="menu menu--disclosure">
         <ul class="padded">

@@ -107,6 +107,13 @@ trait PluginTrait
     public bool $hasCpSettings = false;
 
     /**
+     * @var bool Whether the plugin supports a read-only settings page in the control panel, which
+     * can be shown when admin changes are disallowed.
+     * @since 5.6.0
+     */
+    public bool $hasReadOnlyCpSettings = false;
+
+    /**
      * @var bool Whether the plugin has its own section in the control panel
      */
     public bool $hasCpSection = false;

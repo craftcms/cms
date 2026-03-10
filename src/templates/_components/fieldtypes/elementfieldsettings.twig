@@ -2,6 +2,7 @@
 
 {% set sourceOptions = field.getSourceOptions() %}
 {% set elementType = elementType ?? pluralElementType %}
+{% set upperElementType = upperElementType ?? elementType|capitalize %}
 
 {% block fieldSettings %}
     {% block sourcesField %}
@@ -32,7 +33,7 @@
             {% endif %}
         {% else %}
             {{ forms.field({
-                label: (field.allowMultipleSources ? "Sources"|t('app') : "Source"|t('app'))
+                label: (field.allowMultipleSources ? "Sources"|t('app') : "Source"|t('app')),
             }, '<p class="error">' ~ "No sources exist yet."|t('app') ~ '</p>') }}
         {% endif %}
     {% endblock %}
@@ -47,7 +48,7 @@
             instructions: 'Whether the structure of the related {type} should be maintained.'|t('app', { type: pluralElementType }),
             id: 'maintain-hierarchy',
             name: 'maintainHierarchy',
-            on: field.maintainHierarchy
+            on: field.maintainHierarchy,
         }) }}
     {% endblock %}
 
@@ -92,21 +93,24 @@
         }) }}
     {% endblock %}
 
+    {% block defaultPlacementField %}
+        {{ forms.selectField({
+            label: 'Default {type} Placement'|t('app', {type: upperElementType}),
+            instructions: 'Where new {type} should be placed by default in the field.'|t('app', {type: pluralElementType}),
+            id: 'default-placement',
+            name: 'defaultPlacement',
+            options: [
+                {label: 'Before other {type}'|t('app', {type: pluralElementType}), value: 'beginning'},
+                {label: 'After other {type}'|t('app', {type: pluralElementType}), value: 'end'},
+            ],
+            value: field.defaultPlacement,
+            errors: field.getErrors('defaultPlacement'),
+            data: {'error-key': 'defaultPlacement'},
+        })}}
+    {% endblock %}
+
     {% block viewModeField %}
         {{ field.getViewModeFieldHtml()|raw }}
-
-        {% tag 'div' with {
-            id: 'view-mode--cards',
-            class: field.viewMode != 'cards' ? 'hidden' : null,
-        } %}
-            {{ forms.lightswitchField({
-                label: 'Show cards in a grid'|t('app'),
-                instructions: 'Whether cards should be shown in a multi-column grid on wide viewports.'|t('app'),
-                id: 'show-cards-in-grid',
-                name: 'showCardsInGrid',
-                on: field.showCardsInGrid,
-            }) }}
-        {% endtag %}
     {% endblock %}
 
     {% block selectionLabelField %}
@@ -117,7 +121,18 @@
             name: 'selectionLabel',
             value: field.selectionLabel,
             placeholder: field.defaultSelectionLabel(),
-            errors: field.getErrors('selectionLabel')
+            errors: field.getErrors('selectionLabel'),
+        }) }}
+    {% endblock %}
+
+    {% block showSearchInputField %}
+        {{ forms.lightswitchField({
+            fieldClass: field.allowMultipleSources ? 'hidden' : null,
+            label: 'Show the search input'|t('app'),
+            id: 'show-search-input',
+            name: 'showSearchInput',
+            on: field.showSearchInput,
+            errors: field.getErrors('showSearchInput'),
         }) }}
     {% endblock %}
 
@@ -127,14 +142,14 @@
             instructions: 'Whether validation errors on the related {type} should prevent the source element from being saved.'|t('app', { type: pluralElementType }),
             id: 'validate-related-elements',
             name: 'validateRelatedElements',
-            on: field.validateRelatedElements
+            on: field.validateRelatedElements,
         }) }}
     {% endblock %}
 
     {% block advancedSettings %}
         <hr>
 
-        <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</a>
+        <button type="button" class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</button>
         <div id="advanced" class="hidden">
 
             {{ forms.lightswitchField({
@@ -150,17 +165,57 @@
                 {% block targetSiteField %}
                     {{ field.getTargetSiteFieldHtml()|raw }}
                 {% endblock %}
-
-                {% block localizeRelationsField %}
-                    {{ forms.lightswitchField({
-                        label: 'Manage relations on a per-site basis'|t('app'),
-                        id: 'localize-relations',
-                        name: 'localizeRelations',
-                        on: field.localizeRelations
-                    }) }}
-                {% endblock %}
             {% endif %}
 
         </div>
     {% endblock %}
 {% endblock %}
+
+{% if field.allowMultipleSources %}
+{% js %}
+(() => {
+  const $sourcesField = $('#{{ 'sources-field'|namespaceInputId }}');
+  const $inputs = $sourcesField.find('input');
+  const $searchField = $('#{{ 'show-search-input-field'|namespaceInputId }}');
+
+  const updateSearchField = function() {
+    let showSearchField = false;
+    if (!$sourcesField.is(':visible')) {
+      showSearchField = true;
+    } else {
+      let foundChecked = false;
+      for (let i = 0; i < $inputs.length; i++) {
+        const $input = $inputs.eq(i);
+        const val = $input.val();
+        const checked = $input.prop('checked');
+        if (val === '*') {
+          if (checked) {
+            showSearchField = false;
+            break;
+          }
+        } else if (checked) {
+          if (foundChecked) {
+            showSearchField = false;
+            break;
+          }
+          showSearchField = true;
+          foundChecked = true;
+        }
+      }
+    }
+
+    if (showSearchField) {
+      $searchField.removeClass('hidden');
+    } else {
+      $searchField.addClass('hidden');
+    }
+  };
+
+  $inputs.on('change', () => {
+    updateSearchField();
+  });
+
+  updateSearchField();
+})();
+{% endjs %}
+{% endif %}

@@ -3,6 +3,7 @@
 namespace craft\elements\conditions\entries;
 
 use craft\elements\conditions\ElementCondition;
+use craft\elements\conditions\HasDescendantsRule;
 use craft\elements\conditions\LevelConditionRule;
 
 /**
@@ -22,11 +23,12 @@ class EntryCondition extends ElementCondition
             AuthorConditionRule::class,
             AuthorGroupConditionRule::class,
             ExpiryDateConditionRule::class,
+            HasDescendantsRule::class,
             LevelConditionRule::class,
             PostDateConditionRule::class,
             SavableConditionRule::class,
             SectionConditionRule::class,
-            MatrixFieldConditionRule::class,
+            FieldConditionRule::class,
             TypeConditionRule::class,
             ViewableConditionRule::class,
         ]);

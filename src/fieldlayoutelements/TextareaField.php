@@ -101,7 +101,7 @@ class TextareaField extends BaseNativeField
      * @param ElementInterface|null $element The element the form is being rendered for
      * @param bool $static Whether the form should be static (non-interactive)
      * @return array
-     * @since 4.9.5
+     * @since 5.1.5
      */
     protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
     {
@@ -137,5 +137,19 @@ class TextareaField extends BaseNativeField
     protected function errorKey(): string
     {
         return $this->name ?? parent::errorKey();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        $items = [];
+
+        if (Craft::$app->getUser()->getIsAdmin()) {
+            $items[] = $this->copyAttributeAction();
+        }
+
+        return $items;
     }
 }

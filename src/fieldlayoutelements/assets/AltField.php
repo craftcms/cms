@@ -111,7 +111,7 @@ class AltField extends TextareaField
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         if (!$element instanceof Asset) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', __CLASS__));
+            throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', self::class));
         }
 
         return $element->getVolume()->altTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
@@ -123,9 +123,17 @@ class AltField extends TextareaField
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Asset) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', __CLASS__));
+            throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', self::class));
         }
 
         return ElementHelper::translationDescription($element->getVolume()->altTranslationMethod);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isCrossSiteCopyable(ElementInterface $element): bool
+    {
+        return true;
     }
 }

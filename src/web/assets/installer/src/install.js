@@ -183,7 +183,7 @@ import './install.scss';
           this.showInstallScreen();
         } else if (i !== 1) {
           // Give focus to the first input
-          this.$currentScreen.find('input[type=text]:first').trigger('focus');
+          this.$currentScreen.find('input[type=text]:first').focus();
         }
       },
 
@@ -215,7 +215,7 @@ import './install.scss';
                 $('#' + what).find('.buttons')
               );
 
-              for (let input in response.data.errors) {
+              for (const input in response.data.errors) {
                 if (!response.data.errors.hasOwnProperty(input)) {
                   continue;
                 }

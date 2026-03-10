@@ -187,7 +187,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
         $behaviors = parent::defineBehaviors();
         $behaviors['fieldLayout'] = [
             'class' => FieldLayoutBehavior::class,
-            'elementType' => __CLASS__,
+            'elementType' => self::class,
         ];
         return $behaviors;
     }
@@ -226,6 +226,13 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
             'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
             'except' => [self::SCENARIO_ESSENTIALS],
         ];
+
+        $rules[] = [['fieldLayout'], function() {
+            $fieldLayout = $this->getFieldLayout();
+            if (!$fieldLayout->validate()) {
+                $this->addModelErrors($fieldLayout, 'fieldLayout');
+            }
+        }];
 
         return $rules;
     }

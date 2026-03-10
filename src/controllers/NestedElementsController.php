@@ -42,7 +42,7 @@ class NestedElementsController extends Controller
         $this->requireCpRequest();
 
         // Get the owner element
-        /** @var ElementInterface|string $ownerElementType */
+        /** @var class-string<ElementInterface> $ownerElementType */
         $ownerElementType = $this->request->getRequiredBodyParam('ownerElementType');
         $ownerId = $this->request->getRequiredBodyParam('ownerId');
         $ownerSiteId = $this->request->getRequiredBodyParam('ownerSiteId');
@@ -83,6 +83,7 @@ class NestedElementsController extends Controller
 
         if ($this->nestedElements instanceof ElementQueryInterface) {
             $oldSortOrders = (clone $this->nestedElements)
+                ->status(null)
                 ->asArray()
                 ->select(['id', 'sortOrder'])
                 ->pairs();

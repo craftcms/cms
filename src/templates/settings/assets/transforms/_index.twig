@@ -1,5 +1,6 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedNavItem = 'transforms' %}
+{% set readOnly = readOnly ?? false %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
@@ -13,12 +14,18 @@
     "No image transforms exist yet.",
 ]) %}
 
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
 {% block content %}
     <div id="transforms-vue-admin-table"></div>
 
-    <div class="buttons">
-        <a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New image transform"|t('app') }}</a>
-    </div>
+    {% if not readOnly %}
+        <div class="buttons">
+            <a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New image transform"|t('app') }}</a>
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% set tableData = [] %}
@@ -49,11 +56,16 @@ var columns = [
     { name: 'format', title: Craft.t('app', 'Format'), }
 ];
 
-new Craft.VueAdminTable({
+let config = {
     columns: columns,
     container: '#transforms-vue-admin-table',
-    deleteAction: 'image-transforms/delete',
     emptyMessage: Craft.t('app', 'No image transforms exist yet.'),
     tableData: {{ tableData|json_encode|raw }},
-    });
+};
+
+{% if not readOnly %}
+    config['deleteAction'] = 'image-transforms/delete';
+{% endif %}
+
+new Craft.VueAdminTable(config);
 {% endjs %}

@@ -22,7 +22,6 @@ Craft.Preview = Garnish.Base.extend(
     $editorFooter: null,
     $saveBtn: null,
 
-    $statusIcon: null,
     $dragHandle: null,
     $previewWrapper: null,
     $previewContainer: null,
@@ -88,6 +87,10 @@ Craft.Preview = Garnish.Base.extend(
       );
 
       Craft.Preview.instances.push(this);
+
+      if (this.settings.standaloneMode) {
+        this.open(false);
+      }
     },
 
     get editorWidth() {
@@ -119,7 +122,7 @@ Craft.Preview = Garnish.Base.extend(
       this._editorWidthInPx = inPx;
     },
 
-    open: async function () {
+    open: async function (animate = true) {
       if (this.isActive) {
         return;
       }
@@ -143,9 +146,10 @@ Craft.Preview = Garnish.Base.extend(
       this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
 
       this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
+      this.$dragHandle.css(Craft.left, this.editorWidthInPx - 2 + 'px');
       this.$previewContainer.css(Craft.right, -this.getIframeWidth());
 
-      this.slideIn();
+      this.slideIn(animate);
 
       if (!this.elementEditor) {
         await this._loadElementEditor();
@@ -157,9 +161,7 @@ Craft.Preview = Garnish.Base.extend(
     _buildUi: function () {
       this.editorId = `lp-editor-${Math.floor(Math.random() * 100000000)}`;
 
-      const previewSkipLinkText = Craft.t('app', 'Skip to {title}', {
-        title: Craft.t('app', 'Top of preview'),
-      });
+      const previewSkipLinkText = Craft.t('app', 'Skip to top of preview');
 
       this.$shade = $('<div/>', {class: 'modal-shade dark'}).appendTo(
         Garnish.$bod
@@ -188,15 +190,18 @@ Craft.Preview = Garnish.Base.extend(
       }).appendTo(this.$previewContainer);
 
       this.$editorHeader = $('<header/>', {
-        class: 'flex flex-nowrap',
+        class: 'lp-editor-header',
       }).appendTo(this.$editorContainer);
-      const $closeBtn = $('<button/>', {
-        type: 'button',
-        class: 'btn',
-        'data-icon': 'xmark',
-        title: Craft.t('app', 'Close Preview'),
-        'aria-label': Craft.t('app', 'Close Preview'),
-      }).appendTo(this.$editorHeader);
+      if (!this.settings.standaloneMode) {
+        const $closeBtn = $('<button/>', {
+          type: 'button',
+          class: 'btn lp-close-btn',
+          'data-icon': 'xmark',
+          title: Craft.t('app', 'Close Preview'),
+          'aria-label': Craft.t('app', 'Close Preview'),
+        }).appendTo(this.$editorHeader);
+        this.addListener($closeBtn, 'click', 'close');
+      }
       this.$editorToolbar = $('<div/>', {class: 'lp-toolbar'}).appendTo(
         this.$editorHeader
       );
@@ -214,22 +219,19 @@ Craft.Preview = Garnish.Base.extend(
       );
 
       this.$dragHandle = $('<div/>', {class: 'lp-draghandle'}).appendTo(
-        this.$editorContainer
+        Garnish.$bod
       );
       $('<div/>', {class: 'flex-grow'}).appendTo(this.$editorHeader);
       this.$spinner = $('<div/>', {
         class: 'spinner hidden',
         title: Craft.t('app', 'Saving'),
       }).appendTo(this.$editorHeader);
-      this.$statusIcon = $('<div/>', {class: 'invisible'}).appendTo(
-        this.$editorHeader
-      );
       this.$statusMessage = $('<span/>', {
         class: 'visually-hidden',
         'aria-live': 'polite',
       }).appendTo(this.$editorHeader);
       this.$previewSkipLink = $('<a/>', {
-        class: 'skip-link btn',
+        class: 'skip-link btn hidden',
         href: '#lp-preview-container',
         html: previewSkipLinkText,
       }).appendTo(this.$editorHeader);
@@ -294,11 +296,6 @@ Craft.Preview = Garnish.Base.extend(
         onDrag: this._onDrag.bind(this),
         onDragStop: this._onDragStop.bind(this),
       });
-
-      this.addListener($closeBtn, 'click', 'close');
-      this.addListener(this.$statusIcon, 'click', () => {
-        this.elementEditor.showStatusHud(this.$statusIcon);
-      });
     },
 
     _loadElementEditor: async function () {
@@ -324,7 +321,7 @@ Craft.Preview = Garnish.Base.extend(
       } catch (e) {
         if (!this.ignoreFailedRequest) {
           Craft.cp.displayError();
-          reject(e);
+          throw e;
         }
         this.ignoreFailedRequest = false;
         return;
@@ -335,6 +332,43 @@ Craft.Preview = Garnish.Base.extend(
 
       const {data} = response;
       this.namespace = data.namespace;
+
+      if (this.settings.standaloneMode) {
+        if (data.actionMenu) {
+          const labelId = Craft.namespaceId(
+            'action-menu-label',
+            this.namespace
+          );
+          const menuId = Craft.namespaceId('action-menu', this.namespace);
+          $('<label/>', {
+            id: labelId,
+            class: 'visually-hidden',
+            text: Craft.t('app', 'Actions'),
+          }).appendTo(this.$editorHeader);
+          const $actionBtn = $('<button/>', {
+            class: 'btn action-btn header-btn',
+            type: 'button',
+            title: Craft.t('app', 'Actions'),
+            'aria-controls': menuId,
+            'aria-describedby': labelId,
+            'data-disclosure-trigger': 'true',
+          }).appendTo(this.$editorHeader);
+          $(data.actionMenu).appendTo(this.$editorHeader);
+          $actionBtn.disclosureMenu();
+        }
+
+        if (data.editUrl) {
+          $('<a/>', {
+            target: '_blank',
+            class: 'btn header-btn',
+            title: Craft.t('app', 'Open in a new tab'),
+            'aria-label': Craft.t('app', 'Open in a new tab'),
+            'data-icon': 'external',
+            href: data.editUrl,
+          }).appendTo(this.$editorHeader);
+        }
+      }
+
       this.$content.html(data.content);
 
       this.$saveBtn = Craft.ui
@@ -360,9 +394,11 @@ Craft.Preview = Garnish.Base.extend(
         this.$editorContainer.serialize()
       );
 
-      Craft.initUiElements(this.$editorContainer);
+      // Execute the response JS first so any Selectize inputs, etc.,
+      // get instantiated before field toggles
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
+      Craft.initUiElements(this.$editorContainer);
 
       this.elementEditor = new Craft.ElementEditor(
         this.$editorContainer,
@@ -374,8 +410,12 @@ Craft.Preview = Garnish.Base.extend(
             $spinnerContainer: this.$editorHeader,
             updateTabs: (tabs) => this.updateTabs(tabs),
             getTabManager: () => this.tabManager,
-            handleSubmitResponse: () => {
-              window.location.reload();
+            handleSubmitResponse: (response) => {
+              if (this.settings.redirectUrl) {
+                document.location.href = this.settings.redirectUrl;
+              } else {
+                window.location.reload();
+              }
             },
             handleSubmitError: async (error) => {
               // We can get away with just refreshing the content since there's
@@ -389,6 +429,9 @@ Craft.Preview = Garnish.Base.extend(
               this.$saveBtn.removeClass('loading');
             },
             autosaveDrafts: true,
+            saveParams: {
+              setEnabled: 0,
+            },
           },
           this.$editorContainer.data('elementEditorSettings')
         )
@@ -449,6 +492,8 @@ Craft.Preview = Garnish.Base.extend(
 
       this.updateIframe();
       Craft.ElementThumbLoader.retryAll();
+
+      this.$previewSkipLink.removeClass('hidden');
     },
 
     _getDeviceTypeTranslation: function (type) {
@@ -556,7 +601,7 @@ Craft.Preview = Garnish.Base.extend(
       this.updateWidths();
     },
 
-    slideIn: function () {
+    slideIn: function (animate = true) {
       if (!this.isActive || this.isVisible) {
         return;
       }
@@ -603,6 +648,11 @@ Craft.Preview = Garnish.Base.extend(
       Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
         this.close();
       });
+
+      if (!animate) {
+        this.$editorContainer.velocity('finish');
+        this.$previewContainer.velocity('finish');
+      }
     },
 
     close: async function () {
@@ -688,6 +738,7 @@ Craft.Preview = Garnish.Base.extend(
 
     updateWidths: function () {
       this.$editorContainer.css('width', this.editorWidthInPx + 'px');
+      this.$dragHandle.css(Craft.left, this.editorWidthInPx - 2 + 'px');
       this.$previewContainer.width(this.getIframeWidth());
       if (this._devicePreviewIsActive()) {
         this.updateDevicePreview();
@@ -1068,20 +1119,22 @@ Craft.Preview = Garnish.Base.extend(
       draftId: null,
       revisionId: null,
       siteId: null,
+      standaloneMode: false,
+      redirectUrl: null,
       onBeforeLoad: async () => {},
     },
 
     refresh: function () {
-      for (let preview of Craft.Preview.instances) {
+      for (const preview of Craft.Preview.instances) {
         preview.updateIframe();
       }
-      for (let preview of Craft.LivePreview.instances) {
+      for (const preview of Craft.LivePreview.instances) {
         preview.forceUpdateIframe();
       }
     },
 
     getActive: function () {
-      for (let preview of Craft.Preview.instances) {
+      for (const preview of Craft.Preview.instances) {
         if (preview.isActive) {
           return preview;
         }

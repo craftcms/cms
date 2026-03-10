@@ -94,7 +94,7 @@ class EmailField extends TextField
     {
         /** @var User $element */
         if (
-            Craft::$app->edition === CmsEdition::Pro &&
+            Craft::$app->edition->value >= CmsEdition::Pro->value &&
             Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
             !$element->getIsDraft() &&
             !Craft::$app->getUser()->checkPermission('administrateUsers')
@@ -112,7 +112,7 @@ class EmailField extends TextField
     {
         if ($element) {
             if (!$element instanceof User) {
-                throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', __CLASS__));
+                throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
             }
 
             if (
@@ -139,7 +139,7 @@ JS, [
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         if (!$element instanceof User) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', __CLASS__));
+            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
         }
 
         return [

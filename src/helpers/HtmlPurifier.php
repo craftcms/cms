@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use craft\htmlpurifier\RelAttrLinkTypeDef;
 use craft\htmlpurifier\VideoEmbedUrlDef;
 use HTMLPurifier_Config;
 use HTMLPurifier_Encoder;
@@ -83,6 +84,8 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
 
             $def->addElement('oembed', 'Block', 'Inline', 'Common');
             $def->addAttribute('oembed', 'url', new VideoEmbedUrlDef());
+
+            $def->addAttribute('a', 'rel', new RelAttrLinkTypeDef('rel'));
         }
     }
 }

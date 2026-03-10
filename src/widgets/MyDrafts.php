@@ -85,6 +85,7 @@ class MyDrafts extends Widget
             ->drafts()
             ->status(null)
             ->draftCreator(Craft::$app->getUser()->getId())
+            ->section('*')
             ->site('*')
             ->unique()
             ->orderBy(['dateUpdated' => SORT_DESC])
@@ -103,7 +104,10 @@ class MyDrafts extends Widget
         ]);
 
         foreach ($drafts as $draft) {
-            $html .= Html::tag('li', Cp::elementChipHtml($draft), [
+            $chip = Cp::elementChipHtml($draft, [
+                'hyperlink' => true,
+            ]);
+            $html .= Html::tag('li', $chip, [
                 'class' => 'widget__list-item',
             ]);
         }

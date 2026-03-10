@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\base\FsInterface;
-use yii\base\Event;
 
 /**
  * Filesystem event class.

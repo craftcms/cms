@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\web\twig\Environment;
-use yii\base\Event;
 
 /**
  * CreateTwigEvent event class.

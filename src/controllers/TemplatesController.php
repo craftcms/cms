@@ -101,7 +101,7 @@ class TemplatesController extends Controller
         /** @var Application $app */
         $app = Craft::$app;
         $routeParams = $app->getUrlManager()->getRouteParams();
-        unset($routeParams['template'], $routeParams['template']);
+        unset($routeParams['template']);
         $variables = array_merge($variables, $routeParams);
 
         return $this->renderTemplate($template, $variables);
@@ -130,6 +130,7 @@ class TemplatesController extends Controller
      */
     public function actionManualUpdateNotification(): Response
     {
+        $this->response->setNoCacheHeaders();
         return $this->renderTemplate('_special/dbupdate.twig');
     }
 

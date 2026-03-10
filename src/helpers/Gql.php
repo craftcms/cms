@@ -271,7 +271,7 @@ class Gql
      *
      * @param string $typeName The union type name.
      * @param array $includedTypes The type the union should include
-     * @param ?callable $resolveFunction The resolver function to use to resolve a specific type. If not provided,
+     * @param callable|null $resolveFunction The resolver function to use to resolve a specific type. If not provided,
      * a default one will be used that is able to resolve Craft elements.
      * @return mixed
      */
@@ -337,6 +337,9 @@ class Gql
             $traverser($group);
         }
 
+        $schema->scope[] = 'directive:parseRefs';
+        $schema->scope[] = 'directive:transform';
+
         return $schema;
     }
 
@@ -350,27 +353,31 @@ class Gql
      */
     public static function applyDirectives(mixed $source, ResolveInfo $resolveInfo, mixed $value): mixed
     {
-        if (isset($resolveInfo->fieldNodes[0]->directives)) {
-            foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
-                /** @var Directive|false $directiveEntity */
-                $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
-
-                // This can happen for built-in GraphQL directives in which case they will have been handled already, anyway
-                if (!$directiveEntity) {
-                    continue;
-                }
-
-                $arguments = [];
-
-                if (isset($directive->arguments[0])) {
-                    foreach ($directive->arguments as $argument) {
-                        $arguments[$argument->name->value] = self::_convertArgumentValue($argument->value, $resolveInfo->variableValues);
-                    }
-                }
-
-                $value = $directiveEntity::apply($source, $value, $arguments, $resolveInfo);
-            }
+        /** @phpstan-ignore-next-line */
+        if (!isset($resolveInfo->fieldNodes[0]->directives)) {
+            return $value;
         }
+        
+        foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
+            /** @var Directive|false $directiveEntity */
+            $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
+
+            // This can happen for built-in GraphQL directives in which case they will have been handled already, anyway
+            if (!$directiveEntity) {
+                continue;
+            }
+
+            $arguments = [];
+
+            if (isset($directive->arguments[0])) {
+                foreach ($directive->arguments as $argument) {
+                    $arguments[$argument->name->value] = self::_convertArgumentValue($argument->value, $resolveInfo->variableValues);
+                }
+            }
+
+            $value = $directiveEntity::apply($source, $value, $arguments, $resolveInfo);
+        }
+
         return $value;
     }
 
@@ -385,15 +392,12 @@ class Gql
     {
         unset($arguments['immediately']);
 
-        if (!empty($arguments['handle'])) {
-            $transform = $arguments['handle'];
-        } elseif (!empty($arguments['transform'])) {
-            $transform = $arguments['transform'];
-        } else {
-            $transform = $arguments;
+        // Remap handle to transform to work with image transform normalization
+        if (isset($arguments['handle'])) {
+            $arguments = $arguments['handle'];
         }
 
-        return $transform;
+        return $arguments;
     }
 
     /**
@@ -449,9 +453,7 @@ class Gql
 
         $sites = Craft::$app->getSites()->getAllSites(true);
 
-        return array_filter($sites, static function(Site $site) use ($allowedSiteUids) {
-            return in_array($site->uid, $allowedSiteUids, true);
-        });
+        return array_filter($sites, static fn(Site $site) => in_array($site->uid, $allowedSiteUids, true));
     }
 
     /**
@@ -466,9 +468,7 @@ class Gql
         }
 
         if ($value instanceof ListValueNode) {
-            return array_map(function($node) {
-                return self::_convertArgumentValue($node);
-            }, iterator_to_array($value->values));
+            return array_map(fn($node) => self::_convertArgumentValue($node), iterator_to_array($value->values));
         }
 
         return $value->value;
@@ -510,9 +510,7 @@ class Gql
      */
     public static function eagerLoadComplexity(): callable
     {
-        return static function($childComplexity) {
-            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
-        };
+        return static fn($childComplexity) => $childComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
     }
 
     /**
@@ -523,9 +521,7 @@ class Gql
      */
     public static function singleQueryComplexity(): callable
     {
-        return static function($childComplexity) {
-            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_QUERY;
-        };
+        return static fn($childComplexity) => $childComplexity + GqlService::GRAPHQL_COMPLEXITY_QUERY;
     }
 
     /**
@@ -566,9 +562,7 @@ class Gql
      */
     public static function nPlus1Complexity(): callable
     {
-        return static function($childComplexity) {
-            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
-        };
+        return static fn($childComplexity) => $childComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
     }
 
     /**
@@ -654,12 +648,11 @@ class Gql
      *
      * @param string $query
      * @return bool
-     * @since 4.9.6
+     * @since 5.1.8
      */
     public static function isIntrospectionQuery(string $query): bool
     {
         // strtok() won’t find a token if the string starts with it
-        /** @var string|false $tok */
         $tok = strtok(" $query", '{');
         if ($tok === false) {
             return false;

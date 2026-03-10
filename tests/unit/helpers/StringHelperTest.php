@@ -109,8 +109,8 @@ class StringHelperTest extends TestCase
             'κόσμε-öäü' => [10, 10],
         ];
 
-        foreach ($testArray as $testString => $testResult) {
-            $actual = StringHelper::appendRandomString('', $testResult[0], $testString);
+        foreach ($testArray as $possibleChars => $testResult) {
+            $actual = StringHelper::appendRandomString('', $testResult[0], $possibleChars);
             self::assertSame($testResult[1], StringHelper::length($actual));
         }
     }
@@ -202,17 +202,6 @@ class StringHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider capitalizePersonalNameDataProvider
-     * @param string $expected
-     * @param string $string
-     */
-    public function testCapitalizePersonalName(string $expected, string $string): void
-    {
-        $actual = StringHelper::capitalizePersonalName($string);
-        self::assertSame($expected, $actual);
-    }
-
-    /**
      * @dataProvider charsAsArrayDataProvider
      * @param string[] $expected
      * @param string $string
@@ -261,6 +250,17 @@ class StringHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider convertLineBreaksDataProvider
+     * @param string $expected
+     * @param string $string
+     */
+    public function testConvertLineBreaks(string $expected, string $string): void
+    {
+        $actual = StringHelper::convertLineBreaks($string);
+        self::assertSame($expected, $actual);
+    }
+
+    /**
      *
      */
     public function testCount(): void
@@ -290,7 +290,6 @@ class StringHelperTest extends TestCase
     {
         $actual = StringHelper::delimit($string, $delimiter);
         self::assertSame($expected, $actual);
-        self::assertIsString($actual);
     }
 
     /**
@@ -724,7 +723,6 @@ class StringHelperTest extends TestCase
     {
         $actual = StringHelper::isWhitespace($string);
         self::assertSame($expected, $actual);
-        self::assertIsBool($actual);
     }
 
     /**
@@ -736,6 +734,16 @@ class StringHelperTest extends TestCase
     {
         $actual = StringHelper::lines($string);
         self::assertCount($expected, $actual);
+    }
+
+    /**
+     * @dataProvider firstLineDataProvider
+     * @param string $expected
+     * @param string $string
+     */
+    public function testFirstLine(string $expected, string $string): void
+    {
+        self::assertEquals($expected, StringHelper::firstLine($string));
     }
 
     /**
@@ -781,7 +789,6 @@ class StringHelperTest extends TestCase
     {
         $actual = StringHelper::encodeMb4($string);
         self::assertSame($expected, $actual);
-        self::assertIsString($actual);
 
         self::assertFalse(StringHelper::containsMb4($actual));
     }
@@ -1859,8 +1866,9 @@ class StringHelperTest extends TestCase
             ['c_r_a_f_t_c_m_s', 'CRAFT CMS'],
             ['c_r_a_f_t_c_m_s', 'CRAFTCMS'],
             ['', ''],
-            ['i_😘_u', 'I 😘 U'],
-            ['2_2_alpha_n_numeric', '22 AlphaN Numeric'],
+            ['i😘_u', 'I 😘 U'],
+            ['22_alpha_n_numeric', '22 AlphaN Numeric'],
+            ['foo_bar', 'fooBar'],
         ];
     }
 
@@ -1877,7 +1885,6 @@ class StringHelperTest extends TestCase
             ['hello!@#iam!@#astring', 'HelloIamAstring', '!@#'],
             ['hello😀😁😂iam😀😁😂astring', 'HelloIamAstring', '😀😁😂'],
             ['hello😀😁😂iam😀😁😂a2string', 'HelloIamA2string', '😀😁😂'],
-
         ];
     }
 
@@ -1977,6 +1984,19 @@ class StringHelperTest extends TestCase
             ['😂😁', '😂😁'],
             ['Foo © bar 𝌆 baz ☃ qux', 'Foo © bar 𝌆 baz ☃ qux'],
             ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function convertLineBreaksDataProvider(): array
+    {
+        return [
+            ['foo bar', 'foo bar'],
+            ["foo\nbar", "foo\nbar"],
+            ["foo\nbar", "foo\rbar"],
+            ["foo\nbar", "foo\r\nbar"],
         ];
     }
 
@@ -2181,6 +2201,41 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
+    public static function firstLineDataProvider(): array
+    {
+        return [
+            [
+                'test',
+                'test
+             
+             
+             test',
+            ],
+            ['test <br> test', 'test <br> test'],
+            ['thesearetabs       notspaces', 'thesearetabs       notspaces'],
+            [
+                '😂', '😂
+            😁',
+            ],
+            [
+                '', '
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            ',
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public static function toUppercaseDataProvider(): array
     {
         return [
@@ -2208,6 +2263,10 @@ class StringHelperTest extends TestCase
             ['fooBar', 'Fo’o Bar'],
             ['fooBarBaz', 'Foo Ba’r   Baz'],
             ['fooBar', '0 Foo Bar'],
+            ['fooBar', 'Foo!Bar'],
+            ['fooBar', 'Foo,Bar'],
+            ['fooBar', 'Foo/Bar'],
+            ['fooBar', 'Foo\\Bar'],
         ];
     }
 
@@ -2304,58 +2363,6 @@ class StringHelperTest extends TestCase
             ['camelΣase', 'camel σase'],
             ['στανιλCase', 'Στανιλ case'],
             ['σamelCase', 'σamel  Case'],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public static function capitalizePersonalNameDataProvider(): array
-    {
-        return [
-            ['Marcus Aurelius', 'marcus aurelius'],
-            ['Torbjørn Færøvik', 'torbjørn færøvik'],
-            ['Jaap de Hoop Scheffer', 'jaap de hoop scheffer'],
-            ['K. Anders Ericsson', 'k. anders ericsson'],
-            ['Per-Einar', 'per-einar'],
-            [
-                'Line Break',
-                'line
-             break',
-            ],
-            ['ab', 'ab'],
-            ['af', 'af'],
-            ['al', 'al'],
-            ['and', 'and'],
-            ['ap', 'ap'],
-            ['bint', 'bint'],
-            ['binte', 'binte'],
-            ['da', 'da'],
-            ['de', 'de'],
-            ['del', 'del'],
-            ['den', 'den'],
-            ['der', 'der'],
-            ['di', 'di'],
-            ['dit', 'dit'],
-            ['ibn', 'ibn'],
-            ['la', 'la'],
-            ['mac', 'mac'],
-            ['nic', 'nic'],
-            ['of', 'of'],
-            ['ter', 'ter'],
-            ['the', 'the'],
-            ['und', 'und'],
-            ['van', 'van'],
-            ['von', 'von'],
-            ['y', 'y'],
-            ['zu', 'zu'],
-            ['Bashar al-Assad', 'bashar al-assad'],
-            ["d'Name", "d'Name"],
-            ['ffName', 'ffName'],
-            ["l'Name", "l'Name"],
-            ['macDuck', 'macDuck'],
-            ['mcDuck', 'mcDuck'],
-            ['nickMick', 'nickMick'],
         ];
     }
 
@@ -3742,13 +3749,10 @@ class StringHelperTest extends TestCase
      */
     public static function titleizeDataProvider(): array
     {
-        $ignore = ['at', 'by', 'for', 'in', 'of', 'on', 'out', 'to', 'the'];
-
         return [
             ['Title Case', 'TITLE CASE'],
-            ['Testing The Method', 'testing the method'],
-            ['Testing the Method', 'testing the method', $ignore],
-            ['I Like to Watch Dvds at Home', 'i like to watch DVDs at home', $ignore],
+            ['Testing the Method', 'testing the method'],
+            ['Testing the method With Ignored Word', 'testing the method with ignored word', ['method']],
             ['Θα Ήθελα Να Φύγει', '  Θα ήθελα να φύγει  '],
         ];
     }
@@ -3789,7 +3793,7 @@ class StringHelperTest extends TestCase
             [true, 'on'],
             [true, 'ON'],
             [true, 'yes'],
-            [true, '999'],
+            [false, '999'],
             [false, 'false'],
             [false, '0'],
             [false, 'off'],
@@ -3944,9 +3948,9 @@ class StringHelperTest extends TestCase
             ['CamelCase', 'camel - case'],
             ['CamelCase', 'camel_case'],
             ['CamelCTest', 'camel c test'],
-            ['StringWith1Number', 'string_with1number'],
+            ['StringWith1number', 'string_with1number'],
             ['StringWith22Numbers', 'string-with-2-2 numbers'],
-            ['1Camel2Case', '1camel2case'],
+            ['1camel2case', '1camel2case'],
             ['CamelΣase', 'camel σase'],
             ['ΣτανιλCase', 'στανιλ case'],
             ['ΣamelCase', 'Σamel  Case'],

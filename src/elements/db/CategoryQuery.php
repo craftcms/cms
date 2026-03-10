@@ -208,7 +208,7 @@ class CategoryQuery extends ElementQuery
 
         $this->joinElementTable(Table::CATEGORIES);
 
-        $this->query->select([
+        $this->query->addSelect([
             'categories.groupId',
         ]);
 
@@ -333,6 +333,8 @@ class CategoryQuery extends ElementQuery
      */
     protected function fieldLayouts(): array
     {
+        $this->_normalizeGroupId();
+
         if ($this->groupId) {
             $fieldLayouts = [];
             $categoriesService = Craft::$app->getCategories();

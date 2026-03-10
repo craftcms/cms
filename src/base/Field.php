@@ -8,11 +8,14 @@
 namespace craft\base;
 
 use Craft;
+use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\AttributeStatus;
 use craft\events\DefineFieldHtmlEvent;
 use craft\events\DefineFieldKeywordsEvent;
+use craft\events\DefineMenuItemsEvent;
 use craft\events\FieldElementEvent;
+use craft\events\FieldEvent;
 use craft\gql\types\QueryArgument;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -20,15 +23,14 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use DateTime;
-use Exception;
 use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
-use yii\base\ErrorHandler;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\ExpressionInterface;
@@ -40,7 +42,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Field extends SavableComponent implements FieldInterface
+abstract class Field extends SavableComponent implements FieldInterface, Iconic, Actionable
 {
     use FieldTrait;
 
@@ -126,6 +128,26 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public const EVENT_DEFINE_INPUT_HTML = 'defineInputHtml';
 
+    /**
+     * @vevent DefineMenuItemsEvent
+     * @since 5.7.0
+     */
+    public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
+
+    /**
+     * @event FieldEvent The event that is triggered after the field has been merged into another.
+     * @see afterMergeInto()
+     * @since 5.3.0
+     */
+    public const EVENT_AFTER_MERGE_INTO = 'afterMergeInto';
+
+    /**
+     * @event FieldEvent The event that is triggered after another field has been merged into this one.
+     * @see afterMergeFrom()
+     * @since 5.3.0
+     */
+    public const EVENT_AFTER_MERGE_FROM = 'afterMergeFrom';
+
     // Translation methods
     // -------------------------------------------------------------------------
 
@@ -134,6 +156,96 @@ abstract class Field extends SavableComponent implements FieldInterface
     public const TRANSLATION_METHOD_SITE_GROUP = 'siteGroup';
     public const TRANSLATION_METHOD_LANGUAGE = 'language';
     public const TRANSLATION_METHOD_CUSTOM = 'custom';
+
+    // Reserved handles
+    // -------------------------------------------------------------------------
+
+    /** @since 5.8.0 */
+    public const RESERVED_HANDLES = [
+        'ancestors',
+        'applyingDraft',
+        'archived',
+        'attributeLabel',
+        'attributes',
+        'awaitingFieldValues',
+        'behavior',
+        'behaviors',
+        'canSetProperties',
+        'canonical',
+        'children',
+        'contentTable',
+        'dateCreated',
+        'dateDeleted',
+        'dateLastMerged',
+        'dateUpdated',
+        'descendants',
+        'draftId',
+        'duplicateOf',
+        'enabled',
+        'enabledForSite',
+        'error',
+        'errorSummary',
+        'errors',
+        'fieldLayoutId',
+        'fieldValue',
+        'fieldValues',
+        'firstSave',
+        'hardDelete',
+        'hasMethods',
+        'icon',
+        'id',
+        'isNewForSite',
+        'isProvisionalDraft',
+        'language',
+        'level',
+        'lft',
+        'link',
+        'localized',
+        'localized',
+        'mergingCanonicalChanges',
+        'newSiteIds',
+        'next',
+        'nextSibling',
+        'owner',
+        'parent',
+        'parents',
+        'prev',
+        'prevSibling',
+        'previewing',
+        'propagateAll',
+        'propagateRequired',
+        'propagating',
+        'ref',
+        'relatedToAssets',
+        'relatedToCategories',
+        'relatedToEntries',
+        'relatedToTags',
+        'relatedToUsers',
+        'resaving',
+        'revisionId',
+        'rgt',
+        'root',
+        'scenario',
+        'searchKeywords',
+        'searchScore',
+        'siblings',
+        'site',
+        'siteId',
+        'siteSettingsId',
+        'slug',
+        'sortOrder',
+        'status',
+        'structureId',
+        'tempId',
+        'title',
+        'trashed',
+        'uid',
+        'updatingFromDerivative',
+        'uri',
+        'url',
+        'viewMode',
+        'where',
+    ];
 
     /**
      * @inheritdoc
@@ -218,7 +330,14 @@ abstract class Field extends SavableComponent implements FieldInterface
             return false;
         }
 
-        return Db::parseParam($valueSql, $value, columnType: Schema::TYPE_JSON);
+        $caseInsensitive = false;
+
+        if (is_array($value) && isset($value['value'])) {
+            $caseInsensitive = $value['caseInsensitive'] ?? $caseInsensitive;
+            $value = $value['value'];
+        }
+
+        return Db::parseParam($valueSql, $value, caseInsensitive: $caseInsensitive, columnType: Schema::TYPE_JSON);
     }
 
     /**
@@ -281,15 +400,10 @@ abstract class Field extends SavableComponent implements FieldInterface
      * Use the translated field name as the string representation.
      *
      * @return string
-     * @noinspection PhpInconsistentReturnPointsInspection
      */
     public function __toString(): string
     {
-        try {
-            return Craft::t('site', $this->name) ?: static::class;
-        } catch (Exception $e) {
-            ErrorHandler::convertExceptionToError($e);
-        }
+        return Craft::t('site', $this->name) ?: static::class;
     }
 
     /**
@@ -318,6 +432,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         $names = parent::attributes();
         ArrayHelper::removeValue($names, 'validateHandleUniqueness');
         ArrayHelper::removeValue($names, 'layoutElement');
+        ArrayHelper::removeValue($names, 'static');
         return $names;
     }
 
@@ -353,92 +468,7 @@ abstract class Field extends SavableComponent implements FieldInterface
             ],
         ];
 
-        $rules[] = [
-            ['handle'],
-            HandleValidator::class,
-            'reservedWords' => [
-                'ancestors',
-                'archived',
-                'attributeLabel',
-                'attributes',
-                'awaitingFieldValues',
-                'behavior',
-                'behaviors',
-                'canSetProperties',
-                'canonical',
-                'children',
-                'contentTable',
-                'dateCreated',
-                'dateDeleted',
-                'dateLastMerged',
-                'dateUpdated',
-                'descendants',
-                'draftId',
-                'duplicateOf',
-                'enabled',
-                'enabledForSite',
-                'error',
-                'errorSummary',
-                'errors',
-                'fieldLayoutId',
-                'fieldValue',
-                'fieldValues',
-                'firstSave',
-                'hardDelete',
-                'hasMethods',
-                'id',
-                'isNewForSite',
-                'isProvisionalDraft',
-                'language',
-                'level',
-                'lft',
-                'link',
-                'localized',
-                'localized',
-                'mergingCanonicalChanges',
-                'name', // global set-specific
-                'newSiteIds',
-                'next',
-                'nextSibling',
-                'owner',
-                'parent',
-                'parents',
-                'postDate', // entry-specific
-                'prev',
-                'prevSibling',
-                'previewing',
-                'propagateAll',
-                'propagating',
-                'ref',
-                'relatedToAssets',
-                'relatedToCategories',
-                'relatedToEntries',
-                'relatedToTags',
-                'relatedToUsers',
-                'resaving',
-                'revisionId',
-                'rgt',
-                'root',
-                'scenario',
-                'searchScore',
-                'siblings',
-                'site',
-                'siteId',
-                'siteSettingsId',
-                'slug',
-                'sortOrder',
-                'status',
-                'structureId',
-                'tempId',
-                'title',
-                'trashed',
-                'uid',
-                'updatingFromDerivative',
-                'uri',
-                'url',
-                'username', // user-specific
-            ],
-        ];
+        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => self::RESERVED_HANDLES];
 
         if ($this->validateHandleUniqueness) {
             $rules[] = [
@@ -476,6 +506,85 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getUiLabel(): string
     {
         return Craft::t('site', $this->name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHandle(): ?string
+    {
+        return $this->handle;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIcon(): ?string
+    {
+        return static::icon();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl(): ?string
+    {
+        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+            return null;
+        }
+        return UrlHelper::cpUrl("settings/fields/edit/$this->id");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getActionMenuItems(): array
+    {
+        $items = $this->actionMenuItems();
+
+        // Fire a 'defineActionMenuItems' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+            $event = new DefineMenuItemsEvent([
+                'items' => $items,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ACTION_MENU_ITEMS, $event);
+            return $event->items;
+        }
+
+        return $items;
+    }
+
+    protected function actionMenuItems(): array
+    {
+        $items = [];
+
+        if ($this->id && Craft::$app->getUser()->getIsAdmin()) {
+            $view = Craft::$app->getView();
+
+            if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+                // Edit field
+                $editId = sprintf('action-edit-%s', mt_rand());
+                $items[] = [
+                    'id' => $editId,
+                    'icon' => 'gear',
+                    'label' => Craft::t('app', 'Field settings'),
+                ];
+                $view->registerJsWithVars(fn($id, $params) => <<<JS
+(() => {
+  $('#' + $id).on('activate', () => {
+    new Craft.CpScreenSlideout('fields/edit-field', {
+      params: $params,
+    });
+  });
+})();
+JS, [
+                    $view->namespaceInputId($editId),
+                    ['fieldId' => $this->id],
+                ]);
+            }
+        }
+
+        return $items;
     }
 
     /**
@@ -526,6 +635,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getTranslationKey(ElementInterface $element): string
     {
         return ElementHelper::translationKey($element, $this->translationMethod, $this->translationKeyFormat);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function showStatus(): bool
+    {
+        return true;
     }
 
     /**
@@ -613,11 +730,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the HTML that should be shown for this field’s inline inputs.
-     *
-     * @param mixed $value The field’s value
-     * @param ElementInterface|null $element The element the field is associated with
-     * @return string The HTML that should be shown for this field’s inline input
+     * @see InlineEditableFieldInterface::getInlineInputHtml()
      * @since 5.0.0
      */
     public function getInlineInputHtml(mixed $value, ?ElementInterface $element): string
@@ -661,12 +774,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         // Just return the input HTML with disabled inputs by default
-        Craft::$app->getView()->startJsBuffer();
-        $inputHtml = $this->getInputHtml($value, $element);
-        $inputHtml = preg_replace('/<(?:input|textarea|select)\s[^>]*/i', '$0 disabled', $inputHtml);
-        Craft::$app->getView()->clearJsBuffer();
-
-        return $inputHtml;
+        return Html::disableInputs(fn() => $this->getInputHtml($value, $element));
     }
 
     /**
@@ -723,11 +831,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the HTML that should be shown for this field in table and card views.
-     *
-     * @param mixed $value The field’s value
-     * @param ElementInterface $element The element the field is associated with
-     * @return string The HTML that should be shown for this field in table and card views
+     * @see PreviewableFieldInterface::getPreviewHtml()
      * @since 5.0.0
      */
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
@@ -736,24 +840,103 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the sort option array that should be included in the element’s
-     * [[\craft\base\ElementInterface::sortOptions()|sortOptions()]] response.
-     *
-     * @return array
-     * @see \craft\base\SortableFieldInterface::getSortOption()
+     * @see PreviewableFieldInterface::previewPlaceholderHtml()
+     * @since 5.5.0
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$this instanceof PreviewableFieldInterface) {
+            return '';
+        }
+
+        if ($value !== null) {
+            return $value;
+        }
+
+        if ($element !== null) {
+            return $element->getFieldValue($this->handle);
+        }
+
+        return $this->getUiLabel();
+    }
+
+    /**
+     * @see SortableFieldInterface::getSortOption()
      * @since 3.2.0
      */
     public function getSortOption(): array
     {
-        if (static::dbType() === null || !isset($this->layoutElement)) {
+        $dbType = static::dbType();
+        if ($dbType === null || !isset($this->layoutElement)) {
             throw new NotSupportedException('getSortOption() not supported by ' . $this->name);
         }
 
+        $orderBy = $this->getValueSql();
+
+        // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
+        // see https://github.com/craftcms/cms/issues/15609
+        $db = Craft::$app->getDb();
+        if ($db->getIsMysql() && is_string($dbType) && Db::parseColumnType($dbType) === Schema::TYPE_TEXT) {
+            $orderBy = "CAST($orderBy AS CHAR(255))";
+        }
+
+        // The attribute name should match the table attribute name,
+        // per ElementSources::getTableAttributesForFieldLayouts()
         return [
             'label' => Craft::t('site', $this->name),
-            'orderBy' => [$this->getValueSql(), 'id'],
-            'attribute' => "field:{$this->layoutElement->uid}",
+            'orderBy' => $orderBy,
+            'attribute' => isset($this->layoutElement->handle)
+                ? "fieldInstance:{$this->layoutElement->uid}"
+                : "field:$this->uid",
         ];
+    }
+
+    /**
+     * @see MergeableFieldInterface::canMergeInto()
+     * @since 5.3.0
+     */
+    public function canMergeInto(FieldInterface $persistingField, ?string &$reason): bool
+    {
+        // Go with whether the DB types are compatible by default
+        return Craft::$app->getFields()->areFieldTypesCompatible(static::class, $persistingField::class);
+    }
+
+    /**
+     * @see MergeableFieldInterface::canMergeFrom()
+     * @since 5.3.0
+     */
+    public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
+    {
+        // Go with whether the DB types are compatible by default
+        return Craft::$app->getFields()->areFieldTypesCompatible(static::class, $outgoingField::class);
+    }
+
+    /**
+     * @see MergeableFieldInterface::afterMergeInto()
+     * @since 5.3.0
+     */
+    public function afterMergeInto(FieldInterface $persistingField)
+    {
+        // Fire an 'afterMergeInto' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_INTO)) {
+            $this->trigger(self::EVENT_AFTER_MERGE_INTO, new FieldEvent(['field' => $persistingField]));
+        }
+    }
+
+    /**
+     * @see MergeableFieldInterface::afterMergeFrom()
+     * @since 5.3.0
+     */
+    public function afterMergeFrom(FieldInterface $outgoingField)
+    {
+        if ($this instanceof RelationalFieldInterface) {
+            Db::update(DbTable::RELATIONS, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
+        }
+
+        // Fire an 'afterMergeFrom' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_FROM)) {
+            $this->trigger(self::EVENT_AFTER_MERGE_FROM, new FieldEvent(['field' => $outgoingField]));
+        }
     }
 
     /**
@@ -773,10 +956,23 @@ abstract class Field extends SavableComponent implements FieldInterface
 
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
         if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
-            return Db::prepareDateForDb($value);
+            return DateTimeHelper::toIso8601($value);
         }
 
         return $value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
+    {
+        // Dates should be stored in UTC w/o the time zone
+        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
+            return Db::prepareDateForDb($value);
+        }
+
+        return $this->serializeValue($value, $element);
     }
 
     /**
@@ -786,6 +982,15 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $value = $this->serializeValue($from->getFieldValue($this->handle), $from);
         $to->setFieldValue($this->handle, $value);
+    }
+
+    /**
+     * @see CrossSiteCopyableFieldInterface::copyCrossSiteValue()
+     * @since 5.6.0
+     */
+    public function copyCrossSiteValue(ElementInterface $from, ElementInterface $to): void
+    {
+        $this->copyValue($from, $to);
     }
 
     /**
@@ -812,29 +1017,31 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     private function _valueSql(?string $key): ?string
     {
-        $dbType = static::dbType();
+        $dbType = $this->dbTypeForValueSql();
 
         if ($dbType === null) {
             return null;
         }
 
         if ($key !== null && (!is_array($dbType) || !isset($dbType[$key]))) {
-            throw new InvalidArgumentException(sprintf('%s doesn’t store values under the key “%s”.', __CLASS__, $key));
-        }
-
-        $jsonPath = [$this->layoutElement->uid];
-
-        if (is_array($dbType)) {
-            // Get the primary value by default
-            $key ??= array_key_first($dbType);
-            $jsonPath[] = $key;
-            $dbType = $dbType[$key];
+            throw new InvalidArgumentException(sprintf('%s doesn’t store values under the key “%s”.', self::class, $key));
         }
 
         $db = Craft::$app->getDb();
         $qb = $db->getQueryBuilder();
-        $sql = $qb->jsonExtract('elements_sites.content', $jsonPath);
+        $sql = $qb->jsonExtract('elements_sites.content', [$this->layoutElement->uid]);
 
+        if (is_array($dbType)) {
+            // Get the primary value by default
+            $key ??= array_key_first($dbType);
+            $dbType = $dbType[$key];
+            $sql = sprintf('COALESCE(%s, %s)', $qb->jsonExtract(
+                'elements_sites.content',
+                [$this->layoutElement->uid, $key],
+            ), $sql);
+        }
+
+        $castType = null;
         if ($db->getIsMysql()) {
             // If the field uses an optimized DB type, cast it so its values can be indexed
             // (see "Functional Key Parts" on https://dev.mysql.com/doc/refman/8.0/en/create-index.html)
@@ -856,16 +1063,46 @@ abstract class Field extends SavableComponent implements FieldInterface
                 SCHEMA::TYPE_TIME => 'TIME',
                 default => null,
             };
-            if ($castType !== null) {
-                // if a length was specified, replace the default with that
-                if ($length = Db::parseColumnLength($dbType)) {
-                    $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
+        }
+
+        // for pgsql, we have to make sure decimals column type is cast to decimal, otherwise they won't be sorted correctly
+        // see https://github.com/craftcms/cms/issues/15828, https://github.com/craftcms/cms/issues/15973
+        if ($db->getIsPgsql()) {
+            $castType = match (Db::parseColumnType($dbType)) {
+                Schema::TYPE_DECIMAL => 'DECIMAL',
+                Schema::TYPE_INTEGER => 'INTEGER',
+                default => null,
+            };
+        }
+
+        if ($castType !== null) {
+            // if a length was specified, replace the default with that
+            $length = Db::parseColumnLength($dbType);
+            if ($length) {
+                $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
+            } elseif ($castType === 'DECIMAL') {
+                [$precision, $scale] = Db::parseColumnPrecisionAndScale($dbType) ?? [null, null];
+                if ($precision !== null && $scale !== null) {
+                    $castType .= "($precision,$scale)";
                 }
-                $sql = "CAST($sql AS $castType)";
             }
+
+            $sql = "CAST($sql AS $castType)";
         }
 
         return $sql;
+    }
+
+    /**
+     * Returns the DB data type(s) that this field will store within the `elements_sites.content` column.
+     *
+     * @see dbType()
+     * @return string|string[]|null The data type(s).
+     * @since 5.6.0
+     */
+    protected function dbTypeForValueSql(): array|string|null
+    {
+        return static::dbType();
     }
 
     /**
@@ -1062,10 +1299,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns an array that lists the scopes this custom field allows when eager-loading or false if eager-loading
-     * should not be allowed in the GraphQL context.
-     *
-     * @return array|null
+     * @see EagerLoadingFieldInterface::getEagerLoadingGqlConditions()
      * @since 3.3.0
      */
     public function getEagerLoadingGqlConditions(): ?array
@@ -1103,5 +1337,13 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function propagateValue(ElementInterface $from, ElementInterface $to): void
+    {
+        $to->setFieldValue($this->handle, $from->getFieldValue($this->handle));
     }
 }

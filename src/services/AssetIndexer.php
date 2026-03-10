@@ -45,7 +45,7 @@ use yii\db\Exception as DbException;
 /**
  * Asset Indexer service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssetIndexer()|`Craft::$app->assetIndexer`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssetIndexer()|`Craft::$app->getAssetIndexer()`]].
  *
  * @property-read array $existingIndexingSessions
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -240,7 +240,7 @@ class AssetIndexer extends Component
             $record = AssetIndexingSessionRecord::findOne($session->id);
         }
 
-        $record = $record ?? new AssetIndexingSessionRecord();
+        $record ??= new AssetIndexingSessionRecord();
 
         $record->indexedVolumes = $session->indexedVolumes;
         $record->totalEntries = $session->totalEntries;
@@ -309,6 +309,25 @@ class AssetIndexer extends Component
 
         // The most likely scenario is that the last entry is being worked on.
         if (!$indexEntry && !$indexingSession->processIfRootEmpty) {
+            // if indexEntry is null here, we should also check if there's anything in the assetindexdata table at all
+            // (if not, it could have been deleted when clearing caches)
+            // if that table is empty, we'll get into an infinite loop, calling processIndexSession with the same data all the time
+            // (and it'll be very hard to discard the session via ui)
+            if ($indexingSession->processedEntries < $indexingSession->totalEntries) {
+                $count = (new Query())
+                    ->from([Table::ASSETINDEXDATA])
+                    ->where([
+                        'sessionId' => $indexingSession->id,
+                        'completed' => false,
+                    ])
+                    ->count();
+
+                if ((int)$count === 0) {
+                    Craft::warning('The assetindexdata table is empty; Can’t proceed with indexing.');
+                    $indexingSession->forceStop = true;
+                }
+            }
+
             $mutex->release($lockName);
             return $indexingSession;
         }
@@ -468,9 +487,7 @@ class AssetIndexer extends Component
             if ($session->listEmptyFolders && $hasAssets > 0) {
                 // if the folder contains as many assets as are listed in the $missingFiles
                 // allow this folder to be offered for deletion (with the assets in it)
-                if ($hasAssets == count(array_filter($missingFiles, function($file) use ($path) {
-                    return StringHelper::startsWith($file['path'], $path);
-                }))) {
+                if ($hasAssets == count(array_filter($missingFiles, fn($file) => StringHelper::startsWith($file['path'], $path)))) {
                     $missing['folders'][$folderId] = $volumeName . '/' . $path;
                 }
             }
@@ -712,6 +729,8 @@ class AssetIndexer extends Component
             $volume = $folder->getVolume();
         }
 
+        $fs = $volume->getFs();
+
         $folderId = $folder->id;
 
         /** @var Asset|null $asset */
@@ -740,13 +759,18 @@ class AssetIndexer extends Component
         $asset->setScenario(Asset::SCENARIO_INDEX);
 
         try {
+            if ($fs instanceof LocalFsInterface) {
+                // Have the asset store its MIME type, since it will be able to get it from its file info
+                $asset->setMimeType($asset->getMimeType());
+            }
+
             // All sorts of fun stuff for images.
             if ($asset->kind === Asset::KIND_IMAGE) {
                 $dimensions = null;
                 $tempPath = null;
 
                 // For local images it's easy - the image is right there, nothing to cache and the asset ID means nothing.
-                if ($volume->getFs() instanceof LocalFsInterface) {
+                if ($fs instanceof LocalFsInterface) {
                     $transformSourcePath = $asset->getImageTransformSourcePath();
                     $dimensions = Image::imageSize($transformSourcePath);
                 } else {
@@ -771,6 +795,9 @@ class AssetIndexer extends Component
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
                         AssetsHelper::downloadFile($volume, $indexEntry->uri, $tempPath);
                         $dimensions = Image::imageSize($tempPath);
+
+                        // Store the MIME type on the asset so long as we have it downloaded
+                        $asset->setMimeType(FileHelper::getMimeType($tempPath));
                     }
                 }
 
@@ -782,7 +809,7 @@ class AssetIndexer extends Component
                 Craft::$app->getElements()->saveElement($asset);
 
                 // Now we definitely have an asset ID, so let's cover one last base.
-                $shouldCache = !$volume->getFs() instanceof LocalFsInterface && $cacheImages && Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize > 0;
+                $shouldCache = !$fs instanceof LocalFsInterface && $cacheImages && Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize > 0;
 
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();

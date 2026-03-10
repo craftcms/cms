@@ -15,6 +15,7 @@ use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
+use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\errors\GqlException;
 use craft\events\ConfigEvent;
@@ -78,11 +79,15 @@ use craft\models\GqlToken;
 use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
+use GraphQL\Error\ClientAware;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\Directive as GqlDirective;
+use GraphQL\Type\Definition\InputObjectType;
+use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
+use GraphQL\Utils\TypeInfo;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\DisableIntrospection;
 use GraphQL\Validator\Rules\FieldsOnCorrectType;
@@ -99,7 +104,7 @@ use yii\caching\TagDependency;
 /**
  * GraphQL service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getGql()|`Craft::$app->gql`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getGql()|`Craft::$app->getGql()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
@@ -110,7 +115,7 @@ class Gql extends Component
      * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
      *
      * Plugins get a chance to add their own GraphQL types.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -130,7 +135,7 @@ class Gql extends Component
      * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
      *
      * Plugins get a chance to add their own GraphQL queries.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -156,7 +161,7 @@ class Gql extends Component
      * @event RegisterGqlMutationsEvent The event that is triggered when registering GraphQL mutations.
      *
      * Plugins get a chance to add their own GraphQL mutations.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -181,7 +186,7 @@ class Gql extends Component
      * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
      *
      * Plugins get a chance to add their own GraphQL directives.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -338,6 +343,12 @@ class Gql extends Component
     private array $_contentArguments = [];
 
     /**
+     * @var array Custom field arguments by field layout UUID
+     * @see getFieldLayoutArguments()
+     */
+    private array $_fieldArguments = [];
+
+    /**
      * @var TypeManager|null GQL type manager
      */
     private ?TypeManager $_typeManager = null;
@@ -376,13 +387,25 @@ class Gql extends Component
                 'typeLoader' => TypeLoader::class . '::loadType',
                 'query' => TypeLoader::loadType('Query'),
                 'mutation' => TypeLoader::loadType('Mutation'),
-                'directives' => $this->_loadGqlDirectives(),
+                'directives' => $this->_loadGqlDirectives($schema),
             ];
 
             // If we're not required to pre-build the schema the relevant GraphQL types will be added to the Schema
             // as the query is being resolved thanks to the magic of lazy-loading, so we needn't worry.
             if (!$prebuildSchema) {
                 $this->_schemaDef = new Schema($schemaConfig);
+
+                // but we always have to add the InputObjectType mutation args
+                foreach ($schemaConfig['mutation']->config['fields'] as $item) {
+                    if (isset($item['args'])) {
+                        foreach ($item['args'] as $arg) {
+                            if ($arg instanceof InputObjectType) {
+                                TypeInfo::extractTypes($arg);
+                            }
+                        }
+                    }
+                }
+
                 return $this->_schemaDef;
             }
 
@@ -518,7 +541,8 @@ class Gql extends Component
                 $result = $cachedResult;
             } else {
                 $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
-                $schemaDef = $this->getSchemaDef($schema, true);
+                $prebuildSchema = $isIntrospectionQuery || !Craft::$app->getConfig()->getGeneral()->lazyGqlTypes;
+                $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();
 
@@ -553,6 +577,8 @@ class Gql extends Component
                 'context' => $context,
                 'rootValue' => $rootValue,
                 'result' => $result,
+                'cacheTags' => $dep->tags ?? null,
+                'cacheDuration' => $duration ?? null,
             ]);
             $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
             $result = $event->result;
@@ -623,7 +649,6 @@ class Gql extends Component
      * Sets the active GraphQL schema.
      *
      * @param GqlSchema|null $schema The schema, or `null` to unset the active schema
-     * @throws Exception
      */
     public function setActiveSchema(?GqlSchema $schema = null): void
     {
@@ -1153,8 +1178,7 @@ class Gql extends Component
     /**
      * Returns the content arguments
      *
-     * @param string $elementType
-     * @phpstorm-param class-string<BaseElementInterface> $elementType
+     * @param class-string<BaseElementInterface> $elementType
      * @param callable $setter
      * @phpstan-param callable():array $setter
      * @return array
@@ -1169,10 +1193,31 @@ class Gql extends Component
     }
 
     /**
+     * Returns arguments for fields in the given field layout.
+     *
+     * @param FieldLayout $fieldLayout
+     * @return array
+     * @since 5.6.0
+     */
+    public function getFieldLayoutArguments(FieldLayout $fieldLayout): array
+    {
+        if (!isset($fieldLayout->type)) {
+            throw new InvalidArgumentException('Field layout is missing its element type.');
+        }
+
+        if (!isset($this->_fieldArguments[$fieldLayout->uid])) {
+            $this->_fieldArguments[$fieldLayout->uid] =
+                $this->defineContentArgumentsForFields($fieldLayout->type, $fieldLayout->getCustomFields()) +
+                $this->defineContentArgumentsForGeneratedFields($fieldLayout->type, $fieldLayout->getGeneratedFields());
+        }
+
+        return $this->_fieldArguments[$fieldLayout->uid];
+    }
+
+    /**
      * Returns the content arguments for a given element type and field layouts.
      *
-     * @param string $elementType
-     * @phpstorm-param class-string<BaseElementInterface> $elementType
+     * @param class-string<BaseElementInterface> $elementType
      * @param FieldLayout[] $fieldLayouts
      * @return array
      * @since 5.0.0
@@ -1180,6 +1225,7 @@ class Gql extends Component
     public function defineContentArgumentsForFieldLayouts(string $elementType, array $fieldLayouts): array
     {
         $fields = [];
+        $generatedFields = [];
         $handledFieldLayouts = [];
 
         foreach ($fieldLayouts as $fieldLayout) {
@@ -1192,16 +1238,17 @@ class Gql extends Component
             }
 
             array_push($fields, ...$fieldLayout->getCustomFields());
+            array_push($generatedFields, ...$fieldLayout->getGeneratedFields());
         }
 
-        return $this->defineContentArgumentsForFields($elementType, $fields);
+        return $this->defineContentArgumentsForFields($elementType, $fields) +
+            $this->defineContentArgumentsForGeneratedFields($elementType, $generatedFields);
     }
 
     /**
      * Returns the content arguments for a given element type and custom fields.
      *
-     * @param string $elementType
-     * @phpstorm-param class-string<BaseElementInterface> $elementType
+     * @param class-string<BaseElementInterface> $elementType
      * @param FieldInterface[] $fields
      * @return array
      * @since 5.0.0
@@ -1225,28 +1272,62 @@ class Gql extends Component
     }
 
     /**
+     * Returns the content arguments for a given element type and generated fields.
+     *
+     * @param class-string<BaseElementInterface> $elementType
+     * @param array $fields
+     * @return array
+     * @since 5.8.0
+     */
+    public function defineContentArgumentsForGeneratedFields(string $elementType, array $fields): array
+    {
+        $arguments = [];
+        $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
+
+        foreach ($fields as $field) {
+            $handle = $field['handle'] ?? '';
+            if (
+                $handle !== '' &&
+                !isset($arguments[$handle]) &&
+                !method_exists($elementQuery, $handle)
+            ) {
+                $arguments[$handle] = [
+                    'name' => $handle,
+                    'type' => Type::listOf(QueryArgument::getType()),
+                ];
+            }
+        }
+
+        return $arguments;
+    }
+
+    /**
      * Returns the content arguments for an element class based on the given contexts.
      *
      * @param array $contexts
-     * @param string $elementType
-     * @phpstan-param class-string<BaseElementInterface> $elementType
+     * @param class-string<BaseElementInterface> $elementType
      * @return array
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
         /** @var FieldLayoutBehavior[] $contexts */
-        /** @var string|BaseElementInterface $elementType */
         return $this->getOrSetContentArguments($elementType, function() use ($contexts, $elementType): array {
             $fields = [];
+            $generatedFields = [];
+
             foreach ($contexts as $context) {
                 if (GqlHelper::isSchemaAwareOf($elementType::gqlScopesByContext($context))) {
+                    $layout = $context->getFieldLayout();
                     try {
-                        array_push($fields, ...$context->getCustomFields());
+                        array_push($fields, ...$layout->getCustomFields());
+                        array_push($generatedFields, ...$layout->getGeneratedFields());
                     } catch (UnknownMethodException) {
                     }
                 }
             }
-            return $this->defineContentArgumentsForFields($elementType, $fields);
+
+            return $this->defineContentArgumentsForFields($elementType, $fields) +
+                $this->defineContentArgumentsForGeneratedFields($elementType, $generatedFields);
         });
     }
 
@@ -1270,8 +1351,12 @@ class Gql extends Component
                 $originException = $nextException;
             }
 
-            // If devMode enabled, substitute the original exception here.
-            if ($devMode && !empty($originException->getMessage())) {
+            // If devMode enabled or exception is safe to show, substitute the original exception here.
+            if (
+                ($devMode || ($originException instanceof ClientAware && $originException->isClientSafe())
+                ) &&
+                !empty($originException->getMessage())
+            ) {
                 $error = $originException;
             } elseif (!$originException instanceof Error) {
                 // If devMode not enabled and the error seems to be originating from Craft, display a generic message
@@ -1390,8 +1475,7 @@ class Gql extends Component
         }
 
         foreach ($types as $type) {
-            /** @var string|SingularTypeInterface $type */
-            /** @phpstan-var class-string<SingularTypeInterface>|SingularTypeInterface $type */
+            /** @var class-string<SingularTypeInterface> $type */
             TypeLoader::registerType($type::getName(), "$type::getType");
         }
 
@@ -1425,9 +1509,7 @@ class Gql extends Component
             $queries = $event->queries;
         }
 
-        TypeLoader::registerType('Query', function() use ($queries) {
-            return call_user_func(Query::class . '::getType', $queries);
-        });
+        TypeLoader::registerType('Query', fn() => call_user_func(Query::class . '::getType', $queries));
     }
 
     /**
@@ -1455,30 +1537,38 @@ class Gql extends Component
             $mutations = $event->mutations;
         }
 
-        TypeLoader::registerType('Mutation', function() use ($mutations) {
-            return call_user_func(Mutation::class . '::getType', $mutations);
-        });
+        TypeLoader::registerType('Mutation', fn() => call_user_func(Mutation::class . '::getType', $mutations));
     }
 
     /**
      * Get GraphQL query definitions
      *
+     * @param GqlSchema|null $schema
      * @return GqlDirective[]
      */
-    private function _loadGqlDirectives(): array
+    private function _loadGqlDirectives(?GqlSchema $schema): array
     {
+        /** @var class-string<Directive>[] $directiveClasses */
         $directiveClasses = [
             // Directives
             FormatDateTime::class,
             Markdown::class,
             Money::class,
-            ParseRefs::class,
             StripTags::class,
             Trim::class,
         ];
 
-        if (!Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective) {
-            $directiveClasses[] = Transform::class;
+        if ($schema !== null) {
+            if (in_array('directive:parseRefs', $schema->scope)) {
+                $directiveClasses[] = ParseRefs::class;
+            }
+
+            if (
+                !Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective &&
+                in_array('directive:transform', $schema->scope)
+            ) {
+                $directiveClasses[] = Transform::class;
+            }
         }
 
         // Fire a 'registerGqlDirectives' event
@@ -1491,7 +1581,7 @@ class Gql extends Component
         $directives = GraphQL::getStandardDirectives();
 
         foreach ($directiveClasses as $class) {
-            /** @var Directive|string $class */
+            /** @var class-string<Directive> $class */
             $directives[] = $class::create();
         }
 
@@ -1720,23 +1810,26 @@ class Gql extends Component
      */
     private function userSchemaComponents(): array
     {
-        if (Craft::$app->edition !== CmsEdition::Pro) {
-            return [[], []];
-        }
-
         $queryComponents = [];
-        $userGroups = Craft::$app->getUserGroups()->getAllGroups();
 
-        $queryComponents['usergroups.everyone:read'] = [
-            'label' => Craft::t('app', 'Query for users'),
-        ];
-
-        foreach ($userGroups as $userGroup) {
-            $name = Craft::t('site', $userGroup->name);
-            $prefix = "usergroups.$userGroup->uid";
-            $queryComponents["$prefix:read"] = [
-                'label' => Craft::t('app', 'Query for users in the “{name}” user group', ['name' => $name]),
+        if (Craft::$app->edition === CmsEdition::Solo) {
+            $queryComponents['usergroups.solo:read'] = [
+                'label' => Craft::t('app', 'View {type}', ['type' => User::lowerDisplayName()]),
             ];
+        } else {
+            $userGroups = Craft::$app->getUserGroups()->getAllGroups();
+
+            $queryComponents['usergroups.everyone:read'] = [
+                'label' => Craft::t('app', 'Query for users'),
+            ];
+
+            foreach ($userGroups as $userGroup) {
+                $name = Craft::t('site', $userGroup->name);
+                $prefix = "usergroups.$userGroup->uid";
+                $queryComponents["$prefix:read"] = [
+                    'label' => Craft::t('app', 'Query for users in the “{name}” user group', ['name' => $name]),
+                ];
+            }
         }
 
         return [$queryComponents, []];

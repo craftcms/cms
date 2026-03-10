@@ -18,16 +18,20 @@
     </div>
 
     <div class="cp-image-controls">
-        <input type="file" name="image" class="hidden" />
-        {% if isImageUploaded %}
-            <div class="flex flex-nowrap">
-                <button type="button" class="btn upload">{% if imageType == 'logo' %}{{ block('changeLogoLabel') }}{% else %}{{ block('changeIconLabel') }}{% endif %}</button>
-                <button type="button" class="btn delete">{% if imageType == 'logo' %}{{ block('deleteLogoLabel') }}{% else %}{{ block('deleteIconLabel') }}{% endif %}</button>
-            </div>
+        {% if disabled is defined and disabled == true %}
+            {# don't show any of that #}
         {% else %}
-            <div class="flex flex-nowrap">
-                <button type="button" class="btn upload">{% if imageType == 'logo' %}{{ block('uploadLogoLabel') }}{% else %}{{ block('uploadIconLabel') }}{% endif %}</button>
-            </div>
+            <input type="file" name="image" class="hidden" />
+            {% if isImageUploaded %}
+                <div class="flex flex-nowrap">
+                    <button type="button" class="btn upload">{% if imageType == 'logo' %}{{ block('changeLogoLabel') }}{% else %}{{ block('changeIconLabel') }}{% endif %}</button>
+                    <button type="button" class="btn delete">{% if imageType == 'logo' %}{{ block('deleteLogoLabel') }}{% else %}{{ block('deleteIconLabel') }}{% endif %}</button>
+                </div>
+            {% else %}
+                <div class="flex flex-nowrap">
+                    <button type="button" class="btn upload">{% if imageType == 'logo' %}{{ block('uploadLogoLabel') }}{% else %}{{ block('uploadIconLabel') }}{% endif %}</button>
+                </div>
+            {% endif %}
         {% endif %}
     </div>
 </div>

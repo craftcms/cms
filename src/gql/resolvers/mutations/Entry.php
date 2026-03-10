@@ -94,7 +94,14 @@ class Entry extends ElementMutationResolver
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
 
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
-        $entry = $this->saveElement($entry);
+
+        if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            Craft::$app->getDrafts()->saveElementAsDraft($entry);
+        } else {
+            $entry = $this->saveElement($entry);
+        }
+
         $this->performStructureOperations($entry, $arguments);
 
         /** @var EntryQuery $query */
@@ -106,6 +113,9 @@ class Entry extends ElementMutationResolver
         if ($canIdentify) {
             $query = $this->identifyEntry($query, $arguments);
         } else {
+            if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+                $query->drafts(null);
+            }
             $query->id($entry->id);
         }
 
@@ -119,9 +129,10 @@ class Entry extends ElementMutationResolver
      * @param array $arguments
      * @param mixed $context
      * @param ResolveInfo $resolveInfo
+     * @return bool
      * @throws Throwable if reasons.
      */
-    public function deleteEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
+    public function deleteEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $entryId = $arguments['id'];
         $siteId = $arguments['siteId'] ?? null;
@@ -131,13 +142,13 @@ class Entry extends ElementMutationResolver
         $entry = $elementService->getElementById($entryId, EntryElement::class, $siteId);
 
         if (!$entry) {
-            return;
+            return false;
         }
 
         $section = $entry->getSection();
         $this->requireSchemaAction("sections.$section->uid", 'delete');
 
-        $elementService->deleteElementById($entryId);
+        return $elementService->deleteElementById($entryId);
     }
 
     /**

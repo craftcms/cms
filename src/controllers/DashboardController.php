@@ -65,17 +65,14 @@ class DashboardController extends Controller
         $widgetTypeInfo = [];
 
         foreach ($widgetTypes as $widgetType) {
-            /** @var string|WidgetInterface $widgetType */
-            /** @phpstan-var class-string<WidgetInterface>|WidgetInterface $widgetType */
+            /** @var class-string<WidgetInterface> $widgetType */
             if (!$widgetType::isSelectable()) {
                 continue;
             }
 
             $view->startJsBuffer();
             $widget = $dashboardService->createWidget($widgetType);
-            $settingsHtml = $view->namespaceInputs(function() use ($widget) {
-                return (string)$widget->getSettingsHtml();
-            }, '__NAMESPACE__');
+            $settingsHtml = $view->namespaceInputs(fn() => (string)$widget->getSettingsHtml(), '__NAMESPACE__');
             $settingsJs = (string)$view->clearJsBuffer(false);
 
             $class = get_class($widget);
@@ -471,9 +468,7 @@ class DashboardController extends Controller
 
         // Get the settings HTML + JS
         $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs(function() use ($widget) {
-            return (string)$widget->getSettingsHtml();
-        }, "widget$widget->id-settings");
+        $settingsHtml = $view->namespaceInputs(fn() => (string)$widget->getSettingsHtml(), "widget$widget->id-settings");
         $settingsJs = $view->clearJsBuffer(false);
 
         // Get the colspan (limited to the widget type's max allowed colspan)

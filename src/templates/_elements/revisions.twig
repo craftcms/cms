@@ -16,7 +16,7 @@
                         <th data-title="{{ "Revision"|t('app') }}">
                             <a href="{{ revision.getCpEditUrl() }}">{{ revisionLabel }}</a>
                         </th>
-                        <td data-title="{{ "Created at"|t('app') }}">{{ revision.dateCreated|timestamp('short', withPreposition=false) }}</td>
+                        <td data-title="{{ "Created at"|t('app') }}">{{ revision.dateCreated|datetime('short') }}</td>
                         <td data-title="{{ "Created by"|t('app') }}">
                             {% if creator %}
                                 {{ elementChip(creator) }}

@@ -17,6 +17,7 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
         settings,
         {
           showHeader: true,
+          prevalidate: this.$element.parents('.prevalidate').length > 0,
         }
       );
       this.base('elements/edit', settings);
@@ -38,18 +39,31 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
               handleSubmitResponse: (response) => {
                 this.handleSubmitResponse(response);
               },
+              handleSubmitError: (error) => {
+                this.handleSubmitError(error);
+              },
             },
             this.$container.data('elementEditorSettings')
           )
         );
+
+        // if it's supposed to be static, e.g. it's a revision,
+        // don't show the save button and change wording on the cancel one
+        if (this.elementEditor.settings.isStatic) {
+          this.$saveBtn.remove();
+          this.$cancelBtn[0].innerText = Craft.t('app', 'Close');
+        }
+
         this.elementEditor.on('beforeSubmit', () => {
-          Object.keys(this.settings.saveParams).forEach((name) => {
-            $('<input/>', {
-              class: 'hidden',
-              name: this.elementEditor.namespaceInputName(name),
-              value: this.settings.saveParams[name],
-            }).appendTo(this.$container);
-          });
+          if (this.settings.saveParams) {
+            Object.keys(this.settings.saveParams).forEach((name) => {
+              $('<input/>', {
+                class: 'hidden',
+                name: this.elementEditor.namespaceInputName(name),
+                value: this.settings.saveParams[name],
+              }).appendTo(this.$container);
+            });
+          }
           this.showSubmitSpinner();
         });
         this.elementEditor.on('afterSubmit', () => {
@@ -106,6 +120,18 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
         params.revisionId = this.$element.data('revision-id');
       }
 
+      if (this.settings.fieldId) {
+        params.fieldId = this.settings.fieldId;
+      } else if (this.$element?.data('field-id')) {
+        params.fieldId = this.$element.data('field-id');
+      }
+
+      if (this.settings.ownerId) {
+        params.ownerId = this.settings.ownerId;
+      } else if (this.$element?.data('owner-id')) {
+        params.ownerId = this.$element.data('owner-id');
+      }
+
       if (this.settings.siteId) {
         params.siteId = this.settings.siteId;
       } else if (this.$element?.data('site-id')) {
@@ -119,18 +145,47 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       return params;
     },
 
-    handleSubmit: function (ev) {
-      if (ev.type === 'submit') {
-        this.elementEditor.handleSubmit(ev);
-      } else {
+    handleSubmit: async function (ev) {
+      if (ev.type !== 'submit' && this.elementEditor.settings.canCreateDrafts) {
         // first, we have to save the draft and then fully save;
         // otherwise we'll have tab error indicator issues;
-        this.elementEditor
-          .saveDraft()
-          .then(() => {
-            this.elementEditor.handleSubmit(ev);
-          })
-          .catch();
+        await this.elementEditor.saveDraft();
+      }
+
+      ev.preventDefault();
+      ev.stopPropagation();
+      ev.stopImmediatePropagation();
+
+      await this.settings.onBeforeSubmit();
+      this.elementEditor.handleSubmit(ev);
+    },
+
+    handleSubmitError: function (e) {
+      this.base(e);
+
+      // update the `error` class in nested cards
+      if (e?.response?.data?.invalidNestedElementIds) {
+        const $cards = this.$content.find('.element.card').removeClass('error');
+        $cards
+          .find('craft-element-label > span[data-icon="triangle-exclamation"]')
+          .remove();
+        if (e.response.data.invalidNestedElementIds.length) {
+          const $errorCards = $cards
+            .filter(
+              e.response.data.invalidNestedElementIds
+                .map((id) => `[data-id=${id}]`)
+                .join(',')
+            )
+            .addClass('error');
+          for (let i = 0; i < $errorCards.length; i++) {
+            const $label = $errorCards.eq(i).find('craft-element-label');
+            $('<span/>', {
+              'data-icon': 'triangle-exclamation',
+              'aria-label': Craft.t('app', 'Error'),
+              role: 'img',
+            }).appendTo($label);
+          }
+        }
       }
     },
 
@@ -145,13 +200,17 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       elementId: null,
       draftId: null,
       revisionId: null,
+      fieldId: null,
+      ownerId: null,
       elementType: null,
       siteId: null,
       prevalidate: false,
-      saveParams: {},
+      saveParams: null,
       onSaveElement: null,
       validators: [],
       expandData: [],
+      isStatic: false,
+      onBeforeSubmit: async () => {},
     },
   }
 );

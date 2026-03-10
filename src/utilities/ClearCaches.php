@@ -12,6 +12,7 @@ use craft\base\Utility;
 use craft\db\Table;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
 use Exception;
@@ -45,7 +46,7 @@ class ClearCaches extends Utility
      *
      * Each option added to [[RegisterCacheOptionsEvent::$options]] should be an array that has the following keys:
      *
-     * - `tag` – The cache tag name that sholud be cleared.
+     * - `tag` – The cache tag name that should be cleared.
      * - `label` – A human-facing label for the cache tag option.
      *
      * @see tagOptions()
@@ -125,7 +126,9 @@ class ClearCaches extends Utility
             [
                 'key' => 'data',
                 'label' => Craft::t('app', 'Data caches'),
-                'info' => Craft::t('app', 'Anything cached with `Craft::$app->cache->set()`'),
+                'info' => Craft::t('app', 'Anything cached with {method}', [
+                    'method' => '`Craft::$app->getCache()->set()`',
+                ]),
                 'action' => [Craft::$app->getCache(), 'flush'],
             ],
             [
@@ -151,7 +154,7 @@ class ClearCaches extends Utility
                 'key' => 'compiled-templates',
                 'label' => Craft::t('app', 'Compiled templates'),
                 'info' => Craft::t('app', 'Contents of {path}', [
-                    'path' => '`storage/runtime/compiled_templates/`',
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getCompiledTemplatesPath(false), Craft::getAlias('@root'))),
                 ]),
                 'action' => $pathService->getCompiledTemplatesPath(false),
             ],
@@ -159,7 +162,7 @@ class ClearCaches extends Utility
                 'key' => 'compiled-classes',
                 'label' => Craft::t('app', 'Compiled classes'),
                 'info' => Craft::t('app', 'Contents of {path}', [
-                    'path' => '`storage/runtime/compiled_classes/`',
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getCompiledClassesPath(false), Craft::getAlias('@root'))),
                 ]),
                 'action' => $pathService->getCompiledClassesPath(false),
             ],
@@ -167,7 +170,7 @@ class ClearCaches extends Utility
                 'key' => 'cp-resources',
                 'label' => Craft::t('app', 'Control panel resources'),
                 'info' => Craft::t('app', 'Contents of {path}', [
-                    'path' => '`web/cpresources/`',
+                    'path' => sprintf('`%s/`', Craft::$app->getConfig()->getGeneral()->resourceBasePath),
                 ]),
                 'action' => function() {
                     $basePath = Craft::$app->getConfig()->getGeneral()->resourceBasePath;
@@ -179,22 +182,25 @@ class ClearCaches extends Utility
                     ) {
                         throw new Exception("Unable to clear control panel resources because the location isn't known for console commands.\n" .
                             "Explicitly set the @webroot alias in config/general.php to avoid this error.\n" .
-                            'See https://craftcms.com/docs/4.x/config/#aliases for more info.');
+                            'See https://craftcms.com/docs/5.x/configure.html#aliases for more info.');
                     }
 
                     $basePath = Craft::getAlias($basePath);
-                    if ($basePath !== false) {
+                    if ($basePath !== false && file_exists($basePath)) {
                         FileHelper::clearDirectory($basePath, [
                             'except' => ['.gitignore'],
                         ]);
                     }
+
+                    // truncate the resourcepaths table while we're at it
+                    Db::truncateTable(Table::RESOURCEPATHS);
                 },
             ],
             [
                 'key' => 'temp-files',
                 'label' => Craft::t('app', 'Temp files'),
                 'info' => Craft::t('app', 'Contents of {path}', [
-                    'path' => '`storage/runtime/temp/`',
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getTempPath(), Craft::getAlias('@root'))),
                 ]),
                 'action' => $pathService->getTempPath(),
             ],

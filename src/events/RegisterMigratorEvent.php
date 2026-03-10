@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\db\MigrationManager;
-use yii\base\Event;
 
 /**
  * RegisterMigratorEvent class.

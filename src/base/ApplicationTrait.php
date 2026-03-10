@@ -39,6 +39,7 @@ use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\fieldlayoutelements\TitleField;
+use craft\fieldlayoutelements\users\AffiliatedSiteField;
 use craft\fieldlayoutelements\users\EmailField;
 use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
 use craft\fieldlayoutelements\users\PhotoField;
@@ -91,6 +92,7 @@ use craft\services\Routes;
 use craft\services\Search;
 use craft\services\Security;
 use craft\services\Sites;
+use craft\services\Sso;
 use craft\services\Structures;
 use craft\services\SystemMessages;
 use craft\services\Tags;
@@ -106,6 +108,7 @@ use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
+use craft\web\UrlManager;
 use craft\web\User as UserSession;
 use craft\web\View;
 use Illuminate\Support\Collection;
@@ -144,6 +147,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Conditions $conditions The conditions service
  * @property-read Config $config The config service
  * @property-read Connection $db The database connection component
+ * @property-read Connection $db2 The database connection component used for mutex locks and element bulk op records
  * @property-read Dashboard $dashboard The dashboard service
  * @property-read Deprecator $deprecator The deprecator service
  * @property-read Drafts $drafts The drafts service
@@ -170,18 +174,20 @@ use yii\web\ServerErrorHttpException;
  * @property-read Plugins $plugins The plugins service
  * @property-read ProjectConfig $projectConfig The project config service
  * @property-read Queue|QueueInterface $queue The job queue
- * @property-read Relations $relations The relations service
+ * @property-read Relations $relations The relations service (deprecated)
  * @property-read Revisions $revisions The revisions service
  * @property-read Routes $routes The routes service
  * @property-read Search $search The search service
  * @property-read Security $security The security component
  * @property-read Sites $sites The sites service
+ * @property-read Sso $sso The SSO service
  * @property-read Structures $structures The structures service
  * @property-read SystemMessages $systemMessages The system email messages service
  * @property-read Tags $tags The tags service
  * @property-read TemplateCaches $templateCaches The template caches service
  * @property-read Tokens $tokens The tokens service
  * @property-read Updates $updates The updates service
+ * @property-read UrlManager $urlManager The URL manager for this application
  * @property-read UserGroups $userGroups The user groups service
  * @property-read UserPermissions $userPermissions The user permissions service
  * @property-read Users $users The users service
@@ -203,6 +209,7 @@ use yii\web\ServerErrorHttpException;
  * @method Formatter getFormatter() Returns the formatter component.
  * @method I18N getI18n() Returns the internationalization (i18n) component.
  * @method Security getSecurity() Returns the security component.
+ * @method UrlManager getUrlManager() Returns the URL manager for this application.
  * @method View getView() Returns the view component.
  * @mixin WebApplication
  * @mixin ConsoleApplication
@@ -290,6 +297,19 @@ trait ApplicationTrait
      * @see onAfterRequest()
      */
     private array $afterRequestCallbacks = [];
+
+    /**
+     * Returns the application ID combined with the environment name.
+     *
+     * @return string
+     * @since 5.4.0
+     * @see id
+     * @see env
+     */
+    public function getEnvId(): string
+    {
+        return $this->env ? sprintf('%s--%s', $this->id, $this->env) : $this->id;
+    }
 
     /**
      * @inheritdoc
@@ -603,7 +623,7 @@ trait ApplicationTrait
      */
     public function getLicensedEdition(): ?CmsEdition
     {
-        $licenseInfo = $this->getCache()->get('licenseInfo') ?: [];
+        $licenseInfo = $this->getCache()->get(App::CACHE_KEY_LICENSE_INFO) ?: [];
 
         if (!isset($licenseInfo['craft']['edition'])) {
             return null;
@@ -723,7 +743,7 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
-        if (App::env('CRAFT_NO_TRIALS')) {
+        if (App::normalizeBooleanValue(App::env('CRAFT_NO_TRIALS'))) {
             return false;
         }
 
@@ -917,8 +937,9 @@ trait ApplicationTrait
      */
     public function getSystemName(): string
     {
-        if (($name = Craft::$app->getProjectConfig()->get('system.name')) !== null) {
-            return App::parseEnv($name);
+        $name = App::parseEnv(Craft::$app->getProjectConfig()->get('system.name'));
+        if ($name !== null) {
+            return $name;
         }
 
         try {
@@ -977,7 +998,6 @@ trait ApplicationTrait
      */
     public function getAddresses(): Addresses
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('addresses');
     }
 
@@ -989,7 +1009,6 @@ trait ApplicationTrait
      */
     public function getAnnouncements(): Announcements
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('announcements');
     }
 
@@ -1000,7 +1019,6 @@ trait ApplicationTrait
      */
     public function getApi(): Api
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('api');
     }
 
@@ -1011,7 +1029,6 @@ trait ApplicationTrait
      */
     public function getAssets(): Assets
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('assets');
     }
 
@@ -1022,7 +1039,6 @@ trait ApplicationTrait
      */
     public function getAssetIndexer(): AssetIndexer
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('assetIndexer');
     }
 
@@ -1034,7 +1050,6 @@ trait ApplicationTrait
      */
     public function getAuth(): Auth
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('auth');
     }
 
@@ -1045,7 +1060,6 @@ trait ApplicationTrait
      */
     public function getImageTransforms(): ImageTransforms
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('imageTransforms');
     }
 
@@ -1056,7 +1070,6 @@ trait ApplicationTrait
      */
     public function getCategories(): Categories
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('categories');
     }
 
@@ -1067,7 +1080,6 @@ trait ApplicationTrait
      */
     public function getComposer(): Composer
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('composer');
     }
 
@@ -1079,7 +1091,6 @@ trait ApplicationTrait
      */
     public function getConditions(): Conditions
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('conditions');
     }
 
@@ -1090,7 +1101,6 @@ trait ApplicationTrait
      */
     public function getConfig(): Config
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('config');
     }
 
@@ -1101,7 +1111,6 @@ trait ApplicationTrait
      */
     public function getContentMigrator(): MigrationManager
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('contentMigrator');
     }
 
@@ -1112,8 +1121,21 @@ trait ApplicationTrait
      */
     public function getDashboard(): Dashboard
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('dashboard');
+    }
+
+    /**
+     * Returns the database connection used for mutex locks and element bulk op records.
+     *
+     * This helps avoid erratic behavior when locks are used during transactions
+     * (see https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions).
+     *
+     * @return Connection
+     * @since 5.3.0
+     */
+    public function getDb2(): Connection
+    {
+        return $this->get('db2');
     }
 
     /**
@@ -1123,7 +1145,6 @@ trait ApplicationTrait
      */
     public function getDeprecator(): Deprecator
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('deprecator');
     }
 
@@ -1135,7 +1156,6 @@ trait ApplicationTrait
      */
     public function getDrafts(): Drafts
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('drafts');
     }
 
@@ -1147,7 +1167,6 @@ trait ApplicationTrait
      */
     public function getDumper(): AbstractDumper
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('dumper');
     }
 
@@ -1158,7 +1177,6 @@ trait ApplicationTrait
      */
     public function getElementSources(): ElementSources
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('elementSources');
     }
 
@@ -1169,7 +1187,6 @@ trait ApplicationTrait
      */
     public function getElements(): Elements
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('elements');
     }
 
@@ -1180,7 +1197,6 @@ trait ApplicationTrait
      */
     public function getSystemMessages(): SystemMessages
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('systemMessages');
     }
 
@@ -1191,7 +1207,6 @@ trait ApplicationTrait
      */
     public function getEntries(): Entries
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('entries');
     }
 
@@ -1202,7 +1217,6 @@ trait ApplicationTrait
      */
     public function getFields(): Fields
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('fields');
     }
 
@@ -1214,7 +1228,6 @@ trait ApplicationTrait
      */
     public function getFs(): Fs
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('fs');
     }
 
@@ -1226,7 +1239,6 @@ trait ApplicationTrait
      */
     public function getFormattingLocale(): Locale
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('formattingLocale');
     }
 
@@ -1237,7 +1249,6 @@ trait ApplicationTrait
      */
     public function getGc(): Gc
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('gc');
     }
 
@@ -1248,7 +1259,6 @@ trait ApplicationTrait
      */
     public function getGlobals(): Globals
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('globals');
     }
 
@@ -1260,7 +1270,6 @@ trait ApplicationTrait
      */
     public function getGql(): Gql
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('gql');
     }
 
@@ -1271,7 +1280,6 @@ trait ApplicationTrait
      */
     public function getImages(): Images
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('images');
     }
 
@@ -1282,7 +1290,6 @@ trait ApplicationTrait
      */
     public function getLocale(): Locale
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('locale');
     }
 
@@ -1293,7 +1300,6 @@ trait ApplicationTrait
      */
     public function getMailer(): Mailer
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('mailer');
     }
 
@@ -1304,7 +1310,6 @@ trait ApplicationTrait
      */
     public function getMigrator(): MigrationManager
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
     }
 
@@ -1315,7 +1320,6 @@ trait ApplicationTrait
      */
     public function getMutex(): Mutex
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('mutex');
     }
 
@@ -1326,7 +1330,6 @@ trait ApplicationTrait
      */
     public function getPath(): Path
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('path');
     }
 
@@ -1337,7 +1340,6 @@ trait ApplicationTrait
      */
     public function getPlugins(): Plugins
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('plugins');
     }
 
@@ -1348,7 +1350,6 @@ trait ApplicationTrait
      */
     public function getPluginStore(): PluginStore
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('pluginStore');
     }
 
@@ -1359,7 +1360,6 @@ trait ApplicationTrait
      */
     public function getProjectConfig(): ProjectConfig
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('projectConfig');
     }
 
@@ -1370,7 +1370,6 @@ trait ApplicationTrait
      */
     public function getQueue(): Queue
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('queue');
     }
 
@@ -1378,10 +1377,10 @@ trait ApplicationTrait
      * Returns the relations service.
      *
      * @return Relations The relations service
+     * @deprecated in 5.3.0
      */
     public function getRelations(): Relations
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('relations');
     }
 
@@ -1393,7 +1392,6 @@ trait ApplicationTrait
      */
     public function getRevisions(): Revisions
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('revisions');
     }
 
@@ -1404,7 +1402,6 @@ trait ApplicationTrait
      */
     public function getRoutes(): Routes
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('routes');
     }
 
@@ -1415,7 +1412,6 @@ trait ApplicationTrait
      */
     public function getSearch(): Search
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('search');
     }
 
@@ -1426,8 +1422,18 @@ trait ApplicationTrait
      */
     public function getSites(): Sites
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('sites');
+    }
+
+    /**
+     * Returns the SSO service.
+     *
+     * @return Sso The SSO service
+     * @since 5.3.0
+     */
+    public function getSso(): Sso
+    {
+        return $this->get('sso');
     }
 
     /**
@@ -1437,7 +1443,6 @@ trait ApplicationTrait
      */
     public function getStructures(): Structures
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('structures');
     }
 
@@ -1448,7 +1453,6 @@ trait ApplicationTrait
      */
     public function getTags(): Tags
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('tags');
     }
 
@@ -1459,7 +1463,6 @@ trait ApplicationTrait
      */
     public function getTemplateCaches(): TemplateCaches
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('templateCaches');
     }
 
@@ -1470,7 +1473,6 @@ trait ApplicationTrait
      */
     public function getTokens(): Tokens
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('tokens');
     }
 
@@ -1481,7 +1483,6 @@ trait ApplicationTrait
      */
     public function getUpdates(): Updates
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('updates');
     }
 
@@ -1492,7 +1493,6 @@ trait ApplicationTrait
      */
     public function getUserGroups(): UserGroups
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('userGroups');
     }
 
@@ -1503,7 +1503,6 @@ trait ApplicationTrait
      */
     public function getUserPermissions(): UserPermissions
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('userPermissions');
     }
 
@@ -1514,7 +1513,6 @@ trait ApplicationTrait
      */
     public function getUsers(): Users
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('users');
     }
 
@@ -1525,7 +1523,6 @@ trait ApplicationTrait
      */
     public function getUtilities(): Utilities
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('utilities');
     }
 
@@ -1536,7 +1533,6 @@ trait ApplicationTrait
      */
     public function getVolumes(): Volumes
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('volumes');
     }
 
@@ -1548,7 +1544,6 @@ trait ApplicationTrait
      */
     public function getWebpack(): Webpack
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('webpack');
     }
 
@@ -1565,7 +1560,7 @@ trait ApplicationTrait
 
         // Register Collection::set() as an alias of put() - with support for bulk-setting values
         Collection::macro('set', function(mixed $values) {
-            /** @var Collection $this */
+            assert($this instanceof Collection);
             if (is_array($values)) {
                 foreach ($values as $key => $value) {
                     $this->put($key, $value);
@@ -1578,29 +1573,23 @@ trait ApplicationTrait
 
         // Register Collection::one() as an alias of first(), for consistency with yii\db\Query.
         Collection::macro('one', function() {
-            /** @var Collection $this */
+            assert($this instanceof Collection);
             return $this->first(...func_get_args());
         });
 
+        // Set the Craft edition
+        $this->_setCraftEdition();
+
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
-        $request = $this->getRequest();
+        $this->getRequest();
         $this->getLog();
-
-        // Set the Craft edition
-        $edition = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
-        $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
 
         // Set the timezone
         $this->_setTimeZone();
 
         // Set the language
         $this->updateTargetLanguage();
-
-        // Prevent browser caching if this is a control panel request
-        if ($this instanceof WebApplication && $request->getIsCpRequest()) {
-            $this->getResponse()->setNoCacheHeaders();
-        }
 
         // Register the variable dumper
         VarDumper::setHandler(function($var) {
@@ -1657,7 +1646,6 @@ trait ApplicationTrait
      */
     private function _setTimeZone(): void
     {
-        /** @var WebApplication|ConsoleApplication $this */
         $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
         if ($timeZone) {
@@ -1737,6 +1725,9 @@ trait ApplicationTrait
                     $event->fields[] = UserFullNameField::class;
                     $event->fields[] = PhotoField::class;
                     $event->fields[] = EmailField::class;
+                    if (Craft::$app->getIsMultiSite()) {
+                        $event->fields[] = AffiliatedSiteField::class;
+                    }
                     break;
             }
         });
@@ -1837,5 +1828,31 @@ trait ApplicationTrait
         return function() use ($id, $method) {
             return $this->get($id)->$method(...func_get_args());
         };
+    }
+
+    /**
+     * Set Craft's edition
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function _setCraftEdition(): void
+    {
+        $edition = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
+        $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
+    }
+
+    /**
+     * Ensure that edition is set.
+     *
+     * @return void
+     * @throws Exception
+     * @since 5.8.18
+     */
+    public function ensureEdition(): void
+    {
+        if (!isset($this->edition)) {
+            $this->_setCraftEdition();
+        }
     }
 }
