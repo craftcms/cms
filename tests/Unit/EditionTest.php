@@ -107,6 +107,11 @@ it('determines if socialite is available for the current edition', function () {
     expect(Edition::get()->oAuthAvailable())->toBeFalse();
 
     Edition::set(Edition::Pro);
+    expect(Edition::get()->oAuthAvailable())->toBeFalse();
+
+    Cms::config()->oAuthProviders(['foo']);
+
+    Edition::set(Edition::Pro);
     expect(Edition::get()->oAuthAvailable())->toBeTrue();
 });
 
