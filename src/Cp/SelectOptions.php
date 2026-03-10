@@ -438,18 +438,26 @@ class SelectOptions
 
                 foreach ($iterator as $file) {
                     /** @var SplFileInfo $file */
-                    if (! $file->isDir() && $file->getFilename()[0] !== '.') {
-                        $files[] = $file;
-                        $pathLengths[] = strlen($file->getRealPath());
+                    $realpath = $file->getRealPath();
+                    if (! $realpath) {
+                        continue;
                     }
+                    if ($file->isDir()) {
+                        continue;
+                    }
+                    if ($file->getFilename()[0] === '.') {
+                        continue;
+                    }
+                    $files[] = $realpath;
+                    $pathLengths[] = strlen($realpath);
                 }
 
                 array_multisort($pathLengths, SORT_NUMERIC, $files);
 
                 $basePathLength = strlen((string) $basePath);
 
-                foreach ($files as $file) {
-                    $template = substr($file->getRealPath(), $basePathLength + 1);
+                foreach ($files as $realpath) {
+                    $template = substr($realpath, $basePathLength + 1);
                     $hint = null;
 
                     // Is it in a site template directory?
