@@ -20,7 +20,7 @@ class SectionResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'handle' => $this->handle,
-            'type' => $this->type->value ?? SectionType::Channel->value,
+            'type' => $this->type?->value ?? SectionType::Channel->value,
             'enableVersioning' => $this->enableVersioning,
             'maxAuthors' => $this->maxAuthors ?? 1,
             'maxLevels' => $this->maxLevels,
