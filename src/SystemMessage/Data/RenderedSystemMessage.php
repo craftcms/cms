@@ -12,6 +12,7 @@ final readonly class RenderedSystemMessage
         public string $subject,
         public string $textBody,
         public string $htmlBody,
+        public ?int $siteId,
         public array $variables,
     ) {}
 }
