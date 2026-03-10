@@ -15,7 +15,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
  */
-abstract class AssetPreviewHandler extends Component implements AssetPreviewHandlerInterface
+abstract class AssetPreviewHandler extends Component implements \CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface
 {
     /**
      * @var Asset

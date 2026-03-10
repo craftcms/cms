@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Data;
 
-use Craft;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Gate;
@@ -190,7 +190,7 @@ final class VolumeFolder extends Component implements Stringable
         }
 
         if (! isset($this->_hasChildren)) {
-            $this->_hasChildren = Craft::$app->getAssets()->foldersExist(['parentId' => $this->id]);
+            $this->_hasChildren = Folders::foldersExist(['parentId' => $this->id]);
         }
 
         return $this->_hasChildren;
@@ -211,7 +211,7 @@ final class VolumeFolder extends Component implements Stringable
     public function getChildren(): array
     {
         if ($this->_children === null) {
-            $this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]);
+            $this->_children = Folders::findFolders(['parentId' => $this->id])->all();
         }
 
         return $this->_children;
@@ -223,7 +223,7 @@ final class VolumeFolder extends Component implements Stringable
             return null;
         }
 
-        return Craft::$app->getAssets()->getFolderById((int) $this->parentId);
+        return Folders::getFolderById((int) $this->parentId);
     }
 
     public function addChild(self $folder): void

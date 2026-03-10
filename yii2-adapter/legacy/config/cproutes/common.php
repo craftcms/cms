@@ -4,8 +4,6 @@ use CraftCms\Cms\Support\Str;
 
 return [
     'assets/edit/<elementId:\d+><filename:(?:-[^\/]*)?>' => 'elements/edit',
-    'assets' => 'assets/index',
-    'assets/<defaultSource:{handle}(\/.*)?>' => 'assets/index',
     'edit/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/redirect',
     'edit/<elementUid:' . Str::uuidPattern() . '>' => 'elements/redirect',
     'revisions/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/revisions',
@@ -29,10 +27,6 @@ return [
     'myaccount/preferences' => 'users/preferences',
     'myaccount/password' => 'users/password',
     'myaccount/passkeys' => 'users/passkeys',
-    'settings/assets/transforms' => 'image-transforms/index',
-    'settings/assets/transforms/new' => 'image-transforms/edit',
-    'settings/assets/transforms/<transformHandle:{handle}>' => 'image-transforms/edit',
-    'settings/email' => 'system-settings/edit-email-settings',
     'settings/fields/new' => 'fields/edit-field',
     'settings/fields/edit/<fieldId:\d+>' => 'fields/edit-field',
     'settings/general' => 'system-settings/general-settings',

@@ -15,8 +15,6 @@ use CraftCms\Cms\Config\GeneralConfig;
 return GeneralConfig::create()
     // Set the default week start day for date pickers (0 = Sunday, 1 = Monday, etc.)
     ->defaultWeekStartDay(1)
-    // Prevent generated URLs from including "index.php"
-    // ->omitScriptNameInUrls()
     // Preload Single entries as Twig variables
     ->preloadSingles()
     // Prevent user enumeration attacks

@@ -11,6 +11,7 @@ use Craft;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
+use CraftCms\Cms\Support\Facades\Assets;
 use yii\base\InvalidConfigException;
 use yii\web\ForbiddenHttpException;
 
@@ -19,6 +20,7 @@ use yii\web\ForbiddenHttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
+ * @deprecated 6.0.0
  */
 trait AssetsControllerTrait
 {
@@ -34,9 +36,9 @@ trait AssetsControllerTrait
     public function requireVolumePermissionByAsset(string $permissionName, Asset $asset): void
     {
         if (!$asset->getVolumeId()) {
-            $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
+            $userTemporaryFolder = Assets::getUserTemporaryUploadFolder();
 
-            // Skip permission check only if it’s the user’s temporary folder
+            // Skip permission check only if it's the user's temporary folder
             if ($userTemporaryFolder->id == $asset->folderId) {
                 return;
             }
@@ -75,9 +77,9 @@ trait AssetsControllerTrait
     public function requireVolumePermissionByFolder(string $permissionName, VolumeFolder $folder): void
     {
         if (!$folder->volumeId) {
-            $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
+            $userTemporaryFolder = Assets::getUserTemporaryUploadFolder();
 
-            // Skip permission check only if it’s the user’s temporary folder
+            // Skip permission check only if it's the user's temporary folder
             if ($userTemporaryFolder->id == $folder->id) {
                 return;
             }

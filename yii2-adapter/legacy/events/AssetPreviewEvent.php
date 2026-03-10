@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
-use craft\base\AssetPreviewHandlerInterface;
 use craft\base\Event;
+use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Elements\Asset;
 
 /**

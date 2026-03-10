@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use craft\helpers\Image as ImageHelper;
-use craft\services\Path;
+use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
@@ -15,10 +14,6 @@ class Rebrand
      * @var array[]|false[]
      */
     private array $_imageVariables = [];
-
-    public function __construct(
-        public Path $path
-    ) {}
 
     public function getImage(string $type)
     {

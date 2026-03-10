@@ -14,6 +14,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Updates\Data\Updates as UpdatesData;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
@@ -217,7 +218,7 @@ final class Updates
 
         // Delete all compiled templates
         try {
-            File::cleanDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
+            File::cleanDirectory(Path::compiledTemplates(create: false));
         } catch (Throwable $e) {
             Log::error('Could not delete compiled templates: '.$e->getMessage());
 

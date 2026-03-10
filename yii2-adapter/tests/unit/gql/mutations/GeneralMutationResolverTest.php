@@ -22,6 +22,7 @@ use craft\test\TestCase;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
 use crafttests\fixtures\SectionsFixture;
 use GraphQL\Error\Error;
@@ -231,6 +232,9 @@ class GeneralMutationResolverTest extends TestCase
      */
     public function testSavingElementWithoutValidationError(): void
     {
+        Sections::clearResolvedInstances();
+        app()->forgetInstance(\CraftCms\Cms\Section\Sections::class);
+
         $this->tester->haveFixtures([
             'sections' => SectionsFixture::class,
         ]);

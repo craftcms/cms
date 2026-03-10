@@ -1,55 +1,19 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\imagetransforms;
 
-use craft\base\Component;
-use craft\base\imagetransforms\ImageTransformerInterface;
-use craft\helpers\Assets;
-use craft\helpers\ImageTransforms;
-use craft\helpers\UrlHelper;
-use craft\models\ImageTransform;
-use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Cms;
-use Illuminate\Support\Facades\Crypt;
-
-/**
- * FallbackTransformer transforms image assets using GD or ImageMagick, and stores them in the storage folder.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.4.0
- */
-class FallbackTransformer extends Component implements ImageTransformerInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * FallbackTransformer transforms image assets using GD or ImageMagick, and stores them in the storage folder.
+     *
+     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @since 4.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Image\FallbackTransformer} instead.
      */
-    public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
+    class FallbackTransformer
     {
-        if (match ($asset->getMimeType()) {
-            'image/gif' => Cms::config()->transformGifs,
-            'image/svg+xml' => Cms::config()->transformSvgs,
-            default => true,
-        }) {
-            $transformString = ltrim(ImageTransforms::getTransformString($imageTransform, true), '_');
-        } else {
-            $transformString = 'original';
-        }
-
-        return UrlHelper::actionUrl('assets/generate-fallback-transform', [
-            'transform' => Crypt::encrypt(sprintf('%s,%s', $asset->id, $transformString)),
-        ] + Assets::revParams($asset), showScriptName: false);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function invalidateAssetTransforms(Asset $asset): void
-    {
-        // No reliable way to do this, so not worth trying
     }
 }
+
+class_alias(\CraftCms\Cms\Image\FallbackTransformer::class, FallbackTransformer::class);

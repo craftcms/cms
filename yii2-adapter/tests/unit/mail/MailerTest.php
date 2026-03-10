@@ -8,17 +8,20 @@
 namespace crafttests\unit\mail;
 
 use Craft;
+use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\mail\Message;
 use craft\test\TestCase;
 use craft\test\TestMailer;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Edition;
+use CraftCms\Cms\Config\GeneralConfig as CmsGeneralConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use ReflectionException;
 use UnitTester;
@@ -137,13 +140,34 @@ class MailerTest extends TestCase
      */
     public function testSendMessageCustomTemplate(): void
     {
-        Edition::set(Edition::Pro);
-        $this->mailer->template = 'withvar';
-
         $this->_sendMail('test@craft.test');
 
         $lastMessage = $this->tester->grabLastSentEmail();
-        self::assertStringContainsString('Hello iam This is a name', $lastMessage->toString());
+        self::assertStringContainsString('https://craftcms.com', $lastMessage->toString());
+        self::assertStringContainsString('activate your account', $lastMessage->toString());
+    }
+
+    public function testSendMessageUsesConfiguredSystemMessageTemplate(): void
+    {
+        $generalConfig = Cms::config();
+        $originalTemplatesPath = Aliases::get('@templates');
+        $generalConfig->systemMessageTemplate = 'mail/custom-system-message.twig';
+        Aliases::set('@templates', dirname(__DIR__, 4) . '/tests/Support/templates');
+
+        try {
+            $this->_sendMail('test@craft.test');
+
+            $lastMessage = $this->tester->grabLastSentEmail();
+            $symfonyEmail = $lastMessage->getSymfonyEmail();
+
+            self::assertStringContainsString('custom-system-message', (string)$symfonyEmail->getHtmlBody());
+            self::assertStringContainsString('account_activation', (string)$symfonyEmail->getHtmlBody());
+            self::assertStringContainsString('https://craftcms.com', (string)$symfonyEmail->getHtmlBody());
+            self::assertSame('test@craft.test', array_key_first($lastMessage->to));
+        } finally {
+            $generalConfig->systemMessageTemplate = null;
+            Aliases::set('@templates', $originalTemplatesPath);
+        }
     }
 
     /**
@@ -235,6 +259,13 @@ class MailerTest extends TestCase
     protected function _before(): void
     {
         parent::_before();
+
+        /** @var CmsGeneralConfig $generalConfig */
+        $generalConfig = app(CmsGeneralConfig::class);
+        $legacyConfig = LegacyGeneralConfig::__set_state($generalConfig->toArray());
+
+        Config::set('craft.general', $legacyConfig);
+        app()->instance(CmsGeneralConfig::class, $legacyConfig);
 
         /** @var TestMailer $mailer */
         $mailer = Craft::$app->getMailer();

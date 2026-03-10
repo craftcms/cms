@@ -60,10 +60,6 @@ final readonly class Settings
                 'label' => t('Addresses'),
             ];
         }
-        $settings[$label]['email'] = [
-            'icon' => 'light/envelope',
-            'label' => t('Email'),
-        ];
         $settings[$label]['plugins'] = [
             'icon' => 'light/plug',
             'label' => t('Plugins'),

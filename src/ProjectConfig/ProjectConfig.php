@@ -8,7 +8,6 @@ use Craft;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use craft\models\ImageTransform;
 use craft\services\ElementSources;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
+use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Data\ProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
@@ -40,6 +40,7 @@ use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -65,6 +66,8 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
+
+use function Illuminate\Filesystem\join_paths;
 
 #[Singleton]
 final class ProjectConfig
@@ -592,7 +595,7 @@ final class ProjectConfig
      */
     public function getDoesExternalConfigExist(): bool
     {
-        return file_exists(Craft::$app->getPath()->getProjectConfigFilePath());
+        return file_exists(Path::projectConfigFile());
     }
 
     /**
@@ -1250,7 +1253,7 @@ final class ProjectConfig
      */
     private function _getConfigFileModifiedTime(): int
     {
-        $path = Craft::$app->getPath()->getProjectConfigFilePath();
+        $path = Path::projectConfigFile();
 
         if (! file_exists($path)) {
             return 0;
@@ -1271,7 +1274,7 @@ final class ProjectConfig
 
         $fileList = $this->_getConfigFileList();
         $generatedConfig = [];
-        $projectConfigPathLength = strlen((string) Craft::$app->getPath()->getProjectConfigPath(false));
+        $projectConfigPathLength = strlen((string) Path::projectConfig(create: false));
 
         foreach ($fileList as $filePath) {
             $yamlConfig = Yaml::parse(file_get_contents($filePath));
@@ -1409,7 +1412,7 @@ final class ProjectConfig
     private function _findConfigFiles(?string $path = null): array
     {
         if ($path === null) {
-            $path = Craft::$app->getPath()->getProjectConfigPath(false);
+            $path = Path::projectConfig(create: false);
         }
         if (! is_dir($path)) {
             return [];
@@ -1444,7 +1447,7 @@ final class ProjectConfig
      */
     private function storeYamlHistory(array $configData): void
     {
-        $basePath = Craft::$app->getPath()->getConfigDeltaPath().'/'.self::CONFIG_DELTA_FILENAME;
+        $basePath = Path::configDelta(self::CONFIG_DELTA_FILENAME);
 
         // Go through all of them and move them forward.
         for ($i = $this->maxDeltas; $i > 0; $i--) {
@@ -1487,7 +1490,7 @@ final class ProjectConfig
         $config = $this->getCurrentWorkingConfig();
 
         try {
-            $basePath = Craft::$app->getPath()->getProjectConfigPath();
+            $basePath = Path::projectConfig();
 
             // Delete everything except hidden files/folders
             FileHelper::clearDirectory($basePath, [
@@ -1510,7 +1513,7 @@ final class ProjectConfig
             foreach ($splitConfig as $relativeFile => $configData) {
                 $configData = ProjectConfigHelper::cleanupConfig($configData);
                 ksort($configData);
-                $filePath = $basePath.DIRECTORY_SEPARATOR.$relativeFile;
+                $filePath = join_paths($basePath, $relativeFile);
                 $yamlContent = Yaml::dump($configData, 20, 2);
                 if (! empty($uids)) {
                     $yamlContent = preg_replace($uids, $replacements, $yamlContent);
@@ -1885,7 +1888,7 @@ final class ProjectConfig
      */
     private function _getTransformData(): array
     {
-        return collect(Craft::$app->getImageTransforms()->getAllTransforms())
+        return app(\CraftCms\Cms\Image\ImageTransforms::class)->getAllTransforms()
             ->mapWithKeys(fn (ImageTransform $transform) => [$transform->uid => $transform->getConfig()])
             ->all();
     }

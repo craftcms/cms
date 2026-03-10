@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests\Feature\User;
 
-use CraftCms\Cms\Notifications\Channels\CraftChannel;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
+use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 
@@ -25,7 +25,7 @@ test('sendPasswordResetEmail dispatches ResetPasswordNotification', function () 
     Notification::assertSentTo(
         $user,
         ResetPasswordNotification::class,
-        fn ($notification, $channels) => in_array(CraftChannel::class, $channels)
+        fn ($notification, $channels) => in_array(MailChannel::class, $channels)
     );
 });
 

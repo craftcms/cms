@@ -6,11 +6,11 @@ namespace CraftCms\Cms\Tests\Feature\User;
 
 use Carbon\CarbonInterval;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Notifications\Channels\CraftChannel;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\VerifyEmailNotification;
+use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
@@ -29,7 +29,7 @@ test('sendActivationEmail dispatches VerifyEmailNotification', function () {
     Notification::assertSentTo(
         $user,
         VerifyEmailNotification::class,
-        fn ($notification, $channels) => in_array(CraftChannel::class, $channels)
+        fn ($notification, $channels) => in_array(MailChannel::class, $channels)
     );
 });
 
@@ -42,7 +42,7 @@ test('sendNewEmailVerifyEmail dispatches VerifyEmailNotification', function () {
     Notification::assertSentTo(
         $user,
         VerifyEmailNotification::class,
-        fn ($notification, $channels) => in_array(CraftChannel::class, $channels)
+        fn ($notification, $channels) => in_array(MailChannel::class, $channels)
     );
 });
 

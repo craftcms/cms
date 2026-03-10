@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Filesystem\Filesystems;
 
-use Craft;
+use CraftCms\Cms\Support\Facades\Path;
 
 use function CraftCms\Cms\t;
 
@@ -25,7 +25,7 @@ final class Temp extends Local
     public function __construct($config = [])
     {
         // Config normalization
-        $config['path'] ??= Craft::$app->getPath()->getTempAssetUploadsPath();
+        $config['path'] ??= Path::tempAssetUploads();
         $config['name'] ??= t('Temporary Uploads');
 
         parent::__construct($config);

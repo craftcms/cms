@@ -12,6 +12,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Console\Command;
 use Symfony\Component\Yaml\Yaml;
 
+use function Illuminate\Filesystem\join_paths;
 use function Laravel\Prompts\confirm;
 
 /**
@@ -49,7 +50,7 @@ final class ExportCommand extends Command
         if ($path !== null) {
             // Prefix with the working directory if a relative path or no path is given
             if (str_starts_with($path, '.') || ! str_contains(FileHelper::normalizePath($path, '/'), '/')) {
-                $path = getcwd().DIRECTORY_SEPARATOR.$path;
+                $path = join_paths(getcwd(), $path);
             }
 
             $path = FileHelper::normalizePath($path);
@@ -59,8 +60,11 @@ final class ExportCommand extends Command
 
         if (is_dir($path)) {
             $i = 0;
+            $scope = $this->option('external') ? 'external' : 'internal';
+            $date = date('Y-m-d');
             do {
-                $testPath = $path.DIRECTORY_SEPARATOR.'project-config-'.($this->option('external') ? 'external' : 'internal').'--'.date('Y-m-d').($i ? "--$i" : '').'.yaml';
+                $suffix = $i ? "--$i" : '';
+                $testPath = join_paths($path, "project-config-$scope--$date$suffix.yaml");
                 $i++;
             } while (file_exists($testPath));
             $path = $testPath;

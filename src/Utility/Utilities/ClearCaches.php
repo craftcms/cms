@@ -88,7 +88,7 @@ final class ClearCaches extends Utility
             return [];
         }
 
-        $pathService = app('Craft')->getPath();
+        $pathService = app(\CraftCms\Cms\Support\Path::class);
 
         $options = [
             [
@@ -105,9 +105,9 @@ final class ClearCaches extends Utility
                 'info' => t('Local copies of remote images, generated thumbnails'),
                 'action' => function () use ($pathService) {
                     $dirs = [
-                        $pathService->getAssetSourcesPath(false),
-                        $pathService->getAssetsIconsPath(false),
-                        $pathService->getImageTransformsPath(false),
+                        $pathService->assetSources(create: false),
+                        $pathService->assetsIcons(create: false),
+                        $pathService->imageTransforms(create: false),
                     ];
                     foreach ($dirs as $dir) {
                         File::cleanDirectory($dir);
@@ -118,17 +118,17 @@ final class ClearCaches extends Utility
                 'key' => 'compiled-templates',
                 'label' => t('Compiled templates'),
                 'info' => t('Contents of {path}', [
-                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getCompiledTemplatesPath(false), Aliases::get('@root'))),
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->compiledTemplates(create: false), Aliases::get('@root'))),
                 ]),
-                'action' => $pathService->getCompiledTemplatesPath(false),
+                'action' => $pathService->compiledTemplates(create: false),
             ],
             [
                 'key' => 'compiled-classes',
                 'label' => t('Compiled classes'),
                 'info' => t('Contents of {path}', [
-                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getCompiledClassesPath(false), Aliases::get('@root'))),
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->compiledClasses(create: false), Aliases::get('@root'))),
                 ]),
-                'action' => $pathService->getCompiledClassesPath(false),
+                'action' => $pathService->compiledClasses(create: false),
             ],
             [
                 'key' => 'cp-resources',
@@ -170,9 +170,9 @@ final class ClearCaches extends Utility
                 'key' => 'temp-files',
                 'label' => t('Temp files'),
                 'info' => t('Contents of {path}', [
-                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->getTempPath(), Aliases::get('@root'))),
+                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->temp(), Aliases::get('@root'))),
                 ]),
-                'action' => $pathService->getTempPath(),
+                'action' => $pathService->temp(),
             ],
             [
                 'key' => 'transform-indexes',

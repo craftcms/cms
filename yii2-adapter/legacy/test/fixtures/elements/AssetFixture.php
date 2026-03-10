@@ -56,6 +56,8 @@ abstract class AssetFixture extends BaseElementFixture
     {
         parent::init();
 
+        app()->forgetInstance(Volumes::class);
+
         foreach (app(Volumes::class)->getAllVolumes() as $volume) {
             $this->volumeIds[$volume->handle] = $volume->id;
             $this->folderIds[$volume->handle] = VolumeFolderModel::query()

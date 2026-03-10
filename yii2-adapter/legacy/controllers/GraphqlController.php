@@ -95,7 +95,7 @@ class GraphqlController extends Controller
         $headers->setDefault('Access-Control-Allow-Credentials', 'true');
         $headers->setDefault('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Craft-Authorization, X-Craft-Token');
 
-        $generalConfig = Cms::config();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (is_array($generalConfig->allowedGraphqlOrigins)) {
             if (($origins = $this->request->getOrigin()) !== null) {
                 $origins = Arr::whereNotEmpty(array_map('trim', explode(',', $origins)));
