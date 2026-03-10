@@ -1,5 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/vue3';
 import {ref} from 'vue';
+import {expect, userEvent, waitFor, within} from 'storybook/test';
 import Slideout from './Slideout.vue';
 
 const meta: Meta<typeof Slideout> = {
@@ -326,4 +327,230 @@ export const ResizableNested: Story = {
       </div>
     `,
   }),
+};
+
+export const FocusTrap: Story = {
+  render: () => ({
+    components: {Slideout},
+    setup() {
+      const isOpen = ref(false);
+      return {isOpen};
+    },
+    template: `
+      <div>
+        <button data-testid="outside-before" type="button">Outside Before</button>
+        <button data-testid="trigger" type="button" @click="isOpen = true">Open Slideout</button>
+        <button data-testid="outside-after" type="button">Outside After</button>
+
+        <Slideout v-model="isOpen" title="Focus Trap Test">
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <label>
+              First Name
+              <input data-testid="input-first" type="text" />
+            </label>
+            <label>
+              Last Name
+              <input data-testid="input-last" type="text" />
+            </label>
+            <label>
+              Notes
+              <textarea data-testid="textarea-notes"></textarea>
+            </label>
+          </div>
+
+          <template #secondary-action>
+            <button data-testid="cancel-btn" type="button" @click="isOpen = false">Cancel</button>
+          </template>
+          <template #primary-action>
+            <button data-testid="save-btn" type="button">Save</button>
+          </template>
+        </Slideout>
+      </div>
+    `,
+  }),
+  play: async ({canvasElement}) => {
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+
+    // Open the slideout
+    const trigger = canvas.getByTestId('trigger');
+    await user.click(trigger);
+
+    // Wait for the slideout to open and focus to be set
+    const dialog = await waitFor(() => {
+      const el = document.querySelector<HTMLElement>(
+        '.craft-slideout-panel--open'
+      );
+      expect(el).not.toBeNull();
+      return el!;
+    });
+
+    const panel = within(dialog);
+
+    // Initial focus should be on the first focusable element inside the panel
+    await waitFor(() => {
+      const firstInput = panel.getByTestId('input-first');
+      expect(document.activeElement).toBe(firstInput);
+    });
+
+    // Tab forward through all focusable elements
+    await user.tab();
+    expect(document.activeElement).toBe(panel.getByTestId('input-last'));
+
+    await user.tab();
+    expect(document.activeElement).toBe(panel.getByTestId('textarea-notes'));
+
+    await user.tab();
+    expect(document.activeElement).toBe(panel.getByTestId('cancel-btn'));
+
+    await user.tab();
+    expect(document.activeElement).toBe(panel.getByTestId('save-btn'));
+
+    // Tab from the last focusable element should wrap to the first
+    await user.tab();
+    expect(document.activeElement).toBe(panel.getByTestId('input-first'));
+
+    // Shift+Tab from the first should wrap to the last
+    await user.tab({shift: true});
+    expect(document.activeElement).toBe(panel.getByTestId('save-btn'));
+
+    // Focus should never escape to elements outside the slideout
+    const outsideBefore = canvas.getByTestId('outside-before');
+    const outsideAfter = canvas.getByTestId('outside-after');
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement).not.toBe(outsideBefore);
+    expect(document.activeElement).not.toBe(outsideAfter);
+  },
+};
+
+export const FocusTrapRestore: Story = {
+  render: () => ({
+    components: {Slideout},
+    setup() {
+      const isOpen = ref(false);
+      return {isOpen};
+    },
+    template: `
+      <div>
+        <button data-testid="trigger" type="button" @click="isOpen = true">Open Slideout</button>
+
+        <Slideout v-model="isOpen" title="Focus Restore Test" :closeOnEscape="true">
+          <p>Press Escape to close and verify focus returns to the trigger.</p>
+
+          <template #primary-action>
+            <button data-testid="save-btn" type="button">Save</button>
+          </template>
+        </Slideout>
+      </div>
+    `,
+  }),
+  play: async ({canvasElement}) => {
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+
+    // Focus and click the trigger
+    const trigger = canvas.getByTestId('trigger');
+    await user.click(trigger);
+
+    // Wait for slideout to open
+    await waitFor(() => {
+      const el = document.querySelector('.craft-slideout-panel--open');
+      expect(el).not.toBeNull();
+    });
+
+    // Close via Escape
+    await user.keyboard('{Escape}');
+
+    // Focus should return to the trigger element
+    await waitFor(() => {
+      expect(document.activeElement).toBe(trigger);
+    });
+  },
+};
+
+export const FocusTrapNested: Story = {
+  render: () => ({
+    components: {Slideout},
+    setup() {
+      const outerOpen = ref(false);
+      const innerOpen = ref(false);
+      return {outerOpen, innerOpen};
+    },
+    template: `
+      <div>
+        <button data-testid="trigger" type="button" @click="outerOpen = true">Open Outer</button>
+
+        <Slideout v-model="outerOpen" title="Outer Slideout">
+          <button data-testid="outer-btn" type="button">Outer Button</button>
+          <button data-testid="open-inner" type="button" @click="innerOpen = true">Open Inner</button>
+
+          <Slideout v-model="innerOpen" title="Inner Slideout">
+            <button data-testid="inner-btn-1" type="button">Inner Button 1</button>
+            <button data-testid="inner-btn-2" type="button">Inner Button 2</button>
+
+            <template #primary-action>
+              <button data-testid="inner-save" type="button">Save Inner</button>
+            </template>
+          </Slideout>
+
+          <template #primary-action>
+            <button data-testid="outer-save" type="button">Save Outer</button>
+          </template>
+        </Slideout>
+      </div>
+    `,
+  }),
+  play: async ({canvasElement}) => {
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+
+    // Open outer slideout
+    await user.click(canvas.getByTestId('trigger'));
+    await waitFor(() => {
+      expect(
+        document.querySelector('.craft-slideout-panel--open')
+      ).not.toBeNull();
+    });
+
+    // Open inner slideout
+    const openInner = document.querySelector<HTMLElement>(
+      '[data-testid="open-inner"]'
+    )!;
+    await user.click(openInner);
+
+    // Wait for inner slideout to open
+    await waitFor(() => {
+      const panels = document.querySelectorAll('.craft-slideout-panel--open');
+      expect(panels.length).toBe(2);
+    });
+
+    const innerPanels = document.querySelectorAll(
+      '.craft-slideout-panel--open'
+    );
+    const innerPanel = innerPanels[innerPanels.length - 1] as HTMLElement;
+    const inner = within(innerPanel);
+
+    // Focus should be trapped in the inner (topmost) slideout
+    // Tab through inner slideout elements
+    const innerBtn1 = inner.getByTestId('inner-btn-1');
+    innerBtn1.focus();
+
+    await user.tab();
+    expect(document.activeElement).toBe(inner.getByTestId('inner-btn-2'));
+
+    await user.tab();
+    expect(document.activeElement).toBe(inner.getByTestId('inner-save'));
+
+    // Tab from last inner element should wrap within the inner slideout
+    await user.tab();
+    expect(document.activeElement).toBe(inner.getByTestId('inner-btn-1'));
+
+    // Outer slideout buttons should not receive focus
+    expect(document.activeElement).not.toBe(
+      document.querySelector('[data-testid="outer-btn"]')
+    );
+    expect(document.activeElement).not.toBe(
+      document.querySelector('[data-testid="outer-save"]')
+    );
+  },
 };

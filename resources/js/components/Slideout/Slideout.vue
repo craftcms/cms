@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {computed, nextTick, onUnmounted, ref, watch} from 'vue';
   import {onKeyStroke} from '@vueuse/core';
+  import {useFocusTrap} from '@vueuse/integrations/useFocusTrap';
   import {useUiLayerManager} from '@/composables/useUiLayerManager';
   import {useResizable} from '@/composables/useResizable';
   import Pane from '@/components/Pane/Pane.vue';
@@ -47,10 +48,20 @@
   const panelRef = ref<HTMLElement | null>(null);
   const backdropRef = ref<HTMLElement | null>(null);
 
+  // Focus trap
+  const {activate: activateTrap, deactivate: deactivateTrap} = useFocusTrap(
+    panelRef,
+    {
+      escapeDeactivates: false,
+      allowOutsideClick: true,
+      returnFocusOnDeactivate: true,
+      fallbackFocus: () => panelRef.value ?? document.body,
+    }
+  );
+
   // Internal state
   const isVisible = ref(false);
   const isOpen = ref(false);
-  const triggerElement = ref<HTMLElement | null>(null);
 
   // The resize handle is on the opposite edge from the slideout position
   // e.g., position='end' means panel is on inline-end, so handle is on 'start' edge
@@ -80,7 +91,6 @@
   const show = () => {
     if (isOpen.value) return;
 
-    triggerElement.value = document.activeElement as HTMLElement;
     isVisible.value = true;
     emit('update:modelValue', true);
 
@@ -108,7 +118,7 @@
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           isOpen.value = true;
-          setFocusWithin();
+          activateTrap();
         });
       });
 
@@ -123,6 +133,8 @@
     isOpen.value = false;
     emit('update:modelValue', false);
 
+    deactivateTrap();
+
     // Remove from layer manager
     layerManager.remove(id);
 
@@ -134,7 +146,6 @@
     // Wait for transition to complete
     const handleTransitionEnd = () => {
       isVisible.value = false;
-      restoreFocus();
       emit('close');
     };
 
@@ -158,22 +169,6 @@
   const handleBackdropClick = () => {
     if (props.closeOnBackdropClick) {
       hide();
-    }
-  };
-
-  const setFocusWithin = () => {
-    const focusable = panelRef.value?.querySelector<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    focusable?.focus();
-  };
-
-  const restoreFocus = () => {
-    if (
-      triggerElement.value &&
-      typeof triggerElement.value.focus === 'function'
-    ) {
-      triggerElement.value.focus();
     }
   };
 
