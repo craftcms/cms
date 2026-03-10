@@ -1,5 +1,10 @@
 import {Canvas, Meta} from '@storybook/addon-docs/blocks';
-import VariantsMeta, {AppearanceScale, ButtonMatrix, CalloutMatrix, IndicatorVariants,} from './variants.stories';
+import VariantsMeta, {
+  AppearanceScale,
+  ButtonMatrix,
+  CalloutMatrix,
+  IndicatorVariants,
+} from './variants.stories';
 
 <Meta of={VariantsMeta} />
 
@@ -27,6 +32,7 @@ Setting `variant="danger"` on a component remaps a set of **generic** CSS custom
   --c-color-on-*: var(--c-color-danger-on- *);
 }
 ```
+
 This indirection happens in `src/styles/variants.styles.ts`, a shared Lit CSS module that any component can import.
 
 ---

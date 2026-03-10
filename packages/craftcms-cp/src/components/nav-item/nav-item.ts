@@ -114,9 +114,9 @@ export default class CraftNavItem extends LitElement {
                   icon
                   size="small"
                   aria-controls="${this.id}-subnav"
-                  aria-expanded="${this.subnavState === 'open'
-                    ? 'true': 'false'
-                    }"
+                  aria-expanded="${
+                    this.subnavState === 'open' ? 'true' : 'false'
+                  }"
                     aria-labelledby="${this.id}-toggle-icon ${this.id}-label"
                   >
                     <craft-icon

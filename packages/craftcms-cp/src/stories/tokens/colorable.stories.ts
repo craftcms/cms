@@ -5,7 +5,7 @@ import '../../components/chip/chip';
 const meta: Meta = {
   title: 'Tokens/Colorable',
   parameters: {
-    layout: 'centerd',
+    layout: 'centered',
   },
 };
 

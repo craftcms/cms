@@ -23,11 +23,7 @@ final class EntryTypeRules extends Ruleset
             'id' => ['nullable', 'integer'],
             'color' => [
                 'nullable',
-                'string',
-                Rule::in(array_merge(
-                    array_map(fn (Color $color) => $color->value, Color::cases()),
-                    ['__blank__']
-                )),
+                Rule::enum(Color::class),
             ],
             'fieldLayoutId' => ['nullable', 'integer', function (string $attribute, int $value, $fail) {
                 $fieldLayout = Fields::assembleLayoutFromPost();

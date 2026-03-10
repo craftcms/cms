@@ -21,7 +21,7 @@
   const props = withDefaults(
     defineProps<{
       modelValue: Record<string, Omit<SectionSiteSettingsData, 'handle'>>;
-      selectedType: string;
+      selectedType?: string;
       isMultisite?: boolean;
       isHeadless?: boolean;
     }>(),

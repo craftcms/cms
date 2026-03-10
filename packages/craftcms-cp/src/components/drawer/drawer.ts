@@ -14,7 +14,6 @@ export default class CraftDrawer extends WaDrawer {
         :host {
           --wa-color-surface-raised: var(--c-surface-raised);
           --spacing: var(--c-spacing-lg);
-          background-color: red;
         }
       `,
     ];

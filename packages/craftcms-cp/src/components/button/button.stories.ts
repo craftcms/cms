@@ -44,7 +44,9 @@ const meta = {
           <craft-button appearance="dashed" variant="inherit"
             >Dashed</craft-button
           >
-          <craft-button appearance="plain" variant="inherit">lain</craft-button>
+          <craft-button appearance="plain" variant="inherit"
+            >plain</craft-button
+          >
         </div>
       </craft-chip>
     </div>
