@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Yii2Adapter\Socialite;
+namespace CraftCms\Yii2Adapter\OAuth;
 
 use RuntimeException;
 

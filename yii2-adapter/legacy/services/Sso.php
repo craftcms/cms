@@ -16,7 +16,7 @@ use CraftCms\Cms\Auth\Models\SsoIdentity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
-use CraftCms\Yii2Adapter\Socialite\LegacySsoDriverGuard;
+use CraftCms\Yii2Adapter\OAuth\LegacySsoDriverGuard;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;

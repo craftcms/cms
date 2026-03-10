@@ -13,7 +13,7 @@ use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
-use CraftCms\Cms\Auth\OAuth\ProviderDefinition;
+use CraftCms\Cms\Auth\OAuth\Provider;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
@@ -496,7 +496,7 @@ final class Auth
     }
 
     /**
-     * @return ProviderDefinition[]
+     * @return Provider[]
      */
     #[AllowedInSandbox]
     public function getSocialiteProviders(): array
@@ -507,7 +507,7 @@ final class Auth
     #[AllowedInSandbox]
     public function hasSocialiteProviders(): bool
     {
-        return $this->socialite()?->hasLoginProviders() ?? false;
+        return $this->socialite()?->getLoginProviders()->isNotEmpty();
     }
 
     private function socialite(): ?OAuth

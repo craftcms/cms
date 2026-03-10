@@ -6,6 +6,7 @@ providers:
   - CraftCms\Cms\Providers\CraftServiceProvider
   - CraftCms\Yii2Adapter\Yii2ServiceProvider
   - Laravel\Wayfinder\WayfinderServiceProvider
+  - Laravel\Socialite\SocialiteServiceProvider
 
 seeders:
   - Workbench\Database\Seeders\DatabaseSeeder

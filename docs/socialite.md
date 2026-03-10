@@ -29,7 +29,7 @@ Configure enabled providers in `config/craft/general.php` via `GeneralConfig::$s
 use CraftCms\Cms\Config\GeneralConfig;
 
 return GeneralConfig::create()
-    ->socialiteProviders([
+    ->oAuthProviders([
         'marketing' => [
             'driver' => 'google',
             'name' => 'Marketing SSO',
@@ -38,6 +38,7 @@ return GeneralConfig::create()
             'scopes' => ['openid', 'email', 'profile'],
             'with' => ['prompt' => 'select_account'],
             'stateless' => false,
+            'shouldActivateUsers' => true,
         ],
     ]);
 ```
@@ -52,6 +53,7 @@ Providers are keyed by handle. Each provider can define:
 - `clientSecret`
 - `redirectUrl`
 - `stateless`
+- `shouldActivateUsers`
 - `idpUniqueIdentifier`
 - `findUser`
 - `populateUser`
@@ -68,13 +70,15 @@ return GeneralConfig::create()
     ]);
 ```
 
-The callback hooks receive `CraftCms\Cms\Auth\Socialite\SocialiteProfile` objects:
+The callback hooks receive `CraftCms\Cms\Auth\OAuth\Profile` objects:
 
 ```php
-'findUser' => fn (SocialiteProfile $profile) => null,
-'populateUser' => fn (User $user, SocialiteProfile $profile) => $user,
-'assignUserGroups' => fn (array $groupIds, SocialiteProfile $profile) => $groupIds,
+'findUser' => fn (Profile $profile) => null,
+'populateUser' => fn (User $user, Profile $profile) => $user,
+'assignUserGroups' => fn (array $groupIds, Profile $profile) => $groupIds,
 ```
+
+By default, Craft will only fall back to email-based account matching when the Socialite payload explicitly includes a verified email claim such as `email_verified=true`. Existing non-active users are not auto-activated unless `shouldActivateUsers` is enabled for the provider.
 
 ## Routes
 

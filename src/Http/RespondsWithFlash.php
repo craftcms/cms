@@ -19,13 +19,17 @@ use function CraftCms\Cms\renderObjectTemplate;
 
 trait RespondsWithFlash
 {
-    public function asFailure(?string $message = null, array $data = []): Response
+    public function asFailure(?string $message = null, array $data = [], ?string $redirect = null): Response
     {
         if (request()->expectsJson()) {
             return $this->asJsonFailure($message, $data);
         }
 
         Flash::fail($message);
+
+        if ($redirect) {
+            return redirect($redirect)->with($data)->withErrors($data['errors'] ?? []);
+        }
 
         return back()->with($data)->withErrors($data['errors'] ?? []);
     }

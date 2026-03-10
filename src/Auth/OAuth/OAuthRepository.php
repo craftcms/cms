@@ -11,7 +11,7 @@ use Illuminate\Container\Attributes\Singleton;
 #[Singleton]
 final class OAuthRepository
 {
-    public function identityExists(?int $userId): bool
+    public function exists(?int $userId): bool
     {
         if (! $userId) {
             return false;

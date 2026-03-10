@@ -4,3 +4,4 @@ providers:
   - CraftCms\DependencyAwareCache\CacheServiceProvider
   - CraftCms\Cms\Providers\CraftServiceProvider
   - CraftCms\Yii2Adapter\Yii2ServiceProvider
+  - Laravel\Socialite\SocialiteServiceProvider

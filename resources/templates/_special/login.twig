@@ -6,6 +6,7 @@
 
 {% set generalConfig = app.config.craft.general %}
 {% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? craft.auth.getRememberedUsername() : '') %}
+{% set flashedError = craft.app.session.getFlash('error') %}
 
 {% if generalConfig.useEmailAsUsername %}
   {% set usernameLabel = 'Email'|t('app') %}
@@ -83,7 +84,11 @@
       }) }}
     {% endtag %}
 
-    <div class="login-errors hidden"></div>
+    <div class="login-errors{% if not flashedError %} hidden{% endif %}">
+      {% if flashedError %}
+        <p>{{ flashedError }}</p>
+      {% endif %}
+    </div>
 
     {% if showResetPassword %}
       <form class="login-reset-password hidden">
@@ -137,7 +142,7 @@
 
     {% if CraftEdition >= CraftPro %}
       {% for provider in craft.auth.getSocialiteProviders() %}
-        {{ craft.app.request.isCpRequest ? provider.renderCpButton()|raw : provider.renderSiteLink()|raw }}
+        {{ provider.renderButton() }}
       {% endfor %}
     {% endif %}
 

@@ -2,29 +2,29 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Auth\Models\SsoIdentity;
-use CraftCms\Cms\Auth\OAuth\ProviderDefinition;
-use CraftCms\Cms\Auth\OAuth\OAuth;
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Edition;
-use CraftCms\Cms\Tests\TestClasses\Auth\FakeSocialiteProvider;
-use CraftCms\Cms\Tests\TestClasses\Auth\MarketingProviderDefinition;
-use CraftCms\Cms\User\Models\User as UserModel;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Auth\Models\SsoIdentity;
+use CraftCms\Cms\Auth\OAuth\OAuth;
+use CraftCms\Cms\Auth\OAuth\Provider;
+use CraftCms\Cms\Auth\OAuth\ProviderProfile;
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Tests\TestClasses\Auth\FakeSocialiteProvider;
+use CraftCms\Cms\Tests\TestClasses\Auth\MarketingProvider;
+use CraftCms\Cms\User\Elements\User as UserElement;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Config;
 use Laravel\Socialite\Contracts\Factory as SocialiteFactory;
-use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
 
 use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
 
 beforeEach(function () {
-    Edition::set(Edition::Pro);
     Cms::config()->isSystemLive = true;
 
-    Cms::config()->socialiteProviders = [
+    Cms::config()->oAuthProviders = [
         'marketing' => [
             'driver' => 'fake-socialite',
             'name' => 'Marketing SSO',
@@ -39,12 +39,8 @@ beforeEach(function () {
         'client_secret' => 'marketing-secret',
     ]);
 
-    FakeSocialiteProvider::reset();
-    Socialite::extend('fake-socialite', fn ($app) => new FakeSocialiteProvider('fake-socialite'));
-
-    if (method_exists(app(SocialiteFactory::class), 'forgetDrivers')) {
-        app(SocialiteFactory::class)->forgetDrivers();
-    }
+    app(SocialiteFactory::class)->extend('fake-socialite', fn ($app) => new FakeSocialiteProvider('fake-socialite'));
+    app(SocialiteFactory::class)->forgetDrivers();
 });
 
 it('discovers configured socialite providers', function () {
@@ -53,26 +49,27 @@ it('discovers configured socialite providers', function () {
 });
 
 it('discovers configured provider definition classes', function () {
-    Cms::config()->socialiteProviders = [
-        MarketingProviderDefinition::class,
+    Cms::config()->oAuthProviders = [
+        MarketingProvider::class,
     ];
 
     $providers = app(OAuth::class)->getProviders();
 
     expect($providers->keys()->all())->toBe(['marketing']);
-    expect($providers->get('marketing'))->toBeInstanceOf(ProviderDefinition::class);
+    expect($providers->get('marketing'))->toBeInstanceOf(Provider::class);
 });
 
 it('discovers fluent provider definitions', function () {
-    Cms::config()->socialiteProviders = [
-        (new ProviderDefinition('marketing'))
+    Cms::config()->oAuthProviders = [
+        new Provider('marketing')
             ->driver('fake-socialite')
             ->name('Marketing SSO')
             ->clientId('marketing-client')
             ->clientSecret('marketing-secret')
             ->scopes(['openid', 'email'])
             ->with(['prompt' => 'login'])
-            ->stateless(true),
+            ->activatesUsers()
+            ->stateless(),
     ];
 
     $provider = app(OAuth::class)->getProvider('marketing');
@@ -110,8 +107,8 @@ it('redirects through the configured socialite driver', function () {
 });
 
 it('uses provider definition credentials and redirect overrides when configured', function () {
-    Cms::config()->socialiteProviders = [
-        (new ProviderDefinition('marketing'))
+    Cms::config()->oAuthProviders = [
+        new Provider('marketing')
             ->driver('fake-socialite')
             ->name('Marketing SSO')
             ->clientId('configured-client')
@@ -167,6 +164,14 @@ it('redirects CP users back to the control panel after callback', function () {
 });
 
 it('creates a user and links the identity on callback', function () {
+    Cms::config()->oAuthProviders = [
+        'marketing' => [
+            'driver' => 'fake-socialite',
+            'name' => 'Marketing SSO',
+            'activatesUsers' => true,
+        ],
+    ];
+
     FakeSocialiteProvider::fake('fake-socialite', fakeSocialiteUser(
         id: 'socialite-123',
         email: 'socialite@example.com',
@@ -250,7 +255,213 @@ it('falls back to email lookup when no identity exists', function () {
     ])->exists())->toBeTrue();
 });
 
+it('does not activate existing users unless the provider explicitly allows it', function () {
+    $user = UserModel::factory()->create([
+        'email' => 'suspended@example.com',
+        'username' => 'suspended-user',
+        'suspended' => true,
+        'active' => false,
+    ])->asElement();
+
+    SsoIdentity::query()->create([
+        'provider' => 'marketing',
+        'identityId' => 'socialite-suspended-user',
+        'userId' => $user->id,
+    ]);
+
+    FakeSocialiteProvider::fake('fake-socialite', fakeSocialiteUser(
+        id: 'socialite-suspended-user',
+        email: 'suspended@example.com',
+        name: 'Suspended User',
+    ));
+
+    get(route('craft.auth.socialite.redirect', ['provider' => 'marketing']));
+
+    getJson(route('craft.auth.socialite.callback', ['provider' => 'marketing']))
+        ->assertStatus(400)
+        ->assertJsonPath('errorCode', 'account_suspended');
+
+    expect(auth('craft')->guest())->toBeTrue();
+});
+
+it('redirects site OAuth failures back to the originating login page', function () {
+    $user = UserModel::factory()->create([
+        'email' => 'site-suspended@example.com',
+        'username' => 'site-suspended-user',
+        'suspended' => true,
+        'active' => false,
+    ])->asElement();
+
+    SsoIdentity::query()->create([
+        'provider' => 'marketing',
+        'identityId' => 'socialite-site-suspended-user',
+        'userId' => $user->id,
+    ]);
+
+    FakeSocialiteProvider::fake('fake-socialite', fakeSocialiteUser(
+        id: 'socialite-site-suspended-user',
+        email: 'site-suspended@example.com',
+        name: 'Site Suspended User',
+    ));
+
+    $loginUrl = UrlHelper::siteUrl(Cms::config()->getLoginPath());
+
+    get(route('craft.auth.socialite.redirect', ['provider' => 'marketing']));
+
+    get(route('craft.auth.socialite.callback', ['provider' => 'marketing']))
+        ->assertRedirect($loginUrl)
+        ->assertSessionHas('errorCode', 'account_suspended');
+
+    expect(Craft::$app->getSession()->getError())->toBe('Account suspended.');
+    expect(auth('craft')->guest())->toBeTrue();
+});
+
+it('renders the flashed OAuth failure message on the site login page', function () {
+    $user = UserModel::factory()->create([
+        'email' => 'site-login-message@example.com',
+        'username' => 'site-login-message-user',
+        'suspended' => true,
+        'active' => false,
+    ])->asElement();
+
+    SsoIdentity::query()->create([
+        'provider' => 'marketing',
+        'identityId' => 'socialite-site-login-message-user',
+        'userId' => $user->id,
+    ]);
+
+    FakeSocialiteProvider::fake('fake-socialite', fakeSocialiteUser(
+        id: 'socialite-site-login-message-user',
+        email: 'site-login-message@example.com',
+        name: 'Site Login Message User',
+    ));
+
+    $loginUrl = UrlHelper::siteUrl(Cms::config()->getLoginPath());
+
+    get(route('craft.auth.socialite.redirect', ['provider' => 'marketing']));
+
+    get(route('craft.auth.socialite.callback', ['provider' => 'marketing']))
+        ->assertRedirect($loginUrl);
+
+    get(action([LoginController::class, 'showLogin']))
+        ->assertOk()
+        ->assertSee('Account suspended.');
+});
+
+it('redirects cp OAuth failures back to the originating login page', function () {
+    $user = UserModel::factory()->create([
+        'email' => 'cp-suspended@example.com',
+        'username' => 'cp-suspended-user',
+        'suspended' => true,
+        'active' => false,
+        'admin' => true,
+    ])->asElement();
+
+    SsoIdentity::query()->create([
+        'provider' => 'marketing',
+        'identityId' => 'socialite-cp-suspended-user',
+        'userId' => $user->id,
+    ]);
+
+    FakeSocialiteProvider::fake('fake-socialite', fakeSocialiteUser(
+        id: 'socialite-cp-suspended-user',
+        email: 'cp-suspended@example.com',
+        name: 'CP Suspended User',
+    ));
+
+    $loginUrl = UrlHelper::cpUrl('login');
+
+    get(route('craft.auth.socialite.redirect', ['provider' => 'marketing', 'cp' => 1]));
+
+    get(route('craft.auth.socialite.callback', ['provider' => 'marketing', 'cp' => 1]))
+        ->assertRedirect($loginUrl)
+        ->assertSessionHas('errorCode', 'account_suspended');
+
+    expect(Craft::$app->getSession()->getError())->toBe('Account suspended.');
+    expect(auth('craft')->guest())->toBeTrue();
+});
+
+it('can activate existing users when the provider is trusted', function () {
+    Cms::config()->oAuthProviders = [
+        'marketing' => [
+            'driver' => 'fake-socialite',
+            'name' => 'Marketing SSO',
+            'activatesUsers' => true,
+        ],
+    ];
+
+    $user = UserModel::factory()->create([
+        'email' => 'trusted@example.com',
+        'username' => 'trusted-user',
+        'suspended' => true,
+        'active' => false,
+    ])->asElement();
+
+    SsoIdentity::query()->create([
+        'provider' => 'marketing',
+        'identityId' => 'socialite-trusted-user',
+        'userId' => $user->id,
+    ]);
+
+    FakeSocialiteProvider::fake('fake-socialite', fakeSocialiteUser(
+        id: 'socialite-trusted-user',
+        email: 'trusted@example.com',
+        name: 'Trusted User',
+    ));
+
+    get(route('craft.auth.socialite.redirect', ['provider' => 'marketing']));
+
+    get(route('craft.auth.socialite.callback', ['provider' => 'marketing']))
+        ->assertRedirect(UrlHelper::siteUrl(Cms::config()->getPostLoginRedirect()));
+
+    $user = UserModel::findOrFail($user->id)->asElement();
+
+    expect(auth('craft')->id())->toBe($user->id);
+    expect($user->getStatus())->toBe(UserElement::STATUS_ACTIVE);
+});
+
+it('passes assignUserGroups arguments as groups first and profile second', function () {
+    $seen = [];
+
+    Cms::config()->oAuthProviders = [
+        'marketing' => [
+            'driver' => 'fake-socialite',
+            'name' => 'Marketing SSO',
+            'activatesUsers' => true,
+            'assignUserGroups' => function (array $groupIds, ProviderProfile $profile) use (&$seen) {
+                $seen = [$groupIds, $profile->email];
+
+                return $groupIds;
+            },
+        ],
+    ];
+
+    FakeSocialiteProvider::fake('fake-socialite', fakeSocialiteUser(
+        id: 'socialite-groups',
+        email: 'groups@example.com',
+        name: 'Groups User',
+    ));
+
+    get(route('craft.auth.socialite.redirect', [
+        'provider' => 'marketing',
+        'returnUrl' => 'https://example.com/after-login',
+    ]));
+
+    get(route('craft.auth.socialite.callback', ['provider' => 'marketing']))
+        ->assertRedirect('https://example.com/after-login');
+
+    expect($seen)->toBe([[], 'groups@example.com']);
+});
+
 it('returns json success data on callback', function () {
+    Cms::config()->oAuthProviders = [
+        'marketing' => [
+            'driver' => 'fake-socialite',
+            'name' => 'Marketing SSO',
+            'activatesUsers' => true,
+        ],
+    ];
+
     FakeSocialiteProvider::fake('fake-socialite', fakeSocialiteUser(
         id: 'socialite-json',
         email: 'json@example.com',
@@ -265,9 +476,13 @@ it('returns json success data on callback', function () {
         ->assertJsonPath('returnUrl', 'https://example.com/json-login');
 });
 
-function fakeSocialiteUser(string $id, ?string $email, ?string $name = null, ?string $nickname = null): SocialiteUser
-{
-    return (new SocialiteUser)
+function fakeSocialiteUser(
+    string $id,
+    ?string $email,
+    ?string $name = null,
+    ?string $nickname = null,
+): SocialiteUser {
+    return new SocialiteUser()
         ->setRaw(array_filter([
             'sub' => $id,
             'email' => $email,

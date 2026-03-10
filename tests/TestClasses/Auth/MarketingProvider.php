@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests\TestClasses\Auth;
 
-use CraftCms\Cms\Auth\OAuth\ProviderDefinition;
+use CraftCms\Cms\Auth\OAuth\Provider;
 
-final class MarketingProviderDefinition extends ProviderDefinition
+final class MarketingProvider extends Provider
 {
     public function __construct(string $handle = 'marketing')
     {

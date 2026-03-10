@@ -1790,7 +1790,7 @@ class GeneralConfig extends BaseConfig
     public mixed $logoutPath = 'logout';
 
     /**
-     * @var array<int|string, array<string, mixed>|class-string<\CraftCms\Cms\Auth\OAuth\ProviderDefinition>|\CraftCms\Cms\Auth\OAuth\ProviderDefinition> The configured Socialite providers that should be available for login.
+     * @var array<int|string, array<string, mixed>|class-string<\CraftCms\Cms\Auth\OAuth\Provider>|\CraftCms\Cms\Auth\OAuth\Provider> The configured Socialite providers that should be available for login.
      *
      * Each provider is keyed by handle and can define:
      *
@@ -1802,16 +1802,18 @@ class GeneralConfig extends BaseConfig
      * - `clientSecret`
      * - `redirectUrl`
      * - `stateless`
+     * - `activatesUsers`
      * - `idpUniqueIdentifier`
      * - `findUser`
      * - `populateUser`
      * - `assignUserGroups`
      *
      * ```php
-     * ->socialiteProviders([
+     * ->oAuthProviders([
      *     'google' => [
      *         'name' => 'Google',
      *         'scopes' => ['openid', 'email', 'profile'],
+     *         'activatesUsers' => true,
      *         'clientId' => env('GOOGLE_CLIENT_ID'),
      *         'clientSecret' => env('GOOGLE_CLIENT_SECRET'),
      *     ],
@@ -1821,7 +1823,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Authentication
      */
-    public array $socialiteProviders = [];
+    public array $oAuthProviders = [];
 
     /**
      * @var int The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them. Defaults to `0` as of 5.9.0. Earlier versions default to `2000`.
@@ -5469,7 +5471,7 @@ class GeneralConfig extends BaseConfig
      * The configured Socialite providers that should be available for login.
      *
      * ```php
-     * ->socialiteProviders([
+     * ->oAuthProviders([
      *     'google' => [
      *         'name' => 'Google',
      *         'clientId' => env('GOOGLE_CLIENT_ID'),
@@ -5480,11 +5482,11 @@ class GeneralConfig extends BaseConfig
      *
      * @group Authentication
      *
-     * @see $socialiteProviders
+     * @see $oAuthProviders
      */
-    public function socialiteProviders(array $value): self
+    public function oAuthProviders(array $value): self
     {
-        $this->socialiteProviders = $value;
+        $this->oAuthProviders = $value;
 
         return $this;
     }

@@ -10,12 +10,10 @@ use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Site\Sites;
 use Illuminate\Support\Facades\Route;
 
-if (Edition::get()->oAuthAvailable()) {
-    Route::get('auth/socialite/redirect/{provider}', [OAuthController::class, 'redirect'])
-        ->name('auth.socialite.redirect');
-    Route::get('auth/socialite/callback/{provider}', [OAuthController::class, 'callback'])
-        ->name('auth.socialite.callback');
-}
+Route::get('auth/socialite/redirect/{provider}', [OAuthController::class, 'redirect'])
+    ->name('auth.socialite.redirect');
+Route::get('auth/socialite/callback/{provider}', [OAuthController::class, 'callback'])
+    ->name('auth.socialite.callback');
 
 if (Edition::get()->registersFrontendUserRoutes()) {
     if (Cms::config()->loginPath !== false) {

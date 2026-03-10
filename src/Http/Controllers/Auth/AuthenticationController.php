@@ -23,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
+use function CraftCms\Cms\cp_url;
 
 abstract readonly class AuthenticationController
 {
@@ -53,7 +54,12 @@ abstract readonly class AuthenticationController
         return $this->redirectToPostedUrl($user, $returnUrl);
     }
 
-    protected function handleLoginFailure(Request $request, ?AuthError $authError = null, ?User $user = null): Response
+    protected function handleLoginFailure(
+        Request $request,
+        ?AuthError $authError = null,
+        ?User $user = null,
+        ?string $redirect = null,
+    ): Response
     {
         [$authError, $message] = $this->auth->getLoginFailureInfo($authError, $user);
 
@@ -63,7 +69,7 @@ abstract readonly class AuthenticationController
             credentials: $request->only('loginName', 'password'),
         ));
 
-        return $this->asFailure($message, ['errorCode' => $authError?->value]);
+        return $this->asFailure($message, ['errorCode' => $authError?->value], $redirect);
     }
 
     protected function renderViewWithFallback(string $cpTemplate, array $data = []): View

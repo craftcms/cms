@@ -181,7 +181,7 @@ enum Edition: int implements Arrayable
 
     public function oAuthAvailable(): bool
     {
-        return $this->value >= self::Pro->value && interface_exists(SocialiteFactory::class);
+        return $this->value >= self::Pro->value && app()->bound(SocialiteFactory::class);
     }
 
     public function toArray(): array

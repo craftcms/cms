@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Yii2Adapter\Socialite;
+namespace CraftCms\Yii2Adapter\OAuth;
 
 use CraftCms\Cms\Auth\OAuth\OAuth;
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\Edition;
+use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Manager;
 use Laravel\Socialite\Contracts\Factory as SocialiteFactory;
@@ -15,7 +14,6 @@ use ReflectionProperty;
 #[Singleton]
 final readonly class LegacySsoDriverGuard
 {
-
     /**
      * @param  string[]  $handles
      */
@@ -28,7 +26,7 @@ final readonly class LegacySsoDriverGuard
 
     public function assertHandleAvailable(string $handle): void
     {
-        if (OAuth::configuredProviders(Cms::config()->socialiteProviders)->has($handle)) {
+        if (OAuth::configuredProviders($this->configuredProviders())->has($handle)) {
             throw new DuplicateSocialiteDriverException($handle, 'Craft core socialiteProviders');
         }
 
@@ -39,7 +37,7 @@ final readonly class LegacySsoDriverGuard
 
     private function hasRegisteredCustomDriver(string $handle): bool
     {
-        if (! Edition::get()->oAuthAvailable() || ! app()->bound(SocialiteFactory::class)) {
+        if (! app()->bound(SocialiteFactory::class)) {
             return false;
         }
 
@@ -53,6 +51,18 @@ final readonly class LegacySsoDriverGuard
         $drivers = $this->managerProperty($socialite, 'drivers');
 
         return isset($customCreators[$handle]) || isset($drivers[$handle]);
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    private function configuredProviders(): array
+    {
+        if (! app()->bound(GeneralConfig::class)) {
+            return [];
+        }
+
+        return app(GeneralConfig::class)->oAuthProviders;
     }
 
     /**

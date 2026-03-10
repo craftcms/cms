@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\OAuth;
 
-use CraftCms\Cms\Support\Arr;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use RuntimeException;
 
-final readonly class Profile
+final readonly class ProviderProfile
 {
     /**
      * @param  array<string, mixed>  $attributes
@@ -23,31 +22,16 @@ final readonly class Profile
         public array $attributes,
     ) {}
 
-    public static function fromUser(string $handle, SocialiteUser $user): self
+    public static function fromSocialite(string $handle, SocialiteUser $user): self
     {
-        $id = $user->getId();
-        $email = $user->getEmail();
-        $name = $user->getName();
-        $nickname = $user->getNickname();
-        $avatar = $user->getAvatar();
-
         return new self(
             handle: $handle,
-            id: $id ?? '',
-            email: $email,
-            name: $name,
-            nickname: $nickname,
-            avatar: $avatar,
-            attributes: array_merge(
-                self::rawAttributes($user),
-                array_filter([
-                    'id' => $id,
-                    'email' => $email,
-                    'name' => $name,
-                    'nickname' => $nickname,
-                    'avatar' => $avatar,
-                ], fn (mixed $value) => $value !== null),
-            ),
+            id: $user->getId(),
+            email: $user->getEmail(),
+            name: $user->getName(),
+            nickname: $user->getNickname(),
+            avatar: $user->getAvatar(),
+            attributes: self::rawAttributes($user),
         );
     }
 
@@ -62,11 +46,6 @@ final readonly class Profile
         }
 
         throw new RuntimeException('Socialite user did not provide an ID or email address.');
-    }
-
-    public function attribute(string $key, mixed $default = null): mixed
-    {
-        return Arr::get($this->attributes, $key, $default);
     }
 
     /**

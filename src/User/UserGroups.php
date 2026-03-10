@@ -90,6 +90,23 @@ final readonly class UserGroups
         });
     }
 
+    public function getGroup(mixed $group): ?UserGroup
+    {
+        if (is_int($group)) {
+            return $this->getGroupById($group);
+        }
+
+        if (! is_string($group)) {
+            return null;
+        }
+
+        if (Str::isUuid($group)) {
+            return $this->getGroupByUid($group);
+        }
+
+        return $this->getGroupByHandle($group);
+    }
+
     public function getGroupById(int $groupId): ?UserGroup
     {
         $result = $this->createUserGroupsQuery()->find($groupId);
