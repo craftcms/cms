@@ -731,11 +731,12 @@ final class CpScreenResponse implements Responsable
 
     private function inertiaResponse(Request $request): Response
     {
+        $crumbs = (is_callable($this->crumbs) ? call_user_func($this->crumbs) : $this->crumbs) ?? [];
+
         if ($this->prepareScreen) {
             ($this->prepareScreen)($this, $request);
         }
 
-        $crumbs = $this->crumbs;
         if ($this->title) {
             $crumbs[] = ['label' => $this->title];
         }
