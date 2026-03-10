@@ -1,0 +1,72 @@
+--- a/src/Drivers/LaravelHttpServer.php	2026-03-05 16:49:47
++++ b/src/Drivers/LaravelHttpServer.php	2026-03-05 16:51:36
+@@ -99,12 +99,12 @@
+             return;
+         }
+ 
+-        $this->socket = $server = SocketHttpServer::createForDirectAccess(new NullLogger());
++        $this->socket = $server = SocketHttpServer::createForDirectAccess(new NullLogger);
+ 
+         $server->expose("{$this->host}:{$this->port}");
+         $server->start(
+             new ClosureRequestHandler($this->handleRequest(...)),
+-            new DefaultErrorHandler(),
++            new DefaultErrorHandler,
+         );
+     }
+ 
+@@ -317,38 +317,32 @@
+      */
+     private function asset(string $filepath): Response
+     {
+-        $file = fopen($filepath, 'r');
++        // Use file_get_contents instead of fread()/ReadableResourceStream
++        // because fread() is limited to 8192 bytes when running inside
++        // Amp's event loop, which truncates CSS, JS, and other large assets.
++        $rawContent = file_get_contents($filepath);
+ 
+-        if ($file === false) {
++        if ($rawContent === false) {
+             return new Response(404);
+         }
+ 
+-        $mimeTypes = new MimeTypes();
++        $mimeTypes = new MimeTypes;
+         $contentType = $mimeTypes->getMimeTypes(pathinfo($filepath, PATHINFO_EXTENSION));
+ 
+         $contentType = $contentType[0] ?? 'application/octet-stream';
+ 
+-        if (str_ends_with($filepath, '.js')) {
+-            $temporaryStream = fopen('php://temp', 'r+');
+-            assert($temporaryStream !== false, 'Failed to open temporary stream.');
++        $content = str_ends_with($filepath, '.js')
++            ? $this->rewriteAssetUrl($rawContent)
++            : $rawContent;
+ 
+-            // @phpstan-ignore-next-line
+-            $temporaryContent = fread($file, (int) filesize($filepath));
++        // Build the Response without passing headers to the constructor,
++        // because the constructor calls setBody() first (which auto-sets
++        // content-length for string bodies) then setHeaders() (which
++        // clears ALL headers and only keeps what was passed in).
++        $response = new Response(200, [], $content);
++        $response->setHeader('Content-Type', $contentType);
+ 
+-            assert($temporaryContent !== false, 'Failed to open temporary stream.');
+-
+-            $content = $this->rewriteAssetUrl($temporaryContent);
+-
+-            fwrite($temporaryStream, $content);
+-
+-            rewind($temporaryStream);
+-
+-            $file = $temporaryStream;
+-        }
+-
+-        return new Response(200, [
+-            'Content-Type' => $contentType,
+-        ], new ReadableResourceStream($file));
++        return $response;
+     }
+ 
+     /**
