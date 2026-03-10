@@ -18,6 +18,7 @@ use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
+use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
@@ -131,19 +132,7 @@ final readonly class SectionsController
         }
 
         return [
-            'section' => [
-                'id' => $section->id,
-                'name' => $section->name,
-                'handle' => $section->handle,
-                'type' => $section->type->value ?? SectionType::Channel->value,
-                'enableVersioning' => $section->enableVersioning,
-                'maxAuthors' => $section->maxAuthors ?? 1,
-                'maxLevels' => $section->maxLevels,
-                'propagationMethod' => $section->propagationMethod->value,
-                'defaultPlacement' => $section->defaultPlacement->value,
-                'previewTargets' => $section->previewTargets ?? [],
-                'entryTypes' => $section->entryTypes,
-            ],
+            'section' => SectionResource::make($section),
             'homepageUri' => Element::HOMEPAGE_URI,
             'brandNew' => $brandNew,
             'entryTypes' => $this->entryTypes->getAllEntryTypes(),
