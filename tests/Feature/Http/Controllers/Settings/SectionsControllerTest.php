@@ -16,6 +16,7 @@ use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Testing\AssertableInertia;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -49,7 +50,7 @@ it('requires admin changes', function () {
     Cms::config()->allowAdminChanges = false;
 
     // Read only
-    get(action([SectionsController::class, 'edit'], [Section::first()->id]))->assertSee(t('Changes to these settings aren’t permitted in this environment.'));
+    get(action([SectionsController::class, 'edit'], [Section::first()->id]))->assertInertia(fn (AssertableInertia $page) => $page->where('readOnly', true));
 
     // Not allowed
     get(action([SectionsController::class, 'create']))->assertForbidden();
@@ -186,7 +187,7 @@ it('can delete a section', function () {
 
     postJson(action([SectionsController::class, 'destroy']), [
         'id' => $newSection->id,
-    ])->assertRedirectBack();
+    ])->assertSuccessful();
 
     assertSoftDeleted(Section::class, ['id' => $newSection->id]);
     expect(ProjectConfig::get(ProjectConfigPaths::PATH_SECTIONS.'.'.$newSection->uid))->toBeNull();

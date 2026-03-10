@@ -9,9 +9,10 @@ export default css`
     font: inherit;
     text-align: left;
     display: grid;
+    width: 100%;
     gap: var(--c-spacing-md);
     grid-template-columns: auto 1fr auto;
-    align-items: center;
+    align-items: start;
     text-decoration: none;
     color: inherit;
     padding-inline: var(--c-spacing-sm);
@@ -20,6 +21,10 @@ export default css`
     position: relative;
     background-color: transparent;
     border: 1px solid transparent;
+  }
+
+  .action-item--checkbox {
+    grid-template-columns: 1rem auto 1fr auto;
   }
 
   @media (hover: hover) {
@@ -42,9 +47,14 @@ export default css`
     cursor: pointer;
   }
 
+  .action-item__prefix,
+  .action-item__suffix {
+    height: 1lh;
+  }
+
   .action-item__prefix {
     position: relative;
-    display: grid;
+    display: flex;
     justify-content: center;
     align-items: center;
     aspect-ratio: 1;

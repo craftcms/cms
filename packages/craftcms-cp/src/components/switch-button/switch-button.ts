@@ -7,7 +7,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
       ...super.styles,
       css`
         :host {
-          --c-switch-height: calc(24rem / 16);
+          --c-switch-height: var(--c-size-control-sm);
           --c-switch-thumb-offset: 6px;
           --c-switch-thumb-height: calc(
             var(--c-switch-height) - var(--c-switch-thumb-offset)
@@ -19,7 +19,7 @@ export default class CraftSwitchButton extends LionSwitchButton {
         }
 
         :host([size='small']) {
-          --c-switch-height: var(--c-size-control-sm);
+          --c-switch-height: var(--c-size-control-xs);
           --c-switch-thumb-offset: 4px;
         }
 

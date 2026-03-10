@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {type JobInfo, JobStatus} from '@craftcms/cp/src/types/index.js';
+  import {type JobInfo, JobStatus} from '@craftcms/cp/types/index.ts';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {computed, inject, ref, watch} from 'vue';
   import {Axios, Queue} from '@/types/keys';

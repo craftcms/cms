@@ -8,17 +8,18 @@ export default class CraftInput extends LionInput {
     return [...super.styles, inputStyles, styles];
   }
 
-  @property({type: Number, reflect: true}) size?: string;
+  @property({type: Number, reflect: true}) maxlength?: number;
+  @property({type: String, reflect: true}) size?: 'small' | 'medium' | 'large' =
+    'medium';
   @property({reflect: true, type: Boolean}) small = false;
   @property({reflect: true, type: Boolean}) center = false;
 
   override connectedCallback() {
     super.connectedCallback();
 
-    if (this._inputNode && this.size) {
-      const sizeInt = parseInt(this.size, 10);
-      if (sizeInt > 0) {
-        this._inputNode.size = sizeInt;
+    if (this._inputNode && this.maxlength) {
+      if (this.maxlength > 0) {
+        this._inputNode.size = this.maxlength;
       }
     }
   }

@@ -11,9 +11,13 @@ const meta = {
   title: 'Components/Action Item',
   component: 'craft-action-item',
   argTypes: {},
-  render: ({active, indicator, href, icon}) => {
+  render: ({active, indicator, href, icon, checked}) => {
     return html`
-      <craft-action-item icon="${icon}" ?active="${active}" ?href="${href}"
+      <craft-action-item
+        icon="${icon}"
+        ?active="${active}"
+        ?href="${href}"
+        ?checked="${checked}"
         >View in a new tab</craft-action-item
       >
     `;
@@ -57,5 +61,35 @@ export const WithSuffix: Story = {
 export const Link: Story = {
   args: {
     href: 'https://craftcms.com',
+  },
+};
+
+export const CheckableWithIcon: Story = {
+  args: {
+    checked: true,
+    icon: 'up-right-from-square',
+  },
+  render({icon, active, href, checked}) {
+    return html`
+      <div style="width: 200px">
+        <craft-action-item icon="home" ?href="${href}" checked type="checkbox">
+          <div>
+            <div class="font-bold">Entry Type</div>
+            <pre>entryType</pre>
+          </div>
+        </craft-action-item>
+        <craft-action-item
+          icon="newspaper"
+          active
+          ?href="${href}"
+          type="checkbox"
+        >
+          <div>
+            <div class="font-bold">Entry Type</div>
+            <pre>entryType</pre>
+          </div>
+        </craft-action-item>
+      </div>
+    `;
   },
 };

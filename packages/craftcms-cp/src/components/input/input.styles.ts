@@ -1,10 +1,17 @@
 import {css} from 'lit';
 
 export default css`
-  /* If an input has a "size" attribute, it should not grow */
-  :host([size]) ::slotted(.form-control) {
-    width: auto;
-    flex: 0 0 auto;
+  /* If an input has a "maxlength" attribute, it should not grow */
+  :host([maxlength]) {
+    .input-group__container {
+      display: inline-flex;
+      width: auto;
+    }
+
+    ::slotted(.form-control) {
+      width: auto;
+      flex: 0 0 auto;
+    }
   }
 
   craft-input input[type='checkbox'],

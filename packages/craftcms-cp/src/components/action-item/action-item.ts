@@ -3,6 +3,7 @@ import {property} from 'lit/decorators.js';
 import styles from './action-item.styles.js';
 import {Variant, type VariantKey} from '@src/types';
 import variantsStyles from '@src/styles/variants.styles';
+import {classMap} from 'lit/directives/class-map.js';
 
 /**
  * @summary Either a link or button typically used in a menu.
@@ -13,9 +14,21 @@ export default class CraftActionItem extends LitElement {
   @property() href: string | null = null;
   @property({type: Boolean}) disabled: boolean = false;
   @property({reflect: true}) variant: VariantKey = Variant.Default;
+  @property({type: Boolean}) checked: boolean = false;
+  @property({type: Boolean}) active: boolean = false;
+  @property() type: 'normal' | 'checkbox' = 'normal';
 
   renderBody() {
     return html`
+      ${this.type === 'checkbox'
+        ? html` <div class="action-item__check">
+            <slot name="checkmark">
+              ${this.checked
+                ? html`<craft-icon name="check"></craft-icon>`
+                : nothing}
+            </slot>
+          </div>`
+        : nothing}
       <span class="action-item__prefix">
         <slot name="prefix">
           <slot name="icon">
@@ -37,12 +50,23 @@ export default class CraftActionItem extends LitElement {
   override render() {
     return this.href
       ? html`
-          <a class="action-item" href="${this.href}"> ${this.renderBody()} </a>
+          <a
+            class="${classMap({
+              'action-item': true,
+              'action-item--checkbox': this.type === 'checkbox',
+            })}"
+            href="${this.href}"
+          >
+            ${this.renderBody()}
+          </a>
         `
       : html`
           <button
             type="button"
-            class="action-item"
+            class="${classMap({
+              'action-item': true,
+              'action-item--checkbox': this.type === 'checkbox',
+            })}"
             ?disabled="${this.disabled}"
           >
             ${this.renderBody()}

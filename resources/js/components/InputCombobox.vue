@@ -1,5 +1,12 @@
 <script setup lang="ts">
-  import {computed, type MaybeRef, ref, unref, useTemplateRef} from 'vue';
+  import {
+    computed,
+    type HTMLAttributes,
+    type MaybeRef,
+    ref,
+    unref,
+    useTemplateRef,
+  } from 'vue';
   import {
     Combobox,
     ComboboxButton,
@@ -19,6 +26,7 @@
       modelValue?: string;
       requireOptionMatch?: boolean;
       transformModelValue?: (newValue: SelectOption | null) => string;
+      class?: HTMLAttributes['class'];
     }>(),
     {
       modelValue: '',
@@ -71,7 +79,6 @@
 
   const referenceCoordinates = computed(() => {
     const coordinates = reference.value?.getBoundingClientRect();
-    console.log({coordinates});
     if (coordinates) {
       return coordinates;
     }
@@ -140,7 +147,9 @@
       <ComboboxInput
         @change="query = $event.target.value"
         class="input"
+        :class="props.class"
         :displayValue="displayValue"
+        v-bind="$attrs"
       />
       <ComboboxButton
         class="absolute inset-y-1 right-1 flex items-center"

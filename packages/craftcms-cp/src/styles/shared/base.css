@@ -54,7 +54,7 @@ hr {
   width: 100%;
   border: 0;
   border-top: 1px solid var(--c-color-neutral-border-subtle);
-  margin-block: var(--c-spacing-xl);
+  margin-block: var(--c-spacing-lg);
 }
 
 .index-grid {
@@ -132,9 +132,13 @@ Modify with `cp-table--borderless` to remove the inline cell padding
 Modify with `cp-table--auto` to apply table-layout: auto
  */
 .cp-table {
+  --_cell-spacing-inline: var(--c-spacing-md);
+  --_cell-spacing-block: var(--c-spacing-md);
+  --_cell-height: var(--c-size-control-md);
   text-align: left;
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-variant-numeric: tabular-nums;
 
   @container (width >= 840px) {
@@ -142,18 +146,43 @@ Modify with `cp-table--auto` to apply table-layout: auto
   }
 
   thead {
+    border-bottom: 1px solid var(--c-color-neutral-border-subtle);
+  }
+
+  thead,
+  th {
     background-color: var(--c-color-neutral-bg-normal);
   }
 
-  th,
-  td {
-    vertical-align: top;
-    padding-block: var(--c-spacing-md);
-    padding-inline: var(--c-spacing-md);
+  .cell {
+    padding: 0;
+    vertical-align: middle;
+    padding-inline: var(--_cell-spacing-inline);
+    height: var(--_cell-height);
+
+    &:has(textarea),
+    &:has(input:not([type='checkbox']):not([type='radio'])) {
+      padding: 0;
+    }
   }
 
   tr:not(:last-child) {
     border-bottom: 1px solid var(--c-color-neutral-border-subtle);
+  }
+
+  textarea,
+  input:not([type='checkbox']):not([type='radio']) {
+    border: 0;
+    padding-block: var(--_cell-spacing-block);
+    padding-inline: var(--_cell-spacing-inline);
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  textarea {
+    resize: none;
+    line-height: 1.2;
   }
 }
 
@@ -165,18 +194,14 @@ Modify with `cp-table--auto` to apply table-layout: auto
   table-layout: fixed;
 }
 
+.cp-table--collapsed,
 .cp-table--borderless {
-  th,
-  td {
-    padding-inline: 0;
-  }
+  --_cell-spacing-block: 0;
 }
 
 .cp-table--compact {
-  th,
-  td {
-    padding-block: var(--c-spacing-sm);
-  }
+  --_cell-height: var(--c-size-control-sm);
+  --_cell-spacing-block: var(--c-spacing-sm);
 }
 
 .cp-table-header,

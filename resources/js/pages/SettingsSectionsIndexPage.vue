@@ -14,6 +14,7 @@
   import {Form, router} from '@inertiajs/vue3';
   import AppLayout from '@/layout/AppLayout.vue';
   import Pane from '@/components/Pane.vue';
+  import CpLink from '@/components/CpLink.vue';
 
   export interface SectionModel {
     id: number;
@@ -180,10 +181,10 @@
 <template>
   <AppLayout :title="title">
     <template #actions>
-      <a :href="create().url">
+      <CpLink as="craft-button" variant="primary" :href="create()">
         <craft-icon name="plus" slot="prefix"></craft-icon>
         {{ t('New section') }}
-      </a>
+      </CpLink>
     </template>
 
     <Pane :padding="0" appearance="raised">

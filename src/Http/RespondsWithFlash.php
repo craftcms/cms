@@ -27,7 +27,9 @@ trait RespondsWithFlash
 
         Flash::fail($message);
 
-        return back()->with($data)->withErrors($data['errors'] ?? []);
+        return back()
+            ->with('error', $message)
+            ->with($data)->withErrors($data['errors'] ?? []);
     }
 
     public function asJsonFailure(?string $message = null, array $data = []): JsonResponse
@@ -51,7 +53,9 @@ trait RespondsWithFlash
             return redirect($redirect)->with($data);
         }
 
-        return back()->with($data);
+        return back()
+            ->with('success', $message)
+            ->with($data);
     }
 
     public function asJsonSuccess(?string $message = null, array $data = []): JsonResponse

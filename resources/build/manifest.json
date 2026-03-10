@@ -20,18 +20,11 @@
       "_cp3.js"
     ]
   },
-  "_DeleteSiteModal.css": {
-    "file": "assets/DeleteSiteModal.css",
-    "src": "_DeleteSiteModal.css"
-  },
   "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js": {
     "file": "DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
     "name": "DeleteSiteModal.vue_vue_type_script_setup_true_lang",
     "imports": [
       "_cp3.js"
-    ],
-    "css": [
-      "assets/DeleteSiteModal.css"
     ]
   },
   "_IndexLayout.css": {
@@ -47,6 +40,27 @@
     ],
     "css": [
       "assets/IndexLayout.css"
+    ]
+  },
+  "_InputCombobox.css": {
+    "file": "assets/InputCombobox.css",
+    "src": "_InputCombobox.css"
+  },
+  "_InputCombobox.js": {
+    "file": "InputCombobox.js",
+    "name": "InputCombobox",
+    "imports": [
+      "_cp3.js"
+    ],
+    "css": [
+      "assets/InputCombobox.css"
+    ]
+  },
+  "_SectionsController.js": {
+    "file": "SectionsController.js",
+    "name": "SectionsController",
+    "imports": [
+      "_cp3.js"
     ]
   },
   "_cp2.css": {
@@ -147,6 +161,7 @@
       "resources/js/pages/Install.vue",
       "resources/js/pages/SettingsGeneralPage.vue",
       "resources/js/pages/SettingsIndexPage.vue",
+      "resources/js/pages/SettingsSectionsEditPage.vue",
       "resources/js/pages/SettingsSectionsIndexPage.vue",
       "resources/js/pages/SettingsSitesEdit.vue",
       "resources/js/pages/SettingsSitesIndex.vue",
@@ -155,6 +170,13 @@
     ],
     "css": [
       "assets/cp2.css"
+    ]
+  },
+  "_useInputGenerator.js": {
+    "file": "useInputGenerator.js",
+    "name": "useInputGenerator",
+    "imports": [
+      "_cp3.js"
     ]
   },
   "node_modules/@lion/ui/components/combobox/translations/bg.js": {
@@ -885,6 +907,23 @@
       "assets/SettingsIndexPage.css"
     ]
   },
+  "resources/js/pages/SettingsSectionsEditPage.vue": {
+    "file": "SettingsSectionsEditPage.js",
+    "name": "SettingsSectionsEditPage",
+    "src": "resources/js/pages/SettingsSectionsEditPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_cp3.js",
+      "_AppLayout.js",
+      "_useInputGenerator.js",
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
+      "_SectionsController.js",
+      "_InputCombobox.js"
+    ],
+    "css": [
+      "assets/SettingsSectionsEditPage.css"
+    ]
+  },
   "resources/js/pages/SettingsSectionsIndexPage.vue": {
     "file": "SettingsSectionsIndexPage.js",
     "name": "SettingsSectionsIndexPage",
@@ -892,6 +931,7 @@
     "isDynamicEntry": true,
     "imports": [
       "_cp3.js",
+      "_SectionsController.js",
       "_AppLayout.js"
     ]
   },
@@ -904,7 +944,9 @@
       "_cp3.js",
       "_AppLayout.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js"
+      "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
+      "_useInputGenerator.js",
+      "_InputCombobox.js"
     ]
   },
   "resources/js/pages/SettingsSitesIndex.vue": {
@@ -916,6 +958,7 @@
       "_cp3.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
       "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
+      "_InputCombobox.js",
       "_IndexLayout.js",
       "_AppLayout.js"
     ],

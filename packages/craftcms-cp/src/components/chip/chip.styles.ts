@@ -7,8 +7,7 @@ export default css`
 
   .chip {
     color: var(--c-chip-fg, var(--c-color-neutral-on-faint));
-    display: inline-grid;
-    grid-template-columns: minmax(0, auto) 1fr minmax(0, auto);
+    display: inline-flex;
     min-height: var(--c-chip-height, var(--c-size-control-sm));
     min-width: auto;
     border-radius: var(--c-chip-radius, var(--c-radius-md));
@@ -19,7 +18,7 @@ export default css`
     background-color: var(--c-chip-bg, var(--c-color-neutral-bg-faint));
     padding-inline: var(--c-chip-spacing-inline, var(--c-spacing-md));
     padding-block: var(--c-chip-spacing-block, var(--c-spacing-sm));
-    align-items: center;
+    align-items: start;
     box-shadow: var(--c-chip-shadow, var(--c-shadow-sm));
   }
 
@@ -49,7 +48,7 @@ export default css`
   .chip__suffix {
     display: inline-flex;
     flex-direction: column;
-    justify-content: center;
+    align-self: center;
   }
 
   .chip__body {

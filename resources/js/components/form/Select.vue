@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import type {SelectOption} from '@/types';
+  import CraftSelect from '@craftcms/cp/vue/CraftSelect.vue';
   import {computed} from 'vue';
 
   const emit = defineEmits<{
@@ -35,7 +36,7 @@
 </script>
 
 <template>
-  <craft-select v-model="modelProxy" v-bind="$attrs">
+  <CraftSelect v-model="modelProxy" v-bind="$attrs">
     <select slot="input">
       <option
         v-for="option in normalizedOptions"
@@ -49,7 +50,7 @@
     <ul class="error-list" v-if="error" slot="feedback">
       <li>{{ error }}</li>
     </ul>
-  </craft-select>
+  </CraftSelect>
 </template>
 
 <style scoped lang="scss"></style>

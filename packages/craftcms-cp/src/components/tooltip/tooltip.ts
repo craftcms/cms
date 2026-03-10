@@ -1,5 +1,5 @@
 import WaTooltip from '@awesome.me/webawesome/dist/components/tooltip/tooltip.js';
-import {css, html, LitElement} from 'lit';
+import {css} from 'lit';
 
 // export default class CraftTooltip extends LitElement {
 //   override render() {
@@ -12,7 +12,7 @@ export default class CraftTooltip extends WaTooltip {
     return [
       WaTooltip.styles,
       css`
-        :host {
+        wa-popup {
           --wa-z-index-tooltip: var(--c-tooltip-z-index, 1000);
           --wa-tooltip-background-color: var(
             --c-tooltip-bg,
@@ -20,7 +20,7 @@ export default class CraftTooltip extends WaTooltip {
           );
           --wa-tooltip-border-color: var(
             --c-tooltip-border,
-            var(--c-border-subtle)
+            var(--c-color-neutral-border-subtle)
           );
           --wa-tooltip-content-color: var(--c-tooltip-fg, currentColor);
           --wa-tooltip-padding: var(
@@ -39,6 +39,9 @@ export default class CraftTooltip extends WaTooltip {
             --c-tooltip-border-radius,
             var(--c-radius-sm)
           );
+          font-weight: 400;
+          color: var(--c-tooltip-fg, currentColor);
+          box-shadow: var(--c-shadow-md);
         }
       `,
     ];

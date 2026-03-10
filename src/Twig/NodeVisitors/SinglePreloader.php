@@ -89,7 +89,7 @@ final class SinglePreloader implements NodeVisitorInterface
         ]));
 
         foreach ($subNodes as $key => $subNode) {
-            $body->setNode($key, $subNode);
+            $body->setNode((string) $key, $subNode);
         }
 
         return $node;

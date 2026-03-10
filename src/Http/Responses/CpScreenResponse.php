@@ -22,6 +22,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Traits\Conditionable;
+use Inertia\Inertia;
 use Stringable;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -32,6 +33,20 @@ use function CraftCms\Cms\template;
 final class CpScreenResponse implements Responsable
 {
     use Conditionable;
+
+    /**
+     * @var string|null The Inertia page component to render.
+     *
+     * @see inertiaPage()
+     */
+    private ?string $inertiaPage = null;
+
+    /**
+     * @var array Props to pass to the Inertia page component.
+     *
+     * @see inertiaPage()
+     */
+    private array $inertiaProps = [];
 
     /**
      * @var callable|null Callable that will be called before other properties are added to the screen.
@@ -328,7 +343,7 @@ final class CpScreenResponse implements Responsable
      *
      * This will only be used by full-page screens.
      */
-    public function addCrumb(string $label, string $url): self
+    public function addCrumb(string $label, ?string $url = null): self
     {
         if (! is_array($this->crumbs)) {
             $this->crumbs = [];
@@ -336,7 +351,7 @@ final class CpScreenResponse implements Responsable
 
         $this->crumbs[] = [
             'label' => $label,
-            'url' => UrlHelper::cpUrl($url),
+            'url' => $url ? UrlHelper::cpUrl($url) : null,
         ];
 
         return $this;
@@ -608,6 +623,20 @@ final class CpScreenResponse implements Responsable
     }
 
     /**
+     * Sets the Inertia page component and props for this screen.
+     *
+     * When set, `toResponse()` will render an Inertia response instead of a Twig template.
+     * The `title` and `crumbs` properties will be automatically included as props.
+     */
+    public function inertiaPage(?string $value, array $props = []): self
+    {
+        $this->inertiaPage = $value;
+        $this->inertiaProps = $props;
+
+        return $this;
+    }
+
+    /**
      * Sets the right-hand meta sidebar HTML.
      */
     public function metaSidebarHtml(callable|string|null $value): self
@@ -689,11 +718,37 @@ final class CpScreenResponse implements Responsable
 
     public function toResponse($request): Response
     {
+        if ($this->inertiaPage) {
+            return $this->inertiaResponse($request);
+        }
+
         if ($request->wantsJson()) {
             return $this->jsonResponse($request);
         }
 
         return $this->response($request);
+    }
+
+    private function inertiaResponse(Request $request): Response
+    {
+        if ($this->prepareScreen) {
+            ($this->prepareScreen)($this, $request);
+        }
+
+        $crumbs = $this->crumbs;
+        if ($this->title) {
+            $crumbs[] = ['label' => $this->title];
+        }
+
+        $props = array_filter([
+            'title' => $this->title,
+            'crumbs' => $crumbs,
+        ], fn ($value) => $value !== null);
+
+        return Inertia::render(
+            $this->inertiaPage,
+            [...$props, ...$this->inertiaProps],
+        )->toResponse($request);
     }
 
     private function jsonResponse(Request $request): JsonResponse
