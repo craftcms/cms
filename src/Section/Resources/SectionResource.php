@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Resources;
 
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Section\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

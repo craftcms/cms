@@ -12,6 +12,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Image\Images;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\DB;
@@ -111,7 +112,7 @@ final class SystemReport extends Utility
         ];
 
         if (! class_exists(InstalledVersions::class, false)) {
-            $path = Craft::$app->getPath()->getVendorPath().DIRECTORY_SEPARATOR.'composer'.DIRECTORY_SEPARATOR.'InstalledVersions.php';
+            $path = Path::vendor('composer/InstalledVersions.php');
             if (file_exists($path)) {
                 require $path;
             }

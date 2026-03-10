@@ -11,6 +11,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
@@ -201,7 +202,7 @@ final readonly class CraftSupportController
         bool $attachTemplates,
         ?UploadedFile $attachment
     ): array {
-        $zipPath = Craft::$app->getPath()->getTempPath().'/'.Str::uuid()->toString().'.zip';
+        $zipPath = Path::temp(Str::uuid()->toString().'.zip');
         $message = '';
 
         // Create the zip
@@ -232,7 +233,7 @@ final readonly class CraftSupportController
         $zip->addFromString('project.yaml', Yaml::dump($projectConfig, 20, 2));
 
         // project.yaml backups
-        $configBackupPath = Craft::$app->getPath()->getConfigBackupPath(false);
+        $configBackupPath = Path::configBackup(create: false);
         $zip->addGlob($configBackupPath.'/*', 0, [
             'remove_all_path' => true,
             'add_path' => 'config-backups/',
@@ -240,7 +241,7 @@ final readonly class CraftSupportController
 
         // Logs
         if ($attachLogs) {
-            $logPath = Craft::$app->getPath()->getLogPath();
+            $logPath = Path::logs();
             FileHelper::addFilesToZip($zip, $logPath, 'logs', [
                 'only' => ['*.log'],
                 'except' => ['web-404s.log'],
@@ -263,7 +264,7 @@ final readonly class CraftSupportController
 
         // Templates
         if ($attachTemplates) {
-            $templatesPath = Craft::$app->getPath()->getSiteTemplatesPath();
+            $templatesPath = Path::siteTemplates();
             FileHelper::addFilesToZip($zip, $templatesPath, 'templates');
         }
 

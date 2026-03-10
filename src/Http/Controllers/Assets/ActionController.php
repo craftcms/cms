@@ -13,6 +13,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\JsonResponse;
@@ -158,7 +159,7 @@ final readonly class ActionController
         }
 
         // Otherwise create a zip of all the selected assets
-        $zipPath = Craft::$app->getPath()->getTempPath().'/'.Str::uuid()->toString().'.zip';
+        $zipPath = Path::temp(Str::uuid()->toString().'.zip');
         $zip = new ZipArchive;
 
         abort_if($zip->open($zipPath, ZipArchive::CREATE) !== true, 500, 'Cannot create zip at '.$zipPath);

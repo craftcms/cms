@@ -12,6 +12,7 @@ use CraftCms\Cms\Console\Commands\IdeHelper\GenerateCustomFieldsCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCheckCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCommand;
 use CraftCms\Cms\Console\Commands\InvalidateTagsCommand;
+use CraftCms\Cms\Console\Commands\SendTestMailCommand;
 use CraftCms\Cms\Console\Commands\Setup\CloudCommand;
 use CraftCms\Cms\Console\Commands\Setup\DatabaseCredentialsCommand;
 use CraftCms\Cms\Console\Commands\Setup\SetupCommand;
@@ -47,6 +48,9 @@ final class ConsoleServiceProvider extends ServiceProvider
         EnvShowCommand::class,
         EnvSetCommand::class,
         EnvRemoveCommand::class,
+
+        // Mailer
+        SendTestMailCommand::class,
 
         // Gc
         RunCommand::class,

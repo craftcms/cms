@@ -31,6 +31,7 @@ use CraftCms\Cms\Image\FallbackTransformer;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
@@ -318,7 +319,7 @@ final class Assets
         if (! $handle) {
             return Storage::build([ // @phpstan-ignore return.type
                 'driver' => 'local',
-                'root' => Craft::$app->getPath()->getTempAssetUploadsPath(),
+                'root' => Path::tempAssetUploads(),
             ]);
         }
 

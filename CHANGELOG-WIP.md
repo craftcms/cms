@@ -6,12 +6,15 @@
 
 ## Extensibility
 - Added `CraftCms\Cms\Support\Arr`.
+- Added `CraftCms\Cms\Support\Facades\Path`.
+- Added `CraftCms\Cms\Support\Path`.
 - Added `CraftCms\Cms\Support\Str`.
 - `craft\services\Elements::stopCollectingCacheInfo()` no longer sets the returned duration to the `cacheDuration` config setting if a duration wasn’t explicitly declared. ([#16796](https://github.com/craftcms/cms/pull/16796))
 - Deprecated `craft\helpers\ArrayHelper`. `CraftCms\Cms\Support\Arr` should be used instead.
 - Deprecated `craft\helpers\ConfigHelper`. `CraftCms\Cms\Support\Config` should be used instead.
 - Deprecated `craft\helpers\Diff`. `CraftCms\Cms\Support\Diff` should be used instead.
 - Deprecated `craft\helpers\Html`. `CraftCms\Cms\Support\Html` should be used instead.
+- Deprecated `craft\services\Path`. `CraftCms\Cms\Support\Path` should be used instead.
 - Deprecated `craft\helpers\SessionHelper`. `Illuminate\Support\Facades\Session` should be used instead.
 - Deprecated `craft\helpers\Sequence`. `CraftCms\Cms\Support\Sequence` should be used instead.
 - Deprecated `craft\helpers\StringHelper`. `CraftCms\Cms\Support\Str` should be used instead.
@@ -584,6 +587,18 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Removed the licensing issues screen logic in `yii2-adapter\legacy\web\Application`. The new `\CraftCms\Cms\Http\Middleware\EnforceLicenses` middleware handles this functionality.
 - Removed `craft\controllers\AppController::actionTryEdition()` and `actionSwitchToLicensedEdition()` in favor of `CraftCms\Cms\Http\Controllers\EditionController`.
 
+## Mail
+
+- Added `CraftCms\Cms\Console\Commands\SendTestMailCommand`.
+- Added `CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable`.
+- Added `CraftCms\Cms\Utility\Utilities\MailSettings`.
+- Deprecated `Craft::$app->getMailer()`. Laravel mailers/drivers and `CraftCms\Cms\SystemMessage\SystemMessages::mailable()` should be used instead.
+- Deprecated `craft\mail\Mailer`. Laravel mailers/drivers and `CraftCms\Cms\SystemMessage\SystemMessages::mailable()` should be used instead.
+- Deprecated `craft\helpers\MailerHelper`. Laravel mail configuration and drivers should be used instead.
+- Deprecated `craft\config\GeneralConfig::$testToEmailAddress` and `craft\config\GeneralConfig::testToEmailAddress()`. `Illuminate\Support\Facades\Mail::alwaysTo()` should be used instead.
+- Deprecated `craft\mail\Mailer::$template`, `craft\mail\Mailer::$siteOverrides`, `craft\models\MailSettings::$template`, and `craft\models\MailSettings::$siteOverrides`. Laravel mailable views and environment-specific Laravel mailers should be used instead.
+- Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel's `mail` config and drivers.
+
 ## Migrations
 
 Craft and Yii's migrations have been removed in favor of [Laravel migrations](https://laravel.com/docs/12.x/migrations).
@@ -646,6 +661,7 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 ## Request
 
 - Added `Request::isPreview()` macro for detecting preview requests via `x-craft-preview` or `x-craft-live-preview` parameters.
+- Added `Request::isCpRequest()`, `Request::isSiteRequest()`, `Request::isActionRequest()`, `Request::actionSegments()`, `Request::actionSegmentsToRoute()`, `Request::pageNumber()`, `Request::duplicateWithUri()`, `Request::getToken()`, and `Request::getSigned()` macros.
 
 ## Security
 
@@ -920,6 +936,13 @@ Moved the following controllers:
 - Added `CraftCms\Cms\View\TemplateMode` enum.
 - Added `CraftCms\Cms\View\Events\RegisterCpTemplateRoots`.
 - Added `CraftCms\Cms\View\Events\RegisterSiteTemplateRoots`.
+- Added `CraftCms\Cms\View\TemplateCaches`.
+- Added `CraftCms\Cms\View\CacheCollectors\DependencyCollector`.
+- Added `CraftCms\Cms\View\CacheCollectors\ResourceCollector`.
+- Added `CraftCms\Cms\View\Contracts\CacheCollectorInterface`.
+- Added `CraftCms\Cms\View\Data\TemplateCacheContext`.
+- Added `CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors`.
+- Deprecated `craft\services\TemplateCaches`. `CraftCms\Cms\View\TemplateCaches` should be used instead.
 - Deprecated `craft\web\View::registerJs()`. `CraftCms\Cms\View\HtmlStack::js()` should be used instead.
 - Deprecated `craft\web\View::registerJsWithVars()`. `CraftCms\Cms\View\HtmlStack::jsWithVars()` should be used instead.
 - Deprecated `craft\web\View::registerJsFile()`. `CraftCms\Cms\View\HtmlStack::jsFile()` should be used instead.

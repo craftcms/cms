@@ -10,6 +10,7 @@ use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Diff;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\AllDependencies;
@@ -624,7 +625,7 @@ final class ProjectConfigHelper
 
         $timestampLine = "dateModified: $timestamp\n";
 
-        $path = Craft::$app->getPath()->getProjectConfigFilePath();
+        $path = Path::projectConfigFile();
         $handle = fopen($path, 'r');
         $foundTimestamp = false;
 

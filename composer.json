@@ -138,6 +138,13 @@
       "@php vendor/bin/testbench package:sync-skeleton --ansi",
       "@build",
       "@php vendor/bin/testbench serve --ansi"
+    ],
+    "ci": [
+      "@php pint",
+      "@rector",
+      "@phpstan",
+      "@tests",
+      "@tests-adapter"
     ]
   },
   "config": {
