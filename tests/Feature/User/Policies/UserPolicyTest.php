@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\Auth\Models\SsoIdentity;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
 
@@ -221,6 +224,23 @@ it('denies suspend when target has SSO identity', function () {
     $ssoUser = createUserTestUser(id: 2, hasSsoIdentity: true);
 
     $result = $this->policy->suspend($moderator, $ssoUser);
+
+    expect($result)->toBeFalse();
+});
+
+it('denies suspend when target has a stored SSO identity', function () {
+    Edition::set(Edition::Pro);
+
+    $moderator = createUserTestUser(id: 1, permissions: ['moderateUsers']);
+    $targetUser = UserModel::factory()->create()->asElement();
+
+    SsoIdentity::query()->create([
+        'provider' => 'marketing',
+        'identityId' => 'stored-sso-user',
+        'userId' => $targetUser->id,
+    ]);
+
+    $result = $this->policy->suspend($moderator, $targetUser);
 
     expect($result)->toBeFalse();
 });

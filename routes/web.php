@@ -4,10 +4,18 @@ use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Http\Controllers\Auth\OAuthController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
 use CraftCms\Cms\Site\Sites;
 use Illuminate\Support\Facades\Route;
+
+if (Edition::get()->oAuthAvailable()) {
+    Route::get('auth/socialite/redirect/{provider}', [OAuthController::class, 'redirect'])
+        ->name('auth.socialite.redirect');
+    Route::get('auth/socialite/callback/{provider}', [OAuthController::class, 'callback'])
+        ->name('auth.socialite.callback');
+}
 
 if (Edition::get()->registersFrontendUserRoutes()) {
     if (Cms::config()->loginPath !== false) {
@@ -22,7 +30,7 @@ if (Edition::get()->registersFrontendUserRoutes()) {
 
     Route::middleware('auth:craft')->group(function () {
         if (Cms::config()->logoutPath !== false) {
-            Route::get(Cms::config()->logoutPath, [LoginController::class, 'logout']);
+            Route::any(Cms::config()->logoutPath, [LoginController::class, 'logout']);
         }
     });
 }

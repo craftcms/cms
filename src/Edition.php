@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Request;
 use InvalidArgumentException;
+use Laravel\Socialite\Contracts\Factory as SocialiteFactory;
 
 /**
  * Edition defines all available Craft CMS editions
@@ -176,6 +177,11 @@ enum Edition: int implements Arrayable
     public function registersFrontendUserRoutes(): bool
     {
         return $this->value >= self::Pro->value;
+    }
+
+    public function oAuthAvailable(): bool
+    {
+        return $this->value >= self::Pro->value && interface_exists(SocialiteFactory::class);
     }
 
     public function toArray(): array

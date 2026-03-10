@@ -16,6 +16,7 @@ use CraftCms\Cms\Auth\Models\SsoIdentity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\Socialite\LegacySsoDriverGuard;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -137,6 +138,8 @@ class Sso extends Component
      */
     private function initProviders(array $configs = []): MemoizableArray
     {
+        app(LegacySsoDriverGuard::class)->assertLegacyProviderHandlesAvailable(array_keys($configs));
+
         $providers = array_map(function(string $handle, array $config) {
             $config['handle'] = $handle;
             return $this->createAuthProvider($config);

@@ -135,9 +135,9 @@
       retryMessage: 'Sign in with a passkey'|t('app'),
     }) }}
 
-    {% if CraftEdition == CraftEnterprise %}
-      {% for provider in craft.app.sso.providers %}
-        {{ provider.getCpLoginHtml()|raw }}
+    {% if CraftEdition >= CraftPro %}
+      {% for provider in craft.auth.getSocialiteProviders() %}
+        {{ craft.app.request.isCpRequest ? provider.renderCpButton()|raw : provider.renderSiteLink()|raw }}
       {% endfor %}
     {% endif %}
 

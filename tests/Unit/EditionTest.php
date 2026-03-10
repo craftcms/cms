@@ -102,6 +102,14 @@ it('can determine if the edition can be tested', function () {
     unset($_SERVER['CRAFT_NO_TRIALS']);
 });
 
+it('determines if socialite is available for the current edition', function () {
+    Edition::set(Edition::Team);
+    expect(Edition::get()->oAuthAvailable())->toBeFalse();
+
+    Edition::set(Edition::Pro);
+    expect(Edition::get()->oAuthAvailable())->toBeTrue();
+});
+
 it('determines if the edition can be upgraded', function () {
     Edition::set(Edition::Solo);
 

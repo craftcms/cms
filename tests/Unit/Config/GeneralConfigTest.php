@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Tests\TestClasses\Auth\MarketingProviderDefinition;
 use Illuminate\Support\Facades\Config;
 
 it('can get from container', function () {
@@ -59,4 +60,20 @@ it('can set trackedQueueNames via fluent setter', function () {
     $config = GeneralConfig::create()->trackedQueueNames(['craft', 'default']);
 
     expect($config->trackedQueueNames)->toBe(['craft', 'default']);
+});
+
+it('can set socialiteProviders via fluent setter', function () {
+    $config = GeneralConfig::create()->socialiteProviders([
+        'google' => [
+            'name' => 'Google',
+        ],
+        MarketingProviderDefinition::class,
+    ]);
+
+    expect($config->socialiteProviders)->toBe([
+        'google' => [
+            'name' => 'Google',
+        ],
+        MarketingProviderDefinition::class,
+    ]);
 });

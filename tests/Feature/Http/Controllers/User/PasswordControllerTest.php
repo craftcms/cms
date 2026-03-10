@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\Models\SsoIdentity;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Users\PasswordController;
@@ -188,6 +189,29 @@ it('requires loginName when not providing userId for sendPasswordResetEmail', fu
 it('returns error for invalid loginName on sendPasswordResetEmail', function () {
     $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
         'loginName' => 'nonexistent@example.com',
+    ]);
+
+    expect($response->json('message'))->toContain('Invalid username or email.');
+});
+
+it('returns error for SSO-only users on sendPasswordResetEmail', function () {
+    Edition::set(Edition::Pro);
+
+    $user = UserModel::factory()->create([
+        'email' => 'sso-only@example.com',
+        'password' => null,
+    ]);
+
+    SsoIdentity::query()->create([
+        'provider' => 'marketing',
+        'identityId' => 'sso-only-user',
+        'userId' => $user->id,
+    ]);
+
+    auth()->logout();
+
+    $response = postJson(action([PasswordController::class, 'sendPasswordResetEmail']), [
+        'loginName' => 'sso-only@example.com',
     ]);
 
     expect($response->json('message'))->toContain('Invalid username or email.');

@@ -15,7 +15,7 @@ use Throwable;
 
 final class ConfigServiceProvider extends ServiceProvider
 {
-    private array $configFiles = [
+    private array $craftConfigFiles = [
         'general',
         'redirects',
         'routes',
@@ -29,13 +29,14 @@ final class ConfigServiceProvider extends ServiceProvider
 
         $this->app->singleton(GeneralConfig::class, fn () => $this->app->make(ConfigRepository::class)->get('craft.general'));
 
-        collect($this->configFiles)->each(function (string $file) {
+        collect($this->craftConfigFiles)->each(function (string $file) {
             if ($file === 'general') {
                 return;
             }
 
             $this->mergeConfigFrom(__DIR__."/../../config/$file.php", "craft.$file");
         });
+
     }
 
     public function boot(): void
@@ -50,9 +51,10 @@ final class ConfigServiceProvider extends ServiceProvider
             return;
         }
 
-        collect($this->configFiles)->each(function (string $file) {
+        collect($this->craftConfigFiles)->each(function (string $file) {
             $this->publishes([__DIR__."/../../config/$file.php" => config_path("craft/$file.php")], 'craftcms-config');
         });
+
     }
 
     private function loadGeneralConfig(): void

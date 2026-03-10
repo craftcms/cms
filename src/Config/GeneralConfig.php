@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
+use Override;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -44,7 +45,7 @@ class GeneralConfig extends BaseConfig
 
     public const string SNAKE_CASE = 'snake';
 
-    #[\Override]
+    #[Override]
     protected static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',
@@ -1787,6 +1788,40 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public mixed $logoutPath = 'logout';
+
+    /**
+     * @var array<int|string, array<string, mixed>|class-string<\CraftCms\Cms\Auth\OAuth\ProviderDefinition>|\CraftCms\Cms\Auth\OAuth\ProviderDefinition> The configured Socialite providers that should be available for login.
+     *
+     * Each provider is keyed by handle and can define:
+     *
+     * - `driver`
+     * - `name`
+     * - `scopes`
+     * - `with`
+     * - `clientId`
+     * - `clientSecret`
+     * - `redirectUrl`
+     * - `stateless`
+     * - `idpUniqueIdentifier`
+     * - `findUser`
+     * - `populateUser`
+     * - `assignUserGroups`
+     *
+     * ```php
+     * ->socialiteProviders([
+     *     'google' => [
+     *         'name' => 'Google',
+     *         'scopes' => ['openid', 'email', 'profile'],
+     *         'clientId' => env('GOOGLE_CLIENT_ID'),
+     *         'clientSecret' => env('GOOGLE_CLIENT_SECRET'),
+     *     ],
+     *     \App\Auth\MarketingProviderDefinition::class,
+     * ])
+     * ```
+     *
+     * @group Authentication
+     */
+    public array $socialiteProviders = [];
 
     /**
      * @var int The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them. Defaults to `0` as of 5.9.0. Earlier versions default to `2000`.
@@ -5426,6 +5461,30 @@ class GeneralConfig extends BaseConfig
     public function logoutPath(mixed $value): self
     {
         $this->logoutPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The configured Socialite providers that should be available for login.
+     *
+     * ```php
+     * ->socialiteProviders([
+     *     'google' => [
+     *         'name' => 'Google',
+     *         'clientId' => env('GOOGLE_CLIENT_ID'),
+     *     ],
+     *     \App\Auth\MarketingProviderDefinition::class,
+     * ])
+     * ```
+     *
+     * @group Authentication
+     *
+     * @see $socialiteProviders
+     */
+    public function socialiteProviders(array $value): self
+    {
+        $this->socialiteProviders = $value;
 
         return $this;
     }

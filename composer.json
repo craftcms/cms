@@ -80,6 +80,7 @@
     "fakerphp/faker": "^1.19.0",
     "larastan/larastan": "^3.4",
     "laravel/pint": "^1.22",
+    "laravel/socialite": "^5.24.3",
     "orchestra/testbench": "^10.3",
     "pestphp/pest": "^4.0",
     "pestphp/pest-plugin-arch": "^4.0",

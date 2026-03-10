@@ -24,6 +24,8 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Laravel\Socialite\Contracts\Factory as SocialiteFactory;
+use Laravel\Socialite\SocialiteServiceProvider as LaravelSocialiteServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -51,6 +53,10 @@ class TestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
+
+        if (class_exists(LaravelSocialiteServiceProvider::class) && ! app()->bound(SocialiteFactory::class)) {
+            app()->register(LaravelSocialiteServiceProvider::class);
+        }
 
         app()->setLocale('en-US');
         app()->maintenanceMode()->deactivate();
