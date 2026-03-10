@@ -832,7 +832,8 @@ class App
      */
     public static function userConfig(): array
     {
-        $generalConfig = Cms::config();
+        /** @var \craft\config\GeneralConfig $generalConfig */
+        $generalConfig = Craft::$app->getConfig()->getConfigSettings(\craft\services\Config::CATEGORY_GENERAL);
         $request = Craft::$app->getRequest();
 
         if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {

@@ -9,9 +9,9 @@ namespace craft\services;
 
 use Craft;
 use craft\config\DbConfig;
-use CraftCms\Cms\Cms;
+use craft\config\GeneralConfig as LegacyGeneralConfig;
 use CraftCms\Cms\Config\BaseConfig;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Config\GeneralConfig as NewGeneralConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Typecast;
@@ -28,7 +28,7 @@ use yii\base\Component;
  * An instance of the service is available via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->getConfig()`]].
  *
  * @property-read DbConfig $db the DB config settings
- * @property-read GeneralConfig $general the general config settings
+ * @property-read LegacyGeneralConfig $general the general config settings
  * @property-read object $custom the custom config settings
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -103,7 +103,7 @@ class Config extends Component
 
             if ($category !== self::CATEGORY_CUSTOM && isset($this->appType)) {
                 // See if an application type-specific config exists (general.web.php / general.console.php)
-                /** @var GeneralConfig|DbConfig $config */
+                /** @var LegacyGeneralConfig|DbConfig $config */
                 $config = $this->_createConfigObj($category, "$category.$this->appType", $config);
             }
 
@@ -115,29 +115,38 @@ class Config extends Component
 
     private function _createConfigObj(string $category, string $filename, BaseConfig|\craft\config\BaseConfig|null $existingConfig): object
     {
-        if ($category === self::CATEGORY_GENERAL) {
-            return Cms::config();
-        }
-
         $config = ConfigFacade::get("craft.$filename", []);
 
         if ($existingConfig && empty($config)) {
             return $existingConfig;
         }
 
-        switch ($category) {
-            case self::CATEGORY_CUSTOM:
-                return (object)$config;
-            case self::CATEGORY_DB:
-                $configClass = DbConfig::class;
-                $envPrefix = 'CRAFT_DB_';
-                break;
-            default:
-                throw new InvalidArgumentException("Invalid config category: $category");
+        if ($category === self::CATEGORY_GENERAL) {
+            $configClass = LegacyGeneralConfig::class;
+            $envPrefix = 'CRAFT_';
+
+            if ($config instanceof NewGeneralConfig) {
+                $config = LegacyGeneralConfig::__set_state($config->toArray());
+            }
+        } else {
+            switch ($category) {
+                case self::CATEGORY_CUSTOM:
+                    return (object)$config;
+                case self::CATEGORY_DB:
+                    $configClass = DbConfig::class;
+                    $envPrefix = 'CRAFT_DB_';
+                    break;
+                default:
+                    throw new InvalidArgumentException("Invalid config category: $category");
+            }
         }
 
         if (is_callable($config)) {
             $config = $config($existingConfig ?? $configClass::create());
+        }
+
+        if ($config instanceof NewGeneralConfig) {
+            $config = LegacyGeneralConfig::__set_state($config->toArray());
         }
 
         // Get any environment value overrides
@@ -172,7 +181,12 @@ class Config extends Component
             Craft::configure($existingConfig, $config);
             $config = $existingConfig;
         } else {
-            $config = new $configClass($config);
+            if ($category === self::CATEGORY_GENERAL) {
+                $config = $configClass::__set_state($config);
+            } else {
+                /** @var class-string<DbConfig> $configClass */
+                $config = new $configClass($config);
+            }
         }
 
         $this->_loadingConfigFile = $loadingConfig;
@@ -233,14 +247,15 @@ class Config extends Component
      * </a>
      * ```
      *
-     * @return GeneralConfig
+     * @return LegacyGeneralConfig
      * @deprecated in 6.0.0. Use `app(\CraftCms\Cms\Config\GeneralConfig::class)` (PHP) or `app.config.craft.general` (Twig) instead.
      */
-    public function getGeneral(): GeneralConfig
+    public function getGeneral(): LegacyGeneralConfig
     {
         Deprecator::log('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `CraftCms\Cms\Cms::config()` (PHP) or `app.config.craft.general` (Twig) instead.');
 
-        return Cms::config();
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->getConfigSettings(self::CATEGORY_GENERAL);
     }
 
     /**
