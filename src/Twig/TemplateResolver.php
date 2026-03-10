@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Twig\Error\LoaderError;
 
 use function CraftCms\Cms\t;
+use function Illuminate\Filesystem\join_paths;
 
 #[Scoped]
 final class TemplateResolver
@@ -153,7 +154,7 @@ final class TemplateResolver
         // Should we be looking for a localized version of the template?
         if (TemplateMode::is(TemplateMode::Site) && Cms::isInstalled()) {
             /** @noinspection PhpUnhandledExceptionInspection */
-            $sitePath = TemplateMode::get()->templatesPath().DIRECTORY_SEPARATOR.Sites::getCurrentSite()->handle;
+            $sitePath = join_paths(TemplateMode::get()->templatesPath(), Sites::getCurrentSite()->handle);
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
             }
@@ -211,14 +212,14 @@ final class TemplateResolver
             }
 
             // Maybe $name is already the full file path
-            $testPath = $basePath.DIRECTORY_SEPARATOR.$name;
+            $testPath = join_paths($basePath, $name);
 
             if (is_file($testPath)) {
                 return $testPath;
             }
 
             foreach ($templateMode->defaultTemplateExtensions() as $extension) {
-                $testPath = $basePath.DIRECTORY_SEPARATOR.$name.'.'.$extension;
+                $testPath = join_paths($basePath, $name.'.'.$extension);
 
                 if (is_file($testPath)) {
                     return $testPath;
@@ -228,7 +229,9 @@ final class TemplateResolver
 
         foreach ($templateMode->indexTemplateFilenames() as $filename) {
             foreach ($templateMode->defaultTemplateExtensions() as $extension) {
-                $testPath = $basePath.($name !== '' ? DIRECTORY_SEPARATOR.$name : '').DIRECTORY_SEPARATOR.$filename.'.'.$extension;
+                $testPath = $name !== ''
+                    ? join_paths($basePath, $name, $filename.'.'.$extension)
+                    : join_paths($basePath, $filename.'.'.$extension);
 
                 if (is_file($testPath)) {
                     return $testPath;

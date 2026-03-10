@@ -14,6 +14,7 @@ use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Updates;
 use GuzzleHttp\Utils;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
@@ -102,7 +103,7 @@ final class AppServiceProvider extends ServiceProvider
         config([
             'filesystems.disks.rebrand' => [
                 'driver' => 'local',
-                'root' => storage_path('rebrand'),
+                'root' => Path::rebrand(create: false),
                 'url' => implode('/', [
                     config('app.url'),
                     Cms::config()->cpTrigger,
