@@ -11,6 +11,9 @@ export interface UiLayer {
 // Global stack of open UI layers
 const layers = ref<UiLayer[]>([]);
 
+// Shared slideout width (persists across all slideouts)
+const slideoutWidth = ref<number | null>(null);
+
 export function useUiLayerManager() {
   const add = (layer: UiLayer) => {
     if (!layers.value.find((l) => l.id === layer.id)) {
@@ -61,11 +64,26 @@ export function useUiLayerManager() {
 
   const hasOpenLayers = computed(() => layers.value.length > 0);
 
+  const getSlideoutWidth = () => slideoutWidth.value;
+
+  const setSlideoutWidth = (width: number | null) => {
+    slideoutWidth.value = width;
+    // Apply width to all open slideouts
+    const slideouts = layers.value.filter((l) => l.type === 'slideout');
+    slideouts.forEach((layer) => {
+      if (layer.panel && width !== null) {
+        layer.panel.style.width = `${width}px`;
+      }
+    });
+  };
+
   return {
     add,
     remove,
     isTopmost,
     count,
     hasOpenLayers,
+    getSlideoutWidth,
+    setSlideoutWidth,
   };
 }

@@ -14,6 +14,9 @@ const meta: Meta<typeof Slideout> = {
     showFooter: {control: 'boolean'},
     closeOnEscape: {control: 'boolean'},
     closeOnBackdropClick: {control: 'boolean'},
+    resizable: {control: 'boolean'},
+    minWidth: {control: 'number'},
+    maxWidth: {control: 'number'},
   },
   args: {
     position: 'end',
@@ -21,6 +24,9 @@ const meta: Meta<typeof Slideout> = {
     showFooter: true,
     closeOnEscape: true,
     closeOnBackdropClick: true,
+    resizable: false,
+    minWidth: 320,
+    maxWidth: 1200,
     title: 'Example Slideout',
   },
 };
@@ -249,6 +255,73 @@ export const Minimal: Story = {
           <p>This slideout has no header or footer.</p>
           <p>Just the body content.</p>
           <craft-button type="button" @click="isOpen = false">Close</craft-button>
+        </Slideout>
+      </div>
+    `,
+  }),
+};
+
+export const Resizable: Story = {
+  render: () => ({
+    components: {Slideout},
+    setup() {
+      const isOpen = ref(false);
+      return {isOpen};
+    },
+    template: `
+      <div>
+        <craft-button type="button" @click="isOpen = true">Open Resizable Slideout</craft-button>
+
+        <Slideout
+          v-model="isOpen"
+          title="Resizable Slideout"
+          resizable
+          :minWidth="320"
+          :maxWidth="1200"
+        >
+          <p>This slideout can be resized by dragging the left edge.</p>
+          <p>The resize handle appears as a blue bar when you hover over it.</p>
+          <p>Try resizing this slideout, then close it and reopen to see that the width is preserved.</p>
+
+          <template #secondary-action>
+            <craft-button type="button" @click="isOpen = false">Close</craft-button>
+          </template>
+        </Slideout>
+      </div>
+    `,
+  }),
+};
+
+export const ResizableNested: Story = {
+  render: () => ({
+    components: {Slideout},
+    setup() {
+      const outerOpen = ref(false);
+      const innerOpen = ref(false);
+      return {outerOpen, innerOpen};
+    },
+    template: `
+      <div>
+        <craft-button type="button" @click="outerOpen = true">Open Resizable Slideout</craft-button>
+
+        <Slideout v-model="outerOpen" title="Outer Slideout" resizable>
+          <p>This slideout is resizable. Drag the left edge to resize.</p>
+          <p>When you resize this slideout, all subsequent slideouts will open at the same width.</p>
+
+          <craft-button type="button" @click="innerOpen = true">Open Nested Slideout</craft-button>
+
+          <Slideout v-model="innerOpen" title="Inner Slideout" resizable>
+            <p>This nested slideout inherits the width from the parent.</p>
+            <p>You can also resize this one, and the width will be shared with any new slideouts.</p>
+
+            <template #secondary-action>
+              <craft-button type="button" @click="innerOpen = false">Close Inner</craft-button>
+            </template>
+          </Slideout>
+
+          <template #secondary-action>
+            <craft-button type="button" @click="outerOpen = false">Close</craft-button>
+          </template>
         </Slideout>
       </div>
     `,

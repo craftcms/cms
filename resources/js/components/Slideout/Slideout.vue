@@ -2,6 +2,7 @@
   import {computed, nextTick, onUnmounted, ref, watch} from 'vue';
   import {onKeyStroke} from '@vueuse/core';
   import {useUiLayerManager} from '@/composables/useUiLayerManager';
+  import {useResizable} from '@/composables/useResizable';
   import Pane from '@/components/Pane/Pane.vue';
 
   export interface SlideoutProps {
@@ -13,6 +14,9 @@
     closeOnEscape?: boolean;
     closeOnBackdropClick?: boolean;
     action?: string;
+    resizable?: boolean;
+    minWidth?: number;
+    maxWidth?: number;
   }
 
   const props = withDefaults(defineProps<SlideoutProps>(), {
@@ -22,6 +26,9 @@
     showFooter: true,
     closeOnEscape: true,
     closeOnBackdropClick: true,
+    resizable: false,
+    minWidth: 320,
+    maxWidth: 1200,
   });
 
   const emit = defineEmits<{
@@ -45,6 +52,27 @@
   const isOpen = ref(false);
   const triggerElement = ref<HTMLElement | null>(null);
 
+  // The resize handle is on the opposite edge from the slideout position
+  // e.g., position='end' means panel is on inline-end, so handle is on 'start' edge
+  const resizeEdge = computed(() => (props.position === 'end' ? 'start' : 'end'));
+
+  const {
+    setHandleRef,
+    size: currentWidth,
+    isResizing,
+  } = useResizable({
+    target: panelRef,
+    direction: 'horizontal',
+    edge: resizeEdge,
+    minSize: () => props.minWidth,
+    maxSize: () => props.maxWidth,
+    initialSize: layerManager.getSlideoutWidth() ?? undefined,
+    enabled: () => props.resizable,
+    onResizeEnd: (width) => {
+      layerManager.setSlideoutWidth(width);
+    },
+  });
+
   // Computed
   const isActive = computed(() => props.modelValue);
 
@@ -60,6 +88,13 @@
     document.body.style.overflow = 'hidden';
 
     nextTick(() => {
+      // Apply stored width if available
+      const storedWidth = layerManager.getSlideoutWidth();
+      if (storedWidth !== null && panelRef.value) {
+        panelRef.value.style.width = `${storedWidth}px`;
+        currentWidth.value = storedWidth;
+      }
+
       // Register with layer manager
       layerManager.add({
         id,
@@ -198,10 +233,20 @@
           'craft-slideout-panel--start': props.position === 'start',
           'craft-slideout-panel--end': props.position === 'end',
           'craft-slideout-panel--open': isOpen,
+          'craft-slideout-panel--resizing': isResizing,
         }"
         role="dialog"
         aria-modal="true"
       >
+        <div
+          v-if="resizable"
+          :ref="setHandleRef"
+          :class="{
+            'craft-slideout-resize-handle': true,
+            'craft-slideout-resize-handle--start': props.position === 'end',
+            'craft-slideout-resize-handle--end': props.position === 'start',
+          }"
+        ></div>
         <div class="slideout-inner">
           <Pane
             as="form"
@@ -292,6 +337,35 @@
 
   .craft-slideout-panel--open {
     translate: 0 0;
+  }
+
+  .craft-slideout-panel--resizing {
+    transition: none;
+    user-select: none;
+  }
+
+  .craft-slideout-resize-handle {
+    position: absolute;
+    inset-block: 0;
+    width: 6px;
+    cursor: ew-resize;
+    background: transparent;
+    z-index: 10;
+    transition: background-color 150ms ease;
+    touch-action: none;
+  }
+
+  .craft-slideout-resize-handle:hover,
+  .craft-slideout-resize-handle:active {
+    background-color: var(--c-color-brand-fill, #3b82f6);
+  }
+
+  .craft-slideout-resize-handle--start {
+    inset-inline-start: 0;
+  }
+
+  .craft-slideout-resize-handle--end {
+    inset-inline-end: 0;
   }
 
   .slideout-inner {
