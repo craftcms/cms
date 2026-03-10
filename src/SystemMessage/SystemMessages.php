@@ -8,7 +8,9 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
+use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -199,5 +201,32 @@ final class SystemMessages
             'subject' => $message->subject,
             'body' => $message->body,
         ]);
+    }
+
+    public function mailable(string $key, User $user, array $variables = []): SystemMessageMailable
+    {
+        $siteId = null;
+        $language = $user->getPreferredLanguage();
+
+        if (
+            isset($user->affiliatedSiteId) &&
+            (
+                app()->runningInConsole() ||
+                request()->isCpRequest()
+            )
+        ) {
+            $siteId = $user->affiliatedSiteId;
+        }
+
+        $variables['user'] ??= $user;
+
+        return new SystemMessageMailable(
+            key: $key,
+            variables: $variables,
+            language: $language,
+            siteId: $siteId,
+        )
+            ->to($user->email, $user->fullName)
+            ->locale($language);
     }
 }

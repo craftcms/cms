@@ -3135,25 +3135,6 @@ class GeneralConfig extends BaseConfig
     public ?string $tempAssetUploadFs = null;
 
     /**
-     * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
-     *                              for testing purposes.
-     *
-     * By default, the recipient name(s) will be “Test Recipient”, but you can customize that by setting the value with the format
-     * `['me@domain.tld' => 'Name']`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->testToEmailAddress('me@domain.tld')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_TEST_TO_EMAIL_ADDRESS=me@domain.tld
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public string|array|null|false $testToEmailAddress = null;
-
     /**
      * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
      *
@@ -6971,25 +6952,6 @@ class GeneralConfig extends BaseConfig
      * Configures Craft to send all system emails to either a single email address or an array of email addresses
      * for testing purposes.
      *
-     * By default, the recipient name(s) will be “Test Recipient”, but you can customize that by setting the value with the format
-     * `['me@domain.tld' => 'Name']`.
-     *
-     * ```php
-     * ->testToEmailAddress('me@domain.tld')
-     * ```
-     *
-     * @group System
-     *
-     * @see $testToEmailAddress
-     */
-    public function testToEmailAddress(string|array|null|false $value): self
-    {
-        $this->testToEmailAddress = $value;
-
-        return $this;
-    }
-
-    /**
      * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
      *
      * This can be set to one of PHP’s [supported timezones](https://php.net/manual/en/timezones.php).
@@ -7625,24 +7587,5 @@ class GeneralConfig extends BaseConfig
         }
 
         return $pageTrigger;
-    }
-
-    /**
-     * Returns the normalized test email addresses.
-     */
-    public function getTestToEmailAddress(): array
-    {
-        $to = [];
-        if ($this->testToEmailAddress) {
-            foreach ((array) $this->testToEmailAddress as $key => $value) {
-                if (is_numeric($key)) {
-                    $to[$value] = t('Test Recipient');
-                } else {
-                    $to[$key] = $value;
-                }
-            }
-        }
-
-        return $to;
     }
 }

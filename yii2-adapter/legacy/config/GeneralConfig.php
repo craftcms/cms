@@ -8,7 +8,11 @@
 namespace craft\config;
 
 use craft\services\Config;
+use CraftCms\Cms\Support\Facades\Deprecator;
+use Deprecated;
 use yii\base\InvalidConfigException;
+
+use function CraftCms\Cms\t;
 
 /**
  * General config class
@@ -19,6 +23,17 @@ use yii\base\InvalidConfigException;
  */
 class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 {
+    /**
+     * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
+     *                              for testing purposes.
+     *
+     * By default, the recipient name(s) will be “Test Recipient”, but you can customize that by setting the value with the format
+     * `['me@domain.tld' => 'Name']`.
+     *
+     * @deprecated in 6.0.0. Configure `Illuminate\Support\Facades\Mail::alwaysTo()` instead.
+     */
+    public string|array|null|false $testToEmailAddress = null;
+
     /**
      * @inheritdoc
      */
@@ -57,5 +72,45 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
             ->maxUploadFileSize($this->maxUploadFileSize)
             ->disabledPlugins($this->disabledPlugins)
         ;
+    }
+
+    /**
+     * Configures Craft to send all system emails to either a single email address or an array of email addresses
+     * for testing purposes.
+     *
+     * @deprecated in 6.0.0. Configure `Illuminate\Support\Facades\Mail::alwaysTo()` instead.
+     *
+     * @see $testToEmailAddress
+     */
+    #[Deprecated(message: 'in 6.0.0. Configure `Illuminate\\Support\\Facades\\Mail::alwaysTo()` instead.')]
+    public function testToEmailAddress(string|array|null|false $value): self
+    {
+        app()->booted(fn() => Deprecator::log(
+            'generalConfig.testToEmailAddress',
+            '`craft\\config\\GeneralConfig::$testToEmailAddress` and `craft\\config\\GeneralConfig::testToEmailAddress()` are deprecated. Configure `Illuminate\\Support\\Facades\\Mail::alwaysTo()` in your application bootstrap or service provider instead.',
+        ));
+
+        $this->testToEmailAddress = $value;
+
+        return $this;
+    }
+
+    /**
+     * Returns the normalized test email addresses.
+     */
+    public function getTestToEmailAddress(): array
+    {
+        $to = [];
+        if ($this->testToEmailAddress) {
+            foreach ((array)$this->testToEmailAddress as $key => $value) {
+                if (is_numeric($key)) {
+                    $to[$value] = t('Test Recipient');
+                } else {
+                    $to[$key] = $value;
+                }
+            }
+        }
+
+        return $to;
     }
 }

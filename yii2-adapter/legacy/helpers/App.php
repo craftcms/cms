@@ -17,7 +17,6 @@ use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\mail\Mailer;
 use craft\mail\Message;
-use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\web\AssetManager;
 use craft\web\Request;
@@ -26,11 +25,11 @@ use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
@@ -707,27 +706,46 @@ class App
      */
     public static function mailerConfig(?MailSettings $settings = null): array
     {
-        if ($settings === null) {
-            $settings = static::mailSettings();
+        if ($settings?->template) {
+            Deprecator::log(
+                'craft\\models\\MailSettings::$template',
+                '`craft\\models\\MailSettings::$template` is deprecated and no longer has any effect. Use a Laravel mailable view instead.',
+            );
         }
 
-        try {
-            $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
-        } catch (MissingComponentException) {
-            // Fallback to the PHP mailer
-            $adapter = new Sendmail();
+        if ($settings && !empty($settings->siteOverrides)) {
+            Deprecator::log(
+                'craft\\models\\MailSettings::$siteOverrides',
+                '`craft\\models\\MailSettings::$siteOverrides` is deprecated and no longer has any effect. Configure Laravel mailers per environment instead.',
+            );
+        }
+
+        $fromEmail = data_get(config('mail'), 'from.address');
+        $fromName = data_get(config('mail'), 'from.name');
+        $replyTo = data_get(config('mail'), 'reply_to.address');
+
+        if (!is_string($fromEmail) || $fromEmail === '') {
+            $fromEmail = Env::get('FROM_EMAIL_ADDRESS');
+        }
+
+        if (!is_string($fromName) || $fromName === '') {
+            $fromName = Env::get('FROM_EMAIL_NAME');
+        }
+
+        if (!is_string($replyTo) || $replyTo === '') {
+            $replyTo = null;
         }
 
         return [
             'class' => Mailer::class,
             'messageClass' => Message::class,
-            'from' => [
-                Env::parse($settings->fromEmail) => Env::parse($settings->fromName),
-            ],
-            'replyTo' => Env::parse($settings->replyToEmail),
-            'template' => Env::parse($settings->template),
-            'siteOverrides' => $settings->siteOverrides,
-            'transport' => $adapter->defineTransport(),
+            'from' => ($fromEmail && is_string($fromEmail)) ? [
+                $fromEmail => is_string($fromName) ? $fromName : null,
+            ] : [],
+            'replyTo' => $replyTo,
+            'template' => null,
+            'siteOverrides' => [],
+            'transport' => app('mail.manager')->mailer()->getSymfonyTransport(),
         ];
     }
 
