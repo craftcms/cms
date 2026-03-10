@@ -8,7 +8,6 @@ namespace CraftCms\Cms\Database\Migrations;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\mail\transportadapters\Sendmail;
 use craft\web\Response;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
@@ -1212,11 +1211,6 @@ class Install extends Migration
 
         return [
             'dateModified' => DateTimeHelper::currentTimeStamp(),
-            'email' => [
-                'fromEmail' => $this->email,
-                'fromName' => $this->site->getName(),
-                'transportType' => Sendmail::class,
-            ],
             'siteGroups' => [
                 $siteGroupUid => [
                     'name' => $this->site->getName(),

@@ -8,14 +8,13 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\events\RegisterComponentTypesEvent;
 use craft\mail\Mailer;
-use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\User\Elements\User;
 use yii\base\Event;
@@ -27,6 +26,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use Laravel mail configuration and drivers.
  */
 class MailerHelper
 {
@@ -34,6 +34,8 @@ class MailerHelper
      * @event RegisterComponentTypesEvent The event that is triggered when registering mailer transport adapter types.
      *
      * Mailer transports must implement [[TransportAdapterInterface]]. [[BaseTransportAdapter]] provides a base implementation.
+     *
+     * As of Craft 6, custom transport registration is ignored and Laravel mail drivers are used instead.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -64,11 +66,8 @@ class MailerHelper
             Gmail::class,
         ];
 
-        // Fire a 'registerMailerTransports' event
         if (Event::hasHandlers(self::class, self::EVENT_REGISTER_MAILER_TRANSPORTS)) {
-            $event = new RegisterComponentTypesEvent(['types' => $transportTypes]);
-            Event::trigger(self::class, self::EVENT_REGISTER_MAILER_TRANSPORTS, $event);
-            return $event->types;
+            self::_warnIgnoredTransports();
         }
 
         return $transportTypes;
@@ -77,17 +76,24 @@ class MailerHelper
     /**
      * Creates a transport adapter based on the given mail settings.
      *
-     * @template T of TransportAdapterInterface
-     * @param class-string<T> $type
+     * @param class-string<TransportAdapterInterface> $type
      * @param array|null $settings
-     * @return T
+     * @return TransportAdapterInterface
      * @throws MissingComponentException if $type is missing
      */
     public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface
     {
-        $component = Component::createComponent([
-            'type' => $type,
-        ], TransportAdapterInterface::class);
+        if (!in_array($type, self::allMailerTransportTypes(), true)) {
+            throw self::_unsupportedTransportException($type);
+        }
+
+        try {
+            $component = Component::createComponent([
+                'type' => $type,
+            ], TransportAdapterInterface::class);
+        } catch (MissingComponentException) {
+            throw self::_unsupportedTransportException($type);
+        }
 
         if ($settings) {
             if ($component instanceof Model) {
@@ -148,33 +154,29 @@ class MailerHelper
      */
     public static function settingsReport(Mailer $mailer, ?TransportAdapterInterface $transportAdapter = null): string
     {
-        $transportType = $transportAdapter ? get_class($transportAdapter) : App::mailSettings()->transportType;
+        $defaultMailer = data_get(config('mail'), 'default', 'default');
+        $mailerConfig = data_get(config('mail'), sprintf('mailers.%s', $defaultMailer), []);
+        $transportType = is_array($mailerConfig)
+            ? ($mailerConfig['transport'] ?? $defaultMailer)
+            : $defaultMailer;
+
         $settings = [
             t('From') => self::_emailList($mailer->from),
             t('Reply To') => self::_emailList($mailer->replyTo),
             t('Template') => $mailer->template,
             t('Transport Type') => $transportType,
+            t('Mailer') => $defaultMailer,
         ];
 
-        $transportSettings = [];
+        foreach (['host', 'port', 'encryption', 'scheme', 'username', 'path', 'url'] as $configKey) {
+            $value = is_array($mailerConfig) ? ($mailerConfig[$configKey] ?? null) : null;
 
-        // Use the transport adapter settings if it was sent
-        /** @var BaseTransportAdapter|null $transportAdapter */
-        if ($transportAdapter !== null) {
-            /** @var BaseTransportAdapter $transportAdapter */
-            $settingsAttributes = $transportAdapter->settingsAttributes();
-            foreach ($settingsAttributes as $name) {
-                $transportSettings[$transportAdapter->getAttributeLabel($name)] = $transportAdapter->$name;
-            }
-        }
-
-        foreach ($transportSettings as $label => $value) {
             if (is_scalar($value)) {
-                $settings[$label] = Security::redactIfSensitive($label, $value);
+                $settings[ucfirst((string)$configKey)] = Security::redactIfSensitive($configKey, $value);
             } elseif (is_array($value)) {
-                $settings[$label] = 'Array';
+                $settings[ucfirst((string)$configKey)] = 'Array';
             } elseif (is_object($value)) {
-                $settings[$label] = 'Object';
+                $settings[ucfirst((string)$configKey)] = 'Object';
             }
         }
 
@@ -207,5 +209,21 @@ class MailerHelper
             }
         }
         return implode(', ', $list);
+    }
+
+    private static function _warnIgnoredTransports(): void
+    {
+        Deprecator::log(
+            'MailerHelper::EVENT_REGISTER_MAILER_TRANSPORTS',
+            'Custom mailer transport adapters are ignored. Configure Laravel mail drivers instead.',
+        );
+    }
+
+    private static function _unsupportedTransportException(string $type): MissingComponentException
+    {
+        return new MissingComponentException(sprintf(
+            'Mailer transport adapter "%s" is no longer supported. Configure a Laravel mailer/driver in your application config or environment instead.',
+            $type,
+        ));
     }
 }

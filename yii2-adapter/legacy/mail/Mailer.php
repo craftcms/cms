@@ -8,22 +8,17 @@
 namespace craft\mail;
 
 use Craft;
-use craft\helpers\App;
-use craft\helpers\Template;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Edition;
-use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Twig;
-use CraftCms\Cms\SystemMessage\SystemMessages;
+use CraftCms\Cms\SystemMessage\Actions\RenderSystemMessageAction;
+use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
-use Illuminate\Support\Facades\Log;
-use Throwable;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use yii\base\InvalidConfigException;
-use yii\helpers\Markdown;
 use yii\mail\MailEvent;
-use function CraftCms\Cms\renderSandboxedString;
 
 /**
  * The Mailer component provides APIs for sending email in Craft.
@@ -31,6 +26,7 @@ use function CraftCms\Cms\renderSandboxedString;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use Laravel mailers/drivers and system-message mailables.
  */
 class Mailer extends \yii\symfonymailer\Mailer
 {
@@ -42,6 +38,7 @@ class Mailer extends \yii\symfonymailer\Mailer
 
     /**
      * @var string|null The email template that should be used
+     * @deprecated 6.0.0 use a Laravel mailable view instead.
      */
     public ?string $template = null;
 
@@ -59,6 +56,7 @@ class Mailer extends \yii\symfonymailer\Mailer
     /**
      * @var array Site overrides
      * @since 5.6.0
+     * @deprecated 6.0.0 configure Laravel mailers per environment instead.
      */
     public array $siteOverrides = [];
 
@@ -89,7 +87,7 @@ class Mailer extends \yii\symfonymailer\Mailer
         $message = $this->createMessage();
 
         if (!$message instanceof Message) {
-            throw new InvalidConfigException('Mailer must be configured to create messages with craft\mail\Message (or a subclass).');
+            throw new InvalidConfigException('Mailer must be configured to create messages with craft\\mail\\Message (or a subclass).');
         }
 
         $message->key = $key;
@@ -108,11 +106,24 @@ class Mailer extends \yii\symfonymailer\Mailer
             'message' => $message,
         ]));
 
+        if ($this->template) {
+            Deprecator::log(
+                'craft\\mail\\Mailer::$template',
+                '`craft\\mail\\Mailer::$template` is deprecated and no longer has any effect. Use a Laravel mailable view instead.',
+            );
+        }
+
+        if (!empty($this->siteOverrides)) {
+            Deprecator::log(
+                'craft\\mail\\Mailer::$siteOverrides',
+                '`craft\\mail\\Mailer::$siteOverrides` is deprecated and no longer has any effect. Configure Laravel mailers per environment instead.',
+            );
+        }
+
         $generalConfig = Cms::config();
         $currentSite = $messageSite = $twig = null;
         $language = app()->getLocale();
         $generateTransformsBeforePageLoad = $generalConfig->generateTransformsBeforePageLoad;
-        $originalSettings = [];
 
         $originalTemplateMode = TemplateMode::get();
         TemplateMode::set(TemplateMode::Site);
@@ -124,95 +135,50 @@ class Mailer extends \yii\symfonymailer\Mailer
                     $messageSite = Sites::getSiteById($message->siteId);
                     if ($messageSite) {
                         Sites::setCurrentSite($messageSite);
-                        // reset Twig so any global sets and singles get reloaded for the new site
+                        // Reset Twig so any global sets and singles get reloaded for the new site.
                         $twig = Twig::get();
                         Twig::set(Twig::create());
                     }
                 }
             }
 
-            $overrides = $this->siteOverrides[Sites::getCurrentSite()->uid] ?? [];
-            if (isset($overrides['fromEmail']) || isset($overrides['fromName'])) {
-                $originalSettings['from'] = $this->from;
-                $fromEmail = $overrides['fromEmail'] ?? array_key_first($this->from);
-                $fromName = $overrides['fromName'] ?? reset($this->from);
-                /** @phpstan-ignore-next-line */
-                $this->from = [
-                    Env::parse($fromEmail) => Env::parse($fromName),
-                ];
-            }
-            if (isset($overrides['replyToEmail'])) {
-                $originalSettings['replyTo'] = $this->replyTo;
-                $this->replyTo = Env::parse($overrides['replyToEmail']);
-            }
-            if (isset($overrides['template'])) {
-                $originalSettings['template'] = $this->template;
-                $this->template = Env::parse($overrides['template']);
-            }
-
             if ($message instanceof Message && $message->key !== null) {
                 if ($message->language === null) {
-                    // If a site was specified, go with its language
+                    // If a site was specified, go with its language.
                     if ($messageSite) {
                         $message->language = $messageSite->getLanguage();
                     } else {
-                        // Default to the current language
+                        // Default to the current language.
                         $message->language = Craft::$app->getRequest()->getIsSiteRequest()
                             ? app()->getLocale()
                             : Sites::getPrimarySite()->getLanguage();
                     }
                 }
 
-                // Use the message language
-                app()->setLocale($message->language);
+                $mailable = new SystemMessageMailable(
+                    key: $message->key,
+                    variables: $message->variables ?? [],
+                    language: $message->language,
+                    siteId: $message->siteId,
+                );
 
-                // Temporarily disable lazy transform generation
-                $generalConfig->generateTransformsBeforePageLoad = true;
+                $rendered = app(RenderSystemMessageAction::class)->handle(
+                    key: $mailable->key,
+                    variables: $mailable->variables,
+                    language: $mailable->language,
+                    siteId: $mailable->siteId,
+                );
 
-                $systemMessage = app(SystemMessages::class)->getMessage($message->key, $message->language);
-
-                $settings = App::mailSettings();
-                $variables = ($message->variables ?: []) + [
-                        'emailKey' => $message->key,
-                        'fromEmail' => Env::parse($settings->fromEmail),
-                        'replyToEmail' => Env::parse($settings->replyToEmail),
-                        'fromName' => Env::parse($settings->fromName),
-                        'language' => $message->language,
-                    ];
-
-                // Render the subject and body text
-                $subject = renderSandboxedString($systemMessage->subject, $variables);
-                $textBody = renderSandboxedString($systemMessage->body, $variables);
-                $htmlBody = renderSandboxedString($systemMessage->body, $variables, escapeHtml: true);
-
-                // Remove </> from around URLs, so they’re not interpreted as HTML tags
-                $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $textBody);
-
-                $message->setSubject($subject);
-                $message->setTextBody($textBody);
-
-                // Is there a custom HTML template set?
-                if (Edition::get()->value >= Edition::Pro->value && $this->template) {
-                    $template = $this->template;
-                    $templateMode = TemplateMode::Site;
-                } else {
-                    // Default to the _special/email.html template
-                    $template = '_special/email.twig';
-                    $templateMode = TemplateMode::Cp;
-                }
-
-                try {
-                    $message->setHtmlBody(\CraftCms\Cms\template($template, array_merge($variables, [
-                        'body' => Template::raw(Markdown::process($htmlBody, 'gfm')),
-                    ]), templateMode: $templateMode));
-                } catch (Throwable $e) {
-                    // Just log it and don't worry about the HTML body
-                    Log::warning('Error rendering email template: ' . $e->getMessage(), [__METHOD__]);
-                    Craft::$app->getErrorHandler()->logException($e);
-                }
+                $message->language = $rendered->language;
+                $message->setSubject($rendered->subject);
+                $message->setTextBody(view('mail.system-message-text', [
+                    'textBody' => $rendered->textBody,
+                    'variables' => $rendered->variables,
+                ])->render());
+                $message->setHtmlBody($rendered->htmlBody);
             }
 
-            // Set the default sender if there isn't one already
+            // Set the default sender if there isn't one already.
             if (!$message->getFrom()) {
                 $message->setFrom($this->from);
             }
@@ -221,17 +187,19 @@ class Mailer extends \yii\symfonymailer\Mailer
                 $message->setReplyTo($this->replyTo);
             }
 
-            // Apply the testToEmailAddress config setting
-            $testToEmailAddress = $generalConfig->getTestToEmailAddress();
-            if (!empty($testToEmailAddress)) {
-                $message->setTo($testToEmailAddress);
-                $message->setCc([]);
-                $message->setBcc([]);
+            // Apply the testToEmailAddress config setting.
+            if ($generalConfig instanceof \craft\config\GeneralConfig) {
+                $testToEmailAddress = $generalConfig->getTestToEmailAddress();
+                if (!empty($testToEmailAddress)) {
+                    $message->setTo($testToEmailAddress);
+                    $message->setCc([]);
+                    $message->setBcc([]);
+                }
             }
 
             return parent::send($message);
         } finally {
-            // Set things back to normal
+            // Set things back to normal.
             app()->setLocale($language);
             $generalConfig->generateTransformsBeforePageLoad = $generateTransformsBeforePageLoad;
 
@@ -244,8 +212,24 @@ class Mailer extends \yii\symfonymailer\Mailer
             if ($twig) {
                 Twig::set($twig);
             }
+        }
+    }
 
-            Craft::configure($this, $originalSettings);
+    /**
+     * @inheritdoc
+     */
+    protected function sendMessage($message): bool
+    {
+        try {
+            app('mail.manager')->mailer()->getSymfonyTransport()->send($message->getSymfonyEmail());
+
+            return true;
+        } catch (TransportExceptionInterface $e) {
+            if ($message instanceof Message) {
+                $message->error = $e;
+            }
+
+            throw $e;
         }
     }
 }

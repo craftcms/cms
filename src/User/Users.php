@@ -7,7 +7,6 @@ namespace CraftCms\Cms\User;
 use Craft;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Image;
 use craft\helpers\UrlHelper;
 use craft\web\Request;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -22,10 +21,13 @@ use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
+use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Assets as AssetsService;
+use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -336,22 +338,21 @@ final class Users
     ): void {
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
-        if (! Image::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
+        if (! ImageHelper::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
             throw new ImageException(t('User photo must be an image that Craft can manipulate.'));
         }
 
-        $assetsService = Craft::$app->getAssets();
         $photoId = $user->photoId;
 
         event($event = new SavingUserPhoto($user, $photoId));
 
         // If the photo exists, just replace the file.
-        if ($event->photoId && ($photo = Craft::$app->getAssets()->getAssetById($event->photoId)) !== null) {
-            $assetsService->replaceAssetFile($photo, $fileLocation, $filename, $mimeType);
+        if ($event->photoId && ($photo = AssetsService::getAssetById($event->photoId)) !== null) {
+            AssetsService::replaceAssetFile($photo, $fileLocation, $filename, $mimeType);
         } else {
             $volume = $this->userPhotoVolume();
             $folderId = $this->userPhotoFolderId($user, $volume);
-            $filename = $assetsService->getNameReplacementInFolder($filename, $folderId);
+            $filename = AssetsService::getNameReplacementInFolder($filename, $folderId);
 
             $photo = new Asset;
             $photo->setScenario(Asset::SCENARIO_CREATE);
@@ -435,7 +436,7 @@ final class Users
             }
         }
 
-        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume)->id;
+        return Folders::ensureFolderByFullPathAndVolume($subpath, $volume)->id;
     }
 
     /**

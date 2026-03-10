@@ -8,8 +8,6 @@ use Craft;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Image;
-use craft\helpers\ImageTransforms;
 use CraftCms\Cms\Asset\Data\AssetIndexEntry;
 use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -25,6 +23,8 @@ use CraftCms\Cms\Asset\Models\AssetIndexingSession as AssetIndexingSessionModel;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Data\FsListing;
+use CraftCms\Cms\Image\ImageHelper;
+use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -51,6 +51,7 @@ final class AssetIndexer
 
     public function __construct(
         private readonly Volumes $volumes,
+        private readonly Folders $folders,
     ) {}
 
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
@@ -591,8 +592,7 @@ final class AssetIndexer
             $path = "$dirname/";
         }
 
-        $assets = Craft::$app->getAssets();
-        $folder = $assets->findFolder([
+        $folder = $this->folders->findFolder([
             'volumeId' => $indexEntry->volumeId,
             'path' => $path,
             'parentId' => $parentId,
@@ -601,7 +601,7 @@ final class AssetIndexer
         if (! $folder) {
             /** @var Volume $volume */
             $volume = $this->volumes->getVolumeById($indexEntry->volumeId);
-            $folder = $assets->ensureFolderByFullPathAndVolume($path, $volume);
+            $folder = $this->folders->ensureFolderByFullPathAndVolume($path, $volume);
         } else {
             $volume = $folder->getVolume();
         }
@@ -643,14 +643,14 @@ final class AssetIndexer
 
                 if ($isLocalFs) {
                     $transformSourcePath = $asset->getImageTransformSourcePath();
-                    $dimensions = Image::imageSize($transformSourcePath);
+                    $dimensions = ImageHelper::imageSize($transformSourcePath);
                 } else {
                     if (! $cacheImages) {
                         try {
                             $stream = $asset->getStream();
 
                             if (is_resource($stream)) {
-                                $dimensions = Image::imageSizeByStream($stream);
+                                $dimensions = ImageHelper::imageSizeByStream($stream);
                                 fclose($stream);
                             }
                         } catch (VolumeException $e) {
@@ -661,7 +661,7 @@ final class AssetIndexer
                     if (! is_array($dimensions)) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
                         AssetsHelper::downloadFile($volume->sourceDisk(), $indexEntry->uri, $tempPath);
-                        $dimensions = Image::imageSize($tempPath);
+                        $dimensions = ImageHelper::imageSize($tempPath);
 
                         $asset->setMimeType(FileHelper::getMimeType($tempPath));
                     }
@@ -678,7 +678,7 @@ final class AssetIndexer
 
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();
-                    ImageTransforms::storeLocalSource($tempPath, $targetPath);
+                    ImageTransformHelper::storeLocalSource($tempPath, $targetPath);
                     FileHelper::unlink($tempPath);
                 }
             } else {
@@ -707,7 +707,7 @@ final class AssetIndexer
             }
         }
 
-        $folder = Craft::$app->getAssets()->findFolder([
+        $folder = $this->folders->findFolder([
             'path' => "$indexEntry->uri/",
             'volumeId' => $indexEntry->volumeId,
         ]);
@@ -719,7 +719,7 @@ final class AssetIndexer
             throw new MissingVolumeFolderException($indexEntry, $volume, $indexEntry->uri);
         }
 
-        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri ?? '', $volume);
+        return $this->folders->ensureFolderByFullPathAndVolume($indexEntry->uri ?? '', $volume);
     }
 
     private function storeIndexingSession(IndexingSession $session): void

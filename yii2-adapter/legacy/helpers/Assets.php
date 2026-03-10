@@ -26,7 +26,10 @@ use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
 use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
@@ -303,8 +306,7 @@ class Assets
      */
     public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = []): array
     {
-        $assets = Craft::$app->getAssets();
-        $sourceTree = $assets->getAllDescendantFolders($sourceParentFolder);
+        $sourceTree = Folders::getAllDescendantFolders($sourceParentFolder);
         $previousParent = $sourceParentFolder->getParent();
         $sourcePrefixLength = strlen($previousParent->path);
         $folderIdChanges = [];
@@ -323,7 +325,7 @@ class Assets
 
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = ($folderIdChanges[$sourceFolder->parentId] ?? $destinationFolder->id);
-                $assets->createFolder($folder);
+                Folders::createFolder($folder);
 
                 $folderIdChanges[$sourceFolder->id] = $folder->id;
             }
@@ -741,7 +743,7 @@ class Assets
      */
     public static function getImageEditorSource(int $assetId, int $size): string|false
     {
-        $asset = Craft::$app->getAssets()->getAssetById($assetId);
+        $asset = AssetsFacade::getAssetById($assetId);
 
         if (!$asset || !Image::canManipulateAsImage($asset->getExtension())) {
             return false;
@@ -775,7 +777,7 @@ class Assets
                 $existingSize = $subDir;
                 $existingAsset = $assetSourcesDirectory . DIRECTORY_SEPARATOR . $subDir . '/' . $assetId . '.' . $asset->getExtension();
                 if ($existingSize >= $size && is_file($existingAsset)) {
-                    Craft::$app->getImages()->loadImage($existingAsset)
+                    Images::loadImage($existingAsset)
                         ->scaleToFit($size, $size, false)
                         ->saveAs($targetFilePath);
 
@@ -794,11 +796,11 @@ class Assets
         if (!$isLocalFs && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
             $localSource = TransformHelper::getLocalImageSource($asset);
-            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
+            Images::loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
         } else {
             // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
             $localSource = $asset->getCopyOfFile();
-            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
+            Images::loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
             FileHelper::unlink($localSource);
         }
 
@@ -1028,8 +1030,7 @@ class Assets
      */
     public static function resolveSubpath(Volume $volume, ?string $subpath, ?ElementInterface $element = null): array
     {
-        $assetsService = Craft::$app->getAssets();
-        $rootFolder = $assetsService->getRootFolderByVolumeId($volume->id);
+        $rootFolder = Folders::getRootFolderByVolumeId($volume->id);
 
         // Are we looking for the root folder?
         $subpath = trim($subpath ?? '', '/');
@@ -1068,7 +1069,7 @@ class Assets
             $subpath = implode('/', $segments);
         }
 
-        $folder = $assetsService->findFolder([
+        $folder = Folders::findFolder([
             'volumeId' => $volume->id,
             'path' => $subpath . '/',
         ]);

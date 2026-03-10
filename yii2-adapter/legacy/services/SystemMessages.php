@@ -48,16 +48,20 @@ class SystemMessages extends Component
      *
      * Once a system message is registered, it will be editable from the System Messages utility.
      *
-     * System messages can be sent via [[\craft\mail\Mailer::composeFromKey()]]:
+     * System messages can be sent via [[\CraftCms\Cms\SystemMessage\SystemMessages]]:
      *
      * ```php
-     * Craft::$app->getMailer()
-     *    ->composeFromKey('account_approved', [
-     *        'approver' => $approver->friendlyName,
-     *    ])
-     *    ->setTo($user)
-     *    ->send();
+     * use CraftCms\Cms\SystemMessage\SystemMessages;
+     * use Illuminate\Support\Facades\Mail;
+     *
+     * Mail::send(
+     *     app(SystemMessages::class)->mailable('account_approved', $user, [
+     *         'approver' => $approver->friendlyName,
+     *     ])
+     * );
      * ```
+     *
+     * The legacy `Craft::$app->getMailer()->composeFromKey()` API remains supported for compatibility.
      */
     public const EVENT_REGISTER_MESSAGES = 'registerMessages';
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
-use Craft;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\Folders;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 
@@ -26,7 +26,7 @@ final class RemoveEmptyTempFolders extends GarbageCollectionAction
                     ->pluck('folders.id');
 
                 if ($emptyFolderIds->isNotEmpty()) {
-                    Craft::$app->getAssets()->deleteFoldersByIds($emptyFolderIds->all());
+                    Folders::deleteFoldersByIds($emptyFolderIds->all());
                 }
             }
         );

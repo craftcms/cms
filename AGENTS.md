@@ -214,7 +214,7 @@ if (!$event->isValid) {
 
 ### Templates
 
-A portion of this port is moving from twig + jQuery templates into [Inertia](https://inertiajs.com/) + VueJs. The original twig templates are conttained in `resources/templates` the new Inertia Vue files will live in `resources/js`. 
+A portion of this port is moving from twig + jQuery templates into [Inertia](https://inertiajs.com/) + VueJs. The original twig templates are contained in `resources/templates` the new Inertia Vue files will live in `resources/js`. 
 
 We're also building component library located in the `@craftcms/cp` package. Whenever possible, use components from that package to build out UI. 
 

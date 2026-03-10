@@ -72,6 +72,8 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\HandleRule;
+use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
+use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Database\ConnectionInterface;
@@ -83,6 +85,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use RuntimeException;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -602,24 +605,6 @@ class Elements extends Component
     // Element caches
     // -------------------------------------------------------------------------
 
-    /**
-     * @var array[]
-     */
-    private array $_cacheTagBuffers = [];
-
-    /**
-     * @var string[]|null
-     */
-    private ?array $_cacheTags = null;
-
-    /**
-     * @var array
-     * @phpstan-var array<int|null>
-     */
-    private array $_cacheDurationBuffers = [];
-
-    private ?int $_cacheDuration = null;
-
     public function getBulkOpConnection(): ConnectionInterface
     {
         return DB::connection($this->bulkOpDb);
@@ -635,7 +620,7 @@ class Elements extends Component
      */
     public function getIsCollectingCacheInfo(): bool
     {
-        return isset($this->_cacheTags);
+        return $this->cacheInfoCollector()->isCollecting();
     }
 
     /**
@@ -657,14 +642,11 @@ class Elements extends Component
      */
     public function startCollectingCacheInfo(): void
     {
-        // Save any currently-collected info into new buffers
-        if (isset($this->_cacheTags)) {
-            $this->_cacheTagBuffers[] = $this->_cacheTags;
-            $this->_cacheDurationBuffers[] = $this->_cacheDuration;
-        }
-
-        $this->_cacheTags = [];
-        $this->_cacheDuration = null;
+        $this->cacheInfoCollector()->begin(new TemplateCacheContext(
+            cacheKey: '',
+            global: false,
+            resources: false,
+        ));
     }
 
     /**
@@ -687,15 +669,7 @@ class Elements extends Component
      */
     public function collectCacheTags(array $tags): void
     {
-        // Ignore if we're not currently collecting tags
-        if (!isset($this->_cacheTags)) {
-            return;
-        }
-
-        // Element query tags
-        foreach ($tags as $tag) {
-            $this->_cacheTags[$tag] = true;
-        }
+        $this->cacheInfoCollector()->collectTags($tags);
     }
 
     /**
@@ -709,15 +683,7 @@ class Elements extends Component
      */
     public function setCacheExpiryDate(DateTime $expiryDate): void
     {
-        if (!isset($this->_cacheTags)) {
-            return;
-        }
-
-        $duration = $expiryDate->getTimestamp() - DateTimeHelper::currentTimeStamp();
-
-        if ($duration > 0 && (!$this->_cacheDuration || $duration < $this->_cacheDuration)) {
-            $this->_cacheDuration = $duration;
-        }
+        $this->cacheInfoCollector()->setExpiryDate($expiryDate);
     }
 
     /**
@@ -729,25 +695,7 @@ class Elements extends Component
      */
     public function collectCacheInfoForElement(ElementInterface $element): void
     {
-        // Ignore if we're not currently collecting tags
-        if (!isset($this->_cacheTags)) {
-            return;
-        }
-
-        $class = get_class($element);
-        $this->collectCacheTags([
-            'element',
-            "element::$class",
-            "element::$element->id",
-        ]);
-
-        // If the element is expirable, register its expiry date
-        if (
-            $element instanceof ExpirableElementInterface &&
-            ($expiryDate = $element->getExpiryDate()) !== null
-        ) {
-            $this->setCacheExpiryDate($expiryDate);
-        }
+        $this->cacheInfoCollector()->collectElement($element);
     }
 
     /**
@@ -762,34 +710,11 @@ class Elements extends Component
      */
     public function stopCollectingCacheInfo(): array
     {
-        if (!isset($this->_cacheTags)) {
-            throw new InvalidCallException('Element cache invalidation tags are not currently being collected.');
+        try {
+            return $this->cacheInfoCollector()->stop();
+        } catch (RuntimeException $e) {
+            throw new InvalidCallException($e->getMessage(), previous: $e);
         }
-
-        $tags = $this->_cacheTags;
-        $duration = $this->_cacheDuration;
-
-        // Was there another active collection?
-        if (!empty($this->_cacheTagBuffers)) {
-            $this->_cacheTags = array_merge(array_pop($this->_cacheTagBuffers), $tags);
-
-            // Override the parent duration if ours is shorter
-            $this->_cacheDuration = array_pop($this->_cacheDurationBuffers);
-            if ($duration && $duration < $this->_cacheDuration) {
-                $this->_cacheDuration = $duration;
-            }
-        } else {
-            $this->_cacheTags = null;
-            $this->_cacheDuration = null;
-        }
-
-        if (empty($tags)) {
-            return [null, null];
-        }
-
-        $dep = new TagDependency(array_keys($tags));
-
-        return [$dep, $duration];
     }
 
     /**
@@ -803,6 +728,11 @@ class Elements extends Component
     {
         [$dep] = $this->stopCollectingCacheInfo();
         return $dep ?? new TagDependency();
+    }
+
+    private function cacheInfoCollector(): DependencyCollector
+    {
+        return app(DependencyCollector::class);
     }
 
     /**

@@ -51,6 +51,31 @@ final class Env extends \Illuminate\Support\Env
     }
 
     /**
+     * Returns a config string value, falling back to environment variables when needed.
+     *
+     * @param  string  $key  Dot-notated config key (e.g. `mail.from.address`)
+     * @param  list<string>  $fallbackEnvs
+     */
+    public static function configValue(string $key, array $fallbackEnvs = []): ?string
+    {
+        $value = config($key);
+
+        if (is_string($value) && $value !== '') {
+            return $value;
+        }
+
+        foreach ($fallbackEnvs as $fallbackEnv) {
+            $value = self::get($fallbackEnv);
+
+            if (! is_null($value)) {
+                return (string) $value;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Checks if a string references an environment variable (`$VARIABLE_NAME`)
      * and/or an alias (`@aliasName`), and returns the referenced value.
      *

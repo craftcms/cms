@@ -94,8 +94,8 @@
   },
   "scripts": {
     "copy-icons": "php ./scripts/copyicons.php",
-    "check-cs": "ecs check --ansi && pint cms --test",
-    "fix-cs": "npx concurrently -c 'rector' 'ecs check --ansi --fix' --names=rector,ecs",
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix",
     "codecept-build": "codecept build",
     "phpstan": "phpstan --memory-limit=2G",
     "rector": "rector",

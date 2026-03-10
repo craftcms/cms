@@ -19,6 +19,8 @@ use craft\errors\ElementNotFoundException;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\web\Application as WebApplication;
+use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -27,6 +29,7 @@ use CraftCms\Cms\Entry\EntryTypes;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Filesystems;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -34,6 +37,8 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Path as PathFacade;
+use CraftCms\Cms\Support\Path as LaravelPath;
 use CraftCms\Cms\User\Users;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use DateTime;
@@ -161,6 +166,7 @@ class Craft extends Yii2
 
         File::cleanDirectory(config_path('project'));
         Cache::clear();
+        $this->resetPathService();
 
         if ($this->_getConfig('fullMock') !== true) {
             $this->setupDb();
@@ -179,12 +185,15 @@ class Craft extends Yii2
 
         TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
         TestSetup::removeProjectConfigFolders(CRAFT_VENDOR_PATH . '/orchestra/testbench-core/laravel/config/craft/project');
+        $this->resetPathService();
 
         app()->forgetInstance(Sites::class);
         app()->forgetInstance(EntryTypes::class);
         app()->forgetInstance(Fields::class);
         app()->forgetInstance(ProjectConfig::class);
         app()->forgetInstance(Users::class);
+        app()->forgetInstance(Assets::class);
+        app()->forgetInstance(Folders::class);
     }
 
     /**
@@ -200,6 +209,7 @@ class Craft extends Yii2
         self::$currentTest = $test;
 
         parent::_before($test);
+        $this->resetPathService();
 
         // Codeception\Lib\Connector\Yii2::resetApplication() calls Event::offAll(),
         // so we need to re-register the service provider events
@@ -236,9 +246,16 @@ class Craft extends Yii2
         app()->forgetInstance(Sections::class);
         app()->forgetInstance(Filesystems::class);
         app()->forgetInstance(Volumes::class);
+        app()->forgetInstance(Assets::class);
+        app()->forgetInstance(Folders::class);
+        app()->forgetInstance(ImageTransforms::class);
+        $this->resetPathService();
 
         \CraftCms\Cms\Support\Facades\EntryTypes::clearResolvedInstances();
         \CraftCms\Cms\Support\Facades\Sections::clearResolvedInstances();
+        \CraftCms\Cms\Support\Facades\Assets::clearResolvedInstances();
+        \CraftCms\Cms\Support\Facades\Folders::clearResolvedInstances();
+        \CraftCms\Cms\Support\Facades\ImageTransforms::clearResolvedInstances();
 
         \Craft::$app->getDb()->close();
         \Craft::$app->getDb2()->close();
@@ -247,6 +264,12 @@ class Craft extends Yii2
 
         DB::disconnect();
         DB::disconnect('db2');
+    }
+
+    private function resetPathService(): void
+    {
+        app()->forgetInstance(LaravelPath::class);
+        PathFacade::clearResolvedInstances();
     }
 
     /**

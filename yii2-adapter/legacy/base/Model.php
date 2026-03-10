@@ -369,6 +369,11 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
         return true;
     }
 
+    public function afterValidate(?\Illuminate\Validation\Validator $validator = null): void
+    {
+        // Not implemented
+    }
+
     public function validate($attributeNames = null, $clearErrors = true): bool
     {
         return parent::validate($attributeNames, $clearErrors);
@@ -430,5 +435,10 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     public function attributeLabels(): array
     {
         return parent::attributeLabels();
+    }
+
+    public function inScenarios(string ...$scenarios): bool
+    {
+        return in_array($this->getScenario(), $scenarios, true);
     }
 }

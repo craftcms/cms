@@ -152,7 +152,7 @@ const VALUE_COMPONENTS = [
 
 /**
  * Components that use checked (boolean-based value).
- * v-model maps to `.checked` property and `checked-changed` event.
+ * v-model maps to `.checked` property and `model-value-changed` event.
  */
 const CHECKED_COMPONENTS = [
   {

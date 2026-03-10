@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Queries\Events\HydratingElement;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use Illuminate\Support\Collection;
 use stdClass;
 
@@ -56,20 +57,21 @@ trait HydratesElements
         $elements = $this->afterHydrate($elements)
             ->unless($this->asArray, function (Collection $elements) {
                 $elementsService = Craft::$app->getElements();
+                $dependencyCollector = app(DependencyCollector::class);
 
                 $allElements = $elements->all();
 
-                $elements = $elements->map(function (ElementInterface $element) use ($allElements, $elementsService) {
+                $elements = $elements->map(function (ElementInterface $element) use ($allElements, $dependencyCollector) {
                     // Set the full query result on the element, in case it's needed for lazy eager loading
                     $element->elementQueryResult = $allElements;
 
                     // If we're collecting cache info and the element is expirable, register its expiry date
                     if (
                         $element instanceof ExpirableElementInterface &&
-                        $elementsService->getIsCollectingCacheInfo() &&
+                        $dependencyCollector->isCollecting() &&
                         ($expiryDate = $element->getExpiryDate()) !== null
                     ) {
-                        $elementsService->setCacheExpiryDate($expiryDate);
+                        $dependencyCollector->setExpiryDate($expiryDate);
                     }
 
                     return $element;
