@@ -9,16 +9,6 @@ use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 
-beforeEach(function () {
-    $this->originalTemplatesPath = Aliases::get('@templates');
-});
-
-afterEach(function () {
-    app(GeneralConfig::class)->systemMessageTemplate = null;
-    Aliases::set('@templates', $this->originalTemplatesPath);
-    app()->forgetScopedInstances();
-});
-
 it('renders mail wrapper views from the laravel mailable', function () {
     $user = UserModel::factory()->createElement();
     $user = User::find()->id($user->id)->one();
