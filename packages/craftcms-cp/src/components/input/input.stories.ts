@@ -17,7 +17,7 @@ const meta = {
     },
   },
   render: function ({maxlength}) {
-    return html`<craft-input label="Craft Input" help-text="This is some instructions text" .maxlength="${maxlength}"></craft-uinput>`;
+    return html`<craft-input label="Craft Input" help-text="This is some instructions text" .maxlength="${maxlength}"></craft-input>`;
   },
 } satisfies Meta<any>;
 
