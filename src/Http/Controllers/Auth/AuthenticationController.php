@@ -23,7 +23,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
-use function CraftCms\Cms\cp_url;
 
 abstract readonly class AuthenticationController
 {
@@ -59,8 +58,7 @@ abstract readonly class AuthenticationController
         ?AuthError $authError = null,
         ?User $user = null,
         ?string $redirect = null,
-    ): Response
-    {
+    ): Response {
         [$authError, $message] = $this->auth->getLoginFailureInfo($authError, $user);
 
         event(new Failed(

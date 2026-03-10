@@ -8,7 +8,6 @@ use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Auth\OAuth\Provider;
 use CraftCms\Cms\Auth\OAuth\ProviderProfile;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Tests\TestClasses\Auth\FakeSocialiteProvider;
 use CraftCms\Cms\Tests\TestClasses\Auth\MarketingProvider;

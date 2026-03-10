@@ -206,7 +206,7 @@ class Provider extends Component
         }
 
         if ($this->with !== []) {
-            $driver = $driver->with($this->with);
+            return $driver->with($this->with);
         }
 
         return $driver;

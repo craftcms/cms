@@ -21,7 +21,6 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
-use CraftCms\Cms\Auth\Models\SsoIdentity;
 use CraftCms\Cms\Auth\OAuth\OAuthRepository;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;

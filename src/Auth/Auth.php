@@ -12,9 +12,9 @@ use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Methods\RecoveryCodes;
 use CraftCms\Cms\Auth\Methods\TOTP;
 use CraftCms\Cms\Auth\Models\WebAuthn;
-use CraftCms\Cms\Auth\Passkeys\Passkeys;
-use CraftCms\Cms\Auth\OAuth\Provider;
 use CraftCms\Cms\Auth\OAuth\OAuth;
+use CraftCms\Cms\Auth\OAuth\Provider;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -49,10 +49,6 @@ final class Auth
      * The user being logged in.
      */
     private ?User $user = null;
-
-    private bool $socialiteResolved = false;
-
-    private ?OAuth $oAuth = null;
 
     public function __construct(
         private readonly GeneralConfig $generalConfig,
@@ -499,29 +495,17 @@ final class Auth
      * @return Provider[]
      */
     #[AllowedInSandbox]
-    public function getSocialiteProviders(): array
+    public function getOAuthProviders(): array
     {
-        return $this->socialite()?->getLoginProviders()->all() ?? [];
+        return $this->oAuth()?->getLoginProviders()->all() ?? [];
     }
 
-    #[AllowedInSandbox]
-    public function hasSocialiteProviders(): bool
+    private function oAuth(): ?OAuth
     {
-        return $this->socialite()?->getLoginProviders()->isNotEmpty();
-    }
-
-    private function socialite(): ?OAuth
-    {
-        if ($this->socialiteResolved) {
-            return $this->oAuth;
-        }
-
-        $this->socialiteResolved = true;
-
         if (! Edition::get()->oAuthAvailable()) {
             return null;
         }
 
-        return $this->oAuth = app(OAuth::class);
+        return app(OAuth::class);
     }
 }

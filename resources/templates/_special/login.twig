@@ -141,7 +141,7 @@
     }) }}
 
     {% if CraftEdition >= CraftPro %}
-      {% for provider in craft.auth.getSocialiteProviders() %}
+      {% for provider in craft.auth.getOAuthProviders() %}
         {{ provider.renderButton() }}
       {% endfor %}
     {% endif %}

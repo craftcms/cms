@@ -146,9 +146,10 @@ final readonly class OAuthUserResolver
             $groups = value($provider->assignUserGroups, $groups, $profile);
         }
 
-        $groupIds = collect($groups)->map(function (mixed $group) {
-            return UserGroups::getGroup($group)?->id;
-        })->filter()->all();
+        $groupIds = collect($groups)
+            ->map(fn (mixed $group) => UserGroups::getGroup($group)?->id)
+            ->filter()
+            ->all();
 
         event($event = new PopulatingUserGroups($user, $groupIds, $profile, $provider));
 

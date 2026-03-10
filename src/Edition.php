@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Request;
 use InvalidArgumentException;
-use Laravel\Socialite\Contracts\Factory as SocialiteFactory;
 
 /**
  * Edition defines all available Craft CMS editions
@@ -181,7 +180,7 @@ enum Edition: int implements Arrayable
 
     public function oAuthAvailable(): bool
     {
-        return $this->value >= self::Pro->value && app()->bound(SocialiteFactory::class);
+        return $this->value >= self::Pro->value && ! empty(Cms::config()->oAuthProviders);
     }
 
     public function toArray(): array

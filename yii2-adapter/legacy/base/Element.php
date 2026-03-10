@@ -86,7 +86,6 @@ use CraftCms\Cms\Element\Events\SetEagerLoadedElements;
 use CraftCms\Cms\Element\Events\SetRoute;
 use Illuminate\Support\Facades\Event;
 use Override;
-use Throwable;
 
 /**
  * @since 3.0.0
@@ -542,7 +541,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -563,7 +562,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->elementType, true)) {
                     continue;
                 }
 
@@ -584,7 +583,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->elementType, true)) {
+                if (!is_subclass_of($class, $event->elementType, true)) {
                     continue;
                 }
 
@@ -605,7 +604,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -626,7 +625,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->elementType, true)) {
+                if (!is_subclass_of($class, $event->elementType, true)) {
                     continue;
                 }
 
@@ -647,7 +646,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->elementType, true)) {
+                if (!is_subclass_of($class, $event->elementType, true)) {
                     continue;
                 }
 
@@ -668,7 +667,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -694,7 +693,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -719,7 +718,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->elementType, true)) {
+                if (!is_subclass_of($class, $event->elementType, true)) {
                     continue;
                 }
 
@@ -739,7 +738,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->elementType, true)) {
+                if (!is_subclass_of($class, $event->elementType, true)) {
                     continue;
                 }
 
@@ -759,7 +758,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->elementType, true)) {
+                if (!is_subclass_of($class, $event->elementType, true)) {
                     continue;
                 }
 
@@ -780,7 +779,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->elementType, true)) {
+                if (!is_subclass_of($class, $event->elementType, true)) {
                     continue;
                 }
 
@@ -801,7 +800,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->elementType, true)) {
+                if (!is_subclass_of($class, $event->elementType, true)) {
                     continue;
                 }
 
@@ -821,7 +820,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->elementType, true)) {
+                if (!is_subclass_of($class, $event->elementType, true)) {
                     continue;
                 }
 
@@ -841,7 +840,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->elementType, true)) {
+                if (!is_subclass_of($class, $event->elementType, true)) {
                     continue;
                 }
 
@@ -864,7 +863,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->elementType, true)) {
+                if (!is_subclass_of($class, $event->elementType, true)) {
                     continue;
                 }
 
@@ -889,7 +888,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -914,7 +913,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -937,7 +936,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -956,7 +955,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -975,7 +974,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -997,7 +996,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1015,7 +1014,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1037,7 +1036,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1055,7 +1054,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1076,7 +1075,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1097,7 +1096,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1118,7 +1117,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1139,7 +1138,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1161,7 +1160,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1182,7 +1181,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1203,7 +1202,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1226,7 +1225,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1249,7 +1248,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1273,7 +1272,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1297,7 +1296,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1321,7 +1320,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 
@@ -1344,7 +1343,7 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
-                if (! is_subclass_of($class, $event->element::class, true)) {
+                if (!is_subclass_of($class, $event->element::class, true)) {
                     continue;
                 }
 

@@ -32,6 +32,7 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @internal
  * @since 5.3.0
+ * @deprecated 6.0.0 use Socialite based {@see \CraftCms\Cms\Auth\OAuth\OAuth} instead.
  */
 class Sso extends Component
 {
@@ -138,12 +139,14 @@ class Sso extends Component
      */
     private function initProviders(array $configs = []): MemoizableArray
     {
-        app(LegacySsoDriverGuard::class)->assertLegacyProviderHandlesAvailable(array_keys($configs));
-
         $providers = array_map(function(string $handle, array $config) {
             $config['handle'] = $handle;
             return $this->createAuthProvider($config);
         }, array_keys($configs), $configs);
+
+        foreach ($providers as $provider) {
+            app(LegacySsoDriverGuard::class)->assertHandleAvailable($provider->getHandle());
+        }
 
         return new MemoizableArray($providers);
     }

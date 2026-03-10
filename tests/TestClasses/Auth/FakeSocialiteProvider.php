@@ -67,7 +67,7 @@ final class FakeSocialiteProvider implements Provider
      */
     public function scopes(array|string $scopes): self
     {
-        self::$scopes[$this->driver] = array_values((array)$scopes);
+        self::$scopes[$this->driver] = array_values((array) $scopes);
 
         return $this;
     }
@@ -91,6 +91,6 @@ final class FakeSocialiteProvider implements Provider
 
     private function captureConfig(): void
     {
-        self::$configs[$this->driver] = (array)config("services.{$this->driver}");
+        self::$configs[$this->driver] = (array) config("services.{$this->driver}");
     }
 }

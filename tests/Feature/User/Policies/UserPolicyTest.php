@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Auth\Models\SsoIdentity;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;

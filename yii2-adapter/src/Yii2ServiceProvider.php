@@ -138,6 +138,7 @@ use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
 use CraftCms\Yii2Adapter\Mixins\VolumeMixin;
+use CraftCms\Yii2Adapter\OAuth\LegacySsoProviderRegistrar;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Login;
@@ -490,6 +491,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Load legacy Craft
          */
         app('Craft');
+        app(LegacySsoProviderRegistrar::class)->mergeIntoConfig();
 
         /**
          * Keep legacy CustomFieldBehavior statics in sync when field caches are invalidated.

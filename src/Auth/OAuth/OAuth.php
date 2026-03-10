@@ -20,7 +20,6 @@ final readonly class OAuth
 
     /**
      * @param  array<int|string, mixed>  $providers
-     *
      * @return Collection<string, Provider>
      */
     public static function configuredProviders(array $providers): Collection
@@ -28,7 +27,7 @@ final readonly class OAuth
         return collect($providers)
             ->map(fn (mixed $config, mixed $handle = null) => self::configuredProvider($config, is_string($handle) ? $handle : null))
             ->filter(fn (mixed $provider) => $provider instanceof Provider && $provider->handle !== '')
-            ->keyBy(fn(Provider $provider) => $provider->handle);
+            ->keyBy(fn (Provider $provider) => $provider->handle);
     }
 
     /**
