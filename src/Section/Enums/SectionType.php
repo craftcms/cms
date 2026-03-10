@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Enums;
 
+use CraftCms\Cms\Cp\Contracts\CanSelect;
+
 use function CraftCms\Cms\t;
 
 enum SectionType: string
 {
+    use CanSelect;
+
     case Single = 'single';
     case Channel = 'channel';
     case Structure = 'structure';

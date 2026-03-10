@@ -15,6 +15,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section as SectionData;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
+use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Section\Sections;
@@ -146,21 +147,9 @@ final readonly class SectionsController
             'homepageUri' => Element::HOMEPAGE_URI,
             'brandNew' => $brandNew,
             'entryTypes' => $this->entryTypes->getAllEntryTypes(),
-            'typeOptions' => array_map(fn (SectionType $type) => [
-                'value' => $type->value,
-                'label' => $type->label(),
-            ], SectionType::cases()),
-            'propagationOptions' => [
-                ['value' => 'none', 'label' => t('Only save entries to the site they were created in')],
-                ['value' => 'siteGroup', 'label' => t('Save entries to other sites in the same site group')],
-                ['value' => 'language', 'label' => t('Save entries to other sites with the same language')],
-                ['value' => 'all', 'label' => t('Save entries to all sites enabled for this section')],
-                ['value' => 'custom', 'label' => t('Let each entry choose which sites it should be saved to')],
-            ],
-            'placementOptions' => [
-                ['value' => 'beginning', 'label' => t('Before other {type}', ['type' => t('entries')])],
-                ['value' => 'end', 'label' => t('After other {type}', ['type' => t('entries')])],
-            ],
+            'typeOptions' => SectionType::asOptions(),
+            'propagationOptions' => PropagationMethod::asOptions(),
+            'placementOptions' => DefaultPlacement::asOptions(),
             'templateOptions' => SelectOptions::getTemplateSuggestions(),
             'siteSettings' => $siteSettings,
             'isMultiSite' => $sites->isMultiSite(),
