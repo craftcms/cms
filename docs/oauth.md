@@ -16,9 +16,9 @@ Configure provider credentials in the app’s `config/services.php`:
 <?php
 
 return [
-    'marketing' => [
-        'client_id' => env('MARKETING_OAUTH_CLIENT_ID'),
-        'client_secret' => env('MARKETING_OAUTH_CLIENT_SECRET'),
+    'google' => [
+        'client_id' => env('GOOGLE_OAUTH_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_OAUTH_CLIENT_SECRET'),
     ],
 ];
 ```
@@ -26,19 +26,15 @@ return [
 Configure enabled providers in `config/craft/general.php` via `GeneralConfig::$socialiteProviders`:
 
 ```php
+use CraftCms\Cms\Auth\OAuth\Provider;
 use CraftCms\Cms\Config\GeneralConfig;
 
 return GeneralConfig::create()
     ->oAuthProviders([
-        'marketing' => [
-            'driver' => 'google',
-            'name' => 'Marketing SSO',
-            'clientId' => env('MARKETING_OAUTH_CLIENT_ID'),
-            'clientSecret' => env('MARKETING_OAUTH_CLIENT_SECRET'),
-            'scopes' => ['openid', 'email', 'profile'],
-            'with' => ['prompt' => 'select_account'],
-            'stateless' => false,
-            'shouldActivateUsers' => true,
+        new Provider('github')
+            ->name('GitHub')
+            ->scopes(['user'])
+            ->activatesUsers(), // Whether to auto-activate new users - this is when you want the provider to be the source of truth
         ],
     ]);
 ```
@@ -53,10 +49,10 @@ Providers are keyed by handle. Each provider can define:
 - `clientSecret`
 - `redirectUrl`
 - `stateless`
-- `shouldActivateUsers`
-- `idpUniqueIdentifier`
-- `findUser`
-- `populateUser`
+- `activatesUsers`
+- `determineUniqueIdUsing`
+- `findUserUsing`
+- `populateUserUsing`
 - `assignUserGroups`
 
 You can also register provider definition classes directly:
@@ -73,12 +69,12 @@ return GeneralConfig::create()
 The callback hooks receive `CraftCms\Cms\Auth\OAuth\Profile` objects:
 
 ```php
-'findUser' => fn (Profile $profile) => null,
-'populateUser' => fn (User $user, Profile $profile) => $user,
+'findUserUsing' => fn (Profile $profile) => null,
+'populateUserUsing' => fn (User $user, Profile $profile) => $user,
 'assignUserGroups' => fn (array $groupIds, Profile $profile) => $groupIds,
 ```
 
-By default, Craft will only fall back to email-based account matching when the Socialite payload explicitly includes a verified email claim such as `email_verified=true`. Existing non-active users are not auto-activated unless `shouldActivateUsers` is enabled for the provider.
+Existing non-active users are not auto-activated unless `activatesUsers` is enabled for the provider.
 
 ## Routes
 
