@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Cp\Contracts;
+namespace CraftCms\Cms\Cp\Concerns;
 
 trait CanSelect
 {

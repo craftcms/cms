@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Enums;
 
-use CraftCms\Cms\Cp\Contracts\CanSelect;
+use CraftCms\Cms\Cp\Concerns\CanSelect;
 
 use function CraftCms\Cms\t;
 
