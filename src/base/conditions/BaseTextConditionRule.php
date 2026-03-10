@@ -50,6 +50,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     {
         return [
             self::OPERATOR_EQ,
+            self::OPERATOR_NE,
             self::OPERATOR_BEGINS_WITH,
             self::OPERATOR_ENDS_WITH,
             self::OPERATOR_CONTAINS,

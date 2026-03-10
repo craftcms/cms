@@ -3,6 +3,7 @@
 ### Content Management
 - Collapsed Matrix blocks now show their entries’ UI labels as preview text, whenever possible. ([#18484](https://github.com/craftcms/cms/discussions/18484))
 - Number fields now show their selected currency beside their input, if their Preview Format setting is set to “As currency values”. ([#18498](https://github.com/craftcms/cms/pull/18498))
+- Text condition rules now have “does not equal” operators.
 
 ### Administration
 - Newlines in system message bodies are now replaced with `<br>` tags. ([#18058](https://github.com/craftcms/cms/discussions/18058))
