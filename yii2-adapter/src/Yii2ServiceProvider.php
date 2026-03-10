@@ -124,6 +124,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\View\Events\RegisterTemplateCacheCollectors;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\DependencyAwareCache\Events\TagsInvalidated;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
@@ -143,6 +144,7 @@ use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
 use CraftCms\Yii2Adapter\Mixins\VolumeMixin;
+use CraftCms\Yii2Adapter\View\LegacyAssetBundleCollector;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Login;
@@ -725,6 +727,10 @@ class Yii2ServiceProvider extends ServiceProvider
 
         Event::listen(TagsInvalidated::class, function(TagsInvalidated $event) {
             YiiTagDependency::invalidate(Craft::$app->getCache(), $event->tags);
+        });
+
+        Event::listen(RegisterTemplateCacheCollectors::class, function(RegisterTemplateCacheCollectors $event) {
+            $event->types->add(LegacyAssetBundleCollector::class);
         });
 
         /**
