@@ -11,8 +11,6 @@ const meta: Meta<typeof Slideout> = {
       control: 'select',
       options: ['start', 'end'],
     },
-    showHeader: {control: 'boolean'},
-    showFooter: {control: 'boolean'},
     closeOnEscape: {control: 'boolean'},
     closeOnBackdropClick: {control: 'boolean'},
     resizable: {control: 'boolean'},
@@ -21,8 +19,6 @@ const meta: Meta<typeof Slideout> = {
   },
   args: {
     position: 'end',
-    showHeader: true,
-    showFooter: true,
     closeOnEscape: true,
     closeOnBackdropClick: true,
     resizable: false,
@@ -46,19 +42,15 @@ export const Default: Story = {
       <div>
         <craft-button type="button" @click="isOpen = true">Open Slideout</craft-button>
 
-        <Slideout v-model="isOpen" v-bind="args">
-          <template #header>
-            <h3 style="margin: 0;">Slideout Header</h3>
-          </template>
-
+        <Slideout v-model="isOpen" v-bind="args" title="Header">
           <p>This is the main content of the slideout.</p>
           <p>It can contain any content you need.</p>
 
-          <template #footer>
-            <div style="display: flex; gap: 0.5rem;">
-              <craft-button @click="isOpen = false" type="button">Cancel</craft-button>
-              <craft-button type="button">Save</craft-button>
-            </div>
+          <template #primary-action>
+            <craft-button type="button">Save</craft-button>
+          </template>
+          <template #secondary-action>
+            <craft-button @click="isOpen = false" type="button">Cancel</craft-button>
           </template>
         </Slideout>
       </div>
@@ -76,30 +68,125 @@ export const NestedSlideouts: Story = {
     },
     template: `
       <div>
-        <craft-button type="button" @click="outerOpen = true">Open Slideout</craft-button>
+        <craft-button data-testid="open-outer" type="button" @click="outerOpen = true">Open Slideout</craft-button>
 
         <Slideout v-model="outerOpen" title="Outer Slideout">
-          <p>This is the outer slideout.</p>
-          <p>Click the button below to open a nested slideout.</p>
+          <div class="stack">
+            <div>
+              <p>This is the outer slideout.</p>
+              <p>Click the button below to open a nested slideout.</p>
+            </div>
 
-          <craft-button type="button" @click="innerOpen = true">Open Nested Slideout</craft-button>
+            <craft-button data-testid="open-inner" type="button" @click="innerOpen = true">Open Nested Slideout</craft-button>
+          </div>
 
           <Slideout v-model="innerOpen" title="Inner Slideout">
-            <p>This is the inner/nested slideout.</p>
-            <p>It should appear on top of the outer slideout and be independently closable.</p>
+            <div class="stack">
+              <div>
+                <p>This is the inner/nested slideout.</p>
+                <p>It should appear on top of the outer slideout and be independently closable.</p>
+              </div>
+            </div>
 
             <template #secondary-action>
-              <craft-button type="button" @click="innerOpen = false">Close Inner</craft-button>
+              <craft-button data-testid="close-inner" type="button" @click="innerOpen = false">Close Inner</craft-button>
             </template>
           </Slideout>
 
           <template #secondary-action>
-            <craft-button type="button" @click="outerOpen = false">Close</craft-button>
+            <craft-button data-testid="close-outer" type="button" @click="outerOpen = false">Close</craft-button>
           </template>
         </Slideout>
       </div>
     `,
   }),
+  play: async ({canvasElement}) => {
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+
+    const openOuterBtn = canvas.getByTestId('open-outer');
+
+    // --- Open the outer slideout ---
+    await user.click(openOuterBtn);
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('.craft-slideout-panel--open').length
+      ).toBe(1);
+    });
+
+    // --- Open the inner slideout ---
+    const openInnerBtn = document.querySelector<HTMLElement>(
+      '[data-testid="open-inner"]'
+    )!;
+    await user.click(openInnerBtn);
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('.craft-slideout-panel--open').length
+      ).toBe(2);
+    });
+
+    // --- Close inner via its Close button — outer should remain open ---
+    const closeInnerBtn = document.querySelector<HTMLElement>(
+      '[data-testid="close-inner"]'
+    )!;
+    await user.click(closeInnerBtn);
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('.craft-slideout-panel--open').length
+      ).toBe(1);
+    });
+
+    // --- Re-open inner, then close it with Escape — outer stays open ---
+    await user.click(openInnerBtn);
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('.craft-slideout-panel--open').length
+      ).toBe(2);
+    });
+
+    await user.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('.craft-slideout-panel--open').length
+      ).toBe(1);
+    });
+
+    // --- Close outer with Escape ---
+    await user.keyboard('{Escape}');
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('.craft-slideout-panel--open').length
+      ).toBe(0);
+    });
+
+    // --- Re-open both, then close outer directly — both should close ---
+    await user.click(openOuterBtn);
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('.craft-slideout-panel--open').length
+      ).toBe(1);
+    });
+
+    await user.click(
+      document.querySelector<HTMLElement>('[data-testid="open-inner"]')!
+    );
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('.craft-slideout-panel--open').length
+      ).toBe(2);
+    });
+
+    // Close outer via its button while inner is still open
+    const closeOuterBtn = document.querySelector<HTMLElement>(
+      '[data-testid="close-outer"]'
+    )!;
+    await user.click(closeOuterBtn);
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('.craft-slideout-panel--open').length
+      ).toBe(0);
+    });
+  },
 };
 
 export const PositionStart: Story = {
@@ -113,11 +200,7 @@ export const PositionStart: Story = {
       <div>
         <craft-button type="button" @click="isOpen = true">Open Slideout (Start)</craft-button>
 
-        <Slideout v-model="isOpen" position="start" label="Start Position Slideout">
-          <template #header>
-            <h3 style="margin: 0;">Start Position</h3>
-          </template>
-
+        <Slideout v-model="isOpen" position="start" title="Start Position Slideout">
           <p>This slideout opens from the start (left in LTR) side.</p>
         </Slideout>
       </div>
@@ -136,7 +219,7 @@ export const Overflow: Story = {
       <div>
         <craft-button type="button" @click="isOpen = true">Open Slideout</craft-button>
 
-        <Slideout v-model="isOpen" label="Start Position Slideout" title="Start Position">
+        <Slideout v-model="isOpen" title="Overflow">
           <div style="display: grid; gap: 1rem;">
 
             <h1>HTML Ipsum Presents</h1>
@@ -235,65 +318,7 @@ export const Overflow: Story = {
     `,
   }),
 };
-
-export const Minimal: Story = {
-  render: () => ({
-    components: {Slideout},
-    setup() {
-      const isOpen = ref(false);
-      return {isOpen};
-    },
-    template: `
-      <div>
-        <craft-button type="button" @click="isOpen = true">Open Minimal Slideout</craft-button>
-
-        <Slideout
-          v-model="isOpen"
-          :showHeader="false"
-          :showFooter="false"
-          label="Minimal Slideout"
-        >
-          <p>This slideout has no header or footer.</p>
-          <p>Just the body content.</p>
-          <craft-button type="button" @click="isOpen = false">Close</craft-button>
-        </Slideout>
-      </div>
-    `,
-  }),
-};
-
 export const Resizable: Story = {
-  render: () => ({
-    components: {Slideout},
-    setup() {
-      const isOpen = ref(false);
-      return {isOpen};
-    },
-    template: `
-      <div>
-        <craft-button type="button" @click="isOpen = true">Open Resizable Slideout</craft-button>
-
-        <Slideout
-          v-model="isOpen"
-          title="Resizable Slideout"
-          resizable
-          :minWidth="320"
-          :maxWidth="1200"
-        >
-          <p>This slideout can be resized by dragging the left edge.</p>
-          <p>The resize handle appears as a blue bar when you hover over it.</p>
-          <p>Try resizing this slideout, then close it and reopen to see that the width is preserved.</p>
-
-          <template #secondary-action>
-            <craft-button type="button" @click="isOpen = false">Close</craft-button>
-          </template>
-        </Slideout>
-      </div>
-    `,
-  }),
-};
-
-export const ResizableNested: Story = {
   render: () => ({
     components: {Slideout},
     setup() {

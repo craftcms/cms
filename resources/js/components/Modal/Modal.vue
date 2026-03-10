@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {onKeyStroke} from '@vueuse/core';
   import {computed} from 'vue';
+  import Shade from '@/components/Shade.vue';
 
   export interface ModalProps {
     isActive?: boolean;
@@ -28,22 +29,23 @@
 </script>
 
 <template>
-  <Transition name="body">
-    <div class="modal" v-if="isActive">
-      <div
-        :class="{
-          content: true,
-          [widthClass]: true,
-        }"
-      >
-        <slot></slot>
+  <Teleport to="body">
+    <Transition name="body">
+      <div class="modal" v-if="isActive">
+        <div
+          :class="{
+            content: true,
+            [widthClass]: true,
+          }"
+          data-testid="modal-content"
+        >
+          <slot></slot>
+        </div>
       </div>
-    </div>
-  </Transition>
+    </Transition>
 
-  <Transition name="fade" v-if="overlay">
-    <div class="overlay" v-if="isActive" @click="emit('close')"></div>
-  </Transition>
+    <Shade :visible="isActive" v-if="overlay" @close="emit('close')" />
+  </Teleport>
 </template>
 
 <style scoped>
@@ -61,29 +63,16 @@
     pointer-events: auto;
   }
 
-  .modal,
-  .overlay {
+  .modal {
     position: fixed;
     width: 100vw;
     height: 100vh;
     inset: 0;
-  }
-
-  .modal {
     z-index: 10002;
     display: grid;
     justify-content: center;
     align-items: center;
     pointer-events: none;
-  }
-
-  .overlay {
-    /**
-    Action menu items are z-index 10000, so we want to be above that
-    @TODO make this less fragile/weird
-     */
-    z-index: 10001;
-    background-color: rgba(0, 0, 0, 0.5);
   }
 
   /* Only animate when the user is cool with it */
@@ -104,16 +93,6 @@
         opacity: 1;
         transform: scale(1) translateY(0);
       }
-    }
-
-    .fade-enter-active,
-    .fade-leave-active {
-      transition: opacity 0.1s ease;
-    }
-
-    .fade-enter-from,
-    .fade-leave-to {
-      opacity: 0;
     }
   }
 </style>

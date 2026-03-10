@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import ModalForm from '@/components/ModalForm.vue';
+  import ModalForm from '@/components/Modal/ModalForm.vue';
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {useAssetIndexer} from '@/composables/useAssetIndexer';
   import {computed, reactive} from 'vue';

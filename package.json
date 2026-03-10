@@ -19,6 +19,7 @@
     "storybook:cp": "cd ./packages/craftcms-cp && npm run storybook",
     "storybook": "storybook dev -p 6007",
     "build-storybook": "storybook build",
+    "test:storybook": "vitest --run --project storybook",
     "build:all": "npm run build:bundles && npm run build:cp && npm run build"
   },
   "workspaces": [
@@ -35,11 +36,13 @@
     "@storybook/addon-a11y": "^9.1.5",
     "@storybook/addon-docs": "^9.1.5",
     "@storybook/addon-links": "^9.1.5",
+    "@storybook/addon-vitest": "^9.1.20",
     "@storybook/vue3": "^9.1.5",
     "@storybook/vue3-vite": "^9.1.5",
     "@tailwindcss/vite": "^4.1.18",
     "@total-typescript/tsconfig": "^1.0.4",
     "@vitejs/plugin-vue": "^6.0.3",
+    "@vitest/browser": "^3.2.4",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "npm-run-all": "^4.1.5",
@@ -54,6 +57,7 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-tsconfig-paths": "^6.0.5",
+    "vitest": "^3.2.4",
     "vue-tsc": "^3.2.4"
   },
   "optionalDependencies": {

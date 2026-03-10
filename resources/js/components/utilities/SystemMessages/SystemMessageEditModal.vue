@@ -3,7 +3,7 @@
   import {t} from '@craftcms/cp';
   import {useForm} from '@inertiajs/vue3';
   import {useEventListener} from '@vueuse/core';
-  import ModalForm from '@/components/ModalForm.vue';
+  import ModalForm from '@/components/Modal/ModalForm.vue';
   import {useActionClient} from '@/composables/useFetch';
   import {useAnnouncer} from '@/composables/useAnnouncer';
   import {store} from '@actions/Utilities/SystemMessagesController';

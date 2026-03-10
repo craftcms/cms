@@ -9,7 +9,7 @@
   } from '@tanstack/vue-table';
   import {computed, h, nextTick, ref, watch} from 'vue';
   import type {SelectItem, Site, SiteGroup} from '@/types';
-  import ModalForm from '@/components/ModalForm.vue';
+  import ModalForm from '@/components/Modal/ModalForm.vue';
   import {Deferred, router, useForm} from '@inertiajs/vue3';
   import {destroy, store} from '@actions/Settings/SiteGroupsController.js';
   import {create, edit, reorder} from '@actions/Settings/SitesController';

@@ -54,7 +54,7 @@ export function useUiLayerManager() {
 
       // Update z-index so newer panels are on top
       layer.panel.style.zIndex = `${101 + index}`;
-      if (layer.backdrop) {
+      if (layer.backdrop?.style) {
         layer.backdrop.style.zIndex = `${100 + index}`;
       }
     });

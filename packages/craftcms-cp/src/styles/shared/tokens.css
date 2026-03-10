@@ -13,6 +13,7 @@
   --c-surface-sunken: var(--color-slate-100);
   --c-surface-form: hsla(212, 50%, 90%, 0.05);
   --c-surface-overlay: #fff;
+  --c-surface-shade: rgba(0, 0, 0, 0.5);
 
   /* Text tokens (replaces --c-fg-*) */
   --c-text-white: var(--color-white);

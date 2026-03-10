@@ -5,13 +5,12 @@
   import {useUiLayerManager} from '@/composables/useUiLayerManager';
   import {useResizable} from '@/composables/useResizable';
   import Pane from '@/components/Pane/Pane.vue';
+  import Shade from '@/components/Shade.vue';
 
   export interface SlideoutProps {
     modelValue?: boolean;
     position?: 'start' | 'end';
     title?: string;
-    showHeader?: boolean;
-    showFooter?: boolean;
     closeOnEscape?: boolean;
     closeOnBackdropClick?: boolean;
     action?: string;
@@ -23,8 +22,6 @@
   const props = withDefaults(defineProps<SlideoutProps>(), {
     modelValue: false,
     position: 'end',
-    showHeader: true,
-    showFooter: true,
     closeOnEscape: true,
     closeOnBackdropClick: true,
     resizable: false,
@@ -46,7 +43,7 @@
 
   // Template refs
   const panelRef = ref<HTMLElement | null>(null);
-  const backdropRef = ref<HTMLElement | null>(null);
+  const backdropRef = ref<typeof Shade | null>(null);
 
   // Focus trap
   const {activate: activateTrap, deactivate: deactivateTrap} = useFocusTrap(
@@ -65,7 +62,9 @@
 
   // The resize handle is on the opposite edge from the slideout position
   // e.g., position='end' means panel is on inline-end, so handle is on 'start' edge
-  const resizeEdge = computed(() => (props.position === 'end' ? 'start' : 'end'));
+  const resizeEdge = computed(() =>
+    props.position === 'end' ? 'start' : 'end'
+  );
 
   const {
     setHandleRef,
@@ -83,9 +82,6 @@
       layerManager.setSlideoutWidth(width);
     },
   });
-
-  // Computed
-  const isActive = computed(() => props.modelValue);
 
   // Methods
   const show = () => {
@@ -212,16 +208,6 @@
   <Teleport to="body">
     <template v-if="isVisible">
       <div
-        ref="backdropRef"
-        :class="{
-          'craft-slideout-backdrop': true,
-          'craft-slideout-backdrop--visible': isOpen,
-        }"
-        aria-hidden="true"
-        @click="handleBackdropClick"
-      ></div>
-
-      <div
         ref="panelRef"
         :class="{
           'craft-slideout-panel': true,
@@ -259,44 +245,14 @@
               <slot :name="slotName"></slot>
             </template>
           </Pane>
-          <!--<div v-if="showHeader" class="craft-slideout-panel__header">-->
-          <!--  <slot name="header"></slot>-->
-          <!--</div>-->
-
-          <!--<div class="craft-slideout-panel__body">-->
-          <!--  <slot></slot>-->
-          <!--</div>-->
-
-          <!--<div v-if="showFooter" class="craft-slideout-panel__footer">-->
-          <!--  <slot name="footer"></slot>-->
-          <!--</div>-->
         </div>
       </div>
+      <Shade ref="backdropRef" @close="handleBackdropClick" :visible="isOpen" />
     </template>
   </Teleport>
 </template>
 
 <style>
-  .craft-slideout-backdrop {
-    position: fixed;
-    inset: 0;
-    background-color: var(--c-backdrop-color, rgba(0, 0, 0, 0.5));
-    opacity: 0;
-    visibility: hidden;
-    transition:
-      opacity var(--c-transition-duration, 200ms) ease,
-      visibility 0s linear var(--c-transition-duration, 200ms);
-    z-index: var(--c-z-overlay-backdrop, 100);
-  }
-
-  .craft-slideout-backdrop--visible {
-    opacity: 1;
-    visibility: visible;
-    transition:
-      opacity var(--c-transition-duration, 200ms) ease,
-      visibility 0s linear 0s;
-  }
-
   .craft-slideout-panel {
     --_padding-inline: var(--c-spacing-md);
     --_padding-block: var(--c-spacing-md);
@@ -352,7 +308,7 @@
 
   .craft-slideout-resize-handle:hover,
   .craft-slideout-resize-handle:active {
-    background-color: var(--c-color-brand-fill, #3b82f6);
+    background-color: var(--c-color-accent-fill-loud, #3b82f6);
   }
 
   .craft-slideout-resize-handle--start {
@@ -372,35 +328,6 @@
   .craft-slideout-pane {
     flex-grow: 1;
   }
-
-  /*
-  .craft-slideout-panel__header {
-    padding-inline: var(--_padding-inline);
-    padding-block: var(--_padding-block);
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-    background-color: var(--c-color-neutral-fill-quiet);
-    flex-shrink: 0;
-  }
-
-  .craft-slideout-panel__body {
-    padding-inline: var(--_padding-inline);
-    padding-block: var(--_padding-block);
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .craft-slideout-panel__footer {
-    padding-inline: var(--_padding-inline);
-    padding-block: var(--_padding-block);
-    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-    background-color: var(--c-color-neutral-fill-quiet);
-    flex-shrink: 0;
-    display: flex;
-    justify-content: end;
-    gap: var(--c-spacing-md);
-  }
-   */
 
   @media (prefers-reduced-motion: reduce) {
     .craft-slideout-backdrop,
