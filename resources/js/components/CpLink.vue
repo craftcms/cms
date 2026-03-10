@@ -63,10 +63,7 @@
   .cp-link--button {
     cursor: pointer;
     font: inherit;
-    border: 1px solid var(--c-button-border, var(--c-button-default-border));
-    background-color: var(--c-button-fill, var(--c-button-default-fill));
     border-radius: var(--c-button-radius, var(--c-radius-sm));
-    color: var(--c-button-text, inherit);
     padding-inline: var(--c-button-spacing-inline, var(--c-spacing-md));
     padding-block: 0;
     width: auto;
@@ -74,17 +71,28 @@
     min-width: var(--c-button-width, var(--c-size-control-md));
     white-space: nowrap;
 
+    /* Colorable styles */
+    color: var(--c-color-on-loud, var(--c-color-neutral-on-loud));
+    border-width: var(--c-button-border-width, 1px);
+    border-style: var(--c-button-border-style, solid);
+    border-color: var(
+      --c-color-border-loud,
+      var(--c-color-neutral-border-loud)
+    );
+    background-color: var(
+      --c-color-fill-loud,
+      var(--c-color-neutral-fill-loud)
+    );
+
     @media (hover: hover) {
-      &:hover {
-        background-color: var(
-          --c-button-fill-hover,
-          var(--c-button-default-fill-hover)
+      :host(:hover) {
+        background-color: color-mix(
+          in oklab,
+          var(--c-color-fill-loud, var(--c-button-default-fill)),
+          var(--c-color-mix-hover)
         );
-        border-color: var(
-          --c-button-border-hover,
-          var(--c-button-default-border-hover)
-        );
-        color: var(--c-button-text-hover, var(--c-button-default-text-hover));
+        color: var(--c-color-on-loud);
+        border-color: var(--c-color-border-loud);
       }
     }
 

@@ -36,17 +36,17 @@ export const groups: SwatchGroupDef[] = [
     group: 'brand',
     fills: [
       'var(--c-color-brand-fill-loud)',
-      'var(--c-color-brand-fill-quiet)',
+      'var(--c-color-brand-fill-normal)',
       'var(--c-color-brand-fill-quiet)',
     ],
     borders: [
       'var(--c-color-brand-border-loud)',
-      'var(--c-color-brand-border-quiet)',
+      'var(--c-color-brand-border-normal)',
       'var(--c-color-brand-border-quiet)',
     ],
     ons: [
       'var(--c-color-brand-on-loud)',
-      'var(--c-color-brand-on-quiet)',
+      'var(--c-color-brand-on-normal)',
       'var(--c-color-brand-on-quiet)',
     ],
   },
