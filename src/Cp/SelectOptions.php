@@ -487,7 +487,7 @@ class SelectOptions
             [
                 'label' => t('Templates'),
                 'type' => 'optgroup',
-                'options' => array_values(Arr::sort($suggestions, 'name')),
+                'options' => array_values(Arr::sort($suggestions, 'label')),
             ],
         ];
     }
