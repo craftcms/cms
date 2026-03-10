@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage\Mailables;
 
+use CraftCms\Cms\SystemMessage\Actions\FormatSystemMessageMailAction;
 use CraftCms\Cms\SystemMessage\Actions\RenderSystemMessageAction;
 use CraftCms\Cms\SystemMessage\Data\RenderedSystemMessage;
 use Illuminate\Bus\Queueable;
@@ -33,15 +34,16 @@ final class SystemMessageMailable extends Mailable
     public function build(): static
     {
         $message = $this->renderedMessage();
+        $formattedMessage = app(FormatSystemMessageMailAction::class)->handle($message);
 
-        $data = array_merge($message->variables, [
-            'textBody' => $message->textBody,
-            'htmlBody' => $message->htmlBody,
-        ]);
-
-        return $this
+        $mailable = $this
             ->subject($message->subject)
-            ->markdown('mail.system-message', $data)
-            ->text('mail.system-message-text', $data);
+            ->text('mail.system-message-text', $formattedMessage->viewData);
+
+        if ($formattedMessage->usesCustomTemplate) {
+            return $mailable->html($formattedMessage->htmlBody);
+        }
+
+        return $mailable->markdown('mail.system-message', $formattedMessage->viewData);
     }
 }
