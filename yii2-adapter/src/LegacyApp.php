@@ -33,7 +33,7 @@ final readonly class LegacyApp
                  * Yii seems weird about these
                  */
                 $_SERVER = array_merge($_SERVER, [
-                    'SCRIPT_FILENAME' => $this->app->publicPath('index.php'),
+                    'SCRIPT_FILENAME' => $app->publicPath('index.php'),
                     'SCRIPT_NAME' => '/index.php',
                 ]);
 
