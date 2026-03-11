@@ -24,10 +24,9 @@ use Webauthn\AuthenticationExtensions\ExtensionOutputCheckerHandler;
 use Webauthn\AuthenticatorAssertionResponseValidator;
 use Webauthn\AuthenticatorAttestationResponseValidator;
 use Webauthn\AuthenticatorSelectionCriteria;
+use Webauthn\CeremonyStep\CeremonyStepManagerFactory;
 use Webauthn\Denormalizer\WebauthnSerializerFactory;
-use Webauthn\PublicKeyCredentialLoader;
 use Webauthn\PublicKeyCredentialParameters;
-use Webauthn\TokenBinding\IgnoreTokenBindingHandler;
 
 /**
  * Webauthn server.
@@ -38,17 +37,14 @@ use Webauthn\TokenBinding\IgnoreTokenBindingHandler;
  */
 class WebauthnServer
 {
-    /**
-     * Returns the token binding handler.
-     *
-     * > At the time of writing, we recommend to ignore this feature.
-     *
-     * @return IgnoreTokenBindingHandler
-     * @see https://webauthn-doc.spomky-labs.com/v/v4.5/pure-php/the-hard-way#token-binding-handler
-     */
-    public function getTokenBindingHandler(): IgnoreTokenBindingHandler
+    private CeremonyStepManagerFactory $csmFactory;
+    private ?SerializerInterface $serializer = null;
+    private CredentialRepository $credentialRepository;
+
+    public function __construct()
     {
-        return IgnoreTokenBindingHandler::create();
+        $this->csmFactory = new CeremonyStepManagerFactory();
+        $this->credentialRepository = new CredentialRepository();
     }
 
     /**
@@ -76,22 +72,12 @@ class WebauthnServer
      */
     public function getAttestationObjectLoader(): AttestationObjectLoader
     {
-        return AttestationObjectLoader::create(
-            $this->getAttestationStatementManager()
-        );
+        return AttestationObjectLoader::create($this->getAttestationStatementManager());
     }
 
-    /**
-     * Returns the object that will load the Public Key.
-     *
-     * @return PublicKeyCredentialLoader
-     * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#public-key-credential-loader
-     */
-    public function getPublicKeyCredentialLoader(): PublicKeyCredentialLoader
+    public function getCredentialRepository(): CredentialRepository
     {
-        return PublicKeyCredentialLoader::create(
-            $this->getAttestationObjectLoader()
-        );
+        return $this->credentialRepository;
     }
 
     /**
@@ -102,11 +88,14 @@ class WebauthnServer
      */
     public function getSerializer(): SerializerInterface
     {
-        $attestationStatementSupportManager = AttestationStatementSupportManager::create();
-        $attestationStatementSupportManager->add(NoneAttestationStatementSupport::create());
-        $factory = new WebauthnSerializerFactory($attestationStatementSupportManager);
+        if ($this->serializer == null) {
+            $attestationStatementSupportManager = AttestationStatementSupportManager::create();
+            $attestationStatementSupportManager->add(NoneAttestationStatementSupport::create());
+            $factory = new WebauthnSerializerFactory($attestationStatementSupportManager);
+            $this->serializer = $factory->create();
+        }
 
-        return $factory->create();
+        return $this->serializer;
     }
 
     /**
@@ -156,12 +145,7 @@ class WebauthnServer
      */
     public function getAuthenticatorAttestationResponseValidator(): AuthenticatorAttestationResponseValidator
     {
-        return AuthenticatorAttestationResponseValidator::create(
-            $this->getAttestationStatementManager(),
-            new CredentialRepository(),
-            $this->getTokenBindingHandler(),
-            $this->getExtensionOutputCheckerHandler(),
-        );
+        return AuthenticatorAttestationResponseValidator::create(ceremonyStepManager: $this->csmFactory->creationCeremony());
     }
 
     /**
@@ -172,12 +156,7 @@ class WebauthnServer
      */
     public function getAuthenticatorAssertionResponseValidator(): AuthenticatorAssertionResponseValidator
     {
-        return AuthenticatorAssertionResponseValidator::create(
-            new CredentialRepository(),
-            $this->getTokenBindingHandler(),
-            $this->getExtensionOutputCheckerHandler(),
-            $this->getAlgorithmManager(),
-        );
+        return AuthenticatorAssertionResponseValidator::create(ceremonyStepManager: $this->csmFactory->requestCeremony());
     }
 
     /**
@@ -208,7 +187,6 @@ class WebauthnServer
             authenticatorAttachment: null,
             userVerification: AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_REQUIRED,
             residentKey: AuthenticatorSelectionCriteria::RESIDENT_KEY_REQUIREMENT_REQUIRED,
-            requireResidentKey: true,
         );
     }
 }

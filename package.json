@@ -43,7 +43,7 @@
     "@craftcms/vue": "file:packages/craftcms-vue",
     "@floating-ui/dom": "^1.6.3",
     "@selectize/selectize": "selectize/selectize.js#master",
-    "@simplewebauthn/browser": "^7.1.0",
+    "@simplewebauthn/browser": "^13.2.0",
     "@types/jquery": "^3.5.7",
     "accounting": "^0.4.1",
     "axios": "^1.12.2",

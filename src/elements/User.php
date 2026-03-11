@@ -1408,6 +1408,8 @@ class User extends Element implements IdentityInterface
      * @param string $response The authentication response data
      * @return bool
      * @since 5.0.0
+     *
+     * TODO: change the signature in v6 - $requestOptions only really accepts a string
      */
     public function authenticateWithPasskey(
         PublicKeyCredentialRequestOptions|array|string $requestOptions,
