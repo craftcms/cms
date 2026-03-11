@@ -26,7 +26,7 @@ use Twig\Markup;
  *
  * @method TElement one(callable|null $callback, mixed $default)
  */
-final class ElementCollection extends Collection
+class ElementCollection extends Collection
 {
     /**
      * Finds an element in the collection.
