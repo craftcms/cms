@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/vue3';
-import {ref} from 'vue';
+import {computed, defineComponent, h, ref, resolveComponent} from 'vue';
 import {expect, userEvent, waitFor, within} from 'storybook/test';
 import Slideout from './Slideout.vue';
 
@@ -42,7 +42,7 @@ export const Default: Story = {
       <div>
         <craft-button type="button" @click="isOpen = true">Open Slideout</craft-button>
 
-        <Slideout v-model="isOpen" v-bind="args" title="Header">
+        <Slideout :active="isOpen" v-bind="args" title="Header">
           <p>This is the main content of the slideout.</p>
           <p>It can contain any content you need.</p>
 
@@ -70,7 +70,7 @@ export const NestedSlideouts: Story = {
       <div>
         <craft-button data-testid="open-outer" type="button" @click="outerOpen = true">Open Slideout</craft-button>
 
-        <Slideout v-model="outerOpen" title="Outer Slideout">
+        <Slideout :active="outerOpen" title="Outer Slideout">
           <div class="stack">
             <div>
               <p>This is the outer slideout.</p>
@@ -80,7 +80,7 @@ export const NestedSlideouts: Story = {
             <craft-button data-testid="open-inner" type="button" @click="innerOpen = true">Open Nested Slideout</craft-button>
           </div>
 
-          <Slideout v-model="innerOpen" title="Inner Slideout">
+          <Slideout :active="innerOpen" title="Inner Slideout">
             <div class="stack">
               <div>
                 <p>This is the inner/nested slideout.</p>
@@ -200,7 +200,7 @@ export const PositionStart: Story = {
       <div>
         <craft-button type="button" @click="isOpen = true">Open Slideout (Start)</craft-button>
 
-        <Slideout v-model="isOpen" position="start" title="Start Position Slideout">
+        <Slideout :active="isOpen" position="start" title="Start Position Slideout">
           <p>This slideout opens from the start (left in LTR) side.</p>
         </Slideout>
       </div>
@@ -219,7 +219,7 @@ export const Overflow: Story = {
       <div>
         <craft-button type="button" @click="isOpen = true">Open Slideout</craft-button>
 
-        <Slideout v-model="isOpen" title="Overflow">
+        <Slideout :active="isOpen" title="Overflow">
           <div style="display: grid; gap: 1rem;">
 
             <h1>HTML Ipsum Presents</h1>
@@ -318,38 +318,81 @@ export const Overflow: Story = {
     `,
   }),
 };
+
+const NestedSlideout = defineComponent({
+  name: 'NestedSlideout',
+  props: {
+    id: {type: Number, required: true},
+    remaining: {type: Number, required: true},
+    slideouts: {type: Array as () => number[], required: true},
+  },
+  emits: ['open', 'close'],
+  setup(props, {emit}) {
+    return () => {
+      const Self = resolveComponent('NestedSlideout');
+      const nextId = props.id + 1;
+      const hasNext = props.remaining > 0;
+
+      return h(
+        Slideout,
+        {
+          active: props.slideouts?.includes(props.id),
+          title: 'Slideout',
+          resizable: true,
+        },
+        {
+          default: () => [
+            h('p', 'This slideout is resizable. Drag the left edge to resize.'),
+            h(
+              'p',
+              'When you resize this slideout, all subsequent slideouts will open at the same width.'
+            ),
+            hasNext &&
+              h(
+                'craft-button',
+                {type: 'button', onClick: () => emit('open', nextId)},
+                'Open Nested Slideout'
+              ),
+            hasNext &&
+              h(Self, {
+                id: nextId,
+                remaining: props.remaining - 1,
+                slideouts: props.slideouts,
+                onOpen: (id: number) => emit('open', id),
+                onClose: (id: number) => emit('close', id),
+              }),
+          ],
+          'secondary-action': () =>
+            h(
+              'craft-button',
+              {type: 'button', onClick: () => emit('close', props.id)},
+              'Close'
+            ),
+        }
+      );
+    };
+  },
+});
+
 export const Resizable: Story = {
   render: () => ({
-    components: {Slideout},
+    components: {NestedSlideout},
     setup() {
-      const outerOpen = ref(false);
-      const innerOpen = ref(false);
-      return {outerOpen, innerOpen};
+      const slideouts = ref<number[]>([]);
+      const open = (id: number) => slideouts.value.push(id);
+      const close = (id: number) =>
+        (slideouts.value = slideouts.value.filter((s) => s !== id));
+      return {slideouts, open, close};
     },
     template: `
-      <div>
-        <craft-button type="button" @click="outerOpen = true">Open Resizable Slideout</craft-button>
-
-        <Slideout v-model="outerOpen" title="Outer Slideout" resizable>
-          <p>This slideout is resizable. Drag the left edge to resize.</p>
-          <p>When you resize this slideout, all subsequent slideouts will open at the same width.</p>
-
-          <craft-button type="button" @click="innerOpen = true">Open Nested Slideout</craft-button>
-
-          <Slideout v-model="innerOpen" title="Inner Slideout" resizable>
-            <p>This nested slideout inherits the width from the parent.</p>
-            <p>You can also resize this one, and the width will be shared with any new slideouts.</p>
-
-            <template #secondary-action>
-              <craft-button type="button" @click="innerOpen = false">Close Inner</craft-button>
-            </template>
-          </Slideout>
-
-          <template #secondary-action>
-            <craft-button type="button" @click="outerOpen = false">Close</craft-button>
-          </template>
-        </Slideout>
-      </div>
+      <craft-button type="button" @click="open(1)">Open Slideout</craft-button>
+      <NestedSlideout
+        :id="1"
+        :remaining="5"
+        :slideouts="slideouts"
+        @open="open"
+        @close="close"
+      />
     `,
   }),
 };
@@ -367,7 +410,7 @@ export const FocusTrap: Story = {
         <button data-testid="trigger" type="button" @click="isOpen = true">Open Slideout</button>
         <button data-testid="outside-after" type="button">Outside After</button>
 
-        <Slideout v-model="isOpen" title="Focus Trap Test">
+        <Slideout :active="isOpen" title="Focus Trap Test">
           <div style="display: flex; flex-direction: column; gap: 0.5rem;">
             <label>
               First Name
@@ -459,7 +502,7 @@ export const FocusTrapRestore: Story = {
       <div>
         <button data-testid="trigger" type="button" @click="isOpen = true">Open Slideout</button>
 
-        <Slideout v-model="isOpen" title="Focus Restore Test" :closeOnEscape="true">
+        <Slideout :active="isOpen" title="Focus Restore Test" :closeOnEscape="true">
           <p>Press Escape to close and verify focus returns to the trigger.</p>
 
           <template #primary-action>
@@ -505,11 +548,11 @@ export const FocusTrapNested: Story = {
       <div>
         <button data-testid="trigger" type="button" @click="outerOpen = true">Open Outer</button>
 
-        <Slideout v-model="outerOpen" title="Outer Slideout">
+        <Slideout :active="outerOpen" title="Outer Slideout">
           <button data-testid="outer-btn" type="button">Outer Button</button>
           <button data-testid="open-inner" type="button" @click="innerOpen = true">Open Inner</button>
 
-          <Slideout v-model="innerOpen" title="Inner Slideout">
+          <Slideout :active="innerOpen" title="Inner Slideout">
             <button data-testid="inner-btn-1" type="button">Inner Button 1</button>
             <button data-testid="inner-btn-2" type="button">Inner Button 2</button>
 

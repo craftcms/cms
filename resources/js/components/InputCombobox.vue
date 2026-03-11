@@ -29,7 +29,7 @@
       class?: HTMLAttributes['class'];
     }>(),
     {
-      modelValue: '',
+      active: '',
       requireOptionMatch: false,
       options: () => [],
       transformModelValue: (newValue: SelectOption | undefined | null) =>

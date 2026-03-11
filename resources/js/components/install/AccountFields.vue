@@ -15,7 +15,7 @@
       errors?: Record<string, string[]>;
       showUsername?: boolean;
     }>(),
-    {showUsername: true, modelValue: () => ({}), errors: () => ({})}
+    {showUsername: true, active: () => ({}), errors: () => ({})}
   );
 
   const model = computed({

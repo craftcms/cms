@@ -12,7 +12,7 @@
       localeOptions?: Array<{id: string; name: string; selected: boolean}>;
       errors?: Record<string, string[]>;
     }>(),
-    {modelValue: () => ({}), errors: () => ({}), localeOptions: () => []}
+    {active: () => ({}), errors: () => ({}), localeOptions: () => []}
   );
 
   const model = computed({

@@ -8,7 +8,7 @@
   import Shade from '@/components/Shade.vue';
 
   export interface SlideoutProps {
-    modelValue?: boolean;
+    active?: boolean;
     position?: 'start' | 'end';
     title?: string;
     closeOnEscape?: boolean;
@@ -20,7 +20,7 @@
   }
 
   const props = withDefaults(defineProps<SlideoutProps>(), {
-    modelValue: false,
+    active: false,
     position: 'end',
     closeOnEscape: true,
     closeOnBackdropClick: true,
@@ -30,7 +30,6 @@
   });
 
   const emit = defineEmits<{
-    (e: 'update:modelValue', value: boolean): void;
     (e: 'open'): void;
     (e: 'beforeClose'): void;
     (e: 'close'): void;
@@ -88,7 +87,6 @@
     if (isOpen.value) return;
 
     isVisible.value = true;
-    emit('update:modelValue', true);
 
     // Prevent body scroll
     document.body.style.overflow = 'hidden';
@@ -130,7 +128,6 @@
 
     emit('beforeClose');
     isOpen.value = false;
-    emit('update:modelValue', false);
 
     deactivateTrap();
 
@@ -173,7 +170,7 @@
 
   // Watch for external changes to modelValue
   watch(
-    () => props.modelValue,
+    () => props.active,
     (newValue) => {
       if (newValue && !isOpen.value) {
         show();

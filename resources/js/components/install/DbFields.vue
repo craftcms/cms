@@ -12,7 +12,7 @@
       modelValue?: any;
       errors?: Record<string, string[]>;
     }>(),
-    {modelValue: () => ({}), errors: () => ({})}
+    {active: () => ({}), errors: () => ({})}
   );
 
   const model = computed({
