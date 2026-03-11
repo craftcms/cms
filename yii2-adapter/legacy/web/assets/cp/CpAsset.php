@@ -57,7 +57,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
 use CraftCms\Cms\View\Enums\Position;
-use CraftCms\Yii2Adapter\Yii2ServiceProvider;
+use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Support\Facades\Auth;
 use stdClass;
 use yii\web\JqueryAsset;
@@ -333,7 +333,7 @@ JS;
     {
         $groups = [];
 
-        if (!Yii2ServiceProvider::supportsCategories()) {
+        if (!DeprecatedConcepts::supportsCategories()) {
             return $groups;
         }
 

@@ -10,7 +10,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Yii2Adapter\Yii2ServiceProvider;
+use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\Schema\Blueprint;
@@ -18,8 +18,8 @@ use Illuminate\Support\Facades\Schema;
 
 final class AddCategoriesSupportCommand extends Command
 {
-    use CraftCommand;
     use ConfirmableTrait;
+    use CraftCommand;
 
     protected $signature = 'craft:add-categories-support
         {--force : Force the operation to run when in production or when allowAdminChanges is disabled.}
@@ -36,6 +36,7 @@ final class AddCategoriesSupportCommand extends Command
 
         if (Schema::hasTable($categoriesTable)) {
             $this->info("<fg=cyan>$categoriesTable</> table already exists.");
+
             return;
         }
 
@@ -119,7 +120,7 @@ final class AddCategoriesSupportCommand extends Command
             },
         );
 
-        Yii2ServiceProvider::resetSupport();
+        DeprecatedConcepts::resetSupport();
     }
 
     protected function getDefaultConfirmCallback(): Closure
