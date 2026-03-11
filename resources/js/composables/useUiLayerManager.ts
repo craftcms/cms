@@ -32,6 +32,7 @@ export function useUiLayerManager() {
 
   const isTopmost = (id: string) => {
     const stack = layers.value;
+    // @ts-ignore
     return stack.length > 0 && stack[stack.length - 1].id === id;
   };
 
@@ -44,18 +45,22 @@ export function useUiLayerManager() {
       if (!layer.panel) return;
 
       // Calculate offset: newest panel (last in array) is at edge, older panels shift inward
-      const offset = total > 1 ? (total - 1 - index) * 3 : 0;
+      const offset = total > 1 ? (total - 1 - index) * 10 : 0;
 
       if (layer.position === 'end') {
-        layer.panel.style.insetInlineEnd = `${offset}rem`;
+        layer.panel.style.insetInlineEnd = `${offset}%`;
       } else {
-        layer.panel.style.insetInlineStart = `${offset}rem`;
+        layer.panel.style.insetInlineStart = `${offset}%`;
       }
 
       // Update z-index so newer panels are on top
       layer.panel.style.zIndex = `${101 + index}`;
-      if (layer.backdrop?.style) {
-        layer.backdrop.style.zIndex = `${100 + index}`;
+
+      // backdrop is a Shade component instance — access the exposed el ref
+      const backdropRef = (layer.backdrop as any)?.el;
+      const backdropEl = backdropRef?.value ?? backdropRef;
+      if (backdropEl instanceof HTMLElement) {
+        backdropEl.style.zIndex = `${100 + index}`;
       }
     });
   };
@@ -81,6 +86,7 @@ export function useUiLayerManager() {
     add,
     remove,
     isTopmost,
+    updatePositions,
     count,
     hasOpenLayers,
     getSlideoutWidth,

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import {ref} from 'vue';
+
   const emit = defineEmits<{
     (e: 'close'): void;
   }>();
@@ -8,12 +10,19 @@
     }>(),
     {visible: false}
   );
+
+  const shadeRef = ref<HTMLElement | null>(null);
+
+  defineExpose({
+    el: shadeRef,
+  });
 </script>
 
 <template>
   <Transition name="fade">
     <div
       v-if="visible"
+      ref="shadeRef"
       class="shade"
       @click="emit('close')"
       aria-hidden="true"

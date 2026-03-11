@@ -115,6 +115,9 @@
         requestAnimationFrame(() => {
           isOpen.value = true;
           activateTrap();
+
+          // Re-apply z-index positioning after the shade renders
+          nextTick(() => layerManager.updatePositions());
         });
       });
 
