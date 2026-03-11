@@ -13,6 +13,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class SectionResource extends JsonResource
 {
     #[\Override]
+    public static $wrap;
+
+    #[\Override]
     public function toArray(Request $request): array
     {
         return [
