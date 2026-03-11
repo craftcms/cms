@@ -65,8 +65,7 @@
   </craft-chip>
 
   <Slideout
-    :active="settingsSlideoutOpen"
-    @close="settingsSlideoutOpen = false"
+    v-model="settingsSlideoutOpen"
     :title="t('Edit {name}', {name: type.name})"
   >
     <template v-if="isSuccess">

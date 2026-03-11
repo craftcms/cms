@@ -8,7 +8,6 @@
   import Shade from '@/components/Shade.vue';
 
   export interface SlideoutProps {
-    active?: boolean;
     position?: 'start' | 'end';
     title?: string;
     closeOnEscape?: boolean;
@@ -19,8 +18,9 @@
     maxWidth?: number;
   }
 
+  const active = defineModel<boolean>({default: false});
+
   const props = withDefaults(defineProps<SlideoutProps>(), {
-    active: false,
     position: 'end',
     closeOnEscape: true,
     closeOnBackdropClick: true,
@@ -82,9 +82,18 @@
     },
   });
 
+  // Track pending close transition so show() can cancel it
+  let closeAbort: AbortController | null = null;
+
   // Methods
   const show = () => {
     if (isOpen.value) return;
+
+    // Cancel any pending close transition cleanup
+    if (closeAbort) {
+      closeAbort.abort();
+      closeAbort = null;
+    }
 
     isVisible.value = true;
 
@@ -127,6 +136,7 @@
     if (!isOpen.value) return;
 
     emit('beforeClose');
+    active.value = false;
     isOpen.value = false;
 
     deactivateTrap();
@@ -140,7 +150,10 @@
     }
 
     // Wait for transition to complete
+    closeAbort = new AbortController();
+
     const handleTransitionEnd = () => {
+      closeAbort = null;
       isVisible.value = false;
       emit('close');
     };
@@ -150,6 +163,7 @@
     } else {
       panelRef.value?.addEventListener('transitionend', handleTransitionEnd, {
         once: true,
+        signal: closeAbort.signal,
       });
     }
   };
@@ -168,17 +182,14 @@
     }
   };
 
-  // Watch for external changes to modelValue
-  watch(
-    () => props.active,
-    (newValue) => {
-      if (newValue && !isOpen.value) {
-        show();
-      } else if (!newValue && isOpen.value) {
-        hide();
-      }
+  // Watch for external changes to active
+  watch(active, (newValue) => {
+    if (newValue && !isOpen.value) {
+      show();
+    } else if (!newValue && isOpen.value) {
+      hide();
     }
-  );
+  });
 
   // Escape key handler - only topmost slideout responds
   onKeyStroke('Escape', (e) => {

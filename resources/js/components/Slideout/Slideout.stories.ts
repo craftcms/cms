@@ -42,7 +42,7 @@ export const Default: Story = {
       <div>
         <craft-button type="button" @click="isOpen = true">Open Slideout</craft-button>
 
-        <Slideout :active="isOpen" v-bind="args" title="Header">
+        <Slideout v-model="isOpen" v-bind="args" title="Header">
           <p>This is the main content of the slideout.</p>
           <p>It can contain any content you need.</p>
 
@@ -70,7 +70,7 @@ export const NestedSlideouts: Story = {
       <div>
         <craft-button data-testid="open-outer" type="button" @click="outerOpen = true">Open Slideout</craft-button>
 
-        <Slideout :active="outerOpen" title="Outer Slideout">
+        <Slideout v-model="outerOpen" title="Outer Slideout">
           <div class="stack">
             <div>
               <p>This is the outer slideout.</p>
@@ -80,7 +80,7 @@ export const NestedSlideouts: Story = {
             <craft-button data-testid="open-inner" type="button" @click="innerOpen = true">Open Nested Slideout</craft-button>
           </div>
 
-          <Slideout :active="innerOpen" title="Inner Slideout">
+          <Slideout v-model="innerOpen" title="Inner Slideout">
             <div class="stack">
               <div>
                 <p>This is the inner/nested slideout.</p>
@@ -200,7 +200,7 @@ export const PositionStart: Story = {
       <div>
         <craft-button type="button" @click="isOpen = true">Open Slideout (Start)</craft-button>
 
-        <Slideout :active="isOpen" position="start" title="Start Position Slideout">
+        <Slideout v-model="isOpen" position="start" title="Start Position Slideout">
           <p>This slideout opens from the start (left in LTR) side.</p>
         </Slideout>
       </div>
@@ -219,7 +219,7 @@ export const Overflow: Story = {
       <div>
         <craft-button type="button" @click="isOpen = true">Open Slideout</craft-button>
 
-        <Slideout :active="isOpen" title="Overflow">
+        <Slideout v-model="isOpen" title="Overflow">
           <div style="display: grid; gap: 1rem;">
 
             <h1>HTML Ipsum Presents</h1>
@@ -336,7 +336,10 @@ const NestedSlideout = defineComponent({
       return h(
         Slideout,
         {
-          active: props.slideouts?.includes(props.id),
+          modelValue: props.slideouts?.includes(props.id),
+          'onUpdate:modelValue': (value: boolean) => {
+            if (!value) emit('close', props.id);
+          },
           title: 'Slideout',
           resizable: true,
         },
@@ -410,7 +413,7 @@ export const FocusTrap: Story = {
         <button data-testid="trigger" type="button" @click="isOpen = true">Open Slideout</button>
         <button data-testid="outside-after" type="button">Outside After</button>
 
-        <Slideout :active="isOpen" title="Focus Trap Test">
+        <Slideout v-model="isOpen" title="Focus Trap Test">
           <div style="display: flex; flex-direction: column; gap: 0.5rem;">
             <label>
               First Name
@@ -502,7 +505,7 @@ export const FocusTrapRestore: Story = {
       <div>
         <button data-testid="trigger" type="button" @click="isOpen = true">Open Slideout</button>
 
-        <Slideout :active="isOpen" title="Focus Restore Test" :closeOnEscape="true">
+        <Slideout v-model="isOpen" title="Focus Restore Test" :closeOnEscape="true">
           <p>Press Escape to close and verify focus returns to the trigger.</p>
 
           <template #primary-action>
@@ -548,11 +551,11 @@ export const FocusTrapNested: Story = {
       <div>
         <button data-testid="trigger" type="button" @click="outerOpen = true">Open Outer</button>
 
-        <Slideout :active="outerOpen" title="Outer Slideout">
+        <Slideout v-model="outerOpen" title="Outer Slideout">
           <button data-testid="outer-btn" type="button">Outer Button</button>
           <button data-testid="open-inner" type="button" @click="innerOpen = true">Open Inner</button>
 
-          <Slideout :active="innerOpen" title="Inner Slideout">
+          <Slideout v-model="innerOpen" title="Inner Slideout">
             <button data-testid="inner-btn-1" type="button">Inner Button 1</button>
             <button data-testid="inner-btn-2" type="button">Inner Button 2</button>
 
