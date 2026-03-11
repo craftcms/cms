@@ -39,15 +39,13 @@ class WebauthnServer
 {
     private CeremonyStepManagerFactory $csmFactory;
     private ?SerializerInterface $serializer = null;
-    private CredentialRepository $credentialRepository;
+    private ?CredentialRepository $credentialRepository = null;
 
     public function __construct()
     {
         $this->csmFactory = new CeremonyStepManagerFactory();
         $this->csmFactory->setAlgorithmManager($this->getAlgorithmManager());
         $this->csmFactory->setExtensionOutputCheckerHandler($this->getExtensionOutputCheckerHandler());
-
-        $this->credentialRepository = new CredentialRepository();
     }
 
     /**
@@ -79,8 +77,17 @@ class WebauthnServer
         return AttestationObjectLoader::create($this->getAttestationStatementManager());
     }
 
+    /**
+     * Returns the credential repository.
+     *
+     * @return CredentialRepository
+     */
     public function getCredentialRepository(): CredentialRepository
     {
+        if ($this->credentialRepository === null) {
+            $this->credentialRepository = new CredentialRepository();
+        }
+
         return $this->credentialRepository;
     }
 
