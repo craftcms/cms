@@ -17,7 +17,7 @@
       debug?: any;
       fullWidth?: boolean;
     }>(),
-    {fullWidth: false, crumbs: () => []}
+    {fullWidth: false}
   );
 
   const {system} = useCraftData();
