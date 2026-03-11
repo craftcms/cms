@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.16 - 2026-03-11
 
 - Updated @simplewebauthn/browser to 13.3.0. ([#18545](https://github.com/craftcms/cms/pull/18545))
 - Updated web-auth/webauthn-lib to 5.2.4. ([#18545](https://github.com/craftcms/cms/pull/18545))
