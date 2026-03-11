@@ -1,6 +1,6 @@
 html,
 body {
-  background-color: var(--c-bg-body);
+  background-color: var(--c-surface-default);
 }
 
 body {
@@ -9,7 +9,7 @@ body {
   font-family: var(--c-font-body, sans-serif);
   font-size: var(--c-text-base);
   line-height: var(--c-leading-normal);
-  color: var(--c-fg-text);
+  color: var(--c-text-default);
   -webkit-font-smoothing: subpixel-antialiased;
 }
 
@@ -26,7 +26,7 @@ pre {
 
 a {
   cursor: pointer;
-  color: var(--c-fg-link);
+  color: var(--c-text-link);
 }
 
 /*
@@ -53,7 +53,7 @@ hr {
   display: block;
   width: 100%;
   border: 0;
-  border-top: 1px solid var(--c-color-neutral-border-subtle);
+  border-top: 1px solid var(--c-color-neutral-border-quiet);
   margin-block: var(--c-spacing-lg);
 }
 
@@ -134,7 +134,6 @@ Modify with `cp-table--auto` to apply table-layout: auto
 .cp-table {
   --_cell-spacing-inline: var(--c-spacing-md);
   --_cell-spacing-block: var(--c-spacing-md);
-  --_cell-height: var(--c-size-control-md);
   text-align: left;
   width: 100%;
   border-collapse: separate;
@@ -145,20 +144,18 @@ Modify with `cp-table--auto` to apply table-layout: auto
     table-layout: fixed;
   }
 
-  thead {
-    border-bottom: 1px solid var(--c-color-neutral-border-subtle);
-  }
-
   thead,
   th {
-    background-color: var(--c-color-neutral-bg-normal);
+    background-color: var(--c-color-neutral-fill-quiet);
   }
 
   .cell {
     padding: 0;
     vertical-align: middle;
     padding-inline: var(--_cell-spacing-inline);
-    height: var(--_cell-height);
+    padding-block: 0;
+    position: relative;
+    height: var(--c-size-control-md);
 
     &:has(textarea),
     &:has(input:not([type='checkbox']):not([type='radio'])) {
@@ -167,7 +164,7 @@ Modify with `cp-table--auto` to apply table-layout: auto
   }
 
   tr:not(:last-child) {
-    border-bottom: 1px solid var(--c-color-neutral-border-subtle);
+    border-bottom: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   textarea,
@@ -186,6 +183,13 @@ Modify with `cp-table--auto` to apply table-layout: auto
   }
 }
 
+.cp-table--padded {
+  th,
+  td {
+    padding-block: var(--c-spacing-md);
+  }
+}
+
 .cp-table--auto {
   table-layout: auto;
 }
@@ -200,14 +204,13 @@ Modify with `cp-table--auto` to apply table-layout: auto
 }
 
 .cp-table--compact {
-  --_cell-height: var(--c-size-control-sm);
   --_cell-spacing-block: var(--c-spacing-sm);
 }
 
 .cp-table-header,
 .cp-table-footer {
   padding: var(--c-spacing-md);
-  background-color: var(--c-color-neutral-bg-normal);
+  background-color: var(--c-color-neutral-fill-quiet);
   display: flex;
   align-items: center;
   justify-content: space-between;

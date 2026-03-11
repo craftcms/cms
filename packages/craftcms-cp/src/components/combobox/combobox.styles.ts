@@ -22,9 +22,9 @@ export default css`
   ::slotted([slot='listbox']) {
     display: grid;
     gap: var(--c-spacing-xs);
-    border: 1px solid var(--c-color-neutral-border-subtle);
+    border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);
-    background-color: var(--c-bg-overlay);
+    background-color: var(--c-surface-overlay);
     box-shadow: var(--c-shadow-sm);
     padding: var(--c-spacing-sm);
   }

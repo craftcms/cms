@@ -13,13 +13,13 @@ export default class CraftIndicator extends LitElement {
         aspect-ratio: 1;
         width: var(--c-indicator-size, 0.5em);
         border-radius: var(--c-radius-full);
-        color: var(--c-color-on-emphasis);
-        background-color: var(--c-color-bg-emphasis);
-        border: 1px solid var(--c-color-border-emphasis);
+        color: var(--c-color-on-loud);
+        background-color: var(--c-color-fill-loud);
+        border: 1px solid var(--c-color-border-loud);
       }
 
       .indicator--empty {
-        background-color: var(--c-color-neutral-bg-faint);
+        background-color: var(--c-color-neutral-fill-quiet);
         border: 1px solid var(--c-color-neutral-border-normal);
       }
     `,

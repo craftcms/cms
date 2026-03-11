@@ -153,7 +153,7 @@
 <style scoped lang="scss">
   .sessions {
     display: grid;
-    border: 1px solid var(--c-color-neutral-border-subtle);
+    border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);
   }
 
@@ -182,7 +182,7 @@
   }
 
   .session + .session {
-    border-block-start: 1px solid var(--c-color-neutral-border-subtle);
+    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   .session__label {

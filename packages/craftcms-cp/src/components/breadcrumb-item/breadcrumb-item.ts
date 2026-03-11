@@ -1,5 +1,4 @@
-import {css, html, LitElement} from 'lit';
-import {customElement} from 'lit/decorators.js';
+import {css} from 'lit';
 import WaBreadcrumbItem from '@awesome.me/webawesome/dist/components/breadcrumb-item/breadcrumb-item.js';
 
 export default class CraftBreadcrumbItem extends WaBreadcrumbItem {
@@ -25,7 +24,7 @@ export default class CraftBreadcrumbItem extends WaBreadcrumbItem {
         }
 
         .separator {
-          color: var(--c-fg-muted);
+          color: var(--c-text-quiet);
           margin: 0 var(--c-spacing-md);
         }
       `,

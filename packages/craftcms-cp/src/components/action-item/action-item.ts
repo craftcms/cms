@@ -19,27 +19,31 @@ export default class CraftActionItem extends LitElement {
   @property() type: 'normal' | 'checkbox' = 'normal';
 
   renderBody() {
+    const hasIcon = !!this.querySelector('[slot="icon"]') || !!this.icon;
+
     return html`
       ${this.type === 'checkbox'
-        ? html` <div class="action-item__check">
+        ? html` <span class="action-item__check">
             <slot name="checkmark">
               ${this.checked
                 ? html`<craft-icon name="check"></craft-icon>`
                 : nothing}
             </slot>
-          </div>`
+          </span>`
         : nothing}
-      <span class="action-item__prefix">
-        <slot name="prefix">
-          <slot name="icon">
-            ${this.icon
-              ? html`<craft-icon name="${this.icon}"></craft-icon>`
-              : nothing}
-          </slot>
-        </slot>
-      </span>
+      ${hasIcon
+        ? html`<span class="action-item__icon">
+            <slot name="icon">
+              ${this.icon
+                ? html`<craft-icon name="${this.icon}"></craft-icon>`
+                : nothing}
+            </slot>
+          </span>`
+        : nothing}
 
-      <slot></slot>
+      <span class="action-item__label">
+        <slot></slot>
+      </span>
 
       <span class="action-item__suffix">
         <slot name="suffix"></slot>

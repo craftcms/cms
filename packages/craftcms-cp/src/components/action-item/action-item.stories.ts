@@ -5,12 +5,30 @@ import {html} from 'lit';
 import '../icon/icon.js';
 import '../button/button.js';
 import './action-item.js';
+import {Color} from '@src/constants/colors';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
   title: 'Components/Action Item',
   component: 'craft-action-item',
   argTypes: {},
+  parameters: {
+    layout: 'centered',
+  },
+  decorators: [
+    (story) => html`
+      <style>
+        .stage {
+          padding: var(--c-spacing-sm);
+          border-radius: var(--c-radius-sm);
+          width: calc(320rem / 16);
+          background-color: var(--c-surface-raised);
+          box-shadow: var(--c-shadow-raised);
+        }
+      </style>
+      <div class="stage">${story()}</div>
+    `,
+  ],
   render: ({active, indicator, href, icon, checked}) => {
     return html`
       <craft-action-item
@@ -71,25 +89,35 @@ export const CheckableWithIcon: Story = {
   },
   render({icon, active, href, checked}) {
     return html`
-      <div style="width: 200px">
-        <craft-action-item icon="home" ?href="${href}" checked type="checkbox">
-          <div>
-            <div class="font-bold">Entry Type</div>
-            <pre>entryType</pre>
-          </div>
-        </craft-action-item>
-        <craft-action-item
-          icon="newspaper"
-          active
-          ?href="${href}"
-          type="checkbox"
-        >
-          <div>
-            <div class="font-bold">Entry Type</div>
-            <pre>entryType</pre>
-          </div>
-        </craft-action-item>
-      </div>
+      <craft-action-item icon="home" ?href="${href}" checked type="checkbox">
+        <div>
+          <div class="font-bold">Entry Type</div>
+          <pre>entryType</pre>
+        </div>
+      </craft-action-item>
+      <craft-action-item
+        icon="newspaper"
+        active
+        ?href="${href}"
+        type="checkbox"
+      >
+        <div>
+          <div class="font-bold">Entry Type</div>
+          <pre>entryType</pre>
+        </div>
+      </craft-action-item>
+    `;
+  },
+};
+
+export const Colors: Story = {
+  render() {
+    return html`
+      ${Object.entries(Color).map(([name, value]) => {
+        return html`<craft-action-item data-color="${value}"
+          >With color ${name}</craft-action-item
+        >`;
+      })}
     `;
   },
 };

@@ -6,20 +6,24 @@ export default css`
   }
 
   .chip {
-    color: var(--c-chip-fg, var(--c-color-neutral-on-faint));
     display: inline-flex;
     min-height: var(--c-chip-height, var(--c-size-control-sm));
     min-width: auto;
     border-radius: var(--c-chip-radius, var(--c-radius-md));
-    border: var(
-      --c-chip-border,
-      1px solid var(--c-color-neutral-border-subtle)
-    );
-    background-color: var(--c-chip-bg, var(--c-color-neutral-bg-faint));
     padding-inline: var(--c-chip-spacing-inline, var(--c-spacing-md));
     padding-block: var(--c-chip-spacing-block, var(--c-spacing-sm));
     align-items: start;
     box-shadow: var(--c-chip-shadow, var(--c-shadow-sm));
+
+    /* colorable styles */
+    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+    border-width: var(--c-chip-border-width, 1px);
+    border-style: var(--c-chip-border-style, solid);
+    border-color: var(
+      --c-color-border-quiet,
+      var(--c-color-neutral-border-quiet)
+    );
+    background-color: var(--c-color-fill-quiet, var(--c-surface-raised));
   }
 
   .chip[appearance='plain'],
