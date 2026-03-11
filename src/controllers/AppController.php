@@ -127,7 +127,7 @@ class AppController extends Controller
 
         $resourceUri = preg_replace('/^(.*)\?.*/', '$1', substr($url, strlen($baseUrl)));
 
-        if (!Path::ensurePathIsContained($resourceUri) || !preg_match('/^[a-z0-9]{8}\//', $resourceUri)) {
+        if (!Path::ensurePathIsContained($resourceUri)) {
             throw new BadRequestHttpException("Invalid resource: $resourceUri");
         }
 
