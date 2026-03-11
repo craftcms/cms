@@ -44,6 +44,9 @@ class WebauthnServer
     public function __construct()
     {
         $this->csmFactory = new CeremonyStepManagerFactory();
+        $this->csmFactory->setAlgorithmManager($this->getAlgorithmManager());
+        $this->csmFactory->setExtensionOutputCheckerHandler($this->getExtensionOutputCheckerHandler());
+
         $this->credentialRepository = new CredentialRepository();
     }
 
