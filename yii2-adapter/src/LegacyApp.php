@@ -64,6 +64,8 @@ final readonly class LegacyApp
              */
             new DeprecatedConcepts()->boot();
 
+            DeprecatedConcepts::bootYiiEvents();
+
             return $app;
         });
     }

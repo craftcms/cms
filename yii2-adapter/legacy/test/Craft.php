@@ -40,7 +40,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Path as PathFacade;
 use CraftCms\Cms\Support\Path as LaravelPath;
 use CraftCms\Cms\User\Users;
-use CraftCms\Yii2Adapter\Yii2ServiceProvider;
+use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Cache;
@@ -213,7 +213,7 @@ class Craft extends Yii2
 
         // Codeception\Lib\Connector\Yii2::resetApplication() calls Event::offAll(),
         // so we need to re-register the service provider events
-        Yii2ServiceProvider::bootYiiEvents();
+        DeprecatedConcepts::bootYiiEvents();
 
         // transaction events are registered now, so it's ok to open the connection
         \Craft::$app->db->open();
