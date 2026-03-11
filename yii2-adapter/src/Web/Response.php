@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Cookie;
 use Throwable;
 use Yii;
 use yii\web\HeadersAlreadySentException;
+use Yii2tech\Illuminate\Http\YiiApplicationMiddleware;
 
 /**
  * Response fills up Laravel HTTP response instead of sending itself back to the user agent.
@@ -46,10 +47,10 @@ use yii\web\HeadersAlreadySentException;
  * }
  * ```
  *
- * @see \Illuminate\Http\Response
- * @see \Yii2tech\Illuminate\Http\YiiApplicationMiddleware
+ * @see IlluminateResponse
+ * @see YiiApplicationMiddleware
  *
- * @property \Illuminate\Http\Response $illuminateResponse related Laravel response.
+ * @property IlluminateResponse $illuminateResponse related Laravel response.
  *
  * @author Paul Klimov <klimov.paul@gmail.com>
  *
@@ -58,7 +59,7 @@ use yii\web\HeadersAlreadySentException;
 class Response extends \yii\web\Response
 {
     /**
-     * @var \Illuminate\Http\Response|null related Laravel response.
+     * @var IlluminateResponse|null related Laravel response.
      */
     private $_illuminateResponse;
 

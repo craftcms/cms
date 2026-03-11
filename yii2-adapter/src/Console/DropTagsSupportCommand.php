@@ -8,15 +8,15 @@ use craft\db\Table as LegacyTable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
-use CraftCms\Yii2Adapter\Yii2ServiceProvider;
+use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\Schema;
 
 final class DropTagsSupportCommand extends Command
 {
-    use CraftCommand;
     use ConfirmableTrait;
+    use CraftCommand;
 
     protected $signature = 'craft:drop-tags-support
         {--force : Force the operation to run when in production or when allowAdminChanges is disabled.}
@@ -32,6 +32,7 @@ final class DropTagsSupportCommand extends Command
 
         if (!Schema::hasTable($tagsTable)) {
             $this->info("<fg=cyan>$tagsTable</> table doesn’t exist.");
+
             return;
         }
 
@@ -53,7 +54,7 @@ final class DropTagsSupportCommand extends Command
             },
         );
 
-        Yii2ServiceProvider::resetSupport();
+        DeprecatedConcepts::resetSupport();
     }
 
     protected function getDefaultConfirmCallback(): Closure

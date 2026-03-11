@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
@@ -34,7 +35,7 @@ final class VolumeMixin
             }
 
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
              *
              * @phpstan-ignore-next-line
              */
@@ -62,7 +63,7 @@ final class VolumeMixin
             }
 
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
              *
              * @phpstan-ignore-next-line
              */
@@ -78,7 +79,7 @@ final class VolumeMixin
     {
         return function(): string {
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
              *
              * @phpstan-ignore-next-line
              */
@@ -96,7 +97,7 @@ final class VolumeMixin
         return function(string $directory = '', bool $recursive = true): Generator {
             $targetDirectory = trim($directory, '/');
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
              *
              * @phpstan-ignore-next-line
              */
@@ -133,7 +134,7 @@ final class VolumeMixin
         return function(string $uri): int {
             try {
                 /**
-                 * @var \CraftCms\Cms\Asset\Data\Volume $this
+                 * @var Volume $this
                  *
                  * @phpstan-ignore-next-line
                  */
@@ -149,7 +150,7 @@ final class VolumeMixin
         return function(string $uri): int {
             try {
                 /**
-                 * @var \CraftCms\Cms\Asset\Data\Volume $this
+                 * @var Volume $this
                  *
                  * @phpstan-ignore-next-line
                  */
@@ -166,7 +167,7 @@ final class VolumeMixin
 
         return function(string $path, string $contents, array $config = []) use ($mixin): void {
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
              *
              * @phpstan-ignore-next-line
              */
@@ -182,7 +183,7 @@ final class VolumeMixin
 
         return function(string $path) use ($mixin): string {
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
              *
              * @phpstan-ignore-next-line
              */
@@ -213,7 +214,7 @@ final class VolumeMixin
 
             try {
                 /**
-                 * @var \CraftCms\Cms\Asset\Data\Volume $this
+                 * @var Volume $this
                  *
                  * @phpstan-ignore-next-line
                  */
@@ -230,7 +231,7 @@ final class VolumeMixin
     {
         return function(string $path) {
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
              *
              * @phpstan-ignore-next-line
              */
@@ -242,7 +243,7 @@ final class VolumeMixin
     {
         return function(string $path): void {
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
              *
              * @phpstan-ignore-next-line
              */
@@ -254,7 +255,7 @@ final class VolumeMixin
     {
         return function(string $path, string $newPath, array $config = []): void {
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
              *
              * @phpstan-ignore-next-line
              */
@@ -268,7 +269,7 @@ final class VolumeMixin
     {
         return function(string $path, string $newPath, array $config = []): void {
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
              *
              * @phpstan-ignore-next-line
              */
@@ -284,7 +285,7 @@ final class VolumeMixin
 
         return function(string $uriPath) use ($mixin) {
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
              *
              * @phpstan-ignore-next-line
              */
@@ -308,7 +309,8 @@ final class VolumeMixin
     {
         return function(string $path): bool {
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
+             *
              * @phpstan-ignore-next-line
              */
             return $this->sourceDisk()->directoryExists(trim($path, '/'));
@@ -326,7 +328,8 @@ final class VolumeMixin
             }
 
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
+             *
              * @phpstan-ignore-next-line
              */
             if (!$this->sourceDisk()->makeDirectory($path, $mixin->legacyConfigForDisk($config))) {
@@ -341,7 +344,8 @@ final class VolumeMixin
             $directory = trim($path, '/');
 
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
+             *
              * @phpstan-ignore-next-line
              */
             if ($directory === '' && $this->getSubpath(false) === '') {
@@ -360,7 +364,8 @@ final class VolumeMixin
             $sourcePath = trim($path, '/');
 
             /**
-             * @var \CraftCms\Cms\Asset\Data\Volume $this
+             * @var Volume $this
+             *
              * @phpstan-ignore-next-line
              */
             $disk = $this->sourceDisk();
