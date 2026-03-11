@@ -15,7 +15,7 @@ final readonly class LegacyApp
 {
     public function register(Application $app): void
     {
-        $app->singleton('Craft', function() {
+        $app->singleton('Craft', function() use ($app) {
             /**
              * Register the base aliases that Yii sets, this has to be after
              * the constants as composer will autoload the BaseYii class.
@@ -26,8 +26,8 @@ final readonly class LegacyApp
                 Aliases::set($alias, $path);
             }
 
-            if ($this->app->runningInConsole() && !$this->app->runningUnitTests()) {
-                $app = require __DIR__ . '/../bootstrap/console.php';
+            if ($app->runningInConsole() && !$app->runningUnitTests()) {
+                $craftApp = require __DIR__ . '/../bootstrap/console.php';
             } else {
                 /**
                  * Yii seems weird about these
@@ -37,20 +37,20 @@ final readonly class LegacyApp
                     'SCRIPT_NAME' => '/index.php',
                 ]);
 
-                $app = require __DIR__ . '/../bootstrap/web.php';
+                $craftApp = require __DIR__ . '/../bootstrap/web.php';
 
-                if (!$app->controller) {
-                    $controller = new Controller('', $app);
+                if (!$craftApp->controller) {
+                    $controller = new Controller('', $craftApp);
 
-                    $app->controller = $controller;
+                    $craftApp->controller = $controller;
                 }
             }
 
-            /** @var \craft\web\Application|\craft\console\Application $app */
-            $app->setTimeZone(app()->getTimezone());
-            $app->language = app()->getLocale();
+            /** @var \craft\web\Application|\craft\console\Application $craftApp */
+            $craftApp->setTimeZone(app()->getTimezone());
+            $craftApp->language = app()->getLocale();
 
-            Craft::$app = $app;
+            Craft::$app = $craftApp;
             Craft::populateCustomFieldBehavior();
 
             /**
