@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where `craft\fields\data\LinkData::getUrl()` was returning the URL suffix rather than an empty string, if the rendered base URL was an empty string.
+
 ## 5.9.15 - 2026-03-09
 
 - Element edit pages once again redirect to their referral URL on save. ([#18483](https://github.com/craftcms/cms/pull/18483))
