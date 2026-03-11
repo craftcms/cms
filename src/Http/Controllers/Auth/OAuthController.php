@@ -17,7 +17,6 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
-use Laravel\Socialite\Two\InvalidStateException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -112,7 +111,7 @@ final readonly class OAuthController extends AuthenticationController
                 implode(', ', $user->getErrorSummary(true)) ?: t('Unable to save the user.'),
                 previous: $e,
             );
-        } catch (InvalidStateException|Throwable $e) {
+        } catch (Throwable $e) {
             return $this->failedResponse($isCpRequest, t('Authentication failed.'), previous: $e);
         }
     }
