@@ -19,7 +19,7 @@ use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
 
-/** @extends Ruleset<\CraftCms\Cms\Asset\Data\Volume> */
+/** @extends Ruleset<Volume> */
 final class VolumeRules extends Ruleset
 {
     #[\Override]

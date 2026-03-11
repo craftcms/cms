@@ -11,6 +11,7 @@ use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\Factory;
 use Override;
 
 class ViewServiceProvider extends ServiceProvider
@@ -61,8 +62,8 @@ class ViewServiceProvider extends ServiceProvider
     private function registerTemplateRoots(): void
     {
         $this->app->booted(function () {
-            /** @var \Illuminate\View\Factory $factory */
-            $factory = $this->app->make(\Illuminate\Contracts\View\Factory::class);
+            /** @var Factory $factory */
+            $factory = $this->app->make(ViewFactory::class);
 
             /**
              * Prepend the Craft CMS Control panel views when

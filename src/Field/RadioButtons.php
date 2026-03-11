@@ -18,13 +18,13 @@ use function CraftCms\Cms\template;
  */
 final class RadioButtons extends BaseOptionsField implements SortableFieldInterface
 {
-    #[\Override]
+    #[Override]
     protected static bool $allowCustomOptions = true;
 
-    #[\Override]
+    #[Override]
     protected static bool $optionIcons = true;
 
-    #[\Override]
+    #[Override]
     protected static bool $optionColors = true;
 
     #[Override]

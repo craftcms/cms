@@ -15,7 +15,7 @@ final class RegisterCardAttributes
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class
      * @param  array  $cardAttributes  The card attributes
-     * @param  \CraftCms\Cms\FieldLayout\FieldLayout|null  $fieldLayout  The field layout
+     * @param  FieldLayout|null  $fieldLayout  The field layout
      */
     public function __construct(
         public string $elementType,

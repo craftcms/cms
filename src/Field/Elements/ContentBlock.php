@@ -57,7 +57,7 @@ final class ContentBlock extends Element implements NestedElementInterface
         return 'block';
     }
 
-    #[\Override]
+    #[Override]
     public static function hasDrafts(): bool
     {
         return true;

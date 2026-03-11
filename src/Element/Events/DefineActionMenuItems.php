@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
 
 /**
  * @event DefineActionMenuItems The event that is triggered when defining action menu items.
  *
- * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::getActionMenuItems()}
+ * {@see HasControlPanelUI::getActionMenuItems()}
  */
 class DefineActionMenuItems
 {

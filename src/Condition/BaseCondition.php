@@ -403,7 +403,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
 
             if ($rulesJs) {
                 if ($isHtmxRequest) {
-                    $html .= html::tag('script', $rulesJs, ['type' => 'text/javascript']);
+                    $html .= Html::tag('script', $rulesJs, ['type' => 'text/javascript']);
                 } else {
                     HtmlStack::js($rulesJs);
                 }
@@ -413,12 +413,12 @@ JS, [InputNamespace::namespaceId($this->id)]);
             // If this is not an htmx request, don't add scripts, since they will be in the page anyway.
             if ($isHtmxRequest) {
                 if ($bodyHtml = HtmlStack::bodyHtml()) {
-                    $html .= html::tag('template', $bodyHtml, [
+                    $html .= Html::tag('template', $bodyHtml, [
                         'class' => ['hx-body-html'],
                     ]);
                 }
                 if ($headHtml = HtmlStack::headHtml()) {
-                    $html .= html::tag('template', $headHtml, [
+                    $html .= Html::tag('template', $headHtml, [
                         'class' => ['hx-head-html'],
                     ]);
                 }

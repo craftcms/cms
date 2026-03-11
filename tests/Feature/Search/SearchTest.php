@@ -9,6 +9,7 @@ use CraftCms\Cms\Search\Events\AfterSearch;
 use CraftCms\Cms\Search\Events\BeforeIndexKeywords;
 use CraftCms\Cms\Search\Events\BeforeScoreResults;
 use CraftCms\Cms\Search\Events\BeforeSearch;
+use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Search\SearchQuery;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Queue;
 // wraps each test in a transaction, we disable fulltext and fall back to LIKE.
 beforeEach(function () {
     if (DB::isMysql()) {
-        app(\CraftCms\Cms\Search\Search::class)->useFullText = false;
+        app(CraftCms\Cms\Search\Search::class)->useFullText = false;
     }
 });
 
@@ -292,7 +293,7 @@ describe('queueIndexElement', function () {
 
         Search::queueIndexElement($element, ['title']);
 
-        Queue::assertPushed(\CraftCms\Cms\Search\Jobs\UpdateSearchIndex::class);
+        Queue::assertPushed(UpdateSearchIndex::class);
     });
 
     test('creates a search index queue record', function () {

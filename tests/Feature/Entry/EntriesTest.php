@@ -20,7 +20,7 @@ beforeEach(function () {
 it('can get an entry by id', function () {
     $entry = Entry::factory()->create();
 
-    expect($this->entries->getEntryById($entry->id))->toBeInstanceOf(\CraftCms\Cms\Entry\Elements\Entry::class);
+    expect($this->entries->getEntryById($entry->id))->toBeInstanceOf(CraftCms\Cms\Entry\Elements\Entry::class);
 });
 
 it('returns null when entry does not exist', function () {
@@ -33,7 +33,7 @@ it('can get an entry in a specific site', function () {
 
     $secondSite = Site::factory()->create();
 
-    expect($this->entries->getEntryById($entry->id, Site::first()->id))->toBeInstanceOf(\CraftCms\Cms\Entry\Elements\Entry::class);
+    expect($this->entries->getEntryById($entry->id, Site::first()->id))->toBeInstanceOf(CraftCms\Cms\Entry\Elements\Entry::class);
     expect($this->entries->getEntryById($entry->id, $secondSite->id))->toBeNull();
 });
 

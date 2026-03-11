@@ -13,12 +13,13 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\Factory\FactoryFieldConfig;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Collection;
 
 /**
  * Trait for element factories that need to create elements with custom fields.
  *
- * @mixin \Illuminate\Database\Eloquent\Factories\Factory
+ * @mixin Factory
  */
 trait HasFieldFactory
 {

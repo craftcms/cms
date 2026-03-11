@@ -51,7 +51,7 @@ final class DeprecationErrors extends Utility
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function contentHtml(): string
     {
         return Html::tag('DeprecationErrors', attributes: [

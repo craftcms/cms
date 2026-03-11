@@ -9,6 +9,7 @@ use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\UserProvider;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\View\View;
@@ -79,7 +80,7 @@ final readonly class LoginController extends AuthenticationController
         ]);
 
         /**
-         * @var \CraftCms\Cms\Auth\UserProvider $provider
+         * @var UserProvider $provider
          *
          * @phpstan-ignore method.notFound
          */

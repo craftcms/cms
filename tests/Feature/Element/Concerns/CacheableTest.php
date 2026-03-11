@@ -7,6 +7,7 @@ use CraftCms\Cms\Element\Events\DefineCacheTags;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
@@ -49,7 +50,7 @@ describe('getCacheTags', function () {
         $element = new TestCacheableElement;
         $element->setCustomCacheTags(['original']);
 
-        \Illuminate\Support\Facades\Event::listen(function (DefineCacheTags $event) {
+        Event::listen(function (DefineCacheTags $event) {
             $event->tags = array_merge($event->tags, ['added-by-event']);
         });
 

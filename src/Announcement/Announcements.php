@@ -9,7 +9,9 @@ use CraftCms\Cms\Announcement\Jobs\SendAnnouncement;
 use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\t;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -29,7 +31,7 @@ final readonly class Announcements
      * Pushes a new announcement out to all control panel users.
      *
      * ::: tip
-     * Run the heading and body through {@see \CraftCms\Cms\Support\Facades\I18N::prep} rather than {@see \CraftCms\Cms\t()}
+     * Run the heading and body through {@see I18N::prep} rather than {@see t()}
      * so they can be lazy-translated for users’ preferred languages rather than the current app language.
      * :::
      *

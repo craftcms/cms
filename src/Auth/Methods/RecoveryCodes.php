@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Methods;
 
+use Carbon\CarbonInterface;
 use Craft;
 use craft\web\assets\recoverycodes\RecoveryCodesAsset;
 use CraftCms\Cms\Auth\Models\RecoveryCodes as RecoveryCodesModel;
@@ -116,7 +117,7 @@ JS, [$containerId]);
     /**
      * Returns the user’s recovery codes.
      *
-     * @return array{0:array<string|false>,1:\Carbon\CarbonInterface|null}
+     * @return array{0:array<string|false>,1:CarbonInterface|null}
      */
     public function getRecoveryCodes(): array
     {

@@ -70,7 +70,7 @@ trait Queryable
      */
     protected static function findByCondition(mixed $criteria, bool $one): array|static|null
     {
-        /** @var \CraftCms\Cms\Element\Queries\ElementQuery<static> $query */
+        /** @var ElementQuery<static> $query */
         $query = static::find();
 
         if ($criteria !== null) {

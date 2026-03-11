@@ -9,6 +9,7 @@ use craft\base\MemoizableArray;
 use craft\helpers\AdminTable;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
@@ -713,7 +714,7 @@ final class Sections
         $this->refreshSections();
 
         if ($wasTrashed) {
-            /** @var \CraftCms\Cms\Element\ElementCollection<Entry> $entries */
+            /** @var ElementCollection<Entry> $entries */
             $entries = Entry::find()
                 ->sectionId($sectionModel->id)
                 ->drafts(null)

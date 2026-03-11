@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User\Events;
 
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 
 /**
@@ -18,7 +19,7 @@ final class AssigningUserToDefaultGroups
 
     public function __construct(
         public User $user,
-        /** @var \CraftCms\Cms\User\Data\UserGroup[] */
+        /** @var UserGroup[] */
         public array $userGroups,
     ) {}
 }

@@ -18,6 +18,7 @@ use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\VerifyingEmail;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -102,7 +103,7 @@ abstract readonly class AuthenticationController
 
         event(new VerifyingEmail($user));
 
-        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        /** @var PasswordBroker $broker */
         $broker = Password::broker('craft');
         if (! $broker->tokenExists($user, $request->input('code'))) {
             return $this->processInvalidToken($request, $user);

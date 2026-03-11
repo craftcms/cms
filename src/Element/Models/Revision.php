@@ -23,7 +23,7 @@ final class Revision extends BaseModel
     ];
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\Element\Models\Element, $this>
+     * @return BelongsTo<Element, $this>
      */
     public function canonical(): BelongsTo
     {
@@ -31,7 +31,7 @@ final class Revision extends BaseModel
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\CraftCms\Cms\User\Models\User, $this>
+     * @return BelongsTo<User, $this>
      */
     public function creator(): BelongsTo
     {

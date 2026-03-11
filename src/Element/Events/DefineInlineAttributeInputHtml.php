@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
 use Stringable;
 
 /**
@@ -13,7 +14,7 @@ use Stringable;
  *
  * If `html` is set, it will be used instead of the default inline input HTML.
  *
- * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::getInlineAttributeInputHtml()}
+ * {@see HasControlPanelUI::getInlineAttributeInputHtml()}
  */
 final class DefineInlineAttributeInputHtml
 {

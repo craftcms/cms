@@ -10,6 +10,7 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Once;
+use Twig\Error\LoaderError;
 
 beforeEach(function () {
     $this->tempDir = sys_get_temp_dir().'/craft-template-resolver-test-'.uniqid();
@@ -154,7 +155,7 @@ describe('resolve', function () {
 
     it('throws LoaderError for path traversal', function () {
         $this->resolver->resolve('../../../etc/passwd');
-    })->throws(Twig\Error\LoaderError::class, 'outside the template folder');
+    })->throws(LoaderError::class, 'outside the template folder');
 
     it('returns false for private templates when publicOnly is true', function () {
         file_put_contents($this->tempDir.'/_partial.twig', 'private');

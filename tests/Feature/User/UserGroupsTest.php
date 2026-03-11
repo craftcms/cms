@@ -47,7 +47,7 @@ it('can get assignable groups', function () {
     expect(UserGroups::getAssignableGroups()->count())->toBeGreaterThan(0);
 
     // No group when user has no permissions to assign groups
-    actingAs(\CraftCms\Cms\User\Models\User::factory()->createElement());
+    actingAs(CraftCms\Cms\User\Models\User::factory()->createElement());
     expect(UserGroups::getAssignableGroups())->toBeEmpty();
 });
 
@@ -84,7 +84,7 @@ it('creates a unique name and handle for the team group', function () {
 it('can get groups by user id', function () {
     expect(UserGroups::getGroupsByUserId(User::find()->one()->id))->toBeEmpty();
 
-    \CraftCms\Cms\User\Models\User::firstOrFail()->userGroups()->attach($this->group->id);
+    CraftCms\Cms\User\Models\User::firstOrFail()->userGroups()->attach($this->group->id);
 
     expect(UserGroups::getGroupsByUserId(User::find()->one()->id))->toHaveCount(1);
 });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use craft\helpers\Cp;
+use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
@@ -16,7 +17,7 @@ use yii\base\InvalidConfigException;
  */
 abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 {
-    #[\Override]
+    #[Override]
     public string $operator = self::OPERATOR_IN;
 
     /**
@@ -121,7 +122,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -130,7 +131,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * Returns the rule’s value, prepped for {@see \CraftCms\Cms\Database\QueryParam::parse} based on the selected operator.
+     * Returns the rule’s value, prepped for {@see QueryParam::parse} based on the selected operator.
      *
      * @param  callable|null  $normalizeValue  Method for normalizing a given selected value.
      */
