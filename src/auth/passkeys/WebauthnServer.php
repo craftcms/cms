@@ -72,6 +72,7 @@ class WebauthnServer
      *
      * @return AttestationObjectLoader
      * @see https://webauthn-doc.spomky-labs.com/pure-php/the-hard-way#attestation-object-loader
+     * @deprecated in 5.9.16
      */
     public function getAttestationObjectLoader(): AttestationObjectLoader
     {
