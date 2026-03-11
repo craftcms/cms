@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'resources/js/**'
+      - 'resources/css/**'
+      - 'packages/craftcms-cp/**'
       - '.storybook/**'
       - 'vitest.config.ts'
       - 'package.json'
@@ -32,6 +34,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
+
+      - name: Build @craftcms/cp
+        run: npm run build:cp
 
       - name: Run Storybook tests
         run: npm run test:storybook
