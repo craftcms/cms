@@ -22,6 +22,7 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Path;
 use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\helpers\Update as UpdateHelper;
@@ -119,6 +120,22 @@ class AppController extends Controller
         }
 
         $resourceUri = preg_replace('/^(.*)\?.*/', '$1', substr($url, strlen($baseUrl)));
+
+        if (!Path::ensurePathIsContained($resourceUri) || !preg_match('/^[a-z0-9]{8}\//', $resourceUri)) {
+            throw new BadRequestHttpException("Invalid resource: $resourceUri");
+        }
+
+        // If we aren’t caching source paths in the resourcepaths table,
+        // then we’re going to have to fetch the file over HTTP
+        if (!$assetManager->cacheSourcePaths) {
+            // Close the PHP session in case this takes a while
+            Session::close();
+
+            $response = Craft::createGuzzleClient()->get($url);
+            $this->response->setCacheHeaders();
+            $this->response->getHeaders()->set('content-type', 'application/javascript');
+            return $this->asRaw($response->getBody());
+        }
 
         try {
             $publishedPath = App::resourcePathByUri($resourceUri);
