@@ -9,8 +9,10 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Tests\TestClasses\OAuth\CustomButtonRenderer;
+use CraftCms\Cms\Tests\TestClasses\OAuth\CustomUserGroupResolver;
 use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Data\UserGroup;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Config;
 
 beforeEach(function () {
@@ -162,14 +164,14 @@ describe('button rendering', function () {
             'handle' => 'handle-group-runtime',
         ]));
 
-        \CraftCms\Cms\Tests\TestClasses\OAuth\CustomUserGroupResolver::$groups = [
+        CustomUserGroupResolver::$groups = [
             $groupById->id,
             $groupByUid->uid,
             $groupByHandle->handle,
         ];
 
         configureOAuthManagerProvider([
-            'groupResolver' => \CraftCms\Cms\Tests\TestClasses\OAuth\CustomUserGroupResolver::class,
+            'groupResolver' => CustomUserGroupResolver::class,
         ]);
 
         $manager = app(OAuth::class);
@@ -180,7 +182,7 @@ describe('button rendering', function () {
             FakeOAuthProvider::fakeUser([
                 'id' => 'provider-user-groups',
             ]),
-            \CraftCms\Cms\User\Elements\User::findOne(),
+            User::findOne(),
             'provider-user-groups',
         );
 

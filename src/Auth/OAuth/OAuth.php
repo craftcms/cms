@@ -530,6 +530,7 @@ final class OAuth
         if ($request->isCpRequest()) {
             return true;
         }
+
         return $request->query('context') === self::CP_CONTEXT_VALUE;
     }
 }
