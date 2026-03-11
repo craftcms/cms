@@ -38,7 +38,8 @@
   const sidebarToggle = useTemplateRef('sidebarToggle');
   const {announcement, announce} = useAnnouncer();
   const fullPageTitle = computed(() => {
-    return `${props.title} - ${system.name}`;
+    const title = props.title?.trim();
+    return title ? `${title} - ${system.name}` : system.name;
   });
 
   watch(successFlash, (newMessage) => announce(newMessage));
