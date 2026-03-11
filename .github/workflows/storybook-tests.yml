@@ -1,0 +1,37 @@
+name: 'ci / Storybook Tests'
+
+on:
+  pull_request:
+    paths:
+      - 'resources/js/**'
+      - '.storybook/**'
+      - 'vitest.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+
+concurrency:
+  group: storybook-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  storybook-tests:
+    name: 'Tests / Storybook'
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.0-noble
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run Storybook tests
+        run: npm run test:storybook
