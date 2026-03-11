@@ -1202,6 +1202,7 @@ trait ApplicationTrait
      * @return Sso The SSO service
      *
      * @since 5.3.0
+     * @deprecated 6.0.0 use the Laravel Socialite {@see \CraftCms\Cms\Auth\OAuth\OAuth} implementation instead.
      */
     public function getSso(): Sso
     {

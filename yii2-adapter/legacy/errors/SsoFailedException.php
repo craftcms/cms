@@ -15,6 +15,7 @@ use yii\base\Exception;
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
+ * @deprecated 6.0.0 use the Laravel Socialite {@see \CraftCms\Cms\Auth\OAuth\OAuth} implementation instead.
  */
 class SsoFailedException extends Exception
 {
