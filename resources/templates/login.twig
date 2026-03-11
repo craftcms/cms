@@ -8,7 +8,7 @@
   {% set logo = craft.rebrand.logo %}
 {% endif %}
 
-{% set loginError = craft.app.session.getFlash('error') %}
+{% set loginError = craft.app.session.getError() ?? craft.app.session.getFlash('error') %}
 
 {% set formHtml %}
   <main>
