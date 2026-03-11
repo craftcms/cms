@@ -49,7 +49,6 @@ Each provider supports the following keys:
 - `driver` required. A registered Socialite driver name, or a Socialite-compatible provider class name.
 - `clientId` optional for named drivers when already defined in Laravel's `services` config. Required for provider classes.
 - `clientSecret` optional for named drivers when already defined in Laravel's `services` config. Required for provider classes.
-- `enabled` optional. Defaults to `true`.
 - `name` optional. Human-friendly provider name.
 - `label` optional. Button label. Defaults to `Sign in with {name}`.
 - `scopes` optional. Array of scopes passed to Socialite.
