@@ -128,16 +128,25 @@
                 {% for colId, col in cols %}
                     {% set cell = row[colId] is defined ? row[colId] : (defaultValues[colId] ?? null) %}
                     {% set value = cell.value is defined ? cell.value : cell %}
+                    {% if col.width ?? false %}
+                        {% set width = col.width|trim %}
+                        {% set width = width ends with 'px' ? width|slice(0, width|length - 2) : width %}
+                        {% set minWidth = width ends with '%' ? col.width : "#{col.width}px" %}
+                        {% set widthAttributes = " width=\"#{width}\" style=\"min-width: #{minWidth}\"" %}
+                    {% else %}
+                        {% set widthAttributes = '' %}
+                    {% endif %}
+                    {% dump widthAttributes %}
                     {% if col.type == 'heading' %}
-                        <th scope="row" class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>{{ value|raw }}</th>
+                        <th scope="row" class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{{ widthAttributes|raw }}>{{ value|raw }}</th>
                     {% elseif col.type == 'html' %}
-                        <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>{{ value|raw }}</td>
+                        <td class="{{ _self.cellClass(fullWidth, col, cell.class ?? col.class ?? []) }}"{{ widthAttributes|raw }}>{{ value|raw }}</td>
                     {% else %}
                         {% set headingId = "#{id}-heading-#{loop.index}" %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
                         {% set isCode = (col.code ?? false) or col.type == 'color' %}
-                        <td class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>
+                        <td class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{{ widthAttributes|raw }}>
                             {% block tablecell %}
                                 {%- switch col.type -%}
                                     {%- case 'checkbox' -%}
