@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where the Plugin Store would not load if you setup Craft to use remote Craft Cloud assets locally.
+
 ## 4.17.9 - 2026-03-09
 
 - Added `craft\filters\IpRateLimitIdentity`. ([#18510](https://github.com/craftcms/cms/pull/18510))

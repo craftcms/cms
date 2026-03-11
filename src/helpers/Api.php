@@ -92,7 +92,7 @@ abstract class Api
 
         // Craft Cloud
         $craftCloudProjectId = App::env('CRAFT_CLOUD_PROJECT_ID');
-        if ($craftCloudProjectId) {
+        if ($craftCloudProjectId && (App::env('CRAFT_CLOUD') ?? App::env('AWS_LAMBDA_RUNTIME_API'))) {
             $headers['X-Craft-Cloud-Project-Id'] = $craftCloudProjectId;
         }
 
@@ -114,9 +114,11 @@ abstract class Api
             $overrides = [];
         }
 
+        /** @phpstan-ignore-next-line */
         $repo = new PlatformRepository([], $overrides);
 
         $versions = [];
+        /** @phpstan-ignore-next-line */
         foreach ($repo->getPackages() as $package) {
             $versions[$package->getName()] = $package->getPrettyVersion();
         }
