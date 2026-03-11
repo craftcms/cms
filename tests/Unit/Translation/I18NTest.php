@@ -7,6 +7,8 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\I18N as I18NService;
 use CraftCms\Cms\Translation\Locale;
 use Illuminate\Support\Collection;
+use Yiisoft\Translator\CategorySource;
+use Yiisoft\Translator\MessageReaderInterface;
 
 test('normalize language', function (string $expected, string $language) {
     expect(I18N::normalizeLanguage($language))->toBe($expected);
@@ -215,7 +217,7 @@ test('defaultCpLanguage is included in app locale IDs', function () {
 });
 
 test('getAllTranslationsForLocale returns translations for registered categories', function () {
-    $reader = new class implements \Yiisoft\Translator\MessageReaderInterface
+    $reader = new class implements MessageReaderInterface
     {
         public function getMessage(string $id, string $category, string $locale, array $parameters = []): ?string
         {
@@ -235,7 +237,7 @@ test('getAllTranslationsForLocale returns translations for registered categories
         }
     };
 
-    $source = new \Yiisoft\Translator\CategorySource('testcat', $reader);
+    $source = new CategorySource('testcat', $reader);
     I18N::addCategorySources($source);
 
     $translations = I18N::getAllTranslationsForLocale('nl');
@@ -248,7 +250,7 @@ test('getAllTranslationsForLocale returns translations for registered categories
 });
 
 test('getAllTranslationsForLocale filters out untranslated messages', function () {
-    $reader = new class implements \Yiisoft\Translator\MessageReaderInterface
+    $reader = new class implements MessageReaderInterface
     {
         public function getMessage(string $id, string $category, string $locale, array $parameters = []): ?string
         {
@@ -264,7 +266,7 @@ test('getAllTranslationsForLocale filters out untranslated messages', function (
         }
     };
 
-    $source = new \Yiisoft\Translator\CategorySource('filtertest', $reader);
+    $source = new CategorySource('filtertest', $reader);
     I18N::addCategorySources($source);
 
     $translations = I18N::getAllTranslationsForLocale('nl');
@@ -274,7 +276,7 @@ test('getAllTranslationsForLocale filters out untranslated messages', function (
 });
 
 test('getAllTranslationsForLocale excludes categories with no translated messages', function () {
-    $reader = new class implements \Yiisoft\Translator\MessageReaderInterface
+    $reader = new class implements MessageReaderInterface
     {
         public function getMessage(string $id, string $category, string $locale, array $parameters = []): ?string
         {
@@ -289,7 +291,7 @@ test('getAllTranslationsForLocale excludes categories with no translated message
         }
     };
 
-    $source = new \Yiisoft\Translator\CategorySource('emptycat', $reader);
+    $source = new CategorySource('emptycat', $reader);
     I18N::addCategorySources($source);
 
     $translations = I18N::getAllTranslationsForLocale('nl');
@@ -298,7 +300,7 @@ test('getAllTranslationsForLocale excludes categories with no translated message
 });
 
 test('getAllTranslationsForLocale handles locale fallback', function () {
-    $reader = new class implements \Yiisoft\Translator\MessageReaderInterface
+    $reader = new class implements MessageReaderInterface
     {
         public function getMessage(string $id, string $category, string $locale, array $parameters = []): ?string
         {
@@ -324,7 +326,7 @@ test('getAllTranslationsForLocale handles locale fallback', function () {
         }
     };
 
-    $source = new \Yiisoft\Translator\CategorySource('fallbacktest', $reader);
+    $source = new CategorySource('fallbacktest', $reader);
     I18N::addCategorySources($source);
 
     $translations = I18N::getAllTranslationsForLocale('fr-CA');

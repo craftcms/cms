@@ -34,7 +34,7 @@ final class SectionSiteSettings extends Component
     /**
      * Returns the section.
      *
-     * @throws \RuntimeException if [[sectionId]] is missing or invalid
+     * @throws RuntimeException if [[sectionId]] is missing or invalid
      */
     public function getSection(): Section
     {

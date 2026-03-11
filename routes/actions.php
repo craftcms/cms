@@ -132,8 +132,8 @@ Route::prefix(Cms::config()->actionTrigger)->group(function () {
 
     Route::middleware(['auth:craft'])->group(function () {
         Route::post('entries/save-entry', StoreEntryController::class);
-        Route::post('users/save-address', [\CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'store']);
-        Route::post('users/delete-address', [\CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'destroy']);
+        Route::post('users/save-address', [CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'store']);
+        Route::post('users/delete-address', [CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'destroy']);
     });
 
     Route::middleware([RequireToken::class])->group(function () {

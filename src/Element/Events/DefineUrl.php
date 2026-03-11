@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Concerns\HasRoutesAndUrls;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
 /**
@@ -13,7 +14,7 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  * To prevent the element from getting a URL, ensure `$url` is set to `null`,
  * and set `$handled` to `true`.
  *
- * {@see \CraftCms\Cms\Element\Concerns\HasRoutesAndUrls::getUrl()}
+ * {@see HasRoutesAndUrls::getUrl()}
  */
 class DefineUrl
 {

@@ -66,7 +66,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
         return 'number';
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [

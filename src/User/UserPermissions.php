@@ -47,7 +47,7 @@ use function CraftCms\Cms\t;
 final class UserPermissions
 {
     /**
-     * @var Collection<\CraftCms\Cms\User\Data\PermissionGroup>
+     * @var Collection<PermissionGroup>
      *
      * @see getAllPermissions()
      */
@@ -87,7 +87,7 @@ final class UserPermissions
      * - `nested` _(optional)_ – An array of nested permissions, which can only be assigned if the parent
      *   permission is assigned.
      *
-     * @return Collection<\CraftCms\Cms\User\Data\PermissionGroup>
+     * @return Collection<PermissionGroup>
      */
     public function getAllPermissions(): Collection
     {

@@ -85,7 +85,7 @@ final class MergeEntryTypesCommand extends Command implements PromptsForMissingI
 
         /** @var EntryType $persistingEntryType */
         /** @var EntryType $outgoingEntryType */
-        /** @var array<\CraftCms\Cms\Section\Data\Section|ElementContainerFieldInterface> $outgoingUsages */
+        /** @var array<Section|ElementContainerFieldInterface> $outgoingUsages */
         [$persistingEntryType, $outgoingEntryType, $outgoingUsages] = $choice === $entryTypeA->handle
             ? [$entryTypeA, $entryTypeB, $usagesB]
             : [$entryTypeB, $entryTypeA, $usagesA];
@@ -181,7 +181,7 @@ final class MergeEntryTypesCommand extends Command implements PromptsForMissingI
                         ->map(fn () => true)
                         ->all();
                     $tabs = $fieldLayout->getTabs();
-                    /** @var \CraftCms\Cms\FieldLayout\FieldLayoutTab|null $tab */
+                    /** @var FieldLayoutTab|null $tab */
                     $tab = Arr::first($tabs, fn (FieldLayoutTab $tab) => $tab->name === 'Merged Fields');
                     if (! $tab) {
                         $tab = new FieldLayoutTab(['name' => 'Merged Fields']);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Jobs\LocalizeRelations;
 use CraftCms\Cms\Queue\Job;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 
@@ -64,7 +65,7 @@ it('localizes relations for a field', function () {
         $this->markTestSkipped('Not enough elements exist in the database');
     }
 
-    $uid = \CraftCms\Cms\Support\Str::uuid();
+    $uid = Str::uuid();
 
     DB::table(Table::RELATIONS)->insert([
         'fieldId' => $fieldId,

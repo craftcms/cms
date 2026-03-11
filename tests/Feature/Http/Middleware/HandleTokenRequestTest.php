@@ -8,6 +8,7 @@ use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Uri;
 
 beforeEach(function () {
     $this->middleware = app(HandleTokenRequest::class);
@@ -58,7 +59,7 @@ it('returns the response of the token route', function () {
 
     expect($result)->toBe('token/route');
 
-    /** @var ?\Illuminate\Support\Uri $originalUri */
+    /** @var ?Uri $originalUri */
     $originalUri = Context::getHidden(HandleTokenRequest::ORIGINAL_URI_KEY);
 
     expect($originalUri)->not()->toBeNull();

@@ -8,6 +8,7 @@ use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
 
@@ -21,7 +22,7 @@ beforeEach(function () {
 });
 
 it('requires authentication', function () {
-    \Illuminate\Support\Facades\Auth::logout();
+    Auth::logout();
 
     get(action([GeneralSettingsController::class, 'index']))
         ->assertRedirect();

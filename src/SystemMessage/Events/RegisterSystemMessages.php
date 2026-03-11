@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage\Events;
 
+use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Support\Collection;
 
 /**
@@ -45,7 +46,7 @@ use Illuminate\Support\Collection;
 final class RegisterSystemMessages
 {
     public function __construct(
-        /** @var Collection<\CraftCms\Cms\SystemMessage\Models\SystemMessage> */
+        /** @var Collection<SystemMessage> */
         public Collection $messages,
     ) {}
 }

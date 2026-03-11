@@ -74,7 +74,7 @@ test('index shows all sites', function () {
 });
 
 test('index can filter by group', function () {
-    $this->siteGroups->saveGroup($group = new \CraftCms\Cms\Site\Data\SiteGroup(['name' => 'New group']));
+    $this->siteGroups->saveGroup($group = new CraftCms\Cms\Site\Data\SiteGroup(['name' => 'New group']));
 
     $this->sites->saveSite(new SiteData([
         'name' => 'New site',

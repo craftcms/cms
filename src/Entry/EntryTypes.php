@@ -82,7 +82,7 @@ final class EntryTypes
      * ```
      *
      *
-     * @return \Illuminate\Support\Collection<EntryType>
+     * @return Collection<EntryType>
      */
     public function getEntryTypesBySectionId(int $sectionId): Collection
     {

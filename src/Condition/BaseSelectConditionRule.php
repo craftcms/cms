@@ -47,7 +47,7 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
             ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [

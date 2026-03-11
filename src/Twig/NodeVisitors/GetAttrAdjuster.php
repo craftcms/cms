@@ -55,7 +55,7 @@ final class GetAttrAdjuster implements NodeVisitorInterface
         return $getAttrNode;
     }
 
-    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
+    public function leaveNode(Node $node, Environment $env): Node
     {
         return $node;
     }

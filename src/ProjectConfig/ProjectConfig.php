@@ -18,6 +18,7 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Data\ProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
@@ -1888,7 +1889,7 @@ final class ProjectConfig
      */
     private function _getTransformData(): array
     {
-        return app(\CraftCms\Cms\Image\ImageTransforms::class)->getAllTransforms()
+        return app(ImageTransforms::class)->getAllTransforms()
             ->mapWithKeys(fn (ImageTransform $transform) => [$transform->uid => $transform->getConfig()])
             ->all();
     }

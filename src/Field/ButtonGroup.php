@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
  */
 final class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
 {
-    #[\Override]
+    #[Override]
     protected static bool $optionIcons = true;
 
     #[Override]

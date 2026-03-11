@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
 use CraftCms\Cms\Support\Facades\Sites;
+use Illuminate\Support\Facades\Event;
 
 class TestPreviewTargetsElement extends Element
 {
@@ -164,7 +165,7 @@ describe('getPreviewTargets', function () {
         $element->siteId = $this->primarySiteId;
         $element->setElementUrl('https://example.com/original');
 
-        \Illuminate\Support\Facades\Event::listen(function (RegisterPreviewTargets $event) {
+        Event::listen(function (RegisterPreviewTargets $event) {
             if ($event->element instanceof TestPreviewTargetsElement) {
                 $event->previewTargets[] = [
                     'label' => 'Added by Event',
@@ -189,7 +190,7 @@ describe('getPreviewTargets', function () {
             ],
         ]);
 
-        \Illuminate\Support\Facades\Event::listen(function (RegisterPreviewTargets $event) {
+        Event::listen(function (RegisterPreviewTargets $event) {
             if ($event->element instanceof TestPreviewTargetsElement) {
                 $event->previewTargets[0]['label'] = 'Modified by Event';
             }

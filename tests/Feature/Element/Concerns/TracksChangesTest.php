@@ -7,16 +7,17 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class TestTracksChangesElement extends Element
 {
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return 'Test Element';
     }
 
-    #[\Override]
+    #[Override]
     public static function find(): ElementQuery
     {
         return new ElementQuery(static::class);
@@ -25,7 +26,7 @@ class TestTracksChangesElement extends Element
 
 class TestTracksChangesEnabledElement extends TestTracksChangesElement
 {
-    #[\Override]
+    #[Override]
     public static function trackChanges(): bool
     {
         return true;
@@ -133,7 +134,7 @@ describe('Change Tracking', function () {
             'archived' => false,
             'dateCreated' => now(),
             'dateUpdated' => now(),
-            'uid' => \Illuminate\Support\Str::uuid(),
+            'uid' => Str::uuid(),
         ]);
 
         // Insert changed attribute for the element
@@ -165,7 +166,7 @@ describe('Change Tracking', function () {
             'archived' => false,
             'dateCreated' => now(),
             'dateUpdated' => now(),
-            'uid' => \Illuminate\Support\Str::uuid(),
+            'uid' => Str::uuid(),
         ]);
 
         // Changed yesterday
@@ -194,7 +195,7 @@ describe('Change Tracking', function () {
             'archived' => false,
             'dateCreated' => now(),
             'dateUpdated' => now(),
-            'uid' => \Illuminate\Support\Str::uuid(),
+            'uid' => Str::uuid(),
         ]);
 
         DB::table(Table::CHANGEDATTRIBUTES)->insert([
@@ -223,7 +224,7 @@ describe('Change Tracking', function () {
             'archived' => false,
             'dateCreated' => now(),
             'dateUpdated' => now(),
-            'uid' => \Illuminate\Support\Str::uuid(),
+            'uid' => Str::uuid(),
         ]);
 
         DB::table(Table::CHANGEDATTRIBUTES)->insert([
@@ -253,7 +254,7 @@ describe('Change Tracking', function () {
             'archived' => false,
             'dateCreated' => now(),
             'dateUpdated' => now(),
-            'uid' => \Illuminate\Support\Str::uuid(),
+            'uid' => Str::uuid(),
         ]);
 
         DB::table(Table::CHANGEDATTRIBUTES)->insert([

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
 
 /**
  * @event DefineSidebarHtml The event that is triggered when defining the HTML for the editor sidebar.
  *
- * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::getSidebarHtml()}
+ * {@see HasControlPanelUI::getSidebarHtml()}
  */
 final class DefineSidebarHtml
 {

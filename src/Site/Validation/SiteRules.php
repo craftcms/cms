@@ -6,13 +6,14 @@ namespace CraftCms\Cms\Site\Validation;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\Validation\Rules\LanguageRule;
 use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
 
-/** @extends Ruleset<\CraftCms\Cms\Site\Data\Site> */
+/** @extends Ruleset<Site> */
 final class SiteRules extends Ruleset
 {
     #[\Override]

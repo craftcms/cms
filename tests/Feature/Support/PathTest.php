@@ -38,8 +38,8 @@ beforeEach(function () {
     putenv('CRAFT_REBRAND_PATH');
     unset($_SERVER['CRAFT_REBRAND_PATH']);
 
-    $this->laravelPath = function (): \CraftCms\Cms\Support\Path {
-        $laravelPathClass = \CraftCms\Cms\Support\Path::class;
+    $this->laravelPath = function (): CraftCms\Cms\Support\Path {
+        $laravelPathClass = CraftCms\Cms\Support\Path::class;
 
         app()->forgetInstance($laravelPathClass);
         Facade::clearResolvedInstance($laravelPathClass);

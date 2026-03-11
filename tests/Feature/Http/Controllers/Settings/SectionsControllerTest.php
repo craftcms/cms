@@ -73,7 +73,7 @@ test('index can be sorted', function () {
         ],
     ]))
         ->assertOk()
-        ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+        ->assertInertia(fn (AssertableInertia $page) => $page
             ->has('data', 3)
             ->where('data.0.name', 'aaa First Section')
             ->where('data.2.name', 'zzz Last Section')
@@ -171,7 +171,7 @@ test('handle needs to be unique without trashed', function () {
     post(action([SectionsController::class, 'store']), $data)
         ->assertSessionHasNoErrors();
 
-    \CraftCms\Cms\Support\Facades\Sections::deleteSectionById(Section::latest('id')->first()->id);
+    CraftCms\Cms\Support\Facades\Sections::deleteSectionById(Section::latest('id')->first()->id);
 
     post(action([SectionsController::class, 'store']), $data)
         ->assertSessionHasNoErrors();

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Events;
 
+use CraftCms\Cms\Field\Link;
+
 /**
- * @see \CraftCms\Cms\Field\Link::types()
+ * @see Link::types()
  */
 final class RegisterLinkTypes
 {

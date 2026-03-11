@@ -66,6 +66,7 @@ use DateTimeZone;
 use Deprecated;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
@@ -465,7 +466,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[Override]
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
-        /** @var \CraftCms\Cms\Element\Queries\UserQuery $elementQuery */
+        /** @var UserQuery $elementQuery */
         if ($attribute === 'groups') {
             $elementQuery->withGroups();
         } else {
@@ -775,7 +776,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
 
     public function sendEmailVerificationNotification(): void
     {
-        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        /** @var PasswordBroker $broker */
         $broker = Password::broker('craft');
 
         $this->notify(new VerifyEmailNotification($broker->createToken($this)));
@@ -1106,7 +1107,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * Sets an array of user groups on the user.
      *
-     * @param  UserGroup[]|\CraftCms\Cms\User\Data\UserGroup[]  $groups  An array of UserGroup objects.
+     * @param  UserGroup[]|UserGroup[]  $groups  An array of UserGroup objects.
      */
     public function setGroups(array $groups): void
     {
@@ -1118,7 +1119,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * Returns whether the user is in a specific group.
      *
-     * @param  int|string|\CraftCms\Cms\User\Data\UserGroup  $group  The user group model, its handle, or ID.
+     * @param  int|string|UserGroup  $group  The user group model, its handle, or ID.
      */
     #[AllowedInSandbox]
     public function isInGroup(UserGroup|int|string $group): bool
