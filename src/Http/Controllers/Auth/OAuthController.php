@@ -10,9 +10,9 @@ use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
-use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Log;
@@ -42,7 +42,7 @@ final readonly class OAuthController extends AuthenticationController
         return $oauthManager->buildProvider($definition, $isCpRequest)->redirect();
     }
 
-    public function callback(Request $request, string $provider, OAuth $oauthManager): Response
+    public function callback(Request $request, string $provider, OAuth $oauthManager, Users $users): Response
     {
         abort_if(! $definition = $oauthManager->getProviderDefinition($provider), 404);
 
@@ -81,7 +81,7 @@ final readonly class OAuthController extends AuthenticationController
                 $definition->activatesUsers &&
                 $user->getStatus() !== User::STATUS_ACTIVE
             ) {
-                UsersFacade::activateUser($user);
+                $users->activateUser($user);
             }
 
             $oauthManager->linkIdentity($user, $definition, $identity);
@@ -90,7 +90,7 @@ final readonly class OAuthController extends AuthenticationController
                 $groupIds = $oauthManager->resolveGroupIds($definition, $socialiteUser, $user, $identity);
 
                 if ($groupIds !== []) {
-                    UsersFacade::assignUserToGroups($user->id, $groupIds);
+                    $users->assignUserToGroups($user->id, $groupIds);
                 }
             }
 
@@ -103,8 +103,6 @@ final readonly class OAuthController extends AuthenticationController
             }
 
             return $this->finalizeLogin($request, $user, true, skipTwoFactor: true);
-        } catch (InvalidStateException $e) {
-            return $this->failedResponse($isCpRequest, t('Authentication failed.'), previous: $e);
         } catch (InvalidElementException $e) {
             /** @var User $user */
             $user = $e->element;
@@ -114,7 +112,7 @@ final readonly class OAuthController extends AuthenticationController
                 implode(', ', $user->getErrorSummary(true)) ?: t('Unable to save the user.'),
                 previous: $e,
             );
-        } catch (Throwable $e) {
+        } catch (InvalidStateException|Throwable $e) {
             return $this->failedResponse($isCpRequest, t('Authentication failed.'), previous: $e);
         }
     }
