@@ -863,6 +863,7 @@ class ProjectConfig extends Component
                 'path' => $event->path,
                 'oldValue' => $event->oldValue,
                 'newValue' => $event->newValue,
+                'tokenMatches' => $event->tokenMatches,
             ]);
 
             Craft::$app->getProjectConfig()->trigger(self::EVENT_ADD_ITEM, $yiiEvent);
@@ -873,6 +874,7 @@ class ProjectConfig extends Component
                 'path' => $event->path,
                 'oldValue' => $event->oldValue,
                 'newValue' => $event->newValue,
+                'tokenMatches' => $event->tokenMatches,
             ]);
 
             Craft::$app->getProjectConfig()->trigger(self::EVENT_REMOVE_ITEM, $yiiEvent);
@@ -883,6 +885,7 @@ class ProjectConfig extends Component
                 'path' => $event->path,
                 'oldValue' => $event->oldValue,
                 'newValue' => $event->newValue,
+                'tokenMatches' => $event->tokenMatches,
             ]);
 
             Craft::$app->getProjectConfig()->trigger(self::EVENT_UPDATE_ITEM, $yiiEvent);
