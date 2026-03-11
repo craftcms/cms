@@ -57,6 +57,13 @@ it('can set the current edition', function () {
     expect(Edition::get())->toBe(Edition::Solo);
 });
 
+it('knows when oauth is supported', function () {
+    expect(Edition::Solo->supportsOAuth())->toBeFalse()
+        ->and(Edition::Team->supportsOAuth())->toBeFalse()
+        ->and(Edition::Pro->supportsOAuth())->toBeTrue()
+        ->and(Edition::Enterprise->supportsOAuth())->toBeTrue();
+});
+
 it('can get the current licensed edition', function () {
     expect(Edition::getLicensed())->toBeNull();
 

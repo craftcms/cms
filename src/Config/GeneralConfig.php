@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
+use Override;
 use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
@@ -42,7 +43,7 @@ class GeneralConfig extends BaseConfig
 
     public const string SNAKE_CASE = 'snake';
 
-    #[\Override]
+    #[Override]
     protected static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',
@@ -1666,6 +1667,47 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public mixed $loginPath = 'login';
+
+    /**
+     * @var array<int|string, array<string, mixed>|string> The OAuth providers that should be available for login.
+     *
+     * Each provider should be keyed by its handle, and may be configured as either a driver string shorthand
+     * or an array with the following supported keys. Numeric entries are also allowed for simple driver-only providers.
+     *
+     * - `driver` *(required)*: A registered Socialite driver name, or a Socialite-compatible provider class name.
+     * - `clientId`: The provider client ID. Required for provider classes, optional for named drivers if already defined in `config/services.php`.
+     * - `clientSecret`: The provider client secret. Required for provider classes, optional for named drivers if already defined in `config/services.php`.
+     * - `enabled`: Whether the provider should be available. Defaults to `true`.
+     * - `name`: A human-friendly provider name.
+     * - `label`: The rendered button label.
+     * - `scopes`: Additional Socialite scopes.
+     * - `with`: Additional Socialite request parameters.
+     * - `stateless`: Whether the provider should bypass Socialite state checks.
+     * - `groups`: User group IDs, UIDs, or handles to assign to new users.
+     * - `createsUsers`: Whether the provider may create new users when no existing account can be matched. Defaults to the public registration setting when `null` or omitted.
+     * - `activatesUsers`: Whether matched or newly-created users should be activated automatically.
+     * - `identityResolver`: A custom identity resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthIdentity`.
+     * - `userResolver`: A custom linked-user resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUser`.
+     * - `userPopulator`: A custom user populator class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\PopulatesOAuthUser`.
+     * - `groupResolver`: A custom initial user-group resolver class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthUserGroups`, returning group IDs, UIDs, or handles.
+     * - `buttonRenderer`: A custom login-button renderer class implementing `\CraftCms\Cms\Auth\OAuth\Contracts\RendersOAuthButton`.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->oauthProviders([
+     *     'github',
+     *     'google' => [
+     *         'driver' => 'google',
+     *         'clientId' => '$GOOGLE_CLIENT_ID',
+     *         'clientSecret' => '$GOOGLE_CLIENT_SECRET',
+     *     ],
+     * ])
+     * ```
+     * :::
+     *
+     * @group Users
+     */
+    public array $oauthProviders = [];
 
     /**
      * @var mixed The URI Craft should use for user logout on the front end.
@@ -4926,6 +4968,20 @@ class GeneralConfig extends BaseConfig
     public function loginPath(mixed $value): self
     {
         $this->loginPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The OAuth providers that should be available for login.
+     *
+     * @group Users
+     *
+     * @see $oauthProviders
+     */
+    public function oauthProviders(array $value): self
+    {
+        $this->oauthProviders = $value;
 
         return $this;
     }
