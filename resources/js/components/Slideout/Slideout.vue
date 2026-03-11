@@ -262,7 +262,8 @@
     flex-grow: 1;
     position: fixed;
     inset-block: 0;
-    width: 55%;
+    width: minmax(320px, 55%);
+    max-width: 100%;
     background-color: var(--c-surface-overlay);
     box-shadow: var(--c-shadow-overlay);
     border-radius: var(--c-modal-radius);
