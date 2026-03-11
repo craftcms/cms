@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.17.10 - 2026-03-11
 
 - Fixed an error that occurred when loading some control panel resources on environments with `craft\web\AssetManager::$cacheSourcePaths` disabled. ([#18536](https://github.com/craftcms/cms/issues/18536))
 
