@@ -50,7 +50,7 @@ trait Eagerloadable
      * @var array<string,ElementCollection>
      *
      * @see getEagerLoadedElements()
-     * @see setEagerLoadedElements()
+     * @see SetEagerLoadedElements()
      */
     private array $_eagerLoadedElements = [];
 
@@ -533,7 +533,7 @@ trait Eagerloadable
      * @param  string  $handle  The handle to check for
      * @return bool Whether the eager-loaded elements exist
      *
-     * @see setEagerLoadedElements()
+     * @see SetEagerLoadedElements()
      * @since 3.5.0
      */
     public function hasEagerLoadedElements(string $handle): bool
@@ -555,7 +555,7 @@ trait Eagerloadable
      * @param  string  $handle  The handle to check for
      * @return ElementCollection|null The eager-loaded elements, or null if they don't exist
      *
-     * @see setEagerLoadedElements()
+     * @see SetEagerLoadedElements()
      * @since 3.5.0
      */
     public function getEagerLoadedElements(string $handle): ?ElementCollection

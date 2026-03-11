@@ -295,13 +295,13 @@ final class Html
             ->render();
     }
 
-    /** {@see \Yiisoft\Html\Html::openTag} */
+    /** {@see YiiHtml::openTag} */
     public static function beginTag($name, $options = []): string
     {
         return YiiHtml::openTag($name, self::normalizeTagAttributes($options));
     }
 
-    /** {@see \Yiisoft\Html\Html::closeTag} */
+    /** {@see YiiHtml::closeTag} */
     public static function endTag(string $name): string
     {
         return YiiHtml::closeTag($name);

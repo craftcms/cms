@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Events;
 
+use CraftCms\Cms\User\Data\PermissionGroup;
 use Illuminate\Support\Collection;
 
 /**
@@ -12,7 +13,7 @@ use Illuminate\Support\Collection;
 final class RegisterUserPermissions
 {
     public function __construct(
-        /** @var Collection<\CraftCms\Cms\User\Data\PermissionGroup> */
+        /** @var Collection<PermissionGroup> */
         public Collection $permissions,
     ) {}
 }

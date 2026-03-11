@@ -12,7 +12,7 @@ use Override;
 
 class FullNameField extends BaseFullNameField
 {
-    #[\Override]
+    #[Override]
     public bool $mandatory = true;
 
     #[Override]

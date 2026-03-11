@@ -79,7 +79,7 @@ final class IdentityWrapper implements IdentityInterface
         throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
     }
 
-    public function getId(): int|null
+    public function getId(): ?int
     {
         return $this->user->getId();
     }

@@ -2444,7 +2444,7 @@ JS, [
     /**
      * Sets the asset's focal point.
      *
-     * @throws \InvalidArgumentException if $value is invalid
+     * @throws InvalidArgumentException if $value is invalid
      */
     public function setFocalPoint(array|string|null $value): void
     {

@@ -30,7 +30,7 @@ final class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [

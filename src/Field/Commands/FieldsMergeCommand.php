@@ -77,10 +77,10 @@ final class FieldsMergeCommand extends Command
             })
             ->keyBy(fn (FieldInterface $field) => $field->handle);
 
-        /** @var Collection<string,\CraftCms\Cms\FieldLayout\FieldLayout[]> $layoutsByField */
+        /** @var Collection<string,FieldLayout[]> $layoutsByField */
         $layoutsByField = $fields->map(fn (FieldInterface $field) => $fieldsService->findFieldUsages($field));
 
-        /** @var Collection<\CraftCms\Cms\FieldLayout\FieldLayout> $layouts */
+        /** @var Collection<FieldLayout> $layouts */
         $layouts = $layoutsByField->values()->flatten(1)->unique();
 
         // Make sure all the layouts either have an ID or UUID; otherwise we wouldn't know what to do with it

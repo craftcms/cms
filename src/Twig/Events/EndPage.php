@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Events;
 
+use CraftCms\Cms\View\HtmlStack;
+
 /**
  * The event that is triggered when page rendering ends.
  *
  * Listeners can populate the nullable HTML properties to override
- * the default output from {@see \CraftCms\Cms\View\HtmlStack}.
+ * the default output from {@see HtmlStack}.
  * When a property is left `null`, the page lifecycle falls back to
  * `HtmlStack::headHtml()`, `bodyBeginHtml()`, or `bodyEndHtml()`
  * respectively.

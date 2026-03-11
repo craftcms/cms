@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
@@ -15,7 +16,7 @@ beforeEach(function () {
 });
 
 it('requires authentication', function () {
-    \Illuminate\Support\Facades\Auth::logout();
+    Auth::logout();
 
     get(action(SettingsIndexController::class))->assertRedirect();
 });

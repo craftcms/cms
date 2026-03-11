@@ -65,7 +65,7 @@ final class EventTagFinder extends BaseEventTagVisitor
         return $node;
     }
 
-    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
+    public function leaveNode(Node $node, Environment $env): Node
     {
         return $node;
     }

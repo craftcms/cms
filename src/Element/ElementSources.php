@@ -479,7 +479,7 @@ final class ElementSources
      * Returns all the field layouts available for the given element source.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @return Collection<\CraftCms\Cms\FieldLayout\FieldLayout>
+     * @return Collection<FieldLayout>
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): Collection
     {
@@ -553,7 +553,7 @@ final class ElementSources
      * Returns additional sort options that should be available for an element index source that includes the given
      * field layouts.
      *
-     * @param  \CraftCms\Cms\FieldLayout\FieldLayout[]|Collection<\CraftCms\Cms\FieldLayout\FieldLayout>  $fieldLayouts
+     * @param  FieldLayout[]|Collection<FieldLayout>  $fieldLayouts
      * @return Collection<array>
      */
     public function getSortOptionsForFieldLayouts(array|Collection $fieldLayouts): Collection

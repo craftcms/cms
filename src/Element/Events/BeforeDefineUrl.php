@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Concerns\HasRoutesAndUrls;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
 /**
@@ -17,7 +18,7 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  *
  * Note that DefineUrl will still be called regardless of what happens with this event.
  *
- * {@see \CraftCms\Cms\Element\Concerns\HasRoutesAndUrls::getUrl()}
+ * {@see HasRoutesAndUrls::getUrl()}
  */
 class BeforeDefineUrl
 {

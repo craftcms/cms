@@ -77,7 +77,7 @@ final readonly class UtilitiesController
         return $this->utilitiesService
             ->getAuthorizedUtilityTypes()
             /**
-             * @var class-string<\CraftCms\Cms\Utility\Utility> $class
+             * @var class-string<Utility> $class
              *
              * @phpstan-ignore argument.unresolvableType
              */

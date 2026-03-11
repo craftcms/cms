@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Element\Events\RegisterFieldLayouts;
 use CraftCms\Cms\Element\Events\RegisterSources;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Fields;
 
 /**
@@ -82,7 +83,7 @@ trait HasSources
      * Defines the field layouts associated with elements for a given source.
      *
      * @param  string|null  $source  The selected source's key, or `null` if all known field layouts should be returned
-     * @return \CraftCms\Cms\FieldLayout\FieldLayout[] The associated field layouts
+     * @return FieldLayout[] The associated field layouts
      *
      * @see fieldLayouts()
      * @since 3.5.0

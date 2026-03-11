@@ -5,6 +5,7 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Support\Facades\DB;
 
 test('nested element query', function () {
@@ -47,9 +48,9 @@ test('nested element query', function () {
     entryQuery()->fieldId($field->id)->count();
     entryQuery()->ownerId($entry->id)->count();
 
-    /** @var \CraftCms\DependencyAwareCache\Dependency\TagDependency $dependency */
+    /** @var TagDependency $dependency */
     $dependency = Craft::$app->getElements()->stopCollectingCacheInfo()[0];
 
-    expect($dependency->tags)->toContain('element::'.\CraftCms\Cms\Entry\Elements\Entry::class.'::field:'.$field->id);
+    expect($dependency->tags)->toContain('element::'.CraftCms\Cms\Entry\Elements\Entry::class.'::field:'.$field->id);
     expect($dependency->tags)->toContain('element::'.$entry->id);
 });

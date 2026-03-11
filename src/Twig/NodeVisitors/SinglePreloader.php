@@ -56,7 +56,7 @@ final class SinglePreloader implements NodeVisitorInterface
         return $node;
     }
 
-    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
+    public function leaveNode(Node $node, Environment $env): Node
     {
         if (! $this->isRelevant($node)) {
             return $node;

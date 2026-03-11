@@ -8,6 +8,7 @@ use craft\helpers\Cp;
 use craft\helpers\DateRange;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -291,7 +292,7 @@ JS,
     }
 
     /**
-     * Returns the rule’s value, prepped for {@see \CraftCms\Cms\Database\QueryParam::parse()}.
+     * Returns the rule’s value, prepped for {@see QueryParam::parse()}.
      */
     protected function queryParamValue(): array|string|null
     {

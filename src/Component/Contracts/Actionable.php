@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component\Contracts;
 
+use craft\helpers\Cp;
+
 /**
  * Actionable defines the common interface to be implemented by components that
  * can have action menus within the control panel.
@@ -22,7 +24,7 @@ interface Actionable
      * 'showInChips' => false,
      * ```
      *
-     * @see \craft\helpers\Cp::disclosureMenu()
+     * @see Cp::disclosureMenu()
      */
     public function getActionMenuItems(): array;
 }

@@ -12,6 +12,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
+use CraftCms\Cms\User\Models\User;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
@@ -151,7 +152,7 @@ final class Api
         }
 
         if ($user = Auth::getUser()) {
-            /** @var \CraftCms\Cms\User\Models\User $user */
+            /** @var User $user */
             $headers['X-Craft-User-Email'] = $user->email;
         }
 

@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
 
 /**
  * @event DefineMetaFieldsHtml The event that is triggered when defining the HTML for meta fields
  * within the editor sidebar.
  *
- * {@see \CraftCms\Cms\Element\Concerns\HasControlPanelUI::metaFieldsHtml()}
+ * {@see HasControlPanelUI::metaFieldsHtml()}
  */
 final class DefineMetaFieldsHtml
 {

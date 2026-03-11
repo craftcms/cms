@@ -209,7 +209,7 @@ final class Updates
 
         try {
             DB::commit();
-        } catch (PdoException $e) {
+        } catch (PDOException $e) {
             // The transaction could be implicitly committed by Mysql
             if ($e->getMessage() !== 'There is no active transaction') {
                 throw $e;

@@ -8,15 +8,15 @@ use craft\db\Table as LegacyTable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
-use CraftCms\Yii2Adapter\Yii2ServiceProvider;
+use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\Schema;
 
 final class DropCategoriesSupportCommand extends Command
 {
-    use CraftCommand;
     use ConfirmableTrait;
+    use CraftCommand;
 
     protected $signature = 'craft:drop-categories-support
         {--force : Force the operation to run when in production or when allowAdminChanges is disabled.}
@@ -33,6 +33,7 @@ final class DropCategoriesSupportCommand extends Command
 
         if (!Schema::hasTable($categoriesTable)) {
             $this->info("<fg=cyan>$categoriesTable</> table doesn’t exist.");
+
             return;
         }
 
@@ -61,7 +62,7 @@ final class DropCategoriesSupportCommand extends Command
             },
         );
 
-        Yii2ServiceProvider::resetSupport();
+        DeprecatedConcepts::resetSupport();
     }
 
     protected function getDefaultConfirmCallback(): Closure

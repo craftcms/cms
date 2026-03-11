@@ -15,6 +15,7 @@ use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Element;
@@ -228,9 +229,9 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     ): Builder {
         $ns = sprintf('%s_%s', $field->handle, Str::random(5));
 
-        $query = DB::table(\CraftCms\Cms\Database\Table::RELATIONS, "relations_$ns")
-            ->join(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "relations_$ns.targetId")
-            ->leftJoin(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS_SITES, "elements_sites_$ns"), "elements_sites_$ns.elementId", '=', "elements_$ns.id")
+        $query = DB::table(Table::RELATIONS, "relations_$ns")
+            ->join(new Alias(Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "relations_$ns.targetId")
+            ->leftJoin(new Alias(Table::ELEMENTS_SITES, "elements_sites_$ns"), "elements_sites_$ns.elementId", '=', "elements_$ns.id")
             ->whereColumn("relations_$ns.sourceId", 'elements.id')
             ->where("relations_$ns.fieldId", $field->id)
             ->whereNull("elements_$ns.dateDeleted")
@@ -693,7 +694,7 @@ JS, [
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var \CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection $value */
+        /** @var ElementQuery|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
             return ! $this->_all($value, $element)->exists();
         }
@@ -765,10 +766,10 @@ JS, [
                 // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
                 // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
                 // to the eager-loading query and cause a SQL error.
-                /** @var \Illuminate\Database\Query\Builder $q */
+                /** @var Builder $q */
                 foreach ([$elementQuery->getQuery(), $elementQuery->getSubQuery()] as $q) {
                     $q->join(
-                        new Alias(\CraftCms\Cms\Database\Table::RELATIONS, $relationsAlias),
+                        new Alias(Table::RELATIONS, $relationsAlias),
                         function (JoinClause $join) use ($element, $relationsAlias) {
                             $join->whereColumn("$relationsAlias.targetId", 'elements.id')
                                 ->where("$relationsAlias.sourceId", $element->id)
@@ -874,7 +875,7 @@ JS, [
             $criteria['siteId'] = '*';
             $criteria['unique'] = true;
             // Just to be safe...
-            /** @var \CraftCms\Cms\Element\Queries\ElementQuery $query */
+            /** @var ElementQuery $query */
             if (is_numeric($query->siteId)) {
                 $criteria['preferSites'] = [$query->siteId];
             }
@@ -1056,7 +1057,7 @@ JS, [
 
         // Are there any source elements that don't have hardcoded relation IDs yet?
         if (! empty($missingSourceElementIds)) {
-            $missingMappingsQuery = DB::table(\CraftCms\Cms\Database\Table::RELATIONS)
+            $missingMappingsQuery = DB::table(Table::RELATIONS)
                 ->select(['sourceId as source', 'targetId as target'])
                 ->where([
                     'fieldId' => $this->id,
@@ -1160,7 +1161,7 @@ JS, [
 
     public function getRelationTargetIds(ElementInterface $element): array
     {
-        /** @var \CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection $value */
+        /** @var ElementQuery|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
 
         // $value will be an element query and its $id will be set if we're saving new relations
@@ -1241,7 +1242,7 @@ JS, [
                     $timestamp = now();
 
                     foreach ($siteIds as $siteId) {
-                        DB::table(\CraftCms\Cms\Database\Table::CHANGEDFIELDS)
+                        DB::table(Table::CHANGEDFIELDS)
                             ->upsert([
                                 'elementId' => $element->id,
                                 'siteId' => $siteId,

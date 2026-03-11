@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Validation;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -13,7 +14,7 @@ use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
 
-/** @extends Ruleset<\CraftCms\Cms\Entry\Data\EntryType> */
+/** @extends Ruleset<EntryType> */
 final class EntryTypeRules extends Ruleset
 {
     #[\Override]

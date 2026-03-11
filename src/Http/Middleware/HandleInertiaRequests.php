@@ -30,7 +30,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @var string
      */
-    #[\Override]
+    #[Override]
     protected $rootView = 'app';
 
     /**

@@ -10,6 +10,7 @@
 namespace CraftCms\Yii2Adapter\Web;
 
 use ArrayIterator;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Session\Store;
 use yii\base\Component;
 
@@ -31,11 +32,11 @@ use yii\base\Component;
  * ];
  * ```
  *
- * > Note: usage of this component requires Yii application running within {@see \Illuminate\Session\Middleware\StartSession} middleware.
+ * > Note: usage of this component requires Yii application running within {@see StartSession} middleware.
  *
- * @see \Illuminate\Session\Store
+ * @see Store
  *
- * @property \Illuminate\Session\Store $illuminateSession related Laravel session instance.
+ * @property Store $illuminateSession related Laravel session instance.
  *
  * @author Paul Klimov <klimov.paul@gmail.com>
  *

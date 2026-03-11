@@ -92,7 +92,7 @@ final class CpScreenResponse implements Responsable
     /**
      * @var Site|null The site that should be displayed within the breadcrumbs.
      *
-     * @see site()
+     * @see Site()
      */
     public ?Site $site = null;
 

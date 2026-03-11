@@ -26,7 +26,7 @@ use Twig\Markup;
  *
  * @method TElement one(callable|null $callback, mixed $default)
  */
-final class ElementCollection extends Collection
+class ElementCollection extends Collection
 {
     /**
      * Finds an element in the collection.
@@ -166,14 +166,24 @@ final class ElementCollection extends Collection
      * @template TMapValue
      *
      * @param  callable(TElement,TKey):TMapValue  $callback
-     * @return Collection<TKey,TMapValue>|self<TKey,TMapValue>
+     * @return Collection<TKey,TMapValue>|self<TKey,TMapValue&ElementInterface>
      */
     #[Override]
     public function map(callable $callback): Collection|self
     {
-        $result = parent::map($callback);
+        /** @var Collection<TKey,TMapValue> $result */
+        $result = $this->toBase()->map($callback);
+        $elements = [];
 
-        return $result->contains(fn ($item) => ! $item instanceof ElementInterface) ? $result->toBase() : $result;
+        foreach ($result as $key => $item) {
+            if (! $item instanceof ElementInterface) {
+                return $result;
+            }
+
+            $elements[$key] = $item;
+        }
+
+        return self::makeElementCollection($elements);
     }
 
     /**
@@ -185,14 +195,24 @@ final class ElementCollection extends Collection
      * @template TMapWithKeysValue
      *
      * @param  callable(TElement,TKey):array<TMapWithKeysKey,TMapWithKeysValue>  $callback
-     * @return Collection<TMapWithKeysKey,TMapWithKeysValue>|self<TMapWithKeysKey,TMapWithKeysValue>
+     * @return Collection<TMapWithKeysKey,TMapWithKeysValue>|self<TMapWithKeysKey,TMapWithKeysValue&ElementInterface>
      */
     #[Override]
     public function mapWithKeys(callable $callback): self|Collection
     {
-        $result = parent::mapWithKeys($callback);
+        /** @var Collection<TMapWithKeysKey,TMapWithKeysValue> $result */
+        $result = $this->toBase()->mapWithKeys($callback);
+        $elements = [];
 
-        return $result->contains(fn ($item) => ! $item instanceof ElementInterface) ? $result->toBase() : $result;
+        foreach ($result as $key => $item) {
+            if (! $item instanceof ElementInterface) {
+                return $result;
+            }
+
+            $elements[$key] = $item;
+        }
+
+        return self::makeElementCollection($elements);
     }
 
     /**
@@ -369,12 +389,19 @@ final class ElementCollection extends Collection
     // The following methods are intercepted to always return base collections.
     // -------------------------------------------------------------------------
 
+    /**
+     * @param  (callable(TElement,TKey):(array-key|\UnitEnum))|string|null  $countBy
+     * @return Collection<array-key,int>
+     */
     #[Override]
     public function countBy($countBy = null): Collection
     {
         return $this->toBase()->countBy($countBy);
     }
 
+    /**
+     * @return Collection<int,mixed>
+     */
     #[Override]
     public function collapse(): Collection
     {
@@ -383,6 +410,7 @@ final class ElementCollection extends Collection
 
     /**
      * @param  int|float  $depth
+     * @return Collection<int,mixed>
      */
     #[Override]
     public function flatten($depth = INF): Collection
@@ -399,12 +427,22 @@ final class ElementCollection extends Collection
         throw new RuntimeException('Not possible to flip element collections.');
     }
 
+    /**
+     * @return Collection<int,TKey>
+     */
     #[Override]
     public function keys(): Collection
     {
         return $this->toBase()->keys();
     }
 
+    /**
+     * @template TPadValue
+     *
+     * @param  int  $size
+     * @param  TPadValue  $value
+     * @return Collection<int,TElement|TPadValue>
+     */
     #[Override]
     public function pad($size, $value): Collection
     {
@@ -427,9 +465,27 @@ final class ElementCollection extends Collection
         return $this->toBase()->pluck($value, $key);
     }
 
+    /**
+     * @template TZipValue
+     *
+     * @param  Arrayable<array-key,TZipValue>|iterable<array-key,TZipValue>  ...$items
+     * @return Collection<int,Collection<int,mixed>>
+     */
     #[Override]
     public function zip($items): Collection
     {
         return $this->toBase()->zip(...func_get_args());
+    }
+
+    /**
+     * @template TCollectionKey of array-key
+     * @template TCollectionElement of ElementInterface
+     *
+     * @param  array<TCollectionKey,TCollectionElement>  $collection
+     * @return self<TCollectionKey,TCollectionElement>
+     */
+    private static function makeElementCollection(array $collection): self
+    {
+        return new self($collection);
     }
 }

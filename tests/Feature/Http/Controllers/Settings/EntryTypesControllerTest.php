@@ -93,7 +93,7 @@ it('can save an entry type', function () {
         ->assertRedirectBack();
 
     expect(EntryType::count())->toBe(2);
-    /** @var \CraftCms\Cms\Entry\Data\EntryType $entryType */
+    /** @var CraftCms\Cms\Entry\Data\EntryType $entryType */
     $entryType = $this->entryTypes->getEntryTypeByHandle('a_new_entry_type');
     expect($entryType->name)->toBe('A new entry type');
     expect($entryType->handle)->toBe('a_new_entry_type');

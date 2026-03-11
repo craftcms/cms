@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Concerns\HasRoutesAndUrls;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
 /**
@@ -14,7 +15,7 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  * Set `$handled` to `true` to explicitly tell the element that a route has been set
  * (even if you're setting it to `null`).
  *
- * {@see \CraftCms\Cms\Element\Concerns\HasRoutesAndUrls::getRoute()}
+ * {@see HasRoutesAndUrls::getRoute()}
  */
 final class SetRoute
 {

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Element;
 
 /**
  * @event AfterSave The event that is triggered after the element is saved.
  *
- * {@see \CraftCms\Cms\Element\Element::afterSave()}
+ * {@see Element::afterSave()}
  */
 final class AfterSave
 {

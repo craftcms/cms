@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Section\Validation;
 use Closure;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -17,7 +18,7 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-/** @extends Ruleset<\CraftCms\Cms\Section\Data\Section> */
+/** @extends Ruleset<Section> */
 final class SectionRules extends Ruleset
 {
     #[Override]
