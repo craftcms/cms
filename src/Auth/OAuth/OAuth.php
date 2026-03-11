@@ -501,7 +501,12 @@ final class OAuth
     private function resolveStrategyClass(string $handle, mixed $class, string $interface): string
     {
         if (! is_string($class) || ! class_exists($class) || ! is_subclass_of($class, $interface)) {
-            throw new ProviderConfigurationException(sprintf('OAuth provider [%s] has an invalid strategy [%s].', $handle, $interface));
+            throw new ProviderConfigurationException(sprintf(
+                'OAuth provider [%s] has an invalid strategy class [%s]; expected implementation of [%s].',
+                $handle,
+                (string) $class,
+                $interface,
+            ));
         }
 
         return $class;
