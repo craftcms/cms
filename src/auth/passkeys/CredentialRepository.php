@@ -10,6 +10,7 @@ namespace craft\auth\passkeys;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use craft\records\WebAuthn;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\PublicKeyCredentialSource;
@@ -26,18 +27,28 @@ class CredentialRepository
     /**
      * Finds a webauthn record in the database for given id and returns the PublicKeyCredentialSource for its credential value.
      */
-    public function findOneByCredentialId(string $publicKeyCredentialId): ?PublicKeyCredentialSource
+    public function findOneByCredentialId(string $publicKeyCredentialId, bool $checkOldUserHandle = false): ?PublicKeyCredentialSource
     {
         $record = $this->_findByCredentialId($publicKeyCredentialId);
 
         if ($record) {
             $serializer = Craft::$app->getAuth()->webauthnServer()->getSerializer();
 
-            return $serializer->deserialize(
+            $publicKeyCredentialSource = $serializer->deserialize(
                 $record->credential,
                 PublicKeyCredentialSource::class,
                 'json',
             );
+
+            // if the record was created using webauthn v4 then the credential was run through Json::encode() before storing in the DB
+            // deserialising such value base64 decodes the userHandle too, and leads to user handle mismatch;
+            // so, if we failed to log user in based on the handle mismatch exception, we'll try again but using the encoded (old) handle
+            if ($checkOldUserHandle) {
+                $credential = Json::decodeIfJson($record->credential);
+                $publicKeyCredentialSource->userHandle = $credential['userHandle'];
+            }
+
+            return $publicKeyCredentialSource;
         }
 
         return null;

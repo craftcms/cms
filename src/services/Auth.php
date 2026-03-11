@@ -561,6 +561,7 @@ class Auth extends Component
         User $user,
         PublicKeyCredentialRequestOptions|array|string $requestOptions,
         string $response,
+        bool $checkOldUserHandle = false,
     ): bool {
         $serializer = $this->webauthnServer()->getSerializer();
 
@@ -583,7 +584,8 @@ class Auth extends Component
         }
 
         $publicKeyCredentialSource = $this->webauthnServer()->getCredentialRepository()->findOneByCredentialId(
-            $publicKeyCredential->rawId
+            $publicKeyCredential->rawId,
+            $checkOldUserHandle,
         );
 
         if ($publicKeyCredentialSource === null) {
@@ -592,18 +594,6 @@ class Auth extends Component
         }
 
         try {
-            // first check using the unencoded user handle (userEntity->id);
-            // this will work for passkeys created on webauthn v4
-            $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
-                $publicKeyCredentialSource,
-                $authenticatorAssertionResponse,
-                $publicKeyCredentialRequestOptions,
-                Craft::$app->getRequest()->getHostName(),
-                Base64UrlSafe::decode($userEntity->id),
-            );
-        } catch (InvalidUserHandleException) {
-            // now check using the raw/encoded user handle (userEntity->id);
-            // this will work for passkeys created on webauthn v5
             $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $publicKeyCredentialSource,
                 $authenticatorAssertionResponse,
@@ -611,6 +601,8 @@ class Auth extends Component
                 Craft::$app->getRequest()->getHostName(),
                 $userEntity->id,
             );
+        } catch (InvalidUserHandleException $e) {
+            throw $e;
         } catch (Throwable $e) {
             Craft::warning('Authenticator Assertion Response Validation failed: ' . $e->getMessage());
             return false;
