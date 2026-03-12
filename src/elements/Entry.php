@@ -2301,6 +2301,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $actions = parent::safeActionMenuItems();
 
         if (
+            Craft::$app->controller instanceof ElementsController &&
+            Craft::$app->controller->element === $this &&
             Craft::$app->getUser()->getIsAdmin() &&
             Craft::$app->getConfig()->getGeneral()->allowAdminChanges
         ) {
@@ -2355,11 +2357,7 @@ JS, [
             }
 
             // Field settings
-            if (
-                !empty($this->fieldId) &&
-                Craft::$app->controller instanceof ElementsController &&
-                Craft::$app->controller->element === $this
-            ) {
+            if (!empty($this->fieldId)) {
                 $fieldEditId = sprintf('edit-field-%s', mt_rand());
                 $actions[] = [
                     'id' => $fieldEditId,
