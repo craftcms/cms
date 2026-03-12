@@ -24,7 +24,6 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Traits\Macroable;
 use Override;
 use RuntimeException;
 use yii\base\InvalidConfigException;
@@ -41,7 +40,6 @@ use function CraftCms\Cms\t;
 class Volume extends Component implements CpEditable, FieldLayoutProviderInterface
 {
     use HasFieldLayout;
-    use Macroable;
 
     public const string STORAGE_FS_PREFIX = 'fs:';
 

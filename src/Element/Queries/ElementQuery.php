@@ -788,7 +788,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Checks if a macro is registered.
      */
-    public function hasMacro(string $name): bool
+    public function hasLocalMacro(string $name): bool
     {
         return isset($this->localMacros[$name]);
     }
@@ -876,7 +876,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this;
         }
 
-        if ($this->hasMacro($method)) {
+        if ($this->hasLocalMacro($method)) {
             array_unshift($parameters, $this);
 
             return $this->localMacros[$method](...$parameters);

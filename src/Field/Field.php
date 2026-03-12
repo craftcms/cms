@@ -53,7 +53,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Override;
@@ -67,7 +66,6 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 {
     use ConfigurableComponent;
     use HasComponentEvents;
-    use Macroable;
     use SavableComponent;
 
     // Translation methods

@@ -10,5 +10,5 @@ namespace craft\models;
  */
 class Site extends \CraftCms\Cms\Site\Data\Site
 {
-    public const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+    public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 }

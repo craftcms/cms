@@ -6,12 +6,9 @@ namespace CraftCms\Cms\Filesystem\Data;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Traits\Macroable;
 
 final class FsListing extends Component
 {
-    use Macroable;
-
     public string $dirname {
         get => $this->_dirname;
         set(string $value) {

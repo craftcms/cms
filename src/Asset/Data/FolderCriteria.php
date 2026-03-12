@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Data;
 
 use CraftCms\Cms\Component\Component;
-use Illuminate\Support\Traits\Macroable;
 use Override;
 
 final class FolderCriteria extends Component
 {
-    use Macroable;
-
     public mixed $id = null;
 
     public mixed $parentId = null;

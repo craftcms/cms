@@ -18,6 +18,7 @@ use Yiisoft\Arrays\ArrayableTrait;
 abstract class Component implements Arrayable, ArrayableInterface, ComponentInterface, Validatable
 {
     use ArrayableTrait;
+    use Macroable;
     use Validates;
 
     public function __construct(array|object $config = [])

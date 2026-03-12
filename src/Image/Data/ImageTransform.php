@@ -8,7 +8,6 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\ImageTransformer;
 use DateTime;
-use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
 use Override;
 
@@ -16,8 +15,6 @@ use function CraftCms\Cms\t;
 
 class ImageTransform extends Component
 {
-    use Macroable;
-
     public const string DEFAULT_TRANSFORMER = ImageTransformer::class;
 
     private const array POSITIONS = [
