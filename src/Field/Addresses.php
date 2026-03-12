@@ -51,7 +51,7 @@ use function CraftCms\Cms\template;
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
-final class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
+class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
 {
     public const string VIEW_MODE_CARDS = 'cards';
 

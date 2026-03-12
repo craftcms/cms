@@ -38,7 +38,7 @@ use function CraftCms\Cms\template;
  * @property-read null $elementConditionRuleType
  * @property-read mixed $contentGqlType
  */
-final class Money extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Money extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string

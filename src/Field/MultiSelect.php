@@ -15,7 +15,7 @@ use function CraftCms\Cms\t;
 /**
  * MultiSelect represents a Multi-select field.
  */
-final class MultiSelect extends BaseOptionsField
+class MultiSelect extends BaseOptionsField
 {
     #[\Override]
     protected static bool $multi = true;

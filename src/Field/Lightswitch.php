@@ -27,7 +27,7 @@ use function CraftCms\Cms\template;
 /**
  * Lightswitch represents a Lightswitch field.
  */
-final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string

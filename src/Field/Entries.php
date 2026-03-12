@@ -30,7 +30,7 @@ use function CraftCms\Cms\t;
 /**
  * Entries represents an Entries field.
  */
-final class Entries extends BaseRelationField
+class Entries extends BaseRelationField
 {
     /**
      * @var bool Whether to show input sources for sections the user doesn’t have permission to view

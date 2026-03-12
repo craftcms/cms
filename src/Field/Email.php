@@ -23,7 +23,7 @@ use function CraftCms\Cms\template;
 /**
  * Email represents an Email field.
  */
-final class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string

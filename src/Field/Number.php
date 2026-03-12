@@ -37,7 +37,7 @@ use function CraftCms\Cms\template;
 /**
  * Number represents a Number field.
  */
-final class Number extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Number extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     public const string FORMAT_DECIMAL = 'decimal';
 

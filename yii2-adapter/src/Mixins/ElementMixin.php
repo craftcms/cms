@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Support\Facades\Deprecator;
 
 final class ElementMixin
@@ -15,7 +16,8 @@ final class ElementMixin
             Deprecator::log(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
 
             /**
-             * @var \CraftCms\Cms\Element\Element $this
+             * @var Element $this
+             *
              * @phpstan-ignore-next-line
              */
             return $this->getCanonicalId();
@@ -28,7 +30,8 @@ final class ElementMixin
             Deprecator::log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
 
             /**
-             * @var \CraftCms\Cms\Element\Element $this
+             * @var Element $this
+             *
              * @phpstan-ignore-next-line
              */
             return $this->getCanonicalUid();

@@ -1,21 +1,49 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\fields;
 
-/** @phpstan-ignore-next-line **/
-if (false) {
+use craft\base\Event as YiiEvent;
+use craft\events\DefineEntryTypesForFieldEvent;
+use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
+use Illuminate\Support\Facades\Event;
+
+/**
+ * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Matrix} instead.
+ */
+class Matrix extends \CraftCms\Cms\Field\Matrix
+{
     /**
-     * @since 3.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Matrix} instead.
+     * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
+     *
+     * @since 5.0.0
      */
-    class Matrix
+    public const string EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
+
+    public static function registerEvents(): void
     {
+        Event::listen(\CraftCms\Cms\Field\Matrix::componentEventName(\CraftCms\Cms\Field\Matrix::EVENT_DEFINE_ENTRY_TYPES), function(DefineEntryTypesForField $event) {
+            if (!YiiEvent::hasHandlers(self::class, self::EVENT_DEFINE_ENTRY_TYPES)) {
+                return;
+            }
+
+            $yiiEvent = new DefineEntryTypesForFieldEvent([
+                'entryTypes' => $event->entryTypes,
+                'element' => $event->element,
+                'value' => $event->value,
+                'sender' => $event->field,
+            ]);
+
+            YiiEvent::trigger(self::class, self::EVENT_DEFINE_ENTRY_TYPES, $yiiEvent);
+
+            $event->entryTypes = $yiiEvent->entryTypes;
+        });
     }
 }
-
-class_alias(\CraftCms\Cms\Field\Matrix::class, Matrix::class);

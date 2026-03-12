@@ -21,7 +21,7 @@ use function CraftCms\Cms\t;
 /**
  * Country represents a Country field.
  */
-final class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string

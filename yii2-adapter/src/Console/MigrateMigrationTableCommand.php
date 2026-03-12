@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Schema;
 
 final class MigrateMigrationTableCommand extends Command
 {
-    use CraftCommand;
     use ConfirmableTrait;
+    use CraftCommand;
 
     protected $signature = 'craft:migrate:migration-table
         {--force : Force the operation to run when in production or when allowAdminChanges is disabled.}
