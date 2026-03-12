@@ -55,16 +55,16 @@ final class OAuth
     /** @var Collection<string, ProviderDefinition>|null */
     private ?Collection $providerDefinitions = null;
 
-    private readonly SocialiteFactory $socialite;
+    private readonly ?SocialiteFactory $socialite;
 
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly ProjectConfig $projectConfig,
         private readonly UserGroups $userGroups,
     ) {
-        if (self::isAvailable()) {
-            $this->socialite = app(SocialiteFactory::class);
-        }
+        $this->socialite = self::isAvailable()
+            ? app(SocialiteFactory::class)
+            : null;
     }
 
     public static function isAvailable(): bool
