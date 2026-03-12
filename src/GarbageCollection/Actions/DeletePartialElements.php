@@ -14,7 +14,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 /**
  * Deletes elements that are missing data in the given element extension table.
  */
-final class DeletePartialElements extends GarbageCollectionAction
+class DeletePartialElements extends GarbageCollectionAction
 {
     public function __construct(
         GarbageCollection $garbageCollection,

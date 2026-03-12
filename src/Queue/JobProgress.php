@@ -19,7 +19,7 @@ use RuntimeException;
  * Service for tracking job progress and status.
  */
 #[Singleton]
-final readonly class JobProgress
+readonly class JobProgress
 {
     public function queued(string $uid, string $description, ?int $delay = null): void
     {

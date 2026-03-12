@@ -32,7 +32,7 @@ use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final readonly class CraftSupportController
+readonly class CraftSupportController
 {
     public function __construct(
         private Composer $composer,

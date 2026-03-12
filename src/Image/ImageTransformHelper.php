@@ -27,7 +27,7 @@ use InvalidArgumentException;
 
 use function CraftCms\Cms\t;
 
-final class ImageTransformHelper
+class ImageTransformHelper
 {
     /**
      * @var string The pattern to use for matching against a transform string.

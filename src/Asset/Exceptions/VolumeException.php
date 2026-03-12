@@ -6,4 +6,4 @@ namespace CraftCms\Cms\Asset\Exceptions;
 
 use RuntimeException;
 
-final class VolumeException extends RuntimeException {}
+class VolumeException extends RuntimeException {}

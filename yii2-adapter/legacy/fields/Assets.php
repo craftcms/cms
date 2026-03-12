@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Event;
  */
 class Assets extends \CraftCms\Cms\Field\Assets
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * @event LocateUploadedFilesEvent The event that is triggered when identifying any uploaded files that
      * should be stored as assets and related by the field.

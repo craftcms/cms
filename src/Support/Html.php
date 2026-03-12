@@ -36,7 +36,7 @@ use function CraftCms\Cms\template;
 /**
  * @mixin YiiHtml
  */
-final class Html
+class Html
 {
     public const string TITLE_TAG_RE = '/<title(\s+([\s\S]*?))?>.*?<\/title>\s*/is';
 

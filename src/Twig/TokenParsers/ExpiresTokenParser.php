@@ -9,7 +9,7 @@ use CraftCms\Cms\Twig\Nodes\ExpiresNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-final class ExpiresTokenParser extends AbstractTokenParser
+class ExpiresTokenParser extends AbstractTokenParser
 {
     public function parse(Token $token): ExpiresNode
     {

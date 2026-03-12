@@ -11,7 +11,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 
-final readonly class HandleTokenRequest
+readonly class HandleTokenRequest
 {
     public const string TOKEN_KEY = 'craft.token';
 

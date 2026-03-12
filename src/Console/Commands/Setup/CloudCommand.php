@@ -8,7 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Support\Composer;
 use Illuminate\Console\Command;
 
-final class CloudCommand extends Command
+class CloudCommand extends Command
 {
     use CraftCommand;
 

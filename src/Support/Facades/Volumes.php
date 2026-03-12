@@ -28,7 +28,7 @@ use Override;
  *
  * @see \CraftCms\Cms\Asset\Volumes
  */
-final class Volumes extends Facade
+class Volumes extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

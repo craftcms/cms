@@ -30,7 +30,7 @@ use Stringable;
 use function CraftCms\Cms\t;
 
 #[Ruleset(SectionRules::class)]
-final class Section extends Component implements Chippable, CpEditable, Iconic, Stringable
+class Section extends Component implements Chippable, CpEditable, Iconic, Stringable
 {
     /**
      * @see getPage()
@@ -96,7 +96,7 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
         ];
     }
 
-    public static function get(int|string $id): ?static
+    public static function get(int|string $id): ?self
     {
         return Sections::getSectionById($id);
     }

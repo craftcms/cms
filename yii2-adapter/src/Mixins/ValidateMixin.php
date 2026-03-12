@@ -15,7 +15,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 
-final readonly class ValidateMixin
+readonly class ValidateMixin
 {
     public function hasErrors(): Closure
     {

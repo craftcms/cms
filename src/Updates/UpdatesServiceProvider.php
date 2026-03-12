@@ -12,7 +12,7 @@ use Illuminate\Support\ServiceProvider;
 /**
  * @internal
  */
-final class UpdatesServiceProvider extends ServiceProvider
+class UpdatesServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {

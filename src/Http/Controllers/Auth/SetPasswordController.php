@@ -22,7 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class SetPasswordController extends AuthenticationController
+readonly class SetPasswordController extends AuthenticationController
 {
     public function show(Request $request, Auth $auth): Response|View
     {

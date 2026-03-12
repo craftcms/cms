@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Event;
  */
 class Link extends \CraftCms\Cms\Field\Link
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering the link types for Link fields.
      *

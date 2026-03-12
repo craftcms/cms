@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 #[Singleton]
-final class SiteGroups
+class SiteGroups
 {
     /**
      * @var MemoizableArray<SiteGroup>|null

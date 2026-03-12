@@ -6,6 +6,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\LegacyEventConstants;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
 use craft\gql\arguments\elements\Category as CategoryArguments;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Support\Facades\Structures;
 use GraphQL\Type\Definition\Type;
 
+use Override;
 use function CraftCms\Cms\t;
 
 /**
@@ -28,12 +30,14 @@ use function CraftCms\Cms\t;
  *
  * @deprecated in 6.0.0
  */
-final class Categories extends \CraftCms\Cms\Field\BaseRelationField
+class Categories extends \CraftCms\Cms\Field\BaseRelationField
 {
+    use LegacyEventConstants;
+
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return t('Categories');
@@ -42,7 +46,7 @@ final class Categories extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function icon(): string
     {
         return 'sitemap';
@@ -59,7 +63,7 @@ final class Categories extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected static function canShowSiteMenu(): bool
     {
         return false;
@@ -68,7 +72,7 @@ final class Categories extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function defaultSelectionLabel(): string
     {
         return t('Add a category', category: 'yii2-adapter');
@@ -77,7 +81,7 @@ final class Categories extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public static function phpType(): string
     {
         return sprintf('\\%s|\\%s<\\%s>', CategoryQuery::class, ElementCollection::class, Category::class);
@@ -107,7 +111,7 @@ final class Categories extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if (is_array($value) && $this->maintainHierarchy) {
@@ -135,7 +139,7 @@ final class Categories extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         // Make sure the field is set to a valid category group
@@ -153,7 +157,7 @@ final class Categories extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function includeInGqlSchema(GqlSchema $schema): bool
     {
         return Gql::canQueryCategories($schema);
@@ -162,7 +166,7 @@ final class Categories extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getContentGqlType(): array
     {
         return [
@@ -177,7 +181,7 @@ final class Categories extends \CraftCms\Cms\Field\BaseRelationField
     /**
      * {@inheritdoc}
      */
-    #[\Override]
+    #[Override]
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();

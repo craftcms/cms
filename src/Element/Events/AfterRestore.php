@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Element;
  *
  * {@see Element::afterRestore()}
  */
-final class AfterRestore
+class AfterRestore
 {
     public function __construct(
         public ElementInterface $element,

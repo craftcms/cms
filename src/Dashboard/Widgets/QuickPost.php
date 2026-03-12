@@ -20,7 +20,7 @@ use Override;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class QuickPost extends Widget
+class QuickPost extends Widget
 {
     #[Override]
     public static function displayName(): string

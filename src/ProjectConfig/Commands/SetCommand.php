@@ -27,7 +27,7 @@ use Symfony\Component\Yaml\Yaml;
  *
  * Values are updated in the database *and* in your local YAML files, but the root `dateModified` project config property is only touched when using the [`--update-timestamp` flag](#project-config-set-options). If you do not update the timestamp along with the value, the change may not be detected or applied in other environments!
  */
-final class SetCommand extends Command implements PromptsForMissingInput
+class SetCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 

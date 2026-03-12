@@ -14,7 +14,7 @@ use CraftCms\Cms\Support\Json;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 
-final readonly class EnforceLicenses
+readonly class EnforceLicenses
 {
     public function __construct(
         private License $license,

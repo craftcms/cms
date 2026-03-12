@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 /**
  * @event FolderCreated The event that is triggered after a folder is created.
  */
-final class FolderCreated
+class FolderCreated
 {
     public function __construct(
         public VolumeFolder $folder,

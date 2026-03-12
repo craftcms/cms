@@ -15,7 +15,7 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
-final class TimeRule implements DataAwareRule, ValidationRule
+class TimeRule implements DataAwareRule, ValidationRule
 {
     /**
      * All of the data under validation.

@@ -1,12 +1,15 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
 
+use craft\base\ElementEventConstants;
 use craft\base\Event as YiiEvent;
 use craft\events\AssetEvent;
 use craft\events\DefineAssetUrlEvent;
@@ -24,6 +27,8 @@ use Illuminate\Support\Facades\Event;
  */
 class Asset extends \CraftCms\Cms\Asset\Elements\Asset
 {
+    use ElementEventConstants;
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -41,20 +46,6 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
      * @event GenerateTransformEvent The event that is triggered after a transform is generated for an asset.
      */
     public const string EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
-
-    /**
-     * @event DefineAssetUrlEvent The event that is triggered before defining the asset’s URL.
-     *
-     * @see getUrl()
-     */
-    public const string EVENT_BEFORE_DEFINE_URL = 'beforeDefineUrl';
-
-    /**
-     * @event DefineAssetUrlEvent The event that is triggered when defining the asset’s URL.
-     *
-     * @see getUrl()
-     */
-    public const string EVENT_DEFINE_URL = 'defineUrl';
 
     public static function registerEvents(): void
     {

@@ -13,7 +13,7 @@ use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\Schema;
 
-final class DropCategoriesSupportCommand extends Command
+class DropCategoriesSupportCommand extends Command
 {
     use ConfirmableTrait;
     use CraftCommand;

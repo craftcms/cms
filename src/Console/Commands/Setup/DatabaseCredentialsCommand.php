@@ -19,7 +19,7 @@ use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
-final class DatabaseCredentialsCommand extends Command
+class DatabaseCredentialsCommand extends Command
 {
     use CraftCommand;
 

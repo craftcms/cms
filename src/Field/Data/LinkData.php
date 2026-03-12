@@ -16,7 +16,7 @@ use Stringable;
 use Twig\Markup;
 
 #[AllowedInSandbox]
-final class LinkData implements Serializable, Stringable
+class LinkData implements Serializable, Stringable
 {
     /** @var string|null The link’s URL suffix value. */
     public ?string $urlSuffix = null;

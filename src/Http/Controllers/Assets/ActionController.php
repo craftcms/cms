@@ -25,7 +25,7 @@ use ZipArchive;
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
 
-final readonly class ActionController
+readonly class ActionController
 {
     use EnforcesVolumePermissions;
     use RespondsWithFlash;

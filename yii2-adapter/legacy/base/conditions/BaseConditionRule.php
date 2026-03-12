@@ -18,4 +18,5 @@ use craft\helpers\Html;
  */
 abstract class BaseConditionRule extends \CraftCms\Cms\Condition\BaseConditionRule
 {
+    use \craft\base\LegacyEventConstants;
 }

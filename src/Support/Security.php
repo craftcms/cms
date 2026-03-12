@@ -10,7 +10,7 @@ use Illuminate\Container\Attributes\Singleton;
 use SensitiveParameter;
 
 #[Singleton]
-final class Security
+class Security
 {
     public function __construct(
         /**

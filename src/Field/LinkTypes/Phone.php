@@ -11,7 +11,7 @@ use function CraftCms\Cms\t;
 /**
  * Phone number link type.
  */
-final class Phone extends BaseTextLinkType
+class Phone extends BaseTextLinkType
 {
     public static function id(): string
     {

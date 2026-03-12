@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
  *
  * @see Fields::getCompatibleFieldTypes()
  */
-final class DefineCompatibleFieldTypes
+class DefineCompatibleFieldTypes
 {
     public function __construct(
         public FieldInterface $field,

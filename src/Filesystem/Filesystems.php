@@ -27,7 +27,7 @@ use Throwable;
 use yii\base\InvalidConfigException;
 
 #[Singleton]
-final class Filesystems
+class Filesystems
 {
     public const string DISK_PREFIX = 'craft-fs-';
 

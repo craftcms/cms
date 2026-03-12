@@ -13,7 +13,7 @@ use CraftCms\Cms\Image\Data\ImageTransform;
  *
  * @see getUrl()
  */
-final class BeforeDefineAssetUrl extends BeforeDefineUrl
+class BeforeDefineAssetUrl extends BeforeDefineUrl
 {
     public function __construct(
         public Asset $asset,

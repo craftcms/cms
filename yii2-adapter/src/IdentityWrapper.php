@@ -17,7 +17,7 @@ use yii\web\IdentityInterface;
 /**
  * @mixin User
  */
-final class IdentityWrapper implements IdentityInterface
+class IdentityWrapper implements IdentityInterface
 {
     use ForwardsCalls;
 

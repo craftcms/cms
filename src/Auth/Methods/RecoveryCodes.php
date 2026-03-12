@@ -16,7 +16,7 @@ use PragmaRX\Recovery\Recovery;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class RecoveryCodes extends BaseAuthMethod
+class RecoveryCodes extends BaseAuthMethod
 {
     public static function displayName(): string
     {

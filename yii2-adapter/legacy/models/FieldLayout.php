@@ -30,6 +30,8 @@ use Illuminate\Support\Facades\Event;
  */
 class FieldLayout extends \CraftCms\Cms\FieldLayout\FieldLayout
 {
+    use \craft\base\LegacyEventConstants;
+
     public const EVENT_DEFINE_CUSTOM_FIELDS = 'defineCustomFields';
 
     public const EVENT_DEFINE_NATIVE_FIELDS = 'defineNativeFields';

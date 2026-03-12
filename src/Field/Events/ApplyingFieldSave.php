@@ -9,7 +9,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 /**
  * @event ApplyingFieldSave The event that is triggered before a field save is applied to the database.
  */
-final class ApplyingFieldSave
+class ApplyingFieldSave
 {
     public function __construct(
         /**

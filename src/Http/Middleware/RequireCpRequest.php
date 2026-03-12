@@ -8,7 +8,7 @@ use Closure;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 
-final readonly class RequireCpRequest
+readonly class RequireCpRequest
 {
     public function handle(Request $request, Closure $next): mixed
     {

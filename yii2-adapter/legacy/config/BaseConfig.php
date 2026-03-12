@@ -19,6 +19,8 @@ use CraftCms\Cms\Support\Facades\Deprecator;
  */
 class BaseConfig extends Model
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * @var array Settings that have been renamed
      */

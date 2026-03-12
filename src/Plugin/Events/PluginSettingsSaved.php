@@ -7,4 +7,4 @@ namespace CraftCms\Cms\Plugin\Events;
 /**
  * @event PluginSettingsSaved The event that is triggered after a plugin’s settings are saved
  */
-final class PluginSettingsSaved extends PluginEvent {}
+class PluginSettingsSaved extends PluginEvent {}

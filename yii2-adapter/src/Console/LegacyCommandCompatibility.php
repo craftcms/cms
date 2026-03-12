@@ -8,7 +8,7 @@ use craft\console\controllers\HelpController;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Application;
 
-final readonly class LegacyCommandCompatibility
+readonly class LegacyCommandCompatibility
 {
     public function boot()
     {

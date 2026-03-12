@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Element;
  *
  * {@see Element::afterSave()}
  */
-final class AfterSave
+class AfterSave
 {
     public function __construct(
         public ElementInterface $element,

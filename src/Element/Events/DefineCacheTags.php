@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Element;
  *
  * {@see Element::getCacheTags()}
  */
-final class DefineCacheTags
+class DefineCacheTags
 {
     public function __construct(
         public ElementInterface $element,

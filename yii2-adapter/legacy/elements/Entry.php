@@ -1,12 +1,15 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
 namespace craft\elements;
 
+use craft\base\ElementEventConstants;
 use craft\base\Event as YiiEvent;
 use craft\events\DefineEntryTypesEvent;
 use craft\events\ElementCriteriaEvent;
@@ -21,6 +24,8 @@ use Illuminate\Support\Facades\Event;
  */
 class Entry extends \CraftCms\Cms\Entry\Elements\Entry
 {
+    use ElementEventConstants;
+
     /**
      * @event DefineEntryTypesEvent The event that is triggered when defining the available entry types for the entry
      *

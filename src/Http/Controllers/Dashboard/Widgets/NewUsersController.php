@@ -17,7 +17,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\t;
 
-final readonly class NewUsersController
+readonly class NewUsersController
 {
     public function data(Request $request, I18N $i18N): JsonResponse
     {

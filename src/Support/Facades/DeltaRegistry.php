@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\View\DeltaRegistry
  */
-final class DeltaRegistry extends Facade
+class DeltaRegistry extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

@@ -71,7 +71,7 @@ use yii\web\ServerErrorHttpException;
 use function Illuminate\Filesystem\join_paths;
 
 #[Singleton]
-final class ProjectConfig
+class ProjectConfig
 {
     /**
      * The cache key that is used to store the modified time of the project config files, at the time they were last applied.

@@ -37,7 +37,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Lottery;
 
-final class GarbageCollection
+class GarbageCollection
 {
     /**
      * @var int The number of items that should be deleted in a single batch.

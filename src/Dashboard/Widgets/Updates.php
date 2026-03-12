@@ -14,7 +14,7 @@ use Override;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class Updates extends Widget
+class Updates extends Widget
 {
     public function __construct(
         private readonly UpdatesService $updates,

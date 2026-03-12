@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Updates\Events;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 use CraftCms\Cms\Updates\Data\Update;
 
-final class CriticalUpdateReleased
+class CriticalUpdateReleased
 {
     use ValidatableEvent;
 

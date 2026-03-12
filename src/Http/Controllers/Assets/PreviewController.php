@@ -18,7 +18,7 @@ use yii\base\NotSupportedException;
 
 use function CraftCms\Cms\t;
 
-final readonly class PreviewController
+readonly class PreviewController
 {
     use EnforcesVolumePermissions;
     use RespondsWithFlash;

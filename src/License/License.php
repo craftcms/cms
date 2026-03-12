@@ -30,7 +30,7 @@ use function CraftCms\Cms\t;
  * @internal
  */
 #[Singleton]
-final readonly class License
+readonly class License
 {
     public const string CACHE_KEY_LICENSE_INFO = 'licenseInfo';
 

@@ -17,7 +17,7 @@ use Override;
  *
  * @property Asset $component
  */
-final class AssetRules extends ElementRules
+class AssetRules extends ElementRules
 {
     #[Override]
     protected function defineRules(): array

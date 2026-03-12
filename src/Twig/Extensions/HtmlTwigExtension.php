@@ -23,7 +23,7 @@ use Twig\TwigFunction;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
-final class HtmlTwigExtension extends AbstractExtension
+class HtmlTwigExtension extends AbstractExtension
 {
     #[Override]
     public function getFilters(): array

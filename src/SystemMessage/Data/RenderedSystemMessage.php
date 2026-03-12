@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage\Data;
 
-final readonly class RenderedSystemMessage
+readonly class RenderedSystemMessage
 {
     public function __construct(
         public string $key,

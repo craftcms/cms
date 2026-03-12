@@ -9,7 +9,7 @@ use CraftCms\Cms\Site\Data\SiteGroup;
 /**
  * @event DeletedSiteGroup The event that is triggered after a site group is deleted.
  */
-final class DeletedSiteGroup
+class DeletedSiteGroup
 {
     public function __construct(
         public SiteGroup $siteGroup,

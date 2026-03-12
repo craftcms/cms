@@ -33,7 +33,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Volumes
+class Volumes
 {
     /** @var Collection<int, Volume>|null */
     private ?Collection $volumes = null;

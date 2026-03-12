@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage\Data;
 
-final readonly class FormattedSystemMessageMail
+readonly class FormattedSystemMessageMail
 {
     public function __construct(
         public bool $usesCustomTemplate,

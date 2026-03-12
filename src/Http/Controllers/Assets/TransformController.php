@@ -24,7 +24,7 @@ use Throwable;
 
 use function Illuminate\Filesystem\join_paths;
 
-final readonly class TransformController
+readonly class TransformController
 {
     use EnforcesPermissions;
     use RespondsWithFlash;

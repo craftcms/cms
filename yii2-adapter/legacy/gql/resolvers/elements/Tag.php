@@ -64,7 +64,6 @@ class Tag extends ElementResolver
             return $tagGroup->id ?? null;
         }, $pairs['taggroups']));
 
-        /** @phpstan-ignore-next-line */
         $query->andWhere(['in', 'tags.groupId', $tagGroupIds]);
 
         return $query;

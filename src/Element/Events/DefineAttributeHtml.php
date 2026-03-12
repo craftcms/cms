@@ -16,7 +16,7 @@ use Stringable;
  *
  * {@see HasControlPanelUI::getAttributeHtml()}
  */
-final class DefineAttributeHtml
+class DefineAttributeHtml
 {
     public function __construct(
         public ElementInterface $element,

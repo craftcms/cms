@@ -22,7 +22,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElement;
  *
  * @see FieldLayout::getAvailableUiElements()
  */
-final class DefineUIElements
+class DefineUIElements
 {
     public function __construct(
         public FieldLayout $fieldLayout,

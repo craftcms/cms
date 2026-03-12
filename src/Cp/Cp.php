@@ -8,7 +8,7 @@ use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
 use Illuminate\Support\Collection;
 
-final readonly class Cp
+readonly class Cp
 {
     /**
      * @TODO Could/should all this data just be handled in an inertia middleware?

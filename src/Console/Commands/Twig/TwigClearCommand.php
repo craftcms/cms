@@ -10,7 +10,7 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
-final class TwigClearCommand extends Command
+class TwigClearCommand extends Command
 {
     use CraftCommand;
 

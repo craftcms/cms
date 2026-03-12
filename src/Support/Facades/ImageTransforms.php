@@ -31,7 +31,7 @@ use Override;
  *
  * @see \CraftCms\Cms\Image\ImageTransforms
  */
-final class ImageTransforms extends Facade
+class ImageTransforms extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

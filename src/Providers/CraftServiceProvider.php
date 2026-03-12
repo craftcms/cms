@@ -28,7 +28,7 @@ use CraftCms\Cms\View\ViewServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
 use Override;
 
-final class CraftServiceProvider extends AggregateServiceProvider
+class CraftServiceProvider extends AggregateServiceProvider
 {
     #[Override]
     protected $providers = [

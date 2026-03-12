@@ -9,7 +9,7 @@ use CraftCms\Cms\Twig\Nodes\CacheNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-final class CacheTokenParser extends AbstractTokenParser
+class CacheTokenParser extends AbstractTokenParser
 {
     public function getTag(): string
     {

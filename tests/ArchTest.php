@@ -9,8 +9,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Env;
 use Illuminate\Support\Str;
 
-arch()
-    ->expect('cms')
+arch('No debug functions')
+    ->expect('src')
     ->not->toUse(['die', 'dd', 'dump', 'env']);
 
 arch('Don\'t use legacy logging')

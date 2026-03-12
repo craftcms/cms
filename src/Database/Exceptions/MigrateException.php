@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Database\Exceptions;
 use Exception;
 use Throwable;
 
-final class MigrateException extends Exception
+class MigrateException extends Exception
 {
     public function __construct(
         public string $ownerName,

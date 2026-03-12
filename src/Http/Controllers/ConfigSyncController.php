@@ -29,7 +29,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  */
-final class ConfigSyncController extends BaseUpdaterController
+class ConfigSyncController extends BaseUpdaterController
 {
     public const string ACTION_RETRY = 'retry';
 

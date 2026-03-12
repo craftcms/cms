@@ -29,7 +29,7 @@ use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
 
 #[Scoped]
-final class Passkeys
+class Passkeys
 {
     /**
      * @see webauthnServer()

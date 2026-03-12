@@ -11,7 +11,7 @@ use craft\base\ElementInterface;
  *
  * Set `elementType` and `map` to define a custom eager-loading map for the handle.
  */
-final class DefineEagerLoadingMap
+class DefineEagerLoadingMap
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class being queried

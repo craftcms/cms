@@ -8,7 +8,7 @@ use ArrayObject;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 
 #[AllowedInSandbox]
-final class MultiOptionsFieldData extends ArrayObject
+class MultiOptionsFieldData extends ArrayObject
 {
     /** @var OptionData[] */
     private array $_options = [];

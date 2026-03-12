@@ -26,7 +26,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\t;
 
-final readonly class MoveEntryToSectionController
+readonly class MoveEntryToSectionController
 {
     use EnforcesPermissions;
     use RespondsWithFlash;

@@ -11,7 +11,7 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-final class MigrateSessionsTableCommand extends Command
+class MigrateSessionsTableCommand extends Command
 {
     use ConfirmableTrait;
     use CraftCommand;

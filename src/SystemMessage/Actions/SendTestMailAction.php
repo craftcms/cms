@@ -9,7 +9,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities\MailSettings;
 use Illuminate\Support\Facades\Mail;
 
-final readonly class SendTestMailAction
+readonly class SendTestMailAction
 {
     public function __construct(
         private SystemMessages $systemMessages

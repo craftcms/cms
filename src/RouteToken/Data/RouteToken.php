@@ -9,7 +9,7 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Validation\Rule;
 
-final class RouteToken extends Component
+class RouteToken extends Component
 {
     /** @var class-string<ElementInterface> */
     public string $elementType;

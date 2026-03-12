@@ -9,7 +9,7 @@ use craft\base\ElementInterface;
 /**
  * RegisterExporters event is triggered when registering the available exporters for an element type.
  */
-final class RegisterExporters
+class RegisterExporters
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

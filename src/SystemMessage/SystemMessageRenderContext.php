@@ -9,7 +9,7 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
 
-final readonly class SystemMessageRenderContext
+readonly class SystemMessageRenderContext
 {
     public function __construct(
         private GeneralConfig $generalConfig,

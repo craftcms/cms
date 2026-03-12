@@ -14,7 +14,7 @@ use Twig\NodeVisitor\NodeVisitorInterface;
  * GetAttrAdjuster swaps [[GetAttrExpression]]
  * nodes with [[GetAttrNode]] nodes.
  */
-final class GetAttrAdjuster implements NodeVisitorInterface
+class GetAttrAdjuster implements NodeVisitorInterface
 {
     public function enterNode(Node $node, Environment $env): Node
     {

@@ -13,7 +13,7 @@ use CraftCms\Cms\User\Users;
  *
  * {@see Users::getDefaultUserGroups()}
  */
-final class DefineDefaultUserGroups
+class DefineDefaultUserGroups
 {
     public function __construct(
         public User $user,

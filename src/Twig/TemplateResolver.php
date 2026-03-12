@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
 use function Illuminate\Filesystem\join_paths;
 
 #[Scoped]
-final class TemplateResolver
+class TemplateResolver
 {
     /** @var string[] Resolved template path cache (request-scoped) */
     private array $templatePaths = [];

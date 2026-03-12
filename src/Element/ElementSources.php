@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
 
 #[Scoped]
-final class ElementSources
+class ElementSources
 {
     public const string TYPE_HEADING = 'heading';
 
@@ -221,7 +221,6 @@ final class ElementSources
 
                     try {
                         return Sites::getSiteByUid($siteId)->id;
-                        /** @phpstan-ignore catch.neverThrown */
                     } catch (SiteNotFoundException) {
                         return null;
                     }

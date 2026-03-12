@@ -17,7 +17,7 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use League\Flysystem\StorageAttributes;
 use Throwable;
 
-final class VolumeMixin
+class VolumeMixin
 {
     public function canGetProperty(): Closure
     {

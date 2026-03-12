@@ -14,7 +14,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
 
 /** @extends Ruleset<Site> */
-final class SiteRules extends Ruleset
+class SiteRules extends Ruleset
 {
     #[\Override]
     public function defineRules(): array

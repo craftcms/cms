@@ -11,7 +11,7 @@ use CraftCms\Cms\Support\Facades\Search;
 use InvalidArgumentException;
 use Override;
 
-final class UpdateSearchIndex extends Job
+class UpdateSearchIndex extends Job
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type.

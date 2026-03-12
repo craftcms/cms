@@ -26,7 +26,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class PasswordController
+readonly class PasswordController
 {
     use ConfirmsPasswords;
     use EditUserTrait;

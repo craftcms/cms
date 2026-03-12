@@ -29,7 +29,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class SectionsController
+readonly class SectionsController
 {
     use RespondsWithFlash;
 

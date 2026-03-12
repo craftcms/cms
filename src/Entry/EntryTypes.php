@@ -49,7 +49,7 @@ use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
 #[Singleton]
-final class EntryTypes
+class EntryTypes
 {
     /**
      * @var bool Whether entries should be resaved after an entry type has been updated.

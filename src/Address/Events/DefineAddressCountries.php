@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Address\Events;
 
-final class DefineAddressCountries
+class DefineAddressCountries
 {
     public function __construct(
         public string $locale,

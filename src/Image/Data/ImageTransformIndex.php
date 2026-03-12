@@ -7,12 +7,9 @@ namespace CraftCms\Cms\Image\Data;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use DateTime;
-use Illuminate\Support\Traits\Macroable;
 
 class ImageTransformIndex extends Component
 {
-    use Macroable;
-
     public ?int $id = null;
 
     public ?int $assetId = null;

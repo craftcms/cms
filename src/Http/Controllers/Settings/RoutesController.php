@@ -14,7 +14,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class RoutesController
+readonly class RoutesController
 {
     use RespondsWithFlash;
 

@@ -24,7 +24,7 @@ use Illuminate\Support\Collection;
  * });
  * ```
  */
-final class RegisterFieldTypes
+class RegisterFieldTypes
 {
     public function __construct(
         /** @var Collection<class-string<FieldInterface>> */

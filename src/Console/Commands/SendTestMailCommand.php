@@ -13,7 +13,7 @@ use Override;
 use function Laravel\Prompts\table;
 use function Laravel\Prompts\text;
 
-final class SendTestMailCommand extends Command
+class SendTestMailCommand extends Command
 {
     use CraftCommand;
 

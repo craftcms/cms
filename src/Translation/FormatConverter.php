@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Translation;
 
 use IntlDateFormatter;
 
-final class FormatConverter
+class FormatConverter
 {
     private static array $icuShortFormats = [
         'short' => 3, // IntlDateFormatter::SHORT,

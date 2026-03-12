@@ -12,7 +12,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 /**
  * Find all temp upload folders with no assets in them and remove them.
  */
-final class RemoveEmptyTempFolders extends GarbageCollectionAction
+class RemoveEmptyTempFolders extends GarbageCollectionAction
 {
     public function __invoke(): void
     {

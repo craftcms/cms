@@ -22,7 +22,7 @@ use InvalidArgumentException;
 use function request;
 
 #[Scoped]
-final class TemplateCaches
+class TemplateCaches
 {
     private ?bool $enabled = null;
 

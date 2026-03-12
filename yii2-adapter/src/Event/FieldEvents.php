@@ -9,7 +9,7 @@ use craft\events\ElementCriteriaEvent;
 use CraftCms\Cms\Element\Events\DefineElementCriteria;
 use CraftCms\Cms\Field\BaseRelationField;
 
-final readonly class FieldEvents
+readonly class FieldEvents
 {
     public static function registerEvents(): void
     {

@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Event;
  */
 class Matrix extends \CraftCms\Cms\Field\Matrix
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
      *

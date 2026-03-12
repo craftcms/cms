@@ -76,7 +76,7 @@ use PDOException;
 
 use function CraftCms\Cms\t;
 
-final class DeprecatedConcepts
+class DeprecatedConcepts
 {
     private static ?bool $supportsCategories = null;
 

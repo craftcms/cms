@@ -25,7 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * @internal
  */
-final readonly class PluginStoreController
+readonly class PluginStoreController
 {
     public function __construct(
         #[Give('Craft')] private Application $craft,

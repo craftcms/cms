@@ -19,7 +19,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\t;
 
-final class SingleSectionUriRule implements DataAwareRule, ValidationRule
+class SingleSectionUriRule implements DataAwareRule, ValidationRule
 {
     /**
      * All of the data under validation.

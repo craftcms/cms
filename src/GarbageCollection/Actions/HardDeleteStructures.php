@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\Alias;
 
-final class HardDeleteStructures extends GarbageCollectionAction
+class HardDeleteStructures extends GarbageCollectionAction
 {
     public function __invoke(): void
     {

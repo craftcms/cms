@@ -21,7 +21,7 @@ use function Illuminate\Filesystem\join_paths;
  * @internal
  */
 #[Singleton]
-final class Composer
+class Composer
 {
     public function __construct(
         public string $composerRepoUrl = 'https://composer.craftcms.com',

@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Structure;
 use CraftCms\Cms\Structure\Commands\RepairSectionStructureCommand;
 use Illuminate\Support\ServiceProvider;
 
-final class StructureServiceProvider extends ServiceProvider
+class StructureServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {

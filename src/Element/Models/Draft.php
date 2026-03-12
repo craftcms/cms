@@ -10,7 +10,7 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class Draft extends BaseModel
+class Draft extends BaseModel
 {
     use HasFactory;
 

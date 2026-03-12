@@ -13,7 +13,7 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-final class MailSettings extends Utility
+class MailSettings extends Utility
 {
     #[Override]
     public static function displayName(): string

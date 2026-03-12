@@ -8,7 +8,7 @@ use Closure;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Support\Facades\Deprecator;
 
-final class ElementMixin
+class ElementMixin
 {
     public function getSourceId(): Closure
     {

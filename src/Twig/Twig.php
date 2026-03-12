@@ -28,7 +28,7 @@ use Twig\Extension\StringLoaderExtension;
 use Twig\Runtime\EscaperRuntime;
 
 #[Scoped]
-final class Twig
+class Twig
 {
     private ?Environment $cpTwig = null;
 

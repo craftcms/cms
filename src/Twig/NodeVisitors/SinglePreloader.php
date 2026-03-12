@@ -18,7 +18,7 @@ use Twig\NodeVisitor\NodeVisitorInterface;
 /**
  * SinglePreloader preloads Single section entries for a template.
  */
-final class SinglePreloader implements NodeVisitorInterface
+class SinglePreloader implements NodeVisitorInterface
 {
     /**
      * @var array<string,bool>[]

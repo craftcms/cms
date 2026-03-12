@@ -22,7 +22,7 @@ use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\Translator;
 
 #[Singleton]
-final class I18N
+class I18N
 {
     /**
      * @var Collection<string> All of the known locales
@@ -307,8 +307,12 @@ final class I18N
         return $this->getEditableLocales()->map(fn (Locale $locale) => $locale->id);
     }
 
-    public function translate(string|Stringable $message, array $parameters = [], ?string $category = null, ?string $locale = null): string
+    public function translate(string|Stringable|null $message, array $parameters = [], ?string $category = null, ?string $locale = null): string
     {
+        if (! $message) {
+            return '';
+        }
+
         if (str_starts_with($message, 't9n:')) {
             $args = Json::decode(substr($message, 4));
 

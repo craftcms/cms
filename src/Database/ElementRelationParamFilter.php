@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Tpetry\QueryExpressions\Language\Alias;
 
-final class ElementRelationParamFilter
+class ElementRelationParamFilter
 {
     public const int DIR_FORWARD = 0;
 

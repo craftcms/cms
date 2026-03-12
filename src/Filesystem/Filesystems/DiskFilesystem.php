@@ -13,7 +13,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal This class is used when a Volume is configured to use a Laravel disk.
  */
-final class DiskFilesystem extends Filesystem
+class DiskFilesystem extends Filesystem
 {
     #[Override]
     protected static bool $showHasUrlSetting = false;

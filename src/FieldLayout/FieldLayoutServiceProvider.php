@@ -29,7 +29,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
-final class FieldLayoutServiceProvider extends ServiceProvider
+class FieldLayoutServiceProvider extends ServiceProvider
 {
     public function boot(Sites $sites): void
     {

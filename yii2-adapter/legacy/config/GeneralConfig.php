@@ -28,6 +28,8 @@ use function CraftCms\Cms\t;
  */
 class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
      *                              for testing purposes.

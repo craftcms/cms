@@ -6,7 +6,7 @@ namespace CraftCms\Cms\FieldLayout\Events;
 
 use craft\base\ElementInterface;
 
-final class DefineActionMenuItems extends \CraftCms\Cms\Element\Events\DefineActionMenuItems
+class DefineActionMenuItems extends \CraftCms\Cms\Element\Events\DefineActionMenuItems
 {
     public function __construct(
         ElementInterface $element,

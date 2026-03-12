@@ -18,4 +18,4 @@ namespace CraftCms\Cms\ProjectConfig\Events;
  * });
  * ```
  */
-final class UpdatingItem extends ConfigEvent {}
+class UpdatingItem extends ConfigEvent {}

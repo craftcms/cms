@@ -41,7 +41,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\Support\Path
  */
-final class Path extends Facade
+class Path extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

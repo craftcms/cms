@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
 use PDOException;
 use Throwable;
 
-final readonly class Cms
+readonly class Cms
 {
     public const string NAME = 'Craft CMS';
 

@@ -15,7 +15,7 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-final class AddTagsSupportCommand extends Command
+class AddTagsSupportCommand extends Command
 {
     use ConfirmableTrait;
     use CraftCommand;

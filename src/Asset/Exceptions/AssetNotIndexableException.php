@@ -4,4 +4,4 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Exceptions;
 
-final class AssetNotIndexableException extends AssetException {}
+class AssetNotIndexableException extends AssetException {}

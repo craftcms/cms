@@ -30,7 +30,7 @@ use function CraftCms\Cms\pageTemplate;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class CpScreenResponse implements Responsable
+class CpScreenResponse implements Responsable
 {
     use Conditionable;
 

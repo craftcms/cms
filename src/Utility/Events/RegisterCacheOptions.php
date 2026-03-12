@@ -18,7 +18,7 @@ use CraftCms\Cms\Utility\Utilities\ClearCaches;
  *
  * @see ClearCaches::cacheOptions()
  */
-final class RegisterCacheOptions
+class RegisterCacheOptions
 {
     public function __construct(
         /**

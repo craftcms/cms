@@ -15,7 +15,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  *
  * {@see Element::beforeRestore()}
  */
-final class BeforeRestore
+class BeforeRestore
 {
     use ValidatableEvent;
 

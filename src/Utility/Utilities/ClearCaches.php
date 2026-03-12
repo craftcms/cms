@@ -27,7 +27,7 @@ use function CraftCms\Cms\t;
 /**
  * ClearCaches represents a ClearCaches dashboard widget.
  */
-final class ClearCaches extends Utility
+class ClearCaches extends Utility
 {
     #[Override]
     public static function displayName(): string

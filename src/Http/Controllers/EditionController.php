@@ -10,7 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
 
-final readonly class EditionController
+readonly class EditionController
 {
     use RespondsWithFlash;
 

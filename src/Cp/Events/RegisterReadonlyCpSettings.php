@@ -10,7 +10,7 @@ namespace CraftCms\Cms\Cp\Events;
  *
  * @see RegisterCpSettings
  */
-final class RegisterReadonlyCpSettings
+class RegisterReadonlyCpSettings
 {
     public function __construct(
         /** @var array $settings The registered control panel settings */

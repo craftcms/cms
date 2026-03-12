@@ -2,18 +2,14 @@
 
 namespace craft\elements\conditions\users;
 
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * First name condition rule.
-     *
-     * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
-     * @since 4.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Conditions\FirstNameConditionRule} instead.
-     */
-    class FirstNameConditionRule
-    {
-    }
+/**
+ * First name condition rule.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\User\Conditions\FirstNameConditionRule} instead.
+ */
+class FirstNameConditionRule extends \CraftCms\Cms\User\Conditions\FirstNameConditionRule
+{
+    use \craft\base\LegacyEventConstants;
 }
-
-class_alias(\CraftCms\Cms\User\Conditions\FirstNameConditionRule::class, FirstNameConditionRule::class);

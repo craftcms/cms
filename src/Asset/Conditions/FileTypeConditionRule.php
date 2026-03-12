@@ -14,7 +14,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 use function CraftCms\Cms\t;
 
-final class FileTypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class FileTypeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     public function getLabel(): string
     {

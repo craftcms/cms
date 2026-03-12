@@ -105,6 +105,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * All of the globally registered builder macros.
      */
+    #[Override]
     protected static $macros = [];
 
     /**
@@ -788,7 +789,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Checks if a macro is registered.
      */
-    public function hasMacro(string $name): bool
+    public function hasLocalMacro(string $name): bool
     {
         return isset($this->localMacros[$name]);
     }
@@ -862,6 +863,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @param  string  $method
      * @param  array  $parameters
      */
+    #[Override]
     public function __call($method, $parameters): mixed
     {
         if ($method === 'macro') {
@@ -876,7 +878,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this;
         }
 
-        if ($this->hasMacro($method)) {
+        if ($this->hasLocalMacro($method)) {
             array_unshift($parameters, $this);
 
             return $this->localMacros[$method](...$parameters);
@@ -940,6 +942,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @throws \BadMethodCallException
      */
+    #[Override]
     public static function __callStatic($method, $parameters): mixed
     {
         if ($method === 'macro') {

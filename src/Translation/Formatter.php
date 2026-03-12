@@ -20,7 +20,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 #[Scoped]
-final class Formatter
+class Formatter
 {
     public const string FORMAT_WIDTH_SHORT = 'short';
 

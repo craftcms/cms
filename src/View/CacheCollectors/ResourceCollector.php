@@ -11,7 +11,7 @@ use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlStack;
 
-final readonly class ResourceCollector implements CacheCollectorInterface
+readonly class ResourceCollector implements CacheCollectorInterface
 {
     private const array BUFFER_KEYS = [
         'js',

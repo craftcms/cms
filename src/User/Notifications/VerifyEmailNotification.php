@@ -15,7 +15,7 @@ use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Notifications\Notification;
 use SensitiveParameter;
 
-final class VerifyEmailNotification extends Notification implements ShouldQueue
+class VerifyEmailNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

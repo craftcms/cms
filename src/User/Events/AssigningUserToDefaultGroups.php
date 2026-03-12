@@ -13,7 +13,7 @@ use CraftCms\Cms\User\Elements\User;
  *
  * You may set [[$isValid]] to `false` to prevent the user from getting assigned to the default user group.
  */
-final class AssigningUserToDefaultGroups
+class AssigningUserToDefaultGroups
 {
     use ValidatableEvent;
 

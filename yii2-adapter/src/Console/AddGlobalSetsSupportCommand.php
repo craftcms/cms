@@ -15,7 +15,7 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-final class AddGlobalSetsSupportCommand extends Command
+class AddGlobalSetsSupportCommand extends Command
 {
     use ConfirmableTrait;
     use CraftCommand;

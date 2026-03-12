@@ -12,7 +12,7 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-final class MigrateMigrationTableCommand extends Command
+class MigrateMigrationTableCommand extends Command
 {
     use ConfirmableTrait;
     use CraftCommand;

@@ -10,7 +10,7 @@ use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\IntlMessageFormatter;
 use Yiisoft\Translator\Message\Php\MessageSource;
 
-final readonly class I18NCompatibility
+readonly class I18NCompatibility
 {
     public function boot(): void
     {
