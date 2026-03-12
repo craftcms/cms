@@ -33,7 +33,6 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
-        <env name="CRAFT_EDITION" value="pro"/>
 
         <env name="APP_URL" value="http://localhost" />
         <env name="APP_KEY" value="base64:6BDzvwO4hrN7Twv6/gaQ6oZMB/CvpUArZXho189U75E=" />
