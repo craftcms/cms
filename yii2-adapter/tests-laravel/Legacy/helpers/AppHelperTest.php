@@ -13,7 +13,7 @@ use Orchestra\Testbench\PHPUnit\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 
-final class AppHelperTest extends TestCase
+class AppHelperTest extends TestCase
 {
     public function testCliOption(): void
     {

@@ -8,8 +8,9 @@ use CraftCms\Cms\User\Models\UserPermission;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
-final class UserPermissionFactory extends Factory
+class UserPermissionFactory extends Factory
 {
+    #[Override]
     protected $model = UserPermission::class;
 
     #[Override]

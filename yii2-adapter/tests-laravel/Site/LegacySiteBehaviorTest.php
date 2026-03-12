@@ -11,7 +11,7 @@ use yii\base\Event;
 
 uses(TestCase::class);
 
-final class TestSiteBehavior extends Behavior
+class TestSiteBehavior extends Behavior
 {
     private ?string $_foo = 'bar';
 

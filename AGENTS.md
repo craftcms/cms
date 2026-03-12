@@ -146,7 +146,7 @@ Services that should be singletons use the `#[Singleton]` attribute from Laravel
 use Illuminate\Container\Attributes\Singleton;
 
 #[Singleton]
-final class MyService
+class MyService
 {
     public function __construct(
         private readonly SomeDependency $dependency,
@@ -183,7 +183,7 @@ Craft 6 uses Laravel's event system. Events are simple classes with public prope
 **Laravel Event Pattern:**
 ```php
 // Event class (src/Element/Events/BeforeSave.php)
-final class BeforeSave
+class BeforeSave
 {
     use \CraftCms\Cms\Shared\Concerns\ValidatableEvent; // For cancellable events
     use \CraftCms\Cms\Shared\Concerns\HandleableEvent; // For events able to be marked as handled
@@ -238,6 +238,6 @@ PHP 8.2+ does not allow accessing constants on traits directly (e.g., `MyTrait::
 - Uses Laravel Pint with Laravel preset
 - Rector for automated refactoring (PHP 8.4, Laravel-specific rules)
 - `declare(strict_types=1)` required in all PHP files
-- Final classes by default, `readonly` when possible
+- non-final classes by default, `readonly` when possible
 - ECS for yii2-adapter code style
 - You don't need to remove unused imports, running Pint will fix that for you

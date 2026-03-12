@@ -5,7 +5,7 @@ namespace CraftCms\Yii2Adapter\Tests\Legacy\web\twig\variables;
 use craft\web\twig\variables\Cp;
 use CraftCms\Yii2Adapter\Tests\TestCase;
 
-final class CpTest extends TestCase
+class CpTest extends TestCase
 {
     public function test_get_template_suggestions(): void
     {
