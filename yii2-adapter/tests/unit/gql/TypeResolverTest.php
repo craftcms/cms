@@ -22,6 +22,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
@@ -118,7 +119,7 @@ class TypeResolverTest extends TestCase
         if ($elementQueryClass instanceof ElementQuery) {
             $elementQuery = new $elementQueryClass($params);
         } else {
-            $elementQuery = Craft::configure($elementType::find(), $params);
+            $elementQuery = Typecast::configure($elementType::find(), $params);
         }
 
         // Get the ids and elements.

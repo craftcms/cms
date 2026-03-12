@@ -45,6 +45,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
@@ -749,7 +750,7 @@ JS, [
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
-                    Craft::configure($query, $source['criteria']);
+                    Typecast::configure($query, $source['criteria']);
                 }
             }
 

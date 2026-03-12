@@ -34,6 +34,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Sequence;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Twig\Nodes\Expressions\Binaries\HasEveryBinary;
 use CraftCms\Cms\Twig\Nodes\Expressions\Binaries\HasSomeBinary;
 use CraftCms\Cms\Twig\NodeVisitors\EventTagAdder;
@@ -250,7 +251,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', $this->cloneFunction(...)),
-            new TwigFunction('configure', [Craft::class, 'configure']),
+            new TwigFunction('configure', Typecast::configure(...)),
             new TwigFunction('cpUrl', UrlHelper::cpUrl(...)),
             new TwigFunction('create', $this->createFunction(...)),
             new TwigFunction('dump', $this->dumpFunction(...), ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),

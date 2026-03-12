@@ -33,6 +33,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -71,7 +72,7 @@ class Assets
         $query = Asset::find();
 
         if ($criteria) {
-            Craft::configure($query, $criteria);
+            Typecast::configure($query, $criteria);
         }
 
         return $query->count();

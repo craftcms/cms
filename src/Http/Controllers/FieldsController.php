@@ -123,8 +123,7 @@ class FieldsController
             }, ARRAY_FILTER_USE_KEY);
 
             $settings = Component::cleanseConfig($settings);
-            Typecast::properties($type, $settings);
-            Craft::configure($field, $settings);
+            Typecast::configure($field, $settings);
         }
 
         $html = template('settings/fields/_type-settings', [

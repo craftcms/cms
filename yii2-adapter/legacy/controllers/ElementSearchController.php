@@ -18,6 +18,7 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Search;
+use CraftCms\Cms\Support\Typecast;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -64,7 +65,7 @@ class ElementSearchController extends Controller
             // Remove unsupported criteria attributes
             $criteria = ElementHelper::cleanseQueryCriteria($criteria);
 
-            Craft::configure($query, Component::cleanseConfig($criteria));
+            Typecast::configure($query, Component::cleanseConfig($criteria));
         }
 
         if ($conditionConfig) {

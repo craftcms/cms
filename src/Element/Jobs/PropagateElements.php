@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Queue\BatchedElementJob;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Database\Query\Builder;
 use Override;
 
@@ -61,7 +62,7 @@ class PropagateElements extends BatchedElementJob
             ->orderBy('elements.id');
 
         if (! empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
+            Typecast::configure($query, $this->criteria);
         }
 
         return $query;

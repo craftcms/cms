@@ -34,6 +34,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Typecast;
 use DateInterval;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -465,7 +466,7 @@ class AppController extends Controller
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
                     if (!empty($config['overrides'])) {
-                        Craft::configure($component, Component::cleanseConfig($config['overrides']));
+                        Typecast::configure($component, Component::cleanseConfig($config['overrides']));
                     }
                     $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
                 }
