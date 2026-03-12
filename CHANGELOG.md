@@ -6,6 +6,7 @@
 - Updated web-auth/webauthn-lib to 5.2.4. ([#18545](https://github.com/craftcms/cms/pull/18545))
 - Fixed an error that occurred when loading some control panel resources on environments with `craft\web\AssetManager::$cacheSourcePaths` disabled. ([#18536](https://github.com/craftcms/cms/issues/18536))
 - Fixed a bug where `craft\fields\data\LinkData::getUrl()` was returning the URL suffix rather than an empty string, if the rendered base URL was an empty string.
+- Fixed a styling bug where horizontal rules could bleed out of their containing panes.
 
 ## 5.9.15 - 2026-03-09
 
