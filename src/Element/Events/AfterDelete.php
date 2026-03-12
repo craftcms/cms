@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Element;
  *
  * {@see Element::afterDelete()}
  */
-final class AfterDelete
+class AfterDelete
 {
     public function __construct(
         public ElementInterface $element,

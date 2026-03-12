@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
 #[Singleton]
-final class ImageTransforms
+class ImageTransforms
 {
     /** @var Collection<int, ImageTransform>|null */
     private ?Collection $transforms = null;

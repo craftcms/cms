@@ -16,16 +16,19 @@ trait MacroableMagicMethods
             return $method;
         }
 
+        /** @phpstan-ignore staticClassAccess.privateMethod */
         if (! static::supportsMacroableMagicMethods()) {
             return null;
         }
 
+        /** @phpstan-ignore staticClassAccess.privateMethod */
         if (static::macroMethodExists($method)) {
             return $method;
         }
 
         $normalizedMethod = $prefix.ucfirst($name);
 
+        /** @phpstan-ignore staticClassAccess.privateMethod */
         if ($normalizedMethod !== $method && static::macroMethodExists($normalizedMethod)) {
             return $normalizedMethod;
         }

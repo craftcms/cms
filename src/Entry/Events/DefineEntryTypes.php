@@ -12,7 +12,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
  *
  * @see Entry::getAvailableEntryTypes()
  */
-final class DefineEntryTypes
+class DefineEntryTypes
 {
     public function __construct(
         public Entry $entry,

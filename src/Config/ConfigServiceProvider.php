@@ -13,7 +13,7 @@ use Illuminate\Support\ServiceProvider;
 use Override;
 use Throwable;
 
-final class ConfigServiceProvider extends ServiceProvider
+class ConfigServiceProvider extends ServiceProvider
 {
     private array $configFiles = [
         'general',

@@ -9,7 +9,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\Shared\Concerns\HandleableEvent;
 
-final class DefineShowInForm
+class DefineShowInForm
 {
     use HandleableEvent;
 

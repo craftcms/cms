@@ -21,7 +21,7 @@ use yii\base\NotSupportedException;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final readonly class ImageEditorController
+readonly class ImageEditorController
 {
     use EnforcesVolumePermissions;
     use RespondsWithFlash;

@@ -9,7 +9,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use Illuminate\Contracts\View\Engine;
 
-final readonly class TwigEngine implements Engine
+readonly class TwigEngine implements Engine
 {
     public function __construct(
         private TemplateRenderer $renderer,

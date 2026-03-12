@@ -13,7 +13,7 @@ use function CraftCms\Cms\t;
 /**
  * URL link type.
  */
-final class Url extends BaseTextLinkType
+class Url extends BaseTextLinkType
 {
     public static function id(): string
     {

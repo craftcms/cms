@@ -2,6 +2,9 @@
 
 namespace craft\fields\conditions;
 
+use craft\base\LegacyEventConstants;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+
 /**
  * Generated field condition rule.
  *
@@ -14,5 +17,5 @@ namespace craft\fields\conditions;
  */
 class GeneratedFieldConditionRule extends \CraftCms\Cms\Field\Conditions\GeneratedFieldConditionRule
 {
-    use \craft\base\LegacyEventConstants;
+    use LegacyEventConstants;
 }

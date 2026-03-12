@@ -27,7 +27,7 @@ use League\Flysystem\UnableToSetVisibility;
 use League\Flysystem\UnableToWriteFile;
 use Throwable;
 
-final class LegacyFsFlysystemAdapter implements FilesystemAdapter
+class LegacyFsFlysystemAdapter implements FilesystemAdapter
 {
     public const string DISK_DRIVER = 'craft-fs-bridge';
 

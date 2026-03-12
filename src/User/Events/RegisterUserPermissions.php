@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 /**
  * @event RegisterUserPermissions The event that is triggered when registering user permissions.
  */
-final class RegisterUserPermissions
+class RegisterUserPermissions
 {
     public function __construct(
         /** @var Collection<PermissionGroup> */

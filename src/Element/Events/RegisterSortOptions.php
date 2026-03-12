@@ -9,7 +9,7 @@ use craft\base\ElementInterface;
 /**
  * @event RegisterSortOptions event is triggered when registering the sort options for an element type.
  */
-final class RegisterSortOptions
+class RegisterSortOptions
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

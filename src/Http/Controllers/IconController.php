@@ -13,7 +13,7 @@ use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-final readonly class IconController
+readonly class IconController
 {
     public function svg(Request $request): JsonResponse
     {

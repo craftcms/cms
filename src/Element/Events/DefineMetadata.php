@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
  *
  * {@see HasControlPanelUI::getMetadata()}
  */
-final class DefineMetadata
+class DefineMetadata
 {
     /**
      * @param  ElementInterface  $element  The element

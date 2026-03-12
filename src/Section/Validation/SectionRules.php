@@ -19,7 +19,7 @@ use Override;
 use function CraftCms\Cms\t;
 
 /** @extends Ruleset<Section> */
-final class SectionRules extends Ruleset
+class SectionRules extends Ruleset
 {
     #[Override]
     public function defineRules(): array

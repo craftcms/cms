@@ -16,7 +16,7 @@ use Stringable;
  *
  * {@see HasControlPanelUI::getInlineAttributeInputHtml()}
  */
-final class DefineInlineAttributeInputHtml
+class DefineInlineAttributeInputHtml
 {
     /**
      * @param  ElementInterface  $element  The element

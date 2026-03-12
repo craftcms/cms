@@ -48,7 +48,7 @@ use Override;
  *
  * @see \CraftCms\Cms\User\Users
  */
-final class Users extends Facade
+class Users extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

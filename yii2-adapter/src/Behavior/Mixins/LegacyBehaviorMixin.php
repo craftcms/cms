@@ -9,7 +9,7 @@ use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCompatibility;
 use yii\base\Behavior;
 use yii\base\Event;
 
-final class LegacyBehaviorMixin
+class LegacyBehaviorMixin
 {
     public function ensureBehaviors(): Closure
     {

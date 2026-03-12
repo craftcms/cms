@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class PasskeyController extends AuthenticationController
+readonly class PasskeyController extends AuthenticationController
 {
     public function requestOptions(Passkeys $passkeys): JsonResponse
     {

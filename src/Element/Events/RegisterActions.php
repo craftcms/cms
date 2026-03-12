@@ -9,7 +9,7 @@ use craft\base\ElementInterface;
 /**
  * RegisterActions event is triggered when registering the available bulk actions for an element type.
  */
-final class RegisterActions
+class RegisterActions
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

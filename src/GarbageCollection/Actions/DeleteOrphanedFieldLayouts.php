@@ -14,7 +14,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 /**
  * Deletes field layouts that are no longer used.
  */
-final class DeleteOrphanedFieldLayouts extends GarbageCollectionAction
+class DeleteOrphanedFieldLayouts extends GarbageCollectionAction
 {
     public function __construct(
         GarbageCollection $garbageCollection,

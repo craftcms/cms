@@ -9,7 +9,7 @@ use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-final readonly class FeedController
+readonly class FeedController
 {
     public function cacheData(Request $request, Repository $cache, GeneralConfig $generalConfig): JsonResponse
     {

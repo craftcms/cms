@@ -9,7 +9,7 @@ use CraftCms\Cms\Support\Arr;
 use ReflectionClass;
 use yii\validators\Validator;
 
-final class LegacyElementRules extends ElementRules
+class LegacyElementRules extends ElementRules
 {
     protected function defineRules(): array
     {

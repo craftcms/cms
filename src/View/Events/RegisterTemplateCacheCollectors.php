@@ -21,7 +21,7 @@ use Illuminate\Support\Collection;
  * });
  * ```
  */
-final class RegisterTemplateCacheCollectors
+class RegisterTemplateCacheCollectors
 {
     /**
      * @param  Collection<class-string<CacheCollectorInterface>>  $types

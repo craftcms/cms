@@ -10,7 +10,7 @@ use CraftCms\Cms\SystemMessage\Data\RenderedSystemMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 
-final class SystemMessageMailable extends Mailable
+class SystemMessageMailable extends Mailable
 {
     use Queueable;
 

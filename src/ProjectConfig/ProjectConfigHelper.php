@@ -21,7 +21,7 @@ use InvalidArgumentException;
 use StdClass;
 use yii\base\InvalidConfigException;
 
-final class ProjectConfigHelper
+class ProjectConfigHelper
 {
     /**
      * Returns a project config compatible value encoded for storage.

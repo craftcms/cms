@@ -75,6 +75,12 @@ class FieldLayoutFormTab extends Component
         $components = [];
 
         foreach ($this->elements as $formElement) {
+            if (is_array($formElement)) {
+                $components[] = $formElement[2] ?? null;
+
+                continue;
+            }
+
             if (is_string($formElement->html) && $formElement->html) {
                 $components[] = $formElement->html;
             } elseif ($formElement->isConditional) {

@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Updates\Data;
 /**
  * @internal
  */
-final readonly class Updates
+readonly class Updates
 {
     public function __construct(
         public Update $cms = new Update,

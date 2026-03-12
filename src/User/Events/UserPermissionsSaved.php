@@ -7,7 +7,7 @@ namespace CraftCms\Cms\User\Events;
 /**
  * @event UserPermissionsSaved The event triggered after saving user permissions.
  */
-final class UserPermissionsSaved
+class UserPermissionsSaved
 {
     public function __construct(
         public int $userId,

@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
  *
  * {@see HasControlPanelUI::getAdditionalButtons()}
  */
-final class DefineAdditionalButtons
+class DefineAdditionalButtons
 {
     public function __construct(
         public ElementInterface $element,

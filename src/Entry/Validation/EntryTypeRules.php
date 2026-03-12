@@ -15,7 +15,7 @@ use Illuminate\Validation\Rule;
 use function CraftCms\Cms\t;
 
 /** @extends Ruleset<EntryType> */
-final class EntryTypeRules extends Ruleset
+class EntryTypeRules extends Ruleset
 {
     #[\Override]
     public function defineRules(): array

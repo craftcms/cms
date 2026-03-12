@@ -24,7 +24,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 /**
  * @extends ElementQuery<Asset>
  */
-final class AssetQuery extends ElementQuery
+class AssetQuery extends ElementQuery
 {
     use EagerloadsTransforms;
     use QueriesAlt;

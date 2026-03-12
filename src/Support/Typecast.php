@@ -17,7 +17,7 @@ use ReflectionProperty;
 use ReflectionUnionType;
 use RuntimeException;
 
-final class Typecast
+class Typecast
 {
     private const string TYPE_BOOL = 'bool';
 

@@ -39,7 +39,7 @@ use yii\base\NotSupportedException;
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
 
-final class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTransformerInterface, ImageTransformerInterface
+class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTransformerInterface, ImageTransformerInterface
 {
     /** @var array<string, array<string, mixed>> */
     private array $eagerLoadedTransformIndexes = [];

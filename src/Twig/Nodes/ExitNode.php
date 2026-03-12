@@ -11,7 +11,7 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class ExitNode extends Node
+class ExitNode extends Node
 {
     #[Override]
     public function compile(Compiler $compiler): void

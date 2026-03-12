@@ -25,7 +25,7 @@ use Throwable;
 use yii\base\Exception;
 
 #[Singleton]
-final class Structures
+class Structures
 {
     /**
      * @var int The timeout to pass to [[\yii\mutex\Mutex::acquire()]] when acquiring a lock on the structure.

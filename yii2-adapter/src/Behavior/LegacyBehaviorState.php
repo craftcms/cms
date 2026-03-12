@@ -6,7 +6,7 @@ namespace CraftCms\Yii2Adapter\Behavior;
 
 use yii\base\Behavior;
 
-final class LegacyBehaviorState
+class LegacyBehaviorState
 {
     public bool $behaviorsLoaded = false;
 

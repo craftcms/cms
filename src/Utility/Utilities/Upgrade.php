@@ -18,7 +18,7 @@ use function CraftCms\Cms\template;
 /**
  * Upgrade utility
  */
-final class Upgrade extends Utility
+class Upgrade extends Utility
 {
     #[Override]
     public static function displayName(): string

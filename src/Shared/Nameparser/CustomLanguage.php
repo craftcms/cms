@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Shared\Nameparser;
 
 use TheIconic\NameParser\LanguageInterface;
 
-final readonly class CustomLanguage implements LanguageInterface
+readonly class CustomLanguage implements LanguageInterface
 {
     private array $suffixes;
 

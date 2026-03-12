@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Element\Exceptions;
 use craft\base\ElementInterface;
 use Throwable;
 
-final class UnsupportedSiteException extends ElementException
+class UnsupportedSiteException extends ElementException
 {
     public function __construct(
         ElementInterface $element,

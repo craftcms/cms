@@ -7,7 +7,7 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 
-final class DeleteStaleElementActivity extends GarbageCollectionAction
+class DeleteStaleElementActivity extends GarbageCollectionAction
 {
     public function __invoke(): void
     {

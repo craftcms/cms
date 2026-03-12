@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 /**
  * @event FolderRenamed The event that is triggered after a folder is renamed.
  */
-final class FolderRenamed
+class FolderRenamed
 {
     public function __construct(
         public VolumeFolder $folder,

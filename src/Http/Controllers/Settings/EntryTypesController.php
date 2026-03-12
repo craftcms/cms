@@ -39,7 +39,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class EntryTypesController
+class EntryTypesController
 {
     use RespondsWithFlash;
 

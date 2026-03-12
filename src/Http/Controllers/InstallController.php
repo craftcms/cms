@@ -36,7 +36,7 @@ use Throwable;
  * Note that all actions in the controller are open and do not require an
  * authenticated Craft session to execute.
  */
-final readonly class InstallController
+readonly class InstallController
 {
     use SiteDefaults;
 

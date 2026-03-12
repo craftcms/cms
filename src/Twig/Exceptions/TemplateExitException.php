@@ -13,4 +13,4 @@ use CraftCms\Cms\Twig\PageLifecycle;
  *
  * Caught by {@see PageLifecycle} to capture buffered output.
  */
-final class TemplateExitException extends \RuntimeException {}
+class TemplateExitException extends \RuntimeException {}

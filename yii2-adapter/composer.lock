@@ -479,7 +479,7 @@
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "b1a257ab4691ff0670f2b60277f9cee596f1654b"
+                "reference": "e28bae650dfdcd01371b80289fd0fbfedd652b89"
             },
             "require": {
                 "bacon/bacon-qr-code": "^2.0",
@@ -534,7 +534,7 @@
                 "yiisoft/translator-message-php": "^1.1"
             },
             "require-dev": {
-                "dg/bypass-finals": "^1.9",
+                "dg/bypass-finals": "*",
                 "driftingly/rector-laravel": "^2.1",
                 "fakerphp/faker": "^1.19.0",
                 "larastan/larastan": "^3.4",
@@ -591,6 +591,7 @@
                     "rector"
                 ],
                 "tests": [
+                    "Composer\\Config::disableProcessTimeout",
                     "./vendor/bin/pest --compact"
                 ],
                 "tests-adapter": [
@@ -611,8 +612,16 @@
                 ],
                 "serve": [
                     "Composer\\Config::disableProcessTimeout",
+                    "@php vendor/bin/testbench package:sync-skeleton --ansi",
                     "@build",
                     "@php vendor/bin/testbench serve --ansi"
+                ],
+                "ci": [
+                    "@php pint",
+                    "@rector",
+                    "@phpstan",
+                    "@tests",
+                    "@tests-adapter"
                 ]
             },
             "license": [

@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 
-final class SessionAuth
+class SessionAuth
 {
     private const string AUTH_LOCK_NAME = 'authAccess';
 

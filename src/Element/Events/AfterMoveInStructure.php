@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Concerns\Structurable;
  *
  * {@see Structurable::afterMoveInStructure()}
  */
-final class AfterMoveInStructure
+class AfterMoveInStructure
 {
     public function __construct(
         public ElementInterface $element,

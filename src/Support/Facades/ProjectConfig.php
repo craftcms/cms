@@ -42,7 +42,7 @@ use Override;
  *
  * @see \CraftCms\Cms\ProjectConfig\ProjectConfig
  */
-final class ProjectConfig extends Facade
+class ProjectConfig extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

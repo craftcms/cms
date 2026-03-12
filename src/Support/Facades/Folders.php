@@ -26,7 +26,7 @@ use Override;
  *
  * @see \CraftCms\Cms\Asset\Folders
  */
-final class Folders extends Facade
+class Folders extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

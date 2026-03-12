@@ -14,6 +14,8 @@ use craft\events\DeleteSiteEvent;
 use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
+use craft\models\Site as LegacySite;
+use craft\models\SiteGroup as LegacySiteGroup;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
@@ -31,6 +33,7 @@ use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Site\Events\SiteSaved;
 use CraftCms\Cms\Site\Events\SitesReordered;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use Illuminate\Support\Facades\Event;
@@ -148,11 +151,13 @@ class Sites extends Component
     /**
      * Returns all site groups.
      *
-     * @return SiteGroup[] The site groups
+     * @return LegacySiteGroup[] The site groups
      */
     public function getAllGroups(): array
     {
-        return SiteGroups::getAllGroups()->all();
+        return SiteGroups::getAllGroups()
+            ->map(fn(SiteGroup $group) => self::siteGroupToLegacySiteGroup($group))
+            ->all();
     }
 
     /**
@@ -163,7 +168,13 @@ class Sites extends Component
      */
     public function getGroupById(int $groupId): ?SiteGroup
     {
-        return SiteGroups::getGroupById($groupId);
+        $group = SiteGroups::getGroupById($groupId);
+
+        if (!$group) {
+            return null;
+        }
+
+        return self::siteGroupToLegacySiteGroup($group);
     }
 
     /**
@@ -176,19 +187,27 @@ class Sites extends Component
      */
     public function getGroupByUid(string $uid): ?SiteGroup
     {
-        return SiteGroups::getGroupByUid($uid);
+        $group = SiteGroups::getGroupByUid($uid);
+
+        if (!$group) {
+            return null;
+        }
+
+        return self::siteGroupToLegacySiteGroup($group);
     }
 
     /**
      * Saves a site group.
      *
-     * @param  SiteGroup  $group  The site group to be saved
+     * @param  LegacySiteGroup  $group  The site group to be saved
      * @param  bool  $runValidation  Whether the group should be validated
      * @return bool Whether the site group was saved successfully
      */
-    public function saveGroup(SiteGroup $group, bool $runValidation = true): bool
+    public function saveGroup(LegacySiteGroup $group, bool $runValidation = true): bool
     {
-        return SiteGroups::saveGroup($group);
+        $group = new SiteGroup($group->toArray());
+
+        return SiteGroups::saveGroup($group, $runValidation);
     }
 
     /**
@@ -221,12 +240,12 @@ class Sites extends Component
     /**
      * Deletes a site group.
      *
-     * @param  SiteGroup  $group  The site group
+     * @param  LegacySiteGroup  $group  The site group
      * @return bool Whether the site group was deleted successfully
      */
-    public function deleteGroup(SiteGroup $group): bool
+    public function deleteGroup(LegacySiteGroup $group): bool
     {
-        return SiteGroups::deleteGroup($group);
+        return SiteGroups::deleteGroupById($group->id);
     }
 
     // Sites
@@ -253,7 +272,9 @@ class Sites extends Component
      */
     public function getSiteByUid(string $uid, ?bool $withDisabled = null): Site
     {
-        return SitesFacade::getSiteByUid($uid, $withDisabled);
+        $site = SitesFacade::getSiteByUid($uid, $withDisabled);
+
+        return self::siteToLegacySite($site);
     }
 
     /**
@@ -277,16 +298,20 @@ class Sites extends Component
      */
     public function getCurrentSite(): Site
     {
-        return SitesFacade::getCurrentSite();
+        return self::siteToLegacySite(SitesFacade::getCurrentSite());
     }
 
     /**
      * Sets the current site.
      *
-     * @param  Site|string|int|null  $site  the current site, or its handle/ID, or null
+     * @param  LegacySite|string|int|null  $site  the current site, or its handle/ID, or null
      */
     public function setCurrentSite(mixed $site): void
     {
+        if ($site instanceof LegacySite) {
+            $site = $site->id;
+        }
+
         SitesFacade::setCurrentSite($site);
     }
 
@@ -300,7 +325,7 @@ class Sites extends Component
      */
     public function getPrimarySite(): Site
     {
-        return SitesFacade::getPrimarySite();
+        return self::siteToLegacySite(SitesFacade::getPrimarySite());
     }
 
     /**
@@ -317,45 +342,53 @@ class Sites extends Component
      * Returns all sites.
      *
      *
-     * @return Site[] All the sites
+     * @return LegacySite[] All the sites
      */
     public function getAllSites(?bool $withDisabled = null): array
     {
-        return SitesFacade::getAllSites($withDisabled)->all();
+        return SitesFacade::getAllSites($withDisabled)
+            ->map(fn(Site $site) => self::siteToLegacySite($site))
+            ->all();
     }
 
     /**
      * Returns all editable sites.
      *
-     * @return Site[] All the editable sites
+     * @return LegacySite[] All the editable sites
      */
     public function getEditableSites(): array
     {
-        return SitesFacade::getEditableSites()->all();
+        return SitesFacade::getEditableSites()
+            ->map(fn(Site $site) => self::siteToLegacySite($site))
+            ->all();
     }
 
     /**
      * Returns sites by a group ID.
      *
      *
-     * @return Site[]
+     * @return LegacySite[]
      */
     public function getSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
     {
-        return SitesFacade::getSitesByGroupId($groupId, $withDisabled)->all();
+        return SitesFacade::getSitesByGroupId($groupId, $withDisabled)
+            ->map(fn(Site $site) => self::siteToLegacySite($site))
+            ->all();
     }
 
     /**
      * Returns editable sites by a group ID.
      *
      *
-     * @return Site[]
+     * @return LegacySite[]
      *
      * @since 5.4.0
      */
     public function getEditableSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
     {
-        return SitesFacade::getEditableSitesByGroupId($groupId, $withDisabled)->all();
+        return SitesFacade::getEditableSitesByGroupId($groupId, $withDisabled)
+            ->map(fn(Site $site) => self::siteToLegacySite($site))
+            ->all();
     }
 
     /**
@@ -377,30 +410,44 @@ class Sites extends Component
     /**
      * Returns a site by its ID.
      */
-    public function getSiteById(int $siteId, ?bool $withDisabled = null): ?Site
+    public function getSiteById(int $siteId, ?bool $withDisabled = null): ?LegacySite
     {
-        return SitesFacade::getSiteById($siteId, $withDisabled);
+        $site = SitesFacade::getSiteById($siteId, $withDisabled);
+
+        if (!$site) {
+            return null;
+        }
+
+        return self::siteToLegacySite($site);
     }
 
     /**
      * Returns a site by its handle.
      */
-    public function getSiteByHandle(string $siteHandle, ?bool $withDisabled = null): ?Site
+    public function getSiteByHandle(string $siteHandle, ?bool $withDisabled = null): ?LegacySite
     {
-        return SitesFacade::getSiteByHandle($siteHandle, $withDisabled);
+        $site = SitesFacade::getSiteByHandle($siteHandle, $withDisabled);
+
+        if (!$site) {
+            return null;
+        }
+
+        return self::siteToLegacySite($site);
     }
 
     /**
      * Returns sites by their language.
      *
      *
-     * @return Site[]
+     * @return LegacySite[]
      *
      * @since 4.9.0
      */
     public function getSitesByLanguage(string $language, ?bool $withDisabled = null): array
     {
-        return SitesFacade::getSitesByLanguage($language, $withDisabled)->all();
+        return SitesFacade::getSitesByLanguage($language, $withDisabled)
+            ->map(fn(Site $site) => self::siteToLegacySite($site))
+            ->all();
     }
 
     /**
@@ -417,15 +464,17 @@ class Sites extends Component
     /**
      * Saves a site.
      *
-     * @param  Site  $site  The site to be saved
+     * @param  LegacySite  $site  The site to be saved
      * @param  bool  $runValidation  Whether the site should be validated
      *
      * @throws SiteNotFoundException if $site->id is invalid
      * @throws Throwable if reasons
      */
-    public function saveSite(Site $site, bool $runValidation = true): bool
+    public function saveSite(LegacySite $site, bool $runValidation = true): bool
     {
-        return SitesFacade::saveSite($site);
+        $site = new Site($site->toArray());
+
+        return SitesFacade::saveSite($site, $runValidation);
     }
 
     /**
@@ -478,7 +527,7 @@ class Sites extends Component
      */
     public function deleteSite(Site $site, ?int $transferContentTo = null): bool
     {
-        return SitesFacade::deleteSite($site, $transferContentTo);
+        return SitesFacade::deleteSiteById($site->id, $transferContentTo);
     }
 
     /**
@@ -523,17 +572,19 @@ class Sites extends Component
     {
         Event::listen(SavingSiteGroup::class, function(SavingSiteGroup $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE_GROUP)) {
-                Craft::$app->getSites()->trigger(self::EVENT_BEFORE_SAVE_SITE_GROUP, new SiteGroupEvent([
-                    'group' => $event->siteGroup,
+                Craft::$app->getSites()->trigger(self::EVENT_BEFORE_SAVE_SITE_GROUP, $yiiEvent = new SiteGroupEvent([
+                    'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),
                     'isNew' => $event->isNew,
                 ]));
+
+                $event->siteGroup = new SiteGroup($yiiEvent->group->toArray());
             }
         });
 
         Event::listen(SavedSiteGroup::class, function(SavedSiteGroup $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE_GROUP)) {
                 Craft::$app->getSites()->trigger(self::EVENT_AFTER_SAVE_SITE_GROUP, new SiteGroupEvent([
-                    'group' => $event->siteGroup,
+                    'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),
                     'isNew' => $event->isNew,
                 ]));
             }
@@ -542,7 +593,7 @@ class Sites extends Component
         Event::listen(ApplyingSiteGroupDelete::class, function(ApplyingSiteGroupDelete $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new SiteGroupEvent([
-                    'group' => $event->siteGroup,
+                    'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),
                 ]));
             }
         });
@@ -550,7 +601,7 @@ class Sites extends Component
         Event::listen(DeletingSiteGroup::class, function(DeletingSiteGroup $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE_GROUP)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_DELETE_SITE_GROUP, new SiteGroupEvent([
-                    'group' => $event->siteGroup,
+                    'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),
                 ]));
             }
         });
@@ -558,25 +609,27 @@ class Sites extends Component
         Event::listen(DeletedSiteGroup::class, function(DeletedSiteGroup $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE_GROUP)) {
                 Craft::$app->getSites()->trigger(self::EVENT_AFTER_DELETE_SITE_GROUP, new SiteGroupEvent([
-                    'group' => $event->siteGroup,
+                    'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),
                 ]));
             }
         });
 
         Event::listen(SavingSite::class, function(SavingSite $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE)) {
-                Craft::$app->getSites()->trigger(self::EVENT_BEFORE_SAVE_SITE, new SiteEvent([
-                    'site' => $event->site,
+                Craft::$app->getSites()->trigger(self::EVENT_BEFORE_SAVE_SITE, $yiiEvent = new SiteEvent([
+                    'site' => self::siteToLegacySite($event->site),
                     'isNew' => $event->isNew,
                     'oldPrimarySiteId' => $event->oldPrimarySiteId,
                 ]));
+
+                $event->site = new Site($yiiEvent->site->toArray());
             }
         });
 
         Event::listen(SiteSaved::class, function(SiteSaved $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_AFTER_SAVE_SITE, new SiteEvent([
-                    'site' => $event->site,
+                    'site' => self::siteToLegacySite($event->site),
                     'isNew' => $event->isNew,
                     'oldPrimarySiteId' => $event->oldPrimarySiteId,
                 ]));
@@ -602,9 +655,12 @@ class Sites extends Component
         Event::listen(DeletingSite::class, function(DeletingSite $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_DELETE_SITE, $yiiEvent = new DeleteSiteEvent([
-                    'site' => $event->site,
+                    'site' => self::siteToLegacySite($event->site),
                     'transferContentTo' => $event->transferContentTo,
                 ]));
+
+                $event->site = new Site($yiiEvent->site->toArray());
+                $event->transferContentTo = $yiiEvent->transferContentTo;
                 $event->isValid = $yiiEvent->isValid;
             }
         });
@@ -612,7 +668,7 @@ class Sites extends Component
         Event::listen(ApplyingSiteDelete::class, function(ApplyingSiteDelete $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_APPLY_SITE_DELETE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_BEFORE_APPLY_SITE_DELETE, new DeleteSiteEvent([
-                    'site' => $event->site,
+                    'site' => self::siteToLegacySite($event->site),
                 ]));
             }
         });
@@ -620,7 +676,7 @@ class Sites extends Component
         Event::listen(SiteDeleted::class, function(SiteDeleted $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_AFTER_DELETE_SITE, new DeleteSiteEvent([
-                    'site' => $event->site,
+                    'site' => self::siteToLegacySite($event->site),
                 ]));
             }
         });
@@ -628,9 +684,27 @@ class Sites extends Component
         Event::listen(PrimarySiteChanged::class, function(PrimarySiteChanged $event) {
             if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {
                 Craft::$app->getSites()->trigger(self::EVENT_AFTER_CHANGE_PRIMARY_SITE, new SiteEvent([
-                    'site' => $event->site,
+                    'site' => self::siteToLegacySite($event->site),
                 ]));
             }
         });
+    }
+
+    private static function siteGroupToLegacySiteGroup(SiteGroup $siteGroup): LegacySiteGroup
+    {
+        return new LegacySiteGroup(Arr::except($siteGroup->toArray(), ['rawName']));
+    }
+
+    private static function siteToLegacySite(Site $site): LegacySite
+    {
+        return new LegacySite(Arr::except($site->toArray(), [
+            'nameRaw',
+            'uiLabel',
+            'languageRaw',
+            'locale',
+            'baseUrlRaw',
+            'enabledRaw',
+            'group',
+        ]));
     }
 }

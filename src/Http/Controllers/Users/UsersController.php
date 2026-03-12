@@ -30,7 +30,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class UsersController
+readonly class UsersController
 {
     use AuthorizesRequests;
     use EditUserTrait;

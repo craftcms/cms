@@ -65,7 +65,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Fields
+class Fields
 {
     /**
      * @var string The active field context

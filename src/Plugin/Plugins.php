@@ -56,7 +56,7 @@ use yii\base\Module;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Plugins
+class Plugins
 {
     /**
      * @var array[] Custom plugin configurations.

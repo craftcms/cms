@@ -10,7 +10,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 use function CraftCms\Cms\t;
 
-final readonly class SiteIdRule implements ValidationRule
+readonly class SiteIdRule implements ValidationRule
 {
     public function __construct(
         /**

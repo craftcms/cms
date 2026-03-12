@@ -61,7 +61,7 @@ use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Event;
 use yii\caching\TagDependency as YiiTagDependency;
 
-final readonly class EventCompatibility
+readonly class EventCompatibility
 {
     public function boot(): void
     {

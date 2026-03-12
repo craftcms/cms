@@ -25,7 +25,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  */
-final readonly class UpdatesController
+readonly class UpdatesController
 {
     public function __construct(
         private GeneralConfig $generalConfig,

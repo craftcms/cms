@@ -23,7 +23,7 @@ use Illuminate\Support\Collection;
  * });
  * ```
  */
-final class RegisterWidgetTypes
+class RegisterWidgetTypes
 {
     public function __construct(
         /** @var Collection<int, class-string<WidgetInterface>> */

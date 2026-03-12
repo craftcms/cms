@@ -25,7 +25,7 @@ use Override;
  *
  * @see \CraftCms\Cms\Filesystem\Filesystems
  */
-final class Filesystems extends Facade
+class Filesystems extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

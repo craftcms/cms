@@ -6,7 +6,7 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\Support\Facades\Search;
 
-final class DeleteOrphanedSearchIndexJobs extends GarbageCollectionAction
+class DeleteOrphanedSearchIndexJobs extends GarbageCollectionAction
 {
     public function __invoke(): void
     {

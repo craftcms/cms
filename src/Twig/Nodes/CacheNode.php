@@ -13,7 +13,7 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class CacheNode extends Node
+class CacheNode extends Node
 {
     #[Override]
     public function compile(Compiler $compiler): void

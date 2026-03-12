@@ -21,7 +21,7 @@ use yii\helpers\Markdown;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final readonly class Announcements
+readonly class Announcements
 {
     public function __construct(
         private Plugins $plugins,

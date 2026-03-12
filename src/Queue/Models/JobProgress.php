@@ -12,7 +12,7 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-final class JobProgress extends BaseModel
+class JobProgress extends BaseModel
 {
     use HasUid;
 

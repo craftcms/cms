@@ -11,7 +11,7 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class RequireGuestNode extends Node
+class RequireGuestNode extends Node
 {
     /**
      * Compiles a RequireGuestNode into PHP.

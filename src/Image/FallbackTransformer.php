@@ -12,7 +12,7 @@ use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use Illuminate\Support\Facades\Crypt;
 
-final readonly class FallbackTransformer implements ImageTransformerInterface
+readonly class FallbackTransformer implements ImageTransformerInterface
 {
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {

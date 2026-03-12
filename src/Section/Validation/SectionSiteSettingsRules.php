@@ -14,7 +14,7 @@ use Override;
 use Throwable;
 
 /** @extends Ruleset<SectionSiteSettings> */
-final class SectionSiteSettingsRules extends Ruleset
+class SectionSiteSettingsRules extends Ruleset
 {
     #[Override]
     public function defineRules(): array

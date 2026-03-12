@@ -15,7 +15,7 @@ use Illuminate\Container\Attributes\Scoped;
 use RuntimeException;
 
 #[Scoped]
-final class DependencyCollector implements CacheCollectorInterface
+class DependencyCollector implements CacheCollectorInterface
 {
     /**
      * @var array<int, array{tags: array<string, bool>, duration: int|null}>

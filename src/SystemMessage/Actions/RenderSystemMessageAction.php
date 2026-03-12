@@ -14,7 +14,7 @@ use yii\helpers\Markdown;
 
 use function CraftCms\Cms\renderSandboxedString;
 
-final readonly class RenderSystemMessageAction
+readonly class RenderSystemMessageAction
 {
     public function __construct(
         private SystemMessages $systemMessages,

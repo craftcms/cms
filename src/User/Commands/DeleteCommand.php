@@ -14,7 +14,7 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\suggest;
 
-final class DeleteCommand extends Command implements PromptsForMissingInput
+class DeleteCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
     use PromptsForMissingUser;

@@ -8,7 +8,7 @@ use CraftCms\Cms\Twig\Nodes\RequireGuestNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-final class RequireGuestTokenParser extends AbstractTokenParser
+class RequireGuestTokenParser extends AbstractTokenParser
 {
     public function parse(Token $token): RequireGuestNode
     {

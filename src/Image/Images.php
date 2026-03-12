@@ -22,7 +22,7 @@ use yii\base\Exception;
 use function CraftCms\Cms\maxPowerCaptain;
 
 #[Singleton]
-final class Images
+class Images
 {
     public const string MINIMUM_IMAGICK_VERSION = '6.2.9';
 

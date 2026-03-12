@@ -18,7 +18,7 @@ use Illuminate\Support\Traits\Conditionable;
 
 use function CraftCms\Cms\template;
 
-final class CpModalResponse implements Responsable
+class CpModalResponse implements Responsable
 {
     use Conditionable;
 

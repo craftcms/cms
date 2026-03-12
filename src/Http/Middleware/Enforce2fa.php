@@ -13,7 +13,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 
-final readonly class Enforce2fa
+readonly class Enforce2fa
 {
     public function __construct(
         private GeneralConfig $generalConfig,

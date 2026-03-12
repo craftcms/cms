@@ -15,7 +15,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  *
  * {@see Structurable::beforeMoveInStructure()}
  */
-final class BeforeMoveInStructure
+class BeforeMoveInStructure
 {
     use ValidatableEvent;
 

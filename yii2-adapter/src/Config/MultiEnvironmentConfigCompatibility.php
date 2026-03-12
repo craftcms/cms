@@ -11,7 +11,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Config;
 use Symfony\Component\Finder\Finder;
 
-final readonly class MultiEnvironmentConfigCompatibility
+readonly class MultiEnvironmentConfigCompatibility
 {
     public function register(Application $app): void
     {

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Date;
 /**
  * @internal
  */
-final readonly class UpdateRelease
+readonly class UpdateRelease
 {
     public function __construct(
         public string $version,

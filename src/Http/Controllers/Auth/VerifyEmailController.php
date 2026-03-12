@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class VerifyEmailController extends AuthenticationController
+readonly class VerifyEmailController extends AuthenticationController
 {
     public function show(Request $request): Response|View
     {

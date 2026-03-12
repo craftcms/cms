@@ -33,7 +33,7 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 
-final class UpdateCommand extends Command
+class UpdateCommand extends Command
 {
     use BackupTrait;
     use ChecksLicense;

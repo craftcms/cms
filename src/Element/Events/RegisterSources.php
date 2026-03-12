@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Concerns\HasSources;
  *
  * {@see HasSources::sources()}
  */
-final class RegisterSources
+class RegisterSources
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

@@ -14,7 +14,7 @@ use Illuminate\Contracts\Foundation\Application;
 use function Illuminate\Filesystem\join_paths;
 
 #[Singleton]
-final class Path
+class Path
 {
     public function __construct(
         private readonly Application $app,

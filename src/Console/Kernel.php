@@ -11,7 +11,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 /**
  * @internal
  */
-final class Kernel extends \Illuminate\Foundation\Console\Kernel
+class Kernel extends \Illuminate\Foundation\Console\Kernel
 {
     #[Override]
     protected function getArtisan(): ConsoleApplication

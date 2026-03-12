@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Config;
 
 use function Laravel\Prompts\confirm;
 
-final class WelcomeCommand extends Command
+class WelcomeCommand extends Command
 {
     use CraftCommand;
 

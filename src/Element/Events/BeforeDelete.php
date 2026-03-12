@@ -15,7 +15,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  *
  * {@see Element::beforeDelete()}
  */
-final class BeforeDelete
+class BeforeDelete
 {
     use ValidatableEvent;
 

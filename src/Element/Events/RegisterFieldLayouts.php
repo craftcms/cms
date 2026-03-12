@@ -14,7 +14,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
  *
  * {@see HasSources::fieldLayouts()}
  */
-final class RegisterFieldLayouts
+class RegisterFieldLayouts
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

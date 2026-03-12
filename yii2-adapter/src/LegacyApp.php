@@ -11,7 +11,7 @@ use CraftCms\Yii2Adapter\Http\Controller;
 use Illuminate\Contracts\Foundation\Application;
 use yii\BaseYii;
 
-final readonly class LegacyApp
+readonly class LegacyApp
 {
     public function register(Application $app): void
     {

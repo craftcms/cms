@@ -29,7 +29,7 @@ use Override;
  *
  * @see \CraftCms\Cms\Asset\AssetIndexer
  */
-final class AssetIndexer extends Facade
+class AssetIndexer extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

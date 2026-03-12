@@ -13,7 +13,7 @@ use CraftCms\Cms\Validation\Attributes\Ruleset;
 use RuntimeException;
 
 #[Ruleset(SectionSiteSettingsRules::class)]
-final class SectionSiteSettings extends Component
+class SectionSiteSettings extends Component
 {
     private ?Section $section = null;
 

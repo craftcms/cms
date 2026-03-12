@@ -15,7 +15,7 @@ use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-final readonly class ClearCachesController
+readonly class ClearCachesController
 {
     public function __construct(Utilities $utilitiesService)
     {

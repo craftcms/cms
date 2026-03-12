@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Element;
  *
  * {@see Element::afterPropagate()}
  */
-final class AfterPropagate
+class AfterPropagate
 {
     public function __construct(
         public ElementInterface $element,

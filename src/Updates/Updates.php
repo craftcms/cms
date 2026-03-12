@@ -28,7 +28,7 @@ use Throwable;
  * @internal
  */
 #[Singleton]
-final class Updates
+class Updates
 {
     private ?UpdatesData $updates = null;
 

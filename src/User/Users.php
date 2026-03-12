@@ -73,7 +73,7 @@ use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Users
+class Users
 {
     /**
      * @var array Cached user preferences.

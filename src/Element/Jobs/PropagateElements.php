@@ -17,7 +17,7 @@ use Override;
 /**
  * Propagates elements to other sites.
  */
-final class PropagateElements extends BatchedElementJob
+class PropagateElements extends BatchedElementJob
 {
     /**
      * The site ID(s) that the elements should be propagated to.

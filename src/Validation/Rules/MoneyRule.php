@@ -16,7 +16,7 @@ use NumberFormatter;
 
 use function CraftCms\Cms\t;
 
-final readonly class MoneyRule implements ValidationRule
+readonly class MoneyRule implements ValidationRule
 {
     public function __construct(
         private ElementInterface $model,

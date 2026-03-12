@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
  *
  * @property Entry $component
  */
-final class EntryRules extends ElementRules
+class EntryRules extends ElementRules
 {
     #[Override]
     protected function defineRules(): array

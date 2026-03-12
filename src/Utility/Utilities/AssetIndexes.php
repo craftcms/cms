@@ -20,7 +20,7 @@ use function CraftCms\Cms\t;
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
  */
-final class AssetIndexes extends Utility
+class AssetIndexes extends Utility
 {
     #[Override]
     public static function displayName(): string

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-final class UserPermission extends BaseModel
+class UserPermission extends BaseModel
 {
     use HasFactory;
     use HasUid;

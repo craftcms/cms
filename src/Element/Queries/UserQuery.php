@@ -21,7 +21,7 @@ use Override;
 /**
  * @extends ElementQuery<User>
  */
-final class UserQuery extends ElementQuery
+class UserQuery extends ElementQuery
 {
     use QueriesAffiliatedSite;
     use QueriesAssetUploaders;

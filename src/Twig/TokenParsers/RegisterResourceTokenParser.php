@@ -10,7 +10,7 @@ use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 use Twig\TokenStream;
 
-final class RegisterResourceTokenParser extends AbstractTokenParser
+class RegisterResourceTokenParser extends AbstractTokenParser
 {
     /**
      * @var bool Whether the tag supports a tag pair mode for capturing the JS/CSS

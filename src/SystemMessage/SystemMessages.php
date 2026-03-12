@@ -22,7 +22,7 @@ use Tpetry\QueryExpressions\Value\Value;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class SystemMessages
+class SystemMessages
 {
     /** @var Collection<SystemMessage>|null */
     private ?Collection $defaultMessages = null;

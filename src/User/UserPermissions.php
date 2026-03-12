@@ -44,7 +44,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class UserPermissions
+class UserPermissions
 {
     /**
      * @var Collection<PermissionGroup>

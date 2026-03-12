@@ -10,7 +10,7 @@ use Override;
 /**
  * @internal
  */
-final class Migrator extends \Illuminate\Database\Migrations\Migrator
+class Migrator extends \Illuminate\Database\Migrations\Migrator
 {
     /** @var MigrationRepository */
     #[Override]

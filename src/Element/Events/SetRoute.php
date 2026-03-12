@@ -17,7 +17,7 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  *
  * {@see HasRoutesAndUrls::getRoute()}
  */
-final class SetRoute
+class SetRoute
 {
     use HandleableEvent;
 

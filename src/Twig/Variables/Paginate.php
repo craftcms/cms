@@ -10,7 +10,7 @@ use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 
-final class Paginate extends Component
+class Paginate extends Component
 {
     public string $basePath {
         get => $this->getBasePath();

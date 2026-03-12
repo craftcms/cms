@@ -24,7 +24,7 @@ use Stringable;
  * assets registered during a block of code without them appearing in the final output.
  */
 #[Scoped]
-final class HtmlStack
+class HtmlStack
 {
     /** @var array<int, array<string, string>> */
     private array $js = [];

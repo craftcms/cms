@@ -24,7 +24,7 @@ use CraftCms\Cms\User\Data\UserGroup;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
-final class LegacyBehaviorCatalog
+class LegacyBehaviorCatalog
 {
     /**
      * @var list<string>
@@ -362,6 +362,8 @@ final class LegacyBehaviorCatalog
 
     /**
      * @param  array<class-string, list<class-string>>  $registrations
+     * @param  class-string  $class
+     * @param  class-string  $legacyClass
      */
     private static function appendRegistration(array &$registrations, string $class, string $legacyClass): void
     {

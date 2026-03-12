@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 /**
  * @event AfterReplaceAsset The event that is triggered after an asset's file is replaced.
  */
-final class AfterReplaceAsset
+class AfterReplaceAsset
 {
     public function __construct(
         public Asset $asset,

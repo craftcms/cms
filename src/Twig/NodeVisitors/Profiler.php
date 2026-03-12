@@ -18,7 +18,7 @@ use Twig\NodeVisitor\NodeVisitorInterface;
 /**
  * Profiler adds profiling to template bodies, blocks, and macros.
  */
-final class Profiler implements NodeVisitorInterface
+class Profiler implements NodeVisitorInterface
 {
     public function enterNode(Node $node, Environment $env): Node
     {

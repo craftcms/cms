@@ -9,7 +9,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 use function CraftCms\Cms\t;
 
-final class HandleRule implements ValidationRule
+class HandleRule implements ValidationRule
 {
     public static string $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
 

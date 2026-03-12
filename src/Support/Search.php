@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-final readonly class Search
+readonly class Search
 {
     /**
      * Normalizes search keywords.

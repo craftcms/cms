@@ -18,7 +18,7 @@ use InvalidArgumentException;
 use function CraftCms\Cms\cp_redirect;
 use function CraftCms\Cms\template;
 
-final readonly class UtilitiesController
+readonly class UtilitiesController
 {
     public function __construct(
         private Utilities $utilitiesService,

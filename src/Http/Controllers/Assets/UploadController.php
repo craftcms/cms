@@ -29,7 +29,7 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-final readonly class UploadController
+readonly class UploadController
 {
     use EnforcesVolumePermissions;
     use RespondsWithFlash;

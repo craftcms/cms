@@ -8,7 +8,7 @@ namespace CraftCms\Cms\Search;
  * Contains multiple SearchQueryTerm instances, each representing
  * a term in the search query that was combined by "OR".
  */
-final class SearchQueryTermGroup
+class SearchQueryTermGroup
 {
     /** @param  SearchQueryTerm[] $terms */
     public function __construct(

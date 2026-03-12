@@ -18,7 +18,7 @@ use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
-final class CpExtension extends AbstractExtension implements GlobalsInterface
+class CpExtension extends AbstractExtension implements GlobalsInterface
 {
     public function getGlobals(): array
     {

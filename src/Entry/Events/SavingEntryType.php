@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Entry\Events;
 
 use CraftCms\Cms\Entry\Data\EntryType;
 
-final class SavingEntryType
+class SavingEntryType
 {
     public function __construct(
         public EntryType $entryType,

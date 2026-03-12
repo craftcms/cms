@@ -55,7 +55,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 
 #[Scoped]
-final class Sections
+class Sections
 {
     /**
      * @var bool Whether entries should be resaved after a section has been updated.

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
-final class TestToEmailAddressCompatibility
+class TestToEmailAddressCompatibility
 {
     public function boot(): void
     {

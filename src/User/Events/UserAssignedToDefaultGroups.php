@@ -11,7 +11,7 @@ use CraftCms\Cms\User\Elements\User;
 /**
  * @event UserAssignedToDefaultGroups The event that is triggered after a user is assigned to the default user group.
  */
-final class UserAssignedToDefaultGroups
+class UserAssignedToDefaultGroups
 {
     use ValidatableEvent;
 

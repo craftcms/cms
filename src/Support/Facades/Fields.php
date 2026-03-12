@@ -59,7 +59,7 @@ use Override;
  *
  * @see \CraftCms\Cms\Field\Fields
  */
-final class Fields extends Facade
+class Fields extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

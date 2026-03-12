@@ -23,7 +23,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final readonly class PhotoController
+readonly class PhotoController
 {
     use AuthorizesRequests;
     use RespondsWithFlash;

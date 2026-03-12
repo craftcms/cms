@@ -12,7 +12,7 @@ use Override;
 use ReflectionProperty;
 use RuntimeException;
 
-final class Env extends \Illuminate\Support\Env
+class Env extends \Illuminate\Support\Env
 {
     /**
      * Remove a single key from the environment file.

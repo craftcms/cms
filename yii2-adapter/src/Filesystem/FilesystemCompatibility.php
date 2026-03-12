@@ -18,7 +18,7 @@ use League\Flysystem\Filesystem as Flysystem;
 use League\Flysystem\PathPrefixing\PathPrefixedAdapter;
 use Throwable;
 
-final readonly class FilesystemCompatibility
+readonly class FilesystemCompatibility
 {
     public function register(Application $app): void
     {

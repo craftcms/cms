@@ -43,7 +43,7 @@ use Illuminate\Support\Collection;
  * );
  * ```
  */
-final class RegisterSystemMessages
+class RegisterSystemMessages
 {
     public function __construct(
         /** @var Collection<SystemMessage> */

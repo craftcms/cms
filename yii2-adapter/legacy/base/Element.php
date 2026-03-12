@@ -147,6 +147,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new DefineValueEvent([
                     'sender' => $event->element,
                     'value' => $event->tags,
@@ -161,6 +165,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(RegisterSources $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_SOURCES)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->elementType)) {
                     continue;
                 }
 
@@ -181,6 +189,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->elementType)) {
+                    continue;
+                }
+
                 $yiiEvent = new RegisterElementFieldLayoutsEvent([
                     'source' => $event->source,
                     'fieldLayouts' => $event->fieldLayouts,
@@ -195,6 +207,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(RegisterPreviewTargets $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_PREVIEW_TARGETS)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->element::class)) {
                     continue;
                 }
 
@@ -215,6 +231,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->elementType)) {
+                    continue;
+                }
+
                 $yiiEvent = new RegisterElementActionsEvent([
                     'source' => $event->source,
                     'actions' => $event->actions,
@@ -232,6 +252,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->elementType)) {
+                    continue;
+                }
+
                 $yiiEvent = new RegisterElementExportersEvent([
                     'source' => $event->source,
                     'exporters' => $event->exporters,
@@ -246,6 +270,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(Render $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_RENDER)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->element::class)) {
                     continue;
                 }
 
@@ -271,6 +299,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new DefineAttributeKeywordsEvent([
                     'sender' => $event->element,
                     'attribute' => $event->attribute,
@@ -292,6 +324,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->elementType)) {
+                    continue;
+                }
+
                 $yiiEvent = new RegisterElementSortOptionsEvent([
                     'sortOptions' => $event->sortOptions,
                 ]);
@@ -308,6 +344,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->elementType)) {
+                    continue;
+                }
+
                 $yiiEvent = new RegisterElementTableAttributesEvent([
                     'tableAttributes' => $event->tableAttributes,
                 ]);
@@ -321,6 +361,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(RegisterDefaultTableAttributes $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->elementType)) {
                     continue;
                 }
 
@@ -341,6 +385,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->elementType)) {
+                    continue;
+                }
+
                 $yiiEvent = new RegisterElementCardAttributesEvent([
                     'cardAttributes' => $event->cardAttributes,
                     'fieldLayout' => $event->fieldLayout,
@@ -355,6 +403,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(RegisterDefaultCardAttributes $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->elementType)) {
                     continue;
                 }
 
@@ -374,6 +426,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->elementType)) {
+                    continue;
+                }
+
                 $yiiEvent = new RegisterElementSearchableAttributesEvent([
                     'attributes' => $event->attributes,
                 ]);
@@ -387,6 +443,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(PrepQueryForTableAttribute $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->elementType)) {
                     continue;
                 }
 
@@ -406,6 +466,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(DefineEagerLoadingMap $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_EAGER_LOADING_MAP)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->elementType)) {
                     continue;
                 }
 
@@ -430,6 +494,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new SetEagerLoadedElementsEvent([
                     'sender' => $event->element,
                     'handle' => $event->handle,
@@ -448,6 +516,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(BeforeSave $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_BEFORE_SAVE)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->element::class)) {
                     continue;
                 }
 
@@ -470,6 +542,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new ModelEvent([
                     'sender' => $event->element,
                     'isNew' => $event->isNew,
@@ -485,6 +561,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new ModelEvent([
                     'sender' => $event->element,
                     'isNew' => $event->isNew,
@@ -497,6 +577,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(BeforeDelete $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_BEFORE_DELETE)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->element::class)) {
                     continue;
                 }
 
@@ -518,6 +602,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new ModelEvent([
                     'sender' => $event->element,
                 ]);
@@ -529,6 +617,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(BeforeRestore $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_BEFORE_RESTORE)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->element::class)) {
                     continue;
                 }
 
@@ -550,6 +642,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new ModelEvent([
                     'sender' => $event->element,
                 ]);
@@ -561,6 +657,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(DefineAdditionalButtons $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_ADDITIONAL_BUTTONS)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->element::class)) {
                     continue;
                 }
 
@@ -581,6 +681,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new DefineAltActionsEvent([
                     'sender' => $event->element,
                     'altActions' => $event->altActions,
@@ -595,6 +699,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(DefineActionMenuItems $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->element::class)) {
                     continue;
                 }
 
@@ -615,6 +723,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new DefineHtmlEvent([
                     'sender' => $event->element,
                     'html' => $event->html,
@@ -629,6 +741,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(DefineMetaFieldsHtml $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_META_FIELDS_HTML)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->element::class)) {
                     continue;
                 }
 
@@ -650,6 +766,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new DefineMetadataEvent([
                     'sender' => $event->element,
                     'metadata' => $event->metadata,
@@ -667,6 +787,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new RegisterElementHtmlAttributesEvent([
                     'sender' => $event->element,
                     'htmlAttributes' => $event->htmlAttributes,
@@ -681,6 +805,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(DefineAttributeHtml $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_ATTRIBUTE_HTML)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->element::class)) {
                     continue;
                 }
 
@@ -703,6 +831,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new DefineAttributeHtmlEvent([
                     'sender' => $event->element,
                     'attribute' => $event->attribute,
@@ -719,6 +851,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(SetRoute $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_SET_ROUTE)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->element::class)) {
                     continue;
                 }
 
@@ -742,6 +878,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new DefineUrlEvent([
                     'sender' => $event->element,
                     'url' => $event->url,
@@ -759,6 +899,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(DefineUrl $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_DEFINE_URL)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->element::class)) {
                     continue;
                 }
 
@@ -782,6 +926,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
                     continue;
                 }
 
+                if (!is_subclass_of($class, $event->element::class)) {
+                    continue;
+                }
+
                 $yiiEvent = new ElementStructureEvent([
                     'sender' => $event->element,
                     'structureId' => $event->structureId,
@@ -798,6 +946,10 @@ abstract class Element extends \CraftCms\Cms\Element\Element
         Event::listen(function(AfterMoveInStructure $event) use ($elementClasses) {
             foreach ($elementClasses as $class) {
                 if (!YiiEvent::hasHandlers($class, self::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
+                    continue;
+                }
+
+                if (!is_subclass_of($class, $event->element::class)) {
                     continue;
                 }
 

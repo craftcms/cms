@@ -28,7 +28,7 @@ use function CraftCms\Cms\template;
 /**
  * SystemReport represents a SystemReport dashboard widget.
  */
-final class SystemReport extends Utility
+class SystemReport extends Utility
 {
     #[Override]
     public static function displayName(): string

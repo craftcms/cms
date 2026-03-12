@@ -8,7 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Console\Command;
 
-final class UninstallCommand extends Command
+class UninstallCommand extends Command
 {
     use CraftCommand;
     use PromptsForMissingHandle;

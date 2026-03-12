@@ -9,7 +9,7 @@ use CraftCms\Cms\Field\Link;
 /**
  * @see Link::types()
  */
-final class RegisterLinkTypes
+class RegisterLinkTypes
 {
     public function __construct(
         /** @var string[] List of link types. */

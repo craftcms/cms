@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
  *
  * {@see HasControlPanelUI::metaFieldsHtml()}
  */
-final class DefineMetaFieldsHtml
+class DefineMetaFieldsHtml
 {
     /**
      * @param  ElementInterface  $element  The element

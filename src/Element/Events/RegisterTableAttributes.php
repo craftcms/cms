@@ -9,7 +9,7 @@ use craft\base\ElementInterface;
 /**
  * RegisterTableAttributes event is triggered when registering the table attributes for an element type.
  */
-final class RegisterTableAttributes
+class RegisterTableAttributes
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

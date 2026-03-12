@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Component\Events;
 
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 
-final class DefineSettingsAttributes
+class DefineSettingsAttributes
 {
     public function __construct(
         public ConfigurableComponentInterface $component,

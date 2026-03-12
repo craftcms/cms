@@ -18,7 +18,7 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 
 #[Scoped]
-final class Routes
+class Routes
 {
     public array $tokens {
         get => [

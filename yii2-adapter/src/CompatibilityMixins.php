@@ -28,7 +28,7 @@ use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
 use CraftCms\Yii2Adapter\Mixins\VolumeMixin;
 
-final readonly class CompatibilityMixins
+readonly class CompatibilityMixins
 {
     public function register(): void
     {

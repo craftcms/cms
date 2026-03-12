@@ -26,7 +26,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 #[Singleton]
-final readonly class Utilities
+readonly class Utilities
 {
     public function __construct(
         private GeneralConfig $generalConfig,

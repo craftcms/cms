@@ -9,7 +9,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-final readonly class SetHeaders
+readonly class SetHeaders
 {
     public function __construct(
         private GeneralConfig $generalConfig,

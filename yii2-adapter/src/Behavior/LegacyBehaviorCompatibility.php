@@ -16,7 +16,7 @@ use Yii;
 use yii\base\Behavior;
 use yii\base\Event as BaseEvent;
 
-final class LegacyBehaviorCompatibility
+class LegacyBehaviorCompatibility
 {
     /**
      * @var array<class-string, list<class-string>>

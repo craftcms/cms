@@ -9,4 +9,4 @@ use CraftCms\Cms\User\Elements\User;
 /**
  * @event AssigningGroupsAndPermissions The event that is triggered BEFORE user groups and permissions ARE assigned to the user getting saved
  */
-final class AssigningGroupsAndPermissions extends UserEvent {}
+class AssigningGroupsAndPermissions extends UserEvent {}

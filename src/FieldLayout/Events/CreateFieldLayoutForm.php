@@ -45,7 +45,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
  *
  * @see FieldLayout::createForm()
  */
-final class CreateFieldLayoutForm
+class CreateFieldLayoutForm
 {
     public function __construct(
         public FieldLayout $fieldLayout,

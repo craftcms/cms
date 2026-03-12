@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
  *
  * {@see HasControlPanelUI::getHtmlAttributes()}
  */
-final class RegisterHtmlAttributes
+class RegisterHtmlAttributes
 {
     /**
      * @param  ElementInterface  $element  The element

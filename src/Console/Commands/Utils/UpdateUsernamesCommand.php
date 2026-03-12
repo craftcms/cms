@@ -10,7 +10,7 @@ use CraftCms\Cms\Database\Table;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-final class UpdateUsernamesCommand extends Command
+class UpdateUsernamesCommand extends Command
 {
     use CraftCommand;
 

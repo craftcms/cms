@@ -12,7 +12,7 @@ use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Give;
 use Symfony\Component\Console\Input\InputOption;
 
-final class IndexAllAssetsCommand extends Command
+class IndexAllAssetsCommand extends Command
 {
     use CraftCommand;
     use IndexesAssets;

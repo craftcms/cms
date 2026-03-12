@@ -8,7 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Console\Command;
 
-final class EnableCommand extends Command
+class EnableCommand extends Command
 {
     use CraftCommand;
     use PromptsForMissingHandle;

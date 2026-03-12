@@ -20,7 +20,7 @@ use Twig\Extension\CoreExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
-final class DateTwigExtension extends AbstractExtension
+class DateTwigExtension extends AbstractExtension
 {
     #[Override]
     public function getFilters(): array

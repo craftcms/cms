@@ -85,7 +85,7 @@ use yii\db\QueryInterface;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
-final class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
+class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 {
     public function __construct(
         private readonly PageLifecycle $pageLifecycle,

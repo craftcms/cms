@@ -15,7 +15,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  *
  * {@see Element::beforeSave()}
  */
-final class BeforeSave
+class BeforeSave
 {
     use ValidatableEvent;
 

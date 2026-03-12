@@ -45,7 +45,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class FieldsController
+class FieldsController
 {
     use RespondsWithFlash;
 

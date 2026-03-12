@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
  *
  * {@see HasControlPanelUI::getSidebarHtml()}
  */
-final class DefineSidebarHtml
+class DefineSidebarHtml
 {
     /**
      * @param  ElementInterface  $element  The element

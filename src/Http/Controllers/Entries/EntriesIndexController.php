@@ -11,7 +11,7 @@ use Illuminate\Http\RedirectResponse;
 
 use function CraftCms\Cms\cp_redirect;
 
-final readonly class EntriesIndexController
+readonly class EntriesIndexController
 {
     public function __invoke(ElementSources $elementSources): RedirectResponse
     {

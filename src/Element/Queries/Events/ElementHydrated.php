@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Queries\Events;
 
 use craft\base\ElementInterface;
 
-final class ElementHydrated
+class ElementHydrated
 {
     public function __construct(
         public ElementInterface $element,

@@ -30,7 +30,7 @@ use Illuminate\Support\ServiceProvider;
 /**
  * @internal
  */
-final class ConsoleServiceProvider extends ServiceProvider
+class ConsoleServiceProvider extends ServiceProvider
 {
     private array $commands = [
         // Install

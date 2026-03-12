@@ -18,7 +18,7 @@ use Illuminate\Container\Attributes\Scoped;
  * it to asset output or page structure concerns.
  */
 #[Scoped]
-final readonly class PageLifecycle
+readonly class PageLifecycle
 {
     public const string HEAD_PLACEHOLDER = '<![CDATA[CRAFT-BLOCK-HEAD]]>';
 

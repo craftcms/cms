@@ -16,7 +16,7 @@ use Tpetry\QueryExpressions\Language\Alias;
  *
  * Any soft-deleted nested elements that have revisions will be skipped, as their revisions may still be needed by the owner element.
  */
-final class HardDeleteElements extends GarbageCollectionAction
+class HardDeleteElements extends GarbageCollectionAction
 {
     public function __invoke(): void
     {

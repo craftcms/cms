@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
 
-final class RequestMixin
+class RequestMixin
 {
     public function isCpRequest(): Closure
     {

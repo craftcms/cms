@@ -26,7 +26,7 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-final readonly class PermissionsController
+readonly class PermissionsController
 {
     use ConfirmsPasswords;
     use EditUserTrait;

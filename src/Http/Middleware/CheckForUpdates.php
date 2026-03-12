@@ -16,7 +16,7 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
-final readonly class CheckForUpdates
+readonly class CheckForUpdates
 {
     public function __construct(
         private Updates $updates,

@@ -11,7 +11,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  *
  * You may set [[$isValid]] to `false` to prevent the user from getting assigned to the groups.
  */
-final class AssigningUserToGroups
+class AssigningUserToGroups
 {
     use ValidatableEvent;
 

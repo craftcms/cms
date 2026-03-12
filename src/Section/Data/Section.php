@@ -96,7 +96,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
         ];
     }
 
-    public static function get(int|string $id): ?static
+    public static function get(int|string $id): ?self
     {
         return Sections::getSectionById($id);
     }

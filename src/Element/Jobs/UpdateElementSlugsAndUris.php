@@ -16,7 +16,7 @@ use Override;
 /**
  * Updates element slugs and URIs.
  */
-final class UpdateElementSlugsAndUris extends Job
+class UpdateElementSlugsAndUris extends Job
 {
     private int $totalToProcess = 0;
 

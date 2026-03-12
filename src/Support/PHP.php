@@ -14,7 +14,7 @@ use Symfony\Component\Process\PhpExecutableFinder;
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
 
-final class PHP
+class PHP
 {
     private static array $basePaths = [];
 

@@ -11,7 +11,7 @@ use CraftCms\Cms\SystemMessage\SystemMessageRenderContext;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\View\TemplateMode;
 
-final readonly class FormatSystemMessageMailAction
+readonly class FormatSystemMessageMailAction
 {
     public function __construct(
         private GeneralConfig $generalConfig,

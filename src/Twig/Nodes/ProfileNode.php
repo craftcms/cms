@@ -11,7 +11,7 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class ProfileNode extends Node
+class ProfileNode extends Node
 {
     /**
      * Constructor.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View\Data;
 
-final readonly class TemplateCacheContext
+readonly class TemplateCacheContext
 {
     public function __construct(
         public string $cacheKey,

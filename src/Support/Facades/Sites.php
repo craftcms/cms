@@ -38,7 +38,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\Site\Sites
  */
-final class Sites extends Facade
+class Sites extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

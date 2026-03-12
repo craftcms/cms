@@ -11,7 +11,7 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 
 use function Laravel\Prompts\info;
 
-final class PasswordResetUrlCommand extends Command implements PromptsForMissingInput
+class PasswordResetUrlCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
     use PromptsForMissingUser;

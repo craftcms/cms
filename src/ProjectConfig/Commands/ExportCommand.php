@@ -26,7 +26,7 @@ use function Laravel\Prompts\confirm;
  * - A filename (export will be saved in the working directory with the given name)
  * - Blank (export will be saved in the working directly with a dynamically-generated name)
  */
-final class ExportCommand extends Command
+class ExportCommand extends Command
 {
     use CraftCommand;
 

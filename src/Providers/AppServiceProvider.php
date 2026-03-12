@@ -45,7 +45,7 @@ use RuntimeException;
 use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\t;
 
-final class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
     private string $root = __DIR__.'/../..';
 

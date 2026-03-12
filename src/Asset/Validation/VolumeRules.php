@@ -20,7 +20,7 @@ use Illuminate\Validation\Rule;
 use function CraftCms\Cms\t;
 
 /** @extends Ruleset<Volume> */
-final class VolumeRules extends Ruleset
+class VolumeRules extends Ruleset
 {
     #[\Override]
     public function defineRules(): array

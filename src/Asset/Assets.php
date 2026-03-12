@@ -48,7 +48,7 @@ use yii\base\NotSupportedException;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Assets
+class Assets
 {
     /** @var VolumeFolder[] */
     private array $userTempFolders = [];

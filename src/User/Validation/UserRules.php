@@ -24,7 +24,7 @@ use function CraftCms\Cms\t;
  *
  * @property User $component
  */
-final class UserRules extends ElementRules
+class UserRules extends ElementRules
 {
     private const array TRIMMABLE_ATTRIBUTES = [
         'email',

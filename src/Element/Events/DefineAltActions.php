@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Concerns\HasControlPanelUI;
  *
  * {@see HasControlPanelUI::getAltActions()}
  */
-final class DefineAltActions
+class DefineAltActions
 {
     public function __construct(
         public ElementInterface $element,

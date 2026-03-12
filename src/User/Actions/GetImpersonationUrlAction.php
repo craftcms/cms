@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\action_url;
 
-final readonly class GetImpersonationUrlAction
+readonly class GetImpersonationUrlAction
 {
     public function __construct(
         private RouteTokens $tokens,

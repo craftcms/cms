@@ -13,7 +13,7 @@ use function CraftCms\Cms\t;
 /**
  * DbBackup represents a DbBackup dashboard widget.
  */
-final class DbBackup extends Utility
+class DbBackup extends Utility
 {
     #[Override]
     public static function displayName(): string

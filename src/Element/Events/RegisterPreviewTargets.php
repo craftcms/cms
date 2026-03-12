@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Concerns\HasPreviewTargets;
  *
  * {@see HasPreviewTargets::getPreviewTargets()}
  */
-final class RegisterPreviewTargets
+class RegisterPreviewTargets
 {
     /**
      * @param  ElementInterface  $element  The element

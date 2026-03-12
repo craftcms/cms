@@ -16,7 +16,7 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-final class AddCategoriesSupportCommand extends Command
+class AddCategoriesSupportCommand extends Command
 {
     use ConfirmableTrait;
     use CraftCommand;

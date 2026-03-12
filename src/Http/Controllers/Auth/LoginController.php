@@ -23,7 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\template;
 
-final readonly class LoginController extends AuthenticationController
+readonly class LoginController extends AuthenticationController
 {
     public function showLogin(Request $request): Response|View
     {

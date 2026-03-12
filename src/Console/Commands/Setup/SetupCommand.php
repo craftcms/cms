@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Config;
 
 use function Laravel\Prompts\confirm;
 
-final class SetupCommand extends Command
+class SetupCommand extends Command
 {
     use CraftCommand;
 

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Event;
 
 use function CraftCms\Cms\t;
 
-final readonly class Settings
+readonly class Settings
 {
     public function __construct(
         private GeneralConfig $generalConfig,

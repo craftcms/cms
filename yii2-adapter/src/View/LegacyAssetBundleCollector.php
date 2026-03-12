@@ -9,7 +9,7 @@ use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
 use yii\web\AssetBundle;
 
-final class LegacyAssetBundleCollector implements CacheCollectorInterface
+class LegacyAssetBundleCollector implements CacheCollectorInterface
 {
     public static function key(): string
     {

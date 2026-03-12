@@ -14,7 +14,7 @@ use Webauthn\PublicKeyCredentialUserEntity;
 
 use function CraftCms\Cms\t;
 
-final class CredentialRepository implements PublicKeyCredentialSourceRepository
+class CredentialRepository implements PublicKeyCredentialSourceRepository
 {
     public function findOneByCredentialId(string $publicKeyCredentialId): ?PublicKeyCredentialSource
     {

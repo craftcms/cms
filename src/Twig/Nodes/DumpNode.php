@@ -12,7 +12,7 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class DumpNode extends Node
+class DumpNode extends Node
 {
     #[Override]
     public function compile(Compiler $compiler): void

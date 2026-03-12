@@ -23,7 +23,7 @@ use Yiisoft\Arrays\ArrayableInterface;
  * @mixin Twig
  */
 #[Scoped]
-final class TemplateRenderer
+class TemplateRenderer
 {
     /** @var TemplateWrapper[] Object template cache */
     private array $objectTemplates = [];

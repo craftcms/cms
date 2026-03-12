@@ -18,7 +18,7 @@ use Money\Money;
 use Serializable;
 use Tpetry\QueryExpressions\Function\String\Lower;
 
-final readonly class Query
+readonly class Query
 {
     const string SIMPLE_TYPE_NUMERIC = 'numeric';
 

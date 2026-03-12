@@ -9,7 +9,7 @@ use Twig\Node\Expression\ConstantExpression;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-final class RedirectTokenParser extends AbstractTokenParser
+class RedirectTokenParser extends AbstractTokenParser
 {
     public function parse(Token $token): RedirectNode
     {

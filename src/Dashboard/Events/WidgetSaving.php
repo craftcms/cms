@@ -10,7 +10,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 /**
  * @event WidgetSaving The event that is triggered before a widget is saved.
  */
-final class WidgetSaving
+class WidgetSaving
 {
     use ValidatableEvent;
 

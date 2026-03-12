@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
 /**
  * @extends ElementQuery<Address>
  */
-final class AddressQuery extends ElementQuery
+class AddressQuery extends ElementQuery
 {
     use QueriesNestedElements;
 

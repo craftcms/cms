@@ -8,7 +8,7 @@ use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Support\Html;
 use Symfony\Component\Mime\MimeTypes;
 
-final class Image
+class Image
 {
     /**
      * @var array{int,int}|null

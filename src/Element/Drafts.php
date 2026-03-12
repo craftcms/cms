@@ -33,7 +33,7 @@ use yii\base\Exception;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final readonly class Drafts
+readonly class Drafts
 {
     /**
      * Returns drafts for a given element ID that the current user is allowed to edit

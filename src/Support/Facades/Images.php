@@ -28,7 +28,7 @@ use Override;
  *
  * @see \CraftCms\Cms\Image\Images
  */
-final class Images extends Facade
+class Images extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

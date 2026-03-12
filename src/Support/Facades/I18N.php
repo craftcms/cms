@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\Translation\I18N
  */
-final class I18N extends Facade
+class I18N extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

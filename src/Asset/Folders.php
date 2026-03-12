@@ -27,7 +27,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Folders
+class Folders
 {
     /** @var array<int, VolumeFolder|null> */
     private array $foldersById = [];

@@ -41,7 +41,7 @@ use function CraftCms\Cms\normalizeVersion;
  * @internal
  */
 #[Singleton]
-final class Api
+class Api
 {
     private static string $craftApiEndpoint;
 

@@ -44,7 +44,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\maxPowerCaptain;
 
 #[Scoped]
-final class Sites
+class Sites
 {
     /**
      * This value can be configured as needed, but exists as a safeguard against performance issues.

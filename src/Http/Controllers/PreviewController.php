@@ -21,7 +21,7 @@ use Illuminate\Support\Uri;
 
 use function CraftCms\Cms\t;
 
-final readonly class PreviewController
+readonly class PreviewController
 {
     use EnforcesPermissions;
 
