@@ -165,7 +165,7 @@ trait HasControlPanelUI
         // Validate
         if (
             ! $this->getIsRevision() &&
-            ! Craft::$app->getRequest()->getHeaders()->has('X-Craft-Container-Id') &&
+            ! request()->headers->has('X-Craft-Container-Id') &&
             Craft::$app->controller instanceof ElementsController &&
             Craft::$app->controller->element === $this
         ) {

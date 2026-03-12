@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use Craft;
-use craft\web\Controller;
 use CraftCms\Cms\Component\Concerns\HasComponentEvents;
 use CraftCms\Cms\Component\Events\ComponentEvent;
 use CraftCms\Cms\Plugin\Plugin;
@@ -14,7 +12,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
-use yii\web\Response;
+
+use function CraftCms\Cms\template;
 
 /**
  * @mixin Plugin
@@ -83,7 +82,7 @@ trait HasSettings
         return $this->settingsResponse(true);
     }
 
-    private function settingsResponse(bool $readOnly): Response
+    private function settingsResponse(bool $readOnly): mixed
     {
         $settingsHtml = InputNamespace::namespaceInputs(function () use ($readOnly) {
             if ($readOnly) {
@@ -94,14 +93,11 @@ trait HasSettings
             return (string) $this->settingsHtml();
         }, 'settings');
 
-        /** @var Controller $controller */
-        $controller = Craft::$app->controller;
-
-        return $controller->rendertemplate('settings/plugins/_settings', [
+        return response(template('settings/plugins/_settings', [
             'plugin' => $this,
             'settingsHtml' => $settingsHtml,
             'readOnly' => $readOnly,
-        ]);
+        ]));
     }
 
     public function beforeSaveSettings(): bool

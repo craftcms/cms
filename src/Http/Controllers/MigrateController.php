@@ -83,7 +83,7 @@ class MigrateController
             DB::rollBack();
 
             // MySQL may have implicitly committed the transaction
-            $restored = Craft::$app->getDb()->getIsPgsql();
+            $restored = DB::isPgsql();
 
             // Do we have a backup?
             if (! $restored && ! empty($backupPath)) {

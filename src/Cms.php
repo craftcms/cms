@@ -48,6 +48,11 @@ readonly class Cms
         return $name ?: config('app.name', 'Craft');
     }
 
+    public static function systemUid(): ?string
+    {
+        return Info::fetch()->uid;
+    }
+
     public static function isInstalled(bool $strict = false): bool
     {
         if ($strict) {

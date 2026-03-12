@@ -1230,9 +1230,9 @@ class Users
         }
 
         if (UrlHelper::isRootRelativeUrl($url)) {
-            $request = Craft::$app->getRequest();
+            $request = request();
             if (! app()->runningInConsole()) {
-                $url = rtrim($request->getHostInfo().$request->getBaseUrl(), '/').$url;
+                $url = rtrim($request->getSchemeAndHttpHost().$request->getBaseUrl(), '/').$url;
             }
         }
 

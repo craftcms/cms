@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin;
 
-use Craft;
-use craft\base\Plugin;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
@@ -21,9 +19,11 @@ use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginDisabled;
 use CraftCms\Cms\Plugin\Events\PluginEnabled;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
+use CraftCms\Cms\Plugin\Events\PluginRegistered;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
+use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
@@ -31,7 +31,6 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -51,7 +50,6 @@ use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
-use yii\base\Module;
 
 use function CraftCms\Cms\t;
 
@@ -849,7 +847,6 @@ class Plugins
                 Aliases::set($alias, $path);
             }
 
-            // Unset them so we don't end up calling Module::setAliases()
             unset($config['aliases']);
         }
 
@@ -1252,10 +1249,7 @@ class Plugins
     {
         $this->plugins[$plugin->handle] = $plugin;
 
-        if ($plugin instanceof Module) {
-            /** @var Plugin $plugin */
-            app('Craft')->setModule($plugin->handle, $plugin);
-        }
+        event(new PluginRegistered($plugin));
     }
 
     /**
@@ -1267,9 +1261,7 @@ class Plugins
     {
         unset($this->plugins[$plugin->handle]);
 
-        if ($plugin instanceof Module) {
-            app('Craft')->setModule($plugin->handle, null);
-        }
+        event(new PluginUnregistered($plugin));
     }
 
     /**

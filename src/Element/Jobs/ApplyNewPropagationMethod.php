@@ -212,7 +212,7 @@ class ApplyNewPropagationMethod extends BatchedJob
         try {
             Craft::$app->getElements()->saveElement($item, updateSearchIndex: false, saveContent: true);
         } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
+            report($e);
         }
     }
 }

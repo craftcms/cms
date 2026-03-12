@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use Override;
@@ -114,7 +114,7 @@ class Tip extends BaseUiElement
             : '';
 
         if ($this->dismissible) {
-            $key = sprintf('Craft-%s.dismissedTips', Craft::$app->getSystemUid());
+            $key = sprintf('Craft-%s.dismissedTips', Cms::systemUid());
             $js = <<<JAVASCRIPT
 if (
   typeof localStorage !== 'undefined' &&

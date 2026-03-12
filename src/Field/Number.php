@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Localization;
@@ -320,7 +319,7 @@ JS;
             return Schema::TYPE_INTEGER;
         }
 
-        if (Craft::$app->getDb()->getIsMysql()) {
+        if (DB::isMysql()) {
             return sprintf('%s(65,%s)', Schema::TYPE_DECIMAL, $this->decimals);
         }
 
