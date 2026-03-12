@@ -15,6 +15,7 @@ use craft\base\Fs;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use craft\controllers\ElementIndexesController;
+use craft\controllers\ElementsController;
 use craft\controllers\ElementSelectorModalsController;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -1825,6 +1826,55 @@ $('#' + $id).on('activate', () => {
 JS,[
                 $view->namespaceInputId($editImageId),
                 $this->id,
+            ]);
+        }
+
+        if (
+            Craft::$app->controller instanceof ElementsController &&
+            Craft::$app->controller->element === $this &&
+            Craft::$app->getUser()->getIsAdmin() &&
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            $items[] = ['type' => MenuItemType::HR];
+
+            // Volume settings
+            $volumeEditId = sprintf('edit-volume-%s', mt_rand());
+            $items[] = [
+                'id' => $volumeEditId,
+                'icon' => 'gear',
+                'label' => Craft::t('app', 'Volume settings'),
+            ];
+
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
+(() => {
+  $('#' + $id).on('activate', function() {
+    const params = $params;
+    new Craft.CpScreenSlideout('volumes/edit-volume', {params});
+  });
+})();
+JS, [
+                $view->namespaceInputId($volumeEditId),
+                ['volumeId' => $this->volumeId],
+            ]);
+
+            // Filesystem settings
+            $fsEditId = sprintf('edit-fs-%s', mt_rand());
+            $items[] = [
+                'id' => $fsEditId,
+                'icon' => 'gear',
+                'label' => Craft::t('app', 'Filesystem settings'),
+            ];
+
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
+(() => {
+  $('#' + $id).on('activate', function() {
+    const params = $params;
+    new Craft.CpScreenSlideout('fs/edit', {params});
+  });
+})();
+JS, [
+                $view->namespaceInputId($fsEditId),
+                ['handle' => $this->getVolume()->getFs()->handle],
             ]);
         }
 

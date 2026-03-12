@@ -11,11 +11,13 @@ use craft\base\Element;
 use craft\base\NameTrait;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
+use craft\controllers\ElementsController;
 use craft\db\Table;
 use craft\elements\actions\Copy;
 use craft\elements\conditions\addresses\AddressCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AddressQuery;
+use craft\enums\MenuItemType;
 use craft\fieldlayoutelements\addresses\LatLongField;
 use craft\fieldlayoutelements\addresses\OrganizationField;
 use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
@@ -462,6 +464,46 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public function canCreateDrafts(User $user): bool
     {
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function safeActionMenuItems(): array
+    {
+        $items = parent::safeActionMenuItems();
+
+        if (
+            Craft::$app->controller instanceof ElementsController &&
+            Craft::$app->controller->element === $this &&
+            Craft::$app->getUser()->getIsAdmin() &&
+            Craft::$app->getConfig()->getGeneral()->allowAdminChanges &&
+            !empty($this->fieldId)
+        ) {
+            $items[] = ['type' => MenuItemType::HR];
+
+            // Field settings
+            $fieldEditId = sprintf('edit-field-%s', mt_rand());
+            $items[] = [
+                'id' => $fieldEditId,
+                'icon' => 'gear',
+                'label' => Craft::t('app', 'Field settings'),
+            ];
+
+            $view = Craft::$app->getView();
+            $view->registerJsWithVars(fn($id, $params) => <<<JS
+    (() => {
+      $('#' + $id).on('activate', function() {
+        new Craft.CpScreenSlideout('fields/edit-field', {params: $params});
+      });
+    })();
+    JS, [
+                $view->namespaceInputId($fieldEditId),
+                ['fieldId' => $this->fieldId],
+            ]);
+        }
+
+        return $items;
     }
 
     /**

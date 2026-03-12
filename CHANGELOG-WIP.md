@@ -5,6 +5,8 @@
 - Number fields now show their selected currency beside their input, if their Preview Format setting is set to “As currency values”. ([#18498](https://github.com/craftcms/cms/pull/18498))
 - Text condition rules now have “does not equal” operators.
 - Editable table columns now set `min-width` styles based on their configured widths, if set. ([#18534](https://github.com/craftcms/cms/issues/18534))
+- Address edit screens now have “Field settings” action menu items. ([#18544](https://github.com/craftcms/cms/discussions/18544))
+- Asset edit screens now have “Volume settings” and “Filesystem settings” action menu items. ([#18544](https://github.com/craftcms/cms/discussions/18544))
 - Entries’ “Entry type settings” and “Section settings” action menu items are now only shown for element edit screens’ primary action menus. 
 
 ### Administration
