@@ -9,7 +9,7 @@ use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
 use CraftCms\Cms\User\Elements\User;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
-final class CustomUserResolver implements ResolvesOAuthUser
+class CustomUserResolver implements ResolvesOAuthUser
 {
     public static ?int $userId = null;
 

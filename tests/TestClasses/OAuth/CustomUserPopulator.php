@@ -9,7 +9,7 @@ use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
 use CraftCms\Cms\User\Elements\User;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
-final class CustomUserPopulator implements PopulatesOAuthUser
+class CustomUserPopulator implements PopulatesOAuthUser
 {
     public function handle(
         ProviderDefinition $provider,

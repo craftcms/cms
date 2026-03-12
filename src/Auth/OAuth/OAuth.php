@@ -48,7 +48,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 #[Scoped]
-final class OAuth
+class OAuth
 {
     private const string CP_CONTEXT_VALUE = 'cp';
 

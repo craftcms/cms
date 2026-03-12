@@ -8,7 +8,7 @@ use CraftCms\Cms\Auth\OAuth\Contracts\ResolvesOAuthIdentity;
 use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
-final class CustomIdentityResolver implements ResolvesOAuthIdentity
+class CustomIdentityResolver implements ResolvesOAuthIdentity
 {
     public function handle(ProviderDefinition $provider, SocialiteUser $socialiteUser): string
     {

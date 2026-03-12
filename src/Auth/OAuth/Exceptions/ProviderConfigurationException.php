@@ -6,4 +6,4 @@ namespace CraftCms\Cms\Auth\OAuth\Exceptions;
 
 use InvalidArgumentException;
 
-final class ProviderConfigurationException extends InvalidArgumentException {}
+class ProviderConfigurationException extends InvalidArgumentException {}

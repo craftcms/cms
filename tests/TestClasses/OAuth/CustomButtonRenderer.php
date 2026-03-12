@@ -8,7 +8,7 @@ use CraftCms\Cms\Auth\OAuth\Contracts\RendersOAuthButton;
 use CraftCms\Cms\Auth\OAuth\Data\ButtonData;
 use Illuminate\Support\HtmlString;
 
-final class CustomButtonRenderer implements RendersOAuthButton
+class CustomButtonRenderer implements RendersOAuthButton
 {
     public function handle(ButtonData $button): HtmlString
     {

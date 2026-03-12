@@ -24,7 +24,7 @@ use Throwable;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
-final readonly class OAuthController extends AuthenticationController
+readonly class OAuthController extends AuthenticationController
 {
     private const string CP_CONTEXT_VALUE = 'cp';
 

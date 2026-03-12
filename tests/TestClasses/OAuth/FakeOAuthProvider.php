@@ -8,9 +8,10 @@ use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Contracts\User as SocialiteUserContract;
 use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\User as SocialiteUser;
+use Override;
 use Throwable;
 
-final class FakeOAuthProvider extends AbstractProvider
+class FakeOAuthProvider extends AbstractProvider
 {
     public static ?SocialiteUserContract $fakeUser = null;
 
@@ -45,13 +46,13 @@ final class FakeOAuthProvider extends AbstractProvider
         });
     }
 
-    #[\Override]
+    #[Override]
     public function redirect(): RedirectResponse
     {
         return new RedirectResponse('https://provider.test/oauth/authorize');
     }
 
-    #[\Override]
+    #[Override]
     public function user(): SocialiteUserContract
     {
         if (self::$exception) {
@@ -61,7 +62,7 @@ final class FakeOAuthProvider extends AbstractProvider
         return self::$fakeUser ?? self::fakeUser();
     }
 
-    #[\Override]
+    #[Override]
     public function with(array $parameters)
     {
         self::$withParameters = $parameters;
@@ -69,7 +70,7 @@ final class FakeOAuthProvider extends AbstractProvider
         return parent::with($parameters);
     }
 
-    #[\Override]
+    #[Override]
     public function stateless()
     {
         self::$usedStateless = true;

@@ -8,7 +8,7 @@ use CraftCms\Cms\Auth\OAuth\Data\ProviderDefinition;
 use CraftCms\Cms\User\Elements\User;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
-final class ResolvingOAuthUserLink
+class ResolvingOAuthUserLink
 {
     public function __construct(
         public ProviderDefinition $provider,
