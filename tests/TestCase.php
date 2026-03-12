@@ -9,7 +9,6 @@ use craft\test\TestSetup;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Field;
@@ -61,8 +60,7 @@ class TestCase extends Orchestra
         Config::set('app.timezone', 'America/Los_Angeles');
         date_default_timezone_set('America/Los_Angeles');
 
-        // Tests run in Pro and Cp by default
-        Edition::set(Edition::Pro);
+        // Tests run in Cp by default
         TemplateMode::set(TemplateMode::Cp);
 
         File::cleanDirectory(config_path('craft/project'));
