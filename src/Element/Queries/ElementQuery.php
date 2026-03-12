@@ -105,6 +105,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * All of the globally registered builder macros.
      */
+    #[Override]
     protected static $macros = [];
 
     /**
@@ -862,6 +863,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @param  string  $method
      * @param  array  $parameters
      */
+    #[Override]
     public function __call($method, $parameters): mixed
     {
         if ($method === 'macro') {
@@ -940,6 +942,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @throws \BadMethodCallException
      */
+    #[Override]
     public static function __callStatic($method, $parameters): mixed
     {
         if ($method === 'macro') {
