@@ -15,6 +15,7 @@ use craft\test\TestSetup;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\RouteToken\RouteTokens;
+use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Request;
 use Mockery;
 use UnitTester;
@@ -259,10 +260,6 @@ class UrlHelperTest extends TestCase
      */
     public function testTokenizedSiteUrl(): void
     {
-        $this->tester->mockCraftMethods('request', [
-            'getToken' => 't0k3n',
-        ]);
-
         app()->bind(RouteTokens::class, function() {
             $mock = Mockery::mock(RouteTokens::class);
             $mock->makePartial()
@@ -272,9 +269,9 @@ class UrlHelperTest extends TestCase
             return $mock;
         });
 
-        Request::macro('isCpRequest', function() {
-            return false;
-        });
+        app()->instance('request', HttpRequest::create('/endpoint', 'GET', [
+            Cms::config()->tokenParam => 't0k3n',
+        ]));
 
         $expected = TestSetup::SITE_URL . 'endpoint?token=t0k3n';
         self::assertSame($expected, UrlHelper::url('endpoint'));
@@ -286,7 +283,7 @@ class UrlHelperTest extends TestCase
      */
     public function testActionUrl(): void
     {
-        $expected = Aliases::get('@web/actions/endpoint');
+        $expected = TestSetup::SITE_URL . 'actions/endpoint';
         self::assertSame($expected, UrlHelper::actionUrl('endpoint', null, null, false));
     }
 
