@@ -8,8 +8,9 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
-final class EntryTypeFactory extends Factory
+class EntryTypeFactory extends Factory
 {
+    #[Override]
     protected $model = EntryType::class;
 
     #[Override]

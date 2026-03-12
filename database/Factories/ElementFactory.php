@@ -13,8 +13,9 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\DB;
 use Override;
 
-final class ElementFactory extends Factory
+class ElementFactory extends Factory
 {
+    #[Override]
     protected $model = Element::class;
 
     #[Override]

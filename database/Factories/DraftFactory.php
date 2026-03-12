@@ -11,8 +11,9 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
-final class DraftFactory extends Factory
+class DraftFactory extends Factory
 {
+    #[Override]
     protected $model = Draft::class;
 
     #[Override]

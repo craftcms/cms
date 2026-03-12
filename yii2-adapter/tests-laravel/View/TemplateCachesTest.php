@@ -8,7 +8,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\Cache;
 use yii\web\AssetBundle;
 
-final class TestAssetBundle extends AssetBundle
+class TestAssetBundle extends AssetBundle
 {
 }
 

@@ -15,8 +15,9 @@ use Illuminate\Support\Facades\Hash;
 use Override;
 use RuntimeException;
 
-final class UserFactory extends Factory
+class UserFactory extends Factory
 {
+    #[Override]
     protected $model = User::class;
 
     #[Override]

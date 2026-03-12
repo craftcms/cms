@@ -12,8 +12,9 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-final class FieldLayoutFactory extends Factory
+class FieldLayoutFactory extends Factory
 {
+    #[\Override]
     protected $model = FieldLayout::class;
 
     public function definition(): array

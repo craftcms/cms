@@ -20,7 +20,7 @@ use yii\base\Event;
 
 uses(TestCase::class);
 
-final class TestCompatibilityBehavior extends Behavior
+class TestCompatibilityBehavior extends Behavior
 {
     public string $value = 'bar';
 

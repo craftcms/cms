@@ -15,10 +15,11 @@ use CraftCms\Cms\Section\Models\Section;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
-final class EntryFactory extends Factory
+class EntryFactory extends Factory
 {
     use HasFieldFactory;
 
+    #[Override]
     protected $model = Entry::class;
 
     #[Override]

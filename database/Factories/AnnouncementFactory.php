@@ -1,16 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Factories;
 
 use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Override;
 
-final class AnnouncementFactory extends Factory
+class AnnouncementFactory extends Factory
 {
+    #[Override]
     protected $model = Announcement::class;
 
-    #[\Override]
+    #[Override]
     public function definition(): array
     {
         return [
