@@ -46,7 +46,7 @@ use function CraftCms\Cms\template;
 /**
  * Content Block field type
  */
-final class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface
+class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface
 {
     private const string VIEW_MODE_GROUPED = 'grouped';
 

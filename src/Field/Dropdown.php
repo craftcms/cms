@@ -19,7 +19,7 @@ use function CraftCms\Cms\t;
 /**
  * Dropdown represents a Dropdown field.
  */
-final class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface, SortableFieldInterface
+class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface, SortableFieldInterface
 {
     #[\Override]
     protected static bool $optgroups = true;

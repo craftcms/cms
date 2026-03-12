@@ -28,7 +28,7 @@ use function CraftCms\Cms\t;
  *
  * @property string|null $defaultColor
  */
-final class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string

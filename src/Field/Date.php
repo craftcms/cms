@@ -34,7 +34,7 @@ use function CraftCms\Cms\template;
 /**
  * Date represents a Date/Time field.
  */
-final class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string

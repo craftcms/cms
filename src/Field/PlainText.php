@@ -22,7 +22,7 @@ use function CraftCms\Cms\template;
 /**
  * PlainText represents a Plain Text field.
  */
-final class PlainText extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class PlainText extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string

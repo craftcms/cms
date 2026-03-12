@@ -16,7 +16,7 @@ use function CraftCms\Cms\template;
 /**
  * Checkboxes represents a Checkboxes field.
  */
-final class Checkboxes extends BaseOptionsField
+class Checkboxes extends BaseOptionsField
 {
     #[Override]
     protected static bool $multi = true;

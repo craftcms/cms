@@ -16,7 +16,7 @@ use function CraftCms\Cms\template;
 /**
  * RadioButtons represents a Radio Buttons field.
  */
-final class RadioButtons extends BaseOptionsField implements SortableFieldInterface
+class RadioButtons extends BaseOptionsField implements SortableFieldInterface
 {
     #[Override]
     protected static bool $allowCustomOptions = true;

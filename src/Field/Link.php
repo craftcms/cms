@@ -49,7 +49,7 @@ use function CraftCms\Cms\t;
 /**
  * Link represents a Link field.
  */
-final class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface
+class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface
 {
     use RelationalField;
 

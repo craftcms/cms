@@ -24,7 +24,7 @@ use function CraftCms\Cms\template;
 /**
  * Range represents a Range field, which provides a tactile UI around a numeric value.
  */
-final class Range extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Range extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string

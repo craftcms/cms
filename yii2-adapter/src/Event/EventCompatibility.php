@@ -14,6 +14,10 @@ use craft\elements\Entry;
 use craft\events\EditionChangeEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\fieldlayoutelements\BaseField;
+use craft\fields\Assets as LegacyAssetsField;
+use craft\fields\BaseOptionsField as LegacyBaseOptionsField;
+use craft\fields\Link as LegacyLinkField;
+use craft\fields\Matrix as LegacyMatrixField;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\FieldLayout;
 use craft\services\Addresses;
@@ -79,6 +83,10 @@ final readonly class EventCompatibility
         /**
          * Fields
          */
+        LegacyAssetsField::registerEvents();
+        LegacyBaseOptionsField::registerEvents();
+        LegacyLinkField::registerEvents();
+        LegacyMatrixField::registerEvents();
         FieldEvents::registerEvents();
 
         /**

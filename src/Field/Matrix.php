@@ -76,7 +76,7 @@ use function CraftCms\Cms\template;
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
-final class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
+class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
 {
     /**
      * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
