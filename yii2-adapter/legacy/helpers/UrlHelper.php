@@ -693,9 +693,9 @@ class UrlHelper
                     !isset($params['x-craft-live-preview']) &&
                     request()->isPreview()
                 ) {
-                    if (($previewToken = $request->getQueryParam('x-craft-preview')) !== null) {
+                    if (($previewToken = request()->query('x-craft-preview')) !== null) {
                         $params['x-craft-preview'] = $previewToken;
-                    } elseif (($previewToken = $request->getQueryParam('x-craft-live-preview')) !== null) {
+                    } elseif (($previewToken = request()->query('x-craft-live-preview')) !== null) {
                         $params['x-craft-live-preview'] = $previewToken;
                     }
                 }
@@ -719,12 +719,12 @@ class UrlHelper
         if ($showScriptName) {
             $baseUrl = sprintf('%s/%s',
                 rtrim($baseUrl, '/'),
-                ($request->getIsConsoleRequest() ? 'index.php' : basename($request->getScriptUrl())),
+                (app()->runningInConsole() ? 'index.php' : basename(Craft::$app->getRequest()->getScriptUrl())),
             );
         }
 
         if ($scheme === null && !static::isAbsoluteUrl($baseUrl)) {
-            $scheme = !$request->getIsConsoleRequest() && $request->getIsSecureConnection() ? 'https' : 'http';
+            $scheme = !app()->runningInConsole() && Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
         }
 
         if ($scheme !== null) {

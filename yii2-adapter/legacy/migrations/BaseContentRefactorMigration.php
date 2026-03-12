@@ -3,16 +3,16 @@
 namespace craft\migrations;
 
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\fieldlayoutelements\CustomField;
-use craft\fields\MissingField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use yii\base\InvalidArgumentException;
 use yii\db\ColumnSchema;
 use yii\db\Expression;
@@ -244,10 +244,9 @@ class BaseContentRefactorMigration extends Migration
         }
 
         $primaryColumn = sprintf(
-            '%s%s%s',
+            '%s%s',
             $fieldColumnPrefix,
             $field->handle,
-            ($field->columnSuffix ? "_$field->columnSuffix" : ''),
         );
 
         if (!$contentTableSchema->getColumn($primaryColumn)) {
@@ -258,7 +257,7 @@ class BaseContentRefactorMigration extends Migration
         if (is_array($dbType) && count($dbType) > 1) {
             $dbTypeKeys = array_keys($dbType);
             $extraColumns = array_map(
-                fn(string $key) => sprintf('%s%s_%s_%s', $fieldColumnPrefix, $field->handle, $key, $field->columnSuffix),
+                fn(string $key) => sprintf('%s%s_%s', $fieldColumnPrefix, $field->handle, $key),
                 array_slice($dbTypeKeys, 1),
             );
 

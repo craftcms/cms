@@ -3,12 +3,12 @@
 namespace craft\migrations;
 
 use Craft;
-use craft\base\FieldInterface;
-use craft\base\MergeableFieldInterface;
 use craft\db\Migration;
 use craft\fields\MissingField;
 use craft\records\Field as FieldRecord;
 use craft\services\Fields;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 
 /**
  * Base field merge migration class.

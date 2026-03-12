@@ -14,6 +14,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Typecast;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
@@ -128,6 +129,18 @@ class Craft extends Yii
     public static function parseBooleanEnv(mixed $value): ?bool
     {
         return Env::parseBoolean($value);
+    }
+
+    /**
+     * @param $object
+     * @param $properties
+     *
+     * @return object
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Typecast::configure()} instead.
+     */
+    public static function configure($object, $properties)
+    {
+        return Typecast::configure($object, $properties);
     }
 
     /**

@@ -30,7 +30,7 @@ class SetHeaders
             return $response;
         }
 
-        if ($request->isCpRequest() || $request->isActionRequest()) {
+        if ($request->isCpRequest() || $request->isActionRequest() || self::$noCache) {
             $response->setNoCacheHeaders();
         }
 

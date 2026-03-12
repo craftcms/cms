@@ -8,8 +8,8 @@ use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
-use craft\models\Section;
 use craft\records\EntryType as EntryTypeRecord;
+use CraftCms\Cms\Section\Enums\SectionType;
 
 /**
  * Base entry type merge migration class.
@@ -65,7 +65,7 @@ class BaseEntryTypeMergeMigration extends Migration
             ->leftJoin(['s' => Table::SECTIONS], '[[e.sectionId]] = [[s.id]]')
             ->where(['e.typeId' => $persistingEntryTypeRecord->id])
             ->andWhere(['not', ['es.content' => null]])
-            ->andWhere(['s.type' => Section::TYPE_SINGLE]);
+            ->andWhere(['s.type' => SectionType::Single->value]);
 
         $total = $query->count();
         if ($total > 0) {

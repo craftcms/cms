@@ -50,7 +50,7 @@ class Typecast
      *
      * @template T of object
      *
-     * @param  T  $component  the object to be configured
+     * @param  T  $object  the object to be configured
      * @param  array  $properties  the property initial values given in terms of name-value pairs.
      * @return T the object itself
      */
