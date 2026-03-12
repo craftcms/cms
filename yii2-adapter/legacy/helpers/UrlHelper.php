@@ -8,12 +8,9 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\console\Request as ConsoleRequest;
-use craft\web\Request as WebRequest;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\RouteToken\RouteTokens;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -410,7 +407,7 @@ class UrlHelper
         }
 
         // Stick with SSL if the current request is over SSL and a scheme wasn't defined
-        if ($scheme === null && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
+        if ($scheme === null && !app()->runningInConsole() && $request->getIsSecureConnection()) {
             $scheme = 'https';
         }
 
@@ -473,7 +470,7 @@ class UrlHelper
 
         // Is the current request over SSL?
         $request = Craft::$app->getRequest();
-        if (!$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
+        if (!app()->runningInConsole() && $request->getIsSecureConnection()) {
             return 'https';
         }
 
@@ -535,12 +532,11 @@ class UrlHelper
         return self::fallbackBaseUrl();
     }
 
-    private static function fallbackBaseUrl(WebRequest|ConsoleRequest|null $request = null): string
+    private static function fallbackBaseUrl(): string
     {
-        $request ??= Craft::$app->getRequest();
         // Use @web as a fallback, unless it's a console request and @web was defined dynamically,
         // in which case it's totally unreliable so go with the base site URL
-        return $request->getIsConsoleRequest() && $request->isWebAliasSetDynamically
+        return app()->runningInConsole()
             ? static::baseSiteUrl()
             : Aliases::get('@web');
     }
@@ -611,7 +607,7 @@ class UrlHelper
         // If there's no host info in the base URL, default to the request's host info
         if (($slashes = strpos($url, '//')) === false) {
             $request = Craft::$app->getRequest();
-            if ($request->getIsConsoleRequest()) {
+            if (app()->runningInConsole()) {
                 return '';
             }
             return $request->getHostInfo();
@@ -671,23 +667,22 @@ class UrlHelper
         $fragment ??= $baseFragment;
 
         $generalConfig = Cms::config();
-        $request = Craft::$app->getRequest();
 
         if ($cpUrl) {
             // site param
-            if (!isset($params['site']) && Craft::$app->getIsInitialized() && Sites::isMultiSite() && Cp::requestedSite() !== null) {
+            if (!isset($params['site']) && Sites::isMultiSite() && Cp::requestedSite() !== null) {
                 $params['site'] = Cp::requestedSite()->handle;
             }
         } else {
             // token/siteToken/preview params
-            if (!isset($params[$generalConfig->siteToken]) && ($siteToken = $request->getSiteToken()) !== null) {
+            if (!isset($params[$generalConfig->siteToken]) && ($siteToken = request()->siteToken()) !== null) {
                 $params[$generalConfig->siteToken] = $siteToken;
             }
-            if ($request->getIsSiteRequest()) {
+            if (request()->isSiteRequest()) {
                 if (
                     $addToken &&
                     !isset($params[$generalConfig->tokenParam]) &&
-                    ($token = $request->getToken()) !== null &&
+                    ($token = request()->getToken()) !== null &&
                     app(RouteTokens::class)->getRemainingTokenUsages($token) !== 0
                 ) {
                     $params[$generalConfig->tokenParam] = $token;
@@ -696,7 +691,7 @@ class UrlHelper
                 if (
                     !isset($params['x-craft-preview']) &&
                     !isset($params['x-craft-live-preview']) &&
-                    $request->getIsPreview()
+                    request()->isPreview()
                 ) {
                     if (($previewToken = $request->getQueryParam('x-craft-preview')) !== null) {
                         $params['x-craft-preview'] = $previewToken;
@@ -712,9 +707,9 @@ class UrlHelper
         }
 
         if ($useRequestHostInfo) {
-            $baseUrl = self::fallbackBaseUrl($request);
+            $baseUrl = self::fallbackBaseUrl();
         } elseif ($showScriptName) {
-            $baseUrl = $request->getIsConsoleRequest() ? '/' : static::host();
+            $baseUrl = app()->runningInConsole() ? '/' : static::host();
         } elseif ($cpUrl) {
             $baseUrl = static::baseCpUrl();
         } else {

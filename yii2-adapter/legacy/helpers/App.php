@@ -18,6 +18,7 @@ use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\models\MailSettings;
+use craft\services\Config;
 use craft\web\AssetManager;
 use craft\web\Request;
 use craft\web\Request as WebRequest;
@@ -833,10 +834,9 @@ class App
     public static function userConfig(): array
     {
         /** @var \craft\config\GeneralConfig $generalConfig */
-        $generalConfig = Craft::$app->getConfig()->getConfigSettings(\craft\services\Config::CATEGORY_GENERAL);
-        $request = Craft::$app->getRequest();
+        $generalConfig = Craft::$app->getConfig()->getConfigSettings(Config::CATEGORY_GENERAL);
 
-        if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
+        if (app()->runningInConsole() || request()->isSiteRequest()) {
             $loginUrl = UrlHelper::siteUrl($generalConfig->getLoginPath());
         } else {
             $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
@@ -865,7 +865,7 @@ class App
         ];
 
         $request = Craft::$app->getRequest();
-        if (!$request->getIsConsoleRequest()) {
+        if (!app()->runningInConsole()) {
             // Check these headers for site requests too, in case we're rendering a system fallback template
             $headers = $request->getHeaders();
             $config['registeredAssetBundles'] = array_filter(explode(',', $headers->get('X-Registered-Asset-Bundles', '')));

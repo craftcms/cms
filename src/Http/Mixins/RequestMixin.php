@@ -45,6 +45,20 @@ class RequestMixin
         };
     }
 
+    public function siteToken(): Closure
+    {
+        return function (): ?string {
+            /**
+             * @var Request $request
+             *
+             * @phpstan-ignore-next-line
+             */
+            $request = $this;
+
+            return $request->query(Cms::config()->siteToken, $request->header('X-Craft-Site-Token'));
+        };
+    }
+
     public function isSiteRequest(): Closure
     {
         return function (): bool {

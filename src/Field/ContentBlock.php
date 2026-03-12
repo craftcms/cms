@@ -781,7 +781,7 @@ JS, [
                 // this is so that extra drafts don't get created for matrix in matrix scenario
                 // where both are set to inline-editable blocks view mode
                 (
-                    $request->getIsConsoleRequest() ||
+                    app()->runningInConsole() ||
                     $request->getActionSegments() !== ['elements', 'update-field-layout']
                 )
             ) {

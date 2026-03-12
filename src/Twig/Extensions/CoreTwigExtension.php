@@ -383,8 +383,8 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
     {
         if ($options === null) {
             if (
-                ! Craft::$app->getRequest()->getIsConsoleRequest() &&
-                in_array(Craft::$app->getResponse()->getContentType(), ['text/html', 'application/xhtml+xml'], true)
+                ! app()->runningInConsole() &&
+                ! request()->wantsJson()
             ) {
                 $options = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT;
             } else {
