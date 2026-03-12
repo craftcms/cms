@@ -32,6 +32,8 @@ use function CraftCms\Cms\template;
  */
 final class Tags extends \CraftCms\Cms\Field\BaseRelationField
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * {@inheritdoc}
      */

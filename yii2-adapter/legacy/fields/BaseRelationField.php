@@ -29,6 +29,8 @@ use Override;
  */
 abstract class BaseRelationField extends \CraftCms\Cms\Field\BaseRelationField
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * {@inheritdoc}
      */

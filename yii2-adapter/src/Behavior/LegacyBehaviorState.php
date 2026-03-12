@@ -23,4 +23,6 @@ final class LegacyBehaviorState
     public array $events = [];
 
     public ?object $legacyOwner = null;
+
+    public ?string $legacyOwnerClass = null;
 }

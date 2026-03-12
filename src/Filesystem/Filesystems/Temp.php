@@ -8,7 +8,7 @@ use CraftCms\Cms\Support\Facades\Path;
 
 use function CraftCms\Cms\t;
 
-final class Temp extends Local
+class Temp extends Local
 {
     #[\Override]
     public bool $hasUrls = false;

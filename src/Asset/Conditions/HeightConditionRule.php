@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 use function CraftCms\Cms\t;
 
-final class HeightConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
+class HeightConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
 {
     public function getLabel(): string
     {

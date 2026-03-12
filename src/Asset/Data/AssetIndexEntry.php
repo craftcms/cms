@@ -8,7 +8,7 @@ use CraftCms\Cms\Component\Component;
 use DateTime;
 use Stringable;
 
-final class AssetIndexEntry extends Component implements Stringable
+class AssetIndexEntry extends Component implements Stringable
 {
     public ?int $id = null;
 

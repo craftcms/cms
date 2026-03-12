@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Event;
  */
 abstract class BaseOptionsField extends \CraftCms\Cms\Field\BaseOptionsField
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.
      *

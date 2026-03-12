@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Asset\Data;
 use CraftCms\Cms\Component\Component;
 use Override;
 
-final class FolderCriteria extends Component
+class FolderCriteria extends Component
 {
     public mixed $id = null;
 

@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Asset\Data;
 use CraftCms\Cms\Component\Component;
 use DateTime;
 
-final class IndexingSession extends Component
+class IndexingSession extends Component
 {
     public ?string $uid = null;
 

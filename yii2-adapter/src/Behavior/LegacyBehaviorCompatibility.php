@@ -8,6 +8,7 @@ use BadMethodCallException;
 use craft\base\Event as YiiEvent;
 use craft\events\DefineBehaviorsEvent;
 use CraftCms\Cms\Support\Utils;
+use ReflectionClass;
 use ReflectionMethod;
 use ReflectionObject;
 use WeakMap;
@@ -18,7 +19,7 @@ use yii\base\Event as BaseEvent;
 final class LegacyBehaviorCompatibility
 {
     /**
-     * @var array<class-string, array{legacyClass: class-string, defineBehaviorsEvent: string}>
+     * @var array<class-string, list<class-string>>
      */
     private static array $registrations = [];
 
@@ -27,17 +28,19 @@ final class LegacyBehaviorCompatibility
      */
     private static WeakMap $states;
 
-    public static function register(string $class, string $legacyClass, string $defineBehaviorsEvent): void
+    public static function register(string $class, string $legacyClass): void
     {
-        self::$registrations[$class] = [
-            'legacyClass' => $legacyClass,
-            'defineBehaviorsEvent' => $defineBehaviorsEvent,
-        ];
+        self::$registrations[$class] ??= [];
+
+        if (in_array($legacyClass, self::$registrations[$class], true)) {
+            return;
+        }
+
+        self::$registrations[$class][] = $legacyClass;
     }
 
     public static function ensureBehaviors(object $object): void
     {
-        $registration = self::registration($object);
         $state = self::state($object);
 
         if ($state->behaviorsLoaded || $state->loadingBehaviors) {
@@ -47,20 +50,21 @@ final class LegacyBehaviorCompatibility
         $state->loadingBehaviors = true;
 
         try {
-            $behaviors = [];
+            foreach (self::registrationsFor($object) as $registration) {
+                if (!YiiEvent::hasHandlers($registration['legacyClass'], 'defineBehaviors')) {
+                    continue;
+                }
 
-            if (YiiEvent::hasHandlers($registration['legacyClass'], $registration['defineBehaviorsEvent'])) {
                 $event = new DefineBehaviorsEvent([
                     'sender' => $object,
-                    'behaviors' => $behaviors,
+                    'behaviors' => [],
                 ]);
 
-                YiiEvent::trigger($registration['legacyClass'], $registration['defineBehaviorsEvent'], $event);
-                $behaviors = $event->behaviors;
-            }
+                YiiEvent::trigger($registration['legacyClass'], 'defineBehaviors', $event);
 
-            foreach ($behaviors as $name => $behavior) {
-                self::attachBehavior($object, is_int($name) ? $name : (string) $name, $behavior, false);
+                foreach ($event->behaviors as $name => $behavior) {
+                    self::attachBehavior($object, is_int($name) ? $name : (string) $name, $behavior, false);
+                }
             }
 
             $state->behaviorsLoaded = true;
@@ -346,30 +350,81 @@ final class LegacyBehaviorCompatibility
     }
 
     /**
-     * @return array{legacyClass: class-string, defineBehaviorsEvent: string}
+     * @return list<array{class: class-string, legacyClass: class-string}>
      */
-    private static function registration(object|string $object): array
+    private static function registrationsFor(object|string $object): array
     {
         $class = is_object($object) ? $object::class : $object;
+        $classes = array_reverse([$class, ...array_values(class_parents($class) ?: [])]);
+        $registrations = [];
+        $seen = [];
 
-        if (!isset(self::$registrations[$class])) {
+        foreach ($classes as $registeredClass) {
+            foreach (self::$registrations[$registeredClass] ?? [] as $legacyClass) {
+                if (isset($seen[$legacyClass])) {
+                    continue;
+                }
+
+                $seen[$legacyClass] = true;
+                $registrations[] = [
+                    'class' => $registeredClass,
+                    'legacyClass' => $legacyClass,
+                ];
+            }
+        }
+
+        if ($registrations === []) {
             throw new BadMethodCallException(sprintf('Legacy behavior compatibility has not been registered for %s.', $class));
         }
 
-        return self::$registrations[$class];
+        return $registrations;
     }
 
     private static function legacyOwner(object $object): object
     {
-        $registration = self::registration($object);
         $state = self::state($object);
+        $legacyClass = self::mostSpecificLegacyClass($object);
 
-        if (!isset($state->legacyOwner)) {
-            $legacyClass = $registration['legacyClass'];
+        if ($object instanceof $legacyClass) {
+            return $object;
+        }
+
+        if (!isset($state->legacyOwner) || $state->legacyOwnerClass !== $legacyClass) {
             $state->legacyOwner = new $legacyClass(Utils::getPublicProperties($object));
+            $state->legacyOwnerClass = $legacyClass;
         }
 
         return $state->legacyOwner;
+    }
+
+    /**
+     * @return class-string
+     */
+    private static function mostSpecificLegacyClass(object $object): string
+    {
+        foreach (self::registrationsFor($object) as $registration) {
+            $legacyClass = $registration['legacyClass'];
+
+            if ($object instanceof $legacyClass) {
+                return $legacyClass;
+            }
+        }
+
+        foreach (array_reverse(self::registrationsFor($object)) as $registration) {
+            $legacyClass = $registration['legacyClass'];
+
+            if (!class_exists($legacyClass)) {
+                continue;
+            }
+
+            $reflection = new ReflectionClass($legacyClass);
+
+            if (!$reflection->isAbstract()) {
+                return $legacyClass;
+            }
+        }
+
+        throw new BadMethodCallException(sprintf('Unable to determine a legacy owner for %s.', $object::class));
     }
 
     private static function syncObjectToLegacyOwner(object $object, ?Behavior $behavior = null): void

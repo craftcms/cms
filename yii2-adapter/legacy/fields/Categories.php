@@ -30,6 +30,8 @@ use function CraftCms\Cms\t;
  */
 final class Categories extends \CraftCms\Cms\Field\BaseRelationField
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * {@inheritdoc}
      */

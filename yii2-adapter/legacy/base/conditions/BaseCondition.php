@@ -24,6 +24,8 @@ use yii\validators\Validator;
  */
 abstract class BaseCondition extends \CraftCms\Cms\Condition\BaseCondition
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * @event RegisterConditionRulesEvent The event that is triggered when defining the selectable condition rules.
      * @see getSelectableConditionRules()

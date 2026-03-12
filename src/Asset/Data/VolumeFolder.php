@@ -16,7 +16,7 @@ use Stringable;
 
 use function CraftCms\Cms\t;
 
-final class VolumeFolder extends Component implements Stringable
+class VolumeFolder extends Component implements Stringable
 {
     public ?int $id = null;
 

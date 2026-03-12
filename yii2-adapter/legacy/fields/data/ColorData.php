@@ -7,15 +7,11 @@
 
 namespace craft\fields\data;
 
-/** @phpstan-ignore-next-line **/
-if (false) {
-    /**
-     * @since 3.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Data\ColorData} instead.
-     */
-    class ColorData
-    {
-    }
+/**
+ * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Data\ColorData} instead.
+ */
+class ColorData extends \CraftCms\Cms\Field\Data\ColorData
+{
+    use \craft\base\LegacyEventConstants;
 }
-
-class_alias(\CraftCms\Cms\Field\Data\ColorData::class, ColorData::class);

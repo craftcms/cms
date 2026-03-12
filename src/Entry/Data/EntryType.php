@@ -35,7 +35,7 @@ use Stringable;
 use function CraftCms\Cms\t;
 
 #[Ruleset(EntryTypeRules::class)]
-final class EntryType extends Component implements Actionable, Chippable, Colorable, CpEditable, Describable, FieldLayoutProviderInterface, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
+class EntryType extends Component implements Actionable, Chippable, Colorable, CpEditable, Describable, FieldLayoutProviderInterface, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
 {
     use HasFieldLayout;
 

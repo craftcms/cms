@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -7,15 +8,11 @@
 
 namespace craft\fields;
 
-/** @phpstan-ignore-next-line **/
-if (false) {
-    /**
-     * @since 3.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\ButtonGroup} instead.
-     */
-    class ButtonGroup
-    {
-    }
+/**
+ * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\ButtonGroup} instead.
+ */
+class ButtonGroup extends \CraftCms\Cms\Field\ButtonGroup
+{
+    use \craft\base\LegacyEventConstants;
 }
-
-class_alias(\CraftCms\Cms\Field\ButtonGroup::class, ButtonGroup::class);

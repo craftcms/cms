@@ -7,15 +7,11 @@
 
 namespace craft\fields;
 
-/** @phpstan-ignore-next-line **/
-if (false) {
-    /**
-     * @since 3.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\PlainText} instead.
-     */
-    class PlainText
-    {
-    }
+/**
+ * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\PlainText} instead.
+ */
+class PlainText extends \CraftCms\Cms\Field\PlainText
+{
+    public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 }
-
-class_alias(\CraftCms\Cms\Field\PlainText::class, PlainText::class);

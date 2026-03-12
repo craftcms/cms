@@ -14,7 +14,7 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-final class MyDrafts extends Widget
+class MyDrafts extends Widget
 {
     #[Override]
     public static function displayName(): string
