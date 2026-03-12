@@ -33,7 +33,7 @@ use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
 
 #[Ruleset(AddressRules::class)]
-final class Address extends Element implements AddressInterface, NestedElementInterface
+class Address extends Element implements AddressInterface, NestedElementInterface
 {
     use HasNames;
     use NestedElementTrait;
