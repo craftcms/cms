@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\OAuth;
 
+use Composer\InstalledVersions;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Models\SsoIdentity;
 use CraftCms\Cms\Auth\OAuth\Actions\ButtonRenderer;
@@ -54,12 +55,22 @@ final class OAuth
     /** @var Collection<string, ProviderDefinition>|null */
     private ?Collection $providerDefinitions = null;
 
+    private readonly SocialiteFactory $socialite;
+
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly ProjectConfig $projectConfig,
         private readonly UserGroups $userGroups,
-        private readonly SocialiteFactory $socialite,
-    ) {}
+    ) {
+        if (self::isAvailable()) {
+            $this->socialite = app(SocialiteFactory::class);
+        }
+    }
+
+    public static function isAvailable(): bool
+    {
+        return Edition::get()->supportsOAuth() && InstalledVersions::isInstalled('laravel/socialite');
+    }
 
     /**
      * @return Collection<string, ProviderDefinition>
@@ -70,7 +81,7 @@ final class OAuth
             return $this->providerDefinitions;
         }
 
-        if (! Edition::get()->supportsOAuth()) {
+        if (! self::isAvailable()) {
             return $this->providerDefinitions = collect();
         }
 

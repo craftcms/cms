@@ -1004,7 +1004,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     public function getHasSsoIdentity(): bool
     {
-        if (! Edition::get()->supportsOAuth()) {
+        if (! OAuth::isAvailable()) {
             return false;
         }
 

@@ -7,10 +7,13 @@ OAuth providers are configured in `GeneralConfig`, use Craft web routes for redi
 ## Requirements
 
 - OAuth is available in Craft Pro and Enterprise.
+- Install `laravel/socialite` in your project before configuring OAuth providers.
 - Each provider must be configured in `config/craft/general.php` or equivalent config.
 - The provider `driver` must be either:
   - a registered Socialite driver name, or
   - a Socialite-compatible provider class name
+
+If `laravel/socialite` is not installed, Craft silently treats OAuth as unavailable: configured providers are ignored, login buttons are omitted, and OAuth routes are not registered.
 
 ## Basic Configuration
 
