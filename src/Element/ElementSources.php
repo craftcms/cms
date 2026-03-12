@@ -221,7 +221,6 @@ final class ElementSources
 
                     try {
                         return Sites::getSiteByUid($siteId)->id;
-                        /** @phpstan-ignore catch.neverThrown */
                     } catch (SiteNotFoundException) {
                         return null;
                     }

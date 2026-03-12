@@ -17,8 +17,11 @@ use CraftCms\Cms\Filesystem\Data\FsListing as FilesystemFsListing;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem as FilesystemComponent;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCompatibility;
+use CraftCms\Yii2Adapter\Behavior\Mixins\LegacyBehaviorMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
@@ -29,6 +32,12 @@ final readonly class CompatibilityMixins
 {
     public function register(): void
     {
+        LegacyBehaviorCompatibility::register(
+            class: Site::class,
+            legacyClass: \craft\models\Site::class,
+            defineBehaviorsEvent: \craft\models\Site::EVENT_DEFINE_BEHAVIORS,
+        );
+
         Field::macro('trigger', function($name, mixed $event = null): void {
             Deprecator::log('Field-trigger', 'Calling ->trigger on a Field is deprecated. Switch to component events instead.');
 
@@ -44,6 +53,7 @@ final readonly class CompatibilityMixins
         Field::mixin(new ValidateMixin());
         FieldLayoutComponent::mixin(new ValidateMixin());
         FilesystemComponent::mixin(new ValidateMixin());
+        Site::mixin(new LegacyBehaviorMixin());
         ElementQuery::mixin(new ElementQueryMixin());
         User::mixin(new UserMixin());
         AssetFolderCriteria::mixin(new ValidateMixin());
