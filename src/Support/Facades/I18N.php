@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Illuminate\Support\Collection getSiteLocales()
  * @method static \Illuminate\Support\Collection getEditableLocales()
  * @method static \Illuminate\Support\Collection getEditableLocaleIds()
- * @method static string translate(\Stringable|string $message, array $parameters = [], string|null $category = null, string|null $locale = null)
+ * @method static string translate(\Stringable|string|null $message, array $parameters = [], string|null $category = null, string|null $locale = null)
  * @method static void addCategorySources(\Yiisoft\Translator\CategorySource ...$categories)
  * @method static array getAllTranslationsForLocale(string $locale)
  * @method static string prep(string $message, array $params = [], ?string $category = null, ?string $locale = null)
