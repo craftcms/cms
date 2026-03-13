@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where deeply-nested elements could be deleted unexpectedly. ([#18537](https://github.com/craftcms/cms/issues/18537))
+- Fixed a warning that was getting logged when using `craft\filters\SiteFilterTrait`.
 
 ## 5.9.16 - 2026-03-11
 
