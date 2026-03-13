@@ -47,7 +47,7 @@
   --c-color-brand-border-loud: var(--color-red-600);
   --c-color-brand-border-normal: var(--color-red-500);
   --c-color-brand-border-quiet: var(--color-red-600);
-  --c-color-brand-on-loud: var(--color-red-100);
+  --c-color-brand-on-loud: var(--c-text-white);
   --c-color-brand-on-normal: var(--color-red-700);
   --c-color-brand-on-quiet: var(--color-red-800);
 
@@ -102,7 +102,7 @@
   --c-color-danger-border-loud: var(--color-red-800);
   --c-color-danger-border-normal: var(--color-red-600);
   --c-color-danger-border-quiet: var(--color-red-400);
-  --c-color-danger-on-loud: var(--color-red-50);
+  --c-color-danger-on-loud: var(--c-text-white);
   --c-color-danger-on-normal: var(--color-red-700);
   --c-color-danger-on-quiet: var(--color-red-800);
 
