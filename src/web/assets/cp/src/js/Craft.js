@@ -1813,55 +1813,82 @@ $.extend(Craft, {
   _existingCss: null,
   _existingJs: null,
 
-  _appendHtml: function (html, $parent) {
+  _appendHtml: async function (html, $parent) {
     if (!html) {
       return;
     }
 
-    const nodes = $.parseHTML(html.trim(), true).filter((node) => {
+    /**
+     * Separate scripts from other nodes to bypass jQuery's internal
+     * script handling, which uses sync XHR (jQuery._evalUrl) and
+     * silently falls back to async for cross-origin URLs, breaking
+     * execution order.
+     *
+     * @see https://github.com/jquery/jquery/issues/4801
+     * @see https://github.com/jquery/jquery/issues/1895
+     */
+    const scriptNodes = [];
+    const otherNodes = [];
+
+    for (const node of $.parseHTML(html.trim(), true)) {
+
+      // Deduplicate CSS
       if (node.nodeName === 'LINK' && node.href) {
         if (!this._existingCss) {
           this._existingCss = $('link[href]')
             .toArray()
             .map((n) => n.href.replace(/&/g, '&amp;'));
         }
-
         if (this._existingCss.includes(node.href)) {
-          return false;
+          continue;
         }
-
         this._existingCss.push(node.href);
-        return true;
       }
 
-      if (node.nodeName === 'SCRIPT' && node.src) {
-        if (!this._existingJs) {
-          this._existingJs = $('script[src]')
-            .toArray()
-            .map((n) => n.src.replace(/&/g, '&amp;'));
+      // Deduplicate and separate scripts
+      if (node.nodeName === 'SCRIPT') {
+        if (node.src) {
+          if (!this._existingJs) {
+            this._existingJs = $('script[src]')
+              .toArray()
+              .map((n) => n.src.replace(/&/g, '&amp;'));
+          }
+          if (this._existingJs.includes(node.src)) {
+            continue;
+          }
+          this._existingJs.push(node.src);
         }
-
-        // if this is a cross-domain JS resource, use our app/resource-js proxy to load it
-        if (
-          node.src.startsWith(this.resourceBaseUrl) &&
-          !this.isSameHost(node.src)
-        ) {
-          node.src = this.getActionUrl('app/resource-js', {
-            url: node.src,
-          });
-        }
-
-        if (this._existingJs.includes(node.src)) {
-          return false;
-        }
-
-        this._existingJs.push(node.src);
+        scriptNodes.push(node);
+        continue;
       }
 
-      return true;
-    });
+      otherNodes.push(node);
+    }
 
-    $parent.append(nodes);
+    if (otherNodes.length) {
+      $parent.append(otherNodes);
+    }
+
+    // Load scripts sequentially via native <script> insertion to
+    // preserve execution order without requiring CORS.
+    const parentEl = $parent[0];
+    for (const scriptNode of scriptNodes) {
+      const scriptEl = document.createElement('script');
+
+      for (const attr of scriptNode.attributes) {
+        scriptEl.setAttribute(attr.name, attr.value);
+      }
+
+      if (scriptEl.src) {
+        await new Promise((resolve) => {
+          scriptEl.onload = scriptEl.onerror = resolve;
+          parentEl.appendChild(scriptEl);
+        });
+      } else {
+        scriptEl.textContent = scriptNode.textContent;
+        parentEl.appendChild(scriptEl);
+      }
+    }
   },
 
   /**
@@ -1871,7 +1898,7 @@ $.extend(Craft, {
    * @returns {Promise}
    */
   appendHeadHtml: async function (html) {
-    this._appendHtml(html, $('head'));
+    await this._appendHtml(html, $('head'));
   },
 
   /**
@@ -1881,7 +1908,7 @@ $.extend(Craft, {
    * @returns {Promise}
    */
   appendBodyHtml: async function (html) {
-    this._appendHtml(html, Garnish.$bod);
+    await this._appendHtml(html, Garnish.$bod);
   },
 
   /**
@@ -1893,7 +1920,7 @@ $.extend(Craft, {
     console.warn(
       'Craft.appendFootHtml() is deprecated. Craft.appendBodyHtml() should be used instead.'
     );
-    this.appendBodyHtml(html);
+    return this.appendBodyHtml(html);
   },
 
   /**
