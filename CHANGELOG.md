@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where deeply-nested elements could be deleted unexpectedly. ([#18537](https://github.com/craftcms/cms/issues/18537))
+
 ## 5.9.16 - 2026-03-11
 
 - Updated @simplewebauthn/browser to 13.3.0. ([#18545](https://github.com/craftcms/cms/pull/18545))
