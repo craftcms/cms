@@ -573,7 +573,7 @@ class Gql
     public function getPublicToken(): ?GqlToken
     {
         if (! isset($this->_publicToken)) {
-            $config = $this->projectConfig()->get(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN) ?? [];
+            $config = $this->projectConfig->get(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN) ?? [];
             $this->_publicToken = $this->_createPublicToken($config);
 
             if ($this->_publicToken) {
@@ -637,11 +637,10 @@ class Gql
                 'expiryDate' => $token->expiryDate?->getTimestamp(),
             ];
 
-            $projectConfig = $this->projectConfig();
-            $muteEvents = $projectConfig->muteEvents;
-            $projectConfig->muteEvents = false;
-            $projectConfig->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
-            $projectConfig->muteEvents = $muteEvents;
+            $muteEvents = $this->projectConfig->muteEvents;
+            $this->projectConfig->muteEvents = false;
+            $this->projectConfig->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
+            $this->projectConfig->muteEvents = $muteEvents;
         }
 
         $this->_saveTokenInternal($token);
@@ -696,7 +695,7 @@ class Gql
 
         $configPath = ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.'.$schema->uid;
         $configData = $schema->getConfig();
-        $this->projectConfig()->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
+        $this->projectConfig->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
 
         if ($isNewSchema) {
             $schema->id = DB::table(Table::GQLSCHEMAS)->idByUid($schema->uid);
@@ -767,7 +766,7 @@ class Gql
     /** Deletes a GraphQL schema. */
     public function deleteSchema(GqlSchema $schema): bool
     {
-        $this->projectConfig()->remove(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.'.$schema->uid,
+        $this->projectConfig->remove(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.'.$schema->uid,
             "Delete the “{$schema->name}” GraphQL schema");
 
         return true;
@@ -1490,10 +1489,5 @@ class Gql
         $tokenModel->save();
         $token->id = $tokenModel->id;
         $token->uid = $tokenModel->uid;
-    }
-
-    private function projectConfig(): ProjectConfig
-    {
-        return $this->projectConfig ?? app(ProjectConfig::class);
     }
 }
