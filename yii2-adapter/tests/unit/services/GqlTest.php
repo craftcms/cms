@@ -36,6 +36,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Gql\Gql as NewGql;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -189,7 +190,7 @@ class GqlTest extends TestCase
         $cache = [];
         $cacheKey = 'testKey';
 
-        $gql = $this->make(Craft::$app->getGql(), [
+        $gql = $this->make(app(NewGql::class), [
             'setCachedResult' => function($key, $value) use (&$cache, $cacheKey) {
                 $cache[$cacheKey] = $value;
             },
