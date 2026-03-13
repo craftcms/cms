@@ -10,6 +10,7 @@ namespace craft\test\fixtures\elements;
 use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Support\Typecast;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\test\DbFixture;
@@ -118,7 +119,7 @@ abstract class BaseContentFixture extends DbFixture
         $class = $this->elementType;
         $query = $class::find();
         if (isset($data['criteria'])) {
-            Craft::configure($query, $data['criteria']);
+            Typecast::configure($query, $data['criteria']);
         }
         return $query->one();
     }

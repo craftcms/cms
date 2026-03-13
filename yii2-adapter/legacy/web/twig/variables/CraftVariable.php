@@ -36,6 +36,7 @@ use CraftCms\Cms\Route\Routes;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Translation\I18N;
 use CraftCms\Cms\Twig\Variables\Io;
 use CraftCms\Cms\Twig\Variables\Rebrand;
@@ -152,7 +153,7 @@ class CraftVariable extends ServiceLocator
     public function addresses(array $criteria = []): AddressQuery
     {
         $query = new AddressQuery(Address::class);
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 
@@ -165,7 +166,7 @@ class CraftVariable extends ServiceLocator
     public function assets(array $criteria = []): AssetQuery
     {
         $query = new AssetQuery(Asset::class);
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 
@@ -189,7 +190,7 @@ class CraftVariable extends ServiceLocator
     public function categories(array $criteria = []): CategoryQuery
     {
         $query = Category::find();
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 
@@ -207,7 +208,7 @@ class CraftVariable extends ServiceLocator
     public function entries(array $criteria = []): EntryQuery
     {
         $query = new EntryQuery(Entry::class);
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 
@@ -237,7 +238,7 @@ class CraftVariable extends ServiceLocator
     public function globalSets(array $criteria = []): GlobalSetQuery
     {
         $query = GlobalSet::find();
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 
@@ -297,7 +298,7 @@ class CraftVariable extends ServiceLocator
     public function tags(array $criteria = []): TagQuery
     {
         $query = Tag::find();
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 
@@ -310,7 +311,7 @@ class CraftVariable extends ServiceLocator
     public function users(array $criteria = []): UserQuery
     {
         $query = User::find();
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $query;
     }
 }

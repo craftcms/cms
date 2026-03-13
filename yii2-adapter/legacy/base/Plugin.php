@@ -115,7 +115,7 @@ class Plugin extends Module implements PluginInterface
         // Set the default controller namespace
         if (!isset($this->controllerNamespace) && ($pos = strrpos(static::class, '\\')) !== false) {
             $namespace = substr(static::class, 0, $pos);
-            if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            if (app()->runningInConsole()) {
                 $this->controllerNamespace = $namespace . '\\console\\controllers';
             } else {
                 $this->controllerNamespace = $namespace . '\\controllers';

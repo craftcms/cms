@@ -140,7 +140,7 @@ class ClearCaches extends Utility
                     $basePath = Cms::config()->resourceBasePath;
                     $request = Craft::$app->getRequest();
                     if (
-                        $request->getIsConsoleRequest() &&
+                        app()->runningInConsole() &&
                         $request->isWebrootAliasSetDynamically &&
                         str_starts_with($basePath, '@webroot')
                     ) {

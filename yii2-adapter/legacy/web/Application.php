@@ -26,6 +26,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -347,7 +348,7 @@ class Application extends \yii\web\Application
         $module->bootstrap($this);
 
         if ($config = Config::get('craft.debug', [])) {
-            Craft::configure($module, $config);
+            Typecast::configure($module, $config);
         }
     }
 

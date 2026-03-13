@@ -1594,7 +1594,7 @@ JS,
     public function afterSaveEntries(BulkElementsEvent $event): void
     {
         if (
-            ! Craft::$app->getRequest()->getIsConsoleRequest() &&
+            ! app()->runningInConsole() &&
             ! Craft::$app->getResponse()->isSent
         ) {
             // Tell the browser to collapse any new entry IDs
@@ -1724,7 +1724,7 @@ JS,
 
         // Should we ignore disabled entries?
         $request = Craft::$app->getRequest();
-        $hideDisabledEntries = ! $request->getIsConsoleRequest() && (
+        $hideDisabledEntries = ! app()->runningInConsole() && (
             $request->getToken() !== null ||
             $request->getIsLivePreview()
         );
@@ -1786,7 +1786,7 @@ JS,
                     // this is so that extra drafts don't get created for matrix in matrix scenario
                     // where both are set to inline-editable blocks view mode
                     (
-                        $request->getIsConsoleRequest() ||
+                        app()->runningInConsole() ||
                         $request->getActionSegments() !== ['elements', 'update-field-layout']
                     )
                 ) {

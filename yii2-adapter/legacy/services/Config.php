@@ -178,7 +178,7 @@ class Config extends Component
         Typecast::properties($configClass, $config);
 
         if ($existingConfig !== null) {
-            Craft::configure($existingConfig, $config);
+            Typecast::configure($existingConfig, $config);
             $config = $existingConfig;
         } else {
             if ($category === self::CATEGORY_GENERAL) {

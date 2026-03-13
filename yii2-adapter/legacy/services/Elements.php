@@ -70,6 +70,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
@@ -926,7 +927,7 @@ class Elements extends Component
             ->revisions(null);
 
         $query->$property = $elementId;
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
 
         return $query->one();
     }
@@ -1792,7 +1793,7 @@ class Elements extends Component
 
         // Note: must use Craft::configure() rather than setAttributes() here,
         // so we're not limited to whatever attributes() returns
-        Craft::configure($mainClone, Arr::merge(
+        Typecast::configure($mainClone, Arr::merge(
             $newAttributes,
             $siteAttributes[$mainClone->siteId] ?? [],
         ));
@@ -1958,7 +1959,7 @@ class Elements extends Component
 
                         // Note: must use Craft::configure() rather than setAttributes() here,
                         // so we're not limited to whatever attributes() returns
-                        Craft::configure($siteClone, Arr::merge(
+                        Typecast::configure($siteClone, Arr::merge(
                             $newAttributes,
                             $siteAttributes[$siteElement->siteId] ?? [],
                         ));
@@ -3467,7 +3468,7 @@ class Elements extends Component
                         $offset = Arr::pull($criteria, 'offset', 0);
                         $limit = Arr::pull($criteria, 'limit');
 
-                        Craft::configure($query, $criteria);
+                        Typecast::configure($query, $criteria);
 
                         if (!$query->siteId) {
                             $query->siteId = $siteId;
@@ -4336,7 +4337,7 @@ class Elements extends Component
         bool $propagate,
         ?bool $updateForOwner = null,
     ): void {
-        if ($element->updateSearchIndexImmediately ?? Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if ($element->updateSearchIndexImmediately ?? app()->runningInConsole()) {
             Search::indexElementAttributes($element, $searchableDirtyFields);
         } else {
             Search::queueIndexElement($element, $searchableDirtyFields);

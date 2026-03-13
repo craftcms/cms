@@ -16,6 +16,7 @@ use craft\mail\transportadapters\TransportAdapterInterface;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Security;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
 use yii\base\Event;
 use yii\base\Model;
@@ -99,7 +100,7 @@ class MailerHelper
             if ($component instanceof Model) {
                 $component->setAttributes($settings, false);
             } else {
-                Craft::configure($component, $settings);
+                Typecast::configure($component, $settings);
             }
         }
 

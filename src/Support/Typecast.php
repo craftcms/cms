@@ -46,6 +46,26 @@ class Typecast
     private static array $types = [];
 
     /**
+     * Configures a component with the initial property values.
+     *
+     * @template T of object
+     *
+     * @param  T  $object  the object to be configured
+     * @param  array  $properties  the property initial values given in terms of name-value pairs.
+     * @return T the object itself
+     */
+    final public static function configure(object $object, array $properties = []): object
+    {
+        self::properties($object::class, $properties);
+
+        foreach ($properties as $name => $value) {
+            $object->$name = $value;
+        }
+
+        return $object;
+    }
+
+    /**
      * Typecasts the given property values based on their type declarations.
      *
      * @param  class-string  $class  The class name

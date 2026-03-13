@@ -368,7 +368,7 @@ class Asset extends Element
         // Add the Temporary Uploads location
         if (
             $context !== ElementSources::CONTEXT_SETTINGS &&
-            ! Craft::$app->getRequest()->getIsConsoleRequest()
+            ! app()->runningInConsole()
         ) {
             $temporaryUploadFolder = AssetsService::getUserTemporaryUploadFolder();
             $temporaryUploadFs = AssetsService::getTempAssetUploadFs();

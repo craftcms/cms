@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Image\SvgAllowedAttributes;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -175,14 +175,13 @@ class Html
      */
     public static function csrfInput(array $options = []): string
     {
-        $request = Craft::$app->getRequest();
         $async = Arr::pull($options, 'async')
-            ?? ($request->getIsSiteRequest() && Cms::config()->asyncCsrfInputs);
+            ?? (request()->isSiteRequest() && Cms::config()->asyncCsrfInputs);
 
         if (! $async) {
-            Craft::$app->getResponse()->setNoCacheHeaders();
+            SetHeaders::noCache();
 
-            return self::hiddenInput($request->csrfParam, csrf_token(), $options)->render();
+            return (string) csrf_field();
         }
 
         HtmlStack::html(template('_special/async-csrf-input', [

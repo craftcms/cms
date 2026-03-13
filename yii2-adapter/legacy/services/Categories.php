@@ -163,7 +163,7 @@ class Categories extends Component
      */
     public function getEditableGroups(): array
     {
-        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if (app()->runningInConsole()) {
             return $this->getAllGroups();
         }
 

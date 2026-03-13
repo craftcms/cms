@@ -41,13 +41,7 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
      */
     final public static function configure(self $component, array $properties = []): self
     {
-        Typecast::properties(static::class, $properties);
-
-        foreach ($properties as $name => $value) {
-            $component->$name = $value;
-        }
-
-        return $component;
+        return Typecast::configure($component, $properties);
     }
 
     /**

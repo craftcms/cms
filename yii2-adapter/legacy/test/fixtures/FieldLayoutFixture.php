@@ -18,6 +18,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use PDO;
@@ -66,7 +67,7 @@ abstract class FieldLayoutFixture extends DbFixture
                 $layout = $fieldsService->getLayoutByUid($layoutConfig['uid']);
             }
             $layout ??= new FieldLayout();
-            Craft::configure($layout, $layoutConfig);
+            Typecast::configure($layout, $layoutConfig);
             $this->_layouts[] = $layout;
 
             $tabs = [];
