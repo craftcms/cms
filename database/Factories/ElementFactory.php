@@ -18,6 +18,24 @@ class ElementFactory extends Factory
     #[Override]
     protected $model = Element::class;
 
+    public function title(string $title): static
+    {
+        return $this->afterCreating(function (Element $element) use ($title) {
+            DB::table(Table::ELEMENTS_SITES)
+                ->where('elementId', $element->id)
+                ->update(['title' => $title]);
+        });
+    }
+
+    public function slug(string $slug): static
+    {
+        return $this->afterCreating(function (Element $element) use ($slug) {
+            DB::table(Table::ELEMENTS_SITES)
+                ->where('elementId', $element->id)
+                ->update(['slug' => $slug]);
+        });
+    }
+
     #[Override]
     public function definition(): array
     {

@@ -129,7 +129,7 @@ describe('modifyQuery', function () {
         $section = Section::factory()->create(['type' => SectionType::Channel]);
         Sections::refreshSections();
 
-        EntryModel::factory()->create(['sectionId' => $section->id]);
+        EntryModel::factory()->forSection($section)->create();
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(SectionConditionRule::class);
@@ -146,12 +146,10 @@ describe('modifyQuery', function () {
         $section = Section::factory()->create(['type' => SectionType::Channel]);
         Sections::refreshSections();
 
-        EntryModel::factory()->create([
-            'sectionId' => $section->id,
+        EntryModel::factory()->forSection($section)->create([
             'postDate' => new DateTime('2025-06-15'),
         ]);
-        EntryModel::factory()->create([
-            'sectionId' => $section->id,
+        EntryModel::factory()->forSection($section)->create([
             'postDate' => new DateTime('2025-01-15'),
         ]);
 
@@ -179,8 +177,7 @@ describe('matchElement', function () {
         $section = Section::factory()->create(['type' => SectionType::Channel]);
         Sections::refreshSections();
 
-        $entry = EntryModel::factory()->create([
-            'sectionId' => $section->id,
+        $entry = EntryModel::factory()->forSection($section)->create([
             'postDate' => new DateTime('2025-06-15'),
         ]);
 
@@ -207,8 +204,7 @@ describe('matchElement', function () {
         $section2 = Section::factory()->create(['type' => SectionType::Channel]);
         Sections::refreshSections();
 
-        $entry = EntryModel::factory()->create([
-            'sectionId' => $section2->id,
+        $entry = EntryModel::factory()->forSection($section2)->create([
             'postDate' => new DateTime('2025-06-15'),
         ]);
 
@@ -236,7 +232,7 @@ describe('matchElement', function () {
         $section = Section::factory()->create(['type' => SectionType::Channel]);
         Sections::refreshSections();
 
-        $entry = EntryModel::factory()->create(['sectionId' => $section->id]);
+        $entry = EntryModel::factory()->forSection($section)->create();
         $element = Entry::find()->id($entry->id)->one();
         $element->setAuthorId($author->id);
         Craft::$app->getElements()->saveElement($element);

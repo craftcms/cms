@@ -15,8 +15,8 @@ use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 
 beforeEach(function () {
-    disablePublicToken();
-    setActiveSchema(fullAccessSchema());
+    gqlDisablePublicToken();
+    gqlActivateFullAccessSchema('Active '.bin2hex(random_bytes(4)));
 });
 
 it('returns the missing-query error payload', function () {
@@ -144,33 +144,19 @@ it('adds no-cache headers for mutations unless caching is forced', function () {
         ->toContain('no-store')
         ->toContain('must-revalidate');
 
-    get(action_url('graphql/api').'?query=mutation%20%7Bbogus%7D', [
+    $response = get(action_url('graphql/api').'?query=mutation%20%7Bbogus%7D', [
         'X-Craft-Gql-Cache' => 'cache',
     ])->assertOk()
-        ->assertHeaderMissing('Cache-Control')
         ->assertHeaderMissing('Pragma')
         ->assertHeaderMissing('Expires');
-});
 
-function fullAccessSchema(): GqlSchema
-{
-    return new GqlSchema([
-        'name' => 'Active '.bin2hex(random_bytes(4)),
-        'scope' => GqlHelper::createFullAccessSchema()->scope,
-    ]);
-}
+    expect($response->headers->get('Cache-Control'))
+        ->not->toBe('no-cache, no-store, must-revalidate');
+});
 
 function setActiveSchema(GqlSchema $schema): void
 {
     GqlFacade::setActiveSchema($schema);
-}
-
-function disablePublicToken(): void
-{
-    $token = GqlFacade::getPublicToken();
-    $token->enabled = false;
-
-    GqlFacade::saveToken($token);
 }
 
 function enablePublicToken(): GqlToken

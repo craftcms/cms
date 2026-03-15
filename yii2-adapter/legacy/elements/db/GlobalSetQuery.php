@@ -8,7 +8,6 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\controllers\GraphqlController;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\GlobalSet;

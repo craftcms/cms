@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\Sites;
 use Error;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Support\Facades\Auth;
 use Override;
 use Throwable;
 
@@ -79,7 +80,12 @@ class Entry extends ElementMutationResolver
 
         if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-            Drafts::saveElementAsDraft($entry);
+            Drafts::saveElementAsDraft(
+                $entry,
+                creatorId: Auth::id(),
+                name: $arguments['draftName'] ?? null,
+                notes: $arguments['draftNotes'] ?? null,
+            );
         } else {
             $entry = $this->saveElement($entry);
         }
@@ -156,7 +162,7 @@ class Entry extends ElementMutationResolver
             name: $draftName,
             notes: $draftNotes,
             provisional: $provisional,
-        )->id;
+        )->draftId;
     }
 
     public function publishDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): int
@@ -273,7 +279,7 @@ class Entry extends ElementMutationResolver
             $entryQuery->fieldId($field->id);
         }
         if (! empty($arguments['draftId'])) {
-            $entryQuery->draftId($arguments['draftId']);
+            $entryQuery->draftId((int) $arguments['draftId']);
 
             if (array_key_exists('provisional', $arguments)) {
                 $entryQuery->provisionalDrafts($arguments['provisional']);
