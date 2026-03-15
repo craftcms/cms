@@ -581,6 +581,11 @@ class Gql
         ]);
     }
 
+    public function generateToken(): string
+    {
+        return Str::random(32, extendedChars: true);
+    }
+
     /**
      * @param  GqlToken  $token  the schema to save
      * @param  bool  $runValidation  Whether the schema should be validated
