@@ -400,6 +400,9 @@ class NestedElementManager extends Component
                     'deleteConfirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
                         'type' => $this->elementType::lowerDisplayName(),
                     ]),
+                    'bulkDeleteConfirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
+                        'type' => $this->elementType::pluralLowerDisplayName(),
+                    ]),
                     'showInGrid' => $config['showInGrid'],
                     'selectable' => $config['selectable'],
                 ];

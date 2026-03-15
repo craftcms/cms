@@ -971,9 +971,6 @@ JS, [
             $entrySelector = ' > .nested-element-cards > .elements > li > .element';
 
             $items[] = $this->copyAction($type, $entrySelector);
-            $items[] = $this->duplicateAction($type, $entrySelector, <<<JS
-field.children('.nested-element-cards').data('nestedElementManager').duplicateElements(getEntries());
-JS);
             $items[] = $this->deleteAction($type, $entrySelector, <<<JS
 field.children('.nested-element-cards').data('nestedElementManager').deleteElements(getEntries());
 JS);
@@ -1005,11 +1002,7 @@ JS);
     return;
   }
 
-  const getEntries = () => {
-    const entries = field.find($entrySelector);
-    const selectedEntries = entries.filter('.sel');
-    return (selectedEntries.length ? selectedEntries : entries).toArray();
-  };
+  const getEntries = () => field.find($entrySelector).toArray();
 
   btn.on('activate', () => {
     Craft.cp.copyElements(getEntries().map((element) => {
@@ -1029,17 +1022,6 @@ JS);
     const disclosureMenu = menu.data('disclosureMenu');
     disclosureMenu?.on('show', () => {
       const entries = getEntries();
-      let copyLabel;
-      if ($(entries).is('.sel')) {
-        copyLabel = Craft.t('app', 'Copy selected {type}', {
-          type: $type,
-        });
-      } else {
-        copyLabel = Craft.t('app', 'Copy all {type}', {
-          type: $type,
-        });
-      }
-      btn.find('.menu-item-label').text(copyLabel);
       disclosureMenu.toggleItem(btn[0], !!entries.length);
     });
   }, 1);
@@ -1059,16 +1041,6 @@ JS, [
                 'type' => $type,
             ])),
         ];
-    }
-
-    private function duplicateAction(string $type, string $entrySelector, string $activateJs): array
-    {
-        return $this->bulkAction($entrySelector, $activateJs, [
-            'icon' => 'clone',
-            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Duplicate selected {type}', [
-                'type' => $type,
-            ])),
-        ]);
     }
 
     private function deleteAction(string $type, string $entrySelector, string $activateJs): array
@@ -1109,7 +1081,7 @@ JS;
     return;
   }
 
-  const getEntries = () => field.find($entrySelector).filter('.sel').toArray();
+  const getEntries = () => field.find($entrySelector).toArray();
 
   btn.on('activate', () => {
     $activateJs

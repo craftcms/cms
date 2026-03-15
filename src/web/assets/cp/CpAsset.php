@@ -192,6 +192,7 @@ JS;
             'Default View Mode',
             'Delete custom source',
             'Delete folder',
+            'Delete selected {type}',
             'Delete their content',
             'Delete them',
             'Delete {num, plural, =1{user} other{users}} and content',
