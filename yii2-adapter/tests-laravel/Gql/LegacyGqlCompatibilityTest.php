@@ -7,8 +7,10 @@ use craft\events\RegisterGqlQueriesEvent;
 use craft\gql\TypeLoader as LegacyTypeLoader;
 use craft\helpers\Gql as LegacyGqlHelper;
 use craft\models\GqlSchema;
+use craft\models\GqlToken as LegacyGqlToken;
 use craft\services\Gql as LegacyGql;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Tests\TestCase;
 use GraphQL\Type\Definition\ObjectType;
@@ -65,6 +67,16 @@ it('keeps the legacy gql helper working against the new service', function() {
 
     expect(LegacyGqlHelper::canSchema('sections.news'))->toBeTrue()
         ->and(LegacyGqlHelper::isSchemaAwareOf('sections.news'))->toBeTrue();
+});
+
+it('returns legacy token wrappers from the legacy gql service', function() {
+    $modernToken = app(\CraftCms\Cms\Gql\Gql::class)->getPublicToken();
+    $legacyToken = Craft::$app->getGql()->getPublicToken();
+
+    expect($modernToken)->toBeInstanceOf(GqlToken::class)
+        ->and($modernToken)->not->toBeInstanceOf(LegacyGqlToken::class)
+        ->and($legacyToken)->toBeInstanceOf(LegacyGqlToken::class)
+        ->and($legacyToken?->getSchema())->toBeInstanceOf(GqlSchema::class);
 });
 
 it('shares registry and loader state across modern and legacy namespaces', function() {

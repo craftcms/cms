@@ -10,10 +10,12 @@ use craft\events\DefineBehaviorsEvent;
 use craft\fields\PlainText as LegacyPlainText;
 use craft\models\DeprecationError as LegacyDeprecationError;
 use craft\models\GqlSchema as LegacyGqlSchema;
+use craft\models\GqlToken as LegacyGqlToken;
 use craft\models\UserGroup as LegacyUserGroup;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCatalog;
 use CraftCms\Yii2Adapter\Tests\TestCase;
@@ -61,10 +63,12 @@ test('legacy behavior catalog discovers migrated behavior targets across the mai
 
     expect($targets)
         ->toHaveKey(LegacyGqlSchema::class)
+        ->toHaveKey(LegacyGqlToken::class)
         ->toHaveKey(LegacyUserGroup::class)
         ->toHaveKey(LegacyPlainText::class)
         ->toHaveKey(LegacyDeprecationError::class)
         ->and($targets[LegacyGqlSchema::class]['targetClass'])->toBe(GqlSchema::class)
+        ->and($targets[LegacyGqlToken::class]['targetClass'])->toBe(GqlToken::class)
         ->and($targets[LegacyUserGroup::class]['targetClass'])->toBe(UserGroup::class)
         ->and($targets[LegacyPlainText::class]['targetClass'])->toBe(PlainText::class)
         ->and($targets[LegacyDeprecationError::class]['targetClass'])->toBe(DeprecationError::class);
