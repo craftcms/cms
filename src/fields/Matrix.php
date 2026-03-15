@@ -882,11 +882,15 @@ class Matrix extends Field implements
      */
     protected function actionMenuItems(): array
     {
-        $items = match ($this->viewMode) {
-            self::VIEW_MODE_BLOCKS => $this->blockViewActionMenuItems(),
-            self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID => $this->cardViewActionMenuItems(),
-            default => [],
-        };
+        if ($this->maxEntries !== 1) {
+            $items = match ($this->viewMode) {
+                self::VIEW_MODE_BLOCKS => $this->blockViewActionMenuItems(),
+                self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID => $this->cardViewActionMenuItems(),
+                default => [],
+            };
+        } else {
+            $items = [];
+        }
 
         $parentItems = parent::actionMenuItems();
 
@@ -966,15 +970,13 @@ JS, [
         $items = [];
 
         // Copy, Duplicate, Delete
-        if ($this->maxEntries !== 1) {
-            $type = Entry::pluralLowerDisplayName();
-            $entrySelector = ' > .nested-element-cards > .elements > li > .element';
+        $type = Entry::pluralLowerDisplayName();
+        $entrySelector = ' > .nested-element-cards > .elements > li > .element';
 
-            $items[] = $this->copyAction($type, $entrySelector);
-            $items[] = $this->deleteAction($type, $entrySelector, <<<JS
+        $items[] = $this->copyAction($type, $entrySelector);
+        $items[] = $this->deleteAction($type, $entrySelector, <<<JS
 field.children('.nested-element-cards').data('nestedElementManager').deleteElements(getEntries());
 JS);
-        }
 
         return $items;
     }
