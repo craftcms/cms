@@ -30,6 +30,7 @@ use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
 use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
+use CraftCms\Cms\Http\Controllers\Gql\SchemasController as GqlSchemasController;
 use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
@@ -260,6 +261,16 @@ Route::prefix(implode('/', [
 
         // FindAndReplace
         Route::post('utilities/find-and-replace-perform-action', FindAndReplaceController::class);
+
+        // GraphQL
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('graphql/delete-schema', [GqlSchemasController::class, 'destroy']);
+
+            Route::middleware('password.confirm')->group(function () {
+                Route::post('graphql/save-schema', [GqlSchemasController::class, 'save']);
+                Route::post('graphql/save-public-schema', [GqlSchemasController::class, 'savePublic']);
+            });
+        });
 
         // Migrations
         Route::post('utilities/apply-new-migrations', MigrationsController::class);
