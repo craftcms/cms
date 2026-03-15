@@ -427,9 +427,20 @@ class Gql extends Component
 
     private static function tokenToLegacyToken(NewGqlToken $token): GqlToken
     {
-        $config = $token->toArray();
+        $config = [
+            'id' => $token->id,
+            'name' => $token->name,
+            'schemaId' => $token->schemaId,
+            'accessToken' => $token->accessToken,
+            'enabled' => $token->enabled,
+            'expiryDate' => $token->expiryDate,
+            'lastUsed' => $token->lastUsed,
+            'dateCreated' => $token->dateCreated,
+            'uid' => $token->uid,
+            'isTemporary' => $token->isTemporary,
+        ];
 
-        if (!$token->schemaId && ($schema = $token->getSchema())) {
+        if ($schema = $token->getSchema()) {
             $config['schema'] = self::schemaToLegacySchema($schema);
         }
 

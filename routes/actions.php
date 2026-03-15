@@ -29,6 +29,7 @@ use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
+use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
 use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
@@ -87,6 +88,7 @@ use Illuminate\Support\Facades\Route;
  * mapped to `/{cpTrigger}/{actionTrigger}/route` and `/{actionTrigger}/{route}`
  */
 VerifyCsrfToken::except(collect([
+    'graphql/api',
     'preview/preview',
 ])->flatMap(fn (string $route) => [
     $route,
@@ -128,6 +130,7 @@ foreach ([
  * Actions that are accessible without CP can be registered here.
  */
 Route::prefix(Cms::config()->actionTrigger)->group(function () {
+    Route::any('graphql/api', GqlApiController::class);
     Route::post('migrate', MigrateController::class);
 
     Route::middleware(['auth:craft'])->group(function () {

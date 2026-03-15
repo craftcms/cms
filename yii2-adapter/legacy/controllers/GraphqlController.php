@@ -8,33 +8,20 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\errors\GqlException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
-use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
-use craft\web\ErrorHandler;
-use craft\web\Response;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
-use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use DateTimeZone;
-use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
-use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -51,16 +38,6 @@ class GraphqlController extends Controller
 {
     /**
      * @inheritdoc
-     */
-    protected array|bool|int $allowAnonymous = ['api'];
-
-    /**
-     * @inheritdoc
-     */
-    public $defaultAction = 'api';
-
-    /**
-     * @inheritdoc
      * @throws NotFoundHttpException
      */
     public function beforeAction($action): bool
@@ -69,307 +46,11 @@ class GraphqlController extends Controller
             throw new NotFoundHttpException(t('Page not found.'));
         }
 
-        if ($action->id === 'api') {
-            $this->enableCsrfValidation = false;
-        }
-
         if (!parent::beforeAction($action)) {
             return false;
         }
 
         return true;
-    }
-
-    /**
-     * Performs a GraphQL query.
-     *
-     * @return YiiResponse
-     * @throws BadRequestHttpException
-     * @throws GqlException
-     * @throws ForbiddenHttpException
-     */
-    public function actionApi(): YiiResponse
-    {
-        // Add CORS headers
-        $headers = $this->response->getHeaders();
-        $headers->setDefault('Access-Control-Allow-Credentials', 'true');
-        $headers->setDefault('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Craft-Authorization, X-Craft-Token');
-
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if (is_array($generalConfig->allowedGraphqlOrigins)) {
-            if (($origins = $this->request->getOrigin()) !== null) {
-                $origins = Arr::whereNotEmpty(array_map('trim', explode(',', $origins)));
-                foreach ($origins as $origin) {
-                    if (in_array($origin, $generalConfig->allowedGraphqlOrigins)) {
-                        $headers->setDefault('Access-Control-Allow-Origin', $origin);
-                        break;
-                    }
-                }
-            }
-        } elseif ($generalConfig->allowedGraphqlOrigins !== false) {
-            $headers->setDefault('Access-Control-Allow-Origin', '*');
-        }
-
-        if ($this->request->getIsOptions()) {
-            // This is just a preflight request, no need to run the actual query yet
-            $this->response->format = YiiResponse::FORMAT_RAW;
-            $this->response->data = '';
-            return $this->response;
-        }
-
-        $this->response->format = YiiResponse::FORMAT_JSON;
-
-        $gqlService = Craft::$app->getGql();
-        $schema = $this->_schema($gqlService);
-
-        $this->_enforceSiteAccess($schema);
-
-        $query = $operationName = $variables = null;
-
-        // Check the body if it's a POST request
-        if ($this->request->getIsPost()) {
-            // If it's an application/graphql request, the whole body is the query
-            if ($this->request->getIsGraphql()) {
-                $query = $this->request->getRawBody();
-            } else {
-                $query = $this->request->getBodyParam('query');
-                $operationName = $this->request->getBodyParam('operationName');
-                $variables = $this->request->getBodyParam('variables');
-            }
-        }
-
-        // query/variables/operationName GET params supersede BODY params
-        if (($qQuery = $this->request->getQueryParam('query')) !== null) {
-            $query = $qQuery;
-        }
-
-        if (($qVariables = $this->request->getQueryParam('variables')) !== null) {
-            // Must be valid JSON
-            try {
-                $variables = Json::decode($qVariables);
-            } catch (InvalidArgumentException $e) {
-                throw new BadRequestHttpException('The variables param must be valid JSON', 0, $e);
-            }
-        }
-
-        if (($qOperationName = $this->request->getQueryParam('operationName')) !== null) {
-            $operationName = $qOperationName;
-        }
-
-        $queries = [];
-        if ($singleQuery = ($query !== null)) {
-            $queries[] = [$query, $variables, $operationName];
-        } else {
-            if ($this->request->getIsJson()) {
-                // Check if there are any queries defined in the JSON body
-                foreach ($this->request->getBodyParams() as $key => $param) {
-                    $queries[$key] = [$param['query'] ?? null, $param['variables'] ?? null, $param['operationName'] ?? null];
-                }
-            }
-
-            if (empty($queries)) {
-                $singleQuery = true;
-                $queries[] = [null, null, null];
-            }
-        }
-
-        if ($generalConfig->maxGraphqlBatchSize && count($queries) > $generalConfig->maxGraphqlBatchSize) {
-            throw new BadRequestHttpException(sprintf(
-                'No more than %s GraphQL %s can be executed in a single batch.',
-                $generalConfig->maxGraphqlBatchSize,
-                $generalConfig->maxGraphqlBatchSize === 1 ? 'query' : 'queries'
-            ));
-        }
-
-
-        // Generate all transforms immediately
-        $generalConfig->generateTransformsBeforePageLoad = true;
-
-        // Check for the cache-bust header
-        $cacheHeader = $this->request->getHeaders()->get('x-craft-gql-cache');
-        $cache = $cacheHeader ? ($cacheHeader === 'cache') : null;
-        if ($cache !== null) {
-            $cacheSetting = $generalConfig->enableGraphqlCaching;
-            $generalConfig->enableGraphqlCaching = $cache;
-        }
-
-        $result = [];
-        $hasMutations = false;
-
-        foreach ($queries as $key => [$query, $variables, $operationName]) {
-            $query = trim($query);
-            try {
-                if (empty($query)) {
-                    throw new InvalidValueException('No GraphQL query was supplied');
-                }
-                $result[$key] = $gqlService->executeQuery($schema, $query, $variables, $operationName, app()->hasDebugModeEnabled());
-            } catch (InvalidValueException $e) {
-                $result[$key] = [
-                    'errors' => [
-                        [
-                            'message' => $e->getMessage(),
-                        ],
-                    ],
-                ];
-            } catch (Throwable $e) {
-                /** @var ErrorHandler $errorHandler */
-                $errorHandler = Craft::$app->getErrorHandler();
-                $errorHandler->logException($e);
-                $result[$key] = [
-                    'errors' => [
-                        $errorHandler->showExceptionDetails()
-                            ? $errorHandler->exceptionAsArray($e)
-                            : ['message' => t('Something went wrong when processing the GraphQL query.')],
-                    ],
-                ];
-            }
-
-            if (str_starts_with($query, 'mutation')) {
-                $hasMutations = true;
-            }
-        }
-
-        if (isset($cacheSetting)) {
-            $generalConfig->enableGraphqlCaching = $cacheSetting;
-        }
-
-        $this->response->format = Response::FORMAT_GQL;
-        $this->response->data = $singleQuery ? reset($result) : $result;
-
-        // send no-cache headers?
-        if (!($cache ?? !$hasMutations)) {
-            $this->response->setNoCacheHeaders();
-        }
-
-        return $this->response;
-    }
-
-    /**
-     * Returns the requested GraphQL schema
-     *
-     * @param GqlService $gqlService
-     * @return GqlSchema
-     * @throws ForbiddenHttpException
-     * @throws BadRequestHttpException
-     */
-    private function _schema(GqlService $gqlService): GqlSchema
-    {
-        $requestHeaders = $this->request->getHeaders();
-
-        // Admins can access schemas directly with a X-Craft-Gql-Schema header
-        if ($requestHeaders->has('x-craft-gql-schema')) {
-            $this->requireAdmin(false);
-            $schemaUid = $requestHeaders->get('x-craft-gql-schema');
-            if ($schemaUid === '*') {
-                return GqlHelper::createFullAccessSchema();
-            }
-            $schema = $gqlService->getSchemaByUid($schemaUid);
-            if (!$schema) {
-                throw new BadRequestHttpException('Invalid X-Craft-Gql-Schema header');
-            }
-            return $schema;
-        }
-
-        $token = $this->_token($gqlService);
-
-        // If we couldn't find a token, then return the active schema if there is one, otherwise bail
-        if (!$token) {
-            try {
-                return $gqlService->getActiveSchema();
-            } catch (GqlException) {
-                throw new BadRequestHttpException('Missing Authorization header');
-            }
-        }
-
-        // Update the lastUsed timestamp
-        $now = DateTimeHelper::currentUTCDateTime();
-        if (
-            !$token->lastUsed ||
-            $token->lastUsed->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i') !== $now->format('Y-m-d H:i')
-        ) {
-            $token->lastUsed = $now;
-            $gqlService->saveToken($token);
-        }
-
-        return $token->getSchema();
-    }
-
-    private function _token(GqlService $gqlService): ?GqlToken
-    {
-        $bearerToken = $this->request->getBearerToken();
-
-        if ($bearerToken) {
-            try {
-                $token = $gqlService->getTokenByAccessToken($bearerToken);
-
-                if (!$token->getIsValid()) {
-                    throw new BadRequestHttpException('Invalid Authorization header');
-                }
-
-                return $token;
-            } catch (InvalidArgumentException) {
-            }
-        }
-
-        // Get the public schema, if it exists & is valid
-        return $this->_publicToken($gqlService);
-    }
-
-    /**
-     * Returns the public token, if it exists and is valid.
-     *
-     * @param GqlService $gqlService
-     * @return GqlToken|null
-     */
-    private function _publicToken(GqlService $gqlService): ?GqlToken
-    {
-        try {
-            $token = $gqlService->getPublicToken();
-        } catch (Throwable $e) {
-            Log::info('Could not obtain the public token: ' . $e->getMessage());
-            Craft::$app->getErrorHandler()->logException($e);
-            return null;
-        }
-
-        return $token->getIsValid() ? $token : null;
-    }
-
-    /**
-     * Enforce site access based on used schema.
-     *
-     * @param GqlSchema $schema
-     * @return void
-     * @throws ForbiddenHttpException
-     * @throws SiteNotFoundException
-     */
-    private function _enforceSiteAccess(GqlSchema $schema): void
-    {
-        $allowedSites = GqlHelper::getAllowedSites($schema);
-        $allowedSiteIds = array_flip(array_map(fn(Site $site) => $site->id, $allowedSites));
-
-        // check if schema has access to the current site
-        $currentSite = Sites::getCurrentSite();
-        if (isset($allowedSiteIds[$currentSite->id])) {
-            return;
-        }
-
-        // if not, check if it has access to the primary site (if different from the current site)
-        $primarySite = Sites::getPrimarySite();
-        if ($currentSite->id !== $primarySite->id && isset($allowedSiteIds[$primarySite->id])) {
-            Sites::setCurrentSite($primarySite);
-            return;
-        }
-
-        // otherwise, loop through all sites until we find one that the token has access to
-        foreach (Sites::getAllSites() as $site) {
-            if (isset($allowedSiteIds[$site->id])) {
-                Sites::setCurrentSite($site);
-                return;
-            }
-        }
-
-        // no allowed sites could be found, so throw a ForbiddenHttpException
-        throw new ForbiddenHttpException(sprintf('Schema doesn’t have access to the “%s” site.', $currentSite->getName()));
     }
 
     /**

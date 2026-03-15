@@ -15,6 +15,8 @@ use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Filesystem\Data\FsListing as FilesystemFsListing;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem as FilesystemComponent;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -64,6 +66,8 @@ readonly class CompatibilityMixins
         AssetVolume::mixin(new VolumeMixin());
         AssetVolumeFolder::mixin(new ValidateMixin());
         FilesystemFsListing::mixin(new ValidateMixin());
+        GqlSchema::mixin(new ValidateMixin());
+        GqlToken::mixin(new ValidateMixin());
         Widget::mixin(new ValidateMixin());
         ImageTransform::mixin(new ValidateMixin());
         ImageTransformIndex::mixin(new ValidateMixin());
