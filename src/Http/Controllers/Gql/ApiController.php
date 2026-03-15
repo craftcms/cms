@@ -11,12 +11,12 @@ use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Http\Responses\GqlResponse;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites as SiteSites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTimeZone;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -108,16 +108,10 @@ readonly class ApiController extends GqlController
             $this->generalConfig->enableGraphqlCaching = $cacheSetting;
         }
 
-        $response = new JsonResponse($singleQuery ? reset($result) : $result);
-        $response->headers->set('Content-Type', 'application/graphql-response+json');
-        $response->headers->remove('Cache-Control');
-        $response->headers->remove('Pragma');
-        $response->headers->remove('Expires');
+        $response = new GqlResponse($singleQuery ? reset($result) : $result);
 
         if (! ($cache ?? ! $hasMutations)) {
-            $response->headers->set('Expires', '0');
-            $response->headers->set('Pragma', 'no-cache');
-            $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+            $response->nocache();
         }
 
         return $response;
