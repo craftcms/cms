@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed an error that could occur after running the `utils/fix-field-layout-uids` command. ([#18516](https://github.com/craftcms/cms/issues/18516))
+
+## 4.17.10 - 2026-03-11
+
+- Fixed an error that occurred when loading some control panel resources on environments with `craft\web\AssetManager::$cacheSourcePaths` disabled. ([#18536](https://github.com/craftcms/cms/issues/18536))
+
 ## 4.17.9 - 2026-03-09
 
 - Added `craft\filters\IpRateLimitIdentity`. ([#18510](https://github.com/craftcms/cms/pull/18510))
@@ -51,7 +59,7 @@
 - The `create()` Twig function now allows `craft\helpers\` classes to be created. ([#18376](https://github.com/craftcms/cms/discussions/18376))
 - Added `craft\helpers\ElementHelper::cleanseQueryCriteria()`.
 - Fixed an error that could occur when editing an element with a Table field. ([#18408](https://github.com/craftcms/cms/pull/18408))
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-fp5j-j7j4-mcxc)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-fp5j-j7j4-mcxc](https://github.com/craftcms/cms/security/advisories/GHSA-fp5j-j7j4-mcxc))
 
 ## 4.17.3 - 2026-02-09
 
@@ -60,8 +68,8 @@
 - `craft\base\ElementInterface`, `craft\fields\data\ColorData`, `craft\fields\data\MultiOptionsFieldData`, `craft\fields\data\OptionData`, and `yii\base\Event` are now allowed in their entirety within sandboxed Twig environments.
 - Fixed a bug where Dashboard columns weren’t getting refreshed when the window was resized. ([#18389](https://github.com/craftcms/cms/issues/18389))
 - Fixed a bug where `craft\web\View::renderSandboxedObjectTemplate()` and `renderSandboxedString()` weren’t properly sandboxing templates rendered from the control panel.
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. (GHSA-fvwq-45qv-xvhv)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-vg3j-hpm9-8v5v)
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) XSS vulnerability. ([GHSA-fvwq-45qv-xvhv](https://github.com/craftcms/cms/security/advisories/GHSA-fvwq-45qv-xvhv))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. ([GHSA-vg3j-hpm9-8v5v](https://github.com/craftcms/cms/security/advisories/GHSA-vg3j-hpm9-8v5v))
 
 ## 4.17.2 - 2026-01-28
 
