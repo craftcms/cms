@@ -74,10 +74,10 @@
   --c-color-info-on-quiet: var(--color-blue-800);
 
   /* Semantic colors — success */
-  --c-color-success-fill-loud: var(--color-emerald-600);
+  --c-color-success-fill-loud: var(--color-emerald-700);
   --c-color-success-fill-normal: var(--color-emerald-100);
   --c-color-success-fill-quiet: var(--color-emerald-50);
-  --c-color-success-border-loud: var(--color-emerald-800);
+  --c-color-success-border-loud: var(--color-emerald-900);
   --c-color-success-border-normal: var(--color-emerald-600);
   --c-color-success-border-quiet: var(--color-emerald-400);
   --c-color-success-on-loud: var(--color-emerald-50);
@@ -85,10 +85,10 @@
   --c-color-success-on-quiet: var(--color-emerald-800);
 
   /* Semantic colors — warning */
-  --c-color-warning-fill-loud: var(--color-yellow-600);
+  --c-color-warning-fill-loud: var(--color-yellow-700);
   --c-color-warning-fill-normal: var(--color-yellow-100);
   --c-color-warning-fill-quiet: var(--color-yellow-50);
-  --c-color-warning-border-loud: var(--color-yellow-800);
+  --c-color-warning-border-loud: var(--color-yellow-900);
   --c-color-warning-border-normal: var(--color-yellow-600);
   --c-color-warning-border-quiet: var(--color-yellow-400);
   --c-color-warning-on-loud: var(--color-yellow-50);

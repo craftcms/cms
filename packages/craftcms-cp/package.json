@@ -88,6 +88,7 @@
     "plop": "^4.0.1",
     "recursive-copy": "^2.0.14",
     "rimraf": "^6.0.1",
+    "shadow-dom-testing-library": "^1.13.1",
     "storybook": "^9.1.5",
     "tsdown": "^0.16.6",
     "typescript": "^5.8.3",
