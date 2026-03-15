@@ -183,5 +183,7 @@ readonly class EventCompatibility
         Event::listen(RegisterTemplateCacheCollectors::class, function(RegisterTemplateCacheCollectors $event) {
             $event->types->add(LegacyAssetBundleCollector::class);
         });
+
+        LegacyGqlEvents::register();
     }
 }

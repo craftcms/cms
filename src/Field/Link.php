@@ -6,8 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use craft\base\ElementInterface;
-use craft\gql\GqlEntityRegistry;
-use craft\gql\types\generators\LinkDataType;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Template;
@@ -30,6 +28,8 @@ use CraftCms\Cms\Field\LinkTypes\Entry;
 use CraftCms\Cms\Field\LinkTypes\Phone;
 use CraftCms\Cms\Field\LinkTypes\Sms;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
+use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Gql\Types\Generators\LinkDataType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;

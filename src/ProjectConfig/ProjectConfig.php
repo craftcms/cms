@@ -41,6 +41,7 @@ use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
@@ -1899,8 +1900,7 @@ class ProjectConfig
      */
     private function _getGqlData(): array
     {
-        $gqlService = Craft::$app->getGql();
-        $publicToken = $gqlService->getPublicToken();
+        $publicToken = Gql::getPublicToken();
 
         $data = [
             'schemas' => [],
@@ -1910,7 +1910,7 @@ class ProjectConfig
             ],
         ];
 
-        foreach ($gqlService->getSchemas() as $schema) {
+        foreach (Gql::getSchemas() as $schema) {
             $data['schemas'][$schema->uid] = $schema->getConfig();
         }
 

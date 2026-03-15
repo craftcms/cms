@@ -6,44 +6,8 @@ namespace CraftCms\Cms\Gql;
 
 use Craft;
 use craft\base\ElementInterface as BaseElementInterface;
-use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\errors\GqlException;
-use craft\gql\ArgumentManager;
-use craft\gql\base\Directive;
-use craft\gql\base\GeneratorInterface;
-use craft\gql\base\SingularTypeInterface;
-use craft\gql\directives\FormatDateTime;
-use craft\gql\directives\Markdown;
-use craft\gql\directives\Money;
-use craft\gql\directives\ParseRefs;
-use craft\gql\directives\StripTags;
-use craft\gql\directives\Transform;
-use craft\gql\directives\Trim;
-use craft\gql\ElementQueryConditionBuilder;
-use craft\gql\GqlEntityRegistry;
-use craft\gql\interfaces\Element as ElementInterface;
-use craft\gql\interfaces\elements\Address as AddressInterface;
-use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\gql\interfaces\elements\User as UserInterface;
-use craft\gql\mutations\Asset as AssetMutation;
-use craft\gql\mutations\Entry as EntryMutation;
-use craft\gql\mutations\Ping as PingMutation;
-use craft\gql\queries\Address as AddressQuery;
-use craft\gql\queries\Asset as AssetQuery;
-use craft\gql\queries\Entry as EntryQuery;
-use craft\gql\queries\Ping as PingQuery;
-use craft\gql\queries\User as UserQuery;
-use craft\gql\TypeLoader;
-use craft\gql\TypeManager;
-use craft\gql\types\DateTime;
-use craft\gql\types\Mutation;
-use craft\gql\types\Number;
-use craft\gql\types\Query;
-use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use CraftCms\Cms\Asset\Volumes;
@@ -54,6 +18,17 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\Contracts\GeneratorInterface;
+use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
+use CraftCms\Cms\Gql\Contracts\SingularTypeInterface;
+use CraftCms\Cms\Gql\Directives\Directive;
+use CraftCms\Cms\Gql\Directives\FormatDateTime;
+use CraftCms\Cms\Gql\Directives\Markdown;
+use CraftCms\Cms\Gql\Directives\Money;
+use CraftCms\Cms\Gql\Directives\ParseRefs;
+use CraftCms\Cms\Gql\Directives\StripTags;
+use CraftCms\Cms\Gql\Directives\Transform;
+use CraftCms\Cms\Gql\Directives\Trim;
 use CraftCms\Cms\Gql\Events\DefineGqlValidationRules;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
 use CraftCms\Cms\Gql\Events\ExecutingGqlQuery;
@@ -62,8 +37,27 @@ use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
 use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
 use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
 use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
+use CraftCms\Cms\Gql\Exceptions\GqlException;
+use CraftCms\Cms\Gql\Interfaces\Element as ElementInterface;
+use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressInterface;
+use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
+use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
+use CraftCms\Cms\Gql\Interfaces\Elements\User as UserInterface;
 use CraftCms\Cms\Gql\Models\GqlSchema as GqlSchemaModel;
 use CraftCms\Cms\Gql\Models\GqlToken as GqlTokenModel;
+use CraftCms\Cms\Gql\Mutations\Asset as AssetMutation;
+use CraftCms\Cms\Gql\Mutations\Entry as EntryMutation;
+use CraftCms\Cms\Gql\Mutations\Ping as PingMutation;
+use CraftCms\Cms\Gql\Queries\Address as AddressQuery;
+use CraftCms\Cms\Gql\Queries\Asset as AssetQuery;
+use CraftCms\Cms\Gql\Queries\Entry as EntryQuery;
+use CraftCms\Cms\Gql\Queries\Ping as PingQuery;
+use CraftCms\Cms\Gql\Queries\User as UserQuery;
+use CraftCms\Cms\Gql\Types\DateTime;
+use CraftCms\Cms\Gql\Types\Mutation;
+use CraftCms\Cms\Gql\Types\Number;
+use CraftCms\Cms\Gql\Types\Query;
+use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -170,8 +164,6 @@ class Gql
     ) {}
 
     /**
-     * Returns the GraphQL schema.
-     *
      * @param  bool  $prebuildSchema  should the schema be deep-scanned and pre-built instead of lazy-loaded
      *
      * @throws GqlException in case of invalid schema
@@ -236,8 +228,6 @@ class Gql
     }
 
     /**
-     * Return a set of validation rules to use.
-     *
      * @param  bool  $debug  Whether debugging validation rules should be allowed.
      * @param  bool  $isIntrospectionQuery  Whether this is an introspection query
      */
@@ -281,8 +271,6 @@ class Gql
     }
 
     /**
-     * Execute a GraphQL query for a given schema.
-     *
      * @param  GqlSchema  $schema  The schema definition to use.
      * @param  string  $query  The query string to execute.
      * @param  array|null  $variables  The variables to use.
@@ -378,19 +366,16 @@ class Gql
         return $event->result ?? [];
     }
 
-    /** Invalidates all GraphQL result caches. */
     public function invalidateCaches(): void
     {
         TagDependency::invalidate(self::CACHE_TAG);
     }
 
-    /** Returns the cached result for a key. */
     public function getCachedResult(string $cacheKey): ?array
     {
         return DependencyCache::get($cacheKey) ?: null;
     }
 
-    /** Cache a result for the key and tag it. */
     public function setCachedResult(
         string $cacheKey,
         array $result,
@@ -408,8 +393,6 @@ class Gql
     }
 
     /**
-     * Returns the active GraphQL schema.
-     *
      * @throws GqlException if no schema is currently active.
      */
     public function getActiveSchema(): GqlSchema
@@ -422,8 +405,6 @@ class Gql
     }
 
     /**
-     * Sets the active GraphQL schema.
-     *
      * @param  GqlSchema|null  $schema  The schema, or `null` to unset the active schema
      */
     public function setActiveSchema(?GqlSchema $schema = null): void
@@ -464,7 +445,6 @@ class Gql
         return $this->getPublicToken()?->getSchema();
     }
 
-    /** Returns all of the known GraphQL schema components. */
     public function getAllSchemaComponents(): array
     {
         $queries = [];
@@ -503,9 +483,6 @@ class Gql
         ];
     }
 
-    /**
-     * Flush all GraphQL caches, registries and loaders.
-     */
     public function flushCaches(): void
     {
         $this->_schema = null;
@@ -517,7 +494,6 @@ class Gql
         $this->invalidateCaches();
     }
 
-    /** Returns a GraphQL token by its ID. */
     public function getTokenById(int $id): ?GqlToken
     {
         $result = $this->_createTokenQuery()->find($id);
@@ -525,7 +501,6 @@ class Gql
         return $result ? new GqlToken((array) $result) : null;
     }
 
-    /** Returns a GraphQL token by its name. */
     public function getTokenByName(string $tokenName): ?GqlToken
     {
         $result = $this->_createTokenQuery()
@@ -569,7 +544,6 @@ class Gql
         return new GqlToken((array) $result);
     }
 
-    /** Returns the public token. If it does not exist and admin changes are allowed, it will be created. */
     public function getPublicToken(): ?GqlToken
     {
         if (! isset($this->_publicToken)) {
@@ -586,9 +560,6 @@ class Gql
         return $this->_publicToken;
     }
 
-    /**
-     * Creates a public token with the given config.
-     */
     private function _createPublicToken(array $config): ?GqlToken
     {
         $schema = $this->_getPublicSchema();
@@ -611,8 +582,6 @@ class Gql
     }
 
     /**
-     * Saves a GraphQL token.
-     *
      * @param  GqlToken  $token  the schema to save
      * @param  bool  $runValidation  Whether the schema should be validated
      *
@@ -648,7 +617,6 @@ class Gql
         return true;
     }
 
-    /** Handle public token settings being updated. */
     public function handleChangedPublicToken(ConfigEvent $event): void
     {
         // If we're just adding a public schema, ensure it makes it in.
@@ -657,7 +625,6 @@ class Gql
         $this->_publicToken = $this->_createPublicToken($event->newValue);
     }
 
-    /** Deletes a GraphQL token by its ID. */
     public function deleteTokenById(int $id): bool
     {
         $model = GqlTokenModel::find($id);
@@ -670,8 +637,6 @@ class Gql
     }
 
     /**
-     * Saves a GraphQL schema.
-     *
      * @param  GqlSchema  $schema  the schema to save
      * @param  bool  $runValidation  Whether the schema should be validated
      *
@@ -704,7 +669,6 @@ class Gql
         return true;
     }
 
-    /** Handle schema change. */
     public function handleChangedSchema(ConfigEvent $event): void
     {
         $schemaUid = $event->tokenMatches[0];
@@ -751,7 +715,6 @@ class Gql
         $this->invalidateCaches();
     }
 
-    /** Deletes a GraphQL schema by its ID. */
     public function deleteSchemaById(int $id): bool
     {
         $schema = $this->getSchemaById($id);
@@ -763,7 +726,6 @@ class Gql
         return $this->deleteSchema($schema);
     }
 
-    /** Deletes a GraphQL schema. */
     public function deleteSchema(GqlSchema $schema): bool
     {
         $this->projectConfig->remove(ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.'.$schema->uid,
@@ -772,7 +734,6 @@ class Gql
         return true;
     }
 
-    /** Handle schema getting deleted. */
     public function handleDeletedSchema(ConfigEvent $event): void
     {
         $uid = $event->tokenMatches[0];
@@ -798,8 +759,6 @@ class Gql
     }
 
     /**
-     * Get a schema by its ID.
-     *
      * @param  int  $id  The schema's ID
      */
     public function getSchemaById(int $id): ?GqlSchema
@@ -810,8 +769,6 @@ class Gql
     }
 
     /**
-     * Get a schema by its UID.
-     *
      * @param  string  $uid  The schema's UID
      */
     public function getSchemaByUid(string $uid): ?GqlSchema
@@ -833,8 +790,6 @@ class Gql
     }
 
     /**
-     * Returns the content arguments
-     *
      * @param  class-string<BaseElementInterface>  $elementType
      *
      * @phpstan-param callable():array $setter
@@ -848,7 +803,6 @@ class Gql
         return $this->_contentArguments[$elementType];
     }
 
-    /** Returns arguments for fields in the given field layout. */
     public function getFieldLayoutArguments(FieldLayout $fieldLayout): array
     {
         if (! isset($fieldLayout->type)) {
@@ -865,8 +819,6 @@ class Gql
     }
 
     /**
-     * Returns the content arguments for a given element type and field layouts.
-     *
      * @param  class-string<BaseElementInterface>  $elementType
      * @param  FieldLayout[]  $fieldLayouts
      */
@@ -894,8 +846,6 @@ class Gql
     }
 
     /**
-     * Returns the content arguments for a given element type and custom fields.
-     *
      * @param  class-string<BaseElementInterface>  $elementType
      * @param  FieldInterface[]  $fields
      */
@@ -918,8 +868,6 @@ class Gql
     }
 
     /**
-     * Returns the content arguments for a given element type and generated fields.
-     *
      * @param  class-string<BaseElementInterface>  $elementType
      */
     public function defineContentArgumentsForGeneratedFields(string $elementType, array $fields): array
@@ -945,8 +893,6 @@ class Gql
     }
 
     /**
-     * Returns the content arguments for an element class based on the given contexts.
-     *
      * @param  class-string<BaseElementInterface>  $elementType
      */
     public function getContentArguments(array $contexts, string $elementType): array
@@ -973,8 +919,6 @@ class Gql
     }
 
     /**
-     * Custom error handler for GraphQL query errors
-     *
      * @param  Error[]  $errors
      * @return Error[]
      */
@@ -1011,9 +955,6 @@ class Gql
         return array_map($formatter, $errors);
     }
 
-    /**
-     * Prepare field definitions for a given GraphQL type by giving plugins a chance to modify them.
-     */
     public function prepareFieldDefinitions(array $fields, string $typeName): array
     {
         if (! array_key_exists($typeName, $this->_typeDefinitions)) {
@@ -1027,9 +968,6 @@ class Gql
         return $this->_typeDefinitions[$typeName];
     }
 
-    /**
-     * Generate a cache key for the GraphQL operation. Returns null if caching is disabled or unable to generate one.
-     */
     private function _getCacheKey(
         GqlSchema $schema,
         string $query,
@@ -1072,8 +1010,6 @@ class Gql
     }
 
     /**
-     * Register GraphQL types
-     *
      * @return array the list of registered types.
      */
     private function _registerGqlTypes(): array
@@ -1103,9 +1039,6 @@ class Gql
         return $types;
     }
 
-    /**
-     * Get GraphQL query definitions
-     */
     private function _registerGqlQueries(): void
     {
         $queryList = [
@@ -1126,9 +1059,6 @@ class Gql
         TypeLoader::registerType('Query', fn () => call_user_func(Query::class.'::getType', $queries));
     }
 
-    /**
-     * Get GraphQL mutation definitions
-     */
     private function _registerGqlMutations(): void
     {
         $mutationList = [
@@ -1148,8 +1078,6 @@ class Gql
     }
 
     /**
-     * Get GraphQL query definitions
-     *
      * @return GqlDirective[]
      */
     private function _loadGqlDirectives(?GqlSchema $schema): array
@@ -1190,9 +1118,6 @@ class Gql
         return $directives;
     }
 
-    /**
-     * Return site schema components.
-     */
     private function siteSchemaComponents(): array
     {
         $sites = Sites::getAllSites(true);
@@ -1209,9 +1134,6 @@ class Gql
         return [$queryComponents, []];
     }
 
-    /**
-     * Return element schema components.
-     */
     private function elementSchemaComponents(): array
     {
         $queryComponents = [
@@ -1229,9 +1151,6 @@ class Gql
         return [$queryComponents, []];
     }
 
-    /**
-     * Return the available schema components for entries.
-     */
     private function entrySchemaComponents(): array
     {
         $queryComponents = [];
@@ -1333,9 +1252,6 @@ class Gql
         return [$queryComponents, $mutationComponents];
     }
 
-    /**
-     * Return volume permissions.
-     */
     private function assetSchemaComponents(): array
     {
         $queryComponents = [];
@@ -1370,9 +1286,6 @@ class Gql
         return [$queryComponents, $mutationComponents];
     }
 
-    /**
-     * Return user permissions.
-     */
     private function userSchemaComponents(): array
     {
         $queryComponents = [];
@@ -1428,9 +1341,6 @@ class Gql
             ]);
     }
 
-    /**
-     * Get the public schema, if it exists.
-     */
     private function _getPublicSchema(): ?GqlSchema
     {
         $result = $this->_createSchemaQuery()->where('isPublic', true)->first();
@@ -1438,9 +1348,6 @@ class Gql
         return $result ? new GqlSchema((array) $result) : null;
     }
 
-    /**
-     * Creates the public schema.
-     */
     private function _createPublicSchema(): GqlSchema
     {
         $schemaUid = Str::uuid()->toString();
@@ -1455,17 +1362,11 @@ class Gql
         return $publicSchema;
     }
 
-    /**
-     * Gets a schema's record by uid.
-     */
     private function getSchemaModel(string $uid): GqlSchemaModel
     {
         return GqlSchemaModel::findByUid($uid) ?? new GqlSchemaModel;
     }
 
-    /**
-     * Save a GQL Token record based on the model.
-     */
     private function _saveTokenInternal(GqlToken $token): void
     {
         $isNewToken = ! $token->id;

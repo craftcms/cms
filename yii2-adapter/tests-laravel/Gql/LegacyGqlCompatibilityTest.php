@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlQueriesEvent;
+use craft\gql\TypeLoader as LegacyTypeLoader;
+use craft\helpers\Gql as LegacyGqlHelper;
 use craft\models\GqlSchema;
 use craft\services\Gql as LegacyGql;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Tests\TestCase;
+use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use yii\base\Event;
 
 uses(TestCase::class);
 
 beforeEach(function() {
-    Craft::$app->getGql()->flushCaches();
-    Craft::$app->getGql()->setActiveSchema(new GqlSchema());
+    app(\CraftCms\Cms\Gql\Gql::class)->flushCaches();
+    app(\CraftCms\Cms\Gql\Gql::class)->setActiveSchema(new GqlSchema());
     Cms::config()->enableGraphqlCaching = false;
 });
 
@@ -31,7 +35,7 @@ it('bridges legacy query registration listeners', function() {
     Event::on(LegacyGql::class, LegacyGql::EVENT_REGISTER_GQL_QUERIES, $handler);
 
     try {
-        $queries = Craft::$app->getGql()->getSchemaDef()->getQueryType()->getFields();
+        $queries = app(\CraftCms\Cms\Gql\Gql::class)->getSchemaDef()->getQueryType()->getFields();
 
         expect($queries)->toHaveKey('legacyMockQuery');
     } finally {
@@ -40,7 +44,7 @@ it('bridges legacy query registration listeners', function() {
 });
 
 it('bridges legacy before-execute listeners', function() {
-    $schema = Craft::$app->getGql()->getPublicSchema();
+    $schema = app(\CraftCms\Cms\Gql\Gql::class)->getPublicSchema();
     $handler = function(ExecuteGqlQueryEvent $event) {
         $event->result = ['data' => 'legacy override'];
     };
@@ -48,8 +52,26 @@ it('bridges legacy before-execute listeners', function() {
     Event::on(LegacyGql::class, LegacyGql::EVENT_BEFORE_EXECUTE_GQL_QUERY, $handler);
 
     try {
-        expect(Craft::$app->getGql()->executeQuery($schema, '{ping}'))->toBe(['data' => 'legacy override']);
+        expect(app(\CraftCms\Cms\Gql\Gql::class)->executeQuery($schema, '{ping}'))->toBe(['data' => 'legacy override']);
     } finally {
         Event::off(LegacyGql::class, LegacyGql::EVENT_BEFORE_EXECUTE_GQL_QUERY, $handler);
     }
+});
+
+it('keeps the legacy gql helper working against the new service', function() {
+    app(\CraftCms\Cms\Gql\Gql::class)->setActiveSchema(new GqlSchema([
+        'scope' => ['sections.news:read'],
+    ]));
+
+    expect(LegacyGqlHelper::canSchema('sections.news'))->toBeTrue()
+        ->and(LegacyGqlHelper::isSchemaAwareOf('sections.news'))->toBeTrue();
+});
+
+it('shares registry and loader state across modern and legacy namespaces', function() {
+    GqlEntityRegistry::createEntity('SharedType', new ObjectType([
+        'name' => 'SharedType',
+        'fields' => [],
+    ]));
+
+    expect(LegacyTypeLoader::loadType('SharedType'))->toBeInstanceOf(ObjectType::class);
 });

@@ -1,75 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\types\generators;
 
-use Craft;
-use craft\gql\base\Generator;
-use craft\gql\base\GeneratorInterface;
-use craft\gql\base\ObjectType;
-use craft\gql\base\SingleGeneratorInterface;
-use craft\gql\GqlEntityRegistry;
-use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\gql\types\elements\Entry;
-use craft\helpers\Gql as GqlHelper;
-use CraftCms\Cms\Entry\Data\EntryType as EntryTypeData;
-use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
-use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
-
 /**
- * Class EntryType
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Types\Generators\EntryType} instead.
  */
-class EntryType extends Generator implements GeneratorInterface, SingleGeneratorInterface
+class EntryType extends \CraftCms\Cms\Gql\Types\Generators\EntryType
 {
-    /**
-     * @inheritdoc
-     */
-    public static function generateTypes(mixed $context = null): array
-    {
-        if ($context instanceof ElementContainerFieldInterface) {
-            $entryTypes = [];
-            foreach ($context->getFieldLayoutProviders() as $provider) {
-                if ($provider instanceof EntryTypeData) {
-                    $entryTypes[] = $provider;
-                }
-            }
-        } else {
-            $entryTypes = GqlHelper::getSchemaContainedEntryTypes();
-        }
-
-        $gqlTypes = [];
-
-        foreach ($entryTypes as $entryType) {
-            // Generate a type for each entry type
-            $type = static::generateType($entryType);
-            $gqlTypes[$type->name] = $type;
-        }
-
-        return $gqlTypes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function generateType(mixed $context): ObjectType
-    {
-        /** @var EntryTypeData $context */
-        $typeName = EntryElement::gqlTypeName($context);
-
-        return GqlEntityRegistry::getOrCreate($typeName, fn() => new Entry([
-            'name' => $typeName,
-            'fields' => function() use ($context, $typeName) {
-                $contentFieldGqlTypes = self::getContentFields($context);
-                $entryTypeFields = array_merge(EntryInterface::getFieldDefinitions(), $contentFieldGqlTypes);
-                return Craft::$app->getGql()->prepareFieldDefinitions($entryTypeFields, $typeName);
-            },
-        ]));
-    }
 }

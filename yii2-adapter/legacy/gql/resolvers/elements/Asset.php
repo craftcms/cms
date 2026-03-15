@@ -1,70 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\resolvers\elements;
 
-use craft\gql\base\ElementResolver;
-use craft\helpers\Gql as GqlHelper;
-use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
-use CraftCms\Cms\Asset\Volumes;
-use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use yii\base\UnknownMethodException;
-
 /**
- * Class Asset
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Resolvers\Elements\Asset} instead.
  */
-class Asset extends ElementResolver
+class Asset extends \CraftCms\Cms\Gql\Resolvers\Elements\Asset
 {
-    /**
-     * @inheritdoc
-     */
-    public static function prepareQuery(mixed $source, array $arguments, ?string $fieldName = null): mixed
-    {
-        // If this is the beginning of a resolver chain, start fresh
-        if ($source === null) {
-            $query = AssetElement::find();
-        // If not, get the prepared element query
-        } else {
-            $query = $source->$fieldName;
-        }
-
-        // If it's preloaded, it's preloaded.
-        if (!$query instanceof ElementQueryInterface) {
-            return $query;
-        }
-
-        foreach ($arguments as $key => $value) {
-            try {
-                $query->$key($value);
-            } catch (UnknownMethodException $e) {
-                if ($value !== null) {
-                    throw $e;
-                }
-            }
-        }
-
-        $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
-
-        if (!GqlHelper::canQueryAssets()) {
-            return ElementCollection::empty();
-        }
-
-        $volumesService = app(Volumes::class);
-        $volumeIds = array_filter(array_map(function(string $uid) use ($volumesService) {
-            $volume = $volumesService->getVolumeByUid($uid);
-            return $volume->id ?? null;
-        }, $pairs['volumes']));
-
-        $query->whereIn('assets.volumeId', $volumeIds);
-
-        return $query;
-    }
 }

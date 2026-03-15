@@ -39,6 +39,7 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -56,7 +57,6 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Schema;
 
@@ -1115,7 +1115,6 @@ JS, [
     protected function gqlFieldArguments(): array
     {
         $elementSourcesService = resolve(ElementSources::class);
-        $gqlService = Craft::$app->getGql();
         $fieldLayouts = [];
         $arguments = [];
 
@@ -1127,7 +1126,7 @@ JS, [
         }
 
         foreach ($fieldLayouts as $fieldLayout) {
-            $arguments += $gqlService->getFieldLayoutArguments($fieldLayout);
+            $arguments += Gql::getFieldLayoutArguments($fieldLayout);
         }
 
         return $arguments;

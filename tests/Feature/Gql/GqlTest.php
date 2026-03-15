@@ -3,11 +3,7 @@
 declare(strict_types=1);
 
 use craft\elements\GlobalSet;
-use craft\errors\GqlException;
 use craft\fs\Local;
-use craft\gql\GqlEntityRegistry;
-use craft\gql\interfaces\elements\User as UserInterface;
-use craft\gql\TypeLoader;
 use craft\models\CategoryGroup;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
@@ -31,7 +27,11 @@ use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
 use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
 use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
 use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
+use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Gql\Interfaces\Elements\User as UserInterface;
+use CraftCms\Cms\Gql\TypeLoader;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
