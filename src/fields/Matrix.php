@@ -929,11 +929,7 @@ class Matrix extends Field implements
   const expandBtn = $('#' + $expandAllId);
   const collapseBtn = $('#' + $collapseAllId);
   const menu = expandBtn.closest('.menu');
-  const getBlocks = () => {
-    const blocks = field.find(' > .blocks > .matrixblock');
-    const selectedBlocks = blocks.filter('.sel');
-    return selectedBlocks.length ? selectedBlocks : blocks;
-  };
+  const getBlocks = () => field.find(' > .blocks > .matrixblock');
 
   expandBtn.on('activate', () => {
     getBlocks().each((i, block) => {
@@ -951,16 +947,6 @@ class Matrix extends Field implements
     const disclosureMenu = menu.data('disclosureMenu');
     disclosureMenu?.on('show', () => {
       let blocks = getBlocks();
-      let expandLabel, collapseLabel;
-      if (blocks.is('.sel')) {
-        expandLabel = Craft.t('app', 'Expand selected blocks');
-        collapseLabel = Craft.t('app', 'Collapse selected blocks');
-      } else {
-        expandLabel = Craft.t('app', 'Expand all blocks');
-        collapseLabel = Craft.t('app', 'Collapse all blocks');
-      }
-      expandBtn.find('.menu-item-label').text(expandLabel);
-      collapseBtn.find('.menu-item-label').text(collapseLabel);
       disclosureMenu.toggleItem(expandBtn[0], !!blocks.filter('.collapsed').length);
       disclosureMenu.toggleItem(collapseBtn[0], !!blocks.filter(':not(.collapsed)').length);
     });
@@ -971,22 +957,6 @@ JS, [
             $view->namespaceInputId($collapseAllId),
             $view->namespaceInputId($this->getInputId()),
         ]);
-
-        // Copy, Duplicate, Delete
-        if ($this->maxEntries !== 1) {
-            $items[] = ['type' => 'hr'];
-
-            $type = mb_strtolower(Craft::t('app', 'Blocks'));
-            $entrySelector = ' > .blocks > .matrixblock';
-
-            $items[] = $this->copyAction($type, $entrySelector);
-            $items[] = $this->duplicateAction($type, $entrySelector, <<<JS
-field.data('matrix').duplicateSelectedEntries();
-JS);
-            $items[] = $this->deleteAction($type, $entrySelector, <<<JS
-field.data('matrix').deleteSelectedEntries();
-JS);
-        }
 
         return $items;
     }

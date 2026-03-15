@@ -47,12 +47,15 @@ class MatrixAsset extends AssetBundle
                 'Actions',
                 'Add an entry',
                 'Add {type} above',
+                'Collapse selected blocks',
                 'Collapse',
                 'Disable',
                 'Disabled',
                 'Enable',
                 'Entry could not be added. Maximum number of entries reached.',
+                'Expand selected blocks',
                 'Expand',
+                'blocks',
             ]);
         }
     }
