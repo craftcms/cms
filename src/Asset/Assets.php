@@ -5,10 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use Craft;
-use craft\assetpreviews\Image as ImagePreview;
-use craft\assetpreviews\Pdf;
-use craft\assetpreviews\Text;
-use craft\assetpreviews\Video;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -19,8 +15,13 @@ use CraftCms\Cms\Asset\Events\AfterReplaceAsset;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
 use CraftCms\Cms\Asset\Events\DefineThumbUrl;
 use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
+use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
+use CraftCms\Cms\Asset\PreviewHandlers\Image as ImagePreview;
+use CraftCms\Cms\Asset\PreviewHandlers\Pdf;
+use CraftCms\Cms\Asset\PreviewHandlers\Text;
+use CraftCms\Cms\Asset\PreviewHandlers\Video;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -44,7 +45,6 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 
 use function CraftCms\Cms\t;
 
@@ -166,7 +166,7 @@ class Assets
     }
 
     /**
-     * @throws NotSupportedException if the asset's volume doesn't have a filesystem with public URLs
+     * @throws AssetNotPreviewableException if a preview URL can't be generated for the asset
      */
     public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
     {
@@ -192,7 +192,7 @@ class Assets
         }
 
         if (! $url = $asset->getUrl($transform, true)) {
-            throw new NotSupportedException('A preview URL couldn’t be generated for the asset.');
+            throw new AssetNotPreviewableException("A preview URL couldn't be generated for the asset.");
         }
 
         return AssetsHelper::revUrl($url, $asset, fsOnly: true);
