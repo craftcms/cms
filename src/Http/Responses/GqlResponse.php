@@ -19,7 +19,7 @@ class GqlResponse extends JsonResponse
      */
     public function __construct($data = null, $status = 200, $headers = [], $options = 0, $json = false)
     {
-        parent::__construct($data, $status, $headers, $json);
+        parent::__construct($data, $status, $headers, $options, $json);
 
         $this->header('Content-Type', 'application/graphql-response+json');
     }

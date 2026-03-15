@@ -13,6 +13,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\GlobalSet;
 use craft\helpers\Db;
+use CraftCms\Cms\Cms;
 
 /**
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
@@ -165,7 +166,7 @@ class GlobalSetQuery extends ElementQuery
     {
         // no need to register cache tags for global set queries,
         // unless this is a GraphQL request
-        if (Craft::$app->controller instanceof GraphqlController) {
+        if (request()->is(Cms::config()->actionTrigger . '/graphql/api')) {
             return parent::getCacheTags();
         }
 

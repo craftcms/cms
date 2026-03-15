@@ -14,6 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Gql\Events\RegisterGqlQueries} instead.
  */
 class RegisterGqlQueriesEvent extends Event
 {
