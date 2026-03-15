@@ -177,10 +177,14 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireElevatedSession();
 
-        $options = Craft::$app->getAuth()->getPasskeyCreationOptions(static::currentUser());
+        $authService = Craft::$app->getAuth();
+        $options = $authService->getPasskeyCreationOptions(static::currentUser());
+
+        $serializer = $authService->webauthnServer()->getSerializer();
+        $serializedData = $serializer->serialize($options, 'json');
 
         return $this->asJson([
-            'options' => $options,
+            'options' => $serializedData,
         ]);
     }
 
@@ -194,10 +198,13 @@ class AuthController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $options = Craft::$app->getAuth()->getPasskeyRequestOptions();
+        $authService = Craft::$app->getAuth();
+        $options = $authService->getPasskeyRequestOptions();
+        $serializer = $authService->webauthnServer()->getSerializer();
+        $serializedData = $serializer->serialize($options, 'json');
 
         return $this->asJson([
-            'options' => $options,
+            'options' => $serializedData,
         ]);
     }
 

@@ -11,7 +11,6 @@ use Craft;
 use craft\auth\methods\AuthMethodInterface;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
-use craft\auth\passkeys\CredentialRepository;
 use craft\auth\passkeys\WebauthnServer;
 use craft\elements\User;
 use craft\enums\CmsEdition;
@@ -19,7 +18,6 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Json;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\User as UserHelper;
 use craft\models\UserGroup;
@@ -27,12 +25,11 @@ use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\Session;
 use craft\web\View;
 use DateTime;
-use GuzzleHttp\Psr7\ServerRequest;
 use ParagonIE\ConstantTime\Base64UrlSafe;
-use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
+use Webauthn\Exception\InvalidUserHandleException;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
@@ -467,7 +464,7 @@ class Auth extends Component
 
         $excludeCredentials = array_map(
             fn(PublicKeyCredentialSource $credential) => $credential->getPublicKeyCredentialDescriptor(),
-            (new CredentialRepository())->findAllForUserEntity($userEntity),
+            $this->webauthnServer()->getCredentialRepository()->findAllForUserEntity($userEntity),
         );
 
         $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::create(
@@ -480,7 +477,9 @@ class Auth extends Component
             excludeCredentials: $excludeCredentials
         );
 
-        SessionHelper::set($this->passkeyCreationOptionsParam, Json::encode($publicKeyCredentialCreationOptions));
+        $serializer = $this->webauthnServer()->getSerializer();
+        $serialisedData = $serializer->serialize($publicKeyCredentialCreationOptions, 'json');
+        SessionHelper::set($this->passkeyCreationOptionsParam, $serialisedData);
 
         return $publicKeyCredentialCreationOptions;
     }
@@ -502,7 +501,11 @@ class Auth extends Component
 
         $serializer = $this->webauthnServer()->getSerializer();
 
-        $publicKeyCredentialCreationOptions = PublicKeyCredentialCreationOptions::createFromArray(Json::decode($optionsJson));
+        $publicKeyCredentialCreationOptions = $serializer->deserialize(
+            $optionsJson,
+            PublicKeyCredentialCreationOptions::class,
+            'json',
+        );
         $publicKeyCredential = $serializer->deserialize(
             $credentials,
             PublicKeyCredential::class,
@@ -526,8 +529,7 @@ class Auth extends Component
             return false;
         }
 
-        $credentialRepository = new CredentialRepository();
-        $credentialRepository->savedNamedCredentialSource($publicKeyCredentialSource, $credentialName);
+        $this->webauthnServer()->getCredentialRepository()->savedNamedCredentialSource($publicKeyCredentialSource, $credentialName);
 
         return true;
     }
@@ -552,20 +554,28 @@ class Auth extends Component
      * @param PublicKeyCredentialRequestOptions|array|string $requestOptions The public key credential request options
      * @param string $response The authentication response data
      * @return bool
+     *
+     * TODO: change the signature in v6 - $requestOptions only really accepts a string
      */
     public function verifyPasskey(
         User $user,
         PublicKeyCredentialRequestOptions|array|string $requestOptions,
         string $response,
+        bool $checkOldUserHandle = false,
     ): bool {
-        if (is_array($requestOptions)) {
-            $requestOptions = PublicKeyCredentialRequestOptions::createFromArray($requestOptions);
-        } elseif (is_string($requestOptions)) {
-            $requestOptions = PublicKeyCredentialRequestOptions::createFromString($requestOptions);
-        }
+        $serializer = $this->webauthnServer()->getSerializer();
 
+        $publicKeyCredentialRequestOptions = $serializer->deserialize(
+            $requestOptions,
+            PublicKeyCredentialRequestOptions::class,
+            'json',
+        );
         $userEntity = $this->passkeyUserEntity($user);
-        $publicKeyCredential = $this->webauthnServer()->getPublicKeyCredentialLoader()->load($response);
+        $publicKeyCredential = $serializer->deserialize(
+            $response,
+            PublicKeyCredential::class,
+            'json',
+        );
         $authenticatorAssertionResponse = $publicKeyCredential->response;
 
         if (!$authenticatorAssertionResponse instanceof AuthenticatorAssertionResponse) {
@@ -573,15 +583,26 @@ class Auth extends Component
             return false;
         }
 
-        $serverRequest = $this->buildServerRequest(ServerRequest::fromGlobals());
+        $publicKeyCredentialSource = $this->webauthnServer()->getCredentialRepository()->findOneByCredentialId(
+            $publicKeyCredential->rawId,
+            $checkOldUserHandle,
+        );
+
+        if ($publicKeyCredentialSource === null) {
+            Craft::warning('No publicKeyCredential source was found.');
+            return false;
+        }
+
         try {
             $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
-                $publicKeyCredential->rawId,
+                $publicKeyCredentialSource,
                 $authenticatorAssertionResponse,
-                $requestOptions,
-                $serverRequest,
+                $publicKeyCredentialRequestOptions,
+                Craft::$app->getRequest()->getHostName(),
                 $userEntity->id,
             );
+        } catch (InvalidUserHandleException $e) {
+            throw $e;
         } catch (Throwable $e) {
             Craft::warning('Authenticator Assertion Response Validation failed: ' . $e->getMessage());
             return false;
@@ -606,7 +627,7 @@ class Auth extends Component
      *
      * @return WebauthnServer
      */
-    private function webauthnServer(): WebauthnServer
+    public function webauthnServer(): WebauthnServer
     {
         if (!isset($this->_webauthnServer)) {
             $this->_webauthnServer = new WebauthnServer();
@@ -623,13 +644,11 @@ class Auth extends Component
      */
     private function passkeyUserEntity(User $user): PublicKeyCredentialUserEntity
     {
-        $data = [
-            'name' => $user->email,
-            'id' => Base64UrlSafe::encodeUnpadded($user->uid),
-            'displayName' => $user->getName(),
-        ];
-
-        return PublicKeyCredentialUserEntity::createFromArray($data);
+        return PublicKeyCredentialUserEntity::create(
+            $user->email,
+            Base64UrlSafe::encodeUnpadded($user->uid),
+            $user->getName(),
+        );
     }
 
     /**
@@ -639,38 +658,9 @@ class Auth extends Component
      */
     private function passkeyRpEntity(): PublicKeyCredentialRpEntity
     {
-        return PublicKeyCredentialRpEntity::createFromArray([
-            'name' => Craft::$app->getSystemName(),
-            'id' => Craft::$app->getRequest()->getHostName(),
-        ]);
-    }
-
-    /**
-     * Builds server request using the Craft-provided data, e.g. host name.
-     *
-     *
-     * @param ServerRequestInterface $defaultServerRequest
-     * @return ServerRequestInterface
-     */
-    private function buildServerRequest(ServerRequestInterface $defaultServerRequest): ServerRequestInterface
-    {
-        $uri = $defaultServerRequest->getUri();
-        $uri = $uri->withHost(Craft::$app->getRequest()->getHostName());
-
-        $serverRequest = new ServerRequest(
-            $defaultServerRequest->getMethod(),
-            $uri,
-            $defaultServerRequest->getHeaders(),
-            $defaultServerRequest->getBody(),
-            $defaultServerRequest->getProtocolVersion(),
-            $_SERVER
+        return PublicKeyCredentialRpEntity::create(
+            Craft::$app->getSystemName(),
+            Craft::$app->getRequest()->getHostName(),
         );
-
-
-        return $serverRequest
-            ->withCookieParams($_COOKIE)
-            ->withQueryParams($_GET)
-            ->withParsedBody($_POST)
-            ->withUploadedFiles(ServerRequest::normalizeFiles($_FILES));
     }
 }

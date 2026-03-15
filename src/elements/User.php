@@ -57,6 +57,7 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Throwable;
+use Webauthn\Exception\InvalidUserHandleException;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -1408,6 +1409,8 @@ class User extends Element implements IdentityInterface
      * @param string $response The authentication response data
      * @return bool
      * @since 5.0.0
+     *
+     * TODO: change the signature in v6 - $requestOptions only really accepts a string
      */
     public function authenticateWithPasskey(
         PublicKeyCredentialRequestOptions|array|string $requestOptions,
@@ -1439,6 +1442,8 @@ class User extends Element implements IdentityInterface
         // Validate the security key
         try {
             $keyValid = Craft::$app->getAuth()->verifyPasskey($this, $requestOptions, $response);
+        } catch (InvalidUserHandleException $e) {
+            $keyValid = Craft::$app->getAuth()->verifyPasskey($this, $requestOptions, $response, true);
         } catch (InvalidArgumentException) {
             $keyValid = false;
         }

@@ -693,8 +693,7 @@ JS, [
             // If this is a draft, its nested element ownership will be duplicated by Drafts::createDraft()
             if ($owner->getIsRevision()) {
                 $this->createRevisions($owner->duplicateOf, $owner);
-            // getIsUnpublishedDraft is needed for "save as new" duplication
-            } elseif (!$owner->getIsDraft() || $owner->getIsUnpublishedDraft()) {
+            } elseif ($owner->getIsCanonical()) {
                 $this->duplicateNestedElements($owner->duplicateOf, $owner, true, !$isNew);
             }
             $resetValue = true;

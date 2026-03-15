@@ -1612,11 +1612,11 @@ class App
      * Returns the path for a CP resource by its URI.
      *
      * @param string $uri
-     * @return string|null
+     * @return string
      * @throws InvalidArgumentException
      * @since 5.9.15
      */
-    public static function resourcePathByUri(string $uri): ?string
+    public static function resourcePathByUri(string $uri): string
     {
         if (!Path::ensurePathIsContained($uri)) {
             throw new InvalidArgumentException("Invalid resource: $uri");
@@ -1636,7 +1636,7 @@ class App
         $sourcePath = self::resourceSourcePathByHash($hash, $assetManager);
 
         if (!$sourcePath) {
-            return null;
+            throw new InvalidArgumentException("Invalid resource: $uri");
         }
 
         $filePath = substr($uri, strlen($hash) + 1);

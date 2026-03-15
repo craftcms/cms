@@ -34,7 +34,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
@@ -316,7 +315,9 @@ class UsersController extends Controller
 
         $duration = Craft::$app->getConfig()->getGeneral()->userSessionDuration;
 
+        // PublicKeyCredentialRequestOptions
         $requestOptions = $this->request->getRequiredBodyParam('requestOptions');
+        // PublicKeyCredential
         $response = $this->request->getRequiredBodyParam('response');
         $credential = WebAuthnRecord::findOne(['credentialId' => Json::decode($response)['id']]);
 
