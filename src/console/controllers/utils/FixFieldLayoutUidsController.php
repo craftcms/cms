@@ -10,7 +10,9 @@ namespace craft\console\controllers\utils;
 use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
+use craft\helpers\ProjectConfig;
 use craft\helpers\StringHelper;
+use craft\services\ProjectConfig as ProjectConfigService;
 use yii\console\ExitCode;
 
 /**
@@ -53,6 +55,10 @@ class FixFieldLayoutUidsController extends Controller
     {
         if (is_array($config['fieldLayouts'] ?? null)) {
             $modified = false;
+            $packed = isset($config['fieldLayouts'][ProjectConfigService::ASSOC_KEY]);
+            if ($packed) {
+                $config['fieldLayouts'] = ProjectConfig::unpackAssociativeArray($config['fieldLayouts']);
+            }
             foreach ($config['fieldLayouts'] as $fieldLayoutUid => &$fieldLayoutConfig) {
                 $this->topLevelUids[$fieldLayoutUid][] = $path;
                 if (is_array($fieldLayoutConfig)) {
@@ -61,6 +67,9 @@ class FixFieldLayoutUidsController extends Controller
                 }
             }
             if ($modified) {
+                if ($packed) {
+                    $config['fieldLayouts'] = ProjectConfig::packAssociativeArray($config['fieldLayouts']);
+                }
                 Craft::$app->getProjectConfig()->set($path, $config);
             }
             return;
@@ -68,9 +77,16 @@ class FixFieldLayoutUidsController extends Controller
 
         if (is_array($config['fieldLayout'] ?? null)) {
             $modified = false;
+            $packed = isset($config['fieldLayout'][ProjectConfigService::ASSOC_KEY]);
+            if ($packed) {
+                $config['fieldLayout'] = ProjectConfig::unpackAssociativeArray($config['fieldLayout']);
+            }
             $fieldLayoutPath = sprintf('%sfieldLayout', $path ? "$path." : '');
             $this->_fixUidsInLayout($config['fieldLayout'], $count, $fieldLayoutPath, $uids, $modified);
             if ($modified) {
+                if ($packed) {
+                    $config['fieldLayout'] = ProjectConfig::packAssociativeArray($config['fieldLayout']);
+                }
                 Craft::$app->getProjectConfig()->set($path, $config);
             }
             return;
