@@ -971,14 +971,11 @@ JS, [
     {
         $items = [];
 
-        // Copy, Delete
-        $type = Entry::pluralLowerDisplayName();
-        $entrySelector = ' > .nested-element-cards > .elements > li > .element';
-
-        $items[] = $this->copyAction($type, $entrySelector);
-        $items[] = $this->deleteAction($type, $entrySelector, <<<JS
-field.children('.nested-element-cards').data('nestedElementManager').deleteElements(getEntries());
-JS);
+        // Copy
+        $items[] = $this->copyAction(
+            Entry::pluralLowerDisplayName(),
+            ' > .nested-element-cards > .elements > li > .element',
+        );
 
         return $items;
     }
@@ -1044,69 +1041,6 @@ JS, [
             'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
                 'type' => $type,
             ])),
-        ];
-    }
-
-    private function deleteAction(string $type, string $entrySelector, string $activateJs): array
-    {
-        $typeJs = Json::encode($type);
-        $activateJs = <<<JS
-if (confirm(Craft.t('app', 'Are you sure you want to delete the selected {type}?', {
-  type: $typeJs,
-}))) {
-  $activateJs
-}
-JS;
-
-        return $this->bulkAction($entrySelector, $activateJs, [
-            'icon' => 'trash',
-            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete selected {type}', [
-                'type' => $type,
-            ])),
-            'destructive' => true,
-        ]);
-    }
-
-    private function bulkAction(string $entrySelector, string $activateJs, array $item): array
-    {
-        $view = Craft::$app->getView();
-        $id = sprintf('action-%s', mt_rand());
-
-        $view->registerJsWithVars(fn($id, $fieldId, $entrySelector) => <<<JS
-(() => {
-  const btn = $('#' + $id);
-  const field = $('#' + $fieldId);
-  const menu = btn.closest('.menu');
-
-  if (!field.length) {
-    setTimeout(() => {
-      menu.data('disclosureMenu')?.removeItem(btn[0]);
-    }, 1);
-    return;
-  }
-
-  const getEntries = () => field.find($entrySelector).toArray();
-
-  btn.on('activate', () => {
-    $activateJs
-  });
-
-  setTimeout(() => {
-    const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu?.on('show', () => {
-      disclosureMenu.toggleItem(btn[0], !!getEntries().length);
-    });
-  }, 1);
-})();
-JS, [
-            $view->namespaceInputId($id),
-            $view->namespaceInputId($this->getInputId()),
-            $entrySelector,
-        ]);
-
-        return [
-            ...$item,
-            'id' => $id,
         ];
     }
 
