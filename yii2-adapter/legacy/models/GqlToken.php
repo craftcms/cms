@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\helpers\DateTimeHelper;
 use craft\records\GqlToken as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Gql\Data\GqlSchema as NewGqlSchema;
 use DateTime;
 
 /**
@@ -93,7 +94,7 @@ class GqlToken extends Model
     {
         // If the scope is passed in, intercept it and use it.
         if (!empty($config['schema'])) {
-            $this->_schema = $config['schema'];
+            $this->_schema = self::schemaToLegacySchema($config['schema']);
 
             // We don't want any confusion here, so unset the schema ID, if they set a custom scope.
             unset($config['schemaId']);
@@ -169,7 +170,8 @@ class GqlToken extends Model
     public function getSchema(): ?GqlSchema
     {
         if (empty($this->_schema) && !empty($this->schemaId)) {
-            $this->_schema = Craft::$app->getGql()->getSchemaById($this->schemaId);
+            $schema = Craft::$app->getGql()->getSchemaById($this->schemaId);
+            $this->_schema = $schema ? self::schemaToLegacySchema($schema) : null;
         }
 
         return $this->_schema;
@@ -178,12 +180,12 @@ class GqlToken extends Model
     /**
      * Sets the schema for this token.
      *
-     * @param GqlSchema $schema
+     * @param GqlSchema|NewGqlSchema $schema
      * @since 3.5.0
      */
-    public function setSchema(GqlSchema $schema): void
+    public function setSchema(GqlSchema|NewGqlSchema $schema): void
     {
-        $this->_schema = $schema;
+        $this->_schema = self::schemaToLegacySchema($schema);
         $this->schemaId = $schema->id;
     }
 
@@ -200,5 +202,14 @@ class GqlToken extends Model
         }
 
         return $this->_scope;
+    }
+
+    private static function schemaToLegacySchema(GqlSchema|NewGqlSchema $schema): GqlSchema
+    {
+        if ($schema instanceof GqlSchema) {
+            return $schema;
+        }
+
+        return new GqlSchema($schema->toArray());
     }
 }

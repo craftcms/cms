@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Events;
 
-use craft\models\GqlSchema;
+use CraftCms\Cms\Gql\Data\GqlSchema;
 
 /**
  * @event ExecutedGqlQuery The event that is triggered after a GraphQL query has been executed.

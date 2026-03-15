@@ -19,6 +19,7 @@ use craft\events\RegisterGqlTypesEvent;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\Data\GqlSchema as NewGqlSchema;
 use CraftCms\Cms\Gql\Events\DefineGqlValidationRules;
 use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
 use CraftCms\Cms\Gql\Events\ExecutingGqlQuery;
@@ -106,7 +107,7 @@ class Gql extends Component
      */
     public function getActiveSchema(): GqlSchema
     {
-        return app(NewGql::class)->getActiveSchema();
+        return self::schemaToLegacySchema(app(NewGql::class)->getActiveSchema());
     }
 
     public function setActiveSchema(?GqlSchema $schema = null): void
@@ -124,7 +125,9 @@ class Gql extends Component
      */
     public function getPublicSchema(): ?GqlSchema
     {
-        return app(NewGql::class)->getPublicSchema();
+        $schema = app(NewGql::class)->getPublicSchema();
+
+        return $schema ? self::schemaToLegacySchema($schema) : null;
     }
 
     public function getAllSchemaComponents(): array
@@ -210,17 +213,24 @@ class Gql extends Component
 
     public function getSchemaById(int $id): ?GqlSchema
     {
-        return app(NewGql::class)->getSchemaById($id);
+        $schema = app(NewGql::class)->getSchemaById($id);
+
+        return $schema ? self::schemaToLegacySchema($schema) : null;
     }
 
     public function getSchemaByUid(string $uid): ?GqlSchema
     {
-        return app(NewGql::class)->getSchemaByUid($uid);
+        $schema = app(NewGql::class)->getSchemaByUid($uid);
+
+        return $schema ? self::schemaToLegacySchema($schema) : null;
     }
 
     public function getSchemas(): array
     {
-        return app(NewGql::class)->getSchemas();
+        return array_map(
+            fn(NewGqlSchema $schema) => self::schemaToLegacySchema($schema),
+            app(NewGql::class)->getSchemas(),
+        );
     }
 
     public function getOrSetContentArguments(string $elementType, callable $setter): array
@@ -394,5 +404,14 @@ class Gql extends Component
     private static function service(): self
     {
         return Craft::$app->getGql();
+    }
+
+    private static function schemaToLegacySchema(NewGqlSchema $schema): GqlSchema
+    {
+        if ($schema instanceof GqlSchema) {
+            return $schema;
+        }
+
+        return new GqlSchema($schema->toArray());
     }
 }

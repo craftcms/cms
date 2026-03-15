@@ -15,10 +15,10 @@ use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\GqlSchema;
 use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Support\Facades\Structures;
 use GraphQL\Type\Definition\Type;
 

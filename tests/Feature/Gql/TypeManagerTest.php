@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use craft\models\GqlSchema;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Events\DefineGqlTypeFields;
 use CraftCms\Cms\Gql\Gql;
 use Illuminate\Support\Facades\Event;

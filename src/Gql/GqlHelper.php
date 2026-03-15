@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql;
 
 use craft\base\ElementInterface;
-use craft\models\GqlSchema;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Directives\Directive;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql as GqlService;

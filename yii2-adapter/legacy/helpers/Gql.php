@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace craft\helpers;
 
-use craft\models\GqlSchema;
+use craft\models\GqlSchema as LegacyGqlSchema;
+use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\GqlHelper;
 use Deprecated;
 
@@ -13,6 +14,18 @@ use Deprecated;
  */
 class Gql extends GqlHelper
 {
+    #[Deprecated(message: 'in 6.0.0')]
+    public static function createFullAccessSchema(): LegacyGqlSchema
+    {
+        $schema = parent::createFullAccessSchema();
+
+        if ($schema instanceof LegacyGqlSchema) {
+            return $schema;
+        }
+
+        return new LegacyGqlSchema($schema->toArray());
+    }
+
     /**
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
      */

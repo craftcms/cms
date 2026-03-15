@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use GraphQL\Type\Schema;
 use Illuminate\Support\Facades\Facade;
