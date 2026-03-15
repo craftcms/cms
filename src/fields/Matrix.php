@@ -962,6 +962,8 @@ JS, [
             $view->namespaceInputId($this->getInputId()),
         ]);
 
+        $items[] = $this->copyAction(Craft::t('app', 'blocks'), ' > .blocks > .matrixblock');
+
         return $items;
     }
 
