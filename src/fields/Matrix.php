@@ -971,7 +971,7 @@ JS, [
     {
         $items = [];
 
-        // Copy, Duplicate, Delete
+        // Copy, Delete
         $type = Entry::pluralLowerDisplayName();
         $entrySelector = ' > .nested-element-cards > .elements > li > .element';
 
