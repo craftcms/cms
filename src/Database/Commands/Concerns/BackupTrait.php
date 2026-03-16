@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Database\Commands;
+namespace CraftCms\Cms\Database\Commands\Concerns;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Backups;
 use Throwable;
 
 use function Laravel\Prompts\confirm;
@@ -27,9 +28,9 @@ trait BackupTrait
         $result = spin(
             callback: function () {
                 try {
-                    $this->backupPath = \Craft::$app->getDb()->backup();
+                    $this->backupPath = app(Backups::class)->backup();
                 } catch (Throwable $e) {
-                    error('error: '.$e->getMessage());
+                    error($e->getMessage());
 
                     if (! $this->backupWarning()) {
                         error('Aborting. ');
@@ -101,9 +102,9 @@ trait BackupTrait
         $this->warn('Restoring the database backup ... ');
 
         try {
-            \Craft::$app->getDb()->restore($this->backupPath);
+            app(Backups::class)->restore($this->backupPath);
         } catch (Throwable $e) {
-            $this->error('error: '.$e->getMessage());
+            $this->error($e->getMessage());
             $this->error('You can manually restore the backup file located at '.$this->backupPath);
 
             return false;

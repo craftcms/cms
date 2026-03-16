@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Tests\TestCase;
-
-uses(TestCase::class);
 
 it('resolves the legacy security component from yii config', function() {
     expect(Craft::$app->getSecurity())

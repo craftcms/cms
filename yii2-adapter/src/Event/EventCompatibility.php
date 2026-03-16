@@ -9,6 +9,7 @@ use craft\base\Element;
 use craft\base\Event as YiiEvent;
 use craft\base\FieldLayoutComponent;
 use craft\controllers\UsersController;
+use craft\db\Connection;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\events\EditionChangeEvent;
@@ -95,6 +96,7 @@ readonly class EventCompatibility
          */
         Addresses::registerEvents();
         Auth::registerEvents();
+        Connection::registerEvents();
         Drafts::registerEvents();
         Entries::registerEvents();
         Fields::registerEvents();

@@ -7,7 +7,6 @@
 
 namespace craft\db;
 
-use Closure;
 use Craft;
 use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
 use craft\db\mysql\Schema as MysqlSchema;
@@ -17,18 +16,21 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
-use craft\helpers\Db;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Database\Backups;
+use CraftCms\Cms\Database\Events\AfterCreateBackup;
+use CraftCms\Cms\Database\Events\AfterRestoreBackup;
+use CraftCms\Cms\Database\Events\BeforeCreateBackup;
+use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
+use CraftCms\Cms\Database\Exceptions\CommandFailedException;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\DatabaseConnection;
 use CraftCms\Yii2Adapter\LaravelTransaction;
+use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use InvalidArgumentException;
-use mikehaertl\shellcommand\Command as ShellCommand;
+use RuntimeException;
 use Throwable;
 use yii\base\Event;
 use yii\base\Exception;
@@ -74,6 +76,68 @@ class Connection extends DatabaseConnection
      * @event RestoreEvent The event that is triggered after the restore occurred.
      */
     public const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
+
+    public static function registerEvents(): void
+    {
+        EventFacade::listen(function(BeforeCreateBackup $event) {
+            $db = Craft::$app->getDb();
+            if ($event->connection->getName() !== $db->getLaravelConnection()->getName()) {
+                return;
+            }
+            if (!$db->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
+                return;
+            }
+
+            $yiiEvent = new BackupEvent([
+                'file' => $event->file,
+                'ignoreTables' => $event->ignoreTables,
+            ]);
+            $db->trigger(self::EVENT_BEFORE_CREATE_BACKUP, $yiiEvent);
+            $event->ignoreTables = self::_normalizeLegacyTableNames($yiiEvent->ignoreTables ?? []);
+        });
+
+        EventFacade::listen(function(AfterCreateBackup $event) {
+            $db = Craft::$app->getDb();
+            if ($event->connection->getName() !== $db->getLaravelConnection()->getName()) {
+                return;
+            }
+            if (!$db->hasEventHandlers(self::EVENT_AFTER_CREATE_BACKUP)) {
+                return;
+            }
+
+            $db->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
+                'file' => $event->file,
+            ]));
+        });
+
+        EventFacade::listen(function(BeforeRestoreBackup $event) {
+            $db = Craft::$app->getDb();
+            if ($event->connection->getName() !== $db->getLaravelConnection()->getName()) {
+                return;
+            }
+            if (!$db->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
+                return;
+            }
+
+            $db->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
+                'file' => $event->file,
+            ]));
+        });
+
+        EventFacade::listen(function(AfterRestoreBackup $event) {
+            $db = Craft::$app->getDb();
+            if ($event->connection->getName() !== $db->getLaravelConnection()->getName()) {
+                return;
+            }
+            if (!$db->hasEventHandlers(self::EVENT_AFTER_RESTORE_BACKUP)) {
+                return;
+            }
+
+            $db->trigger(self::EVENT_AFTER_RESTORE_BACKUP, new BackupEvent([
+                'file' => $event->file,
+            ]));
+        });
+    }
 
     /**
      * @var callable[]
@@ -234,21 +298,10 @@ class Connection extends DatabaseConnection
      */
     public function getBackupFilePath(): string
     {
-        // Determine the backup file path
-        $systemName = FileHelper::sanitizeFilename(Cms::systemName(), [
-            'asciiOnly' => true,
-        ]);
-        $systemName = str_replace(['\'', '"'], '', strtolower($systemName));
-        $version = Info::fetch()->version ?? Cms::VERSION;
-        $filename = ($systemName ? "$systemName--" : '') . gmdate('Y-m-d-His') . "--v$version";
-        $backupPath = Craft::$app->getPath()->getDbBackupPath();
-        $path = $backupPath . DIRECTORY_SEPARATOR . $filename . $this->_getDumpExtension();
-
-        $i = 0;
-        while (file_exists($path)) {
-            $path = $backupPath . DIRECTORY_SEPARATOR . $filename . '--' . ++$i . $this->_getDumpExtension();
-        }
-        return $path;
+        return app(Backups::class)->getBackupFilePath(
+            connection: $this->getLaravelConnection(),
+            backupFormat: $this->getIsPgsql() ? $this->getSchema()->getBackupFormat() : null,
+        );
     }
 
     /**
@@ -279,9 +332,15 @@ class Connection extends DatabaseConnection
      */
     public function backup(): string
     {
-        $file = $this->getBackupFilePath();
-        $this->backupTo($file);
-        return $file;
+        try {
+            return app(Backups::class)->backup(
+                connection: $this->getLaravelConnection(),
+                backupFormat: $this->getIsPgsql() ? $this->getSchema()->getBackupFormat() : null,
+                ignoreTables: self::_normalizeLegacyTableNames($this->getIgnoredBackupTables()),
+            );
+        } catch (CommandFailedException $e) {
+            throw new ShellCommandException($e->command, $e->exitCode, $e->error, $e->getMessage());
+        }
     }
 
     /**
@@ -295,63 +354,30 @@ class Connection extends DatabaseConnection
      */
     public function backupTo(string $filePath): void
     {
-        $ignoreTables = $this->getIgnoredBackupTables();
-
-        // Fire a 'beforeCreateBackup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
-            $event = new BackupEvent([
-                'file' => $filePath,
-                'ignoreTables' => $ignoreTables,
-            ]);
-            $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, $event);
-            $ignoreTables = $event->ignoreTables;
-        }
-
-        // Determine the command that should be executed
-        $backupCommand = Cms::config()->backupCommand;
-
-        if ($backupCommand === false) {
-            throw new Exception('Database not backed up because the backup command is false.');
-        } elseif ($backupCommand === null || $backupCommand instanceof Closure) {
-            $backupCommand = $this->getSchema()->getDefaultBackupCommand($ignoreTables);
-        }
-
-        // Create the shell command
-        $backupCommand = $this->_parseCommandTokens($backupCommand, $filePath);
-        $command = $this->_createShellCommand($backupCommand);
-
-        $this->_executeDatabaseShellCommand($command);
-
-        // Fire an 'afterCreateBackup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_BACKUP)) {
-            $this->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
-                'file' => $filePath,
-            ]));
-        }
-
-        $generalConfig = Cms::config();
-
-        if ($generalConfig->maxBackups) {
-            $backupPath = Craft::$app->getPath()->getDbBackupPath();
-
-            // Grab all .sql/.dump files in the backup folder.
-            /** @var string[] $files */
-            $files = array_merge(
-                glob($backupPath . DIRECTORY_SEPARATOR . "*{$this->_getDumpExtension()}"),
-                glob($backupPath . DIRECTORY_SEPARATOR . "*{$this->_getDumpExtension()}.zip"),
+        try {
+            app(Backups::class)->backupTo(
+                filePath: $filePath,
+                connection: $this->getLaravelConnection(),
+                backupFormat: $this->getIsPgsql() ? $this->getSchema()->getBackupFormat() : null,
+                ignoreTables: self::_normalizeLegacyTableNames($this->getIgnoredBackupTables()),
             );
-
-            // Sort them by file modified time descending (newest first).
-            usort($files, static fn($a, $b) => filemtime($b) <=> filemtime($a));
-
-            if (count($files) >= $generalConfig->maxBackups) {
-                $backupsToDelete = array_slice($files, $generalConfig->maxBackups);
-
-                foreach ($backupsToDelete as $backupToDelete) {
-                    FileHelper::unlink($backupToDelete);
-                }
-            }
+        } catch (CommandFailedException $e) {
+            throw new ShellCommandException($e->command, $e->exitCode, $e->error, $e->getMessage());
+        } catch (RuntimeException $e) {
+            throw new Exception($e->getMessage(), 0, $e);
         }
+    }
+
+    /**
+     * @param string[] $tables
+     * @return string[]
+     */
+    private static function _normalizeLegacyTableNames(array $tables): array
+    {
+        return array_map(
+            static fn(string $table) => Table::withoutYiiPlaceholder($table),
+            $tables,
+        );
     }
 
     /**
@@ -363,33 +389,16 @@ class Connection extends DatabaseConnection
      */
     public function restore(string $filePath): void
     {
-        // Fire a 'beforeRestoreBackup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
-            $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
-                'file' => $filePath,
-            ]));
-        }
-
-        // Determine the command that should be executed
-        $restoreCommand = Cms::config()->restoreCommand;
-
-        if ($restoreCommand === false) {
-            throw new Exception('Database not restored because the restore command is false.');
-        } elseif ($restoreCommand === null || $restoreCommand instanceof Closure) {
-            $restoreCommand = $this->getSchema()->getDefaultRestoreCommand();
-        }
-
-        // Create the shell command
-        $restoreCommand = $this->_parseCommandTokens($restoreCommand, $filePath);
-        $command = $this->_createShellCommand($restoreCommand);
-
-        $this->_executeDatabaseShellCommand($command);
-
-        // Fire an 'afterRestoreBackup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_BACKUP)) {
-            $this->trigger(self::EVENT_AFTER_RESTORE_BACKUP, new BackupEvent([
-                'file' => $filePath,
-            ]));
+        try {
+            app(Backups::class)->restore(
+                filePath: $filePath,
+                connection: $this->getLaravelConnection(),
+                restoreFormat: $this->getIsPgsql() ? $this->getSchema()->getRestoreFormat() : null,
+            );
+        } catch (CommandFailedException $e) {
+            throw new ShellCommandException($e->command, $e->exitCode, $e->error, $e->getMessage());
+        } catch (RuntimeException $e) {
+            throw new Exception($e->getMessage(), 0, $e);
         }
     }
 
@@ -487,19 +496,6 @@ class Connection extends DatabaseConnection
         }
     }
 
-    private function _getDumpExtension(): string
-    {
-        $backupFormat = $this->getIsPgsql()
-            ? $this->getSchema()->getBackupFormat()
-            : null;
-
-        return match ($backupFormat) {
-            'custom', 'directory' => '.dump',
-            'tar' => '.tar',
-            default => '.sql',
-        };
-    }
-
     /**
      * @inheritdoc
      */
@@ -526,94 +522,6 @@ class Connection extends DatabaseConnection
     private function _objectName(string $prefix): string
     {
         return $this->tablePrefix . $prefix . '_' . Str::random(36);
-    }
-
-    /**
-     * Creates a shell command set to the given string
-     *
-     * @param string $command The command to be executed
-     * @return ShellCommand
-     */
-    private function _createShellCommand(string $command): ShellCommand
-    {
-        // Create the shell command
-        $shellCommand = new ShellCommand();
-        $shellCommand->setCommand($command);
-
-        // If we don't have proc_open, maybe we've got exec
-        if (!function_exists('proc_open') && function_exists('exec')) {
-            $shellCommand->useExec = true;
-        }
-
-        return $shellCommand;
-    }
-
-    /**
-     * Parses a database backup/restore command for config tokens
-     *
-     * @param string $command The command to parse tokens in
-     * @param string $file The path to the backup file
-     * @return string
-     */
-    private function _parseCommandTokens(string $command, string $file): string
-    {
-        $parsed = Db::parseDsn($this->dsn);
-        $username = $this->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->username;
-        $password = $this->getIsPgsql() && !empty($parsed['password']) ? $parsed['password'] : $this->password;
-        $tokens = [
-            '{file}' => $file,
-            '{port}' => $parsed['port'] ?? '',
-            '{server}' => $parsed['host'] ?? '',
-            '{user}' => $username,
-            // h/t https://stackoverflow.com/a/1250279/1688568
-            '{password}' => str_replace("'", "'\"'\"'", $password),
-            '{database}' => $parsed['dbname'] ?? '',
-            '{schema}' => $this->getSchema()->defaultSchema ?? '',
-        ];
-
-        return str_replace(array_keys($tokens), $tokens, $command);
-    }
-
-    /**
-     * @param ShellCommand $command
-     * @throws ShellCommandException
-     */
-    private function _executeDatabaseShellCommand(ShellCommand $command): void
-    {
-        $success = $command->execute();
-
-        // Nuke any temp connection files that might have been created.
-        try {
-            if ($this->getIsMysql()) {
-                $schema = $this->getSchema();
-                @unlink($schema->tempMyCnfPath);
-            }
-        } catch (InvalidArgumentException) {
-            // the directory doesn't exist
-        }
-
-        // PostgreSQL specific cleanup.
-        if ($this->getIsPgsql()) {
-            if (windows_os()) {
-                $envCommand = 'set PGPASSWORD=';
-            } else {
-                $envCommand = 'unset PGPASSWORD';
-            }
-
-            $cleanCommand = $this->_createShellCommand($envCommand);
-            $cleanCommand->execute();
-        }
-
-        if (!$success) {
-            $execCommand = $command->getExecCommand();
-
-            // Redact the PGPASSWORD
-            if ($this->getIsPgsql()) {
-                $execCommand = preg_replace_callback('/(PGPASSWORD=")([^"]+)"/i', fn($match) => $match[1] . str_repeat('•', strlen($match[2])) . '"', $execCommand);
-            }
-
-            throw new ShellCommandException($execCommand, $command->getExitCode(), $command->getStdErr());
-        }
     }
 
     /**

@@ -10,9 +10,6 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-/**
- * DbBackup represents a DbBackup dashboard widget.
- */
 class DbBackup extends Utility
 {
     #[Override]

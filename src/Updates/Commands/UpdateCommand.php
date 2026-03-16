@@ -8,7 +8,7 @@ use Closure;
 use Composer\Semver\VersionParser;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
-use CraftCms\Cms\Database\Commands\BackupTrait;
+use CraftCms\Cms\Database\Commands\Concerns\BackupTrait;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -25,6 +25,7 @@ use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\File;
 use Laravel\Prompts\Concerns\Colors;
+use Override;
 use Symfony\Component\Process\Process;
 use Throwable;
 
@@ -42,7 +43,7 @@ class UpdateCommand extends Command
     use CraftCommand;
     use FetchesUpdates;
 
-    #[\Override]
+    #[Override]
     protected $signature = 'craft:update
         {handle?* : The update handle (`all`, `craft`, or a plugin handle). You can pass multiple handles separated by spaces, and you can update to a specific version using the syntax `handle:version`.}
         {--force : Force the operation to run when updates are disallowed.}
@@ -54,7 +55,7 @@ class UpdateCommand extends Command
         {--except=* : Plugin handles to exclude}
     ';
 
-    #[\Override]
+    #[Override]
     protected $description = 'Updates Craft and/or plugins.';
 
     private Composer $composer;
