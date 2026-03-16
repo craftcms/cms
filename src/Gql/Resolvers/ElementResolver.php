@@ -53,6 +53,9 @@ abstract class ElementResolver extends Resolver
 
         $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
 
+        // Pull out the parsed orderBy before passing arguments to the resolver
+        $orderBy = Arr::pull($arguments, 'orderBy');
+
         // combine `search` and `searchTermOptions` if both are set
         $searchTermOptions = Arr::pull($arguments, 'searchTermOptions');
         if ($searchTermOptions && isset($arguments['search'])) {
@@ -66,6 +69,13 @@ abstract class ElementResolver extends Resolver
         // If that's already preloaded, then, uhh, skip the preloading?
         if (! $query instanceof ElementQueryInterface) {
             return $query;
+        }
+
+        // Apply parsed orderBy pairs (e.g. [['slug', 'asc'], ['title', 'desc']])
+        if (is_array($orderBy)) {
+            foreach ($orderBy as [$column, $direction]) {
+                $query->orderBy($column);
+            }
         }
 
         $parentField = null;

@@ -74,18 +74,28 @@ class ArgumentManager extends Component
     {
         $orderBy = $arguments['orderBy'] ?? null;
         if ($orderBy) {
+            $parsedOrderBy = [];
+
             foreach (str($orderBy)->explode(',') as $chunk) {
+                $chunk = trim($chunk);
+
                 // Special case for rand()/random()
                 if (in_array(strtolower($chunk), ['rand()', 'random()'], true)) {
+                    $parsedOrderBy[] = [$chunk, 'asc'];
+
                     continue;
                 }
                 if (
                     Str::contains($chunk, ['(', ')']) ||
-                    ! preg_match('/^\w+(\.\w+)?( (asc|desc))?$/i', $chunk)
+                    ! preg_match('/^(\w+(\.\w+)?)( (asc|desc))?$/i', $chunk, $matches)
                 ) {
                     throw new GqlException('Illegal value for `orderBy` argument: `'.$orderBy.'`');
                 }
+
+                $parsedOrderBy[] = [$matches[1], strtolower($matches[4] ?? 'asc')];
             }
+
+            $arguments['orderBy'] = $parsedOrderBy;
         }
 
         $this->createHandlers();
