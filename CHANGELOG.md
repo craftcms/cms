@@ -8,6 +8,7 @@
 - Fixed a warning that was getting logged when using `craft\filters\SiteFilterTrait`.
 - Fixed a bug where prefixing entry queries’ `authorGroup` params with `and` or `not` operators wasn’t working properly. ([#18551](https://github.com/craftcms/cms/issues/18551))
 - Fixed an error that could occur when running the `gc` command, if a Matrix field had been converted to an Addresses or Content Block field. ([#18549](https://github.com/craftcms/cms/issues/18549))
+- Fixed a styling issue. ([#18566](https://github.com/craftcms/cms/issues/18566))
 
 ## 5.9.16 - 2026-03-11
 
