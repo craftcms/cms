@@ -7,14 +7,15 @@ namespace craft\helpers;
 use craft\models\GqlSchema as LegacyGqlSchema;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\GqlHelper;
-use Deprecated;
 
 /**
  * @deprecated 6.0.0 use {@see GqlHelper} instead.
  */
 class Gql extends GqlHelper
 {
-    #[Deprecated(message: 'in 6.0.0')]
+    /**
+     * @deprecated in 6.0.0
+     */
     public static function createFullAccessSchema(): LegacyGqlSchema
     {
         $schema = parent::createFullAccessSchema();
@@ -27,9 +28,10 @@ class Gql extends GqlHelper
     }
 
     /**
+     * @deprecated in 6.0.0
+     *
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
      */
-    #[Deprecated(message: 'in 6.0.0')]
     public static function canMutateTags(?GqlSchema $schema = null): bool
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
@@ -38,9 +40,10 @@ class Gql extends GqlHelper
     }
 
     /**
+     * @deprecated in 6.0.0
+     *
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
      */
-    #[Deprecated(message: 'in 6.0.0')]
     public static function canMutateGlobalSets(?GqlSchema $schema = null): bool
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
@@ -49,9 +52,10 @@ class Gql extends GqlHelper
     }
 
     /**
+     * @deprecated in 6.0.0
+     *
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
      */
-    #[Deprecated(message: 'in 6.0.0')]
     public static function canMutateCategories(?GqlSchema $schema = null): bool
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('edit', $schema);
@@ -60,9 +64,10 @@ class Gql extends GqlHelper
     }
 
     /**
+     * @deprecated in 6.0.0
+     *
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
      */
-    #[Deprecated(message: 'in 6.0.0')]
     public static function canQueryCategories(?GqlSchema $schema = null): bool
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
@@ -71,9 +76,10 @@ class Gql extends GqlHelper
     }
 
     /**
+     * @deprecated in 6.0.0
+     *
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
      */
-    #[Deprecated(message: 'in 6.0.0')]
     public static function canQueryTags(?GqlSchema $schema = null): bool
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
@@ -82,9 +88,10 @@ class Gql extends GqlHelper
     }
 
     /**
+     * @deprecated in 6.0.0
+     *
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
      */
-    #[Deprecated(message: 'in 6.0.0')]
     public static function canQueryGlobalSets(?GqlSchema $schema = null): bool
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
