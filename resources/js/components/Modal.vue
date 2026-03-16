@@ -44,6 +44,16 @@
   <Transition name="fade" v-if="overlay">
     <div class="overlay" v-if="isActive" @click="emit('close')"></div>
   </Transition>
+
+  <craft-dialog :open="isActive">
+    <div
+      :class="{
+        [widthClass]: true,
+      }"
+    >
+      <slot></slot>
+    </div>
+  </craft-dialog>
 </template>
 
 <style scoped>
