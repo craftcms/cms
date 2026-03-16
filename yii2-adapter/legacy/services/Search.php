@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\events\IndexKeywordsEvent;
@@ -28,6 +27,7 @@ use CraftCms\Cms\Search\SearchQueryTerm;
 use CraftCms\Cms\Search\SearchQueryTermGroup;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Search as SearchHelper;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
