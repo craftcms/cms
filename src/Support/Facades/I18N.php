@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \CraftCms\Cms\Translation\Formatter getFormatter()
  * @method static \CraftCms\Cms\Translation\Locale getLocale()
  * @method static \CraftCms\Cms\Translation\Locale getFormattingLocale()
+ * @method static mixed withLocale(string $language, string|null $formattingLocaleId, callable $callback)
  * @method static \CraftCms\Cms\Translation\Locale getLocaleById(string $localeId)
  * @method static \Illuminate\Support\Collection getAllLocaleIds()
  * @method static \Illuminate\Support\Collection getAllLocales()
