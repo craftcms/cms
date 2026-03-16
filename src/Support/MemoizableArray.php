@@ -152,9 +152,9 @@ class MemoizableArray implements Countable, IteratorAggregate
         }
 
         $valueKey = null;
+        $compareValue = enum_value($value);
         foreach ($this->elements as $k => $element) {
             $elementValue = enum_value($this->getElementValue($element, $key));
-            $compareValue = enum_value($value);
             if ($strict ? $elementValue === $compareValue : $elementValue == $compareValue) {
                 $valueKey = $k;
                 break;
