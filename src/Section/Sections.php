@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Section;
 
 use Craft;
-use craft\base\MemoizableArray;
 use craft\helpers\AdminTable;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
@@ -40,6 +39,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
@@ -214,7 +214,7 @@ class Sections
      */
     public function getAllSections(): Collection
     {
-        return collect($this->_sections()->all());
+        return $this->_sections()->collect();
     }
 
     /**
@@ -267,7 +267,7 @@ class Sections
      */
     public function getSectionsByType(SectionType $type): Collection
     {
-        return collect($this->_sections()->where('type', $type, true)->all());
+        return $this->_sections()->where('type', $type, true)->collect();
     }
 
     /**

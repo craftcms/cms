@@ -18,13 +18,13 @@ use CraftCms\Cms\Search\Events\BeforeSearch;
 use CraftCms\Cms\Search\Jobs\UpdateSearchIndex;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Search as SearchHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -365,7 +365,7 @@ class Search
         }
 
         if ($elementQuery->customFields !== null) {
-            $customFields = collect($elementQuery->customFields);
+            $customFields = new MemoizableArray($elementQuery->customFields);
         } else {
             $customFields = null;
         }
@@ -560,10 +560,10 @@ class Search
 
     /**
      * @param  int|int[]|null  $siteId
-     * @param  Collection<int, FieldInterface>|null  $customFields
+     * @param  MemoizableArray<FieldInterface>|null  $customFields
      * @return array{sql: string, bindings: list<int|float|string|bool|null>}|false
      */
-    private function getWhereClause(array|int|null $siteId, ?Collection $customFields): array|false
+    private function getWhereClause(array|int|null $siteId, ?MemoizableArray $customFields): array|false
     {
         $where = [];
 
@@ -593,10 +593,10 @@ class Search
     }
 
     /**
-     * @param  Collection<int, FieldInterface>|null  $customFields
+     * @param  MemoizableArray<FieldInterface>|null  $customFields
      * @return array{sql: string, bindings: list<int|float|string|bool|null>}|false
      */
-    private function processTokens(array $tokens, bool $inclusive, array|int|null $siteId, ?Collection $customFields): array|false
+    private function processTokens(array $tokens, bool $inclusive, array|int|null $siteId, ?MemoizableArray $customFields): array|false
     {
         $glue = $inclusive ? ' AND ' : ' OR ';
         $where = [];
@@ -638,10 +638,10 @@ class Search
     }
 
     /**
-     * @param  Collection<int, FieldInterface>|null  $customFields
+     * @param  MemoizableArray<FieldInterface>|null  $customFields
      * @return array{0: array{sql: string, bindings: list<int|float|string|bool|null>}|false|null, 1: string|null}
      */
-    private function getSqlFromTerm(SearchQueryTerm $term, array|int|null $siteId, ?Collection $customFields): array
+    private function getSqlFromTerm(SearchQueryTerm $term, array|int|null $siteId, ?MemoizableArray $customFields): array
     {
         $sql = null;
         $keywords = null;
@@ -755,17 +755,16 @@ class Search
     }
 
     /**
-     * @param  Collection<int, FieldInterface>|null  $customFields
+     * @param  MemoizableArray<FieldInterface>|null  $customFields
      * @return int|int[]|null
      */
-    private function getFieldIdFromAttribute(string $attribute, ?Collection $customFields): array|int|null
+    private function getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields): array|int|null
     {
         if ($customFields !== null) {
-            return $customFields
-                ->where('handle', $attribute)
-                ->map(fn (FieldInterface $field) => $field->id)
-                ->values()
-                ->all();
+            return array_map(
+                fn (FieldInterface $field) => $field->id,
+                $customFields->where('handle', $attribute)->all(),
+            );
         }
 
         $field = app(Fields::class)->getFieldByHandle($attribute);

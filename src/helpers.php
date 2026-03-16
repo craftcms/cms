@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms;
 
+use BackedEnum;
 use Closure;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
@@ -14,6 +15,19 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Stringable;
+use UnitEnum;
+
+/**
+ * Returns the scalar value of the given enum, or the value itself if it's not an enum.
+ */
+function enum_value(mixed $value, mixed $default = null): mixed
+{
+    return match (true) {
+        $value instanceof BackedEnum => $value->value,
+        $value instanceof UnitEnum => $value->name,
+        default => $value ?? value($default),
+    };
+}
 
 function t(string|Stringable|null $id, array $parameters = [], ?string $category = 'app', ?string $locale = null): string
 {

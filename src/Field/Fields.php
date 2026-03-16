@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\MemoizableArray;
 use craft\helpers\AdminTable;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
@@ -48,6 +47,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ProjectConfig as ProjectConfigFacade;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use Exception;
@@ -428,7 +428,7 @@ class Fields
      */
     public function getAllFields(mixed $context = null): Collection
     {
-        return collect($this->_fields($context)->all());
+        return $this->_fields($context)->collect();
     }
 
     /**
@@ -869,7 +869,7 @@ class Fields
      */
     public function getAllLayouts(): Collection
     {
-        return collect($this->_layouts()->all());
+        return $this->_layouts()->collect();
     }
 
     /**
@@ -912,7 +912,7 @@ class Fields
      */
     public function getLayoutsByIds(array $layoutIds): Collection
     {
-        return collect($this->_layouts()->whereIn('id', $layoutIds)->all());
+        return $this->_layouts()->whereIn('id', $layoutIds)->collect();
     }
 
     /**
@@ -941,7 +941,7 @@ class Fields
      */
     public function getLayoutsByType(string $type): Collection
     {
-        return collect($this->_layouts()->where('type', $type)->all());
+        return $this->_layouts()->where('type', $type)->collect();
     }
 
     /**
