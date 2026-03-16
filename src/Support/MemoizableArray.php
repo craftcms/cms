@@ -45,7 +45,7 @@ class MemoizableArray implements Countable, IteratorAggregate
      */
     public function __construct(
         private readonly array $elements,
-        private readonly mixed $normalizer = null,
+        private readonly ?callable $normalizer = null,
     ) {}
 
     /**
