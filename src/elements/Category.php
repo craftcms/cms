@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Element;
 use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
+use craft\db\Connection;
+use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Delete;
@@ -33,6 +35,7 @@ use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -313,6 +316,19 @@ class Category extends Element
             'slug' => Craft::t('app', 'Slug'),
             'uri' => Craft::t('app', 'URI'),
             [
+                'label' => Craft::t('app', 'Group'),
+                'orderBy' => function(int $dir, Connection $db) {
+                    $groupIds = Collection::make(Craft::$app->getCategories()->getAllGroups())
+                        ->sort(fn(CategoryGroup $a, CategoryGroup $b) => $dir === SORT_ASC
+                            ? $a->name <=> $b->name
+                            : $b->name <=> $a->name)
+                        ->map(fn(CategoryGroup $group) => $group->id)
+                        ->all();
+                    return new FixedOrderExpression('categories.groupId', $groupIds, $db);
+                },
+                'attribute' => 'group',
+            ],
+            [
                 'label' => Craft::t('app', 'Date Created'),
                 'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
@@ -331,6 +347,7 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return array_merge(parent::defineTableAttributes(), [
+            'group' => ['label' => Craft::t('app', 'Group')],
             'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
             'parent' => ['label' => Craft::t('app', 'Parent')],
         ]);
@@ -788,6 +805,19 @@ class Category extends Element
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    protected function attributeHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'group':
+                return Html::encode($this->getGroup()->getUiLabel());
+            default:
+                return parent::attributeHtml($attribute);
+        }
+    }
 
     /**
      * @inheritdoc

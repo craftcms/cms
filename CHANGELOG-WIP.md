@@ -12,6 +12,7 @@
 - Address edit screens now have “Field settings” action menu items. ([#18544](https://github.com/craftcms/cms/discussions/18544))
 - Asset edit screens now have “Volume settings” and “Filesystem settings” action menu items. ([#18544](https://github.com/craftcms/cms/discussions/18544))
 - Entries’ “Entry type settings” and “Section settings” action menu items are now only shown for element edit screens’ primary action menus. 
+- Category indexes can now have “Group” columns. ([#18553](https://github.com/craftcms/cms/discussions/18553))
 
 ### Administration
 - Newlines in system message bodies are now replaced with `<br>` tags. ([#18058](https://github.com/craftcms/cms/discussions/18058))
