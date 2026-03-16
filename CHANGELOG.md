@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that could occur after running the `utils/fix-field-layout-uids` command. ([#18516](https://github.com/craftcms/cms/issues/18516))
+- Fixed a JavaScript error that could occur if any field layout elements were configured with unsupported widths. ([#18552](https://github.com/craftcms/cms/issues/18552))
 - Fixed a bug where deeply-nested elements could be deleted unexpectedly. ([#18537](https://github.com/craftcms/cms/issues/18537))
 - Fixed a warning that was getting logged when using `craft\filters\SiteFilterTrait`.
 - Fixed a bug where prefixing entry queries’ `authorGroup` params with `and` or `not` operators wasn’t working properly. ([#18551](https://github.com/craftcms/cms/issues/18551))
