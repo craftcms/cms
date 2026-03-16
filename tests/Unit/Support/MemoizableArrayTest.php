@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Support\MemoizableArray;
 
+enum TestEnum: string
+{
+    case Single = 'single';
+    case Channel = 'channel';
+    case Structure = 'structure';
+}
+
 function items(): array
 {
     return [
@@ -414,6 +421,97 @@ describe('chaining', function () {
 
         expect($result->all())->toHaveCount(1);
         expect(array_first($result->all())['name'])->toBe('Charlie');
+    });
+});
+
+describe('enum comparison', function () {
+    test('where strict matches enum against raw string value', function () {
+        // Simulates the real-world scenario: raw DB results have string 'single',
+        // enum_value() unwraps the enum to its backing value before comparison,
+        // so strict comparison 'single' === 'single' succeeds.
+        $rawResults = [
+            (object) ['id' => 1, 'type' => 'single', 'handle' => 'homepage'],
+            (object) ['id' => 2, 'type' => 'channel', 'handle' => 'news'],
+            (object) ['id' => 3, 'type' => 'single', 'handle' => 'about'],
+        ];
+
+        $array = new MemoizableArray(
+            $rawResults,
+            function (object $result) {
+                $normalized = clone $result;
+                $normalized->type = TestEnum::from($result->type);
+
+                return $normalized;
+            },
+        );
+
+        $singles = $array->where('type', TestEnum::Single, strict: true);
+
+        expect($singles->all())->toHaveCount(2);
+        expect($singles->all()[0]->handle)->toBe('homepage');
+        expect($singles->all()[1]->handle)->toBe('about');
+    });
+
+    test('firstWhere strict matches enum against raw string value', function () {
+        $rawResults = [
+            (object) ['id' => 1, 'type' => 'single', 'handle' => 'homepage'],
+            (object) ['id' => 2, 'type' => 'channel', 'handle' => 'news'],
+        ];
+
+        $array = new MemoizableArray(
+            $rawResults,
+            function (object $result) {
+                $normalized = clone $result;
+                $normalized->type = TestEnum::from($result->type);
+
+                return $normalized;
+            },
+        );
+
+        $result = $array->firstWhere('type', TestEnum::Single, strict: true);
+
+        expect($result)->not->toBeNull();
+        expect($result->handle)->toBe('homepage');
+        expect($result->type)->toBe(TestEnum::Single);
+    });
+
+    test('whereIn strict matches enums against raw string values', function () {
+        $rawResults = [
+            (object) ['id' => 1, 'type' => 'single', 'handle' => 'homepage'],
+            (object) ['id' => 2, 'type' => 'channel', 'handle' => 'news'],
+            (object) ['id' => 3, 'type' => 'structure', 'handle' => 'docs'],
+        ];
+
+        $array = new MemoizableArray(
+            $rawResults,
+            function (object $result) {
+                $normalized = clone $result;
+                $normalized->type = TestEnum::from($result->type);
+
+                return $normalized;
+            },
+        );
+
+        $result = $array->whereIn('type', [TestEnum::Single, TestEnum::Structure], strict: true);
+
+        expect($result->all())->toHaveCount(2);
+        expect($result->all()[0]->handle)->toBe('homepage');
+        expect($result->all()[1]->handle)->toBe('docs');
+    });
+
+    test('where non-strict matches enum against raw string value', function () {
+        $rawResults = [
+            (object) ['id' => 1, 'type' => 'single', 'handle' => 'homepage'],
+            (object) ['id' => 2, 'type' => 'channel', 'handle' => 'news'],
+        ];
+
+        $array = new MemoizableArray($rawResults);
+
+        // enum_value() unwraps the enum, so 'single' == 'single' matches
+        $singles = $array->where('type', TestEnum::Single);
+
+        expect($singles->all())->toHaveCount(1);
+        expect($singles->all()[0]->handle)->toBe('homepage');
     });
 });
 

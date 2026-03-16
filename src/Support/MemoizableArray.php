@@ -9,6 +9,8 @@ use Countable;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 
+use function CraftCms\Cms\enum_value;
+
 /**
  * MemoizableArray represents an array of values that need to be run through
  * `where()` or `firstWhere()` repeatedly, where it could be beneficial if
@@ -83,8 +85,9 @@ class MemoizableArray implements Countable, IteratorAggregate
 
         $filtered = [];
         foreach ($this->elements as $k => $element) {
-            $elementValue = $this->getElementValue($element, $key);
-            if ($strict ? $elementValue === $value : $elementValue == $value) {
+            $elementValue = enum_value($this->getElementValue($element, $key));
+            $compareValue = enum_value($value);
+            if ($strict ? $elementValue === $compareValue : $elementValue == $compareValue) {
                 $filtered[$k] = $element;
             }
         }
@@ -115,10 +118,11 @@ class MemoizableArray implements Countable, IteratorAggregate
             return $this->memoized[$memKey];
         }
 
+        $compareValues = array_map(enum_value(...), $values);
         $filtered = [];
         foreach ($this->elements as $k => $element) {
-            $elementValue = $this->getElementValue($element, $key);
-            if (in_array($elementValue, $values, $strict)) {
+            $elementValue = enum_value($this->getElementValue($element, $key));
+            if (in_array($elementValue, $compareValues, $strict)) {
                 $filtered[$k] = $element;
             }
         }
@@ -149,8 +153,9 @@ class MemoizableArray implements Countable, IteratorAggregate
 
         $valueKey = null;
         foreach ($this->elements as $k => $element) {
-            $elementValue = $this->getElementValue($element, $key);
-            if ($strict ? $elementValue === $value : $elementValue == $value) {
+            $elementValue = enum_value($this->getElementValue($element, $key));
+            $compareValue = enum_value($value);
+            if ($strict ? $elementValue === $compareValue : $elementValue == $compareValue) {
                 $valueKey = $k;
                 break;
             }
