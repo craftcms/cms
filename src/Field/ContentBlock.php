@@ -35,6 +35,7 @@ use CraftCms\Cms\User\Elements\User;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
@@ -392,7 +393,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             return $this->_createContentBlockFromSerializedData($value, $element, $fromRequest);
         }
 
-        if (Craft::$app->getRequest()->getIsPreview()) {
+        if (request()->isPreview()) {
             $contentBlock = $this->createContentBlockQuery($element)
                 ->withProvisionalDrafts()
                 ->one();
@@ -767,8 +768,6 @@ JS, [
             $contentBlock = $this->createContentBlockQuery($element)->one();
         }
 
-        $request = Craft::$app->getRequest();
-
         $fieldNamespace = $element->getFieldParamNamespace();
         $baseFieldNamespace = $fieldNamespace ? "$fieldNamespace.$this->handle" : null;
 
@@ -782,11 +781,11 @@ JS, [
                 // where both are set to inline-editable blocks view mode
                 (
                     app()->runningInConsole() ||
-                    $request->getActionSegments() !== ['elements', 'update-field-layout']
+                    request()->actionSegments() !== ['elements', 'update-field-layout']
                 )
             ) {
                 // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                $contentBlock = app(Drafts::class)->createDraft($contentBlock, Craft::$app->getUser()->getId(), null, null, [
+                $contentBlock = app(Drafts::class)->createDraft($contentBlock, Auth::id(), null, null, [
                     'canonicalId' => $contentBlock->id,
                     'primaryOwnerId' => $element->id,
                     'owner' => $element,

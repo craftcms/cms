@@ -59,6 +59,7 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
@@ -654,7 +655,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $query->setResultOverride($query->all());
         } elseif ($element && is_array($value)) {
             $query->setResultOverride($this->_createEntriesFromSerializedData($value, $element, $fromRequest));
-        } elseif (Craft::$app->getRequest()->getIsPreview()) {
+        } elseif (request()->isPreview()) {
             $query->withProvisionalDrafts();
         }
 
@@ -1500,7 +1501,7 @@ JS,
     public function getEagerLoadingGqlConditions(): array
     {
         return [
-            'withProvisionalDrafts' => Craft::$app->getRequest()->getIsPreview(),
+            'withProvisionalDrafts' => request()->isPreview(),
         ];
     }
 
@@ -1723,10 +1724,10 @@ JS,
         }
 
         // Should we ignore disabled entries?
-        $request = Craft::$app->getRequest();
+        $request = request();
         $hideDisabledEntries = ! app()->runningInConsole() && (
             $request->getToken() !== null ||
-            $request->getIsLivePreview()
+            $request->isPreview()
         );
 
         $entries = [];
@@ -1778,7 +1779,6 @@ JS,
                 $forceSave = ! empty($entryData);
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
-                $request = Craft::$app->getRequest();
                 if (
                     $forceSave &&
                     $element->getIsDerivative() &&
@@ -1787,11 +1787,11 @@ JS,
                     // where both are set to inline-editable blocks view mode
                     (
                         app()->runningInConsole() ||
-                        $request->getActionSegments() !== ['elements', 'update-field-layout']
+                        request()->actionSegments() !== ['elements', 'update-field-layout']
                     )
                 ) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                    $entry = app(Drafts::class)->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [
+                    $entry = app(Drafts::class)->createDraft($entry, Auth::id(), null, null, [
                         'canonicalId' => $entry->id,
                         'primaryOwnerId' => $element->id,
                         'owner' => $element,

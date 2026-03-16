@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use Craft;
+use function CraftCms\Cms\t;
 
 class Flash
 {
@@ -13,7 +13,14 @@ class Flash
         $message = request('successMessage', $default);
 
         if ($message !== null) {
-            Craft::$app->getSession()->setSuccess($message, $settings);
+            if (request()->isCpRequest()) {
+                session()->flash('cp-notification-success', [$message, $settings + [
+                    'icon' => 'check',
+                    'iconLabel' => t('Success'),
+                ]]);
+            } else {
+                session()->flash('success', $message);
+            }
         }
     }
 
@@ -22,7 +29,14 @@ class Flash
         $message = request('failMessage', $default);
 
         if ($message !== null) {
-            Craft::$app->getSession()->setError($message, $settings);
+            if (request()->isCpRequest()) {
+                session()->flash('cp-notification-error', [$message, $settings + [
+                    'icon' => 'alert',
+                    'iconLabel' => t('Error'),
+                ]]);
+            } else {
+                session()->flash('error', $message);
+            }
         }
     }
 }

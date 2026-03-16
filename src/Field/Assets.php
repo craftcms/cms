@@ -42,6 +42,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -491,7 +492,7 @@ class Assets extends BaseRelationField
                         $asset->setMimeType(FileHelper::getMimeType($tempPath, checkExtension: false) ?? $file['mimeType']);
                         $asset->newFolderId = $uploadFolderId;
                         $asset->setVolumeId($uploadFolder->volumeId);
-                        $asset->uploaderId = Craft::$app->getUser()->getId();
+                        $asset->uploaderId = Auth::id();
                         $asset->avoidFilenameConflicts = true;
                         $asset->setScenario(Asset::SCENARIO_CREATE);
 
@@ -585,7 +586,7 @@ class Assets extends BaseRelationField
                             } catch (FsObjectNotFoundException $e) {
                                 // Don't freak out about that.
                                 Log::warning('Couldn’t move asset because the file doesn’t exist: '.$e->getMessage());
-                                Craft::$app->getErrorHandler()->logException($e);
+                                report($e);
                             }
                         }
                     }

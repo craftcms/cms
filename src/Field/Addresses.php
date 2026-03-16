@@ -355,7 +355,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             $query->setResultOverride($query->all());
         } elseif ($element && is_array($value)) {
             $query->setResultOverride($this->createAddressesFromSerializedData($value, $element, $fromRequest));
-        } elseif (Craft::$app->getRequest()->getIsPreview()) {
+        } elseif (request()->isPreview()) {
             $query->withProvisionalDrafts();
         }
 
@@ -777,7 +777,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     public function getEagerLoadingGqlConditions(): array
     {
         return [
-            'withProvisionalDrafts' => Craft::$app->getRequest()->getIsPreview(),
+            'withProvisionalDrafts' => request()->isPreview(),
         ];
     }
 

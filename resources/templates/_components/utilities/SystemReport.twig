@@ -34,26 +34,6 @@
     {% endif %}
   </div>
 
-  <div id="modules">
-
-    <h2 class="mb-3">{{ 'Modules'|t('app') }}</h2>
-
-    {% if modules|length %}
-      <table class="cp-table cp-table--borderless" dir="ltr">
-        <tbody>
-          {% for id, class in modules %}
-            <tr>
-              <th class="light">{{ id }}</th>
-              <td>{{ class }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p>{{ 'No modules are installed.'|t('app') }}</p>
-    {% endif %}
-  </div>
-
   <div id="aliases">
 
     <h2 class="mb-3">{{ 'Aliases'|t('app') }}</h2>

@@ -5,21 +5,19 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Composer\InstalledVersions;
-use Craft;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Image\Images;
-use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Utility\Utility;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use OutOfBoundsException;
 use Override;
 use RequirementsChecker;
-use yii\base\Module;
 
 use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
@@ -51,28 +49,6 @@ class SystemReport extends Utility
     #[Override]
     public static function contentHtml(): string
     {
-        $modules = collect(Craft::$app->getModules())
-            ->map(function (mixed $module): string {
-                if ($module instanceof PluginInterface) {
-                    return '';
-                }
-
-                if ($module instanceof Module) {
-                    return $module::class;
-                }
-
-                if (is_string($module)) {
-                    return $module;
-                }
-
-                if (is_array($module) && isset($module['class'])) {
-                    return $module['class'];
-                }
-
-                return t('Unknown type');
-            })
-            ->filter();
-
         $aliases = [];
         foreach (Aliases::getAll() as $alias => $value) {
             if (is_array($value)) {
@@ -81,10 +57,8 @@ class SystemReport extends Utility
                         $aliases[$a] = $v;
                     }
                 }
-            } else {
-                if (! str_starts_with((string) $alias, '@appicons/')) {
-                    $aliases[$alias] = $value;
-                }
+            } elseif (! str_starts_with((string) $alias, '@appicons/')) {
+                $aliases[$alias] = $value;
             }
         }
         ksort($aliases);
@@ -92,7 +66,6 @@ class SystemReport extends Utility
         return template('_components/utilities/SystemReport', [
             'appInfo' => self::appInfo(),
             'plugins' => app(Plugins::class)->getAllPlugins(),
-            'modules' => $modules,
             'aliases' => $aliases,
             'requirements' => self::requirementResults(),
         ]);
@@ -148,7 +121,7 @@ class SystemReport extends Utility
      */
     private static function dbDriver(): string
     {
-        $label = DB::getDriverTitle();
+        $label = DB::driverLabel();
         $version = normalizeVersion(DB::getServerVersion());
 
         return "$label $version";
@@ -175,11 +148,18 @@ class SystemReport extends Utility
     {
         $checker = new RequirementsChecker;
 
-        $dbConfig = Craft::$app->getConfig()->getDb();
-        $checker->dsn = $dbConfig->dsn;
+        $prefix = 'database.connections.'.DB::getDriverName();
+        $checker->dsn = implode('', [
+            DB::getDriverName(),
+            ':host='.Config::get("$prefix.host"),
+            ';port='.Config::get("$prefix.port"),
+            ';dbname='.Config::get("$prefix.database"),
+            ';user='.Config::get("$prefix.username"),
+            ';password='.Config::get("$prefix.password"),
+        ]);
         $checker->dbDriver = DB::getDriverName();
-        $checker->dbUser = $dbConfig->user;
-        $checker->dbPassword = $dbConfig->password;
+        $checker->dbUser = Config::get("$prefix.username");
+        $checker->dbPassword = Config::get("$prefix.password");
         $checker->checkCraft();
 
         return $checker->getResult()['requirements'];
