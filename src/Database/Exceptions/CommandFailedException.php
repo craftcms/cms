@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Database\Exceptions;
 
 use RuntimeException;
 
-final class CommandFailedException extends RuntimeException
+class CommandFailedException extends RuntimeException
 {
     public function __construct(
         public readonly string $command,

@@ -16,7 +16,7 @@ use Override;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 
-final class DropTablePrefixCommand extends Command
+class DropTablePrefixCommand extends Command
 {
     use CraftCommand;
     use ManagesDatabaseTables;

@@ -13,7 +13,7 @@ use Override;
 
 use function Laravel\Prompts\suggest;
 
-final class ConvertCharsetCommand extends Command
+class ConvertCharsetCommand extends Command
 {
     use CraftCommand;
     use ManagesDatabaseTables;

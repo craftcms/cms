@@ -12,7 +12,7 @@ use Override;
 
 use function Laravel\Prompts\confirm;
 
-final class RepairCommand extends Command
+class RepairCommand extends Command
 {
     use CraftCommand;
     use ManagesDatabaseTables;

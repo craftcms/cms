@@ -20,7 +20,7 @@ use ZipArchive;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 
-final class RestoreCommand extends Command
+class RestoreCommand extends Command
 {
     use CraftCommand;
     use ManagesDatabaseTables;

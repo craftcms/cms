@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Database\Events;
 
 use Illuminate\Database\Connection;
 
-final class BeforeCreateBackup
+class BeforeCreateBackup
 {
     public function __construct(
         public Connection $connection,

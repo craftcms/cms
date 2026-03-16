@@ -142,7 +142,6 @@ class Yii2ServiceProvider extends ServiceProvider
 
         new LegacyCommandCompatibility()->boot();
     }
-    }
 
     /**
      * Check if we're dealing with an older migrations table.

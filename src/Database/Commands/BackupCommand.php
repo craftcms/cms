@@ -12,10 +12,11 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Override;
+use Symfony\Component\Filesystem\Filesystem;
 
 use function Laravel\Prompts\confirm;
 
-final class BackupCommand extends Command
+class BackupCommand extends Command
 {
     use CraftCommand;
 
@@ -45,7 +46,7 @@ final class BackupCommand extends Command
         }
 
         if (is_string($path)) {
-            if (! File::isAbsolutePath($path)) {
+            if (! new Filesystem()->isAbsolutePath($path)) {
                 $path = getcwd().DIRECTORY_SEPARATOR.$path;
             }
 

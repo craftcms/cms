@@ -12,7 +12,7 @@ use Override;
 
 use function Laravel\Prompts\confirm;
 
-final class DropAllTablesCommand extends Command
+class DropAllTablesCommand extends Command
 {
     use CraftCommand;
     use ManagesDatabaseTables;
