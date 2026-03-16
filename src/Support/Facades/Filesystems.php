@@ -8,20 +8,24 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static array{name:string,type:class-string<\CraftCms\Cms\Filesystem\Contracts\FsInterface>,settings:array<string,mixed>,hasUrls?:bool,url?:string} createFilesystemConfig(\CraftCms\Cms\Filesystem\Contracts\FsInterface $fs)
- * @method static \Illuminate\Support\Collection<int,class-string<\CraftCms\Cms\Filesystem\Contracts\FsInterface>> getAllFilesystemTypes()
- * @method static \Illuminate\Support\Collection<int,\CraftCms\Cms\Filesystem\Contracts\FsInterface> getAllFilesystems()
+ * @method static array createFilesystemConfig(\CraftCms\Cms\Filesystem\Contracts\FsInterface $fs)
+ * @method static \Illuminate\Support\Collection getAllFilesystemTypes()
+ * @method static \Illuminate\Support\Collection getAllFilesystems()
  * @method static \CraftCms\Cms\Filesystem\Contracts\FsInterface|null getFilesystemByHandle(string $handle)
  * @method static string toDiskName(string $handle)
  * @method static \Illuminate\Contracts\Filesystem\Filesystem disk(string $handle)
+ * @method static void syncDisks()
+ * @method static void registerDisk(string $handle, array|null $filesystemConfig = null)
+ * @method static void purgeDisk(string $handle)
  * @method static bool saveFilesystem(\CraftCms\Cms\Filesystem\Contracts\FsInterface $fs, bool $runValidation = true)
- * @method static \CraftCms\Cms\Filesystem\Contracts\FsInterface createFilesystem(mixed $config)
+ * @method static \CraftCms\Cms\Filesystem\Contracts\FsInterface createFilesystem(string|array $config)
  * @method static bool removeFilesystem(\CraftCms\Cms\Filesystem\Contracts\FsInterface $fs)
  * @method static void handleChangedFilesystem(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent|null $event = null)
  * @method static void handleDeletedFilesystem(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent|null $event = null)
  * @method static bool diskExists(string $diskName)
  * @method static \CraftCms\Cms\Filesystem\Contracts\FsInterface|null resolve(string $handle)
  * @method static string|null resolveDiskName(string $handle)
+ * @method static void reset()
  *
  * @see \CraftCms\Cms\Filesystem\Filesystems
  */

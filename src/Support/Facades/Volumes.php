@@ -8,12 +8,12 @@ use Illuminate\Support\Facades\Facade;
 use Override;
 
 /**
- * @method static \Illuminate\Support\Collection<int, int> getAllVolumeIds()
- * @method static \Illuminate\Support\Collection<int, int> getViewableVolumeIds()
- * @method static \Illuminate\Support\Collection<int, \CraftCms\Cms\Asset\Data\Volume> getViewableVolumes()
+ * @method static \Illuminate\Support\Collection getAllVolumeIds()
+ * @method static \Illuminate\Support\Collection getViewableVolumeIds()
+ * @method static \Illuminate\Support\Collection getViewableVolumes()
  * @method static int getTotalVolumes()
  * @method static int getTotalViewableVolumes()
- * @method static \Illuminate\Support\Collection<int, \CraftCms\Cms\Asset\Data\Volume> getAllVolumes()
+ * @method static \Illuminate\Support\Collection getAllVolumes()
  * @method static \CraftCms\Cms\Asset\Data\Volume|null getVolumeById(int $volumeId)
  * @method static \CraftCms\Cms\Asset\Data\Volume|null getVolumeByUid(string $volumeUid)
  * @method static \CraftCms\Cms\Asset\Data\Volume|null getVolumeByHandle(string $handle)
@@ -21,10 +21,11 @@ use Override;
  * @method static \CraftCms\Cms\Asset\Data\Volume|null getUserPhotoVolume()
  * @method static bool saveVolume(\CraftCms\Cms\Asset\Data\Volume $volume, bool $runValidation = true)
  * @method static void handleChangedVolume(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
- * @method static bool reorderVolumes(array $volumeIds)
+ * @method static bool reorderVolumes(int[] $volumeIds)
  * @method static bool deleteVolumeById(int $volumeId)
  * @method static bool deleteVolume(\CraftCms\Cms\Asset\Data\Volume $volume)
  * @method static void handleDeletedVolume(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
+ * @method static void reset()
  *
  * @see \CraftCms\Cms\Asset\Volumes
  */
