@@ -880,6 +880,14 @@ class Matrix extends Field implements
     /**
      * @inheritdoc
      */
+    public function getTranslationDescription(?ElementInterface $element): ?string
+    {
+        return $this->entryManager()->getTranslationDescription($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function actionMenuItems(): array
     {
         if ($this->maxEntries !== 1) {
@@ -1042,14 +1050,6 @@ JS, [
                 'type' => $type,
             ])),
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTranslationDescription(?ElementInterface $element): ?string
-    {
-        return $this->entryManager()->getTranslationDescription($element);
     }
 
     /**
