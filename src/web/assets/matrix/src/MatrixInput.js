@@ -643,16 +643,15 @@
       }
 
       const $actionMenuBtn = this.$container.find('> .actions > .action-btn');
-      const actionDisclosure =
+      this.actionDisclosure =
         $actionMenuBtn.data('disclosureMenu') ||
         new Garnish.DisclosureMenu($actionMenuBtn);
 
-      this.$actionMenu = actionDisclosure.$container;
-      this.actionDisclosure = actionDisclosure;
+      this.$actionMenu = this.actionDisclosure.$container;
 
       this.uiLabel = this.$container.data('ui-label');
 
-      actionDisclosure.on('show', () => {
+      this.actionDisclosure.on('show', () => {
         this.$container.addClass('active');
         const hideActions = [];
 
@@ -688,16 +687,83 @@
             )
           : $();
 
-        const disclosureMenu = this.$actionMenu.data('disclosureMenu');
         $hideButtons.each((i, button) => {
-          disclosureMenu.hideItem(button);
+          this.actionDisclosure.hideItem(button);
         });
         $buttons.not($hideButtons).each((i, button) => {
-          disclosureMenu.showItem(button);
+          this.actionDisclosure.showItem(button);
         });
+
+        const bulk = this.bulkActionMode();
+        $buttons
+          .filter('[data-action="collapse"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Collapse selected blocks')
+              : Craft.t('app', 'Collapse')
+          );
+        $buttons
+          .filter('[data-action="expand"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Expand selected blocks')
+              : Craft.t('app', 'Expand')
+          );
+        $buttons
+          .filter('[data-action="disable"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Disable selected {type}', {
+                  type: Craft.t('app', 'blocks'),
+                })
+              : Craft.t('app', 'Disable')
+          );
+        $buttons
+          .filter('[data-action="enable"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Enable selected {type}', {
+                  type: Craft.t('app', 'blocks'),
+                })
+              : Craft.t('app', 'Enable')
+          );
+        $buttons
+          .filter('[data-action="duplicate"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Duplicate selected {type}', {
+                  type: Craft.t('app', 'blocks'),
+                })
+              : Craft.t('app', 'Duplicate')
+          );
+        $buttons
+          .filter('[data-action="copy"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Copy selected {type}', {
+                  type: Craft.t('app', 'blocks'),
+                })
+              : Craft.t('app', 'Copy')
+          );
+        $buttons
+          .filter('[data-action="delete"]')
+          .children('.menu-item-label')
+          .text(
+            bulk
+              ? Craft.t('app', 'Delete selected {type}', {
+                  type: Craft.t('app', 'blocks'),
+                })
+              : Craft.t('app', 'Delete')
+          );
       });
 
-      actionDisclosure.on('hide', () => {
+      this.actionDisclosure.on('hide', () => {
         this.$container.removeClass('active');
       });
 
@@ -977,15 +1043,19 @@
       this.onActionSelect(event.target);
     },
 
+    bulkActionMode: function () {
+      return (
+        this.matrix.entrySelect.totalSelected > 1 &&
+        this.matrix.entrySelect.isSelected(this.$container)
+      );
+    },
+
     onActionSelect: function (option) {
-      const batchAction =
-          this.matrix.entrySelect.totalSelected > 1 &&
-          this.matrix.entrySelect.isSelected(this.$container),
-        $option = $(option);
+      const $option = $(option);
 
       switch ($option.data('action')) {
         case 'collapse': {
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             this.matrix.collapseSelectedEntries();
           } else {
             this.collapse(true);
@@ -995,7 +1065,7 @@
         }
 
         case 'expand': {
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             this.matrix.expandSelectedEntries();
           } else {
             this.expand();
@@ -1005,7 +1075,7 @@
         }
 
         case 'disable': {
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             this.matrix.disableSelectedEntries();
           } else {
             this.disable();
@@ -1015,7 +1085,7 @@
         }
 
         case 'enable': {
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             this.matrix.enableSelectedEntries();
           } else {
             this.enable();
@@ -1051,7 +1121,7 @@
         }
 
         case 'duplicate': {
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             this.matrix.duplicateSelectedEntries();
           } else {
             this.duplicate();
@@ -1062,7 +1132,7 @@
 
         case 'copy': {
           let elementInfo = [];
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             let selectedItems = this.matrix.entrySelect.getSelectedItems();
             for (let i = 0; i < selectedItems.length; i++) {
               let entry = $(selectedItems[i]).data('entry');
@@ -1100,7 +1170,7 @@
         }
 
         case 'delete': {
-          if (batchAction) {
+          if (this.bulkActionMode()) {
             if (
               confirm(
                 Craft.t(

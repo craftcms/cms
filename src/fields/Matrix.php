@@ -28,6 +28,7 @@ use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
+use craft\enums\Color as ColorEnum;
 use craft\enums\ElementIndexViewMode;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidFieldException;
@@ -880,13 +881,25 @@ class Matrix extends Field implements
     /**
      * @inheritdoc
      */
+    public function getTranslationDescription(?ElementInterface $element): ?string
+    {
+        return $this->entryManager()->getTranslationDescription($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function actionMenuItems(): array
     {
-        $items = match ($this->viewMode) {
-            self::VIEW_MODE_BLOCKS => $this->blockViewActionMenuItems(),
-            self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID => $this->cardViewActionMenuItems(),
-            default => [],
-        };
+        if ($this->maxEntries !== 1) {
+            $items = match ($this->viewMode) {
+                self::VIEW_MODE_BLOCKS => $this->blockViewActionMenuItems(),
+                self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID => $this->cardViewActionMenuItems(),
+                default => [],
+            };
+        } else {
+            $items = [];
+        }
 
         $parentItems = parent::actionMenuItems();
 
@@ -929,11 +942,7 @@ class Matrix extends Field implements
   const expandBtn = $('#' + $expandAllId);
   const collapseBtn = $('#' + $collapseAllId);
   const menu = expandBtn.closest('.menu');
-  const getBlocks = () => {
-    const blocks = field.find(' > .blocks > .matrixblock');
-    const selectedBlocks = blocks.filter('.sel');
-    return selectedBlocks.length ? selectedBlocks : blocks;
-  };
+  const getBlocks = () => field.find(' > .blocks > .matrixblock');
 
   expandBtn.on('activate', () => {
     getBlocks().each((i, block) => {
@@ -951,16 +960,6 @@ class Matrix extends Field implements
     const disclosureMenu = menu.data('disclosureMenu');
     disclosureMenu?.on('show', () => {
       let blocks = getBlocks();
-      let expandLabel, collapseLabel;
-      if (blocks.is('.sel')) {
-        expandLabel = Craft.t('app', 'Expand selected blocks');
-        collapseLabel = Craft.t('app', 'Collapse selected blocks');
-      } else {
-        expandLabel = Craft.t('app', 'Expand all blocks');
-        collapseLabel = Craft.t('app', 'Collapse all blocks');
-      }
-      expandBtn.find('.menu-item-label').text(expandLabel);
-      collapseBtn.find('.menu-item-label').text(collapseLabel);
       disclosureMenu.toggleItem(expandBtn[0], !!blocks.filter('.collapsed').length);
       disclosureMenu.toggleItem(collapseBtn[0], !!blocks.filter(':not(.collapsed)').length);
     });
@@ -972,21 +971,7 @@ JS, [
             $view->namespaceInputId($this->getInputId()),
         ]);
 
-        // Copy, Duplicate, Delete
-        if ($this->maxEntries !== 1) {
-            $items[] = ['type' => 'hr'];
-
-            $type = mb_strtolower(Craft::t('app', 'Blocks'));
-            $entrySelector = ' > .blocks > .matrixblock';
-
-            $items[] = $this->copyAction($type, $entrySelector);
-            $items[] = $this->duplicateAction($type, $entrySelector, <<<JS
-field.data('matrix').duplicateSelectedEntries();
-JS);
-            $items[] = $this->deleteAction($type, $entrySelector, <<<JS
-field.data('matrix').deleteSelectedEntries();
-JS);
-        }
+        $items[] = $this->copyAction(Craft::t('app', 'blocks'), ' > .blocks > .matrixblock');
 
         return $items;
     }
@@ -995,19 +980,11 @@ JS);
     {
         $items = [];
 
-        // Copy, Duplicate, Delete
-        if ($this->maxEntries !== 1) {
-            $type = Entry::pluralLowerDisplayName();
-            $entrySelector = ' > .nested-element-cards > .elements > li > .element';
-
-            $items[] = $this->copyAction($type, $entrySelector);
-            $items[] = $this->duplicateAction($type, $entrySelector, <<<JS
-field.children('.nested-element-cards').data('nestedElementManager').duplicateElements(getEntries());
-JS);
-            $items[] = $this->deleteAction($type, $entrySelector, <<<JS
-field.children('.nested-element-cards').data('nestedElementManager').deleteElements(getEntries());
-JS);
-        }
+        // Copy
+        $items[] = $this->copyAction(
+            Entry::pluralLowerDisplayName(),
+            ' > .nested-element-cards > .elements > li > .element',
+        );
 
         return $items;
     }
@@ -1016,115 +993,6 @@ JS);
     {
         $view = Craft::$app->getView();
         $id = sprintf('action-copy-%s', mt_rand());
-
-        $baseInfo = Json::encode([
-            'type' => Entry::class,
-            'fieldId' => $this->id,
-        ]);
-
-        $view->registerJsWithVars(fn($id, $fieldId, $entrySelector, $type) => <<<JS
-(() => {
-  const btn = $('#' + $id);
-  const field = $('#' + $fieldId);
-  const menu = btn.closest('.menu');
-
-  if (!field.length) {
-    setTimeout(() => {
-      menu.data('disclosureMenu')?.removeItem(btn[0]);
-    }, 1);
-    return;
-  }
-
-  const getEntries = () => {
-    const entries = field.find($entrySelector);
-    const selectedEntries = entries.filter('.sel');
-    return (selectedEntries.length ? selectedEntries : entries).toArray();
-  };
-
-  btn.on('activate', () => {
-    Craft.cp.copyElements(getEntries().map((element) => {
-      element = $(element);
-      return {
-          ... $baseInfo,
-          id: element.data('id'),
-          draftId: element.data('draftId'),
-          revisionId: element.data('revisionId'),
-          ownerId: element.data('ownerId'),
-          siteId: element.data('siteId'),
-        };
-    }));
-  });
-
-  setTimeout(() => {
-    const disclosureMenu = menu.data('disclosureMenu');
-    disclosureMenu?.on('show', () => {
-      const entries = getEntries();
-      let copyLabel;
-      if ($(entries).is('.sel')) {
-        copyLabel = Craft.t('app', 'Copy selected {type}', {
-          type: $type,
-        });
-      } else {
-        copyLabel = Craft.t('app', 'Copy all {type}', {
-          type: $type,
-        });
-      }
-      btn.find('.menu-item-label').text(copyLabel);
-      disclosureMenu.toggleItem(btn[0], !!entries.length);
-    });
-  }, 1);
-})();
-JS, [
-            $view->namespaceInputId($id),
-            $view->namespaceInputId($this->getInputId()),
-            $entrySelector,
-            $type,
-        ]);
-
-        return [
-            'id' => $id,
-            'icon' => 'clone-dashed',
-            'color' => \craft\enums\Color::Fuchsia,
-            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
-                'type' => $type,
-            ])),
-        ];
-    }
-
-    private function duplicateAction(string $type, string $entrySelector, string $activateJs): array
-    {
-        return $this->bulkAction($entrySelector, $activateJs, [
-            'icon' => 'clone',
-            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Duplicate selected {type}', [
-                'type' => $type,
-            ])),
-        ]);
-    }
-
-    private function deleteAction(string $type, string $entrySelector, string $activateJs): array
-    {
-        $typeJs = Json::encode($type);
-        $activateJs = <<<JS
-if (confirm(Craft.t('app', 'Are you sure you want to delete the selected {type}?', {
-  type: $typeJs,
-}))) {
-  $activateJs
-}
-JS;
-
-        return $this->bulkAction($entrySelector, $activateJs, [
-            'icon' => 'trash',
-            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete selected {type}', [
-                'type' => $type,
-            ])),
-            'destructive' => true,
-        ]);
-    }
-
-    private function bulkAction(string $entrySelector, string $activateJs, array $item): array
-    {
-        $view = Craft::$app->getView();
-        $id = sprintf('action-%s', mt_rand());
 
         $view->registerJsWithVars(fn($id, $fieldId, $entrySelector) => <<<JS
 (() => {
@@ -1139,10 +1007,10 @@ JS;
     return;
   }
 
-  const getEntries = () => field.find($entrySelector).filter('.sel').toArray();
+  const getEntries = () => field.find($entrySelector);
 
   btn.on('activate', () => {
-    $activateJs
+    Craft.cp.copyElements(getEntries());
   });
 
   setTimeout(() => {
@@ -1159,17 +1027,13 @@ JS, [
         ]);
 
         return [
-            ...$item,
             'id' => $id,
+            'icon' => 'clone-dashed',
+            'color' => ColorEnum::Fuchsia,
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
+                'type' => $type,
+            ])),
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTranslationDescription(?ElementInterface $element): ?string
-    {
-        return $this->entryManager()->getTranslationDescription($element);
     }
 
     /**
