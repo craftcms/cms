@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
-use Craft;
 use CraftCms\Cms\Element\Queries\Events\DefineCacheTags;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 
 /**
  * @internal
@@ -31,10 +31,10 @@ trait CollectsCacheTags
                 return;
             }
 
-            $elementsService = Craft::$app->getElements();
+            $collector = app(DependencyCollector::class);
 
-            if ($elementsService->getIsCollectingCacheInfo()) {
-                $elementsService->collectCacheTags($cacheTags);
+            if ($collector->isCollecting()) {
+                $collector->collectTags($cacheTags);
             }
         });
     }

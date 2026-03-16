@@ -8,7 +8,7 @@ use Carbon\CarbonInterval;
 use CraftCms\Cms\Support\Facades\Sites;
 use DateInterval;
 
-final class Config
+class Config
 {
     /**
      * Normalizes a time duration value into the number of seconds it represents.

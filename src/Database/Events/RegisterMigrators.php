@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Events;
 
-final class RegisterMigrators
+use CraftCms\Cms\Database\Migrator;
+
+class RegisterMigrators
 {
     public function __construct(
-        /** @var \CraftCms\Cms\Database\Migrator[] */
+        /** @var Migrator[] */
         public array $migrators = [],
     ) {}
 }

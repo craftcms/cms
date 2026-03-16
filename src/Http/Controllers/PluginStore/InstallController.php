@@ -20,7 +20,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  */
-final class InstallController extends BaseUpdaterController
+class InstallController extends BaseUpdaterController
 {
     public const string ACTION_CRAFT_INSTALL = 'craft-install';
 

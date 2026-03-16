@@ -15,7 +15,7 @@ use Illuminate\Auth\AuthManager;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
-final readonly class UpdateLocale
+readonly class UpdateLocale
 {
     public function __construct(
         private Application $app,

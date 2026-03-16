@@ -23,7 +23,7 @@ use Throwable;
 
 use function Laravel\Prompts\confirm;
 
-final class MigrateCommand extends Command implements Isolatable
+class MigrateCommand extends Command implements Isolatable
 {
     use BackupTrait;
     use Colors;

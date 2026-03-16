@@ -43,7 +43,7 @@ it('requires the editStructure permission', function (string $route) {
     // Set edition so permissions actually get checked
     Edition::set(Edition::Pro);
 
-    $user = \CraftCms\Cms\User\Models\User::factory()->create([
+    $user = CraftCms\Cms\User\Models\User::factory()->create([
         'admin' => false,
     ]);
 

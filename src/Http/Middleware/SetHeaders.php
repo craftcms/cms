@@ -9,11 +9,18 @@ use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-final readonly class SetHeaders
+class SetHeaders
 {
+    private static bool $noCache = false;
+
     public function __construct(
-        private GeneralConfig $generalConfig,
+        private readonly GeneralConfig $generalConfig,
     ) {}
+
+    public static function noCache(): void
+    {
+        self::$noCache = true;
+    }
 
     public function handle(Request $request, Closure $next): mixed
     {
@@ -23,7 +30,7 @@ final readonly class SetHeaders
             return $response;
         }
 
-        if ($request->isCpRequest() || $request->isActionRequest()) {
+        if ($request->isCpRequest() || $request->isActionRequest() || self::$noCache) {
             $response->setNoCacheHeaders();
         }
 

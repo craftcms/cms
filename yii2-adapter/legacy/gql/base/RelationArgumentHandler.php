@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Typecast;
 
 /**
  * Class RelationArgumentHandler
@@ -36,7 +37,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
 
         foreach ($criteriaList as $criteria) {
             /** @var ElementQuery $elementQuery */
-            $elementQuery = Craft::configure(Craft::$app->getElements()->createElementQuery($elementType), $criteria);
+            $elementQuery = Typecast::configure(Craft::$app->getElements()->createElementQuery($elementType), $criteria);
             $idSets[] = $elementQuery->ids();
         }
 

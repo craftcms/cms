@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\Structure\Structures
  */
-final class Structures extends Facade
+class Structures extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

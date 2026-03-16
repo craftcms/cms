@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\File;
@@ -15,11 +15,13 @@ use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 
+use function Illuminate\Filesystem\join_paths;
+
 /**
  * @internal
  */
 #[Singleton]
-final class Composer
+class Composer
 {
     public function __construct(
         public string $composerRepoUrl = 'https://composer.craftcms.com',
@@ -166,13 +168,13 @@ final class Composer
         $pharPath = '';
 
         if (! $composerPath) {
-            $runtimePath = Craft::$app->getPath()->getRuntimePath();
+            $runtimePath = Path::runtime();
 
             // Copy composer.phar into storage/
-            $pharPath = sprintf('%s/composer.phar', $runtimePath);
+            $pharPath = join_paths($runtimePath, 'composer.phar');
             copy(Aliases::get('@lib/composer.phar'), $pharPath);
 
-            $homePath = $runtimePath.DIRECTORY_SEPARATOR.'composer';
+            $homePath = join_paths($runtimePath, 'composer');
             File::ensureDirectoryExists($homePath);
         }
 
@@ -351,9 +353,9 @@ final class Composer
      */
     private function backupComposerFiles(): void
     {
-        $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
-        $jsonBackupPath = $backupsDir.DIRECTORY_SEPARATOR.'composer.json';
-        $lockBackupPath = $backupsDir.DIRECTORY_SEPARATOR.'composer.lock';
+        $backupsDir = Path::composerBackups();
+        $jsonBackupPath = join_paths($backupsDir, 'composer.json');
+        $lockBackupPath = join_paths($backupsDir, 'composer.lock');
         FileHelper::cycle($jsonBackupPath, $this->maxBackups);
         FileHelper::cycle($lockBackupPath, $this->maxBackups);
 

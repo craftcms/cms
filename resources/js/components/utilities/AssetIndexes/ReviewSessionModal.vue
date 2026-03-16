@@ -3,9 +3,9 @@
   import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
   import {useAssetIndexer} from '@/composables/useAssetIndexer';
   import {computed, reactive} from 'vue';
-  import {escapeHtml} from '@craftcms/cp/src/utilities/escapeHtml.js';
+  import {escapeHtml} from '@craftcms/cp/utilities/escapeHtml.ts.mjs';
   import CheckboxGroup from '@/components/form/CheckboxGroup.vue';
-  import type {FinishIndexingParams} from '@craftcms/cp/src/services/AssetIndexer.js';
+  import type {FinishIndexingParams} from '@craftcms/cp/services/AssetIndexer.ts.mjs';
   import {router} from '@inertiajs/vue3';
   import {show} from '@routes/cp/utilities';
 

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use Craft;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Container\Attributes\Singleton;
 use SensitiveParameter;
 
 #[Singleton]
-final class Security
+class Security
 {
     public function __construct(
         /**
@@ -71,7 +71,7 @@ final class Security
     {
         $path = FileHelper::absolutePath($path, '/');
 
-        foreach (Craft::$app->getPath()->getSystemPaths() as $dir) {
+        foreach (Path::system() as $dir) {
             $dir = FileHelper::absolutePath($dir, '/');
 
             if (str_starts_with("$path/", "$dir/") || str_starts_with("$dir/", "$path/")) {

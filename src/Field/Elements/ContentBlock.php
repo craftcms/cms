@@ -24,7 +24,7 @@ use function CraftCms\Cms\t;
  * @method ContentBlockField getField()
  */
 #[Ruleset(ContentBlockRules::class)]
-final class ContentBlock extends Element implements NestedElementInterface
+class ContentBlock extends Element implements NestedElementInterface
 {
     use NestedElementTrait;
 
@@ -57,7 +57,7 @@ final class ContentBlock extends Element implements NestedElementInterface
         return 'block';
     }
 
-    #[\Override]
+    #[Override]
     public static function hasDrafts(): bool
     {
         return true;

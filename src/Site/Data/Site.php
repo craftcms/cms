@@ -22,7 +22,7 @@ use Stringable;
 use function CraftCms\Cms\t;
 
 #[Ruleset(SiteRules::class)]
-final class Site extends Component implements Chippable, Stringable
+class Site extends Component implements Chippable, Stringable
 {
     private ?string $_baseUrl = null;
 
@@ -84,7 +84,7 @@ final class Site extends Component implements Chippable, Stringable
 
     public ?DateTimeInterface $dateUpdated = null;
 
-    public static function get(int|string $id): ?static
+    public static function get(int|string $id): ?self
     {
         return Sites::getSiteById($id);
     }

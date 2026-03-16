@@ -7,10 +7,11 @@ namespace CraftCms\Cms\Plugin\Testing;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\File;
+use Orchestra\Testbench\TestCase;
 
 use function Orchestra\Testbench\package_path;
 
-/** @mixin \Orchestra\Testbench\TestCase */
+/** @mixin TestCase */
 trait InstallsPlugin
 {
     public function setupInstallsPlugin(): void

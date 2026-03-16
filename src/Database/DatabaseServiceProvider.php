@@ -28,7 +28,7 @@ use Illuminate\Support\ServiceProvider;
 use Override;
 use ReflectionProperty;
 
-final class DatabaseServiceProvider extends ServiceProvider
+class DatabaseServiceProvider extends ServiceProvider
 {
     #[Override]
     public function register(): void

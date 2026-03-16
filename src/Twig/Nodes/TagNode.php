@@ -11,7 +11,7 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class TagNode extends Node
+class TagNode extends Node
 {
     #[Override]
     public function compile(Compiler $compiler): void

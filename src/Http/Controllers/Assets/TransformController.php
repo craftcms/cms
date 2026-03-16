@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
-use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Http\JsonResponse;
@@ -22,7 +22,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
-final readonly class TransformController
+use function Illuminate\Filesystem\join_paths;
+
+readonly class TransformController
 {
     use EnforcesPermissions;
     use RespondsWithFlash;
@@ -112,11 +114,7 @@ final readonly class TransformController
         }
 
         $filename = sprintf('%s.%s', $asset->id, $ext);
-        $path = implode(DIRECTORY_SEPARATOR, [
-            Craft::$app->getPath()->getImageTransformsPath(),
-            $transformString,
-            $filename,
-        ]);
+        $path = Path::imageTransforms(join_paths($transformString, $filename));
 
         if (! file_exists($path) || filemtime($path) < ($asset->dateModified?->getTimestamp() ?? 0)) {
             if ($useOriginal) {

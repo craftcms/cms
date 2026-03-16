@@ -3,7 +3,8 @@
   import MainNav from '@/components/MainNav.vue';
   import EditionInfo from '@/components/EditionInfo.vue';
   import DevModeIndicator from '@/components/DevModeIndicator.vue';
-  import {watch, computed, nextTick} from 'vue';
+  import {computed, nextTick, watch} from 'vue';
+  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
 
   const emit = defineEmits<{
     (e: 'close'): void;
@@ -42,7 +43,11 @@
           <SystemInfo />
           <div class="ml-auto"></div>
           <craft-button size="small" icon @click="emit('close')" type="button">
-            <craft-icon name="x" style="font-size: 0.7em"></craft-icon>
+            <craft-icon
+              name="x"
+              style="font-size: 0.7em"
+              :label="t('Close')"
+            ></craft-icon>
           </craft-button>
         </div>
       </div>
@@ -61,7 +66,7 @@
   .cp-sidebar {
     height: 100%;
     width: var(--global-sidebar-width);
-    background-color: var(--c-bg-overlay);
+    background-color: var(--c-surface-overlay);
     display: grid;
     grid-template-rows: minmax(0, auto) 1fr minmax(0, auto);
   }

@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Typecast;
 
 /**
  * Queryable provides element query factory methods.
@@ -70,14 +71,14 @@ trait Queryable
      */
     protected static function findByCondition(mixed $criteria, bool $one): array|static|null
     {
-        /** @var \CraftCms\Cms\Element\Queries\ElementQuery<static> $query */
+        /** @var ElementQuery<static> $query */
         $query = static::find();
 
         if ($criteria !== null) {
             if (! is_array($criteria) || Arr::isList($criteria)) {
                 $criteria = ['id' => $criteria];
             }
-            Craft::configure($query, $criteria);
+            Typecast::configure($query, $criteria);
         }
 
         if ($one) {

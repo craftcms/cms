@@ -70,6 +70,7 @@ use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Facades\Volumes;
@@ -367,7 +368,7 @@ class Asset extends Element
         // Add the Temporary Uploads location
         if (
             $context !== ElementSources::CONTEXT_SETTINGS &&
-            ! Craft::$app->getRequest()->getIsConsoleRequest()
+            ! app()->runningInConsole()
         ) {
             $temporaryUploadFolder = AssetsService::getUserTemporaryUploadFolder();
             $temporaryUploadFs = AssetsService::getTempAssetUploadFs();
@@ -2342,7 +2343,7 @@ JS, [
             return FileHelper::normalizePath($volume->sourceDisk()->path($this->getPath()));
         }
 
-        return Craft::$app->getPath()->getAssetSourcesPath().DIRECTORY_SEPARATOR.$this->id.'.'.$this->getExtension();
+        return Path::assetSources($this->id.'.'.$this->getExtension());
     }
 
     /**
@@ -2354,7 +2355,7 @@ JS, [
     public function getCopyOfFile(): string
     {
         $tempFilename = FileHelper::uniqueName($this->_filename);
-        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+        $tempPath = Path::temp($tempFilename);
         Assets::downloadFile($this->getVolume()->sourceDisk(), $this->getPath(), $tempPath);
 
         return $tempPath;
@@ -2443,7 +2444,7 @@ JS, [
     /**
      * Sets the asset's focal point.
      *
-     * @throws \InvalidArgumentException if $value is invalid
+     * @throws InvalidArgumentException if $value is invalid
      */
     public function setFocalPoint(array|string|null $value): void
     {
@@ -3255,7 +3256,7 @@ JS;
                 }
 
                 $tempFilename = FileHelper::uniqueName($filename);
-                $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+                $tempPath = Path::temp($tempFilename);
                 Assets::downloadFile($oldVolume->sourceDisk(), $oldPath, $tempPath);
             }
 
@@ -3344,10 +3345,10 @@ JS;
         $tempFilePath = FileHelper::normalizePath($tempFilePath);
 
         // Make sure it's within a known temp path, the project root, or storage/ folder
-        $pathService = Craft::$app->getPath();
+        $pathService = app(\CraftCms\Cms\Support\Path::class);
         $allowedRoots = [
-            [$pathService->getTempPath(), true],
-            [$pathService->getTempAssetUploadsPath(), true],
+            [$pathService->temp(), true],
+            [$pathService->tempAssetUploads(), true],
             [sys_get_temp_dir(), true],
             [Aliases::get('@root', false), false],
             [Aliases::get('@storage', false), false],
@@ -3370,7 +3371,7 @@ JS;
         }
 
         // Make sure it's *not* within a system directory though
-        $systemDirs = $pathService->getSystemPaths();
+        $systemDirs = $pathService->system();
         $systemDirs = array_map($this->_normalizeTempPath(...), $systemDirs);
         $systemDirs = array_filter($systemDirs, fn ($value) => $value !== false);
 

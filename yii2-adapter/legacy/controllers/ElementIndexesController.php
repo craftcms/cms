@@ -34,6 +34,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -717,7 +718,7 @@ class ElementIndexesController extends BaseElementsController
             // Remove unsupported criteria attributes
             $criteria = ElementHelper::cleanseQueryCriteria($criteria);
 
-            Craft::configure($query, Component::cleanseConfig($criteria));
+            Typecast::configure($query, Component::cleanseConfig($criteria));
 
             return true;
         };

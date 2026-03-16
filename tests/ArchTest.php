@@ -9,8 +9,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Env;
 use Illuminate\Support\Str;
 
-arch()
-    ->expect('cms')
+arch('No debug functions')
+    ->expect('src')
     ->not->toUse(['die', 'dd', 'dump', 'env']);
 
 arch('Don\'t use legacy logging')
@@ -30,19 +30,19 @@ arch()
     ->expect(Env::class)
     ->not
     ->toBeUsed()
-    ->ignoring(\CraftCms\Cms\Support\Env::class);
+    ->ignoring(CraftCms\Cms\Support\Env::class);
 
 arch()
     ->expect(Arr::class)
     ->not
     ->toBeUsed()
-    ->ignoring(\CraftCms\Cms\Support\Arr::class);
+    ->ignoring(CraftCms\Cms\Support\Arr::class);
 
 arch()
     ->expect(Str::class)
     ->not
     ->toBeUsed()
-    ->ignoring(\CraftCms\Cms\Support\Str::class);
+    ->ignoring(CraftCms\Cms\Support\Str::class);
 
 arch('Only use JSON helper')
     ->expect(['json_encode', 'json_decode'])
@@ -54,7 +54,7 @@ arch('Only use JSON helper')
     ]);
 
 arch('Don\'t use default migrator')
-    ->expect(\Illuminate\Database\Migrations\Migrator::class)
+    ->expect(Illuminate\Database\Migrations\Migrator::class)
     ->not
     ->toBeUsed()
     ->ignoring(Migrator::class);

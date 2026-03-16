@@ -20,7 +20,7 @@ use Override;
  *
  * @see \CraftCms\Cms\Search\Search
  */
-final class Search extends Facade
+class Search extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

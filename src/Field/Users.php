@@ -24,7 +24,7 @@ use function CraftCms\Cms\t;
 /**
  * Users represents a Users field.
  */
-final class Users extends BaseRelationField
+class Users extends BaseRelationField
 {
     #[Override]
     public static function displayName(): string

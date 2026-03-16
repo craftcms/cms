@@ -18,14 +18,14 @@ use Twig\NodeVisitor\NodeVisitorInterface;
 /**
  * Profiler adds profiling to template bodies, blocks, and macros.
  */
-final class Profiler implements NodeVisitorInterface
+class Profiler implements NodeVisitorInterface
 {
     public function enterNode(Node $node, Environment $env): Node
     {
         return $node;
     }
 
-    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
+    public function leaveNode(Node $node, Environment $env): Node
     {
         if ($node instanceof ModuleNode) {
             $name = $node->getTemplateName();

@@ -14,7 +14,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
  *
  * @property class-string<FieldInterface> $expectedType
  */
-final class MissingField extends Field implements MissingComponentInterface
+class MissingField extends Field implements MissingComponentInterface
 {
     use MissingComponentTrait;
 

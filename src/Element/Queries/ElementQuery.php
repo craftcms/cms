@@ -23,6 +23,7 @@ use Exception;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Concerns\BuildsQueries;
+use Illuminate\Database\MultipleRecordsFoundException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\RecordsNotFoundException;
 use Illuminate\Support\Collection;
@@ -44,7 +45,7 @@ use Twig\Markup;
 /**
  * @template TElement of ElementInterface
  *
- * @mixin \Illuminate\Database\Query\Builder
+ * @mixin Builder
  *
  * @method static select($columns = ['*'])
  * @method static addSelect($column)
@@ -64,7 +65,7 @@ use Twig\Markup;
  */
 class ElementQuery extends Component implements \Illuminate\Contracts\Database\Query\Builder, ElementQueryInterface
 {
-    /** @use \Illuminate\Database\Concerns\BuildsQueries<TElement> */
+    /** @use BuildsQueries<TElement> */
     use BuildsQueries {
         BuildsQueries::sole as baseSole;
         BuildsQueries::first as baseFirst;
@@ -104,6 +105,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * All of the globally registered builder macros.
      */
+    #[Override]
     protected static $macros = [];
 
     /**
@@ -286,8 +288,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * Find a model by its primary key.
      *
      * @param  int|string|Arrayable<array-key, mixed>|array<mixed>  $id
-     * @param  string|\Illuminate\Contracts\Database\Query\Expression|array<string|\Illuminate\Contracts\Database\Query\Expression>  $columns
-     * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? \CraftCms\Cms\Element\ElementCollection<TElement>|Collection<array> : TElement|array|null)
+     * @param  string|Expression|array<string|Expression>  $columns
+     * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<TElement>|Collection<array> : TElement|array|null)
      */
     public function find(mixed $id, $columns = ['*']): ElementInterface|ElementCollection|Collection|array|null
     {
@@ -301,8 +303,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Find multiple elements by their primary keys.
      *
-     * @param  \Illuminate\Contracts\Support\Arrayable|array  $ids
-     * @return \CraftCms\Cms\Element\ElementCollection<int, TElement>|Collection<int, array>
+     * @param  Arrayable|array  $ids
+     * @return ElementCollection<int, TElement>|Collection<int, array>
      */
     public function findMany(mixed $ids, array|string $columns = ['*']): ElementCollection|Collection
     {
@@ -318,7 +320,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Find a model by its primary key or throw an exception.
      *
-     * @return ($id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<int, TElement>|Collection<array> : TElement|array)
+     * @return ($id is (Arrayable<array-key, mixed>|array<mixed>) ? ElementCollection<int, TElement>|Collection<array> : TElement|array)
      *
      * @throws ElementNotFoundException<TElement>
      */
@@ -352,8 +354,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @template TValue
      *
-     * @param  (\Closure(): TValue)|list<string>|string  $columns
-     * @param  (\Closure(): TValue)|null  $callback
+     * @param  (Closure(): TValue)|list<string>|string  $columns
+     * @param  (Closure(): TValue)|null  $callback
      * @return (
      *     $id is (\Illuminate\Contracts\Support\Arrayable<array-key, mixed>|array<mixed>)
      *     ? \CraftCms\Cms\Element\ElementCollection<int, TElement>
@@ -396,8 +398,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @template TValue
      *
-     * @param  (\Closure(): TValue)|list<string>  $columns
-     * @param  (\Closure(): TValue)|null  $callback
+     * @param  (Closure(): TValue)|list<string>  $columns
+     * @param  (Closure(): TValue)|null  $callback
      * @return TElement|TValue
      */
     public function firstOr(array|string|Closure $columns = ['*'], ?Closure $callback = null): mixed
@@ -421,7 +423,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @return TElement|array
      *
      * @throws ElementNotFoundException<TElement>
-     * @throws \Illuminate\Database\MultipleRecordsFoundException
+     * @throws MultipleRecordsFoundException
      */
     public function sole(array|string $columns = ['*']): ElementInterface|array
     {
@@ -450,8 +452,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Execute the query as a "select" statement.
      *
-     * @param  string|\Illuminate\Contracts\Database\Query\Expression|array<string|\Illuminate\Contracts\Database\Query\Expression>  $columns
-     * @return \CraftCms\Cms\Element\ElementCollection<TElement>|Collection<array>
+     * @param  string|Expression|array<string|Expression>  $columns
+     * @return ElementCollection<TElement>|Collection<array>
      */
     public function get($columns = ['*']): ElementCollection|Collection
     {
@@ -648,7 +650,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Get a lazy collection for the given query.
      *
-     * @return \Illuminate\Support\LazyCollection<int, TElement|array>
+     * @return LazyCollection<int, TElement|array>
      */
     public function cursor(): LazyCollection
     {
@@ -787,7 +789,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /**
      * Checks if a macro is registered.
      */
-    public function hasMacro(string $name): bool
+    public function hasLocalMacro(string $name): bool
     {
         return isset($this->localMacros[$name]);
     }
@@ -815,7 +817,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @param  string  $key
      *
-     * @throws \Exception
+     * @throws Exception
      */
     #[Override]
     public function __get($key): mixed
@@ -861,6 +863,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * @param  string  $method
      * @param  array  $parameters
      */
+    #[Override]
     public function __call($method, $parameters): mixed
     {
         if ($method === 'macro') {
@@ -875,7 +878,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this;
         }
 
-        if ($this->hasMacro($method)) {
+        if ($this->hasLocalMacro($method)) {
             array_unshift($parameters, $this);
 
             return $this->localMacros[$method](...$parameters);
@@ -939,6 +942,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @throws \BadMethodCallException
      */
+    #[Override]
     public static function __callStatic($method, $parameters): mixed
     {
         if ($method === 'macro') {
@@ -1191,7 +1195,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      *
      * @return void
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     protected function enforceOrderBy()
     {

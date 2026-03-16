@@ -11,7 +11,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
  *
  * @see Entry::_parentOptionCriteria()
  */
-final class DefineParentSelectionCriteria
+class DefineParentSelectionCriteria
 {
     public function __construct(
         public Entry $entry,

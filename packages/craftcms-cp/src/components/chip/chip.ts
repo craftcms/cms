@@ -1,7 +1,7 @@
 import {property} from 'lit/decorators.js';
+import type {CSSResultGroup} from 'lit';
 import {html, LitElement, nothing} from 'lit';
 import styles from './chip.styles.js';
-import type {CSSResultGroup} from 'lit';
 import {classMap} from 'lit/directives/class-map.js';
 
 /**
@@ -25,13 +25,27 @@ export default class CraftChip extends LitElement {
   /** Variant of the chip. `plain` will render with no border or padding */
   @property() variant: 'plain' | '' = '';
 
+  /** Shortcut for adding an icon as the prefix */
+  @property() icon: string | null = null;
+
+  renderPrefix() {
+    return html`<div class="chip__prefix" part="prefix">
+      <slot name="prefix">
+        ${this.icon
+          ? html`<craft-icon name="${this.icon}"></craft-icon>`
+          : nothing}
+      </slot>
+    </div>`;
+  }
+
   override render() {
     // query the element Light DOM children for slotted elements
-    const hasSlottedPrefixes = !!this.querySelector('[slot="prefix"]');
-    const hasSlottedSuffixes = !!this.querySelector('[slot="suffix"]');
+    const renderPrefix = !!this.querySelector('[slot="prefix"]') || this.icon;
+    const renderSuffix = !!this.querySelector('[slot="suffix"]');
 
     return html`
       <div
+        part="chip"
         class="${classMap({
           chip: true,
           'chip--small': this.size === 'small',
@@ -40,14 +54,14 @@ export default class CraftChip extends LitElement {
           'chip--plain': this.variant === 'plain',
         })}"
       >
-        ${hasSlottedPrefixes
-          ? html`<div class="chip__prefix"><slot name="prefix"></slot></div>`
-          : nothing}
+        ${renderPrefix ? this.renderPrefix() : nothing}
         <div class="chip__body">
           <slot></slot>
         </div>
-        ${hasSlottedSuffixes
-          ? html`<div class="chip__suffix"><slot name="suffix"></slot></div>`
+        ${renderSuffix
+          ? html`<div class="chip__suffix" part="suffix">
+              <slot name="suffix"></slot>
+            </div>`
           : nothing}
       </div>
     `;

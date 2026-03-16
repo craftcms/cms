@@ -20,7 +20,7 @@ use Override;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class QuickPost extends Widget
+class QuickPost extends Widget
 {
     #[Override]
     public static function displayName(): string
@@ -55,12 +55,12 @@ final class QuickPost extends Widget
     public ?string $customTitle = null;
 
     /**
-     * @see section()
+     * @see Section()
      */
     private Section|false $_section;
 
     /**
-     * @see entryType()
+     * @see EntryType()
      */
     private EntryType|false $_entryType;
 

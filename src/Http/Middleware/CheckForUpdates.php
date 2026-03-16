@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -16,7 +16,7 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
-final readonly class CheckForUpdates
+readonly class CheckForUpdates
 {
     public function __construct(
         private Updates $updates,
@@ -36,7 +36,7 @@ final readonly class CheckForUpdates
         if ($this->updates->hasCraftVersionChanged()) {
             $this->updates->updateCraftVersionInfo();
 
-            if (! File::cleanDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false))) {
+            if (! File::cleanDirectory(Path::compiledTemplates(create: false))) {
                 Log::error('Could not delete compiled templates');
             }
         }
@@ -58,7 +58,7 @@ final readonly class CheckForUpdates
                 ]));
             }
 
-            File::cleanDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
+            File::cleanDirectory(Path::compiledTemplates(create: false));
 
             return response()->view('_special/dbupdate');
         }

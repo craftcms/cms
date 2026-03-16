@@ -23,7 +23,7 @@ use Stringable;
  * @author Top Shelf Craft <michael@michaelrog.com>
  */
 #[AllowedInSandbox]
-final class ColorData implements Serializable, Stringable
+class ColorData implements Serializable, Stringable
 {
     /**
      * @see _hsl()

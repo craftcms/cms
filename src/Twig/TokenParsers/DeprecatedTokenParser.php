@@ -19,7 +19,7 @@ use Twig\TokenParser\AbstractTokenParser;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Yonel Ceruto <yonelceruto@gmail.com>
  */
-final class DeprecatedTokenParser extends AbstractTokenParser
+class DeprecatedTokenParser extends AbstractTokenParser
 {
     public function parse(Token $token): DeprecatedNode
     {

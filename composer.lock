@@ -716,7 +716,7 @@
             "dist": {
                 "type": "path",
                 "url": "./yii2-adapter",
-                "reference": "714d12751531688b15a6e7221b1719bb9f1e24b6"
+                "reference": "4eba7d608e383b217616eb3e92de4b48ba047c3c"
             },
             "require": {
                 "craftcms/cms": "self.version",
@@ -758,7 +758,6 @@
                 "codeception/module-rest": "^3.3.2",
                 "codeception/module-yii2": "^1.1.9",
                 "craftcms/ecs": "dev-main",
-                "dg/bypass-finals": "^1.9",
                 "larastan/larastan": "^3.7",
                 "league/factory-muffin": "^3.3.0",
                 "orchestra/testbench": "^10.6",
@@ -795,10 +794,10 @@
                     "php ./scripts/copyicons.php"
                 ],
                 "check-cs": [
-                    "ecs check --ansi && pint cms --test"
+                    "ecs check --ansi"
                 ],
                 "fix-cs": [
-                    "npx concurrently -c 'rector' 'ecs check --ansi --fix' --names=rector,ecs"
+                    "ecs check --ansi --fix"
                 ],
                 "codecept-build": [
                     "codecept build"
@@ -11562,16 +11561,16 @@
         },
         {
             "name": "laravel/pint",
-            "version": "v1.27.1",
+            "version": "v1.28.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/pint.git",
-                "reference": "54cca2de13790570c7b6f0f94f37896bee4abcb5"
+                "reference": "1feae84bf9c1649d99ba8f7b8193bf0f09f04cc9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/pint/zipball/54cca2de13790570c7b6f0f94f37896bee4abcb5",
-                "reference": "54cca2de13790570c7b6f0f94f37896bee4abcb5",
+                "url": "https://api.github.com/repos/laravel/pint/zipball/1feae84bf9c1649d99ba8f7b8193bf0f09f04cc9",
+                "reference": "1feae84bf9c1649d99ba8f7b8193bf0f09f04cc9",
                 "shasum": ""
             },
             "require": {
@@ -11582,13 +11581,14 @@
                 "php": "^8.2.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.93.1",
-                "illuminate/view": "^12.51.0",
-                "larastan/larastan": "^3.9.2",
+                "friendsofphp/php-cs-fixer": "^3.94.2",
+                "illuminate/view": "^12.54.1",
+                "larastan/larastan": "^3.9.3",
                 "laravel-zero/framework": "^12.0.5",
                 "mockery/mockery": "^1.6.12",
-                "nunomaduro/termwind": "^2.3.3",
-                "pestphp/pest": "^3.8.5"
+                "nunomaduro/termwind": "^2.4.0",
+                "pestphp/pest": "^3.8.5",
+                "shipfastlabs/agent-detector": "^1.0.2"
             },
             "bin": [
                 "builds/pint"
@@ -11625,7 +11625,7 @@
                 "issues": "https://github.com/laravel/pint/issues",
                 "source": "https://github.com/laravel/pint"
             },
-            "time": "2026-02-10T20:00:20+00:00"
+            "time": "2026-03-10T20:37:18+00:00"
         },
         {
             "name": "laravel/tinker",

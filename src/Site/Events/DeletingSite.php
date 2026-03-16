@@ -10,7 +10,7 @@ use CraftCms\Cms\Site\Data\Site;
 /**
  * @event DeletingSite The event that is triggered before a site is deleted.
  */
-final class DeletingSite
+class DeletingSite
 {
     use ValidatableEvent;
 

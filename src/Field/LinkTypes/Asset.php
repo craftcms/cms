@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
 /**
  * Asset link type.
  */
-final class Asset extends BaseElementLinkType
+class Asset extends BaseElementLinkType
 {
     /**
      * @var array|null The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true).

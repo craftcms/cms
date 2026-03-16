@@ -18,7 +18,7 @@ use Twig\NodeVisitor\NodeVisitorInterface;
 /**
  * SinglePreloader preloads Single section entries for a template.
  */
-final class SinglePreloader implements NodeVisitorInterface
+class SinglePreloader implements NodeVisitorInterface
 {
     /**
      * @var array<string,bool>[]
@@ -56,7 +56,7 @@ final class SinglePreloader implements NodeVisitorInterface
         return $node;
     }
 
-    public function leaveNode(Node $node, Environment $env): \Twig\Node\Node
+    public function leaveNode(Node $node, Environment $env): Node
     {
         if (! $this->isRelevant($node)) {
             return $node;
@@ -89,7 +89,7 @@ final class SinglePreloader implements NodeVisitorInterface
         ]));
 
         foreach ($subNodes as $key => $subNode) {
-            $body->setNode($key, $subNode);
+            $body->setNode((string) $key, $subNode);
         }
 
         return $node;

@@ -3974,10 +3974,9 @@ JS, [
             $editableSiteIds = Sites::getEditableSiteIds()->all();
 
             if (!empty($editableSiteIds)) {
-                $request = Craft::$app->getRequest();
                 if (
-                    !$request->getIsConsoleRequest() &&
-                    ($handle = $request->getQueryParam('site')) !== null &&
+                    !app()->runningInConsole() &&
+                    ($handle = request()->query('site')) !== null &&
                     ($site = Sites::getSiteByHandle($handle, true)) !== null &&
                     in_array($site->id, $editableSiteIds, false)
                 ) {

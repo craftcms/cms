@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Contracts;
 
-use yii\base\NotSupportedException;
+use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
 
 interface AssetPreviewHandlerInterface
 {
@@ -14,7 +14,7 @@ interface AssetPreviewHandlerInterface
      * @param  array  $variables  Additional variables to pass to the template.
      * @return string The preview modal HTML
      *
-     * @throws NotSupportedException if the asset can’t be previewed
+     * @throws AssetNotPreviewableException if the asset can't be previewed
      */
     public function getPreviewHtml(array $variables = []): string;
 }

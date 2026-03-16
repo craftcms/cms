@@ -43,7 +43,7 @@ use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
 #[Singleton]
-final class AssetIndexer
+class AssetIndexer
 {
     public Collection $existingIndexingSessions {
         get => $this->getExistingIndexingSessions();

@@ -9,4 +9,4 @@ use CraftCms\Cms\User\Elements\User;
 /**
  * @event UserUnsuspended The event that is triggered after a user is unsuspended.
  */
-final class UserUnsuspended extends UserEvent {}
+class UserUnsuspended extends UserEvent {}

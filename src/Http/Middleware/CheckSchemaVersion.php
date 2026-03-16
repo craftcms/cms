@@ -13,7 +13,7 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
-final readonly class CheckSchemaVersion
+readonly class CheckSchemaVersion
 {
     public function __construct(
         private GeneralConfig $generalConfig,

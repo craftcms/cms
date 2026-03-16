@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Config;
 
 use ArrayAccess;
+use BadMethodCallException;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\Log;
+use Override;
 use ReflectionProperty;
 
 abstract class BaseConfig implements Arrayable, ArrayAccess
@@ -49,31 +51,45 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
         return false;
     }
 
-    #[\Override]
+    /**
+     * If GeneralConfig throws an exception, Laravel won't be able to
+     * show the exception as the Framework isn't booted when it
+     * happens. This delays the exception until that time.
+     */
+    public function __call(string $name, array $arguments)
+    {
+        app()->booted(function () use ($name) {
+            throw new BadMethodCallException("Method `$name` does not exist on ".static::class);
+        });
+
+        return $this;
+    }
+
+    #[Override]
     public function offsetGet(mixed $offset): mixed
     {
         return $this->$offset;
     }
 
-    #[\Override]
+    #[Override]
     public function offsetExists(mixed $offset): bool
     {
         return isset($this->$offset);
     }
 
-    #[\Override]
+    #[Override]
     public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->$offset = $value;
     }
 
-    #[\Override]
+    #[Override]
     public function offsetUnset(mixed $offset): void
     {
         unset($this->$offset);
     }
 
-    #[\Override]
+    #[Override]
     public function toArray(): array
     {
         return get_object_vars($this);

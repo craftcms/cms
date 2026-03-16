@@ -11,4 +11,5 @@ namespace craft\base\conditions;
  */
 abstract class BaseNumberConditionRule extends \CraftCms\Cms\Condition\BaseNumberConditionRule
 {
+    use \craft\base\LegacyEventConstants;
 }

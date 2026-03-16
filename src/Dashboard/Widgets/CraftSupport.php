@@ -20,7 +20,7 @@ use function CraftCms\Cms\normalizeVersion;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class CraftSupport extends Widget
+class CraftSupport extends Widget
 {
     public function __construct(
         private readonly GeneralConfig $generalConfig,

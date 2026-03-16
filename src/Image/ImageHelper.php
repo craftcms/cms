@@ -15,7 +15,7 @@ use InvalidArgumentException;
 use Throwable;
 use TypeError;
 
-final class ImageHelper
+class ImageHelper
 {
     public static function calculateMissingDimension(float|int|null $targetWidth, float|int|null $targetHeight, float|int $sourceWidth, float|int $sourceHeight): array
     {

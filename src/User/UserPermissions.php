@@ -30,6 +30,7 @@ use CraftCms\Cms\User\Events\UserGroupPermissionsSaved;
 use CraftCms\Cms\User\Events\UserPermissionsSaved;
 use CraftCms\Cms\User\Models\UserPermission;
 use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\MailSettings;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Container\Attributes\Singleton;
@@ -43,10 +44,10 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class UserPermissions
+class UserPermissions
 {
     /**
-     * @var Collection<\CraftCms\Cms\User\Data\PermissionGroup>
+     * @var Collection<PermissionGroup>
      *
      * @see getAllPermissions()
      */
@@ -86,7 +87,7 @@ final class UserPermissions
      * - `nested` _(optional)_ – An array of nested permissions, which can only be assigned if the parent
      *   permission is assigned.
      *
-     * @return Collection<\CraftCms\Cms\User\Data\PermissionGroup>
+     * @return Collection<PermissionGroup>
      */
     public function getAllPermissions(): Collection
     {
@@ -729,7 +730,10 @@ final class UserPermissions
             permissions: app(Utilities::class)->getAllUtilityTypes()->map(function (string $class) {
                 /** @var class-string<Utility> $class */
                 // Admins only
-                if (ProjectConfigUtility::id() === $class::id()) {
+                if (in_array($class::id(), [
+                    ProjectConfigUtility::id(),
+                    MailSettings::id(),
+                ], true)) {
                     return null;
                 }
 

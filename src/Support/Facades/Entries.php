@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\Entry\Entries
  */
-final class Entries extends Facade
+class Entries extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

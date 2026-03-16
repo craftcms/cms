@@ -35,7 +35,7 @@ use function CraftCms\Cms\t;
 /**
  * @TODO: This is a controller which can be called both with and withoup the cpTrigger. Make sure it is not in the CP folder after we refactor the CP only controllers to be in a CP folder.
  */
-final readonly class SaveUserController
+readonly class SaveUserController
 {
     use ConfirmsPasswords;
     use EditUserTrait;

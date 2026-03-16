@@ -1070,6 +1070,7 @@ trait ApplicationTrait
      * Returns the current mailer.
      *
      * @return Mailer The mailer component
+     * @deprecated 6.0.0 use Laravel mailers/drivers and system-message mailables.
      */
     public function getMailer(): Mailer
     {
@@ -1235,6 +1236,7 @@ trait ApplicationTrait
      * Returns the template cache service.
      *
      * @return TemplateCaches The template caches service
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\View\TemplateCaches} instead.
      */
     public function getTemplateCaches(): TemplateCaches
     {

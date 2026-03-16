@@ -28,9 +28,11 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\ActivatingUser;
 use CraftCms\Cms\User\Events\AssigningUserToDefaultGroups;
@@ -55,6 +57,7 @@ use CraftCms\Cms\User\Events\UserUnsuspended;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
+use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -70,7 +73,7 @@ use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Users
+class Users
 {
     /**
      * @var array Cached user preferences.
@@ -891,7 +894,7 @@ final class Users
     {
         $userModel = UserModel::findOrFail($user->id);
 
-        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        /** @var PasswordBroker $broker */
         $broker = Password::broker('craft');
         $token = $broker->createToken($user);
 
@@ -1050,14 +1053,14 @@ final class Users
      * Returns the default user groups that the given user should belong to.
      *
      *
-     * @return \CraftCms\Cms\User\Data\UserGroup[]
+     * @return UserGroup[]
      */
     public function getDefaultUserGroups(User $user): array
     {
         $groups = [];
         $uid = app(ProjectConfig::class)->get('users.defaultGroup');
         if ($uid) {
-            $group = \CraftCms\Cms\Support\Facades\UserGroups::getGroupByUid($uid);
+            $group = UserGroups::getGroupByUid($uid);
             if ($group) {
                 $groups[] = $group;
             }

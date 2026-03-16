@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Money as MoneyHelper;
 use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Contracts\Database\Query\Expression;
+use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
@@ -17,7 +18,7 @@ use Money\Money;
 use Serializable;
 use Tpetry\QueryExpressions\Function\String\Lower;
 
-final readonly class Query
+readonly class Query
 {
     const string SIMPLE_TYPE_NUMERIC = 'numeric';
 
@@ -136,7 +137,7 @@ final readonly class Query
             ? self::parseColumnType($columnType)
             : null;
 
-        /** @var \Illuminate\Database\Connection $connection */
+        /** @var Connection $connection */
         $connection = $query->getConnection();
         $isMysql = $connection->isMysql();
         $isPgsql = $connection->isPgsql();

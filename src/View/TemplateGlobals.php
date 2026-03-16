@@ -21,7 +21,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 #[Scoped]
-final readonly class TemplateGlobals
+readonly class TemplateGlobals
 {
     public function __construct(
         private Application $app,

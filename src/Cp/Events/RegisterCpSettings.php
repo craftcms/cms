@@ -33,7 +33,7 @@ namespace CraftCms\Cms\Cp\Events;
  * - `url` – The URL or path of the control panel page the item should link to.
  * - `icon` – The path to the SVG icon that should be used for the item.
  */
-final class RegisterCpSettings
+class RegisterCpSettings
 {
     public function __construct(
         /** @var array $settings The registered control panel settings */

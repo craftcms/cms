@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Auth\Passkeys;
 
+use Carbon\CarbonInterface;
 use CraftCms\Cms\Auth\Models\WebAuthn;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
@@ -12,6 +13,7 @@ use GuzzleHttp\Psr7\ServerRequest;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Session;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use Psr\Http\Message\ServerRequestInterface;
@@ -27,7 +29,7 @@ use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
 
 #[Scoped]
-final class Passkeys
+class Passkeys
 {
     /**
      * @see webauthnServer()
@@ -55,7 +57,7 @@ final class Passkeys
      *
      * @return Collection<array{
      *     credentialName:string,
-     *     dateLastUsed:\Carbon\CarbonInterface|null,
+     *     dateLastUsed:CarbonInterface|null,
      *     uid:string
      * }>
      */
@@ -265,8 +267,8 @@ final class Passkeys
 
         return $serverRequest
             ->withCookieParams($_COOKIE)
-            ->withQueryParams(\Illuminate\Support\Facades\Request::query())
-            ->withParsedBody(\Illuminate\Support\Facades\Request::post())
+            ->withQueryParams(Request::query())
+            ->withParsedBody(Request::post())
             ->withUploadedFiles(ServerRequest::normalizeFiles($_FILES));
     }
 }

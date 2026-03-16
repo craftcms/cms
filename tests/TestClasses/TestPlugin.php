@@ -9,7 +9,7 @@ use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Override;
 
-final class TestPlugin extends Plugin
+class TestPlugin extends Plugin
 {
     public static bool $useSettings = true;
 
@@ -17,7 +17,7 @@ final class TestPlugin extends Plugin
 
     public static ?Closure $onAfterSaveSettings = null;
 
-    #[\Override]
+    #[Override]
     public ?string $packageName = 'craftcms/test-plugin';
 
     #[Override]

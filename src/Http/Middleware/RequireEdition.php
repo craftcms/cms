@@ -8,7 +8,7 @@ use Closure;
 use CraftCms\Cms\Edition;
 use Illuminate\Http\Request;
 
-final readonly class RequireEdition
+readonly class RequireEdition
 {
     public function handle(Request $request, Closure $next, string $edition): mixed
     {

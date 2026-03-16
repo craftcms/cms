@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 
-final readonly class RequireToken
+readonly class RequireToken
 {
     public function handle(Request $request, Closure $next): mixed
     {

@@ -16,7 +16,7 @@ use yii\base\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-final class ShellCommandException extends Exception
+class ShellCommandException extends Exception
 {
     /**
      * @var string The command that was executed
@@ -37,7 +37,7 @@ final class ShellCommandException extends Exception
      * Creates a ShellCommandException from a [[Command]] object
      *
      * @param Command $command The failed Command object
-     * @return static|false
+     * @return self|false
      */
     public static function createFromCommand(Command $command): self|false
     {

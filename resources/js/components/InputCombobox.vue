@@ -1,5 +1,12 @@
 <script setup lang="ts">
-  import {computed, type MaybeRef, ref, unref, useTemplateRef} from 'vue';
+  import {
+    computed,
+    type HTMLAttributes,
+    type MaybeRef,
+    ref,
+    unref,
+    useTemplateRef,
+  } from 'vue';
   import {
     Combobox,
     ComboboxButton,
@@ -19,6 +26,7 @@
       modelValue?: string;
       requireOptionMatch?: boolean;
       transformModelValue?: (newValue: SelectOption | null) => string;
+      class?: HTMLAttributes['class'];
     }>(),
     {
       modelValue: '',
@@ -71,7 +79,6 @@
 
   const referenceCoordinates = computed(() => {
     const coordinates = reference.value?.getBoundingClientRect();
-    console.log({coordinates});
     if (coordinates) {
       return coordinates;
     }
@@ -140,7 +147,9 @@
       <ComboboxInput
         @change="query = $event.target.value"
         class="input"
+        :class="props.class"
         :displayValue="displayValue"
+        v-bind="$attrs"
       />
       <ComboboxButton
         class="absolute inset-y-1 right-1 flex items-center"
@@ -200,7 +209,7 @@
     padding-inline: var(--c-spacing-md);
     padding-block: var(--c-spacing-sm);
     color: var(--c-color-neutral-on-normal);
-    border-bottom: 1px solid var(--c-border-faint);
+    border-bottom: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   .input {
@@ -224,8 +233,8 @@
     overflow: auto;
     border-radius: var(--c-radius-md);
     box-shadow: var(--c-shadow-sm);
-    background-color: var(--c-bg-overlay);
-    border: 1px solid var(--c-color-neutral-border-subtle);
+    background-color: var(--c-surface-overlay);
+    border: 1px solid var(--c-color-neutral-border-quiet);
     width: 100%;
     max-width: 100%;
     z-index: 40;
@@ -233,7 +242,7 @@
     gap: var(--c-spacing-1px);
 
     &:nth-child(even) {
-      background-color: var(--c-color-neutral-bg-subtle);
+      background-color: var(--c-color-neutral-fill-quiet);
     }
   }
 </style>

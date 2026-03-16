@@ -15,7 +15,7 @@ use function CraftCms\Cms\t;
 /**
  * ProjectConfig represents a ProjectConfig utility.
  */
-final class ProjectConfig extends Utility
+class ProjectConfig extends Utility
 {
     #[Override]
     public static function displayName(): string

@@ -25,7 +25,7 @@ use Inertia\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class GeneralSettingsController
+readonly class GeneralSettingsController
 {
     use RespondsWithFlash;
 

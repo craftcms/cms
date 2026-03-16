@@ -25,7 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final readonly class TwoFactorAuthenticationController
+readonly class TwoFactorAuthenticationController
 {
     use RespondsWithFlash;
 

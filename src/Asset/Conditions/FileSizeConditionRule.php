@@ -17,7 +17,7 @@ use yii\base\InvalidValueException;
 
 use function CraftCms\Cms\t;
 
-final class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
+class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
 {
     public const string UNIT_B = 'B';
 

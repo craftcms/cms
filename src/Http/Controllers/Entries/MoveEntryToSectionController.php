@@ -16,6 +16,7 @@ use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -25,7 +26,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\t;
 
-final readonly class MoveEntryToSectionController
+readonly class MoveEntryToSectionController
 {
     use EnforcesPermissions;
     use RespondsWithFlash;
@@ -125,7 +126,7 @@ final readonly class MoveEntryToSectionController
 
         $this->requirePermission("viewEntries:$section->uid");
 
-        /** @var \Illuminate\Support\Collection<Entry> $entries */
+        /** @var Collection<Entry> $entries */
         $entries = Entry::find()
             ->id($entryIds)
             ->status(null)

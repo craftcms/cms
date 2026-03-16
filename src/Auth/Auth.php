@@ -34,7 +34,7 @@ use Webauthn\PublicKeyCredentialRequestOptions;
 use function CraftCms\Cms\t;
 
 #[Scoped]
-final class Auth
+class Auth
 {
     public private(set) ?AuthError $authError = null;
 

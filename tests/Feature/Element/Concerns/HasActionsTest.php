@@ -7,6 +7,7 @@ use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\RegisterActions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use Illuminate\Support\Facades\Event;
@@ -35,7 +36,7 @@ test('includes SetStatus for elements with status support', function () {
 });
 
 test('defineActions merges with default actions', function () {
-    $class = new class extends CraftCms\Cms\Element\Element
+    $class = new class extends Element
     {
         protected static function defineActions(string $source): array
         {

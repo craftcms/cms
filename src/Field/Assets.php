@@ -53,7 +53,7 @@ use function CraftCms\Cms\t;
 /**
  * Assets represents an Assets field.
  */
-final class Assets extends BaseRelationField
+class Assets extends BaseRelationField
 {
     public const string PREVIEW_MODE_FULL = 'full';
 
@@ -170,16 +170,16 @@ final class Assets extends BaseRelationField
      */
     public string $previewMode = self::PREVIEW_MODE_FULL;
 
-    #[\Override]
+    #[Override]
     protected bool $allowLargeThumbsView = true;
 
-    #[\Override]
+    #[Override]
     protected string $settingsTemplate = '_components/fieldtypes/Assets/settings.twig';
 
-    #[\Override]
+    #[Override]
     protected string $inputTemplate = '_components/fieldtypes/Assets/input.twig';
 
-    #[\Override]
+    #[Override]
     protected ?string $inputJsClass = 'Craft.AssetSelectInput';
 
     /**

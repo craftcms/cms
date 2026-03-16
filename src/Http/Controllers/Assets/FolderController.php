@@ -18,7 +18,7 @@ use yii\base\UserException;
 
 use function CraftCms\Cms\t;
 
-final readonly class FolderController
+readonly class FolderController
 {
     use EnforcesVolumePermissions;
     use RespondsWithFlash;

@@ -9,4 +9,4 @@ use CraftCms\Cms\User\Elements\User;
 /**
  * @event GroupsAndPermissionsAssigned The event that is triggered after user groups and permissions have been assigned to the user getting saved
  */
-final class GroupsAndPermissionsAssigned extends UserEvent {}
+class GroupsAndPermissionsAssigned extends UserEvent {}

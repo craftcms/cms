@@ -24,7 +24,7 @@ use Override;
  *
  * @see \CraftCms\Cms\Asset\Assets
  */
-final class Assets extends Facade
+class Assets extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
 use craft\helpers\UrlHelper;
+use craft\web\CpScreenResponseBehavior;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
@@ -29,7 +30,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class UsersController
+readonly class UsersController
 {
     use AuthorizesRequests;
     use EditUserTrait;
@@ -95,7 +96,7 @@ final readonly class UsersController
         /**
          * This transforms the old Yii CpScreen to the new
          *
-         * @var \craft\web\CpScreenResponseBehavior $cpScreen
+         * @var CpScreenResponseBehavior $cpScreen
          */
         $cpScreen = $response->getBehavior('cp-screen');
         $response = $this->asEditUserScreen($user, self::SCREEN_PROFILE);

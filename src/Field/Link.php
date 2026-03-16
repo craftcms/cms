@@ -49,7 +49,7 @@ use function CraftCms\Cms\t;
 /**
  * Link represents a Link field.
  */
-final class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface
+class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface
 {
     use RelationalField;
 
@@ -278,7 +278,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);

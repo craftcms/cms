@@ -16,9 +16,9 @@ use function CraftCms\Cms\t;
 /**
  * RadioButtons represents a Radio Buttons field.
  */
-final class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
+class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
 {
-    #[\Override]
+    #[Override]
     protected static bool $optionIcons = true;
 
     #[Override]

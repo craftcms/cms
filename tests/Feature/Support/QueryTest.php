@@ -312,7 +312,7 @@ test('whereMoneyParam', function () {
 });
 
 test('prepareDateForDb with DateTime', function () {
-    $date = new \DateTime('2024-06-15 14:30:00', new \DateTimeZone('America/New_York'));
+    $date = new DateTime('2024-06-15 14:30:00', new DateTimeZone('America/New_York'));
 
     $result = Query::prepareDateForDb($date);
 
@@ -340,7 +340,7 @@ test('prepareValueForDb passes through scalar values', function (mixed $value, m
 ]);
 
 test('prepareValueForDb converts DateTime to UTC string', function () {
-    $date = new \DateTime('2024-06-15 14:30:00', new \DateTimeZone('America/New_York'));
+    $date = new DateTime('2024-06-15 14:30:00', new DateTimeZone('America/New_York'));
 
     expect(Query::prepareValueForDb($date))->toBe('2024-06-15 18:30:00');
 });
@@ -388,7 +388,7 @@ test('prepareValuesForDb processes an array of mixed values', function () {
     $values = [
         'name' => 'test',
         'count' => 42,
-        'date' => new \DateTime('2024-01-01 00:00:00', new \DateTimeZone('UTC')),
+        'date' => new DateTime('2024-01-01 00:00:00', new DateTimeZone('UTC')),
         'data' => ['nested' => true],
     ];
 

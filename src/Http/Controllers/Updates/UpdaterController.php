@@ -35,7 +35,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  */
-final class UpdaterController extends BaseUpdaterController
+class UpdaterController extends BaseUpdaterController
 {
     public const string ACTION_FORCE_UPDATE = 'force-update';
 

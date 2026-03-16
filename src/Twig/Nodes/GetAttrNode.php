@@ -16,7 +16,7 @@ use Twig\Template;
  * GetAttrNode is an alternative to [[\Twig\Node\Expression\GetAttrExpression]], which sends attribute calls to
  * [[TemplateHelper::attribute()]] rather than CoreExtension::getAttribute().
  */
-final class GetAttrNode extends GetAttrExpression
+class GetAttrNode extends GetAttrExpression
 {
     /**
      * @param  array  $nodes  An array of named nodes

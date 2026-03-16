@@ -9,4 +9,4 @@ use CraftCms\Cms\User\Elements\User;
 /**
  * @event UserLocked The event that is triggered after a user is locked.
  */
-final class UserLocked extends UserEvent {}
+class UserLocked extends UserEvent {}

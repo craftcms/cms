@@ -9,12 +9,14 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Override;
 
-final class SectionFactory extends Factory
+class SectionFactory extends Factory
 {
+    #[Override]
     protected $model = Section::class;
 
-    #[\Override]
+    #[Override]
     public function definition(): array
     {
         return [
@@ -28,7 +30,7 @@ final class SectionFactory extends Factory
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function configure(): self
     {
         return $this->afterCreating(function (Section $section) {

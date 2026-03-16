@@ -14,7 +14,7 @@ use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
-final class TextTwigExtension extends AbstractExtension
+class TextTwigExtension extends AbstractExtension
 {
     #[Override]
     public function getFilters(): array

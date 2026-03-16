@@ -11,7 +11,7 @@ use Twig\Source;
 
 use function CraftCms\Cms\t;
 
-final readonly class TemplateLoader implements LoaderInterface
+readonly class TemplateLoader implements LoaderInterface
 {
     public function __construct(
         private TemplateResolver $resolver,

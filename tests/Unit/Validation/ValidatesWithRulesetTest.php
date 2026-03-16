@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use CraftCms\Cms\Validation\Ruleset;
+use Illuminate\Validation\Validator;
 
 function createValidatableComponent(array $attributes, ?string $rulesetClass = null): Validatable
 {
@@ -53,7 +54,7 @@ function createValidatableComponent(array $attributes, ?string $rulesetClass = n
             return $this->rulesetClass;
         }
 
-        public function afterValidate(?\Illuminate\Validation\Validator $validator = null): void
+        public function afterValidate(?Validator $validator = null): void
         {
             $this->afterValidateCalled = true;
         }

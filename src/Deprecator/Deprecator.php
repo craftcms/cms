@@ -21,7 +21,7 @@ use Throwable;
 use Twig\Template as TwigTemplate;
 
 #[Scoped]
-final class Deprecator
+class Deprecator
 {
     /**
      * @var bool Whether deprecation warnings should throw exceptions rather than being logged.

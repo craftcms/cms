@@ -13,7 +13,7 @@ use Twig\Node\Node;
 use Twig\Template;
 
 #[YieldReady]
-final class NavItemNode extends Node
+class NavItemNode extends Node
 {
     public function __construct(AssignContextVariable $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, int $lineno)
     {

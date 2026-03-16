@@ -151,6 +151,7 @@
       cell: (info) => h('code', info.getValue()),
     }),
     columnHelper.accessor('group.name', {
+      id: 'group',
       header: () => t('Group'),
     }),
     columnHelper.display({
@@ -292,10 +293,11 @@
           :table="sitesTable"
           :read-only="readOnly"
           :reorderable="!!group?.id"
+          spacing="relaxed"
           @reorder="handleReorder"
         >
           <template #drag-preview="{row}">
-            <div class="border-border-subtle rounded p-2 bg-white">
+            <div class="border-neutral-border-quiet rounded p-2 bg-white">
               {{ row.original.name }}
             </div>
           </template>

@@ -15,4 +15,5 @@ use craft\fields\Date;
  */
 abstract class BaseDateRangeConditionRule extends \CraftCms\Cms\Condition\BaseDateRangeConditionRule
 {
+    use \craft\base\LegacyEventConstants;
 }

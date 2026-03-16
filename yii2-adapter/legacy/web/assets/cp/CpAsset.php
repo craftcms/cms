@@ -57,7 +57,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
 use CraftCms\Cms\View\Enums\Position;
-use CraftCms\Yii2Adapter\Yii2ServiceProvider;
+use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Support\Facades\Auth;
 use stdClass;
 use yii\web\JqueryAsset;
@@ -247,7 +247,7 @@ JS;
             'apiParams' => app(Api::class)->apiParams,
             'appId' => Craft::$app->id,
             'autofocusPreferred' => $currentUser->getAutofocusPreferred(),
-            'autosaveDrafts' => $generalConfig->autosaveDrafts,
+            'autosaveDrafts' => Craft::$app->getConfig()->getGeneral()->autosaveDrafts,
             'canAccessQueueManager' => app(Utilities::class)->checkAuthorization(QueueManager::class),
             'dataAttributes' => Html::$dataAttributes,
             'defaultIndexCriteria' => [],
@@ -333,7 +333,7 @@ JS;
     {
         $groups = [];
 
-        if (!Yii2ServiceProvider::supportsCategories()) {
+        if (!DeprecatedConcepts::supportsCategories()) {
             return $groups;
         }
 

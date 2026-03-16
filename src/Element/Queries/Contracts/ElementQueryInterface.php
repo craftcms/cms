@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Contracts;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Collection;
 
@@ -12,9 +14,9 @@ use Illuminate\Support\Collection;
  * ElementQueryInterface defines the common interface to be implemented by element query classes.
  * The default implementation of this interface is provided by [[ElementQuery]].
  *
- * @mixin \CraftCms\Cms\Element\Queries\ElementQuery
+ * @mixin ElementQuery
  *
- * @phpstan-require-extends \CraftCms\Cms\Element\Queries\ElementQuery
+ * @phpstan-require-extends ElementQuery
  */
 interface ElementQueryInterface extends Builder
 {
@@ -1599,7 +1601,7 @@ interface ElementQueryInterface extends Builder
     /**
      * Returns the field layouts that could be associated with the resulting elements.
      *
-     * @return \CraftCms\Cms\FieldLayout\FieldLayout[]
+     * @return FieldLayout[]
      */
     public function getFieldLayouts(): array;
 

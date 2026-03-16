@@ -13,7 +13,6 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
-use Illuminate\Support\Traits\Macroable;
 use Override;
 use RuntimeException;
 
@@ -23,7 +22,6 @@ use RuntimeException;
 abstract class Widget extends \CraftCms\Cms\Component\Component implements WidgetInterface
 {
     use ConfigurableComponent;
-    use Macroable;
     use SavableComponent;
 
     public ?int $colspan = null;
@@ -134,7 +132,7 @@ EOD;
         return $this->getSettings();
     }
 
-    #[\Override]
+    #[Override]
     public function attributes(): array
     {
         return array_keys($this->getSettings());

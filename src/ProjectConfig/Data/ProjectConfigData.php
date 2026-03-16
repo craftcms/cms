@@ -14,7 +14,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
 
-final class ProjectConfigData extends ReadOnlyProjectConfigData
+class ProjectConfigData extends ReadOnlyProjectConfigData
 {
     /**
      * @var array Holds the already parsed paths as keys.

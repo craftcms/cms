@@ -1,5 +1,4 @@
 <script setup lang="ts">
-  import AdminTable from '@/components/AdminTable/AdminTable.vue';
   import {
     createColumnHelper,
     getCoreRowModel,
@@ -11,11 +10,10 @@
   import SessionProgress from '@/components/utilities/AssetIndexes/SessionProgress.vue';
   import SessionActions from '@/components/utilities/AssetIndexes/SessionActions.vue';
   import {useAssetIndexer} from '@/composables/useAssetIndexer';
-  import {type IndexingSession} from '@craftcms/cp/src/services/AssetIndexer.js';
+  import {type IndexingSession} from '@craftcms/cp/services/AssetIndexer.ts.mjs';
   import ReviewSessionModal from '@/components/utilities/AssetIndexes/ReviewSessionModal.vue';
   import SessionVolumes from '@/components/utilities/AssetIndexes/SessionVolumes.vue';
   import Date from '@/components/Date.vue';
-  import Pane from '@/components/Pane.vue';
 
   const {
     sessionsArray,
@@ -155,7 +153,7 @@
 <style scoped lang="scss">
   .sessions {
     display: grid;
-    border: 1px solid var(--c-color-neutral-border-subtle);
+    border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);
   }
 
@@ -184,7 +182,7 @@
   }
 
   .session + .session {
-    border-block-start: 1px solid var(--c-color-neutral-border-subtle);
+    border-block-start: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   .session__label {

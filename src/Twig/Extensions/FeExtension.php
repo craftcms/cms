@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 
-final class FeExtension extends AbstractExtension implements GlobalsInterface
+class FeExtension extends AbstractExtension implements GlobalsInterface
 {
     public function getGlobals(): array
     {

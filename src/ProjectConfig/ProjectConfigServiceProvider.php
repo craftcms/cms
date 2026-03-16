@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
-final class ProjectConfigServiceProvider extends ServiceProvider
+class ProjectConfigServiceProvider extends ServiceProvider
 {
     #[Override]
     public function register(): void

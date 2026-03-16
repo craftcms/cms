@@ -10,7 +10,7 @@ use Twig\Compiler;
 use Twig\Node\Expression\Variable\ContextVariable;
 use Twig\Node\Node;
 
-final class FallbackNameExpression extends ContextVariable
+class FallbackNameExpression extends ContextVariable
 {
     public function __construct(string $name, array $attributes = [], int $lineno = 0)
     {

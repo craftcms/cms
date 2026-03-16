@@ -19,7 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final class FilesystemsController
+class FilesystemsController
 {
     use RespondsWithFlash;
 

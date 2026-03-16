@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use craft\helpers\Cp;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,7 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-final class MyDrafts extends Widget
+class MyDrafts extends Widget
 {
     #[Override]
     public static function displayName(): string
@@ -62,7 +63,7 @@ final class MyDrafts extends Widget
     #[Override]
     public function getBodyHtml(): string
     {
-        /** @var \CraftCms\Cms\Element\ElementCollection<Entry> $drafts */
+        /** @var ElementCollection<Entry> $drafts */
         $drafts = Entry::find()
             ->drafts()
             ->status(null)

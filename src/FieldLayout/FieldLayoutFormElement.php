@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout;
 
-final class FieldLayoutFormElement
+class FieldLayoutFormElement
 {
     public function __construct(
         public FieldLayoutElement $layoutElement,

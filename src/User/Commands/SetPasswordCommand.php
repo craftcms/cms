@@ -10,7 +10,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 
-final class SetPasswordCommand extends Command implements PromptsForMissingInput
+class SetPasswordCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
     use PromptsForMissingUser;

@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final readonly class PasskeysController
+readonly class PasskeysController
 {
     use ConfirmsPasswords;
     use EditUserTrait;

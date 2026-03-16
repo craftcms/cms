@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Queue;
 use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Database\Query\Builder;
 
 /**
@@ -46,7 +47,7 @@ abstract class BatchedElementJob extends BatchedJob
         $query = $this->elementType::find()->orderBy('elements.id');
 
         if (! empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
+            Typecast::configure($query, $this->criteria);
         }
 
         return $query;

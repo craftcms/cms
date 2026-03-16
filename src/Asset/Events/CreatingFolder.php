@@ -10,7 +10,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 /**
  * @event CreatingFolder The event that is triggered before a folder is created.
  */
-final class CreatingFolder
+class CreatingFolder
 {
     use ValidatableEvent;
 

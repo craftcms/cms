@@ -8,7 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Deprecator\Deprecator;
 use Illuminate\Console\Command;
 
-final class ClearDeprecationsCommand extends Command
+class ClearDeprecationsCommand extends Command
 {
     use CraftCommand;
 

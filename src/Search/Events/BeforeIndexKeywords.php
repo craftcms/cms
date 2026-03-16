@@ -12,7 +12,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
  *
  * You may set [[ValidatableEvent::$isValid]] to `false` to prevent the attribute/field's keywords from being indexed.
  */
-final class BeforeIndexKeywords
+class BeforeIndexKeywords
 {
     use ValidatableEvent;
 

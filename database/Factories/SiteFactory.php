@@ -1,16 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CraftCms\Cms\Database\Factories;
 
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Site\Models\SiteGroup;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Override;
 
-final class SiteFactory extends Factory
+class SiteFactory extends Factory
 {
+    #[Override]
     protected $model = Site::class;
 
-    #[\Override]
+    #[Override]
     public function definition(): array
     {
         return [

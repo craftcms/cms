@@ -35,6 +35,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use ReflectionClass;
@@ -672,7 +673,7 @@ class ResaveController extends Controller
         }
 
         $query = $elementType::find();
-        Craft::configure($query, $criteria);
+        Typecast::configure($query, $criteria);
         return $this->_resaveElements($query);
     }
 
@@ -689,7 +690,7 @@ class ResaveController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        Craft::configure($query, $this->_baseCriteria());
+        Typecast::configure($query, $this->_baseCriteria());
         return $this->_resaveElements($query);
     }
 

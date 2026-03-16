@@ -14,7 +14,7 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-final readonly class DbBackupController
+readonly class DbBackupController
 {
     public function __construct(Utilities $utilitiesService)
     {

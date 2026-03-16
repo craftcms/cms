@@ -15,6 +15,7 @@ use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -25,7 +26,7 @@ use Throwable;
  * Applies a new propagation method to elements, duplicating them for sites
  * where they would have been deleted in the process.
  */
-final class ApplyNewPropagationMethod extends BatchedJob
+class ApplyNewPropagationMethod extends BatchedJob
 {
     /**
      * Tracks duplicated element IDs across batches.
@@ -62,7 +63,7 @@ final class ApplyNewPropagationMethod extends BatchedJob
             ->orderBy('elements.id');
 
         if (! empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
+            Typecast::configure($query, $this->criteria);
         }
 
         return $query;
@@ -109,7 +110,7 @@ final class ApplyNewPropagationMethod extends BatchedJob
             ->indexBy('siteId');
 
         if (! empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
+            Typecast::configure($query, $this->criteria);
         }
 
         $otherSiteElements = $query->all();

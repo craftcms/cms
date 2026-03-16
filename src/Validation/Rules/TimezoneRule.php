@@ -10,7 +10,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use IntlDateFormatter;
 use IntlException;
 
-final readonly class TimezoneRule implements ValidationRule
+readonly class TimezoneRule implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {

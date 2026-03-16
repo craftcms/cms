@@ -9,8 +9,9 @@ use CraftCms\Cms\Element\Models\Element;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
-final class AddressFactory extends Factory
+class AddressFactory extends Factory
 {
+    #[Override]
     protected $model = Address::class;
 
     #[Override]

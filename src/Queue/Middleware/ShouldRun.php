@@ -13,7 +13,7 @@ use CraftCms\Cms\Queue\Job;
  * If the job's progress entry has been deleted (canceled), the job
  * will be deleted from the queue without executing.
  */
-final class ShouldRun
+class ShouldRun
 {
     public function handle(object $job, Closure $next): void
     {

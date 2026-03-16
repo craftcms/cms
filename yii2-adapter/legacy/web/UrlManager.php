@@ -125,7 +125,7 @@ class UrlManager extends \yii\web\UrlManager
 
         /** @var Request $request */
         // Just in case...
-        if ($request->getIsConsoleRequest()) {
+        if (app()->runningInConsole()) {
             return false;
         }
 
@@ -240,7 +240,7 @@ class UrlManager extends \yii\web\UrlManager
 
         $request = Craft::$app->getRequest();
 
-        if ($request->getIsConsoleRequest()) {
+        if (app()->runningInConsole()) {
             return false;
         }
 
@@ -318,7 +318,7 @@ class UrlManager extends \yii\web\UrlManager
     {
         $request = Craft::$app->getRequest();
 
-        if ($request->getIsConsoleRequest()) {
+        if (app()->runningInConsole()) {
             return [];
         }
 

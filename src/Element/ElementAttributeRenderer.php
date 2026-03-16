@@ -26,7 +26,7 @@ use Stringable;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final readonly class ElementAttributeRenderer
+readonly class ElementAttributeRenderer
 {
     public function __construct(
         private Fields $fields,

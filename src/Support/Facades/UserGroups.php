@@ -24,7 +24,7 @@ use Override;
  *
  * @see \CraftCms\Cms\User\UserGroups
  */
-final class UserGroups extends Facade
+class UserGroups extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

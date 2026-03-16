@@ -12,6 +12,7 @@ use CraftCms\Cms\Element\Events\AfterMoveInStructure;
 use CraftCms\Cms\Element\Events\BeforeMoveInStructure;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Support\Typecast;
 
 /**
  * Provides structure-related functionality for elements.
@@ -385,7 +386,7 @@ trait Structurable
                 ->siteId($this->siteId);
 
             if ($criteria) {
-                Craft::configure($query, $criteria);
+                Typecast::configure($query, $criteria);
             }
         }
 

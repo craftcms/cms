@@ -15,7 +15,7 @@ use Symfony\Component\Finder\SplFileInfo;
 use Throwable;
 use Twig\Cache\NullCache;
 
-final class TwigCacheCommand extends Command
+class TwigCacheCommand extends Command
 {
     use CraftCommand;
 

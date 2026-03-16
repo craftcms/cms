@@ -30,7 +30,7 @@ use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Language\Alias;
 
 #[Singleton]
-final readonly class UserGroups
+readonly class UserGroups
 {
     /**
      * The “Team” group’s UUID.

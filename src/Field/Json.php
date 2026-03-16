@@ -24,7 +24,7 @@ use function CraftCms\Cms\t;
 /**
  * Icon represents an icon picker field.
  */
-final class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFieldInterface
+class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string

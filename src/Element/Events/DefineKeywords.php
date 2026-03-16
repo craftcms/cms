@@ -11,7 +11,7 @@ use craft\base\ElementInterface;
  *
  * If `handled` is set to `true`, the custom `keywords` value will be used instead of the default.
  */
-final class DefineKeywords
+class DefineKeywords
 {
     /**
      * @param  ElementInterface  $element  The element

@@ -34,7 +34,7 @@ use Webauthn\TokenBinding\IgnoreTokenBindingHandler;
 /**
  * @internal
  */
-final class WebauthnServer
+class WebauthnServer
 {
     /**
      * Returns the token binding handler.

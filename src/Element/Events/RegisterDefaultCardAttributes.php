@@ -9,7 +9,7 @@ use craft\base\ElementInterface;
 /**
  * RegisterDefaultCardAttributes event is triggered when registering the default card attributes for an element type.
  */
-final class RegisterDefaultCardAttributes
+class RegisterDefaultCardAttributes
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

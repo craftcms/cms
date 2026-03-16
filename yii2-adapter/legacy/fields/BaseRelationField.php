@@ -22,6 +22,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use Override;
 
 /**
@@ -29,6 +30,8 @@ use Override;
  */
 abstract class BaseRelationField extends \CraftCms\Cms\Field\BaseRelationField
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * {@inheritdoc}
      */
@@ -93,7 +96,7 @@ abstract class BaseRelationField extends \CraftCms\Cms\Field\BaseRelationField
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
-                    Craft::configure($query, $source['criteria']);
+                    Typecast::configure($query, $source['criteria']);
                 }
             }
 

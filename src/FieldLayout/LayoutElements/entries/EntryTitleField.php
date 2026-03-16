@@ -16,10 +16,10 @@ use Override;
 
 class EntryTitleField extends TitleField
 {
-    #[\Override]
+    #[Override]
     public bool $mandatory = false;
 
-    #[\Override]
+    #[Override]
     public bool $requirable = true;
 
     public function __construct($config = [])

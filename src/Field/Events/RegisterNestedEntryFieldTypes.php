@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
  *
  * These field types must implement [[ElementContainerFieldInterface]].
  */
-final class RegisterNestedEntryFieldTypes
+class RegisterNestedEntryFieldTypes
 {
     public function __construct(
         /** @var Collection<class-string<ElementContainerFieldInterface>> */

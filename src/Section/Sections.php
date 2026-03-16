@@ -9,6 +9,7 @@ use craft\base\MemoizableArray;
 use craft\helpers\AdminTable;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
@@ -54,7 +55,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 
 #[Scoped]
-final class Sections
+class Sections
 {
     /**
      * @var bool Whether entries should be resaved after a section has been updated.
@@ -713,7 +714,7 @@ final class Sections
         $this->refreshSections();
 
         if ($wasTrashed) {
-            /** @var \CraftCms\Cms\Element\ElementCollection<Entry> $entries */
+            /** @var ElementCollection<Entry> $entries */
             $entries = Entry::find()
                 ->sectionId($sectionModel->id)
                 ->drafts(null)

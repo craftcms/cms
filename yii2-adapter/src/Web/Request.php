@@ -10,6 +10,7 @@
 namespace CraftCms\Yii2Adapter\Web;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request as IlluminateRequest;
 use Yii;
 use yii\base\InvalidConfigException;
@@ -36,7 +37,7 @@ use yii\web\HeaderCollection;
  * ];
  * ```
  *
- * @see \Illuminate\Http\Request
+ * @see IlluminateRequest
  *
  * @author Paul Klimov <klimov.paul@gmail.com>
  *
@@ -194,6 +195,7 @@ class Request extends \yii\web\Request
 
     /**
      * {@inheritdoc}
+     *
      * @deprecated 6.0.0 use {@see csrf_token()} instead.
      */
     public function getCsrfToken($regenerate = false): ?string
@@ -203,6 +205,7 @@ class Request extends \yii\web\Request
 
     /**
      * {@inheritdoc}
+     *
      * @deprecated 6.0.0 use {@see csrf_token()} instead.
      */
     protected function loadCsrfToken(): ?string
@@ -212,6 +215,7 @@ class Request extends \yii\web\Request
 
     /**
      * {@inheritdoc}
+     *
      * @deprecated 6.0.0 use `session()->regenerateToken()` instead.
      */
     protected function generateCsrfToken(): string
@@ -223,7 +227,8 @@ class Request extends \yii\web\Request
 
     /**
      * {@inheritdoc}
-     * @deprecated 6.0.0 use {@see \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken} instead.
+     *
+     * @deprecated 6.0.0 use {@see VerifyCsrfToken} instead.
      */
     public function validateCsrfToken($clientSuppliedToken = null): bool
     {

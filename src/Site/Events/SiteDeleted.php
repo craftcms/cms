@@ -9,7 +9,7 @@ use CraftCms\Cms\Site\Data\Site;
 /**
  * @event SiteDeleted The event that is triggered after a site is deleted.
  */
-final class SiteDeleted
+class SiteDeleted
 {
     public function __construct(
         public Site $site,

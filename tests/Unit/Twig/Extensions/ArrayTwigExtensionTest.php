@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Twig\Extensions\ArrayTwigExtension;
 use CraftCms\Cms\Twig\PageLifecycle;
 use CraftCms\Cms\Twig\Twig;
+use Illuminate\Support\Collection;
 
 beforeEach(function () {
     $this->pageLifecycle = app(PageLifecycle::class);
@@ -41,7 +42,7 @@ describe('ArrayTwigExtension', function () {
 
         expect($extension->indexOfFilter('hello', 'll'))->toBe(2);
         expect($extension->withoutKeyFilter(['a' => 1, 'b' => 2], 'a'))->toBe(['b' => 2]);
-        expect($extension->collectFunction([1, 2, 3]))->toBeInstanceOf(Illuminate\Support\Collection::class);
+        expect($extension->collectFunction([1, 2, 3]))->toBeInstanceOf(Collection::class);
     });
 
     it('supports map/filter pipeline helpers', function () {

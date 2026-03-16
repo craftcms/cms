@@ -11,4 +11,5 @@ namespace craft\base\conditions;
  */
 abstract class BaseSelectConditionRule extends \CraftCms\Cms\Condition\BaseSelectConditionRule
 {
+    use \craft\base\LegacyEventConstants;
 }

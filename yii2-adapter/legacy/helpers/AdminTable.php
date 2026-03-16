@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\db\Query;
+use CraftCms\Cms\Support\Typecast;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use yii\db\Expression;
@@ -74,7 +75,7 @@ abstract class AdminTable
         ];
 
         $currentSortOrderQuery = new Query();
-        $currentSortOrderQuery = Craft::configure($currentSortOrderQuery, $criteria);
+        $currentSortOrderQuery = Typecast::configure($currentSortOrderQuery, $criteria);
 
         $currentSortOrder = $currentSortOrderQuery->scalar();
 

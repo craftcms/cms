@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use Illuminate\Auth\Middleware\Authenticate;
 
-final class AuthenticateIfLive extends Authenticate
+class AuthenticateIfLive extends Authenticate
 {
     #[\Override]
     public function handle($request, Closure $next, ...$guards): mixed

@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
 /**
  * Entry link type.
  */
-final class Entry extends BaseElementLinkType
+class Entry extends BaseElementLinkType
 {
     /**
      * @var bool Whether to show input sources for sections the user doesn’t have permission to view

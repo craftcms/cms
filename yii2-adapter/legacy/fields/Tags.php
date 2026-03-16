@@ -6,6 +6,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\LegacyEventConstants;
 use craft\elements\db\TagQuery;
 use craft\elements\Tag;
 use craft\gql\arguments\elements\Tag as TagArguments;
@@ -30,8 +31,10 @@ use function CraftCms\Cms\template;
  *
  * @deprecated in 6.0.0
  */
-final class Tags extends \CraftCms\Cms\Field\BaseRelationField
+class Tags extends \CraftCms\Cms\Field\BaseRelationField
 {
+    use LegacyEventConstants;
+
     /**
      * {@inheritdoc}
      */

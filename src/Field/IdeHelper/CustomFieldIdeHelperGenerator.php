@@ -23,7 +23,7 @@ use Symfony\Component\Filesystem\Path;
 use Throwable;
 
 #[Singleton]
-final readonly class CustomFieldIdeHelperGenerator
+readonly class CustomFieldIdeHelperGenerator
 {
     public function __construct(
         private Fields $fields,

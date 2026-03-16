@@ -68,6 +68,7 @@ use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
+use CraftCms\Cms\Http\Controllers\Utilities\MailSettingsController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
@@ -131,8 +132,8 @@ Route::prefix(Cms::config()->actionTrigger)->group(function () {
 
     Route::middleware(['auth:craft'])->group(function () {
         Route::post('entries/save-entry', StoreEntryController::class);
-        Route::post('users/save-address', [\CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'store']);
-        Route::post('users/delete-address', [\CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'destroy']);
+        Route::post('users/save-address', [CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'store']);
+        Route::post('users/delete-address', [CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'destroy']);
     });
 
     Route::middleware([RequireToken::class])->group(function () {
@@ -205,6 +206,9 @@ Route::prefix(implode('/', [
 
         // DbBackup
         Route::post('utilities/db-backup-perform-action', DbBackupController::class);
+
+        // Mail Settings
+        Route::post('utilities/send-test-mail', MailSettingsController::class);
 
         // DeprecationErrors
         Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);

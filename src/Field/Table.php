@@ -40,7 +40,7 @@ use function CraftCms\Cms\template;
 /**
  * Table represents a Table field.
  */
-final class Table extends Field implements CrossSiteCopyableFieldInterface
+class Table extends Field implements CrossSiteCopyableFieldInterface
 {
     private static array $typeOptions;
 

@@ -56,6 +56,7 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Enums\Color;
@@ -97,7 +98,7 @@ use function CraftCms\Cms\t;
 /**
  * @property int $typeId the entry type’s ID
  * @property EntryType $type the entry type
- * @property \CraftCms\Cms\Section\Data\Section|null $section the entry’s section
+ * @property Section|null $section the entry’s section
  * @property User|null $author the primary entry author
  * @property User[] $authors the entry authors
  * @property int|null $authorId The primary entry author’s ID
@@ -280,7 +281,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 $sources[] = ['heading' => $heading];
 
                 foreach ($sectionsByType[$type] as $section) {
-                    /** @var \CraftCms\Cms\Section\Data\Section $section */
+                    /** @var Section $section */
                     $source = [
                         'key' => 'section:'.$section->uid,
                         'label' => t($section->name, category: 'site'),
@@ -759,7 +760,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     public static function gqlScopesByContext(mixed $context): array
     {
-        /** @var \CraftCms\Cms\Section\Data\Section $section */
+        /** @var Section $section */
         $section = $context['section'];
 
         return [
@@ -1778,7 +1779,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $section = $this->getSection();
         if ($section) {
             // Set the default status based on the section's settings
-            /** @var \CraftCms\Cms\Section\Data\SectionSiteSettings $siteSettings */
+            /** @var SectionSiteSettings $siteSettings */
             $siteSettings = Collection::make($section->getSiteSettings())->firstWhere('siteId', $this->siteId);
             $enabled = $siteSettings->enabledByDefault;
         } else {

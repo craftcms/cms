@@ -30,7 +30,7 @@ use function CraftCms\Cms\t;
 /**
  * Entries represents an Entries field.
  */
-final class Entries extends BaseRelationField
+class Entries extends BaseRelationField
 {
     /**
      * @var bool Whether to show input sources for sections the user doesn’t have permission to view
@@ -43,10 +43,10 @@ final class Entries extends BaseRelationField
      */
     public bool $showUnpermittedEntries = false;
 
-    #[\Override]
+    #[Override]
     protected string $settingsTemplate = '_components/fieldtypes/Entries/settings.twig';
 
-    #[\Override]
+    #[Override]
     protected ?string $inputJsClass = 'Craft.EntrySelectInput';
 
     #[Override]

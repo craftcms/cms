@@ -24,7 +24,7 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-final readonly class StoreEntryController
+readonly class StoreEntryController
 {
     use EnforcesPermissions;
     use RespondsWithFlash;

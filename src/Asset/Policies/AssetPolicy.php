@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\User\Elements\User;
 
-final class AssetPolicy extends ElementPolicy
+class AssetPolicy extends ElementPolicy
 {
     public function view(User $user, Asset $asset): bool
     {

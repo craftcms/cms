@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition\Events;
 
-final class RegisterConditionRules
+class RegisterConditionRules
 {
     public function __construct(
         /**

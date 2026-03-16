@@ -8,7 +8,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Console\Command;
 
-final class ListCommand extends Command
+class ListCommand extends Command
 {
     use CraftCommand;
 

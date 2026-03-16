@@ -13,7 +13,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Support\Collection;
 
-final readonly class DashboardController
+readonly class DashboardController
 {
     use InteractsWithWidgets;
 

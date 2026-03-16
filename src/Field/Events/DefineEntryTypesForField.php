@@ -7,11 +7,12 @@ namespace CraftCms\Cms\Field\Events;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Matrix;
 
 /**
- * @see \CraftCms\Cms\Field\Matrix::getEntryTypesForField()
+ * @see Matrix::getEntryTypesForField()
  */
-final class DefineEntryTypesForField
+class DefineEntryTypesForField
 {
     public function __construct(
         /** @var FieldInterface The current field */

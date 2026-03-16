@@ -11,8 +11,9 @@ use CraftCms\Cms\Element\Models\Element;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
-final class AssetFactory extends Factory
+class AssetFactory extends Factory
 {
+    #[Override]
     protected $model = Asset::class;
 
     #[Override]

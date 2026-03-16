@@ -12,7 +12,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
  *
  * If `handled` is set to `true`, the default query preparation will be skipped.
  */
-final class PrepQueryForTableAttribute
+class PrepQueryForTableAttribute
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

@@ -12,7 +12,7 @@ use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\info;
 
-final class ImpersonateCommand extends Command implements PromptsForMissingInput
+class ImpersonateCommand extends Command implements PromptsForMissingInput
 {
     use Colors;
     use CraftCommand;

@@ -18,7 +18,7 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-final class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     public string $countryCode = 'US';
 
@@ -30,7 +30,7 @@ final class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [

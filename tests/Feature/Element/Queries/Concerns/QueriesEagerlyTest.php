@@ -10,6 +10,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 
@@ -73,7 +74,7 @@ test('eagerly', function () {
     $queryCountWithoutEagerly = 0;
     $queryCountWithEagerly = 0;
 
-    \Illuminate\Support\Facades\DB::listen(function ($query) use (&$queryCountWithoutEagerly, &$queryCountWithEagerly) {
+    DB::listen(function ($query) use (&$queryCountWithoutEagerly, &$queryCountWithEagerly) {
         $queryCountWithoutEagerly++;
         $queryCountWithEagerly++;
     });

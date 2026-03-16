@@ -18,7 +18,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 use Throwable;
 
-final class MigrateController
+class MigrateController
 {
     /**
      * Creates a DB backup (if configured to do so), runs any pending Craft,

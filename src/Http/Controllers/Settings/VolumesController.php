@@ -23,7 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final class VolumesController
+class VolumesController
 {
     use RespondsWithFlash;
 

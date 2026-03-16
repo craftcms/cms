@@ -28,7 +28,7 @@ use function CraftCms\Cms\t;
  *
  * @property string|null $defaultColor
  */
-final class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -153,7 +153,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -211,7 +211,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getMessages(): array
     {
         return [

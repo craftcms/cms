@@ -15,14 +15,15 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\Log;
 use Twig\Extension\SandboxExtension;
+use Twig\Template;
 use Twig\TemplateWrapper;
 use Yiisoft\Arrays\ArrayableInterface;
 
 /**
- * @mixin \CraftCms\Cms\Twig\Twig
+ * @mixin Twig
  */
 #[Scoped]
-final class TemplateRenderer
+class TemplateRenderer
 {
     /** @var TemplateWrapper[] Object template cache */
     private array $objectTemplates = [];
@@ -274,7 +275,7 @@ final class TemplateRenderer
             $variables['object'] = $object;
             $variables['_variables'] = $variables;
 
-            /** @var \Twig\Template $templateObj */
+            /** @var Template $templateObj */
             $templateObj = $this->objectTemplates[$cacheKey];
 
             return trim($templateObj->render($variables));

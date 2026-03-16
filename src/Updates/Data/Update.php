@@ -10,7 +10,7 @@ use Illuminate\Contracts\Support\Arrayable;
 /**
  * @internal
  */
-final readonly class Update implements Arrayable
+readonly class Update implements Arrayable
 {
     public function __construct(
         public UpdateStatus $status = UpdateStatus::ELIGIBLE,

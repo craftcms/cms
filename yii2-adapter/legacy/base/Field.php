@@ -19,6 +19,8 @@ use yii\validators\Validator;
  */
 abstract class Field extends \CraftCms\Cms\Field\Field
 {
+    use \craft\base\LegacyEventConstants;
+
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {
         if (!method_exists(static::class, 'queryCondition')) {

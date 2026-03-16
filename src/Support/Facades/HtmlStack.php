@@ -46,7 +46,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\View\HtmlStack
  */
-final class HtmlStack extends Facade
+class HtmlStack extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

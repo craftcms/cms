@@ -8,7 +8,7 @@ use CraftCms\Cms\Twig\Nodes\RequireAdminNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-final class RequireAdminTokenParser extends AbstractTokenParser
+class RequireAdminTokenParser extends AbstractTokenParser
 {
     public function parse(Token $token): RequireAdminNode
     {

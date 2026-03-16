@@ -4,4 +4,4 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Events;
 
-final class DraftApplied extends DraftEvent {}
+class DraftApplied extends DraftEvent {}

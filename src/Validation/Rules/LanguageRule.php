@@ -12,7 +12,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 use function CraftCms\Cms\t;
 
-final readonly class LanguageRule implements ValidationRule
+readonly class LanguageRule implements ValidationRule
 {
     public function __construct(
         private bool $onlySiteLanguages = true,

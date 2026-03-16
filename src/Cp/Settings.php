@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Event;
 
 use function CraftCms\Cms\t;
 
-final readonly class Settings
+readonly class Settings
 {
     public function __construct(
         private GeneralConfig $generalConfig,
@@ -60,10 +60,6 @@ final readonly class Settings
                 'label' => t('Addresses'),
             ];
         }
-        $settings[$label]['email'] = [
-            'icon' => 'light/envelope',
-            'label' => t('Email'),
-        ];
         $settings[$label]['plugins'] = [
             'icon' => 'light/plug',
             'label' => t('Plugins'),

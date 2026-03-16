@@ -10,7 +10,7 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-final class DbBackup extends Utility
+class DbBackup extends Utility
 {
     #[Override]
     public static function displayName(): string

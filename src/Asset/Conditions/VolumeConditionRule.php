@@ -14,7 +14,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 
 use function CraftCms\Cms\t;
 
-final class VolumeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class VolumeConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     public function getLabel(): string
     {

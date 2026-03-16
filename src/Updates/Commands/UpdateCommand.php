@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Updates\Commands;
 
 use Closure;
 use Composer\Semver\VersionParser;
-use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Commands\Concerns\BackupTrait;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
@@ -29,11 +29,12 @@ use Override;
 use Symfony\Component\Process\Process;
 use Throwable;
 
+use function Illuminate\Filesystem\join_paths;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 
-final class UpdateCommand extends Command
+class UpdateCommand extends Command
 {
     use BackupTrait;
     use ChecksLicense;
@@ -339,9 +340,9 @@ final class UpdateCommand extends Command
     private function revertComposerChanges(): void
     {
         // See if we have composer.json and composer.lock backups
-        $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
-        $jsonBackup = $backupsDir.DIRECTORY_SEPARATOR.'composer.json';
-        $lockBackup = $backupsDir.DIRECTORY_SEPARATOR.'composer.lock';
+        $backupsDir = Path::composerBackups();
+        $jsonBackup = join_paths($backupsDir, 'composer.json');
+        $lockBackup = join_paths($backupsDir, 'composer.lock');
 
         if (! is_file($jsonBackup)) {
             $this->error("Can’t revert Composer changes because no composer.json backup exists in $backupsDir.");

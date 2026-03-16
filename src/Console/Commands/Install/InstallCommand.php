@@ -24,7 +24,7 @@ use function Laravel\Prompts\password;
 use function Laravel\Prompts\suggest;
 use function Laravel\Prompts\text;
 
-final class InstallCommand extends Command
+class InstallCommand extends Command
 {
     use CraftCommand;
     use SiteDefaults;
