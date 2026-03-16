@@ -46,7 +46,7 @@ class EntryQueryTest extends TestCase
         $group3 = new UserGroup(['id' => 3, 'handle' => 'baz']);
 
         $query->authorGroup($group1);
-        self::assertSame(1, $query->authorGroupId);
+        self::assertSame([1], $query->authorGroupId);
 
         $query->authorGroup([$group1, $group2, $group3]);
         self::assertSame([1, 2, 3], $query->authorGroupId);
