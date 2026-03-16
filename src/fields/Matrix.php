@@ -28,6 +28,7 @@ use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
+use craft\enums\Color as ColorEnum;
 use craft\enums\ElementIndexViewMode;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidFieldException;
@@ -993,12 +994,7 @@ JS, [
         $view = Craft::$app->getView();
         $id = sprintf('action-copy-%s', mt_rand());
 
-        $baseInfo = Json::encode([
-            'type' => Entry::class,
-            'fieldId' => $this->id,
-        ]);
-
-        $view->registerJsWithVars(fn($id, $fieldId, $entrySelector, $type) => <<<JS
+        $view->registerJsWithVars(fn($id, $fieldId, $entrySelector) => <<<JS
 (() => {
   const btn = $('#' + $id);
   const field = $('#' + $fieldId);
@@ -1011,27 +1007,16 @@ JS, [
     return;
   }
 
-  const getEntries = () => field.find($entrySelector).toArray();
+  const getEntries = () => field.find($entrySelector);
 
   btn.on('activate', () => {
-    Craft.cp.copyElements(getEntries().map((element) => {
-      element = $(element);
-      return {
-          ... $baseInfo,
-          id: element.data('id'),
-          draftId: element.data('draftId'),
-          revisionId: element.data('revisionId'),
-          ownerId: element.data('ownerId'),
-          siteId: element.data('siteId'),
-        };
-    }));
+    Craft.cp.copyElements(getEntries());
   });
 
   setTimeout(() => {
     const disclosureMenu = menu.data('disclosureMenu');
     disclosureMenu?.on('show', () => {
-      const entries = getEntries();
-      disclosureMenu.toggleItem(btn[0], !!entries.length);
+      disclosureMenu.toggleItem(btn[0], !!getEntries().length);
     });
   }, 1);
 })();
@@ -1039,13 +1024,12 @@ JS, [
             $view->namespaceInputId($id),
             $view->namespaceInputId($this->getInputId()),
             $entrySelector,
-            $type,
         ]);
 
         return [
             'id' => $id,
             'icon' => 'clone-dashed',
-            'color' => \craft\enums\Color::Fuchsia,
+            'color' => ColorEnum::Fuchsia,
             'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
                 'type' => $type,
             ])),
