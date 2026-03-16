@@ -33,13 +33,12 @@
 - The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is now set to `false` by default for database connections.
 - Fixed a bug where `searchindex` and `searchindexqueue` rows weren’t being deleted when an element was deleted for a site. ([#18394](https://github.com/craftcms/cms/issues/18394))
 - Fixed a bug where multi-select condition rules weren’t applying their “has a value” and “is empty” operators correctly. ([#18470](https://github.com/craftcms/cms/pull/18470))
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-472v-j2g4-g9h2)
 
 ## 4.17.6 - 2026-02-18
 
 - Added `craft\serviceokens::getRemainingTokenUsages()`.
 - Added `craft\web\Request::getTokenRoute()`.
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-cc7p-2j3x-x7xf)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. ([GHSA-cc7p-2j3x-x7xf](https://github.com/craftcms/cms/security/advisories/GHSA-cc7p-2j3x-x7xf))
 
 ## 4.17.5 - 2026-02-17
 
@@ -48,8 +47,8 @@
 - Added `craft\web\Request::wants()`.
 - Fixed a bug where the control panel requests could trigger an infinite browser redirect loop. ([#18420](https://github.com/craftcms/cms/issues/18420))
 - Fixed a bug where 404 responses could be set to an image based on the `brokenImagePath` config setting for Chrome. ([#18438](https://github.com/craftcms/cms/issues/18438))
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-4484-8v2f-5748)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-472v-j2g4-g9h2)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-4484-8v2f-5748](https://github.com/craftcms/cms/security/advisories/GHSA-4484-8v2f-5748))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. ([GHSA-472v-j2g4-g9h2](https://github.com/craftcms/cms/security/advisories/GHSA-472v-j2g4-g9h2))
 
 ## 4.17.4 - 2026-02-11
 
