@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
-use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
 use Override;
 

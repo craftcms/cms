@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Gql\Data\GqlSchema;
-use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Gql\Gql as GqlService;
-use GraphQL\Type\Schema;
 use Illuminate\Support\Facades\Facade;
 use Override;
 
@@ -51,7 +47,7 @@ use Override;
  * @method static \Error[] handleQueryErrors(\Error[] $errors, callable $formatter)
  * @method static array prepareFieldDefinitions(array $fields, string $typeName)
  *
- * @see \CraftCms\Cms\Gql\Gql
+ * @see GqlService
  */
 class Gql extends Facade
 {
