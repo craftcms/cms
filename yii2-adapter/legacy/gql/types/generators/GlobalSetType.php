@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
-use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
@@ -62,7 +61,7 @@ class GlobalSetType extends Generator implements GeneratorInterface, SingleGener
     /**
      * @inheritdoc
      */
-    public static function generateType(mixed $context): ObjectType
+    public static function generateType(mixed $context): mixed
     {
         $typeName = self::getName($context);
 
