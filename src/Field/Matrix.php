@@ -7,17 +7,10 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\GqlInlineFragmentFieldInterface;
-use craft\base\GqlInlineFragmentInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\NestedElementManager;
 use craft\events\BulkElementsEvent;
-use craft\gql\arguments\elements\Entry as EntryArguments;
-use craft\gql\resolvers\elements\Entry as EntryResolver;
-use craft\gql\types\generators\EntryType as EntryTypeGenerator;
-use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\Cp;
-use craft\helpers\Gql;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
 use craft\web\assets\cp\CpAsset;
@@ -44,9 +37,17 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
+use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
+use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
+use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
+use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -1482,18 +1483,17 @@ JS,
         $typeName = $this->handle.'_MatrixField';
 
         $arguments = EntryArguments::getArguments();
-        $gqlService = Craft::$app->getGql();
 
         foreach ($this->_entryTypes as $entryType) {
-            $arguments += $gqlService->getFieldLayoutArguments($entryType->getFieldLayout());
+            $arguments += Gql::getFieldLayoutArguments($entryType->getFieldLayout());
         }
 
         return [
             'name' => $this->handle,
-            'type' => Type::nonNull(Type::listOf(Gql::getUnionType($typeName, $typeArray))),
+            'type' => Type::nonNull(Type::listOf(GqlHelper::getUnionType($typeName, $typeArray))),
             'args' => $arguments,
             'resolve' => EntryResolver::class.'::resolve',
-            'complexity' => Gql::eagerLoadComplexity(),
+            'complexity' => GqlHelper::eagerLoadComplexity(),
         ];
     }
 

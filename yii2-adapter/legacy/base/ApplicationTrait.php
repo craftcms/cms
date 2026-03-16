@@ -1036,6 +1036,7 @@ trait ApplicationTrait
      * @return Gql The GraphQL service
      *
      * @since 3.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Gql} instead.
      */
     public function getGql(): Gql
     {

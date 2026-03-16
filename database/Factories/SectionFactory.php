@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories;
 
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
@@ -40,6 +41,15 @@ class SectionFactory extends Factory
                 'dateCreated' => $section->dateCreated,
                 'dateUpdated' => $section->dateUpdated,
             ]);
+        });
+    }
+
+    public function withEntryTypes(EntryType ...$types): static
+    {
+        return $this->afterCreating(function (Section $section) use ($types) {
+            foreach ($types as $index => $type) {
+                $section->entryTypes()->attach($type, ['sortOrder' => $index + 1]);
+            }
         });
     }
 }

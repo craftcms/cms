@@ -59,6 +59,5 @@ groups:
   app: [tests/unit/AppTest.php]
   gql:
     - 'tests/unit/gql'
-    - 'tests/unit/services/GqlTest.php'
     - 'tests/unit/helpers/GqlHelperTest.php'
     - 'tests/gql'

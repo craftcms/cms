@@ -8,7 +8,6 @@ use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\MissingComponentInterface;
-use craft\helpers\Gql;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
@@ -25,10 +24,12 @@ use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
@@ -480,9 +481,9 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 
     public function gqlFunction(string $query, ?array $variables = null, ?string $operationName = null): array
     {
-        $schema = Gql::createFullAccessSchema();
+        $schema = GqlHelper::createFullAccessSchema();
 
-        return Craft::$app->getGql()->executeQuery($schema, $query, $variables, $operationName);
+        return Gql::executeQuery($schema, $query, $variables, $operationName);
     }
 
     public function oldFunction(?string $key = null, mixed $default = null): mixed

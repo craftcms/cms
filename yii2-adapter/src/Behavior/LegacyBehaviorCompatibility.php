@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Utils;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionObject;
+use Throwable;
 use WeakMap;
 use Yii;
 use yii\base\Behavior;
@@ -436,7 +437,11 @@ class LegacyBehaviorCompatibility
         }
 
         foreach (Utils::getPublicProperties($object) as $name => $value) {
-            $owner->$name = $value;
+            try {
+                $owner->$name = $value;
+            } catch (Throwable) {
+                // Read-only
+            }
         }
     }
 
@@ -447,7 +452,11 @@ class LegacyBehaviorCompatibility
         }
 
         foreach (Utils::getPublicProperties($behavior->owner) as $name => $value) {
-            $object->$name = $value;
+            try {
+                $object->$name = $value;
+            } catch (Throwable) {
+                // Read-only
+            }
         }
     }
 

@@ -1,68 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\types\generators;
 
-use Craft;
-use craft\gql\base\Generator;
-use craft\gql\base\GeneratorInterface;
-use craft\gql\base\ObjectType;
-use craft\gql\base\SingleGeneratorInterface;
-use craft\gql\GqlEntityRegistry;
-use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
-use craft\gql\types\elements\ContentBlock as ContentBlockType;
-use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
-use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
-use CraftCms\Cms\Field\Fields;
-
 /**
- * Class ContentBlock
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.8.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Types\Generators\ContentBlock} instead.
  */
-class ContentBlock extends Generator implements GeneratorInterface, SingleGeneratorInterface
+class ContentBlock extends \CraftCms\Cms\Gql\Types\Generators\ContentBlock
 {
-    /**
-     * @inheritdoc
-     */
-    public static function generateTypes(mixed $context = null): array
-    {
-        if ($context instanceof ContentBlockField) {
-            $fields = [$context];
-        } else {
-            $fields = app(Fields::class)->getFieldsByType(ContentBlockField::class);
-        }
-
-        $gqlTypes = [];
-
-        foreach ($fields as $field) {
-            $type = static::generateType($field);
-            $gqlTypes[$type->name] = $type;
-        }
-
-        return $gqlTypes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function generateType(mixed $context): ObjectType
-    {
-        /** @var ContentBlockField $context */
-        $typeName = ContentBlockElement::gqlTypeName($context);
-
-        return GqlEntityRegistry::getOrCreate($typeName, fn() => new ContentBlockType([
-            'name' => $typeName,
-            'fields' => function() use ($context, $typeName) {
-                $contentFieldGqlTypes = self::getContentFields($context->getFieldLayout());
-                $contentBlockFields = array_merge(ContentBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes);
-                return Craft::$app->getGql()->prepareFieldDefinitions($contentBlockFields, $typeName);
-            },
-        ]));
-    }
 }

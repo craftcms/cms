@@ -13,9 +13,7 @@ use craft\gql\mutations\Category as CategoryMutations;
 use craft\gql\mutations\Entry as EntryMutations;
 use craft\gql\mutations\GlobalSet as GlobalSetMutations;
 use craft\gql\mutations\Tag as TagMutations;
-use craft\gql\types\elements\Asset as AssetGqlType;
 use craft\gql\types\elements\Category as CategoryGqlType;
-use craft\gql\types\elements\Entry as EntryGqlType;
 use craft\gql\types\elements\GlobalSet as GlobalSetGqlType;
 use craft\gql\types\elements\Tag as TagGqlType;
 use craft\models\CategoryGroup;
@@ -26,6 +24,9 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Gql\Types\Elements\Asset as AssetGqlType;
+use CraftCms\Cms\Gql\Types\Elements\Entry as EntryGqlType;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -95,6 +96,7 @@ class CreateMutationsTest extends TestCase
 
     protected function _after(): void
     {
+        app(Gql::class)->setActiveSchema(null);
     }
 
     /**
@@ -473,10 +475,13 @@ class CreateMutationsTest extends TestCase
      */
     private function _mockScope(array $scopes)
     {
-        $this->tester->mockCraftMethods('gql', [
-            'getActiveSchema' => $this->make(GqlSchema::class, [
-                'scope' => $scopes,
-            ]),
+        $schema = $this->make(GqlSchema::class, [
+            'scope' => $scopes,
         ]);
+
+        $this->tester->mockCraftMethods('gql', [
+            'getActiveSchema' => $schema,
+        ]);
+        app(Gql::class)->setActiveSchema($schema);
     }
 }

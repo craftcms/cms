@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\gql\types\generators\IconDataType;
 use craft\helpers\Cp;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Data\IconData;
+use CraftCms\Cms\Gql\Types\Generators\IconDataType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;

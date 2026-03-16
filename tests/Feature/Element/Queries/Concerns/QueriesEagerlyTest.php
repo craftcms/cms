@@ -35,10 +35,7 @@ beforeEach(function () {
     app(Fields::class)->invalidateCaches();
     app(Fields::class)->refreshFields();
 
-    $entryModels = EntryModel::factory(10)->create([
-        'sectionId' => $section->id,
-        'typeId' => $entryType->id,
-    ]);
+    $entryModels = EntryModel::factory(10)->forSection($section)->forEntryType($entryType)->create();
 
     foreach ($entryModels as $model) {
         $model->element->update([

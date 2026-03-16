@@ -143,17 +143,18 @@ describe('Author required validation', function () {
         int $maxAuthors,
         bool $expectError
     ) {
-        $section = Section::factory()->create([
-            'type' => $sectionType,
-            'maxAuthors' => $maxAuthors,
-        ]);
         $entryType = EntryType::factory()->create();
-        $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
+        $section = Section::factory()
+            ->withEntryTypes($entryType)
+            ->create([
+                'type' => $sectionType,
+                'maxAuthors' => $maxAuthors,
+            ]);
 
-        $entry = EntryModel::factory()->createElement([
-            'sectionId' => $section->id,
-            'typeId' => $entryType->id,
-        ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement();
 
         if ($isLiveScenario) {
             $entry->setScenario(Element::SCENARIO_LIVE);
@@ -179,22 +180,23 @@ describe('Author max count validation', function () {
         bool $expectError,
         ?string $errorContains = null
     ) {
-        $section = Section::factory()->create([
-            'type' => SectionType::Channel,
-            'maxAuthors' => $maxAuthors,
-        ]);
         $entryType = EntryType::factory()->create();
-        $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
+        $section = Section::factory()
+            ->withEntryTypes($entryType)
+            ->create([
+                'type' => SectionType::Channel,
+                'maxAuthors' => $maxAuthors,
+            ]);
 
         $users = [];
         for ($i = 0; $i < $authorCount; $i++) {
             $users[] = User::factory()->create(['admin' => true]);
         }
 
-        $entry = EntryModel::factory()->createElement([
-            'sectionId' => $section->id,
-            'typeId' => $entryType->id,
-        ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement();
         $entry->setAuthorIds(array_map(fn ($u) => $u->id, $users));
 
         $entry->validate(['authorIds']);
@@ -213,20 +215,21 @@ describe('Author max count validation', function () {
 
 describe('Author permission validation', function () {
     test('author must have viewEntries permission for the section', function () {
-        $section = Section::factory()->create([
-            'type' => SectionType::Channel,
-            'maxAuthors' => 1,
-        ]);
         $entryType = EntryType::factory()->create();
-        $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
+        $section = Section::factory()
+            ->withEntryTypes($entryType)
+            ->create([
+                'type' => SectionType::Channel,
+                'maxAuthors' => 1,
+            ]);
 
         $initialAuthor = User::factory()->create(['admin' => true]);
         $user = User::factory()->create(['admin' => false]);
 
-        $entry = EntryModel::factory()->createElement([
-            'sectionId' => $section->id,
-            'typeId' => $entryType->id,
-        ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement();
         $entry->setAuthorIds([$initialAuthor->id]);
         Craft::$app->getElements()->saveElement($entry);
 
@@ -239,12 +242,13 @@ describe('Author permission validation', function () {
     });
 
     test('author with viewEntries permission is valid', function () {
-        $section = Section::factory()->create([
-            'type' => SectionType::Channel,
-            'maxAuthors' => 1,
-        ]);
         $entryType = EntryType::factory()->create();
-        $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
+        $section = Section::factory()
+            ->withEntryTypes($entryType)
+            ->create([
+                'type' => SectionType::Channel,
+                'maxAuthors' => 1,
+            ]);
 
         $initialAuthor = User::factory()->create(['admin' => true]);
         $user = User::factory()->create(['admin' => false]);
@@ -257,10 +261,10 @@ describe('Author permission validation', function () {
             return null;
         });
 
-        $entry = EntryModel::factory()->createElement([
-            'sectionId' => $section->id,
-            'typeId' => $entryType->id,
-        ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement();
         $entry->setAuthorIds([$initialAuthor->id]);
         Craft::$app->getElements()->saveElement($entry);
 
@@ -272,20 +276,21 @@ describe('Author permission validation', function () {
     });
 
     test('admin user can be author without explicit permission', function () {
-        $section = Section::factory()->create([
-            'type' => SectionType::Channel,
-            'maxAuthors' => 1,
-        ]);
         $entryType = EntryType::factory()->create();
-        $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
+        $section = Section::factory()
+            ->withEntryTypes($entryType)
+            ->create([
+                'type' => SectionType::Channel,
+                'maxAuthors' => 1,
+            ]);
 
         $initialAuthor = User::factory()->create(['admin' => true]);
         $adminUser = User::factory()->create(['admin' => true]);
 
-        $entry = EntryModel::factory()->createElement([
-            'sectionId' => $section->id,
-            'typeId' => $entryType->id,
-        ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement();
         $entry->setAuthorIds([$initialAuthor->id]);
         Craft::$app->getElements()->saveElement($entry);
 
@@ -320,17 +325,18 @@ describe('Scenario-specific validation', function () {
     });
 
     test('SCENARIO_LIVE validates author requirement', function () {
-        $section = Section::factory()->create([
-            'type' => SectionType::Channel,
-            'maxAuthors' => 1,
-        ]);
         $entryType = EntryType::factory()->create();
-        $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
+        $section = Section::factory()
+            ->withEntryTypes($entryType)
+            ->create([
+                'type' => SectionType::Channel,
+                'maxAuthors' => 1,
+            ]);
 
-        $entry = EntryModel::factory()->createElement([
-            'sectionId' => $section->id,
-            'typeId' => $entryType->id,
-        ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement();
         $entry->setScenario(Element::SCENARIO_LIVE);
         $entry->setAuthorIds([]);
 
@@ -340,17 +346,18 @@ describe('Scenario-specific validation', function () {
     });
 
     test('default scenario skips author requirement validation', function () {
-        $section = Section::factory()->create([
-            'type' => SectionType::Channel,
-            'maxAuthors' => 1,
-        ]);
         $entryType = EntryType::factory()->create();
-        $section->entryTypes()->attach($entryType, ['sortOrder' => 1]);
+        $section = Section::factory()
+            ->withEntryTypes($entryType)
+            ->create([
+                'type' => SectionType::Channel,
+                'maxAuthors' => 1,
+            ]);
 
-        $entry = EntryModel::factory()->createElement([
-            'sectionId' => $section->id,
-            'typeId' => $entryType->id,
-        ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->createElement();
         $entry->setAuthorIds([]);
 
         $entry->validate(['authorIds']);

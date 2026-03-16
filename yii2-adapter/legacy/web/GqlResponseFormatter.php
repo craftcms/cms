@@ -12,6 +12,7 @@ use yii\web\JsonResponseFormatter;
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.17.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Http\Responses\GqlResponse} instead.
  */
 class GqlResponseFormatter extends JsonResponseFormatter
 {

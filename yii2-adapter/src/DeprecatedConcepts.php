@@ -108,6 +108,24 @@ class DeprecatedConcepts
         }
     }
 
+    /**
+     * @return class-string<\yii\base\Component>
+     */
+    private static function legacyArgumentManagerClass(): string
+    {
+        /** @phpstan-ignore-next-line */
+        return 'craft\\gql\\ArgumentManager';
+    }
+
+    /**
+     * @return class-string<\yii\base\Component>
+     */
+    private static function legacyElementQueryConditionBuilderClass(): string
+    {
+        /** @phpstan-ignore-next-line */
+        return 'craft\\gql\\ElementQueryConditionBuilder';
+    }
+
     public static function resetSupport(): void
     {
         self::$supportsCategories = null;
@@ -250,7 +268,7 @@ class DeprecatedConcepts
         );
 
         YiiEvent::on(
-            ArgumentManager::class,
+            self::legacyArgumentManagerClass(),
             ArgumentManager::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS,
             function(RegisterGqlArgumentHandlersEvent $event) {
                 if (DeprecatedConcepts::supportsCategories()) {
@@ -356,7 +374,7 @@ class DeprecatedConcepts
         );
 
         YiiEvent::on(
-            ElementQueryConditionBuilder::class,
+            self::legacyElementQueryConditionBuilderClass(),
             ElementQueryConditionBuilder::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS,
             function(RegisterGqlEagerLoadableFields $event) {
                 if (DeprecatedConcepts::supportsCategories()) {

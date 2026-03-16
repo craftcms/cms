@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\gql\arguments\OptionField as OptionFieldArguments;
-use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\Cp;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Field\Conditions\OptionsFieldConditionRule;
@@ -17,6 +15,8 @@ use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Field\Events\DefineInputOptions;
+use CraftCms\Cms\Gql\Arguments\OptionField as OptionFieldArguments;
+use CraftCms\Cms\Gql\Resolvers\OptionField as OptionFieldResolver;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;

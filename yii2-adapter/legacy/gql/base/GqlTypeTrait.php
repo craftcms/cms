@@ -1,46 +1,16 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\base;
 
-use craft\gql\GqlEntityRegistry;
-use GraphQL\Type\Definition\ObjectType as GqlObjectType;
-use GraphQL\Type\Definition\Type;
+use CraftCms\Cms\Gql\Concerns\HasGqlType;
 
 /**
- * Trait GqlTypeTrait
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Concerns\HasGqlType} instead.
+ * @phpstan-ignore-next-line
  */
 trait GqlTypeTrait
 {
-    /**
-     * Returns an instance of this schema object's type as provided by entity registry
-     *
-     * @param array|null $fields optional fields to use
-     * @return GqlObjectType
-     */
-    public static function getType(?array $fields = null): Type
-    {
-        return GqlEntityRegistry::getOrCreate(static::class, fn() => new GqlObjectType([
-            /** @phpstan-ignore-next-line */
-            'name' => static::getName(),
-            'fields' => $fields ?: (static::class . '::getFieldDefinitions'),
-        ]));
-    }
-
-    /**
-     * Return conditional fields for this type.
-     *
-     * @return array
-     */
-    protected static function getConditionalFields(): array
-    {
-        return [];
-    }
+    use HasGqlType;
 }
