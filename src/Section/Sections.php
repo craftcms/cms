@@ -214,7 +214,7 @@ class Sections
      */
     public function getAllSections(): Collection
     {
-        return collect($this->_sections()->all());
+        return $this->_sections()->collect();
     }
 
     /**
@@ -267,7 +267,7 @@ class Sections
      */
     public function getSectionsByType(SectionType $type): Collection
     {
-        return collect($this->_sections()->where('type', $type, true)->all());
+        return $this->_sections()->where('type', $type, true)->collect();
     }
 
     /**

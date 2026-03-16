@@ -428,7 +428,7 @@ class Fields
      */
     public function getAllFields(mixed $context = null): Collection
     {
-        return collect($this->_fields($context)->all());
+        return $this->_fields($context)->collect();
     }
 
     /**
@@ -869,7 +869,7 @@ class Fields
      */
     public function getAllLayouts(): Collection
     {
-        return collect($this->_layouts()->all());
+        return $this->_layouts()->collect();
     }
 
     /**
@@ -912,7 +912,7 @@ class Fields
      */
     public function getLayoutsByIds(array $layoutIds): Collection
     {
-        return collect($this->_layouts()->whereIn('id', $layoutIds)->all());
+        return $this->_layouts()->whereIn('id', $layoutIds)->collect();
     }
 
     /**
@@ -941,7 +941,7 @@ class Fields
      */
     public function getLayoutsByType(string $type): Collection
     {
-        return collect($this->_layouts()->where('type', $type)->all());
+        return $this->_layouts()->where('type', $type)->collect();
     }
 
     /**

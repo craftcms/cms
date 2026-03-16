@@ -58,7 +58,7 @@ class SiteGroups
      */
     public function getAllGroups(): Collection
     {
-        return collect($this->groups()->all());
+        return $this->groups()->collect();
     }
 
     public function getGroupById(int $groupId): ?SiteGroup

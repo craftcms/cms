@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Support;
 
 use ArrayIterator;
 use Countable;
+use Illuminate\Support\Collection;
 use IteratorAggregate;
 
 /**
@@ -54,6 +55,14 @@ class MemoizableArray implements Countable, IteratorAggregate
     }
 
     /**
+     * @return Collection<T>
+     */
+    public function collect(): Collection
+    {
+        return collect($this->all());
+    }
+
+    /**
      * Filters the array to only the values where a given key (the name of a
      * sub-array key or sub-object property) is set to a given value.
      *
@@ -66,18 +75,24 @@ class MemoizableArray implements Countable, IteratorAggregate
      */
     public function where(string $key, mixed $value = true, bool $strict = false): self
     {
-        $memKey = $this->memKey(__METHOD__, $key, $value, $strict);
+        $memKey = $this->memKey('where', $key, $value, $strict);
 
-        if (! isset($this->memoized[$memKey])) {
-            $this->memoized[$memKey] = new self(
-                collect($this->elements)
-                    ->where($key, $strict ? '===' : '==', $value)
-                    ->all(),
-                isset($this->normalizer) ? fn ($element, $key) => $this->normalizeByKey($key) : null,
-            );
+        if (isset($this->memoized[$memKey])) {
+            return $this->memoized[$memKey];
         }
 
-        return $this->memoized[$memKey];
+        $filtered = [];
+        foreach ($this->elements as $k => $element) {
+            $elementValue = $this->getElementValue($element, $key);
+            if ($strict ? $elementValue === $value : $elementValue == $value) {
+                $filtered[$k] = $element;
+            }
+        }
+
+        return $this->memoized[$memKey] = new self(
+            $filtered,
+            isset($this->normalizer) ? fn ($element, $key) => $this->normalizeByKey($key) : null,
+        );
     }
 
     /**
@@ -94,10 +109,22 @@ class MemoizableArray implements Countable, IteratorAggregate
      */
     public function whereIn(string $key, array $values, bool $strict = false): self
     {
-        $memKey = $this->memKey(__METHOD__, $key, $values, $strict);
+        $memKey = $this->memKey('whereIn', $key, $values, $strict);
 
-        return $this->memoized[$memKey] ??= new self(
-            collect($this->elements)->whereIn($key, $values, $strict)->all(),
+        if (isset($this->memoized[$memKey])) {
+            return $this->memoized[$memKey];
+        }
+
+        $filtered = [];
+        foreach ($this->elements as $k => $element) {
+            $elementValue = $this->getElementValue($element, $key);
+            if (in_array($elementValue, $values, $strict)) {
+                $filtered[$k] = $element;
+            }
+        }
+
+        return $this->memoized[$memKey] = new self(
+            $filtered,
             isset($this->normalizer) ? fn ($element, $key) => $this->normalizeByKey($key) : null,
         );
     }
@@ -113,19 +140,23 @@ class MemoizableArray implements Countable, IteratorAggregate
      */
     public function firstWhere(string $key, mixed $value = true, bool $strict = false): mixed
     {
-        $memKey = $this->memKey(__METHOD__, $key, $value, $strict);
+        $memKey = $this->memKey('firstWhere', $key, $value, $strict);
 
         // Use array_key_exists() because the value could be null
-        if (! array_key_exists($memKey, $this->memoized)) {
-            $valueKey = collect($this->elements)
-                ->where($key, $strict ? '===' : '==', $value)
-                ->keys()
-                ->first();
-
-            $this->memoized[$memKey] = $this->normalizeByKey($valueKey);
+        if (array_key_exists($memKey, $this->memoized)) {
+            return $this->memoized[$memKey];
         }
 
-        return $this->memoized[$memKey];
+        $valueKey = null;
+        foreach ($this->elements as $k => $element) {
+            $elementValue = $this->getElementValue($element, $key);
+            if ($strict ? $elementValue === $value : $elementValue == $value) {
+                $valueKey = $k;
+                break;
+            }
+        }
+
+        return $this->memoized[$memKey] = $this->normalizeByKey($valueKey);
     }
 
     public function getIterator(): ArrayIterator
@@ -171,5 +202,14 @@ class MemoizableArray implements Countable, IteratorAggregate
         }
 
         return "{$method}:{$key}:{$value}:{$strict}";
+    }
+
+    private function getElementValue(mixed $element, string $key): mixed
+    {
+        if (is_array($element)) {
+            return $element[$key] ?? null;
+        }
+
+        return $element->$key ?? null;
     }
 }

@@ -161,7 +161,7 @@ class EntryTypes
      */
     public function getAllEntryTypes(): Collection
     {
-        return collect($this->entryTypes()->all());
+        return $this->entryTypes()->collect();
     }
 
     /**
