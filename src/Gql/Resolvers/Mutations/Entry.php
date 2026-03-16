@@ -151,17 +151,12 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
-        $draftName = $arguments['name'] ?? '';
-        $draftNotes = $arguments['notes'] ?? '';
-        $provisional = $arguments['provisional'] ?? false;
-        $creatorId = $arguments['creatorId'] ?? null;
-
         return Drafts::createDraft(
             canonical: $entry,
-            creatorId: $creatorId ?? $entry->getAuthorId(),
-            name: $draftName,
-            notes: $draftNotes,
-            provisional: $provisional,
+            creatorId: $arguments['creatorId'] ?? $entry->getAuthorId(),
+            name: $arguments['name'] ?? '',
+            notes: $arguments['notes'] ?? '',
+            provisional: $arguments['provisional'] ?? false,
         )->draftId;
     }
 
