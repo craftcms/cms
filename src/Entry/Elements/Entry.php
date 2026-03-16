@@ -24,7 +24,6 @@ use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\entries\SectionConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\db\EagerLoadPlan;
-use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
@@ -55,6 +54,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
+use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
@@ -382,12 +382,9 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     protected static function defineActions(string $source): array
     {
         // Get the selected site
-        $controller = Craft::$app->controller;
-        if ($controller instanceof ElementIndexesController) {
-            $elementQuery = $controller->getElementQuery();
-        } else {
-            $elementQuery = null;
-        }
+        $elementQuery = Craft::$app->controller instanceof ElementIndexesController
+            ? Craft::$app->controller->getElementQuery()
+            : null;
         $site = $elementQuery && $elementQuery->siteId
             ? Sites::getSiteById($elementQuery->siteId)
             : Sites::getCurrentSite();
@@ -2401,21 +2398,15 @@ JS;
 
         // Make sure that the locale has been loaded in case the title format has any Date/Time fields
         // Set Craft to the entry’s site’s language, in case the title format has any static translations
-        $language = app()->getLocale();
-        $locale = I18N::getLocale();
-        $formattingLocale = I18N::getFormattingLocale();
         $site = $this->getSite();
-        $tempLocale = I18N::getLocaleById($site->getLanguage());
-        app()->setLocale($site->getLanguage());
-        Craft::$app->set('locale', $tempLocale);
-        Craft::$app->set('formattingLocale', $tempLocale);
-        $title = renderObjectTemplate($entryType->titleFormat, $this);
+        $title = I18N::withLocale(
+            $site->getLanguage(),
+            $site->getLanguage(),
+            fn () => renderObjectTemplate($entryType->titleFormat, $this),
+        );
         if ($title !== '') {
             $this->title = $title;
         }
-        app()->setLocale($language);
-        Craft::$app->set('locale', $locale);
-        Craft::$app->set('formattingLocale', $formattingLocale);
     }
 
     /**

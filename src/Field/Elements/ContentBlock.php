@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field\Elements;
 
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
-use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\ContentBlock as ContentBlockModel;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\Interfaces\Elements\ContentBlock as ContentBlockInterface;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use GraphQL\Type\Definition\Type;
 use Override;

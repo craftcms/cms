@@ -35,10 +35,9 @@ it('requires a valid site when passed', function () {
 });
 
 it('creates a draft and redirects to it', function () {
-    $section = Section::factory()->create([
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->create())->create([
         'handle' => 'blog',
     ]);
-    $section->entryTypes()->save(EntryType::factory()->create(), ['sortOrder' => 1]);
 
     get(cp_url('entries/blog/new'))
         ->assertStatus(302)

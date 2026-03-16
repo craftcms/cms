@@ -1,38 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\arguments\mutations;
 
-use GraphQL\Type\Definition\Type;
-
 /**
- * Class NestedEntry
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Arguments\Mutations\NestedEntry} instead.
  */
-class NestedEntry extends Entry
+class NestedEntry extends \CraftCms\Cms\Gql\Arguments\Mutations\NestedEntry
 {
-    /**
-     * @inheritdoc
-     */
-    public static function getArguments(): array
-    {
-        return array_merge(parent::getArguments(), [
-            'ownerId' => [
-                'name' => 'ownerId',
-                'type' => Type::id(),
-                'description' => 'The entry’s owner ID.',
-            ],
-            'sortOrder' => [
-                'name' => 'sortOrder',
-                'type' => Type::int(),
-                'description' => 'The entry’s sort order.',
-            ],
-        ]);
-    }
 }

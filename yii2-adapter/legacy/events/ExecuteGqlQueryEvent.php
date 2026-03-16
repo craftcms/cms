@@ -14,6 +14,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.11
+ * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Gql\Events\ExecutingGqlQuery} or {@see \CraftCms\Cms\Gql\Events\ExecutedGqlQuery} instead.
  */
 class ExecuteGqlQueryEvent extends Event
 {

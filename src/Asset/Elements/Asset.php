@@ -23,7 +23,6 @@ use craft\elements\actions\ShowInFolder;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\AssetException;
-use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -57,6 +56,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Filesystems\Filesystem;
+use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
@@ -468,7 +468,6 @@ class Asset extends Element
             // Download
             $actions[] = DownloadAssetFile::class;
 
-            $userSession = Craft::$app->getUser();
             if ($isTemp || Gate::check("replaceFiles:$volume->uid")) {
                 // Rename/Replace File
                 $actions[] = RenameFile::class;
@@ -481,15 +480,15 @@ class Asset extends Element
             }
 
             // Show in folder
-            if (Craft::$app->controller instanceof ElementIndexesController) {
-                $query = Craft::$app->controller->getElementQuery();
-                if (
-                    $query instanceof AssetQuery &&
-                    isset($query->search) &&
-                    $query->includeSubfolders
-                ) {
-                    $actions[] = ShowInFolder::class;
-                }
+            $query = Craft::$app->controller instanceof ElementIndexesController
+                ? Craft::$app->controller->getElementQuery()
+                : null;
+            if (
+                $query instanceof AssetQuery &&
+                isset($query->search) &&
+                $query->includeSubfolders
+            ) {
+                $actions[] = ShowInFolder::class;
             }
 
             // Copy Reference Tag
@@ -805,7 +804,7 @@ class Asset extends Element
     private static function _includeFoldersInIndexElements(AssetQuery $assetQuery, ?string $sourceKey, ?VolumeFolder &$queryFolder = null): bool
     {
         if (
-            ! Craft::$app->getRequest()->getBodyParam('showFolders') ||
+            ! request()->input('showFolders') ||
             ! str_starts_with((string) $sourceKey, 'volume:') ||
             ! is_numeric($assetQuery->folderId)
         ) {
@@ -945,7 +944,6 @@ class Asset extends Element
             $volumeHandle = false;
         }
 
-        Craft::$app->getUser();
         $canUpload = Gate::check("saveAssets:$volume->uid");
         $canMoveTo = $canUpload && Gate::check("deleteAssets:$volume->uid");
         $canMovePeerFilesTo = (
@@ -982,9 +980,10 @@ class Asset extends Element
 
     private static function isFolderIndex(): bool
     {
-        return
-            (Craft::$app->controller instanceof ElementIndexesController || Craft::$app->controller instanceof ElementSelectorModalsController) &&
-            Craft::$app->getRequest()->getBodyParam('foldersOnly');
+        return (
+            Craft::$app->controller instanceof ElementIndexesController ||
+            Craft::$app->controller instanceof ElementSelectorModalsController
+        ) && (bool) request()->input('foldersOnly');
     }
 
     /**
@@ -1382,7 +1381,6 @@ class Asset extends Element
         $items = parent::safeActionMenuItems();
 
         $volume = $this->getVolume();
-        $userSession = Craft::$app->getUser();
         $user = Auth::user();
         $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
 
@@ -1600,7 +1598,7 @@ JS, [
         if (
             $this->getSupportsImageEditor() &&
             Gate::check("editImages:$volume->uid") &&
-            ($userSession->getId() == $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
+            (Auth::id() == $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
         ) {
             $editImageId = sprintf('action-image-edit-%s', mt_rand());
             $items[] = [
@@ -2568,14 +2566,12 @@ JS, [
         // See if we can show a thumbnail
         try {
             // Is the image editable, and is the user allowed to edit?
-            $userSession = Craft::$app->getUser();
-
             $volume = $this->getVolume();
             $previewable = AssetsService::getAssetPreviewHandler($this) !== null;
             $editable = (
                 $this->getSupportsImageEditor() &&
                 Gate::check("editImages:$volume->uid") &&
-                ($userSession->getId() == $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
+                (Auth::id() == $this->uploaderId || Gate::check("editPeerImages:$volume->uid"))
             );
 
             $previewInner = match ($this->kind) {
@@ -2612,7 +2608,7 @@ JS, [
                 Html::endTag('div'); // .preview-thumb-container
 
             if ($previewable || $editable) {
-                $isMobile = Craft::$app->getRequest()->isMobileBrowser(true);
+                $isMobile = request()->isMobileBrowser(true);
                 $imageButtonHtml = Html::beginTag('div', [
                     'class' => array_filter([
                         'image-actions',
@@ -2678,7 +2674,7 @@ JS;
 
                 $imageButtonHtml .= Html::endTag('div'); // .image-actions
 
-                if (Craft::$app->getRequest()->isMobileBrowser(true)) {
+                if (request()->isMobileBrowser(true)) {
                     $previewThumbHtml .= $imageButtonHtml;
                 } else {
                     $previewThumbHtml = Html::appendToTag($previewThumbHtml, $imageButtonHtml);
@@ -2949,7 +2945,7 @@ JS;
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
                 Assets::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE &&
                 ($this->sanitizeOnUpload ?? (
-                    ! Craft::$app->getRequest()->getIsCpRequest() ||
+                    ! request()->isCpRequest() ||
                     Cms::config()->sanitizeCpImageUploads
                 ))
             ) {
@@ -3096,7 +3092,6 @@ JS;
             ];
 
             $volume = $this->getVolume();
-            $userSession = Craft::$app->getUser();
 
             if (
                 Gate::check("savePeerAssets:$volume->uid") &&
@@ -3129,10 +3124,9 @@ JS;
         }
 
         $volume = $this->getVolume();
-        $userSession = Craft::$app->getUser();
         $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
-        if (Assets::isTempUploadFs($volume->getFs()) || $userSession->getId() == $this->uploaderId) {
+        if (Assets::isTempUploadFs($volume->getFs()) || Auth::id() == $this->uploaderId) {
             $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {
@@ -3276,7 +3270,7 @@ JS;
                     throw new FilesystemException("Unable to write stream to path: $newPath");
                 }
             } catch (FilesystemException $exception) {
-                Craft::$app->getErrorHandler()->logException($exception);
+                report($exception);
                 throw $exception;
             } finally {
                 // If the volume has not already disconnected the stream, clean it up.

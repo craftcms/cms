@@ -7,11 +7,9 @@ namespace CraftCms\Cms\Field;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Serializable;
-use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
-use craft\models\GqlSchema;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
@@ -36,6 +34,8 @@ use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\FieldElementEvent;
 use CraftCms\Cms\Field\Events\FieldEvent;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -818,8 +818,7 @@ JS, [
 
         // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
         // see https://github.com/craftcms/cms/issues/15609
-        $db = Craft::$app->getDb();
-        if ($db->getIsMysql() && is_string($dbType) && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
+        if (DB::isMysql() && is_string($dbType) && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
             $orderBy = new Cast($orderBy, 'CHAR(255)');
         }
 

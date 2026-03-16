@@ -13,6 +13,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Arr;
 use Override;
 
 class EntryFactory extends Factory
@@ -97,9 +98,43 @@ class EntryFactory extends Factory
         ]);
     }
 
+    public function title(string $title): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'id' => $attributes['id']->title($title),
+        ]);
+    }
+
+    public function slug(string $slug): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'id' => $attributes['id']->slug($slug),
+        ]);
+    }
+
+    public function forSection(Section $section): static
+    {
+        return $this->state(fn () => ['sectionId' => $section->id]);
+    }
+
+    public function forEntryType(EntryType $type): static
+    {
+        return $this->state(fn () => ['typeId' => $type->id]);
+    }
+
     public function createElement(array $attributes = []): EntryElement
     {
-        $model = $this->create($attributes);
+        $factory = $this;
+
+        if (Arr::has($attributes, 'title')) {
+            $factory = $factory->title(Arr::pull($attributes, 'title'));
+        }
+
+        if (Arr::has($attributes, 'slug')) {
+            $factory = $factory->slug(Arr::pull($attributes, 'slug'));
+        }
+
+        $model = $factory->create($attributes);
 
         return EntryElement::find()->id($model->id)->one();
     }

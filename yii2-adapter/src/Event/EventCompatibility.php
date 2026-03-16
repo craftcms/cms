@@ -29,6 +29,7 @@ use craft\services\Entries;
 use craft\services\Fields;
 use craft\services\Fs;
 use craft\services\Gc;
+use craft\services\Gql as LegacyGql;
 use craft\services\ImageTransforms;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig as LegacyProjectConfig;
@@ -101,6 +102,7 @@ readonly class EventCompatibility
         Fields::registerEvents();
         Fs::registerEvents();
         Gc::registerEvents();
+        LegacyGql::registerEvents();
         LegacySearch::registerEvents();
         Utilities::registerEvents();
         Dashboard::registerEvents();
@@ -183,5 +185,7 @@ readonly class EventCompatibility
         Event::listen(RegisterTemplateCacheCollectors::class, function(RegisterTemplateCacheCollectors $event) {
             $event->types->add(LegacyAssetBundleCollector::class);
         });
+
+        LegacyGqlEvents::register();
     }
 }

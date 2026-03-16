@@ -1,62 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\interfaces;
 
-use Craft;
-use GraphQL\Type\Definition\Type;
-
 /**
- * Class Structure
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Interfaces\Structure} instead.
  */
-abstract class Structure extends Element
+abstract class Structure extends \CraftCms\Cms\Gql\Interfaces\Structure
 {
-    /**
-     * @inheritdoc
-     */
-    public static function getFieldDefinitions(): array
-    {
-        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
-            'lft' => [
-                'name' => 'lft',
-                'type' => Type::int(),
-                'description' => 'The element’s left position within its structure.',
-            ],
-            'rgt' => [
-                'name' => 'rgt',
-                'type' => Type::int(),
-                'description' => 'The element’s right position within its structure.',
-            ],
-            'level' => [
-                'name' => 'level',
-                'type' => Type::int(),
-                'description' => 'The element’s level within its structure',
-            ],
-            'root' => [
-                'name' => 'root',
-                'type' => Type::int(),
-                'description' => 'The element’s structure’s root ID',
-            ],
-            'structureId' => [
-                'name' => 'structureId',
-                'type' => Type::int(),
-                'description' => 'The element’s structure ID.',
-            ],
-        ]), self::getName());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getName(): string
-    {
-        return 'StructureInterface';
-    }
 }

@@ -9,12 +9,12 @@ namespace craft\services;
 
 use Craft;
 use craft\auth\sso\ProviderInterface;
-use craft\base\MemoizableArray;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
 use CraftCms\Cms\Auth\Models\SsoIdentity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Throwable;

@@ -13,6 +13,7 @@ use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 use ResourceBundle;
@@ -24,6 +25,10 @@ use Yiisoft\Translator\Translator;
 #[Singleton]
 class I18N
 {
+    private const string CONTEXT_LOCALE = 'craft.locale';
+
+    private const string CONTEXT_FORMATTING_LOCALE = 'craft.formattingLocale';
+
     /**
      * @var Collection<string> All of the known locales
      *
@@ -68,11 +73,19 @@ class I18N
 
     public function getLocale(): Locale
     {
+        if (Context::hasHidden(self::CONTEXT_LOCALE)) {
+            return $this->getLocaleById(Context::getHidden(self::CONTEXT_LOCALE));
+        }
+
         return $this->getLocaleById(app()->getLocale());
     }
 
     public function getFormattingLocale(): Locale
     {
+        if (Context::hasHidden(self::CONTEXT_FORMATTING_LOCALE)) {
+            return $this->getLocaleById(Context::getHidden(self::CONTEXT_FORMATTING_LOCALE));
+        }
+
         if (app()->runningInConsole()) {
             return $this->getLocale();
         }
@@ -100,6 +113,39 @@ class I18N
         }
 
         return $this->getLocale();
+    }
+
+    public function withLocale(string $language, ?string $formattingLocaleId, callable $callback): mixed
+    {
+        $previousLanguage = app()->getLocale();
+        $previousLocale = Context::hasHidden(self::CONTEXT_LOCALE)
+            ? Context::getHidden(self::CONTEXT_LOCALE)
+            : null;
+        $previousFormattingLocale = Context::hasHidden(self::CONTEXT_FORMATTING_LOCALE)
+            ? Context::getHidden(self::CONTEXT_FORMATTING_LOCALE)
+            : null;
+
+        Context::addHidden(self::CONTEXT_LOCALE, $language);
+        Context::addHidden(self::CONTEXT_FORMATTING_LOCALE, $formattingLocaleId ?? $language);
+        app()->setLocale($language);
+
+        try {
+            return $callback();
+        } finally {
+            app()->setLocale($previousLanguage);
+
+            if ($previousLocale === null) {
+                Context::forgetHidden(self::CONTEXT_LOCALE);
+            } else {
+                Context::addHidden(self::CONTEXT_LOCALE, $previousLocale);
+            }
+
+            if ($previousFormattingLocale === null) {
+                Context::forgetHidden(self::CONTEXT_FORMATTING_LOCALE);
+            } else {
+                Context::addHidden(self::CONTEXT_FORMATTING_LOCALE, $previousFormattingLocale);
+            }
+        }
     }
 
     /**

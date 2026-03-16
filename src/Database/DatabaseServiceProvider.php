@@ -42,6 +42,12 @@ class DatabaseServiceProvider extends ServiceProvider
         Connection::macro('isMaria', fn () => $this->getDriverName() === 'mariadb');
         Connection::macro('isPgsql', fn () => $this->getDriverName() === 'pgsql');
         Connection::macro('isSqlite', fn () => $this->getDriverName() === 'sqlite');
+        Connection::macro('driverLabel', fn () => match (true) {
+            $this->isMaria() => 'MariaDB',
+            $this->isMysql() => 'MySQL',
+            $this->isSqlite() => 'SQLite',
+            default => 'PostgreSQL',
+        });
 
         Builder::macro('whereBool', fn ($column, bool $value) => $this->where($column, new QueryExpression(var_export($value, true))));
         Builder::macro('orWhereBool', fn ($column, bool $value) => $this->orWhere($column, new QueryExpression(var_export($value, true))));

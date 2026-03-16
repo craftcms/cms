@@ -83,7 +83,7 @@ class MigrateController
             DB::rollBack();
 
             // MySQL may have implicitly committed the transaction
-            $restored = DB::connection()->isPgsql();
+            $restored = DB::isPgsql();
 
             // Do we have a backup?
             if (! $restored && ! empty($backupPath)) {

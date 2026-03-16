@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry;
 
 use Craft;
-use craft\base\MemoizableArray;
 use craft\helpers\AdminTable;
 use craft\helpers\Cp;
 use CraftCms\Cms\Database\Table;
@@ -34,6 +33,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -161,7 +161,7 @@ class EntryTypes
      */
     public function getAllEntryTypes(): Collection
     {
-        return collect($this->entryTypes()->all());
+        return $this->entryTypes()->collect();
     }
 
     /**

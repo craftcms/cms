@@ -1,19 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\handlers;
 
 /**
- * Class SiteId
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.6.18
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Handlers\SiteId} instead.
  */
-class SiteId extends Site
+class SiteId extends \CraftCms\Cms\Gql\Handlers\SiteId
 {
-    protected string $argumentName = 'siteId';
 }

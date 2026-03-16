@@ -36,16 +36,43 @@ class EntryMutationResolverTest extends TestCase
             'getType' => new EntryType(),
         ]);
 
+        $identifyQuery = $this->make(EntryQuery::class, [
+            'first' => $entry,
+            'siteId' => function() use (&$identifyQuery) {
+                return $identifyQuery;
+            },
+            'status' => function() use (&$identifyQuery) {
+                return $identifyQuery;
+            },
+            'id' => function() use (&$identifyQuery) {
+                return $identifyQuery;
+            },
+            'drafts' => function() use (&$identifyQuery) {
+                return $identifyQuery;
+            },
+            'draftId' => function() use (&$identifyQuery) {
+                return $identifyQuery;
+            },
+        ]);
+
+        $createQuery = $this->make(EntryQuery::class, [
+            'siteId' => function() use (&$createQuery) {
+                return $createQuery;
+            },
+            'status' => function() use (&$createQuery) {
+                return $createQuery;
+            },
+        ]);
+
         $resolver = $this->make(EntryMutationResolver::class, [
             'getEntryElement' => $entry,
-            'identifyEntry' => $this->make(EntryQuery::class, [
-                'one' => $entry,
-            ]),
+            'identifyEntry' => $identifyQuery,
             'recursivelyNormalizeArgumentValues' => $arguments,
         ]);
 
         Craft::$app->set('elements', $this->make(Elements::class, [
             'saveElement' => true,
+            'createElementQuery' => $createQuery,
         ]));
 
         $resolver->saveEntry(null, $arguments, null, $this->make(ResolveInfo::class));
@@ -68,7 +95,22 @@ class EntryMutationResolverTest extends TestCase
         ]);
 
         $query = $this->make(EntryQuery::class, [
-            'one' => $entry,
+            'first' => $entry,
+            'siteId' => function() use (&$query) {
+                return $query;
+            },
+            'status' => function() use (&$query) {
+                return $query;
+            },
+            'id' => function() use (&$query) {
+                return $query;
+            },
+            'drafts' => function() use (&$query) {
+                return $query;
+            },
+            'draftId' => function() use (&$query) {
+                return $query;
+            },
         ]);
 
         $resolver = $this->make(EntryMutationResolver::class, [

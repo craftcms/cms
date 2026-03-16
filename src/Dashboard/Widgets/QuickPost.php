@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use Craft;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Data\Section;
@@ -206,7 +205,7 @@ JS, [
                 'siteId' => $this->siteId(),
                 'section' => $section->handle,
                 'type' => $entryType->handle,
-                'authorId' => Craft::$app->getUser()->getId(),
+                'authorId' => Auth::id(),
             ],
             Entry::class,
         ]);

@@ -1382,7 +1382,7 @@ XML;
             return true;
         }
 
-        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+        foreach (UserGroups::getAllGroups() as $group) {
             if ($this->can("assignUserGroup:$group->uid")) {
                 return true;
             }
@@ -1442,7 +1442,7 @@ XML;
 
     protected function cpEditUrl(): ?string
     {
-        if (Craft::$app->getRequest()->getIsCpRequest() && $this->getIsCurrent()) {
+        if (request()->isCpRequest() && $this->getIsCurrent()) {
             return UrlHelper::cpUrl('myaccount');
         }
 

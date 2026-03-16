@@ -8,9 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface as BaseElementInterface;
-use craft\base\GqlInlineFragmentFieldInterface;
-use craft\behaviors\FieldLayoutBehavior;
 use craft\errors\GqlException;
 use craft\events\DefineGqlValidationRulesEvent;
 use craft\events\ExecuteGqlQueryEvent;
@@ -19,91 +16,26 @@ use craft\events\RegisterGqlMutationsEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlSchemaComponentsEvent;
 use craft\events\RegisterGqlTypesEvent;
-use craft\gql\ArgumentManager;
-use craft\gql\base\Directive;
-use craft\gql\base\GeneratorInterface;
-use craft\gql\base\SingularTypeInterface;
-use craft\gql\directives\FormatDateTime;
-use craft\gql\directives\Markdown;
-use craft\gql\directives\Money;
-use craft\gql\directives\ParseRefs;
-use craft\gql\directives\StripTags;
-use craft\gql\directives\Transform;
-use craft\gql\directives\Trim;
-use craft\gql\ElementQueryConditionBuilder;
-use craft\gql\GqlEntityRegistry;
-use craft\gql\interfaces\Element as ElementInterface;
-use craft\gql\interfaces\elements\Address as AddressInterface;
-use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\gql\interfaces\elements\User as UserInterface;
-use craft\gql\mutations\Asset as AssetMutation;
-use craft\gql\mutations\Entry as EntryMutation;
-use craft\gql\mutations\Ping as PingMutation;
-use craft\gql\queries\Address as AddressQuery;
-use craft\gql\queries\Asset as AssetQuery;
-use craft\gql\queries\Entry as EntryQuery;
-use craft\gql\queries\Ping as PingQuery;
-use craft\gql\queries\User as UserQuery;
-use craft\gql\TypeLoader;
-use craft\gql\TypeManager;
-use craft\gql\types\DateTime;
-use craft\gql\types\Mutation;
-use craft\gql\types\Number;
-use craft\gql\types\Query;
-use craft\gql\types\QueryArgument;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
-use CraftCms\Cms\Asset\Volumes;
-use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Edition;
-use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
-use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Gql\Models\GqlSchema as GqlSchemaModel;
-use CraftCms\Cms\Gql\Models\GqlToken as GqlTokenModel;
+use CraftCms\Cms\Gql\Data\GqlSchema as NewGqlSchema;
+use CraftCms\Cms\Gql\Data\GqlToken as NewGqlToken;
+use CraftCms\Cms\Gql\Events\DefineGqlValidationRules;
+use CraftCms\Cms\Gql\Events\ExecutedGqlQuery;
+use CraftCms\Cms\Gql\Events\ExecutingGqlQuery;
+use CraftCms\Cms\Gql\Events\RegisterGqlDirectives;
+use CraftCms\Cms\Gql\Events\RegisterGqlMutations;
+use CraftCms\Cms\Gql\Events\RegisterGqlQueries;
+use CraftCms\Cms\Gql\Events\RegisterGqlSchemaComponents;
+use CraftCms\Cms\Gql\Events\RegisterGqlTypes;
+use CraftCms\Cms\Gql\Gql as NewGql;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
-use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Shared\Models\Info;
-use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Facades\UserGroups;
-use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\User\Elements\User;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
-use CraftCms\DependencyAwareCache\Facades\DependencyCache;
-use GraphQL\Error\ClientAware;
-use GraphQL\Error\DebugFlag;
-use GraphQL\Error\Error;
-use GraphQL\GraphQL;
-use GraphQL\Type\Definition\Directive as GqlDirective;
-use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
-use GraphQL\Utils\TypeInfo;
-use GraphQL\Validator\DocumentValidator;
-use GraphQL\Validator\Rules\DisableIntrospection;
-use GraphQL\Validator\Rules\FieldsOnCorrectType;
-use GraphQL\Validator\Rules\KnownTypeNames;
-use GraphQL\Validator\Rules\QueryComplexity;
-use GraphQL\Validator\Rules\QueryDepth;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use InvalidArgumentException;
-use Throwable;
+use Illuminate\Support\Facades\Event;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\UnknownMethodException;
-use function CraftCms\Cms\t;
 
 /**
  * GraphQL service.
@@ -112,394 +44,36 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Gql} instead.
  */
 class Gql extends Component
 {
-    /**
-     * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
-     *
-     * Plugins get a chance to add their own GraphQL types.
-     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
-     *
-     * ---
-     * ```php
-     * use craft\events\RegisterGqlTypesEvent;
-     * use craft\services\Gql;
-     * use yii\base\Event;
-     *
-     * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlTypesEvent $event) {
-     *     // Add my GraphQL types
-     *     $event->types[] = MyType::class;
-     * });
-     * ```
-     */
     public const EVENT_REGISTER_GQL_TYPES = 'registerGqlTypes';
-
-    /**
-     * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
-     *
-     * Plugins get a chance to add their own GraphQL queries.
-     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
-     *
-     * ---
-     * ```php
-     * use craft\events\RegisterGqlQueriesEvent;
-     * use craft\services\Gql;
-     * use yii\base\Event;
-     * use GraphQL\Type\Definition\Type;
-     *
-     * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function(RegisterGqlQueriesEvent $event) {
-     *     // Add my GraphQL queries
-     *     $event->queries['queryPluginData'] =
-     *     [
-     *         'type' => Type::listOf(MyType::getType()),
-     *         'args' => MyArguments::getArguments(),
-     *         'resolve' => MyResolver::class . '::resolve'
-     *     ];
-     * });
-     * ```
-     */
     public const EVENT_REGISTER_GQL_QUERIES = 'registerGqlQueries';
-
-    /**
-     * @event RegisterGqlMutationsEvent The event that is triggered when registering GraphQL mutations.
-     *
-     * Plugins get a chance to add their own GraphQL mutations.
-     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
-     *
-     * ---
-     * ```php
-     * use craft\events\RegisterGqlMutationsEvent;
-     * use craft\services\Gql;
-     * use yii\base\Event;
-     * use GraphQL\Type\Definition\Type;
-     *
-     * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_MUTATIONS, function(RegisterGqlMutationsEvent $event) {
-     *     // Add my GraphQL mutations
-     *     $event->mutations['mutationPluginData'] =
-     *     [
-     *         'type' => Type::listOf(MyType::getType()),
-     *         'args' => MyArguments::getArguments(),
-     *     ];
-     * });
-     * ```
-     */
     public const EVENT_REGISTER_GQL_MUTATIONS = 'registerGqlMutations';
-
-    /**
-     * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
-     *
-     * Plugins get a chance to add their own GraphQL directives.
-     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
-     *
-     * ---
-     * ```php
-     * use craft\events\RegisterGqlDirectivesEvent;
-     * use craft\services\Gql;
-     * use yii\base\Event;
-     *
-     * Event::on(Gql::class,
-     *     Gql::EVENT_REGISTER_GQL_DIRECTIVES,
-     *     function(RegisterGqlDirectivesEvent $event) {
-     *         $event->directives[] = MyDirective::class;
-     *     }
-     * );
-     * ```
-     */
     public const EVENT_REGISTER_GQL_DIRECTIVES = 'registerGqlDirectives';
-
-    /**
-     * @event RegisterGqlSchemaComponentsEvent The event that is triggered when registering GraphQL schema components.
-     * @since 3.5.0
-     */
     public const EVENT_REGISTER_GQL_SCHEMA_COMPONENTS = 'registerGqlSchemaComponents';
-
-    /**
-     * @event DefineGqlValidationRulesEvent The event that is triggered when defining validation rules to be used.
-     *
-     * Plugins get a chance to alter the GraphQL validation rule list.
-     *
-     * ---
-     * ```php
-     * use craft\events\DefineGqlValidationRulesEvent;
-     * use craft\services\Gql;
-     * use yii\base\Event;
-     * use GraphQL\Type\Definition\Type;
-     * use GraphQL\Validator\Rules\DisableIntrospection;
-     *
-     * Event::on(Gql::class, Gql::::EVENT_DEFINE_GQL_VALIDATION_RULES, function (DefineGqlValidationRulesEvent $event) {
-     *     // Disable introspection permanently.
-     *     $event->validationRules[DisableIntrospection::class] = new DisableIntrospection();
-     * });
-     * ```
-     */
     public const EVENT_DEFINE_GQL_VALIDATION_RULES = 'defineGqlValidationRules';
-
-    /**
-     * @event ExecuteGqlQueryEvent The event that is triggered before executing the GraphQL query.
-     *
-     * Plugins get a chance to modify the query or return a cached response.
-     *
-     * ---
-     * ```php
-     * use craft\events\ExecuteGqlQueryEvent;
-     * use craft\services\Gql;
-     * use yii\base\Event;
-     *
-     * Event::on(Gql::class,
-     *     Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY,
-     *     function(ExecuteGqlQueryEvent $event) {
-     *         // Set the result from cache
-     *         $event->result = ...;
-     *     }
-     * );
-     * ```
-     *
-     * @since 3.3.11
-     */
     public const EVENT_BEFORE_EXECUTE_GQL_QUERY = 'beforeExecuteGqlQuery';
-
-    /**
-     * @event ExecuteGqlQueryEvent The event that is triggered after executing the GraphQL query.
-     *
-     * Plugins get a chance to do something after a performed GraphQL query.
-     *
-     * ---
-     * ```php
-     * use craft\events\ExecuteGqlQueryEvent;
-     * use craft\services\Gql;
-     * use yii\base\Event;
-     *
-     * Event::on(Gql::class,
-     *     Gql::EVENT_AFTER_EXECUTE_GQL_QUERY,
-     *     function(ExecuteGqlQueryEvent $event) {
-     *         // Cache the results from $event->result or just tweak them
-     *     }
-     * );
-     * ```
-     *
-     * @since 3.3.11
-     */
     public const EVENT_AFTER_EXECUTE_GQL_QUERY = 'afterExecuteGqlQuery';
+    public const CACHE_TAG = NewGql::CACHE_TAG;
+    public const GRAPHQL_COUNT_FIELD = NewGql::GRAPHQL_COUNT_FIELD;
+    public const GRAPHQL_COMPLEXITY_SIMPLE_FIELD = NewGql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
+    public const GRAPHQL_COMPLEXITY_QUERY = NewGql::GRAPHQL_COMPLEXITY_QUERY;
+    public const GRAPHQL_COMPLEXITY_EAGER_LOAD = NewGql::GRAPHQL_COMPLEXITY_EAGER_LOAD;
+    public const GRAPHQL_COMPLEXITY_CPU_HEAVY = NewGql::GRAPHQL_COMPLEXITY_CPU_HEAVY;
+    public const GRAPHQL_COMPLEXITY_NPLUS1 = NewGql::GRAPHQL_COMPLEXITY_NPLUS1;
 
-    /**
-     * @since 3.3.12
-     */
-    public const CACHE_TAG = 'graphql';
-
-    /**
-     * The field name to use when fetching count of related elements
-     *
-     * @since 3.4.0
-     */
-    public const GRAPHQL_COUNT_FIELD = '_count';
-
-    /**
-     * Complexity value for accessing a simple field.
-     *
-     * @since 3.6.0
-     */
-    public const GRAPHQL_COMPLEXITY_SIMPLE_FIELD = 1;
-
-    /**
-     * Complexity value for accessing a field that will trigger a single query for the request.
-     *
-     * @since 3.6.0
-     */
-    public const GRAPHQL_COMPLEXITY_QUERY = 10;
-
-    /**
-     * Complexity value for accessing a field that will add an instance of eager-loading for the request.
-     *
-     * @since 3.6.0
-     */
-    public const GRAPHQL_COMPLEXITY_EAGER_LOAD = 25;
-
-    /**
-     * Complexity value for accessing a field that will likely trigger a CPU heavy operation.
-     *
-     * @since 3.6.0
-     */
-    public const GRAPHQL_COMPLEXITY_CPU_HEAVY = 200;
-
-    /**
-     * Complexity value for accessing a field that will trigger a query for every parent returned.
-     *
-     * @since 3.6.0
-     */
-    public const GRAPHQL_COMPLEXITY_NPLUS1 = 500;
-
-    /**
-     * @var Schema|null Currently loaded schema definition
-     */
-    private ?Schema $_schemaDef = null;
-
-    /**
-     * @var GqlSchema|null The active GraphQL schema
-     * @see setActiveSchema()
-     */
-    private ?GqlSchema $_schema = null;
-
-    /**
-     * @var array Content arguments by element class
-     * @see getOrSetContentArguments()
-     */
-    private array $_contentArguments = [];
-
-    /**
-     * @var array Custom field arguments by field layout UUID
-     * @see getFieldLayoutArguments()
-     */
-    private array $_fieldArguments = [];
-
-    /**
-     * @var TypeManager|null GQL type manager
-     */
-    private ?TypeManager $_typeManager = null;
-
-    /**
-     * @var array
-     */
-    private array $_typeDefinitions = [];
-
-    /**
-     * @var GqlToken|null
-     * @see getPublicToken()
-     */
-    private ?GqlToken $_publicToken = null;
-
-    /**
-     * Returns the GraphQL schema.
-     *
-     * @param GqlSchema|null $schema
-     * @param bool $prebuildSchema should the schema be deep-scanned and pre-built instead of lazy-loaded
-     *
-     * @return Schema
-     * @throws GqlException in case of invalid schema
-     */
     public function getSchemaDef(?GqlSchema $schema = null, bool $prebuildSchema = false): Schema
     {
-        if ($schema) {
-            $this->setActiveSchema($schema);
-        }
-        if (!$this->_schemaDef || $prebuildSchema) {
-            // Either cached version was not found or we need a pre-built schema.
-            $registeredTypes = $this->_registerGqlTypes();
-            $this->_registerGqlQueries();
-            $this->_registerGqlMutations();
-
-            $schemaConfig = [
-                'typeLoader' => TypeLoader::class . '::loadType',
-                'query' => TypeLoader::loadType('Query'),
-                'mutation' => TypeLoader::loadType('Mutation'),
-                'directives' => $this->_loadGqlDirectives($schema),
-            ];
-
-            // If we're not required to pre-build the schema the relevant GraphQL types will be added to the Schema
-            // as the query is being resolved thanks to the magic of lazy-loading, so we needn't worry.
-            if (!$prebuildSchema) {
-                $this->_schemaDef = new Schema($schemaConfig);
-
-                // but we always have to add the InputObjectType mutation args
-                foreach ($schemaConfig['mutation']->config['fields'] as $item) {
-                    if (isset($item['args'])) {
-                        foreach ($item['args'] as $arg) {
-                            if ($arg instanceof InputObjectType) {
-                                TypeInfo::extractTypes($arg);
-                            }
-                        }
-                    }
-                }
-
-                return $this->_schemaDef;
-            }
-
-            foreach ($registeredTypes as $registeredType) {
-                if (method_exists($registeredType, 'getTypeGenerator')) {
-                    $typeGeneratorClass = $registeredType::getTypeGenerator();
-                    if (is_subclass_of($typeGeneratorClass, GeneratorInterface::class)) {
-                        foreach ($typeGeneratorClass::generateTypes() as $type) {
-                            $schemaConfig['types'][] = $type;
-                        }
-                    }
-                }
-            }
-
-            try {
-                $this->_schemaDef = new Schema($schemaConfig);
-                $this->_schemaDef->getTypeMap();
-            } catch (Throwable $exception) {
-                throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage(),
-                    previous: $exception);
-            }
-        }
-
-        return $this->_schemaDef;
+        return app(NewGql::class)->getSchemaDef($schema, $prebuildSchema);
     }
 
-    /**
-     * Return a set of validation rules to use.
-     *
-     * @param bool $debug Whether debugging validation rules should be allowed.
-     * @param bool $isIntrospectionQuery Whether this is an introspection query
-     *
-     * @return array
-     */
     public function getValidationRules(bool $debug = false, bool $isIntrospectionQuery = false): array
     {
-        $validationRules = DocumentValidator::defaultRules();
-
-        if (!$debug) {
-            // Remove the rules which would generate a full schema just for a nice message, to avoid performance hit.
-            unset(
-                $validationRules[KnownTypeNames::class],
-                $validationRules[FieldsOnCorrectType::class],
-            );
-        }
-
-        $generalConfig = Cms::config();
-
-        if (!$isIntrospectionQuery) {
-            // Set complexity rule, if defined,
-            if (!empty($generalConfig->maxGraphqlComplexity)) {
-                $validationRules[QueryComplexity::class] = new QueryComplexity($generalConfig->maxGraphqlComplexity);
-            }
-
-            // Set depth rule, if defined,
-            if (!empty($generalConfig->maxGraphqlDepth)) {
-                $validationRules[QueryDepth::class] = new QueryDepth($generalConfig->maxGraphqlDepth);
-            }
-        }
-
-        if (!$generalConfig->enableGraphqlIntrospection && Auth::guest()) {
-            $validationRules[DisableIntrospection::class] = new DisableIntrospection();
-        }
-
-        // Fire a 'defineGqlValidationRules' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_GQL_VALIDATION_RULES)) {
-            $event = new DefineGqlValidationRulesEvent([
-                'validationRules' => $validationRules,
-                'debug' => $debug,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_GQL_VALIDATION_RULES, $event);
-            $validationRules = $event->validationRules;
-        }
-
-        return array_values($validationRules);
+        return app(NewGql::class)->getValidationRules($debug, $isIntrospectionQuery);
     }
 
-    /**
-     * Execute a GraphQL query for a given schema.
-     *
-     * @param GqlSchema $schema The schema definition to use.
-     * @param string $query The query string to execute.
-     * @param array|null $variables The variables to use.
-     * @param string|null $operationName The operation name.
-     * @param bool $debugMode Whether debug mode validations rules should be used for GraphQL.
-     *
-     * @return array
-     * @since 3.3.11
-     */
     public function executeQuery(
         GqlSchema $schema,
         string $query,
@@ -507,1403 +81,369 @@ class Gql extends Component
         ?string $operationName = null,
         bool $debugMode = false,
     ): array {
-        $context = [
-            'conditionBuilder' => Craft::createObject([
-                'class' => ElementQueryConditionBuilder::class,
-            ]),
-            'argumentManager' => Craft::createObject([
-                'class' => ArgumentManager::class,
-            ]),
-        ];
-
-        // Fire a 'beforeExecuteGqlQuery' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_EXECUTE_GQL_QUERY)) {
-            $event = new ExecuteGqlQueryEvent([
-                'schemaId' => $schema->id,
-                'query' => $query,
-                'variables' => $variables,
-                'operationName' => $operationName,
-                'context' => $context,
-            ]);
-            $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);
-            $query = $event->query;
-            $rootValue = $event->rootValue;
-            $variables = $event->variables;
-            $operationName = $event->operationName;
-            $context = $event->context;
-            $result = $event->result;
-        } else {
-            $result = $rootValue = null;
-        }
-
-        if ($result === null) {
-            $cacheKey = $this->_getCacheKey(
-                $schema,
-                $query,
-                $rootValue,
-                $variables,
-                $operationName,
-            );
-
-            if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey)) !== null) {
-                $result = $cachedResult;
-            } else {
-                $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
-                $prebuildSchema = $isIntrospectionQuery || !Cms::config()->lazyGqlTypes;
-                $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
-                $elementsService = Craft::$app->getElements();
-                $elementsService->startCollectingCacheInfo();
-
-                $result = GraphQL::executeQuery(
-                    $schemaDef,
-                    $query,
-                    $rootValue,
-                    $context,
-                    $variables,
-                    $operationName,
-                    null,
-                    $this->getValidationRules($debugMode, $isIntrospectionQuery),
-                )
-                    ->setErrorsHandler([$this, 'handleQueryErrors'])
-                    ->toArray($debugMode ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE : false);
-
-                [$dep, $duration] = $elementsService->stopCollectingCacheInfo();
-
-                if (empty($result['errors']) && $cacheKey) {
-                    $this->setCachedResult($cacheKey, $result, $dep, $duration);
-                }
-            }
-        }
-
-        // Fire an 'afterExecuteGqlQuery' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_EXECUTE_GQL_QUERY)) {
-            $event = new ExecuteGqlQueryEvent([
-                'schemaId' => $schema->id,
-                'query' => $query,
-                'variables' => $variables,
-                'operationName' => $operationName,
-                'context' => $context,
-                'rootValue' => $rootValue,
-                'result' => $result,
-                'cacheTags' => $dep->tags ?? null,
-                'cacheDuration' => $duration ?? null,
-            ]);
-            $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
-            $result = $event->result;
-        }
-
-        return $result ?? [];
+        return app(NewGql::class)->executeQuery($schema, $query, $variables, $operationName, $debugMode);
     }
 
-    /**
-     * Invalidates all GraphQL result caches.
-     *
-     * @since 3.3.12
-     */
     public function invalidateCaches(): void
     {
-        TagDependency::invalidate(self::CACHE_TAG);
+        app(NewGql::class)->invalidateCaches();
     }
 
-    /**
-     * Returns the cached result for a key.
-     *
-     * @param string $cacheKey
-     *
-     * @return array|null
-     * @since 3.3.12
-     */
     public function getCachedResult(string $cacheKey): ?array
     {
-        return Cache::get($cacheKey) ?: null;
+        return app(NewGql::class)->getCachedResult($cacheKey);
     }
 
-    /**
-     * Cache a result for the key and tag it.
-     *
-     * @param string $cacheKey
-     * @param array $result
-     * @param TagDependency|null $dependency
-     * @param int|null $duration
-     *
-     * @since 3.3.12
-     */
     public function setCachedResult(
         string $cacheKey,
         array $result,
         ?TagDependency $dependency = null,
         ?int $duration = null,
     ): void {
-        if ($dependency === null) {
-            $dependency = new TagDependency();
-        }
-
-        // Add the global graphql cache tag
-        $dependency->tags[] = self::CACHE_TAG;
-
-        DependencyCache::put($cacheKey, $result, $duration, $dependency);
+        app(NewGql::class)->setCachedResult($cacheKey, $result, $dependency, $duration);
     }
 
     /**
-     * Returns the active GraphQL schema.
-     *
-     * @return GqlSchema
-     * @throws GqlException if no schema is currently active.
+     * @throws GqlException
      */
     public function getActiveSchema(): GqlSchema
     {
-        if (!$this->_schema) {
-            throw new GqlException('No schema is active.');
-        }
-
-        return $this->_schema;
+        return self::schemaToLegacySchema(app(NewGql::class)->getActiveSchema());
     }
 
-    /**
-     * Sets the active GraphQL schema.
-     *
-     * @param GqlSchema|null $schema The schema, or `null` to unset the active schema
-     */
     public function setActiveSchema(?GqlSchema $schema = null): void
     {
-        $this->_schema = $schema;
+        app(NewGql::class)->setActiveSchema($schema);
     }
 
-    /**
-     * Returns all GraphQL tokens.
-     *
-     * @return GqlToken[]
-     * @since 3.4.0
-     */
     public function getTokens(): array
     {
-        $rows = $this->_createTokenQuery()->get();
-
-        $schemas = [];
-        $names = [];
-
-        foreach ($rows as $row) {
-            $token = new GqlToken((array) $row);
-
-            if (!$token->getIsPublic()) {
-                $schemas[] = $token;
-                $names[] = $token->name;
-            }
-        }
-
-        // Sort them by name
-        array_multisort($names, SORT_ASC, SORT_STRING, $schemas);
-
-        return $schemas;
+        return array_map(
+            fn(NewGqlToken $token) => self::tokenToLegacyToken($token),
+            app(NewGql::class)->getTokens(),
+        );
     }
 
     /**
-     * Returns the public schema. If it does not exist and admin changes are allowed, it will be created.
-     *
-     * @return GqlSchema|null
      * @throws Exception
      */
     public function getPublicSchema(): ?GqlSchema
     {
-        return $this->getPublicToken()?->getSchema();
+        $schema = app(NewGql::class)->getPublicSchema();
+
+        return $schema ? self::schemaToLegacySchema($schema) : null;
     }
 
-    /**
-     * Returns all of the known GraphQL schema components.
-     *
-     * @return array
-     * @since 3.5.0
-     */
     public function getAllSchemaComponents(): array
     {
-        $queries = [];
-        $mutations = [];
-
-        // Sites
-        $label = t('Sites');
-        [$queries[$label], $mutations[$label]] = $this->siteSchemaComponents();
-
-        // Elements
-        $label = t('All elements');
-        [$queries[$label], $mutations[$label]] = $this->elementSchemaComponents();
-
-        // Entries
-        $label = t('Entries');
-        [$queries[$label], $mutations[$label]] = $this->entrySchemaComponents();
-
-        // Assets
-        $label = t('Assets');
-        [$queries[$label], $mutations[$label]] = $this->assetSchemaComponents();
-
-        // Users
-        $label = t('Users');
-        [$queries[$label], $mutations[$label]] = $this->userSchemaComponents();
-
-        // Fire a 'registerGqlSchemaComponents' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS)) {
-            $event = new RegisterGqlSchemaComponentsEvent([
-                'queries' => $queries,
-                'mutations' => $mutations,
-            ]);
-            $this->trigger(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS, $event);
-            $queries = $event->queries;
-            $mutations = $event->mutations;
-        }
-
-        return [
-            'queries' => $queries,
-            'mutations' => $mutations,
-        ];
+        return app(NewGql::class)->getAllSchemaComponents();
     }
 
-    /**
-     * Flush all GraphQL caches, registries and loaders.
-     */
     public function flushCaches(): void
     {
-        $this->_schema = null;
-        $this->_schemaDef = null;
-        $this->_contentArguments = [];
-        $this->_typeDefinitions = [];
-        TypeLoader::flush();
-        GqlEntityRegistry::flush();
-        $this->invalidateCaches();
+        app(NewGql::class)->flushCaches();
     }
 
-    /**
-     * Returns a GraphQL token by its ID.
-     *
-     * @param int $id
-     *
-     * @return GqlToken|null
-     * @since 3.4.0
-     */
     public function getTokenById(int $id): ?GqlToken
     {
-        $result = $this->_createTokenQuery()->find($id);
+        $token = app(NewGql::class)->getTokenById($id);
 
-        return $result ? new GqlToken((array) $result) : null;
+        return $token ? self::tokenToLegacyToken($token) : null;
     }
 
-    /**
-     * Returns a GraphQL token by its name.
-     *
-     * @param string $tokenName
-     *
-     * @return GqlToken|null
-     * @since 3.4.0
-     */
     public function getTokenByName(string $tokenName): ?GqlToken
     {
-        $result = $this->_createTokenQuery()
-            ->where('name', $tokenName)
-            ->first();
+        $token = app(NewGql::class)->getTokenByName($tokenName);
 
-        return $result ? new GqlToken((array) $result) : null;
+        return $token ? self::tokenToLegacyToken($token) : null;
     }
 
-    /**
-     * Returns a GraphQL token by its UID.
-     *
-     * @param string $uid
-     *
-     * @return GqlToken
-     * @throws InvalidArgumentException if $uid is invalid
-     * @since 3.4.0
-     */
     public function getTokenByUid(string $uid): GqlToken
     {
-        $result = $this->_createTokenQuery()->where('uid', $uid)->first();
-
-        if (!$result) {
-            throw new InvalidArgumentException('Invalid UID');
-        }
-
-        return new GqlToken((array) $result);
+        return self::tokenToLegacyToken(app(NewGql::class)->getTokenByUid($uid));
     }
 
-    /**
-     * Returns a GraphQL token by its access token.
-     *
-     * @param string $token
-     *
-     * @return GqlToken
-     * @throws InvalidArgumentException if $token is invalid
-     * @since 3.4.0
-     */
     public function getTokenByAccessToken(string $token): GqlToken
     {
-        if ($token === GqlToken::PUBLIC_TOKEN) {
-            $publicToken = $this->getPublicToken();
-
-            if (!$publicToken) {
-                throw new InvalidArgumentException('Invalid access token');
-            }
-
-            return $publicToken;
-        }
-
-        $result = $this->_createTokenQuery()->where('accessToken', $token)->first();
-
-        if (!$result) {
-            throw new InvalidArgumentException('Invalid access token');
-        }
-
-        return new GqlToken((array) $result);
+        return self::tokenToLegacyToken(app(NewGql::class)->getTokenByAccessToken($token));
     }
 
-    /**
-     * Returns the public token. If it does not exist and admin changes are allowed, it will be created.
-     *
-     * @return GqlToken|null
-     * @since 3.5.0
-     */
     public function getPublicToken(): ?GqlToken
     {
-        if (!isset($this->_publicToken)) {
-            $config = app(ProjectConfig::class)->get(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN) ?? [];
-            $this->_publicToken = $this->_createPublicToken($config);
+        $token = app(NewGql::class)->getPublicToken();
 
-            if ($this->_publicToken) {
-                $this->_publicToken->id = $this->_createTokenQuery()
-                    ->where('accessToken', GqlToken::PUBLIC_TOKEN)
-                    ->value('id');
-            }
-        }
-
-        return $this->_publicToken;
+        return $token ? self::tokenToLegacyToken($token) : null;
     }
 
     /**
-     * Creates a public token with the given config.
-     *
-     * @param array $config
-     *
-     * @return GqlToken|null
-     */
-    private function _createPublicToken(array $config): ?GqlToken
-    {
-        $schema = $this->_getPublicSchema();
-
-        if (!$schema) {
-            if (!Cms::config()->allowAdminChanges) {
-                return null;
-            }
-
-            $schema = $this->_createPublicSchema();
-        }
-
-        return new GqlToken([
-            'name' => 'Public Token',
-            'accessToken' => GqlToken::PUBLIC_TOKEN,
-            'schema' => $schema,
-            'enabled' => $config['enabled'] ?? false,
-            'expiryDate' => DateTimeHelper::toDateTime($config['expiryDate'] ?? false) ?: null,
-        ]);
-    }
-
-    /**
-     * Saves a GraphQL token.
-     *
-     * @param GqlToken $token the schema to save
-     * @param bool $runValidation Whether the schema should be validated
-     *
-     * @return bool Whether the schema was saved successfully
      * @throws Exception
-     * @since 3.4.0
      */
     public function saveToken(GqlToken $token, bool $runValidation = true): bool
     {
-        if ($token->isTemporary) {
-            return false;
-        }
-
-        if ($runValidation && !$token->validate()) {
-            Log::info('Token not saved due to validation error.', [__METHOD__]);
-            return false;
-        }
-
-        // Public token information is stored in the project config
-        if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
-            $data = [
-                'enabled' => $token->enabled,
-                'expiryDate' => $token->expiryDate?->getTimestamp(),
-            ];
-
-            $projectConfigService = app(ProjectConfig::class);
-            $muteEvents = $projectConfigService->muteEvents;
-            $projectConfigService->muteEvents = false;
-            app(ProjectConfig::class)->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
-            $projectConfigService->muteEvents = $muteEvents;
-        }
-
-        $this->_saveTokenInternal($token);
-
-        return true;
+        return app(NewGql::class)->saveToken($token, $runValidation);
     }
 
-    /**
-     * Handle public token settings being updated.
-     *
-     * @param ConfigEvent $event
-     *
-     * @since 3.5.0
-     */
     public function handleChangedPublicToken(ConfigEvent $event): void
     {
-        // If we're just adding a public schema, ensure it makes it in.
-        ProjectConfigHelper::ensureAllGqlSchemasProcessed();
-
-        $this->_publicToken = $this->_createPublicToken($event->newValue);
+        app(NewGql::class)->handleChangedPublicToken($event);
     }
 
-    /**
-     * Deletes a GraphQL token by its ID.
-     *
-     * @param int $id The schemas's ID
-     *
-     * @return bool Whether the schema was deleted.
-     * @since 3.4.0
-     */
     public function deleteTokenById(int $id): bool
     {
-        $model = GqlTokenModel::find($id);
-
-        if (!$model) {
-            return true;
-        }
-
-        return $model->delete();
+        return app(NewGql::class)->deleteTokenById($id);
     }
 
     /**
-     * Saves a GraphQL schema.
-     *
-     * @param GqlSchema $schema the schema to save
-     * @param bool $runValidation Whether the schema should be validated
-     *
-     * @return bool Whether the schema was saved successfully
      * @throws Exception
-     * @since 3.4.0
      */
     public function saveSchema(GqlSchema $schema, bool $runValidation = true): bool
     {
-        $isNewSchema = !$schema->id;
-
-        if ($runValidation && !$schema->validate()) {
-            Log::info('Schema not saved due to validation error.', [__METHOD__]);
-            return false;
-        }
-
-        if ($isNewSchema && empty($schema->uid)) {
-            $schema->uid = Str::uuid()->toString();
-        } elseif (empty($schema->uid)) {
-            $schema->uid = DB::table(Table::GQLSCHEMAS)->uidById($schema->id);
-        }
-
-        $configPath = ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid;
-        $configData = $schema->getConfig();
-        app(ProjectConfig::class)->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
-
-        if ($isNewSchema) {
-            $schema->id = DB::table(Table::GQLSCHEMAS)->idByUid($schema->uid);
-        }
-
-        return true;
+        return app(NewGql::class)->saveSchema($schema, $runValidation);
     }
 
-    /**
-     * Handle schema change
-     *
-     * @param ConfigEvent $event
-     *
-     * @since 3.4.0
-     */
     public function handleChangedSchema(ConfigEvent $event): void
     {
-        $schemaUid = $event->tokenMatches[0];
-        $data = $event->newValue;
-
-        DB::beginTransaction();
-
-        try {
-            $schemaModel = $this->getSchemaModel($schemaUid);
-            $isNew = !$schemaModel->exists;
-
-            $schemaModel->uid = $schemaUid;
-            $schemaModel->name = $data['name'];
-            $schemaModel->isPublic = (bool)($data['isPublic'] ?? false);
-            $schemaModel->scope = ($data['scope'] ?? false) ?: [];
-
-            // Save the schema record
-            $schemaModel->save();
-
-            // If we're updating to 3.4+, check if the old token info for this schema was cached
-            if (
-                $isNew &&
-                ($allSchemas = Cache::get('migration:add_gql_project_config_support:schemas')) &&
-                !empty($allSchemas[$schemaUid])
-            ) {
-                $migratedSchema = $allSchemas[$schemaUid];
-                $token = new GqlToken([
-                    'name' => $migratedSchema['name'],
-                    'accessToken' => $migratedSchema['accessToken'],
-                    'enabled' => $migratedSchema['enabled'],
-                    'expiryDate' => $migratedSchema['expiryDate'],
-                    'lastUsed' => $migratedSchema['lastUsed'],
-                    'schemaId' => $schemaModel->id,
-                ]);
-                $this->saveToken($token);
-            }
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-
-        $this->invalidateCaches();
+        app(NewGql::class)->handleChangedSchema($event);
     }
 
-    /**
-     * Deletes a GraphQL schema by its ID.
-     *
-     * @param int $id The schema's ID
-     *
-     * @return bool Whether the schema was deleted.
-     * @since 3.4.0
-     */
     public function deleteSchemaById(int $id): bool
     {
-        $schema = $this->getSchemaById($id);
-
-        if (!$schema) {
-            return false;
-        }
-
-        return $this->deleteSchema($schema);
+        return app(NewGql::class)->deleteSchemaById($id);
     }
 
-    /**
-     * Deletes a GraphQL schema.
-     *
-     * @param GqlSchema $schema
-     *
-     * @return bool
-     * @since 3.4.0
-     */
     public function deleteSchema(GqlSchema $schema): bool
     {
-        app(ProjectConfig::class)->remove(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid,
-            "Delete the “{$schema->name}” GraphQL schema");
-        return true;
+        return app(NewGql::class)->deleteSchema($schema);
     }
 
-
-    /**
-     * Handle schema getting deleted
-     *
-     * @param ConfigEvent $event
-     *
-     * @since 3.4.0
-     */
     public function handleDeletedSchema(ConfigEvent $event): void
     {
-        $uid = $event->tokenMatches[0];
-        $schemaModel = $this->getSchemaModel($uid);
-
-        if (!$schemaModel->exists) {
-            return;
-        }
-
-        DB::beginTransaction();
-
-        try {
-            // Delete the schema
-            DB::table(Table::GQLSCHEMAS)->delete($schemaModel->id);
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-
-        $this->invalidateCaches();
+        app(NewGql::class)->handleDeletedSchema($event);
     }
 
-    /**
-     * Get a schema by its ID.
-     *
-     * @param int $id The schema's ID
-     *
-     * @return GqlSchema|null
-     */
     public function getSchemaById(int $id): ?GqlSchema
     {
-        $result = $this->_createSchemaQuery()->find($id);
+        $schema = app(NewGql::class)->getSchemaById($id);
 
-        return $result ? new GqlSchema((array) $result) : null;
+        return $schema ? self::schemaToLegacySchema($schema) : null;
     }
 
-    /**
-     * Get a schema by its UID.
-     *
-     * @param string $uid The schema's UID
-     *
-     * @return GqlSchema|null
-     * @since 3.4.0
-     */
     public function getSchemaByUid(string $uid): ?GqlSchema
     {
-        $result = $this->_createSchemaQuery()
-            ->where('uid', $uid)
-            ->first();
+        $schema = app(NewGql::class)->getSchemaByUid($uid);
 
-        return $result ? new GqlSchema((array) $result) : null;
+        return $schema ? self::schemaToLegacySchema($schema) : null;
     }
 
-    /**
-     * Get all schemas.
-     *
-     * @return GqlSchema[]
-     * @since 3.4.0
-     */
     public function getSchemas(): array
     {
-        return $this->_createSchemaQuery()
-            ->get()
-            ->map(fn(object $result) => new GqlSchema((array) $result))
-            ->all();
+        return array_map(
+            fn(NewGqlSchema $schema) => self::schemaToLegacySchema($schema),
+            app(NewGql::class)->getSchemas(),
+        );
     }
 
-    /**
-     * Returns the content arguments
-     *
-     * @param class-string<BaseElementInterface> $elementType
-     * @param callable $setter
-     *
-     * @phpstan-param callable():array $setter
-     * @return array
-     * @since 5.0.0
-     */
     public function getOrSetContentArguments(string $elementType, callable $setter): array
     {
-        if (!isset($this->_contentArguments[$elementType])) {
-            $this->_contentArguments[$elementType] = $setter();
-        }
-        return $this->_contentArguments[$elementType];
+        return app(NewGql::class)->getOrSetContentArguments($elementType, $setter);
     }
 
-    /**
-     * Returns arguments for fields in the given field layout.
-     *
-     * @param FieldLayout $fieldLayout
-     *
-     * @return array
-     * @since 5.6.0
-     */
     public function getFieldLayoutArguments(FieldLayout $fieldLayout): array
     {
-        if (!isset($fieldLayout->type)) {
-            throw new InvalidArgumentException('Field layout is missing its element type.');
-        }
-
-        if (!isset($this->_fieldArguments[$fieldLayout->uid])) {
-            $this->_fieldArguments[$fieldLayout->uid] =
-                $this->defineContentArgumentsForFields($fieldLayout->type, $fieldLayout->getCustomFields()) +
-                $this->defineContentArgumentsForGeneratedFields($fieldLayout->type, $fieldLayout->getGeneratedFields());
-        }
-
-        return $this->_fieldArguments[$fieldLayout->uid];
+        return app(NewGql::class)->getFieldLayoutArguments($fieldLayout);
     }
 
-    /**
-     * Returns the content arguments for a given element type and field layouts.
-     *
-     * @param class-string<BaseElementInterface> $elementType
-     * @param \CraftCms\Cms\FieldLayout\FieldLayout[] $fieldLayouts
-     *
-     * @return array
-     * @since 5.0.0
-     */
     public function defineContentArgumentsForFieldLayouts(string $elementType, array $fieldLayouts): array
     {
-        $fields = [];
-        $generatedFields = [];
-        $handledFieldLayouts = [];
-
-        foreach ($fieldLayouts as $fieldLayout) {
-            // avoid checking the same field layout more than once
-            if (isset($fieldLayout->uid)) {
-                if (isset($handledFieldLayouts[$fieldLayout->uid])) {
-                    continue;
-                }
-                $handledFieldLayouts[$fieldLayout->uid] = true;
-            }
-
-            array_push($fields, ...$fieldLayout->getCustomFields());
-            array_push($generatedFields, ...$fieldLayout->getGeneratedFields());
-        }
-
-        return $this->defineContentArgumentsForFields($elementType, $fields) +
-            $this->defineContentArgumentsForGeneratedFields($elementType, $generatedFields);
+        return app(NewGql::class)->defineContentArgumentsForFieldLayouts($elementType, $fieldLayouts);
     }
 
-    /**
-     * Returns the content arguments for a given element type and custom fields.
-     *
-     * @param class-string<BaseElementInterface> $elementType
-     * @param FieldInterface[] $fields
-     *
-     * @return array
-     * @since 5.0.0
-     */
     public function defineContentArgumentsForFields(string $elementType, array $fields): array
     {
-        $arguments = [];
-        $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
-
-        foreach ($fields as $field) {
-            if (
-                !isset($arguments[$field->handle]) &&
-                !$field instanceof GqlInlineFragmentFieldInterface &&
-                !method_exists($elementQuery, $field->handle)
-            ) {
-                $arguments[$field->handle] = $field->getContentGqlQueryArgumentType();
-            }
-        }
-
-        return $arguments;
+        return app(NewGql::class)->defineContentArgumentsForFields($elementType, $fields);
     }
 
-    /**
-     * Returns the content arguments for a given element type and generated fields.
-     *
-     * @param class-string<BaseElementInterface> $elementType
-     * @param array $fields
-     *
-     * @return array
-     * @since 5.8.0
-     */
     public function defineContentArgumentsForGeneratedFields(string $elementType, array $fields): array
     {
-        $arguments = [];
-        $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
-
-        foreach ($fields as $field) {
-            $handle = $field['handle'] ?? '';
-            if (
-                $handle !== '' &&
-                !isset($arguments[$handle]) &&
-                !method_exists($elementQuery, $handle)
-            ) {
-                $arguments[$handle] = [
-                    'name' => $handle,
-                    'type' => Type::listOf(QueryArgument::getType()),
-                ];
-            }
-        }
-
-        return $arguments;
+        return app(NewGql::class)->defineContentArgumentsForGeneratedFields($elementType, $fields);
     }
 
-    /**
-     * Returns the content arguments for an element class based on the given contexts.
-     *
-     * @param array $contexts
-     * @param class-string<BaseElementInterface> $elementType
-     *
-     * @return array
-     */
     public function getContentArguments(array $contexts, string $elementType): array
     {
-        /** @var FieldLayoutBehavior[] $contexts */
-        return $this->getOrSetContentArguments($elementType, function() use ($contexts, $elementType): array {
-            $fields = [];
-            $generatedFields = [];
+        return app(NewGql::class)->getContentArguments($contexts, $elementType);
+    }
 
-            foreach ($contexts as $context) {
-                if (GqlHelper::isSchemaAwareOf($elementType::gqlScopesByContext($context))) {
-                    $layout = $context->getFieldLayout();
-                    try {
-                        array_push($fields, ...$layout->getCustomFields());
-                        array_push($generatedFields, ...$layout->getGeneratedFields());
-                    } catch (UnknownMethodException) {
-                    }
-                }
+    public function handleQueryErrors(array $errors, callable $formatter): array
+    {
+        return app(NewGql::class)->handleQueryErrors($errors, $formatter);
+    }
+
+    public function prepareFieldDefinitions(array $fields, string $typeName): array
+    {
+        return app(NewGql::class)->prepareFieldDefinitions($fields, $typeName);
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(RegisterGqlTypes::class, function(RegisterGqlTypes $event) {
+            $service = self::service();
+            if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_TYPES)) {
+                return;
             }
 
-            return $this->defineContentArgumentsForFields($elementType, $fields) +
-                $this->defineContentArgumentsForGeneratedFields($elementType, $generatedFields);
+            $yiiEvent = new RegisterGqlTypesEvent(['types' => $event->types]);
+            $service->trigger(self::EVENT_REGISTER_GQL_TYPES, $yiiEvent);
+            $event->types = $yiiEvent->types;
+        });
+
+        Event::listen(RegisterGqlQueries::class, function(RegisterGqlQueries $event) {
+            $service = self::service();
+            if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_QUERIES)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterGqlQueriesEvent(['queries' => $event->queries]);
+            $service->trigger(self::EVENT_REGISTER_GQL_QUERIES, $yiiEvent);
+            $event->queries = $yiiEvent->queries;
+        });
+
+        Event::listen(RegisterGqlMutations::class, function(RegisterGqlMutations $event) {
+            $service = self::service();
+            if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_MUTATIONS)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterGqlMutationsEvent(['mutations' => $event->mutations]);
+            $service->trigger(self::EVENT_REGISTER_GQL_MUTATIONS, $yiiEvent);
+            $event->mutations = $yiiEvent->mutations;
+        });
+
+        Event::listen(RegisterGqlDirectives::class, function(RegisterGqlDirectives $event) {
+            $service = self::service();
+            if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_DIRECTIVES)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterGqlDirectivesEvent(['directives' => $event->directives]);
+            $service->trigger(self::EVENT_REGISTER_GQL_DIRECTIVES, $yiiEvent);
+            $event->directives = $yiiEvent->directives;
+        });
+
+        Event::listen(RegisterGqlSchemaComponents::class, function(RegisterGqlSchemaComponents $event) {
+            $service = self::service();
+            if (!$service->hasEventHandlers(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterGqlSchemaComponentsEvent([
+                'queries' => $event->queries,
+                'mutations' => $event->mutations,
+            ]);
+            $service->trigger(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS, $yiiEvent);
+            $event->queries = $yiiEvent->queries;
+            $event->mutations = $yiiEvent->mutations;
+        });
+
+        Event::listen(DefineGqlValidationRules::class, function(DefineGqlValidationRules $event) {
+            $service = self::service();
+            if (!$service->hasEventHandlers(self::EVENT_DEFINE_GQL_VALIDATION_RULES)) {
+                return;
+            }
+
+            $yiiEvent = new DefineGqlValidationRulesEvent([
+                'validationRules' => $event->validationRules,
+                'debug' => $event->debug,
+            ]);
+            $service->trigger(self::EVENT_DEFINE_GQL_VALIDATION_RULES, $yiiEvent);
+            $event->validationRules = $yiiEvent->validationRules;
+        });
+
+        Event::listen(ExecutingGqlQuery::class, function(ExecutingGqlQuery $event) {
+            $service = self::service();
+            if (!$service->hasEventHandlers(self::EVENT_BEFORE_EXECUTE_GQL_QUERY)) {
+                return;
+            }
+
+            $yiiEvent = new ExecuteGqlQueryEvent([
+                'schemaId' => $event->schema->id,
+                'query' => $event->query,
+                'variables' => $event->variables,
+                'operationName' => $event->operationName,
+                'context' => $event->context,
+                'rootValue' => $event->rootValue,
+                'result' => $event->result,
+            ]);
+            $service->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $yiiEvent);
+            $event->query = $yiiEvent->query;
+            $event->variables = $yiiEvent->variables;
+            $event->operationName = $yiiEvent->operationName;
+            $event->context = $yiiEvent->context;
+            $event->rootValue = $yiiEvent->rootValue;
+            $event->result = $yiiEvent->result;
+        });
+
+        Event::listen(ExecutedGqlQuery::class, function(ExecutedGqlQuery $event) {
+            $service = self::service();
+            if (!$service->hasEventHandlers(self::EVENT_AFTER_EXECUTE_GQL_QUERY)) {
+                return;
+            }
+
+            $yiiEvent = new ExecuteGqlQueryEvent([
+                'schemaId' => $event->schema->id,
+                'query' => $event->query,
+                'variables' => $event->variables,
+                'operationName' => $event->operationName,
+                'context' => $event->context,
+                'rootValue' => $event->rootValue,
+                'result' => $event->result,
+                'cacheTags' => $event->cacheTags,
+                'cacheDuration' => $event->cacheDuration,
+            ]);
+            $service->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $yiiEvent);
+            $event->query = $yiiEvent->query;
+            $event->variables = $yiiEvent->variables;
+            $event->operationName = $yiiEvent->operationName;
+            $event->context = $yiiEvent->context;
+            $event->rootValue = $yiiEvent->rootValue;
+            $event->result = $yiiEvent->result;
+            $event->cacheTags = $yiiEvent->cacheTags;
+            $event->cacheDuration = $yiiEvent->cacheDuration;
         });
     }
 
-    /**
-     * Custom error handler for GraphQL query errors
-     *
-     * @param Error[] $errors
-     * @param callable $formatter
-     *
-     * @return Error[]
-     * @since 3.6.2
-     */
-    public function handleQueryErrors(array $errors, callable $formatter): array
+    private static function service(): self
     {
-        $devMode = Cms::config()->devMode;
-
-        foreach ($errors as &$error) {
-            $originException = $nextException = $error;
-
-            // Get the origin exception.
-            while ($nextException = $nextException->getPrevious()) {
-                $originException = $nextException;
-            }
-
-            // If devMode enabled or exception is safe to show, substitute the original exception here.
-            if (
-                ($devMode || ($originException instanceof ClientAware && $originException->isClientSafe())
-                ) &&
-                !empty($originException->getMessage())
-            ) {
-                $error = $originException;
-            } elseif (!$originException instanceof Error) {
-                // If devMode not enabled and the error seems to be originating from Craft, display a generic message
-                $error = new Error(
-                    t('Something went wrong when processing the GraphQL query.'),
-                );
-            }
-
-            // Log it.
-            Craft::$app->getErrorHandler()->logException($originException);
-        }
-
-        return array_map($formatter, $errors);
+        return Craft::$app->getGql();
     }
 
-    /**
-     * Prepare field definitions for a given GraphQL type by giving plugins a chance to modify them.
-     *
-     * @param array $fields
-     * @param string $typeName
-     *
-     * @return array
-     */
-    public function prepareFieldDefinitions(array $fields, string $typeName): array
+    private static function schemaToLegacySchema(NewGqlSchema $schema): GqlSchema
     {
-        if (!array_key_exists($typeName, $this->_typeDefinitions)) {
-            if ($this->_typeManager === null) {
-                $this->_typeManager = Craft::createObject(TypeManager::class);
-            }
-
-            $this->_typeDefinitions[$typeName] = $this->_typeManager->registerFieldDefinitions($fields, $typeName);
+        if ($schema instanceof GqlSchema) {
+            return $schema;
         }
 
-        return $this->_typeDefinitions[$typeName];
+        return new GqlSchema($schema->toArray());
     }
 
-    /**
-     * Generate a cache key for the GraphQL operation. Returns null if caching is disabled or unable to generate one.
-     *
-     * @param GqlSchema $schema
-     * @param string $query
-     * @param mixed $rootValue
-     * @param array|null $variables
-     * @param string|null $operationName
-     *
-     * @return string|null
-     */
-    private function _getCacheKey(
-        GqlSchema $schema,
-        string $query,
-        mixed $rootValue,
-        ?array $variables = null,
-        ?string $operationName = null,
-    ): ?string {
-        // No cache key, if explicitly disabled
-        $generalConfig = Cms::config();
-
-        if (!$generalConfig->enableGraphqlCaching) {
-            return null;
-        }
-
-        // Do not cache mutations
-        if (preg_match('/^\s*mutation(?P<operationName>\s+\w+)?\s*(?P<variables>\(.*\))?\s*{/si', $query)) {
-            return null;
-        }
-
-        // No cache key if we have placeholder elements
-        if (!empty(Craft::$app->getElements()->getPlaceholderElements())) {
-            return null;
-        }
-
-        try {
-            $cacheKey = self::CACHE_TAG .
-                '::' . Sites::getCurrentSite()->id .
-                '::' . $schema->uid .
-                '::' . md5($query) .
-                '::' . serialize($rootValue) .
-                '::' . Info::fetch()->configVersion .
-                '::' . serialize($variables) .
-                ($operationName ? "::$operationName" : '');
-        } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-            $cacheKey = null;
-        }
-
-        return $cacheKey;
-    }
-
-    /**
-     * Register GraphQL types
-     *
-     * @return array the list of registered types.
-     */
-    private function _registerGqlTypes(): array
+    private static function tokenToLegacyToken(NewGqlToken $token): GqlToken
     {
-        $types = [
-            // Scalars
-            DateTime::class,
-            Number::class,
-            QueryArgument::class,
-
-            // Interfaces
-            AddressInterface::class,
-            ElementInterface::class,
-            EntryInterface::class,
-            AssetInterface::class,
-            UserInterface::class,
+        $config = [
+            'id' => $token->id,
+            'name' => $token->name,
+            'schemaId' => $token->schemaId,
+            'accessToken' => $token->accessToken,
+            'enabled' => $token->enabled,
+            'expiryDate' => $token->expiryDate,
+            'lastUsed' => $token->lastUsed,
+            'dateCreated' => $token->dateCreated,
+            'uid' => $token->uid,
+            'isTemporary' => $token->isTemporary,
         ];
 
-        // Fire a 'registerGqlTypes' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_TYPES)) {
-            $event = new RegisterGqlTypesEvent(['types' => $types]);
-            $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
-            $types = $event->types;
+        if ($schema = $token->getSchema()) {
+            $config['schema'] = self::schemaToLegacySchema($schema);
         }
 
-        foreach ($types as $type) {
-            /** @var class-string<SingularTypeInterface> $type */
-            TypeLoader::registerType($type::getName(), "$type::getType");
-        }
-
-        return $types;
-    }
-
-    /**
-     * Get GraphQL query definitions
-     */
-    private function _registerGqlQueries(): void
-    {
-        $queryList = [
-            // Queries
-            AddressQuery::getQueries(),
-            PingQuery::getQueries(),
-            EntryQuery::getQueries(),
-            AssetQuery::getQueries(),
-            UserQuery::getQueries(),
-        ];
-
-        // Flatten them
-        $queries = array_merge(...$queryList);
-
-        // Fire a 'registerGqlQueries' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_QUERIES)) {
-            $event = new RegisterGqlQueriesEvent(['queries' => $queries]);
-            $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
-            $queries = $event->queries;
-        }
-
-        TypeLoader::registerType('Query', fn() => call_user_func(Query::class . '::getType', $queries));
-    }
-
-    /**
-     * Get GraphQL mutation definitions
-     */
-    private function _registerGqlMutations(): void
-    {
-        $mutationList = [
-            // Mutations
-            PingMutation::getMutations(),
-            EntryMutation::getMutations(),
-            AssetMutation::getMutations(),
-        ];
-
-        // Flatten them
-        $mutations = array_merge(...$mutationList);
-
-        // Fire a 'registerGqlMutations' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_MUTATIONS)) {
-            $event = new RegisterGqlMutationsEvent(['mutations' => $mutations]);
-            $this->trigger(self::EVENT_REGISTER_GQL_MUTATIONS, $event);
-            $mutations = $event->mutations;
-        }
-
-        TypeLoader::registerType('Mutation', fn() => call_user_func(Mutation::class . '::getType', $mutations));
-    }
-
-    /**
-     * Get GraphQL query definitions
-     *
-     * @param GqlSchema|null $schema
-     * @return GqlDirective[]
-     */
-    private function _loadGqlDirectives(?GqlSchema $schema): array
-    {
-        /** @var class-string<Directive>[] $directiveClasses */
-        $directiveClasses = [
-            // Directives
-            FormatDateTime::class,
-            Markdown::class,
-            Money::class,
-            StripTags::class,
-            Trim::class,
-        ];
-
-        if ($schema !== null) {
-            if (in_array('directive:parseRefs', $schema->scope)) {
-                $directiveClasses[] = ParseRefs::class;
-            }
-
-            if (
-                !Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective &&
-                in_array('directive:transform', $schema->scope)
-            ) {
-                $directiveClasses[] = Transform::class;
-            }
-        }
-
-        // Fire a 'registerGqlDirectives' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_DIRECTIVES)) {
-            $event = new RegisterGqlDirectivesEvent(['directives' => $directiveClasses]);
-            $this->trigger(self::EVENT_REGISTER_GQL_DIRECTIVES, $event);
-            $directiveClasses = $event->directives;
-        }
-
-        $directives = GraphQL::getStandardDirectives();
-
-        foreach ($directiveClasses as $class) {
-            /** @var class-string<Directive> $class */
-            $directives[] = $class::create();
-        }
-
-        return $directives;
-    }
-
-    /**
-     * Return site schema components.
-     *
-     * @return array
-     */
-    private function siteSchemaComponents(): array
-    {
-        $sites = Sites::getAllSites(true);
-        $queryComponents = [];
-
-        foreach ($sites as $site) {
-            $queryComponents["sites.{$site->uid}:read"] = [
-                'label' => t('Query for elements in the “{site}” site', [
-                    'site' => $site->getName(),
-                ]),
-            ];
-        }
-
-        return [$queryComponents, []];
-    }
-
-    /**
-     * Return element schema components.
-     *
-     * @return array
-     */
-    private function elementSchemaComponents(): array
-    {
-        $queryComponents = [
-            'elements.drafts:read' => [
-                'label' => t('Query for element drafts'),
-            ],
-            'elements.revisions:read' => [
-                'label' => t('Query for element revisions'),
-            ],
-            'elements.inactive:read' => [
-                'label' => t('Query for non-enabled elements'),
-            ],
-        ];
-
-        return [$queryComponents, []];
-    }
-
-    /**
-     * Return the available schema components for entries.
-     *
-     * @return array
-     */
-    private function entrySchemaComponents(): array
-    {
-        $queryComponents = [];
-        $mutationComponents = [];
-
-        $singles = Sections::getSectionsByType(SectionType::Single);
-
-        foreach ($singles as $section) {
-            $name = t($section->name, category: 'site');
-            $prefix = "sections.$section->uid";
-            $queryComponents["$prefix:read"] = [
-                'label' => t('Query for the “{name}” entry', ['name' => $name]),
-            ];
-            $mutationComponents["$prefix:save"] = [
-                'label' => t('Save the “{section}” entry', ['section' => $name]),
-            ];
-        }
-
-        foreach (Sections::getAllSections() as $section) {
-            if ($section->type === SectionType::Single) {
-                continue;
-            }
-
-            $name = t($section->name, category: 'site');
-            $prefix = "sections.$section->uid";
-
-            $queryComponents["$prefix:read"] = [
-                'label' => t('Query for entries in the “{name}” section', ['name' => $name]),
-            ];
-
-            $mutationComponents["$prefix:edit"] = [
-                'label' => t('Edit entries in the “{name}” section', ['name' => $name]),
-                'nested' => [
-                    "$prefix:create" => [
-                        'label' => t('Create entries in the “{section}” section', ['section' => $name]),
-                    ],
-                    "$prefix:save" => [
-                        'label' => t('Save entries in the “{section}” section', ['section' => $name]),
-                    ],
-                    "$prefix:delete" => [
-                        'label' => t('Delete entries in the “{section}” section', ['section' => $name]),
-                    ],
-                ],
-            ];
-        }
-
-        // Add components for fields that manage nested entries
-        $fieldsService = app(Fields::class);
-        /** @var ElementContainerFieldInterface[] $fields */
-        $fields = array_merge(...array_map(
-            fn(string $type) => $fieldsService->getFieldsByType($type)->all(),
-            $fieldsService->getNestedEntryFieldTypes()->all(),
-        ));
-        usort($fields, fn(
-            ElementContainerFieldInterface $a,
-            ElementContainerFieldInterface $b,
-        ) => $a::displayName() <=> $b::displayName());
-
-        foreach ($fields as $field) {
-            $name = t($field->name, category: 'site');
-            $type = $field::displayName();
-            $prefix = "nestedentryfields.$field->uid";
-
-            $queryComponents["$prefix:read"] = [
-                'label' => t('Query for entries in the “{name}” {type} field', [
-                    'name' => $name,
-                    'type' => $type,
-                ]),
-            ];
-
-            $mutationComponents["$prefix:edit"] = [
-                'label' => t('Edit entries in the “{name}” {type} field', [
-                    'name' => $name,
-                    'type' => $type,
-                ]),
-                'nested' => [
-                    "$prefix:create" => [
-                        'label' => t('Create entries in the “{section}” {type} field', [
-                            'section' => $name, // todo: change to 'name'
-                            'type' => $type,
-                        ]),
-                    ],
-                    "$prefix:save" => [
-                        'label' => t('Save entries in the “{section}” {type} field', [
-                            'section' => $name, // todo: change to 'name'
-                            'type' => $type,
-                        ]),
-                    ],
-                    "$prefix:delete" => [
-                        'label' => t('Delete entries in the “{section}” {type} field', [
-                            'section' => $name, // todo: change to 'name'
-                            'type' => $type,
-                        ]),
-                    ],
-                ],
-            ];
-        }
-
-        return [$queryComponents, $mutationComponents];
-    }
-
-    /**
-     * Return volume permissions.
-     *
-     * @return array
-     */
-    private function assetSchemaComponents(): array
-    {
-        $queryComponents = [];
-        $mutationComponents = [];
-
-        $volumes = app(Volumes::class)->getAllVolumes();
-
-        if ($volumes->isNotEmpty()) {
-            foreach ($volumes as $volume) {
-                $name = t($volume->name, category: 'site');
-                $prefix = "volumes.$volume->uid";
-                $queryComponents["$prefix:read"] = [
-                    'label' => t('Query for assets in the “{name}” volume', ['name' => $name]),
-                ];
-                $mutationComponents["$prefix:edit"] = [
-                    'label' => t('Edit assets in the “{volume}” volume', ['volume' => $name]),
-                    'nested' => [
-                        "$prefix:create" => [
-                            'label' => t('Create assets in the “{volume}” volume', ['volume' => $name]),
-                        ],
-                        "$prefix:save" => [
-                            'label' => t('Modify assets in the “{volume}” volume', ['volume' => $name]),
-                        ],
-                        "$prefix:delete" => [
-                            'label' => t('Delete assets from the “{volume}” volume', ['volume' => $name]),
-                        ],
-                    ],
-                ];
-            }
-        }
-
-        return [$queryComponents, $mutationComponents];
-    }
-
-    /**
-     * Return user permissions.
-     *
-     * @return array
-     */
-    private function userSchemaComponents(): array
-    {
-        $queryComponents = [];
-
-        if (Edition::get() === Edition::Solo) {
-            $queryComponents['usergroups.solo:read'] = [
-                'label' => t('View {type}', ['type' => User::lowerDisplayName()]),
-            ];
-        } else {
-            $userGroups = UserGroups::getAllGroups();
-
-            $queryComponents['usergroups.everyone:read'] = [
-                'label' => t('Query for users'),
-            ];
-
-            foreach ($userGroups as $userGroup) {
-                $name = t($userGroup->name, category: 'site');
-                $prefix = "usergroups.$userGroup->uid";
-                $queryComponents["$prefix:read"] = [
-                    'label' => t('Query for users in the “{name}” user group', ['name' => $name]),
-                ];
-            }
-        }
-
-        return [$queryComponents, []];
-    }
-
-    private function _createTokenQuery(): Builder
-    {
-        return DB::table(Table::GQLTOKENS)
-            ->select([
-                'id',
-                'schemaId',
-                'name',
-                'accessToken',
-                'enabled',
-                'expiryDate',
-                'lastUsed',
-                'dateCreated',
-                'uid',
-            ]);
-    }
-
-    private function _createSchemaQuery(): Builder
-    {
-        return DB::table(Table::GQLSCHEMAS)
-            ->select([
-                'id',
-                'name',
-                'scope',
-                'isPublic',
-                'uid',
-            ]);
-    }
-
-    /**
-     * Get the public schema, if it exists.
-     *
-     * @return GqlSchema|null
-     */
-    private function _getPublicSchema(): ?GqlSchema
-    {
-        $result = $this->_createSchemaQuery()->where('isPublic', true)->first();
-
-        return $result ? new GqlSchema((array) $result) : null;
-    }
-
-    /**
-     * Creates the public schema.
-     *
-     * @return GqlSchema
-     */
-    private function _createPublicSchema(): GqlSchema
-    {
-        $schemaUid = Str::uuid()->toString();
-        $publicSchema = new GqlSchema([
-            'name' => 'Public Schema',
-            'uid' => $schemaUid,
-            'isPublic' => true,
-        ]);
-
-        $this->saveSchema($publicSchema, false);
-
-        return $publicSchema;
-    }
-
-    /**
-     * Gets a schema's record by uid.
-     */
-    private function getSchemaModel(string $uid): GqlSchemaModel
-    {
-        return GqlSchemaModel::findByUid($uid) ?? new GqlSchemaModel();
-    }
-
-
-    /**
-     * Save a GQL Token record based on the model.
-     *
-     * @param GqlToken $token
-     */
-    private function _saveTokenInternal(GqlToken $token): void
-    {
-        $isNewToken = !$token->id;
-
-        if ($isNewToken) {
-            $tokenModel = new GqlTokenModel();
-        } else {
-            $tokenModel = GqlTokenModel::find($token->id) ?? new GqlTokenModel();
-        }
-
-        $tokenModel->name = $token->name;
-        $tokenModel->enabled = $token->enabled;
-        $tokenModel->expiryDate = \CraftCms\Cms\Support\Query::prepareDateForDb($token->expiryDate);
-        $tokenModel->lastUsed = \CraftCms\Cms\Support\Query::prepareDateForDb($token->lastUsed);
-        $tokenModel->schemaId = $token->schemaId;
-
-        if ($token->accessToken) {
-            $tokenModel->accessToken = $token->accessToken;
-        }
-
-        $tokenModel->save();
-        $token->id = $tokenModel->id;
-        $token->uid = $tokenModel->uid;
+        return new GqlToken($config);
     }
 }

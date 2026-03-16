@@ -64,7 +64,7 @@ class Paginate extends Component
 
     public function getBasePath(): string
     {
-        return $this->_basePath ?? ($this->_basePath = Craft::$app->getRequest()->getPathInfo());
+        return $this->_basePath ?? ($this->_basePath = request()->path());
     }
 
     public function setBasePath(string $basePath): void

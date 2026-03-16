@@ -262,7 +262,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
         $namespacedId = InputNamespace::namespaceId($this->id);
 
         return InputNamespace::namespaceInputs(function () use ($namespacedId, $autofocusAddButton) {
-            $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
+            $isHtmxRequest = request()->headers->has('HX-Request');
             $selectableRules = $this->getSelectableConditionRules();
             $allRulesHtml = '';
             $ruleNum = 1;

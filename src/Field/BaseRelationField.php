@@ -39,6 +39,7 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -50,13 +51,13 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Schema;
 
@@ -1115,7 +1116,6 @@ JS, [
     protected function gqlFieldArguments(): array
     {
         $elementSourcesService = resolve(ElementSources::class);
-        $gqlService = Craft::$app->getGql();
         $fieldLayouts = [];
         $arguments = [];
 
@@ -1127,7 +1127,7 @@ JS, [
         }
 
         foreach ($fieldLayouts as $fieldLayout) {
-            $arguments += $gqlService->getFieldLayoutArguments($fieldLayout);
+            $arguments += Gql::getFieldLayoutArguments($fieldLayout);
         }
 
         return $arguments;
@@ -1239,7 +1239,7 @@ JS, [
                 );
                 $siteIds = Arr::where($siteIds, fn ($siteId) => $siteId !== $element->siteId);
                 if (! empty($siteIds)) {
-                    $userId = Craft::$app->getUser()->getId();
+                    $userId = Auth::id();
                     $timestamp = now();
 
                     foreach ($siteIds as $siteId) {

@@ -45,9 +45,7 @@ it('can get single entries by handle', function () {
 
     expect($this->entries->getSingleEntriesByHandle(['contact']))->toBeEmpty();
 
-    Entry::factory()->create([
-        'sectionId' => $singleSection->id,
-    ]);
+    Entry::factory()->forSection($singleSection)->create();
 
     $this->entries->refreshSingleEntries();
 
@@ -69,15 +67,11 @@ it('can move an entry to a different section', function () {
         'type' => SectionType::Channel,
     ]);
 
-    $section2 = Section::factory()->create([
+    $section2 = Section::factory()->withEntryTypes($entryType)->create([
         'type' => SectionType::Channel,
     ]);
-    $section2->entryTypes()->attach($entryType, ['sortOrder' => 1]);
 
-    $entry = Entry::factory()->create([
-        'sectionId' => $section1->id,
-        'typeId' => $entryType->id,
-    ]);
+    $entry = Entry::factory()->forSection($section1)->forEntryType($entryType)->create();
 
     expect($this->entries->getEntryById($entry->id)->sectionId)->toBe($section1->id);
 
@@ -93,9 +87,8 @@ it('can move an entry to a different section', function () {
 });
 
 it('cannot move if the entry is not saved', function () {
-    $entry = Entry::factory()->create([
-        'sectionId' => Section::factory()->create()->id,
-    ]);
+    $section = Section::factory()->create();
+    $entry = Entry::factory()->forSection($section)->create();
     $entry = $this->entries->getEntryById($entry->id);
     $entry->id = null;
 
@@ -106,9 +99,8 @@ it('cannot move if the entry is not saved', function () {
 });
 
 it('cannot move a nested entry', function () {
-    $entry = Entry::factory()->create([
-        'sectionId' => Section::factory()->create()->id,
-    ]);
+    $section = Section::factory()->create();
+    $entry = Entry::factory()->forSection($section)->create();
     $entry = $this->entries->getEntryById($entry->id);
     $entry->primaryOwnerId = 1;
 

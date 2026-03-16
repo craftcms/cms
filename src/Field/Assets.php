@@ -7,17 +7,10 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use craft\gql\arguments\elements\Asset as AssetArguments;
-use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Gql;
-use craft\helpers\Gql as GqlHelper;
-use craft\models\GqlSchema;
-use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -35,6 +28,13 @@ use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Gql as GqlService;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Gql\GqlHelper as Gql;
+use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
+use CraftCms\Cms\Gql\Resolvers\Elements\Asset as AssetResolver;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Folders;
@@ -42,6 +42,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -491,7 +492,7 @@ class Assets extends BaseRelationField
                         $asset->setMimeType(FileHelper::getMimeType($tempPath, checkExtension: false) ?? $file['mimeType']);
                         $asset->newFolderId = $uploadFolderId;
                         $asset->setVolumeId($uploadFolder->volumeId);
-                        $asset->uploaderId = Craft::$app->getUser()->getId();
+                        $asset->uploaderId = Auth::id();
                         $asset->avoidFilenameConflicts = true;
                         $asset->setScenario(Asset::SCENARIO_CREATE);
 
@@ -585,7 +586,7 @@ class Assets extends BaseRelationField
                             } catch (FsObjectNotFoundException $e) {
                                 // Don't freak out about that.
                                 Log::warning('Couldn’t move asset because the file doesn’t exist: '.$e->getMessage());
-                                Craft::$app->getErrorHandler()->logException($e);
+                                report($e);
                             }
                         }
                     }
