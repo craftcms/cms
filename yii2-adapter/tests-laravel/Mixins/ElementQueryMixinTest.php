@@ -26,11 +26,9 @@ test('collect', function() {
 });
 
 test('scalar', function() {
-    // No exception
-    expect(User::find()->select('id')->scalar())->toBeNull();
+    expect(User::find()->select('id')->scalar())->toBe(\CraftCms\Cms\User\Models\User::first()->id);
 });
 
 test('addOrderBy', function() {
-    // No exception
-    expect(User::find()->select('id')->addOrderBy(['id', SORT_ASC])->first())->toBeNull();
+    expect(User::find()->select('id')->addOrderBy(['id', SORT_ASC])->first()->id)->toBe(\CraftCms\Cms\User\Models\User::first()->id);
 });

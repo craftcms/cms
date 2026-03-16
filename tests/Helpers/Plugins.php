@@ -27,7 +27,7 @@ function loadTestPlugin(): void
             'packageName' => 'craftcms/test-plugin',
             'version' => '1.0.1',
             'class' => TestPlugin::class,
-            'basePath' => __DIR__.'/TestClasses',
+            'basePath' => dirname(__DIR__).'/TestClasses',
         ],
     ]);
 

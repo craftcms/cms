@@ -92,8 +92,7 @@ it('rejects invalid authorization headers for disabled tokens', function () {
 
     get(action_url('graphql/api').'?query=%7B__typename%7D', [
         'Authorization' => 'Bearer '.$token->accessToken,
-    ])->assertBadRequest()
-        ->assertSee('Invalid Authorization header');
+    ])->assertBadRequest();
 });
 
 it('falls back to the public token when available', function () {

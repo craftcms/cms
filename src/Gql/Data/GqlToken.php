@@ -40,6 +40,10 @@ class GqlToken extends Component implements Stringable
     public ?GqlSchema $schema {
         get => $this->getSchema();
         set {
+            if (! $value) {
+                return;
+            }
+
             $this->setSchema($value);
         }
     }
@@ -69,6 +73,8 @@ class GqlToken extends Component implements Stringable
         if (is_object($config)) {
             $config = (array) $config;
         }
+
+        unset($config['isValid'], $config['isExpired'], $config['isPublic'], $config['scope']);
 
         if ($schema = Arr::pull($config, 'schema')) {
             $this->setSchema($schema);
