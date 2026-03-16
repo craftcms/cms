@@ -47,7 +47,7 @@ use Override;
  * @method static \Error[] handleQueryErrors(\Error[] $errors, callable $formatter)
  * @method static array prepareFieldDefinitions(array $fields, string $typeName)
  *
- * @see GqlService
+ * @see \CraftCms\Cms\Gql\Gql
  */
 class Gql extends Facade
 {
