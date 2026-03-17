@@ -9,6 +9,8 @@
   import Input from '@/components/form/Input.vue';
   import type {SelectItem, SuggestionGroup} from '@/types';
   import SiteOverridesTable from '@/components/Settings/Email/SiteOverridesTable.vue';
+  import CraftCombobox from '@/components/form/CraftCombobox.vue';
+  import {store, test} from '@routes/cp/settings/email';
 
   const props = defineProps<{
     readOnly?: boolean;
@@ -38,8 +40,6 @@
       uid: string;
       name: string;
     }>;
-    saveUrl: string;
-    testUrl: string;
     defaultToEmail: string;
     flash?: Record<any, any>;
     errors: Record<any, any>;
@@ -74,13 +74,6 @@
     to: props.defaultToEmail,
   });
 
-  function handleMailerUpdate(event: CustomEvent) {
-    const target = event.target as HTMLSelectElement & {modelValue: string};
-    if (target) {
-      form.mailer = target.modelValue;
-    }
-  }
-
   // Handle cmd + s events
   useEventListener('keydown', (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 's') {
@@ -90,11 +83,11 @@
   });
 
   function save() {
-    form.clearErrors().post(props.saveUrl);
+    form.clearErrors().submit(store());
   }
 
   function sendTest() {
-    testForm.clearErrors().post(props.testUrl, {
+    testForm.clearErrors().submit(test(), {
       onSuccess: () => {
         testForm.reset();
       },
@@ -175,7 +168,7 @@
             </craft-callout>
           </template>
 
-          <craft-combobox
+          <CraftCombobox
             :label="t('System Email Address')"
             :help-text="
               t('The email address Craft CMS will use when sending email.')
@@ -183,38 +176,15 @@
             id="fromEmail"
             name="fromEmail"
             v-model="form.fromEmail"
-            :has-feedback-for="errors?.fromEmail ? 'error' : ''"
+            :error="form.errors?.fromEmail"
+            :options="envSuggestions"
             :disabled="readOnly"
             :require-option-match="false"
             show-all-on-empty
-          >
-            <template v-for="(group, idx) in envSuggestions" :key="idx">
-              <craft-option
-                v-for="suggestion in group.data"
-                :key="suggestion.name"
-                .choiceValue="suggestion.name"
-                .hint="suggestion.hint"
-                >{{ suggestion.name }}</craft-option
-              >
-            </template>
-            <div slot="after">
-              <craft-callout
-                variant="info"
-                appearance="plain"
-                class="p-0"
-                icon="lightbulb"
-              >
-                {{ t('This can be set to an environment variable.') }}
-              </craft-callout>
-            </div>
-            <div slot="feedback">
-              <ul class="error-list" v-if="errors?.fromEmail">
-                <li>{{ errors.fromEmail }}</li>
-              </ul>
-            </div>
-          </craft-combobox>
+            :callouts="['envVars']"
+          />
 
-          <craft-combobox
+          <CraftCombobox
             :label="t('Sender Name')"
             :help-text="
               t('The “From” name Craft CMS will use when sending email.')
@@ -222,38 +192,15 @@
             id="fromName"
             name="fromName"
             v-model="form.fromName"
-            :has-feedback-for="errors?.fromName ? 'error' : ''"
+            :error="form.errors?.fromName"
             :disabled="readOnly"
             :require-option-match="false"
             show-all-on-empty
-          >
-            <template v-for="(group, idx) in envSuggestions" :key="idx">
-              <craft-option
-                v-for="suggestion in group.data"
-                :key="suggestion.name"
-                .choiceValue="suggestion.name"
-                .hint="suggestion.hint"
-                >{{ suggestion.name }}</craft-option
-              >
-            </template>
-            <div slot="after">
-              <craft-callout
-                variant="info"
-                appearance="plain"
-                class="p-0"
-                icon="lightbulb"
-              >
-                {{ t('This can be set to an environment variable.') }}
-              </craft-callout>
-            </div>
-            <div slot="feedback">
-              <ul class="error-list" v-if="errors?.fromName">
-                <li>{{ errors.fromName }}</li>
-              </ul>
-            </div>
-          </craft-combobox>
+            :options="envSuggestions"
+            :callouts="['envVars']"
+          />
 
-          <craft-combobox
+          <CraftCombobox
             :label="t('Reply-To Address')"
             :help-text="
               t(
@@ -263,38 +210,15 @@
             id="replyToEmail"
             name="replyToEmail"
             v-model="form.replyToEmail"
-            :has-feedback-for="errors?.replyToEmail ? 'error' : ''"
+            :error="form.errors?.replyToEmail"
             :disabled="readOnly"
             :require-option-match="false"
+            :options="envSuggestions"
             show-all-on-empty
-          >
-            <template v-for="(group, idx) in envSuggestions" :key="idx">
-              <craft-option
-                v-for="suggestion in group.data"
-                :key="suggestion.name"
-                .choiceValue="suggestion.name"
-                .hint="suggestion.hint"
-                >{{ suggestion.name }}</craft-option
-              >
-            </template>
-            <div slot="after">
-              <craft-callout
-                variant="info"
-                appearance="plain"
-                class="p-0"
-                icon="lightbulb"
-              >
-                {{ t('This can be set to an environment variable.') }}
-              </craft-callout>
-            </div>
-            <div slot="feedback">
-              <ul class="error-list" v-if="errors?.replyToEmail">
-                <li>{{ errors.replyToEmail }}</li>
-              </ul>
-            </div>
-          </craft-combobox>
+            :callouts="['envVars']"
+          />
 
-          <craft-combobox
+          <CraftCombobox
             :label="t('HTML Email Template')"
             :help-text="
               t(
@@ -304,54 +228,13 @@
             id="template"
             name="template"
             v-model="form.template"
-            :has-feedback-for="errors?.template ? 'error' : ''"
+            :error="errors?.template"
             :disabled="readOnly"
             :require-option-match="false"
             show-all-on-empty
-          >
-            <template
-              v-for="(group, idx) in templateSuggestions"
-              :key="'tpl-' + idx"
-            >
-              <template v-if="group.type === 'optgroup'">
-                <span class="group-label">{{ group.label }}</span>
-                <craft-option
-                  v-for="option in group.options"
-                  :key="option.value"
-                  .choiceValue="option.value"
-                  .hint="option.data?.hint"
-                  >{{ option.label }}</craft-option
-                >
-              </template>
-            </template>
-            <template
-              v-for="(group, idx) in envSuggestions"
-              :key="'env-' + idx"
-            >
-              <craft-option
-                v-for="suggestion in group.data"
-                :key="suggestion.name"
-                .choiceValue="suggestion.name"
-                .hint="suggestion.hint"
-                >{{ suggestion.name }}</craft-option
-              >
-            </template>
-            <div slot="after">
-              <craft-callout
-                variant="info"
-                appearance="plain"
-                class="p-0"
-                icon="lightbulb"
-              >
-                {{ t('This can be set to an environment variable.') }}
-              </craft-callout>
-            </div>
-            <div slot="feedback">
-              <ul class="error-list" v-if="errors?.template">
-                <li>{{ errors.template }}</li>
-              </ul>
-            </div>
-          </craft-combobox>
+            :options="[...templateSuggestions, ...envSuggestions]"
+            :callouts="['envVars']"
+          />
         </div>
 
         <!-- Site Overrides -->
@@ -374,53 +257,19 @@
         <hr />
 
         <div class="p-5">
-          <craft-combobox
+          <CraftCombobox
             :label="t('Mailer')"
             :help-text="t('How should Craft CMS send the emails?')"
             id="mailer"
             name="mailer"
-            .modelValue="form.mailer"
-            @model-value-changed="handleMailerUpdate"
-            :has-feedback-for="errors?.mailer ? 'error' : ''"
+            v-model="form.mailer"
+            :error="form.errors?.mailer"
             :disabled="readOnly"
             :require-option-match="false"
             show-all-on-empty
-          >
-            <craft-option
-              v-for="option in mailerOptions"
-              :key="option.value ?? '__default__'"
-              .choiceValue="option.value ?? ''"
-            >
-              {{ option.label }}
-            </craft-option>
-            <template
-              v-for="(group, idx) in envSuggestions"
-              :key="'mailer-env-' + idx"
-            >
-              <craft-option
-                v-for="suggestion in group.data"
-                :key="suggestion.name"
-                .choiceValue="suggestion.name"
-                .hint="suggestion.hint"
-                >{{ suggestion.name }}</craft-option
-              >
-            </template>
-            <div slot="after">
-              <craft-callout
-                variant="info"
-                appearance="plain"
-                class="p-0"
-                icon="lightbulb"
-              >
-                {{ t('This can be set to an environment variable.') }}
-              </craft-callout>
-            </div>
-            <div slot="feedback">
-              <ul class="error-list" v-if="errors?.mailer">
-                <li>{{ errors.mailer }}</li>
-              </ul>
-            </div>
-          </craft-combobox>
+            :options="[...mailerOptions, ...envSuggestions]"
+            :callouts="['envVars']"
+          />
         </div>
       </div>
 

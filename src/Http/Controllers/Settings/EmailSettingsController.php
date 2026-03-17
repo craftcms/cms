@@ -53,8 +53,6 @@ readonly class EmailSettingsController
                 ['label' => t('Email')],
             ],
             'readOnly' => ! $generalConfig->allowAdminChanges,
-            'saveUrl' => route('craft.cp.settings.email.store'),
-            'testUrl' => route('craft.cp.settings.email.test'),
             'defaultToEmail' => auth()->user()->email,
         ]);
     }
@@ -67,9 +65,14 @@ readonly class EmailSettingsController
             'fromEmail' => $validated['fromEmail'] ?? null,
             'fromName' => $validated['fromName'] ?? null,
             'replyToEmail' => $validated['replyToEmail'] ?? null,
-            'mailer' => $validated['mailer'] ?? null,
             'template' => $validated['template'] ?? null,
         ]);
+
+        /**
+         * When the mailer is explicitly set to null, the default at the time
+         * of sending will be used, so we need this explicitly set to `null`
+         * */
+        $emailSettings['mailer'] = $validated['mailer'] ?? null;
 
         $siteOverrides = array_filter(array_map(
             array_filter(...),
@@ -109,7 +112,7 @@ readonly class EmailSettingsController
         $default = config('mail.default', 'smtp');
 
         $options = [
-            ['value' => null, 'label' => t('Default ({mailer})', ['mailer' => $default])],
+            ['value' => '', 'label' => t('Default ({mailer})', ['mailer' => $default])],
         ];
 
         foreach (array_keys($mailers) as $name) {
