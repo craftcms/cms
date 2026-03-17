@@ -2254,6 +2254,7 @@ return [
     '{attribute} must be a date.' => '{attribute} doit être une date.',
     '{attribute} must be a time.' => '{attribute} doit être une heure.',
     '{attribute} must be an array.' => '{attribute} doit être un ensemble.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} ne doit pas être antérieur à {min}.',
     '{attribute} must be no greater than {max}.' => '{attribute} ne doit pas être supérieur à {max}.',
     '{attribute} must be no later than {max}.' => '{attribute} ne doit pas être postérieur à {max}.',
