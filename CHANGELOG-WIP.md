@@ -15,6 +15,7 @@
 - Category indexes can now have “Group” columns. ([#18553](https://github.com/craftcms/cms/discussions/18553))
 
 ### Administration
+- Time fields’ “Max Time” settings can now be set to an earlier time than “Min Time”, for overnight time ranges. ([#18575](https://github.com/craftcms/cms/pull/18575))
 - Newlines in system message bodies are now replaced with `<br>` tags. ([#18058](https://github.com/craftcms/cms/discussions/18058))
 - Added the `--to-default` option to `resave` commands. ([#18522](https://github.com/craftcms/cms/pull/18522))
 
@@ -27,6 +28,7 @@
 ### Extensibility
 - Added `craft\base\DefaultableFieldInterface`. ([#18522](https://github.com/craftcms/cms/pull/18522))
 - Added `craft\elements\PopulateElementEvent::$content`.
+- Added `craft\validators\TimeValidator::$outOfRange`. ([#18575](https://github.com/craftcms/cms/pull/18575))
 - `craft\elements\PopulateElementEvent::$row` no longer includes `fieldValues` or `generatedFieldValues` keys.
 
 ### System
