@@ -2255,6 +2255,7 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{attribute} must be a date.' => '{attribute} bir tarih olmalıdır.',
     '{attribute} must be a time.' => '{attribute} bir saat olmalıdır.',
     '{attribute} must be an array.' => '{attribute} bir dizi olmalı.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute}, {min} değerinden önce olmamalıdır.',
     '{attribute} must be no greater than {max}.' => '{attribute}, {max} değerinden büyük olmamalıdır.',
     '{attribute} must be no later than {max}.' => '{attribute}, {max} değerinden sonra olmamalıdır.',
