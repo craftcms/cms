@@ -2253,6 +2253,7 @@ return [
     '{attribute} must be a date.' => '{attribute} verður að vera dagsetning.',
     '{attribute} must be a time.' => '{attribute} verður að vera tími.',
     '{attribute} must be an array.' => '{attribute} verður að vera fylki.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} má ekki vera fyrr en {min}.',
     '{attribute} must be no greater than {max}.' => '{attribute} má ekki vera stærri en {max}.',
     '{attribute} must be no later than {max}.' => '{attribute} verður að vera eigi síðar en {max}.',
