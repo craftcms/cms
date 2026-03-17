@@ -2255,6 +2255,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{attribute} must be a date.' => 'Atrybut {attribute} musi być datą.',
     '{attribute} must be a time.' => 'Atrybut {attribute} musi być godziną.',
     '{attribute} must be an array.' => 'Atrybut {attribute} musi być tablicą.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => 'Atrybut {attribute} nie może być wcześniejszy niż {min}.',
     '{attribute} must be no greater than {max}.' => 'Atrybut {attribute} musi być nie większy niż {max}.',
     '{attribute} must be no later than {max}.' => 'Atrybut {attribute} nie może być późniejszy niż {max}.',
