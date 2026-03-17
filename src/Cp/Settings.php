@@ -59,7 +59,14 @@ readonly class Settings
                 'icon' => 'light/map-location',
                 'label' => t('Addresses'),
             ];
+
+            $settings[$label]['email'] = [
+                'url' => route('craft.cp.settings.email.index'),
+                'icon' => 'light/envelope',
+                'label' => t('Email'),
+            ];
         }
+
         $settings[$label]['plugins'] = [
             'icon' => 'light/plug',
             'label' => t('Plugins'),

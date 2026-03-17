@@ -589,7 +589,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 ## Mail
 
-- Added `CraftCms\Cms\Console\Commands\SendTestMailCommand`.
+- Added `CraftCms\Cms\Email\Commands\SendTestMailCommand`.
 - Added `CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable`.
 - Added `CraftCms\Cms\Utility\Utilities\MailSettings`.
 - Deprecated `Craft::$app->getMailer()`. Laravel mailers/drivers and `CraftCms\Cms\SystemMessage\SystemMessages::mailable()` should be used instead.

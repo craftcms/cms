@@ -159,6 +159,7 @@
       "node_modules/@lion/ui/components/combobox/translations/zh.js",
       "node_modules/@lion/ui/components/combobox/translations/en.js",
       "resources/js/pages/Install.vue",
+      "resources/js/pages/SettingsEmailPage.vue",
       "resources/js/pages/SettingsGeneralPage.vue",
       "resources/js/pages/SettingsIndexPage.vue",
       "resources/js/pages/SettingsSectionsEditPage.vue",
@@ -877,6 +878,17 @@
       "assets/account.png",
       "assets/site.png",
       "assets/db.png"
+    ]
+  },
+  "resources/js/pages/SettingsEmailPage.vue": {
+    "file": "SettingsEmailPage.js",
+    "name": "SettingsEmailPage",
+    "src": "resources/js/pages/SettingsEmailPage.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_cp3.js",
+      "_AppLayout.js",
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js"
     ]
   },
   "resources/js/pages/SettingsGeneralPage.vue": {

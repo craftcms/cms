@@ -49,7 +49,7 @@ class MailSettings extends Model
     /**
      * @var array Site-specific overrides
      * @since 5.6.0
-     * @deprecated 6.0.0 configure Laravel mailers per environment instead.
+     * @deprecated 6.0.0 Use the email settings in Settings → Email instead.
      */
     public array $siteOverrides = [];
 
@@ -135,7 +135,7 @@ class MailSettings extends Model
      *
      * @param array $siteOverrides
      * @since 5.6.0
-     * @deprecated 6.0.0 configure Laravel mailers per environment instead.
+     * @deprecated 6.0.0 Use the email settings in Settings → Email instead.
      */
     public function setSiteOverrides(array $siteOverrides): void
     {

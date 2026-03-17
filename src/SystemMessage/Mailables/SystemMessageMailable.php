@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage\Mailables;
 
+use CraftCms\Cms\Email\Data\EmailSettings;
+use CraftCms\Cms\Email\Data\MailSettings;
 use CraftCms\Cms\SystemMessage\Actions\FormatSystemMessageMailAction;
 use CraftCms\Cms\SystemMessage\Actions\RenderSystemMessageAction;
 use CraftCms\Cms\SystemMessage\Data\RenderedSystemMessage;
@@ -33,8 +35,10 @@ class SystemMessageMailable extends Mailable
 
     public function build(): static
     {
+        $resolved = $this->applyEmailSettings();
+
         $message = $this->renderedMessage();
-        $formattedMessage = app(FormatSystemMessageMailAction::class)->handle($message);
+        $formattedMessage = app(FormatSystemMessageMailAction::class)->handle($message, $resolved);
 
         $mailable = $this
             ->subject($message->subject)
@@ -45,5 +49,25 @@ class SystemMessageMailable extends Mailable
         }
 
         return $mailable->markdown('mail.system-message', $formattedMessage->viewData);
+    }
+
+    private function applyEmailSettings(): MailSettings
+    {
+        $settings = EmailSettings::fromProjectConfig();
+        $resolved = $settings->resolveForSite($this->siteId);
+
+        if ($resolved->fromEmail) {
+            $this->from($resolved->fromEmail, $resolved->fromName ?? '');
+        }
+
+        if ($resolved->replyToEmail) {
+            $this->replyTo($resolved->replyToEmail);
+        }
+
+        if ($resolved->mailer) {
+            $this->mailer($resolved->mailer);
+        }
+
+        return $resolved;
     }
 }
