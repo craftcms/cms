@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.17 - 2026-03-17
 
 - Added `craft\helpers\DateTimeHelper::testTimeToSeconds()`.
 - Fixed an error that could occur after running the `utils/fix-field-layout-uids` command. ([#18516](https://github.com/craftcms/cms/issues/18516))
