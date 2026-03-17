@@ -2253,6 +2253,7 @@ return [
     '{attribute} must be a date.' => '{attribute}は日付である必要があります。',
     '{attribute} must be a time.' => '{attribute}は時刻である必要があります。',
     '{attribute} must be an array.' => '{attribute} は配列である必要があります。',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute}は{min}より前にできません。',
     '{attribute} must be no greater than {max}.' => '{attribute}は{max}より大きくできません。',
     '{attribute} must be no later than {max}.' => '{attribute}は{max}より後にできません。',
