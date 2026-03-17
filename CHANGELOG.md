@@ -2,10 +2,16 @@
 
 ## Unreleased
 
+- Added `craft\helpers\DateTimeHelper::testTimeToSeconds()`.
 - Fixed an error that could occur after running the `utils/fix-field-layout-uids` command. ([#18516](https://github.com/craftcms/cms/issues/18516))
+- Fixed a JavaScript error that could occur if any field layout elements were configured with unsupported widths. ([#18552](https://github.com/craftcms/cms/issues/18552))
+- Fixed an error that could occur when user impersonation failed. ([#18569](https://github.com/craftcms/cms/issues/18569))
 - Fixed a bug where deeply-nested elements could be deleted unexpectedly. ([#18537](https://github.com/craftcms/cms/issues/18537))
 - Fixed a warning that was getting logged when using `craft\filters\SiteFilterTrait`.
 - Fixed a bug where prefixing entry queries’ `authorGroup` params with `and` or `not` operators wasn’t working properly. ([#18551](https://github.com/craftcms/cms/issues/18551))
+- Fixed an error that could occur when running the `gc` command, if a Matrix field had been converted to an Addresses or Content Block field. ([#18549](https://github.com/craftcms/cms/issues/18549))
+- Fixed a styling issue. ([#18566](https://github.com/craftcms/cms/issues/18566))
+- Fixed a JavaScript error that could occur when Time fields’ Min/Max Time settings were set.
 
 ## 5.9.16 - 2026-03-11
 

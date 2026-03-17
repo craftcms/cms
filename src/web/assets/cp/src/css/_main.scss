@@ -5750,7 +5750,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
       @include mixins.icon;
       opacity: 1;
       position: absolute;
-      inset-block-start: 24px;
+      inset-block-start: var(--pane-padding);
       inset-inline-start: 18px;
       font-size: 18px;
       width: 24px;
