@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
-use CraftCms\Cms\Gql\Gql as GqlService;
 use Illuminate\Support\Facades\Facade;
 use Override;
 
@@ -47,33 +46,33 @@ use Override;
  * @method static \Error[] handleQueryErrors(\Error[] $errors, callable $formatter)
  * @method static array prepareFieldDefinitions(array $fields, string $typeName)
  *
- * @see GqlService
+ * @see \CraftCms\Cms\Gql\Gql
  */
 class Gql extends Facade
 {
-    public const string CACHE_TAG = GqlService::CACHE_TAG;
+    public const string CACHE_TAG = \CraftCms\Cms\Gql\Gql::CACHE_TAG;
 
     /** The field name to use when fetching count of related elements. */
-    public const string GRAPHQL_COUNT_FIELD = GqlService::GRAPHQL_COUNT_FIELD;
+    public const string GRAPHQL_COUNT_FIELD = \CraftCms\Cms\Gql\Gql::GRAPHQL_COUNT_FIELD;
 
     /** Complexity value for accessing a simple field. */
-    public const int GRAPHQL_COMPLEXITY_SIMPLE_FIELD = GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
+    public const int GRAPHQL_COMPLEXITY_SIMPLE_FIELD = \CraftCms\Cms\Gql\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
 
     /** Complexity value for accessing a field that will trigger a single query for the request. */
-    public const int GRAPHQL_COMPLEXITY_QUERY = GqlService::GRAPHQL_COMPLEXITY_QUERY;
+    public const int GRAPHQL_COMPLEXITY_QUERY = \CraftCms\Cms\Gql\Gql::GRAPHQL_COMPLEXITY_QUERY;
 
     /** Complexity value for accessing a field that will add an instance of eager-loading for the request. */
-    public const int GRAPHQL_COMPLEXITY_EAGER_LOAD = GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
+    public const int GRAPHQL_COMPLEXITY_EAGER_LOAD = \CraftCms\Cms\Gql\Gql::GRAPHQL_COMPLEXITY_EAGER_LOAD;
 
     /** Complexity value for accessing a field that will likely trigger a CPU heavy operation. */
-    public const int GRAPHQL_COMPLEXITY_CPU_HEAVY = GqlService::GRAPHQL_COMPLEXITY_CPU_HEAVY;
+    public const int GRAPHQL_COMPLEXITY_CPU_HEAVY = \CraftCms\Cms\Gql\Gql::GRAPHQL_COMPLEXITY_CPU_HEAVY;
 
     /** Complexity value for accessing a field that will trigger a query for every parent returned. */
-    public const int GRAPHQL_COMPLEXITY_NPLUS1 = GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
+    public const int GRAPHQL_COMPLEXITY_NPLUS1 = \CraftCms\Cms\Gql\Gql::GRAPHQL_COMPLEXITY_NPLUS1;
 
     #[Override]
     protected static function getFacadeAccessor(): string
     {
-        return GqlService::class;
+        return \CraftCms\Cms\Gql\Gql::class;
     }
 }
