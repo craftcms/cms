@@ -4,6 +4,7 @@
 
 - Fixed an error that could occur after running the `utils/fix-field-layout-uids` command. ([#18516](https://github.com/craftcms/cms/issues/18516))
 - Fixed a JavaScript error that could occur if any field layout elements were configured with unsupported widths. ([#18552](https://github.com/craftcms/cms/issues/18552))
+- Fixed an error that could occur when user impersonation failed. ([#18569](https://github.com/craftcms/cms/issues/18569))
 
 ## 4.17.10 - 2026-03-11
 
