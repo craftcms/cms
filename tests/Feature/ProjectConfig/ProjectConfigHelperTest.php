@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
@@ -295,7 +294,7 @@ test('touch', function (string $input, string $expected) {
     }
 
     // Create a new project.yaml file with the input data
-    FileHelper::writeToFile($path, $input);
+    CraftCms\Cms\Support\File::writeToFile($path, $input);
 
     // Test
     DateTimeHelper::pause();

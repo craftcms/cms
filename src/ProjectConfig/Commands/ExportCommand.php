@@ -9,7 +9,9 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\File;
 use Illuminate\Console\Command;
+use Override;
 use Symfony\Component\Yaml\Yaml;
 
 use function Illuminate\Filesystem\join_paths;
@@ -30,17 +32,17 @@ class ExportCommand extends Command
 {
     use CraftCommand;
 
-    #[\Override]
+    #[Override]
     protected $signature = 'craft:project-config:export
         {path?}
         {--external : Whether to pull values from the project config YAML files instead of the loaded config.}
         {--overwrite : Whether to overwrite an existing export file, if a specific file path is given.}
     ';
 
-    #[\Override]
+    #[Override]
     protected $description = 'Exports the entire project config to a single file.';
 
-    #[\Override]
+    #[Override]
     protected $aliases = ['project-config/export', 'pc:export', 'pc/export'];
 
     public function handle(ProjectConfig $projectConfig): int
@@ -94,7 +96,7 @@ class ExportCommand extends Command
                 $config = $projectConfig->get(null, $this->option('external'));
                 $content = Yaml::dump(ProjectConfigHelper::cleanupConfig($config), 20, 2);
 
-                FileHelper::writeToFile($path, $content);
+                File::writeToFile($path, $content);
             }
         );
 

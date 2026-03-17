@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Container\Attributes\Singleton;
@@ -355,16 +354,15 @@ class Composer
         $backupsDir = Path::composerBackups();
         $jsonBackupPath = join_paths($backupsDir, 'composer.json');
         $lockBackupPath = join_paths($backupsDir, 'composer.lock');
-        FileHelper::cycle($jsonBackupPath, $this->maxBackups);
-        FileHelper::cycle($lockBackupPath, $this->maxBackups);
-
+        File::cycle($jsonBackupPath, $this->maxBackups);
+        File::cycle($lockBackupPath, $this->maxBackups);
         File::copy($this->getJsonPath(), $jsonBackupPath);
 
         $lockPath = $this->getLockPath();
         if (File::exists($lockPath)) {
             File::copy($lockPath, $lockBackupPath);
         } else {
-            FileHelper::writeToFile($lockBackupPath, Json::encode([
+            File::writeToFile($lockBackupPath, Json::encode([
                 '_readme' => [
                     'No composer.lock file existed at the time of backup.',
                 ],

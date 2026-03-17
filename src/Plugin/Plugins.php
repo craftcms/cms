@@ -33,6 +33,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
@@ -1068,7 +1069,7 @@ class Plugins
 
         $iconPath = ($basePath !== false) ? $basePath.'/icon.svg' : false;
 
-        if ($iconPath === false || ! is_file($iconPath) || ! FileHelper::isSvg($iconPath)) {
+        if ($iconPath === false || ! is_file($iconPath) || ! File::isSvg($iconPath)) {
             $iconPath = Aliases::get('@appicons/default-plugin.svg');
         }
 

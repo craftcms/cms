@@ -43,7 +43,7 @@ final readonly class Backups
     public function getBackupFilePath(?Connection $connection = null, ?string $backupFormat = null): string
     {
         $connection ??= DB::connection();
-        $systemName = FileHelper::sanitizeFilename(Cms::systemName(), ['asciiOnly' => true]);
+        $systemName = File::sanitizeFilename(Cms::systemName(), ['asciiOnly' => true]);
         $systemName = str_replace(['\'', '"'], '', strtolower($systemName));
         $version = Info::fetch()->version ?? Cms::VERSION;
         $filename = ($systemName ? "$systemName--" : '').gmdate('Y-m-d-His')."--v$version";

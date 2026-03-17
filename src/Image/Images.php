@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Enums\ExifOrientation;
 use CraftCms\Cms\Image\Enums\ImageDriver;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\PHP;
 use enshrined\svgSanitize\Sanitizer;
 use Illuminate\Container\Attributes\Singleton;
@@ -158,7 +158,7 @@ class Images
 
     public function loadImage(string $path, bool $rasterize = false, int $svgSize = 1000): Image
     {
-        if (FileHelper::isSvg($path)) {
+        if (File::isSvg($path)) {
             $image = new Svg;
             $image->loadImage($path);
 
@@ -178,7 +178,7 @@ class Images
 
     public function checkMemoryForImage(string $filePath, bool $toTheMax = false): bool
     {
-        if (FileHelper::isSvg($filePath)) {
+        if (File::isSvg($filePath)) {
             return true;
         }
 
@@ -227,7 +227,7 @@ class Images
         $cleanedByRotation = false;
         $cleanedByStripping = false;
 
-        if (FileHelper::isSvg($filePath)) {
+        if (File::isSvg($filePath)) {
             if (! Cms::config()->sanitizeSvgUploads) {
                 return;
             }
@@ -246,7 +246,7 @@ class Images
             return;
         }
 
-        if (FileHelper::isGif($filePath) && ! Cms::config()->transformGifs) {
+        if (File::isGif($filePath) && ! Cms::config()->transformGifs) {
             return;
         }
 

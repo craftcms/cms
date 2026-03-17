@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Asset;
 use Craft;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db as DbHelper;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Data\AssetIndexEntry;
 use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -664,7 +663,7 @@ class AssetIndexer
                         AssetsHelper::downloadFile($volume->sourceDisk(), $indexEntry->uri, $tempPath);
                         $dimensions = ImageHelper::imageSize($tempPath);
 
-                        $asset->setMimeType(FileHelper::getMimeType($tempPath));
+                        $asset->setMimeType(File::getMimeType($tempPath));
                     }
                 }
 

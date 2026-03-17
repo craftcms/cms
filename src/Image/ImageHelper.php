@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Images;
+use CraftCms\Cms\Support\File;
 use Illuminate\Support\Facades\Log;
 use Imagick;
 use Imagine\Image\Format;
@@ -174,7 +174,7 @@ class ImageHelper
     public static function imageSize(string $filePath): array
     {
         try {
-            if (FileHelper::isSvg($filePath)) {
+            if (File::isSvg($filePath)) {
                 return self::parseSvgSize(file_get_contents($filePath));
             }
 

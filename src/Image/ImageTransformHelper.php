@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image;
 
 use craft\helpers\Assets;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
@@ -25,6 +24,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Imagine\Image\Format;
 use InvalidArgumentException;
+use Symfony\Component\Finder\Finder;
 
 use function CraftCms\Cms\t;
 
@@ -149,16 +149,16 @@ class ImageTransformHelper
                     $tempPath = Path::temp();
                     $tempFilePath = Path::temp($tempFilename);
 
-                    // Fetch a list of existing temp files for this image.
-                    $files = FileHelper::findFiles($tempPath, [
-                        'only' => [
-                            $prefix.'*'.'.'.$extension,
-                        ],
-                    ]);
+                    // Fetch existing temp files for this image and clean them up.
+                    $finder = Finder::create()
+                        ->ignoreDotFiles(false)
+                        ->ignoreVCS(false)
+                        ->files()
+                        ->in($tempPath)
+                        ->name($prefix.'*'.'.'.$extension);
 
-                    // And clean them up.
-                    foreach ($files as $filePath) {
-                        File::delete($filePath);
+                    foreach ($finder as $file) {
+                        File::delete($file->getPathname());
                     }
 
                     Assets::downloadFile($volume->sourceDisk(), $asset->getPath(), $tempFilePath);
@@ -177,7 +177,7 @@ class ImageTransformHelper
 
                     // And delete it after the request, if nobody wants it.
                     if (Cms::config()->maxCachedCloudImageSize === 0) {
-                        FileHelper::deleteFileAfterRequest($imageSourcePath);
+                        File::deleteFileAfterRequest($imageSourcePath);
                     }
 
                     if (! File::delete($tempFilePath)) {
@@ -444,7 +444,7 @@ class ImageTransformHelper
 
         // It's important that the temp filename has the target file extension, as CraftCms\Cms\Image\Raster::saveAs() uses it
         // to determine the options that should be passed to Imagine\Image\ManipulatorInterface::save().
-        $tempFilename = FileHelper::uniqueName(sprintf('%s.%s', $asset->getFilename(false), $format));
+        $tempFilename = File::uniqueName(sprintf('%s.%s', $asset->getFilename(false), $format));
         $tempPath = Path::temp($tempFilename);
         $image->saveAs($tempPath);
         clearstatcache(true, $tempPath);

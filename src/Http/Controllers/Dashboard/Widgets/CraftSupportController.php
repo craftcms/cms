@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Dashboard\Widgets;
 
-use craft\helpers\FileHelper;
 use craft\web\Application;
 use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\License\License;
@@ -105,7 +104,7 @@ readonly class CraftSupportController
             $parts[] = [
                 'name' => 'attachments[0]',
                 'contents' => fopen($zipData['zipPath'], 'rb'),
-                'filename' => 'SupportAttachment-'.FileHelper::sanitizeFilename(Sites::getPrimarySite()->getName()).'.zip',
+                'filename' => 'SupportAttachment-'.File::sanitizeFilename(Sites::getPrimarySite()->getName()).'.zip',
             ];
         } catch (Throwable $e) {
             Log::warning('Error creating support zip: '.$e->getMessage(), [__METHOD__]);
@@ -242,12 +241,11 @@ readonly class CraftSupportController
 
         // Logs
         if ($attachLogs) {
-            $logPath = Path::logs();
-            FileHelper::addFilesToZip($zip, $logPath, 'logs', [
-                'only' => ['*.log'],
-                'except' => ['web-404s.log'],
-                'recursive' => false,
-            ]);
+            File::addFilesToZip($zip, Path::logs(), 'logs',
+                only: ['*.log'],
+                except: ['web-404s.log'],
+                recursive: false,
+            );
         }
 
         // DB backups
@@ -266,7 +264,7 @@ readonly class CraftSupportController
         // Templates
         if ($attachTemplates) {
             $templatesPath = Path::siteTemplates();
-            FileHelper::addFilesToZip($zip, $templatesPath, 'templates');
+            File::addFilesToZip($zip, $templatesPath, 'templates');
         }
 
         // Attachment?

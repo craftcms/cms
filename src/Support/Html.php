@@ -1265,7 +1265,7 @@ class Html
 
                 return '';
             }
-            if (! is_file($svg) || ! FileHelper::isSvg($svg)) {
+            if (! is_file($svg) || ! File::isSvg($svg)) {
                 if ($throwException) {
                     throw new InvalidArgumentException("Invalid SVG path: $svg");
                 }

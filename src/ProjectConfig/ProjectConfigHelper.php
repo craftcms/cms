@@ -6,11 +6,11 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Diff;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\AllDependencies;
@@ -722,7 +722,7 @@ class ProjectConfigHelper
             $newContents .= $timestampLine;
         }
 
-        FileHelper::writeToFile($path, $newContents);
+        File::writeToFile($path, $newContents);
     }
 
     /**

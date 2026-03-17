@@ -11,7 +11,10 @@ use Craft;
 use CraftCms\Cms\Support\File;
 use InvalidArgumentException;
 use RuntimeException;
+use Symfony\Component\Filesystem\Path;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Mime\MimeTypes;
+use Throwable;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use ZipArchive;
@@ -85,7 +88,10 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function isWithin(string $path, string $parentPath): bool
     {
-        return File::isWithin($path, $parentPath);
+        $path = File::absolutePath($path, ds: '/');
+        $parentPath = File::absolutePath($parentPath, ds: '/');
+
+        return $path !== $parentPath && Path::isBasePath($parentPath, $path);
     }
 
     /**
@@ -93,18 +99,15 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function copyDirectory($src, $dst, $options = []): void
     {
-        try {
-            File::copyDirectory((string) $src, (string) $dst, $options);
-        } catch (InvalidArgumentException $e) {
-            // Unsupported options — fall back to parent Yii implementation
-            if (str_starts_with($e->getMessage(), 'Unsupported copyDirectory options')) {
-                parent::copyDirectory($src, $dst, $options);
-                return;
-            }
-            throw $e;
-        } catch (\ErrorException $e) {
-            throw new ErrorException($e->getMessage(), (int) $e->getCode(), $e->getSeverity(), $e->getFile(), $e->getLine(), $e);
+        if (!isset($options['fileMode'])) {
+            $options['fileMode'] = Craft::$app->getConfig()->getGeneral()->defaultFileMode;
         }
+
+        if (!isset($options['dirMode'])) {
+            $options['dirMode'] = Craft::$app->getConfig()->getGeneral()->defaultDirMode;
+        }
+
+        parent::copyDirectory($src, $dst, $options);
     }
 
     /**
@@ -161,15 +164,6 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function sanitizeFilename(string $filename, array $options = []): string
     {
-        // Determine stripEmoji from the Yii DB connection if not explicitly set
-        if (!array_key_exists('stripEmoji', $options)) {
-            try {
-                $options['stripEmoji'] = !Craft::$app->getDb()->getSupportsMb4();
-            } catch (\Throwable) {
-                $options['stripEmoji'] = true;
-            }
-        }
-
         return File::sanitizeFilename($filename, $options);
     }
 
@@ -183,10 +177,19 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function isDirectoryEmpty(string $dir): bool
     {
+        if (!is_dir($dir)) {
+            throw new InvalidArgumentException("The dir argument must be a directory: $dir");
+        }
+
         try {
-            return File::isDirectoryEmpty($dir);
-        } catch (\ErrorException $e) {
-            throw new ErrorException($e->getMessage(), (int) $e->getCode(), $e->getSeverity(), $e->getFile(), $e->getLine(), $e);
+            return !Finder::create()
+                ->ignoreDotFiles(false)
+                ->ignoreVCS(false)
+                ->files()
+                ->in($dir)
+                ->hasResults();
+        } catch (Throwable) {
+            throw new ErrorException("Unable to open the directory: $dir");
         }
     }
 
@@ -207,7 +210,7 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function getMimeType($file, $magicFile = null, $checkExtension = true): ?string
     {
-        return File::getMimeType((string) $file, $magicFile, (bool) $checkExtension);
+        return File::getMimeType((string) $file, (bool) $checkExtension);
     }
 
     /**
@@ -227,7 +230,7 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function getMimeTypeByExtension($file, $magicFile = null): ?string
     {
-        return File::getMimeTypeByExtension((string) $file, $magicFile);
+        return File::getMimeTypeByExtension((string) $file);
     }
 
     /**
@@ -252,7 +255,7 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function isSvg(string $file, ?string $magicFile = null, bool $checkExtension = true): bool
     {
-        return File::isSvg($file, $magicFile, $checkExtension);
+        return File::isSvg($file, $checkExtension);
     }
 
     /**
@@ -270,7 +273,7 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function isGif(string $file, ?string $magicFile = null, bool $checkExtension = true): bool
     {
-        return File::isGif($file, $magicFile, $checkExtension);
+        return File::isGif($file, $checkExtension);
     }
 
     /**
@@ -283,8 +286,6 @@ class FileHelper extends \yii\helpers\FileHelper
      *   not exist. Defaults to `true`.
      * - `append`: bool, whether the contents should be appended to the
      *   existing contents. Defaults to false.
-     * - `lock`: bool, whether a file lock should be used. Defaults to the
-     *   `useWriteFileLock` config setting.
      * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
      * @throws Exception if the parent directory can't be created
      * @throws ErrorException in case of failure
@@ -307,7 +308,6 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param array $options options for file write. Valid options are:
      * - `createDirs`: bool, whether to create parent directories if they do
      *   not exist. Defaults to `true`.
-     * - `lock`: bool, whether a file lock should be used. Defaults to `false`.
      * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
      * @throws Exception if the parent directory can't be created
      * @throws ErrorException in case of failure
@@ -346,10 +346,27 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function findClosestFile(string $dir, array $options = []): ?string
     {
-        try {
-            return File::findClosestFile($dir, $options);
-        } catch (InvalidArgumentException $e) {
-            throw new \yii\base\InvalidArgumentException($e->getMessage(), (int) $e->getCode(), $e);
+        $options['recursive'] = false;
+        $dir = static::absolutePath($dir, ds: '/');
+        while (true) {
+            $exists = file_exists($dir);
+            try {
+                $files = static::findFiles($dir, $options);
+            } catch (InvalidArgumentException $e) {
+                if ($exists) {
+                    return null;
+                }
+                throw $e;
+            }
+
+            if (!empty($files)) {
+                return reset($files);
+            }
+            $parent = dirname($dir);
+            if ($parent === $dir) {
+                return null;
+            }
+            $dir = $parent;
         }
     }
 
@@ -363,7 +380,20 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function lastModifiedTime(string $path): int
     {
-        return File::lastModifiedTime($path);
+        if (is_file($path)) {
+            return filemtime($path);
+        }
+
+        $times = [filemtime($path)];
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::SELF_FIRST);
+
+        foreach ($iterator as $p => $info) {
+            $times[] = filemtime($p);
+        }
+
+        return max($times);
     }
 
     /**
@@ -377,21 +407,45 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function hasAnythingChanged(string $dir, string $ref): bool
     {
-        try {
-            return File::hasAnythingChanged($dir, $ref);
-        } catch (\ErrorException $e) {
-            throw new ErrorException($e->getMessage(), (int) $e->getCode(), $e->getSeverity(), $e->getFile(), $e->getLine(), $e);
+        if (!is_dir($dir)) {
+            throw new InvalidArgumentException("The src argument must be a directory: $dir");
         }
+
+        if (!is_dir($ref)) {
+            throw new InvalidArgumentException("The ref argument must be a directory: $ref");
+        }
+
+        if (!($handle = opendir($dir))) {
+            throw new ErrorException("Unable to open the directory: $dir");
+        }
+
+        while (($file = readdir($handle)) !== false) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
+            $refPath = $ref . DIRECTORY_SEPARATOR . $file;
+            if (is_dir($path)) {
+                if (!is_dir($refPath) || static::hasAnythingChanged($path, $refPath)) {
+                    return true;
+                }
+            } elseif (!is_file($refPath) || filemtime($path) > filemtime($refPath)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
      * Returns whether file locks can be used when writing to files.
      *
      * @return bool
+     * @deprecated 6.0.0 File locking has been removed.
      */
     public static function useFileLocks(): bool
     {
-        return File::useFileLocks();
+        return false;
     }
 
     /**
@@ -447,7 +501,11 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function addFilesToZip(ZipArchive $zip, string $dir, ?string $prefix = null, array $options = []): void
     {
-        File::addFilesToZip($zip, $dir, $prefix, $options);
+        File::addFilesToZip($zip, $dir, $prefix,
+            only: $options['only'] ?? [],
+            except: $options['except'] ?? [],
+            recursive: $options['recursive'] ?? true,
+        );
     }
 
     /**
@@ -462,25 +520,7 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function getExtensionByMimeType($mimeType, $preferShort = false, $magicFile = null): string
     {
-        return File::getExtensionByMimeType((string) $mimeType, (bool) $preferShort, $magicFile);
-    }
-
-    /**
-     * Finds files in the given directory.
-     *
-     * @param string $dir the directory to search in
-     * @param array $options options for file searching. Valid options are:
-     * - `only`: array, list of glob patterns for file inclusion (e.g. `['*.php', '*.js']`).
-     * - `except`: array, list of glob patterns for file exclusion (e.g. `['*.log']`).
-     * - `recursive`: bool, whether to search recursively. Defaults to `true`.
-     * - `caseSensitive`: bool, whether pattern matching should be case-sensitive. Defaults to `true`.
-     * - `filter`: callable, a callback receiving the file path, returning `true` to include.
-     * @return array list of found file paths
-     * @throws InvalidArgumentException if the directory is invalid
-     */
-    public static function findFiles($dir, $options = []): array
-    {
-        return File::findFiles((string) $dir, $options);
+        return File::getExtensionByMimeType((string) $mimeType);
     }
 
     /**

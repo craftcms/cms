@@ -30,6 +30,7 @@ use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Images;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
@@ -38,7 +39,6 @@ use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\File;
 use InvalidArgumentException;
 use Throwable;
 use Twig\Error\RuntimeError;
@@ -254,7 +254,7 @@ class Assets
             $separator = null;
         }
 
-        $baseName = FileHelper::sanitizeFilename($originalBaseName, [
+        $baseName = File::sanitizeFilename($originalBaseName, [
             'asciiOnly' => $generalConfig->convertFilenamesToAscii,
             'separator' => $separator,
         ]);
@@ -945,7 +945,7 @@ class Assets
 
         $svg = static::iconSvg($extension);
 
-        FileHelper::writeToFile($path, $svg);
+        \CraftCms\Cms\Support\File::writeToFile($path, $svg);
 
         return $path;
     }
@@ -1064,7 +1064,7 @@ class Assets
             // Sanitize the subpath
             $segments = array_filter(explode('/', $renderedSubpath), fn(string $segment): bool => $segment !== ':ignore:');
             $generalConfig = Craft::$app->getConfig()->getGeneral();
-            $segments = array_map(fn(string $segment): string => FileHelper::sanitizeFilename($segment, [
+            $segments = array_map(fn(string $segment): string => File::sanitizeFilename($segment, [
                 'asciiOnly' => $generalConfig->convertFilenamesToAscii,
             ]), $segments);
             $subpath = implode('/', $segments);

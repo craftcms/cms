@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
 use Override;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Mime\MimeTypes;
 use ZipArchive;
 
@@ -67,16 +68,20 @@ class RestoreCommand extends Command
                 $zip->close();
             });
 
-            $files = FileHelper::findFiles($tempDir);
+            $finder = Finder::create()
+                ->ignoreDotFiles(false)
+                ->ignoreVCS(false)
+                ->files()
+                ->in($tempDir);
 
-            if (empty($files)) {
+            if (! $finder->hasResults()) {
                 $this->components->error("No files unzipped from $path.");
-                FileHelper::removeDirectory($tempDir);
+                File::removeDirectory($tempDir);
 
                 return self::FAILURE;
             }
 
-            $path = reset($files);
+            $path = $finder->getIterator()->current()->getPathname();
         }
 
         if ($this->tablesExist($connection)) {

@@ -102,7 +102,7 @@ class BackupCommand extends Command
         );
 
         if ($this->option('zip')) {
-            $zipPath = FileHelper::zip($path);
+            $zipPath = File::zip($path);
             File::delete($path);
             $path = $zipPath;
         }

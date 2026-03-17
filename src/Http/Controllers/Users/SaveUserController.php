@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
 use craft\helpers\Assets;
-use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Auth\Auth;
@@ -396,7 +395,7 @@ readonly class SaveUserController
 
                 if (! $extension && $mimeType) {
                     try {
-                        $extension = FileHelper::getExtensionByMimeType($mimeType);
+                        $extension = File::getExtensionByMimeType($mimeType);
                     } catch (InvalidArgumentException) {
                     }
                 }
@@ -409,7 +408,7 @@ readonly class SaveUserController
 
                 $fileLocation = Assets::tempFilePath($extension);
                 $data = base64_decode($matches['data']);
-                FileHelper::writeToFile($fileLocation, $data);
+                File::writeToFile($fileLocation, $data);
                 $newPhoto = true;
             }
         }

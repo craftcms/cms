@@ -10,7 +10,6 @@ use craft\base\ElementInterface;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\helpers\FileHelper;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -39,6 +38,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -476,7 +476,7 @@ class Assets extends BaseRelationField
                         $tempPath = AssetsHelper::tempFilePath($file['filename']);
                         switch ($file['type']) {
                             case 'data':
-                                FileHelper::writeToFile($tempPath, $file['data']);
+                                File::writeToFile($tempPath, $file['data']);
                                 break;
                             case 'file':
                                 rename($file['path'], $tempPath);
@@ -490,7 +490,7 @@ class Assets extends BaseRelationField
                         $asset = new Asset;
                         $asset->tempFilePath = $tempPath;
                         $asset->setFilename($file['filename']);
-                        $asset->setMimeType(FileHelper::getMimeType($tempPath, checkExtension: false) ?? $file['mimeType']);
+                        $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false) ?? $file['mimeType']);
                         $asset->newFolderId = $uploadFolderId;
                         $asset->setVolumeId($uploadFolder->volumeId);
                         $asset->uploaderId = Auth::id();

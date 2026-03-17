@@ -2186,10 +2186,10 @@ JS, [
 
         if ($transform?->format) {
             // Prepend with '.' to let pathinfo() work
-            return FileHelper::getMimeTypeByExtension('.'.$transform->format);
+            return File::getMimeTypeByExtension('.'.$transform->format);
         }
 
-        return $this->_mimeType ?? FileHelper::getMimeTypeByExtension($this->_filename);
+        return $this->_mimeType ?? File::getMimeTypeByExtension($this->_filename);
     }
 
     /**
@@ -2353,7 +2353,7 @@ JS, [
      */
     public function getCopyOfFile(): string
     {
-        $tempFilename = FileHelper::uniqueName($this->_filename);
+        $tempFilename = File::uniqueName($this->_filename);
         $tempPath = Path::temp($tempFilename);
         Assets::downloadFile($this->getVolume()->sourceDisk(), $this->getPath(), $tempPath);
 
@@ -3250,7 +3250,7 @@ JS;
                     throw new FileException(t('There was an error relocating the file.'));
                 }
 
-                $tempFilename = FileHelper::uniqueName($filename);
+                $tempFilename = File::uniqueName($filename);
                 $tempPath = Path::temp($tempFilename);
                 Assets::downloadFile($oldVolume->sourceDisk(), $oldPath, $tempPath);
             }
@@ -3264,7 +3264,7 @@ JS;
             // Upload the file to the new location
             try {
                 if (! $newVolume->sourceDisk()->writeStream($newPath, $stream, [
-                    Filesystem::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
+                    Filesystem::CONFIG_MIMETYPE => File::getMimeType($tempPath),
                 ])) {
                     throw new FilesystemException("Unable to write stream to path: $newPath");
                 }

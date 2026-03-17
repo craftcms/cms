@@ -6,7 +6,6 @@ namespace CraftCms\Cms\User;
 
 use Craft;
 use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\web\Request;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -30,6 +29,7 @@ use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -361,7 +361,7 @@ class Users
             $photo->setScenario(Asset::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
             $photo->setFilename($filename);
-            $photo->setMimeType(FileHelper::getMimeType($fileLocation, checkExtension: false) ?? $mimeType);
+            $photo->setMimeType(File::getMimeType($fileLocation, checkExtension: false) ?? $mimeType);
             $photo->newFolderId = $folderId;
             $photo->setVolumeId($volume->id);
 

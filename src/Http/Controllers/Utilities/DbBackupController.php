@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Database\Backups;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\DbBackup;
 use Exception;
@@ -36,9 +36,9 @@ readonly class DbBackupController
         }
 
         // Zip it up and delete the SQL file
-        $zipPath = FileHelper::zip($backupPath);
+        $zipPath = File::zip($backupPath);
 
-        unlink($backupPath);
+        File::delete($backupPath);
 
         if (! $request->input('downloadBackup')) {
             return back()->with('success', t('Backup created.'));

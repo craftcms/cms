@@ -54,7 +54,6 @@ class GeneralConfig extends BaseConfig
         'environmentVariables' => 'aliases',
         'isSystemOn' => 'isSystemLive',
         'restoreDbOnUpdateFailure' => 'restoreOnUpdateFailure',
-        'useWriteFileLock' => 'useFileLocks',
         'validationKey' => 'securityKey',
     ];
 
@@ -3244,28 +3243,6 @@ class GeneralConfig extends BaseConfig
     public string|bool $useSslOnTokenizedUrls = 'auto';
 
     /**
-     * @var bool|null Whether to grab an exclusive lock on a file when writing to it by using the `LOCK_EX` flag.
-     *
-     * Some file systems, such as NFS, do not support exclusive file locking.
-     *
-     * If `null`, Craft will try to detect if the underlying file system supports exclusive file locking and cache the results.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->useFileLocks(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_USE_FILE_LOCKS=false
-     * ```
-     * :::
-     *
-     * @see https://php.net/manual/en/function.file-put-contents.php
-     *
-     * @group System
-     */
-    public ?bool $useFileLocks = null;
-
-    /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
      * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
@@ -6440,29 +6417,6 @@ class GeneralConfig extends BaseConfig
     public function useSslOnTokenizedUrls(string|bool $value): self
     {
         $this->useSslOnTokenizedUrls = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether to grab an exclusive lock on a file when writing to it by using the `LOCK_EX` flag.
-     *
-     * Some file systems, such as NFS, do not support exclusive file locking.
-     *
-     * If `null`, Craft will try to detect if the underlying file system supports exclusive file locking and cache the results.
-     *
-     * ```php
-     * ->useFileLocks(false)
-     * ```
-     *
-     * @group System
-     *
-     * @see $useFileLocks
-     * @see https://php.net/manual/en/function.file-put-contents.php
-     */
-    public function useFileLocks(?bool $value): self
-    {
-        $this->useFileLocks = $value;
 
         return $this;
     }

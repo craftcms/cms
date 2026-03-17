@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
+use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
 use ErrorException;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RuntimeException;
-use SplFileInfo;
 use Symfony\Component\Filesystem\Exception\IOException;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Filesystem\Path;
+use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Mime\MimeTypes;
 use Throwable;
@@ -24,13 +24,6 @@ use ZipArchive;
 
 class File extends \Illuminate\Support\Facades\File
 {
-    /**
-     * @var bool Whether file locks can be used when writing to files.
-     *
-     * @see useFileLocks()
-     */
-    private static bool $_useFileLocks;
-
     /**
      * A list of files to be deleted once the request ends.
      */
@@ -160,20 +153,6 @@ class File extends \Illuminate\Support\Facades\File
     }
 
     /**
-     * Returns whether the given path is within another path.
-     *
-     * @param  string  $path  the path to check
-     * @param  string  $parentPath  the parent path that `$path` should be within
-     */
-    public static function isWithin(string $path, string $parentPath): bool
-    {
-        $path = static::absolutePath($path, ds: '/');
-        $parentPath = static::absolutePath($parentPath, ds: '/');
-
-        return $path !== $parentPath && Path::isBasePath($parentPath, $path);
-    }
-
-    /**
      * Copies a whole directory as another one.
      *
      * @param  string  $src  the source directory
@@ -213,7 +192,7 @@ class File extends \Illuminate\Support\Facades\File
             throw new InvalidArgumentException("Unable to open directory: $src");
         }
 
-        if (! app(\Illuminate\Filesystem\Filesystem::class)->copyDirectory($src, $dst)) {
+        if (! app(Filesystem::class)->copyDirectory($src, $dst)) {
             throw new ErrorException("Unable to copy directory: $src");
         }
 
@@ -244,7 +223,7 @@ class File extends \Illuminate\Support\Facades\File
             return true;
         }
 
-        if (! app(\Illuminate\Filesystem\Filesystem::class)->makeDirectory($path, $mode, $recursive, true) && ! is_dir($path)) {
+        if (! app(Filesystem::class)->makeDirectory($path, $mode, $recursive, true) && ! is_dir($path)) {
             return false;
         }
 
@@ -270,7 +249,7 @@ class File extends \Illuminate\Support\Facades\File
             return;
         }
 
-        if (empty($options) && ! is_link($dir) && app(\Illuminate\Filesystem\Filesystem::class)->deleteDirectory($dir)) {
+        if (empty($options) && ! is_link($dir) && app(Filesystem::class)->deleteDirectory($dir)) {
             return;
         }
 
@@ -288,7 +267,7 @@ class File extends \Illuminate\Support\Facades\File
                         if (is_dir($path)) {
                             static::removeDirectory($path, $options);
                         } else {
-                            app(\Illuminate\Filesystem\Filesystem::class)->delete($path);
+                            app(Filesystem::class)->delete($path);
                         }
                     }
 
@@ -297,7 +276,7 @@ class File extends \Illuminate\Support\Facades\File
             }
 
             if (is_link($dir)) {
-                app(\Illuminate\Filesystem\Filesystem::class)->delete($dir);
+                app(Filesystem::class)->delete($dir);
             } else {
                 rmdir($dir);
             }
@@ -306,7 +285,7 @@ class File extends \Illuminate\Support\Facades\File
                 return;
             }
 
-            $fs = new Filesystem;
+            $fs = new SymfonyFilesystem;
 
             try {
                 $fs->remove($dir);
@@ -336,7 +315,7 @@ class File extends \Illuminate\Support\Facades\File
         }
 
         if (empty($options)) {
-            app(\Illuminate\Filesystem\Filesystem::class)->cleanDirectory($dir);
+            app(Filesystem::class)->cleanDirectory($dir);
 
             return;
         }
@@ -411,7 +390,7 @@ class File extends \Illuminate\Support\Facades\File
                     }
                 }
             } else {
-                app(\Illuminate\Filesystem\Filesystem::class)->delete($path);
+                app(Filesystem::class)->delete($path);
             }
         }
     }
@@ -429,6 +408,14 @@ class File extends \Illuminate\Support\Facades\File
      */
     public static function sanitizeFilename(string $filename, array $options = []): string
     {
+        if (! array_key_exists('stripEmoji', $options)) {
+            try {
+                $options['stripEmoji'] = ! Craft::$app->getDb()->getSupportsMb4();
+            } catch (Throwable) {
+                $options['stripEmoji'] = true;
+            }
+        }
+
         $asciiOnly = $options['asciiOnly'] ?? false;
         $separator = array_key_exists('separator', $options) ? $options['separator'] : '-';
         $stripEmoji = $options['stripEmoji'] ?? true;
@@ -511,33 +498,6 @@ class File extends \Illuminate\Support\Facades\File
     }
 
     /**
-     * Returns whether a given directory is empty (has no files) recursively.
-     *
-     * @param  string  $dir  the directory to be checked
-     * @return bool whether the directory is empty
-     *
-     * @throws InvalidArgumentException if the dir is invalid
-     * @throws ErrorException in case of failure
-     */
-    public static function isDirectoryEmpty(string $dir): bool
-    {
-        if (! is_dir($dir)) {
-            throw new InvalidArgumentException("The dir argument must be a directory: $dir");
-        }
-
-        try {
-            return ! Finder::create()
-                ->ignoreDotFiles(false)
-                ->ignoreVCS(false)
-                ->files()
-                ->in($dir)
-                ->hasResults();
-        } catch (Throwable) {
-            throw new ErrorException("Unable to open the directory: $dir");
-        }
-    }
-
-    /**
      * Tests whether a file/directory is writable.
      *
      * @param  string  $path  the file/directory path to test
@@ -561,7 +521,7 @@ class File extends \Illuminate\Support\Facades\File
 
         // Delete the file if it didn't exist already
         if (! $exists) {
-            app(\Illuminate\Filesystem\Filesystem::class)->delete($path);
+            app(Filesystem::class)->delete($path);
         }
 
         return true;
@@ -571,12 +531,11 @@ class File extends \Illuminate\Support\Facades\File
      * Returns the MIME type of the specified file.
      *
      * @param  string  $file  the file name.
-     * @param  string|null  $magicFile  kept for backwards compatibility, ignored.
      * @param  bool  $checkExtension  whether to use the file extension to determine the MIME type in case
      *                                `finfo_open()` cannot determine it.
      * @return string|null the MIME type
      */
-    public static function getMimeType(string $file, ?string $magicFile = null, bool $checkExtension = true): ?string
+    public static function getMimeType(string $file, bool $checkExtension = true): ?string
     {
         if (is_dir($file)) {
             return 'directory';
@@ -628,10 +587,9 @@ class File extends \Illuminate\Support\Facades\File
      * Returns the MIME type based on the file extension.
      *
      * @param  string  $file  the file name or path.
-     * @param  string|null  $magicFile  kept for backwards compatibility, ignored.
      * @return string|null the MIME type, or null if the extension is not known.
      */
-    public static function getMimeTypeByExtension(string $file, ?string $magicFile = null): ?string
+    public static function getMimeTypeByExtension(string $file): ?string
     {
         $ext = pathinfo($file, PATHINFO_EXTENSION);
         if ($ext === '') {
@@ -647,26 +605,24 @@ class File extends \Illuminate\Support\Facades\File
      * Returns whether the given file path is an SVG image.
      *
      * @param  string  $file  the file name.
-     * @param  string|null  $magicFile  kept for backwards compatibility, ignored.
      * @param  bool  $checkExtension  whether to use the file extension to determine the MIME type in case
      *                                `finfo_open()` cannot determine it.
      */
-    public static function isSvg(string $file, ?string $magicFile = null, bool $checkExtension = true): bool
+    public static function isSvg(string $file, bool $checkExtension = true): bool
     {
-        return static::getMimeType($file, $magicFile, $checkExtension) === 'image/svg+xml';
+        return static::getMimeType($file, $checkExtension) === 'image/svg+xml';
     }
 
     /**
      * Returns whether the given file path is a GIF image.
      *
      * @param  string  $file  the file name.
-     * @param  string|null  $magicFile  kept for backwards compatibility, ignored.
      * @param  bool  $checkExtension  whether to use the file extension to determine the MIME type in case
      *                                `finfo_open()` cannot determine it.
      */
-    public static function isGif(string $file, ?string $magicFile = null, bool $checkExtension = true): bool
+    public static function isGif(string $file, bool $checkExtension = true): bool
     {
-        return static::getMimeType($file, $magicFile, $checkExtension) === 'image/gif';
+        return static::getMimeType($file, $checkExtension) === 'image/gif';
     }
 
     /**
@@ -679,8 +635,6 @@ class File extends \Illuminate\Support\Facades\File
      *                          not exist. Defaults to `true`.
      *                          - `append`: bool, whether the contents should be appended to the
      *                          existing contents. Defaults to false.
-     *                          - `lock`: bool, whether a file lock should be used. Defaults to the
-     *                          `useWriteFileLock` config setting.
      *
      * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
      * @throws RuntimeException if the parent directory can't be created
@@ -721,19 +675,6 @@ class File extends \Illuminate\Support\Facades\File
             }
         }
 
-        if (isset($options['lock'])) {
-            $lock = (bool) $options['lock'];
-        } else {
-            $lock = static::useFileLocks();
-        }
-
-        if ($lock) {
-            $mutex = Cache::lock(md5($file), 3);
-            if (! $mutex->get()) {
-                throw new ErrorException("Unable to acquire a lock for file \"$file\".");
-            }
-        }
-
         $flags = 0;
         if (! empty($options['append'])) {
             $flags |= FILE_APPEND;
@@ -745,10 +686,6 @@ class File extends \Illuminate\Support\Facades\File
 
         // Invalidate opcache
         static::invalidate($file);
-
-        if ($lock) {
-            $mutex->release();
-        }
     }
 
     /**
@@ -757,7 +694,6 @@ class File extends \Illuminate\Support\Facades\File
      * @param  array  $options  options for file write. Valid options are:
      *                          - `createDirs`: bool, whether to create parent directories if they do
      *                          not exist. Defaults to `true`.
-     *                          - `lock`: bool, whether a file lock should be used. Defaults to `false`.
      *
      * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
      * @throws RuntimeException if the parent directory can't be created
@@ -772,173 +708,8 @@ class File extends \Illuminate\Support\Facades\File
         }
 
         $contents = "*\n!.gitignore\n";
-        $options = array_merge([
-            // Prevent a segfault if this is called recursively
-            'lock' => false,
-        ], $options);
 
         static::writeToFile($gitignorePath, $contents, $options);
-    }
-
-    /**
-     * Traverses up the filesystem looking for the closest file to the given directory.
-     *
-     * @param  string  $dir  the directory at or above which the file will be looked for
-     * @param  array  $options  options for file searching. See [[findFiles()]].
-     * @return string|null the closest matching file
-     *
-     * @throws InvalidArgumentException if the directory is invalid
-     */
-    public static function findClosestFile(string $dir, array $options = []): ?string
-    {
-        $options['recursive'] = false;
-        $dir = static::absolutePath($dir, ds: '/');
-        while (true) {
-            $exists = file_exists($dir);
-            try {
-                $files = static::findFiles($dir, $options);
-            } catch (InvalidArgumentException $e) {
-                if ($exists) {
-                    return null;
-                }
-
-                throw $e;
-            }
-
-            if (! empty($files)) {
-                return reset($files);
-            }
-
-            $parent = dirname($dir);
-            if ($parent === $dir) {
-                return null;
-            }
-
-            $dir = $parent;
-        }
-    }
-
-    /**
-     * Returns the last modification time for the given path.
-     *
-     * If the path is a directory, any nested files/directories will be checked as well.
-     *
-     * @param  string  $path  the directory to be checked
-     * @return int Unix timestamp representing the last modification time
-     */
-    public static function lastModifiedTime(string $path): int
-    {
-        if (is_file($path)) {
-            return filemtime($path);
-        }
-
-        $times = [filemtime($path)];
-
-        $finder = Finder::create()
-            ->ignoreDotFiles(false)
-            ->ignoreVCS(false)
-            ->in($path);
-
-        foreach ($finder as $item) {
-            $times[] = $item->getMTime();
-        }
-
-        return max($times);
-    }
-
-    /**
-     * Returns whether any files in a source directory have changed, compared to another directory.
-     *
-     * @param  string  $dir  the source directory to check for changes in
-     * @param  string  $ref  the reference directory
-     *
-     * @throws InvalidArgumentException if $dir or $ref isn't a directory
-     * @throws ErrorException if we can't get a handle on $dir
-     */
-    public static function hasAnythingChanged(string $dir, string $ref): bool
-    {
-        if (! is_dir($dir)) {
-            throw new InvalidArgumentException("The src argument must be a directory: $dir");
-        }
-
-        if (! is_dir($ref)) {
-            throw new InvalidArgumentException("The ref argument must be a directory: $ref");
-        }
-
-        try {
-            $finder = Finder::create()
-                ->ignoreDotFiles(false)
-                ->ignoreVCS(false)
-                ->in($dir);
-        } catch (Throwable) {
-            throw new ErrorException("Unable to open the directory: $dir");
-        }
-
-        try {
-            foreach ($finder as $item) {
-                $refPath = $ref.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $item->getRelativePathname());
-
-                if ($item->isDir()) {
-                    if (! is_dir($refPath)) {
-                        return true;
-                    }
-
-                    continue;
-                }
-
-                if (! is_file($refPath) || $item->getMTime() > filemtime($refPath)) {
-                    return true;
-                }
-            }
-        } catch (Throwable) {
-            throw new ErrorException("Unable to open the directory: $dir");
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns whether file locks can be used when writing to files.
-     */
-    public static function useFileLocks(): bool
-    {
-        if (isset(self::$_useFileLocks)) {
-            return self::$_useFileLocks;
-        }
-
-        $generalConfig = Cms::config();
-        if (is_bool($generalConfig->useFileLocks)) {
-            return self::$_useFileLocks = $generalConfig->useFileLocks;
-        }
-
-        // Do we have it cached?
-        if (($cachedVal = Cache::get('useFileLocks')) !== false) {
-            return self::$_useFileLocks = ($cachedVal === 'y');
-        }
-
-        // Try a test lock
-        self::$_useFileLocks = false;
-
-        try {
-            $name = uniqid('test_lock', true);
-            $mutex = Cache::lock($name);
-            if (! $mutex->get()) {
-                throw new RuntimeException("Unable to acquire test lock: $name");
-            }
-            if (! $mutex->release()) {
-                throw new RuntimeException("Unable to release test lock: $name");
-            }
-
-            self::$_useFileLocks = true;
-        } catch (Throwable $e) {
-            Log::warning('Write lock test failed: '.$e->getMessage());
-        }
-
-        // Cache for two months
-        $cachedValue = self::$_useFileLocks ? 'y' : 'n';
-        Cache::put('useFileLocks', $cachedValue, now()->addMonths(2));
-
-        return self::$_useFileLocks;
     }
 
     /**
@@ -1022,10 +793,18 @@ class File extends \Illuminate\Support\Facades\File
      * @param  ZipArchive  $zip  the ZipArchive object
      * @param  string  $dir  the directory path
      * @param  string|null  $prefix  the path prefix to use when adding the contents of the directory
-     * @param  array  $options  options for file searching. See [[findFiles()]] for available options.
+     * @param  array|string[]  $only  list of glob patterns for file inclusion (e.g. `['*.php', '*.js']`)
+     * @param  array|string[]  $except  list of glob patterns for file exclusion (e.g. `['*.log']`)
+     * @param  bool  $recursive  whether to search recursively
      */
-    public static function addFilesToZip(ZipArchive $zip, string $dir, ?string $prefix = null, array $options = []): void
-    {
+    public static function addFilesToZip(
+        ZipArchive $zip,
+        string $dir,
+        ?string $prefix = null,
+        array $only = [],
+        array $except = [],
+        bool $recursive = true,
+    ): void {
         if (! is_dir($dir)) {
             return;
         }
@@ -1036,24 +815,38 @@ class File extends \Illuminate\Support\Facades\File
             $prefix = '';
         }
 
-        $files = static::findFiles($dir, $options);
+        $finder = Finder::create()
+            ->ignoreDotFiles(false)
+            ->ignoreVCS(false)
+            ->files()
+            ->in($dir);
 
-        foreach ($files as $file) {
+        if (! $recursive) {
+            $finder->depth('== 0');
+        }
+
+        if (! empty($only)) {
+            $finder->name($only);
+        }
+
+        if (! empty($except)) {
+            $finder->notName($except);
+        }
+
+        foreach ($finder as $file) {
             // Use forward slashes
-            $file = str_replace(DIRECTORY_SEPARATOR, '/', $file);
+            $filePath = str_replace(DIRECTORY_SEPARATOR, '/', $file->getPathname());
             // Preserve the directory structure within the templates folder
-            $zip->addFile($file, $prefix.substr($file, strlen($dir) + 1));
+            $zip->addFile($filePath, $prefix.substr($filePath, strlen($dir) + 1));
         }
     }
 
     /**
      * Return a file extension for the given MIME type.
      *
-     * @param  string|null  $magicFile  kept for backwards compatibility, ignored.
-     *
      * @throws InvalidArgumentException if no known extensions exist for the given MIME type.
      */
-    public static function getExtensionByMimeType(string $mimeType, bool $preferShort = false, ?string $magicFile = null): string
+    public static function getExtensionByMimeType(string $mimeType): string
     {
         // cover the ambiguous, web-friendly MIME types up front
         switch (strtolower($mimeType)) {
@@ -1086,76 +879,6 @@ class File extends \Illuminate\Support\Facades\File
     }
 
     /**
-     * Finds files in the given directory.
-     *
-     * @param  string  $dir  the directory to search in
-     * @param  array  $options  options for file searching. Valid options are:
-     *                          - `only`: array, list of glob patterns for file inclusion (e.g. `['*.php', '*.js']`).
-     *                          - `except`: array, list of glob patterns for file exclusion (e.g. `['*.log']`).
-     *                          - `recursive`: bool, whether to search recursively. Defaults to `true`.
-     *                          - `caseSensitive`: bool, whether pattern matching should be case-sensitive. Defaults to `true`.
-     *                          - `filter`: callable, a callback receiving the file path, returning `true` to include.
-     * @return array list of found file paths
-     *
-     * @throws InvalidArgumentException if the directory is invalid
-     */
-    public static function findFiles(string $dir, array $options = []): array
-    {
-        if (! is_dir($dir)) {
-            throw new InvalidArgumentException("The dir argument must be a directory: $dir");
-        }
-
-        $finder = Finder::create()
-            ->ignoreDotFiles(false)
-            ->ignoreVCS(false)
-            ->files()
-            ->in($dir);
-
-        // Handle recursive option (default: true)
-        if (isset($options['recursive']) && ! $options['recursive']) {
-            $finder->depth('== 0');
-        }
-
-        $caseSensitive = $options['caseSensitive'] ?? true;
-
-        // Handle 'only' patterns (file inclusion globs)
-        if (! empty($options['only'])) {
-            if ($caseSensitive) {
-                $finder->name($options['only']);
-            } else {
-                $patterns = (array) $options['only'];
-                $finder->filter(fn (SplFileInfo $file): bool => array_any($patterns, fn ($pattern) => fnmatch($pattern, $file->getFilename(), FNM_CASEFOLD)));
-            }
-        }
-
-        // Handle 'except' patterns (file exclusion globs)
-        if (! empty($options['except'])) {
-            if ($caseSensitive) {
-                $finder->notName($options['except']);
-            } else {
-                $patterns = (array) $options['except'];
-                $finder->filter(fn (SplFileInfo $file): bool => array_all($patterns, fn ($pattern) => ! fnmatch($pattern, $file->getFilename(), FNM_CASEFOLD)));
-            }
-        }
-
-        // Handle 'filter' callback
-        if (isset($options['filter']) && is_callable($options['filter'])) {
-            $finder->filter(function (SplFileInfo $file) use ($options): bool {
-                $result = call_user_func($options['filter'], $file->getPathname());
-
-                return $result !== false;
-            });
-        }
-
-        $list = [];
-        foreach ($finder as $file) {
-            $list[] = $file->getPathname();
-        }
-
-        return $list;
-    }
-
-    /**
      * Deletes a file after the request ends.
      */
     public static function deleteFileAfterRequest(string $filename): void
@@ -1174,7 +897,7 @@ class File extends \Illuminate\Support\Facades\File
     {
         foreach (array_unique(self::$_filesToBeDeleted) as $source) {
             if (file_exists($source)) {
-                app(\Illuminate\Filesystem\Filesystem::class)->delete($source);
+                app(Filesystem::class)->delete($source);
             }
         }
 

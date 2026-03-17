@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Image;
 
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -559,7 +558,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
     {
         $imageCopy = $asset->getCopyOfFile();
 
-        if (FileHelper::isSvg($imageCopy)) {
+        if (File::isSvg($imageCopy)) {
             $size = max($asset->width, $asset->height) ?? 1000;
             /** @var Raster $image */
             $image = app(Images::class)->loadImage($imageCopy, true, $size);
