@@ -51,7 +51,7 @@ readonly class EmailSettings
         $fromEmail = $this->resolvedFromEmail();
         $fromName = $this->resolvedFromName();
         $replyToEmail = $this->resolvedReplyToEmail();
-        $mailer = $this->mailer;
+        $mailer = $this->resolvedMailer();
         $template = $this->resolvedTemplate();
 
         if ($siteId !== null) {
@@ -89,6 +89,11 @@ readonly class EmailSettings
     public function resolvedReplyToEmail(): ?string
     {
         return Env::parse($this->replyToEmail);
+    }
+
+    public function resolvedMailer(): ?string
+    {
+        return Env::parse($this->mailer);
     }
 
     public function resolvedTemplate(): ?string

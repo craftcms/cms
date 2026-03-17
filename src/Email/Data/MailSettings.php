@@ -42,6 +42,11 @@ readonly class MailSettings
         return Env::parse($this->replyToEmail);
     }
 
+    public function resolvedMailer(): ?string
+    {
+        return Env::parse($this->mailer);
+    }
+
     public function resolvedTemplate(): ?string
     {
         return Env::parse($this->template);

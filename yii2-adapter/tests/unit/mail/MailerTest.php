@@ -153,8 +153,8 @@ class MailerTest extends TestCase
         Aliases::set('@templates', dirname(__DIR__, 4) . '/tests/Support/templates');
 
         $projectConfig = app(ProjectConfig::class);
-        $originalEmail = $projectConfig->get('email') ?? [];
-        $projectConfig->set('email', array_merge($originalEmail, [
+        $originalEmail = $projectConfig->get('email');
+        $projectConfig->set('email', array_merge($originalEmail ?? [], [
             'template' => 'mail/custom-system-message.twig',
         ]));
 
@@ -169,7 +169,11 @@ class MailerTest extends TestCase
             self::assertStringContainsString('https://craftcms.com', (string)$symfonyEmail->getHtmlBody());
             self::assertSame('test@craft.test', array_key_first($lastMessage->to));
         } finally {
-            $projectConfig->set('email', $originalEmail);
+            if ($originalEmail === null) {
+                $projectConfig->remove('email');
+            } else {
+                $projectConfig->set('email', $originalEmail);
+            }
             Aliases::set('@templates', $originalTemplatesPath);
         }
     }

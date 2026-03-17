@@ -73,7 +73,7 @@ readonly class EmailSettingsController
 
         $siteOverrides = array_filter(array_map(
             array_filter(...),
-            $request->input('siteOverrides', []),
+            $validated['siteOverrides'] ?? [],
         ));
 
         if (! empty($siteOverrides)) {

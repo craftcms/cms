@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Requests;
 
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+
+use function CraftCms\Cms\t;
 
 class EmailSettingsRequest extends FormRequest
 {
@@ -18,7 +20,13 @@ class EmailSettingsRequest extends FormRequest
             'fromEmail' => ['required', 'string'],
             'fromName' => ['required', 'string'],
             'replyToEmail' => ['nullable', 'string'],
-            'mailer' => ['nullable', 'string', Rule::in($validMailers)],
+            'mailer' => ['nullable', 'string', function (string $attribute, mixed $value, \Closure $fail) use ($validMailers) {
+                $resolved = Env::parse($value);
+
+                if ($resolved !== null && ! in_array($resolved, $validMailers, true)) {
+                    $fail(t('The selected mailer is invalid.'));
+                }
+            }],
             'template' => ['nullable', 'string'],
         ];
 

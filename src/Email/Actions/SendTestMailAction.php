@@ -47,12 +47,14 @@ readonly class SendTestMailAction
     public function settings(?int $siteId = null): array
     {
         $defaultMailer = config('mail.default', 'smtp');
-        $mailerConfig = config("mail.mailers.{$defaultMailer}", []);
 
         $resolved = EmailSettings::fromProjectConfig()->resolveForSite($siteId);
 
+        $effectiveMailer = $resolved->mailer ?? $defaultMailer;
+        $mailerConfig = config("mail.mailers.{$effectiveMailer}", []);
+
         $settings = [
-            t('Mailer') => $resolved->mailer ?? $defaultMailer,
+            t('Mailer') => $effectiveMailer,
             t('From Address') => $resolved->fromEmail ?? Env::configValue('mail.from.address', fallbackEnvs: ['MAIL_FROM_ADDRESS', 'FROM_EMAIL_ADDRESS']) ?? '',
             t('From Name') => $resolved->fromName ?? Env::configValue('mail.from.name', fallbackEnvs: ['MAIL_FROM_NAME', 'FROM_EMAIL_NAME']) ?? '',
         ];
