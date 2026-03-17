@@ -9,7 +9,6 @@ namespace craft\validators;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\i18n\Locale;
 use DateTime;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;
