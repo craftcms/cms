@@ -2255,6 +2255,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{attribute} must be a date.' => '{attribute} må være en dato.',
     '{attribute} must be a time.' => '{attribute} må være et tidspunkt.',
     '{attribute} must be an array.' => '{attribute} må være et array.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} kan ikke være tidligere enn {min}.',
     '{attribute} must be no greater than {max}.' => '{attribute} må ikke være større enn {max}.',
     '{attribute} must be no later than {max}.' => '{attribute} kan ikke være senere enn {max}.',
