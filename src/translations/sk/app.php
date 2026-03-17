@@ -2253,6 +2253,7 @@ return [
     '{attribute} must be a date.' => '{attribute} musí byť dátum.',
     '{attribute} must be a time.' => '{attribute} musí byť čas.',
     '{attribute} must be an array.' => '{attribute} musí byť pole.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} nesmie byť skôr ako {min}.',
     '{attribute} must be no greater than {max}.' => '{attribute} nesmie byť väčší ako {max}.',
     '{attribute} must be no later than {max}.' => '{attribute} nesmie byť neskôr ako {max}.',
