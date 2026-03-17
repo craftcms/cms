@@ -2253,6 +2253,7 @@ return [
     '{attribute} must be a date.' => '{attribute} باید یک تاریخ باشد.',
     '{attribute} must be a time.' => '{attribute} باید یک زمان باشد.',
     '{attribute} must be an array.' => '{attribute} باید یک آرایه باشد.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} نباید زودتر از {min} باشد.',
     '{attribute} must be no greater than {max}.' => '{attribute} نباید بزرگتر از {max} باشد.',
     '{attribute} must be no later than {max}.' => '{attribute} نباید دیرتر از {max} باشد.',
