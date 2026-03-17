@@ -38,7 +38,9 @@ readonly class SendTestMailAction
                 'settings' => $report,
             ])->to($to);
 
-        Mail::sendNow($mailable);
+        $resolved = EmailSettings::fromProjectConfig()->resolveForSite($siteId);
+
+        Mail::mailer($resolved->mailer)->sendNow($mailable);
     }
 
     /**
