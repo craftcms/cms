@@ -59,7 +59,7 @@
     "larastan/larastan": "^3.7",
     "laravel/socialite": "^5.25",
     "league/factory-muffin": "^3.3.0",
-    "orchestra/testbench": "^10.6",
+    "orchestra/testbench": "^11.0",
     "pestphp/pest": "^4.0",
     "phpstan/phpstan": "^2.1",
     "rector/rector": "^2.0",
