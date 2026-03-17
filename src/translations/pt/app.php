@@ -2253,6 +2253,7 @@ return [
     '{attribute} must be a date.' => '{attribute} tem de ser uma data.',
     '{attribute} must be a time.' => '{attribute} tem de ser uma hora.',
     '{attribute} must be an array.' => '{attribute} tem de ser um atributo.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} não deve ser anterior a {min}.',
     '{attribute} must be no greater than {max}.' => '{attribute} não deve ser maior que {max}.',
     '{attribute} must be no later than {max}.' => '{attribute} não deve ser posterior a {max}.',
