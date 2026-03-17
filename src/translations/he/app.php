@@ -2253,6 +2253,7 @@ return [
     '{attribute} must be a date.' => '{attribute} חייב להיות תאריך.',
     '{attribute} must be a time.' => '{attribute} חייב להיות שעה.',
     '{attribute} must be an array.' => '{attribute} חייב להיות מערך.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} חייב לא להיות מוקדם מ-{min}.',
     '{attribute} must be no greater than {max}.' => '{attribute} חייב לא להיות גדול מ-{max}.',
     '{attribute} must be no later than {max}.' => '{attribute} חייב לא להיות מאוחר מ-{max}.',
