@@ -2257,6 +2257,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{attribute} must be a date.' => '{attribute} csak dátum lehet.',
     '{attribute} must be a time.' => '{attribute} csak idő lehet.',
     '{attribute} must be an array.' => 'A(z) {attribute} elemnek tömbnek kell lennie.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} nem lehet korábbi, mint {min}.',
     '{attribute} must be no greater than {max}.' => '{attribute} nem lehet nagyobb, mint {max}.',
     '{attribute} must be no later than {max}.' => '{attribute} nem lehet későbbi, mint {max}.',
