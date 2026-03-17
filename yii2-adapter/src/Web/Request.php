@@ -10,7 +10,7 @@
 namespace CraftCms\Yii2Adapter\Web;
 
 use CraftCms\Cms\Config\GeneralConfig;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request as IlluminateRequest;
 use Yii;
 use yii\base\InvalidConfigException;
@@ -228,7 +228,7 @@ class Request extends \yii\web\Request
     /**
      * {@inheritdoc}
      *
-     * @deprecated 6.0.0 use {@see VerifyCsrfToken} instead.
+     * @deprecated 6.0.0 use {@see PreventRequestForgery} instead.
      */
     public function validateCsrfToken($clientSuppliedToken = null): bool
     {

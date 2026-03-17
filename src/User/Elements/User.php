@@ -774,6 +774,17 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
     }
 
+    public function markEmailAsUnverified(): bool
+    {
+        try {
+            Users::unverifyEmailForUser($this);
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
     public function sendEmailVerificationNotification(): void
     {
         /** @var PasswordBroker $broker */

@@ -710,6 +710,21 @@ class Users
         }
     }
 
+    public function unverifyEmailForUser(User $user): void
+    {
+        // Bail if they already have an unverified email to begin with
+        if ($user->unverifiedEmail) {
+            return;
+        }
+
+        $userModel = UserModel::findOrFail($user->id);
+        $userModel->unverifiedEmail = $user->email;
+
+        if (! $userModel->save()) {
+            throw new InvalidElementException($user);
+        }
+    }
+
     /**
      * Unlocks a user, bypassing the cooldown phase.
      *
