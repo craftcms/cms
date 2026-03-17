@@ -2253,6 +2253,7 @@ return [
     '{attribute} must be a date.' => '{attribute}은(는) 날짜여야 합니다.',
     '{attribute} must be a time.' => '{attribute}은(는) 시간이어야 합니다.',
     '{attribute} must be an array.' => '{attribute}은(는) 배열이어야 합니다.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute}은(는) {min} 이전이 아니어야 합니다.',
     '{attribute} must be no greater than {max}.' => '{attribute}은(는) {max}보다 크지 않아야 합니다.',
     '{attribute} must be no later than {max}.' => '{attribute}은(는) {max} 이후가 아니어야 합니다.',
