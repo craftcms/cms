@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\PreviewHandlers;
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
-use Illuminate\Support\Facades\File;
 
 use function CraftCms\Cms\template;
 

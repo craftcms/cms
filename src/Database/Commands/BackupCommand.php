@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Database\Commands;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Backups;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Translation\I18N;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Override;
 use Symfony\Component\Filesystem\Filesystem;
 

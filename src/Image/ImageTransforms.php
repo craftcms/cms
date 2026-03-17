@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Image;
 
 use Craft;
 use craft\helpers\Assets as AssetsHelper;
-use Illuminate\Support\Facades\File;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Database\Table;
@@ -25,6 +24,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;

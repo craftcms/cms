@@ -9,7 +9,6 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Facades\Path;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
-use Illuminate\Support\Facades\File;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;

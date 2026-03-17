@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Support;
 
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
-use Illuminate\Support\Facades\File;
 use InvalidArgumentException;
 use Throwable;
 

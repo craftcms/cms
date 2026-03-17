@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin\Testing;
 
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
-use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\TestCase;
 
 use function Orchestra\Testbench\package_path;

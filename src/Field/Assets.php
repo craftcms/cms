@@ -48,6 +48,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use Override;
+use Symfony\Component\Mime\MimeTypes;
 
 use function CraftCms\Cms\t;
 
@@ -783,7 +784,7 @@ class Assets extends BaseRelationField
                     if (! empty($this->_uploadedDataFiles['filename'][$index])) {
                         $filename = $this->_uploadedDataFiles['filename'][$index];
                     } else {
-                        $extensions = FileHelper::getExtensionsByMimeType($mimeType);
+                        $extensions = MimeTypes::getDefault()->getExtensions(strtolower($mimeType));
 
                         if (empty($extensions)) {
                             continue;

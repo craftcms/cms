@@ -18,11 +18,11 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\File;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;

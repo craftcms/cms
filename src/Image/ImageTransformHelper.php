@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Image;
 
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
-use Illuminate\Support\Facades\File;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Validation\Rules\ColorRule;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
@@ -157,10 +157,8 @@ class ImageTransformHelper
                     ]);
 
                     // And clean them up.
-                    if (! empty($files)) {
-                        foreach ($files as $filePath) {
-                            File::delete($filePath);
-                        }
+                    foreach ($files as $filePath) {
+                        File::delete($filePath);
                     }
 
                     Assets::downloadFile($volume->sourceDisk(), $asset->getPath(), $tempFilePath);
