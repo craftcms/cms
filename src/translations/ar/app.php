@@ -2253,6 +2253,7 @@ return [
     '{attribute} must be a date.' => 'يجب أن يكون {attribute} عبارة عن تاريخ.',
     '{attribute} must be a time.' => 'يجب أن يكون {attribute} عبارة عن وقت.',
     '{attribute} must be an array.' => 'يجب أن تكون {attribute} عبارة عن صفيف.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => 'يجب ألا يكون {attribute} قبل {min}.',
     '{attribute} must be no greater than {max}.' => '{attribute} يجب ألا تكون أكبر من {max}.',
     '{attribute} must be no later than {max}.' => 'يجب ألا يكون {attribute} بعد {max}.',
