@@ -2255,6 +2255,7 @@ Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazion
     '{attribute} must be a date.' => '{attribute} deve essere una data.',
     '{attribute} must be a time.' => '{attribute} deve essere un valore temporale.',
     '{attribute} must be an array.' => '{attribute} deve essere un array.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} non deve essere precedente a {min}.',
     '{attribute} must be no greater than {max}.' => '{attribute} non deve essere maggiore di {max}.',
     '{attribute} must be no later than {max}.' => '{attribute} non deve essere successivo a {max}.',
