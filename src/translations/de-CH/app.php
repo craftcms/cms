@@ -2255,6 +2255,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{attribute} must be a date.' => '{attribute} muss ein Datum sein.',
     '{attribute} must be a time.' => '{attribute} muss eine Zeit sein.',
     '{attribute} must be an array.' => '{attribute} muss ein Array sein.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} darf nicht früher als {min} sein.',
     '{attribute} must be no greater than {max}.' => '{attribute} darf nicht grösser als {max} sein.',
     '{attribute} must be no later than {max}.' => '{attribute} darf nicht später als {max} sein.',
