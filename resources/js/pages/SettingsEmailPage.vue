@@ -8,6 +8,7 @@
   import CalloutReadOnly from '@/components/CalloutReadOnly.vue';
   import Input from '@/components/form/Input.vue';
   import type {SelectItem, SuggestionGroup} from '@/types';
+  import SiteOverridesTable from '@/components/Settings/Email/SiteOverridesTable.vue';
 
   const props = defineProps<{
     readOnly?: boolean;
@@ -98,10 +99,6 @@
         testForm.reset();
       },
     });
-  }
-
-  function getSiteName(siteUid: string): string {
-    return props.sites.find((s) => s.uid === siteUid)?.name ?? siteUid;
   }
 </script>
 
@@ -370,58 +367,7 @@
               }}
             </p>
 
-            <div class="overflow-x-auto">
-              <table class="cp-table min-w-full">
-                <thead>
-                  <tr>
-                    <th>{{ t('Site') }}</th>
-                    <th>{{ t('System Email Address') }}</th>
-                    <th>{{ t('Sender Name') }}</th>
-                    <th>{{ t('Reply-To Address') }}</th>
-                    <th>{{ t('Template') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="site in sites" :key="site.uid">
-                    <th class="light whitespace-nowrap">
-                      {{ getSiteName(site.uid) }}
-                    </th>
-                    <td>
-                      <craft-input
-                        :name="`siteOverrides[${site.uid}][fromEmail]`"
-                        v-model="form.siteOverrides[site.uid].fromEmail"
-                        :disabled="readOnly"
-                        size="small"
-                      ></craft-input>
-                    </td>
-                    <td>
-                      <craft-input
-                        :name="`siteOverrides[${site.uid}][fromName]`"
-                        v-model="form.siteOverrides[site.uid].fromName"
-                        :disabled="readOnly"
-                        size="small"
-                      ></craft-input>
-                    </td>
-                    <td>
-                      <craft-input
-                        :name="`siteOverrides[${site.uid}][replyToEmail]`"
-                        v-model="form.siteOverrides[site.uid].replyToEmail"
-                        :disabled="readOnly"
-                        size="small"
-                      ></craft-input>
-                    </td>
-                    <td>
-                      <craft-input
-                        :name="`siteOverrides[${site.uid}][template]`"
-                        v-model="form.siteOverrides[site.uid].template"
-                        :disabled="readOnly"
-                        size="small"
-                      ></craft-input>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <SiteOverridesTable v-model="form.siteOverrides" :sites="sites" />
           </div>
         </template>
 
