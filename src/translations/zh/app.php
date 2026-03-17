@@ -2253,6 +2253,7 @@ return [
     '{attribute} must be a date.' => '{attribute}必须为日期。',
     '{attribute} must be a time.' => '{attribute}必须为时间。',
     '{attribute} must be an array.' => '{attribute}必须为数组。',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute}不得早于 {min}。',
     '{attribute} must be no greater than {max}.' => '{attribute}不得大于 {max}。',
     '{attribute} must be no later than {max}.' => '{attribute}不得晚于 {max}。',
