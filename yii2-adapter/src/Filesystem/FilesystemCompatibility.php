@@ -45,7 +45,7 @@ readonly class FilesystemCompatibility
                         );
                     }
 
-                    return $this->legacyFilesystemAdapter($filesystem, array_merge($config, $diskConfig));
+                    return self::legacyFilesystemAdapter($filesystem, array_merge($config, $diskConfig));
                 }
 
                 $disk = $app->make(FilesystemManager::class)->build($diskConfig);
@@ -54,7 +54,7 @@ readonly class FilesystemCompatibility
                     throw new InvalidArgumentException("Filesystem [$handle] returned an invalid disk configuration.");
                 }
 
-                return $this->filesystemWithPrefix($disk, $config);
+                return self::filesystemWithPrefix($disk, $config);
             } catch (Throwable $e) {
                 if (!$filesystem instanceof BaseFsInterface) {
                     throw new InvalidArgumentException(
@@ -72,12 +72,12 @@ readonly class FilesystemCompatibility
                     ),
                 );
 
-                return $this->legacyFilesystemAdapter($filesystem, $config);
+                return self::legacyFilesystemAdapter($filesystem, $config);
             }
         });
     }
 
-    private function filesystemWithPrefix(LaravelFilesystemAdapter $disk, array $config): LaravelFilesystemAdapter
+    private static function filesystemWithPrefix(LaravelFilesystemAdapter $disk, array $config): LaravelFilesystemAdapter
     {
         $prefix = $config['prefix'] ?? null;
         if (!is_string($prefix) || $prefix === '') {
@@ -100,7 +100,7 @@ readonly class FilesystemCompatibility
         );
     }
 
-    private function legacyFilesystemAdapter(BaseFsInterface $filesystem, array $config): LaravelFilesystemAdapter
+    private static function legacyFilesystemAdapter(BaseFsInterface $filesystem, array $config): LaravelFilesystemAdapter
     {
         $adapter = new LegacyFsFlysystemAdapter($filesystem);
         $flysystemAdapter = !empty($config['prefix'])

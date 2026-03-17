@@ -81,7 +81,7 @@ use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 
@@ -89,7 +89,7 @@ use Illuminate\Support\Facades\Route;
  * Actions that should not have CSRF token verification. These are automatically
  * mapped to `/{cpTrigger}/{actionTrigger}/route` and `/{actionTrigger}/{route}`
  */
-VerifyCsrfToken::except(collect([
+PreventRequestForgery::except(collect([
     'graphql/api',
     'preview/preview',
 ])->flatMap(fn (string $route) => [

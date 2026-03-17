@@ -7,11 +7,12 @@
 
 namespace craft\config;
 
+use craft\base\LegacyEventConstants;
 use craft\services\Config;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use Deprecated;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config as ConfigFacade;
@@ -28,7 +29,7 @@ use function CraftCms\Cms\t;
  */
 class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 {
-    use \craft\base\LegacyEventConstants;
+    use LegacyEventConstants;
 
     /**
      * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
@@ -490,7 +491,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * @see $enableCsrfProtection
      * @since 4.2.0
      */
-    #[Deprecated(message: 'in 6.0.0. [Configure excluded routes instead](https://laravel.com/docs/12.x/csrf#csrf-excluding-uris)')]
+    #[Deprecated(message: 'in 6.0.0. [Configure excluded routes instead](https://laravel.com/docs/13.x/csrf#csrf-excluding-uris)')]
     public function enableCsrfProtection(bool $value = true): self
     {
         app()->booting(fn() => Deprecator::log('generalConfig.enableCsrfProtection', 'Configure excluded routes instead.'));
@@ -498,7 +499,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         $this->enableCsrfProtection = $value;
 
         if ($value === false) {
-            VerifyCsrfToken::except(['*']);
+            PreventRequestForgery::except(['*']);
         }
 
         return $this;

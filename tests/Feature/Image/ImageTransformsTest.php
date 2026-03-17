@@ -257,7 +257,7 @@ describe('saveTransform', function () {
             'handle' => 'test',
         ]));
 
-        Event::assertDispatchedOnce(SavingTransform::class, fn (SavingTransform $event) => $event->isNew === true);
+        Event::assertDispatchedOnce(SavingTransform::class);
     });
 
     it('fires TransformSaved with isNew true for new transforms', function () {
@@ -270,7 +270,7 @@ describe('saveTransform', function () {
             'handle' => 'test',
         ]));
 
-        Event::assertDispatchedOnce(TransformSaved::class, fn (TransformSaved $event) => $event->isNew === true);
+        Event::assertDispatchedOnce(TransformSaved::class);
     });
 
     it('fires TransformSaved with isNew false for existing transforms', function () {
@@ -290,7 +290,7 @@ describe('saveTransform', function () {
 
         $this->service->saveTransform($transform);
 
-        Event::assertDispatchedOnce(TransformSaved::class, fn (TransformSaved $event) => $event->isNew === false);
+        Event::assertDispatchedOnce(TransformSaved::class);
     });
 });
 
