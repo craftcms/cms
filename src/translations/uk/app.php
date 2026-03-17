@@ -2253,6 +2253,7 @@ return [
     '{attribute} must be a date.' => '{attribute} має бути датою.',
     '{attribute} must be a time.' => '{attribute} має бути часом.',
     '{attribute} must be an array.' => '{attribute} має бути масивом.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} не раніше ніж {min}.',
     '{attribute} must be no greater than {max}.' => '{attribute} не може перевищувати {max}.',
     '{attribute} must be no later than {max}.' => '{attribute} не пізніше ніж {max}.',
