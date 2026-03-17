@@ -379,7 +379,9 @@ class UsersController extends Controller
             $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
             Craft::error(sprintf('%s tried to impersonate userId: %s but something went wrong.',
                 $userSession->getIdentity()?->username ?? 'Unknown user', $userId), __METHOD__);
-            return $this->redirectToPostedUrl();
+            return $this->redirect($this->request->getIsCpRequest()
+                ? Request::CP_PATH_LOGIN
+                : Craft::$app->getConfig()->getGeneral()->getLoginPath() ?? '');
         }
 
         return $this->_handleSuccessfulLogin($user);
