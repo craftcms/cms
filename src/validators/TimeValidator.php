@@ -88,22 +88,12 @@ class TimeValidator extends Validator
             if (!$min) {
                 throw new InvalidConfigException("Invalid minimum time: $this->min");
             }
-            if ($value < $min) {
-                $this->addError($model, $attribute, $this->tooEarly, [
-                    'min' => Craft::$app->getFormatter()->asTime($min, Locale::LENGTH_SHORT),
-                ]);
-            }
         }
 
         if (isset($this->max)) {
             $max = DateTimeHelper::toDateTime(['time' => $this->max], true);
             if (!$max) {
                 throw new InvalidConfigException("Invalid maximum time: $this->max");
-            }
-            if ($value > $max) {
-                $this->addError($model, $attribute, $this->tooLate, [
-                    'max' => Craft::$app->getFormatter()->asTime($max, Locale::LENGTH_SHORT),
-                ]);
             }
         }
     }
