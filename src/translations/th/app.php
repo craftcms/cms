@@ -2254,6 +2254,7 @@ return [
     '{attribute} must be a date.' => '{attribute} จะต้องเป็นวันที่',
     '{attribute} must be a time.' => '{attribute} จะต้องเป็นเวลา',
     '{attribute} must be an array.' => '{attribute} จะต้องเป็นอาร์เรย์',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} จะต้องไม่เร็วกว่า {min}',
     '{attribute} must be no greater than {max}.' => '{attribute} ห้ามเกิน {max}',
     '{attribute} must be no later than {max}.' => '{attribute} จะต้องไม่ช้ากว่า {max}',
