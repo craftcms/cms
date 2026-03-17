@@ -2255,6 +2255,7 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{attribute} must be a date.' => '{attribute} musí být datum.',
     '{attribute} must be a time.' => '{attribute} musí být čas.',
     '{attribute} must be an array.' => '{attribute} musí být pole.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} nesmí být dříve než {min}.',
     '{attribute} must be no greater than {max}.' => '{attribute} nesmí být větší než {max}.',
     '{attribute} must be no later than {max}.' => '{attribute} nesmí být později než {max}.',
