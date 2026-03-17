@@ -4,7 +4,7 @@
   import {type InertiaForm, usePage} from '@inertiajs/vue3';
   import {computed, useTemplateRef} from 'vue';
   import type {SelectItem, SelectOption, Site} from '@/types';
-  import InputCombobox from '@/components/InputCombobox.vue';
+  import InputCombobox from '@/components/form/InputCombobox.vue';
   import {useInputGenerator} from '@/composables/useInputGenerator';
   import {toHandle} from '@craftcms/cp/utilities/string.ts.mjs';
 

@@ -8,7 +8,7 @@
 </script>
 
 <template>
-  <ComboboxOption v-slot="{active, selected}" :value="option">
+  <ComboboxOption v-slot="{active, selected}" :value="option" as="template">
     <slot name="option" :option="option" :active="active" :selected="selected">
       <craft-option
         :active="active"
