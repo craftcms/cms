@@ -173,6 +173,14 @@
       "assets/cp2.css"
     ]
   },
+  "_useEditableTable.js": {
+    "file": "useEditableTable.js",
+    "name": "useEditableTable",
+    "imports": [
+      "_cp3.js",
+      "_InputCombobox.js"
+    ]
+  },
   "_useInputGenerator.js": {
     "file": "useInputGenerator.js",
     "name": "useInputGenerator",
@@ -888,7 +896,9 @@
     "imports": [
       "_cp3.js",
       "_AppLayout.js",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js"
+      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
+      "_useEditableTable.js",
+      "_InputCombobox.js"
     ]
   },
   "resources/js/pages/SettingsGeneralPage.vue": {
@@ -930,6 +940,7 @@
       "_useInputGenerator.js",
       "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
       "_SectionsController.js",
+      "_useEditableTable.js",
       "_InputCombobox.js"
     ],
     "css": [
