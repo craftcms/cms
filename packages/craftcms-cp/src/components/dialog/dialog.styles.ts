@@ -1,7 +1,0 @@
-import {css} from 'lit';
-
-export default css`
-  :host {
-    --spacing: var(--c-spacing-lg);
-  }
-`;

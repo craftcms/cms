@@ -32,7 +32,7 @@ export {default as CraftPopover} from './components/popover/popover.js';
 export {default as CraftNavList} from './components/nav-list/nav-list.js';
 export {default as CraftNavItem} from './components/nav-item/nav-item.js';
 export {default as CraftDrawer} from './components/drawer/drawer.js';
-export {default as CraftDialog} from './components/dialog/dialog.js';
+export {default as CraftModal} from '@src/components/modal/modal.js';
 export {default as CraftCheckboxGroup} from './components/checkbox-group/checkbox-group.js';
 export {default as CraftCheckbox} from './components/checkbox/checkbox.js';
 export {default as CraftCheckboxIndeterminate} from './components/checkbox-indeterminate/checkbox-indeterminate.js';

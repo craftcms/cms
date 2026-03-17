@@ -1,35 +1,33 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
-import {expect, waitFor} from 'storybook/test';
+import {expect} from 'storybook/test';
 
 import {html} from 'lit';
 
-import './dialog.js';
-import './dialog-content.js';
+import './modal.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
-  title: 'Components/Dialog',
-  component: 'craft-dialog',
+  title: 'Components/Modal',
+  component: 'craft-modal',
   args: {},
   parameters: {
     layout: 'centered',
   },
   render: function (args) {
     return html`
-      <craft-dialog>
-        <craft-button slot="invoker">Open Dialog</craft-button>
-        <craft-dialog-content class="test" slot="content">
-          This is some text within a dialog.
+      <craft-modal>
+        <craft-button slot="invoker">Open Modal</craft-button>
+        <div slot="content">
+          This is the body content
           <craft-button
-            slot="footer"
             @click="${(event: Event) =>
               event.target?.dispatchEvent(
                 new Event('close-overlay', {bubbles: true})
               )}"
             >Close</craft-button
           >
-        </craft-dialog-content>
-      </craft-dialog>
+        </div>
+      </craft-modal>
     `;
   },
 } satisfies Meta<any>;
@@ -41,14 +39,14 @@ type Story = StoryObj<any>;
 export const Default: Story = {
   args: {},
   play: async ({canvas, userEvent}) => {
-    const openBtn = canvas.getByShadowText(/Open Dialog/i);
+    const openBtn = canvas.getByShadowText(/Open Modal/i);
     const closeBtn = canvas.getByText(/Close/i);
     await userEvent.click(openBtn);
 
-    const dialog = canvas.getByRole('dialog');
-    await expect(dialog).toHaveClass('overlays__overlay');
+    const modal = canvas.getByShadowRole('dialog');
+    await expect(modal).toHaveClass('overlays__overlay');
     await userEvent.click(closeBtn);
-    await expect(dialog).not.toHaveClass('overlays__overlay');
+    await expect(modal).not.toHaveClass('overlays__overlay');
     await expect(openBtn).toHaveFocus();
   },
 };
