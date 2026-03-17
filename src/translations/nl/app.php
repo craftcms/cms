@@ -2253,6 +2253,7 @@ return [
     '{attribute} must be a date.' => '{attribute} moet een datum zijn.',
     '{attribute} must be a time.' => '{attribute} moet een tijd zijn.',
     '{attribute} must be an array.' => '{attribute} moet een array zijn.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => '{attribute} mag niet vroeger dan {min} zijn.',
     '{attribute} must be no greater than {max}.' => '{attribute} mag niet groter dan {max} zijn.',
     '{attribute} must be no later than {max}.' => '{attribute} mag niet later dan {max} zijn.',
