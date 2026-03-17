@@ -80,6 +80,7 @@
     "fakerphp/faker": "^1.19.0",
     "larastan/larastan": "^3.4",
     "laravel/pint": "^1.22",
+    "laravel/socialite": "^5.23",
     "orchestra/testbench": "^10.3",
     "pestphp/pest": "^4.0",
     "pestphp/pest-plugin-arch": "^4.0",
@@ -96,7 +97,8 @@
   "suggest": {
     "ext-exif": "Adds support for parsing image EXIF data.",
     "ext-imagick": "Adds support for more image processing formats and options.",
-    "ext-iconv": "Adds support for more character encodings than PHP’s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8."
+    "ext-iconv": "Adds support for more character encodings than PHP’s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8.",
+    "laravel/socialite": "Adds OAuth login support for providers configured with `GeneralConfig::oauthProviders()`."
   },
   "autoload": {
     "psr-4": {

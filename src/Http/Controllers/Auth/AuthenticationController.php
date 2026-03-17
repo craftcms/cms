@@ -23,6 +23,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 abstract readonly class AuthenticationController
@@ -54,6 +55,33 @@ abstract readonly class AuthenticationController
         return $this->redirectToPostedUrl($user, $returnUrl);
     }
 
+    protected function finalizeLogin(
+        Request $request,
+        User $user,
+        bool $remember,
+        bool $skipTwoFactor = false,
+    ): Response {
+        if (! $skipTwoFactor && ! $this->generalConfig->disable2fa && $this->auth->hasActiveMethod($user)) {
+            $this->auth->setUser($user);
+
+            if (! $request->isCpRequest() && ! $request->wantsJson()) {
+                if (! $loginPath = $this->generalConfig->getLoginPath()) {
+                    $request->session()->forget('user.id');
+                    throw new RuntimeException('User requires two-step verification, but the loginPath config setting is disabled.');
+                }
+
+                return redirect(UrlHelper::siteUrl($loginPath, array_filter([
+                    'verify' => 1,
+                    'returnUrl' => $this->getPostedRedirectUrl($user) ?? URL::returnUrl(),
+                ])));
+            }
+
+            return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
+        }
+
+        return $this->completeLogin($request, $user, $remember);
+    }
+
     protected function handleLoginFailure(Request $request, ?AuthError $authError = null, ?User $user = null): Response
     {
         [$authError, $message] = $this->auth->getLoginFailureInfo($authError, $user);
@@ -75,7 +103,7 @@ abstract readonly class AuthenticationController
 
         TemplateMode::set(TemplateMode::Cp);
 
-        return view(Str::start($cpTemplate, ''), $data);
+        return view('craftcms::'.Str::start($cpTemplate, ''), $data);
     }
 
     protected function processTokenRequest(Request $request): Response|array

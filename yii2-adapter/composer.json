@@ -57,6 +57,7 @@
     "craftcms/ecs": "dev-main",
     "dg/bypass-finals": "^1.9",
     "larastan/larastan": "^3.7",
+    "laravel/socialite": "^5.25",
     "league/factory-muffin": "^3.3.0",
     "orchestra/testbench": "^10.6",
     "pestphp/pest": "^4.0",

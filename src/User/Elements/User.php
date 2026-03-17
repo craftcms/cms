@@ -21,6 +21,7 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -1003,11 +1004,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     public function getHasSsoIdentity(): bool
     {
-        if (Edition::get()->value < Edition::Enterprise->value) {
+        if (! OAuth::isAvailable()) {
             return false;
         }
 
-        return Craft::$app->getSso()->identityExists($this->id);
+        return app(OAuth::class)->hasIdentity($this->id);
     }
 
     #[Override]

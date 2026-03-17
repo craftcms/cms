@@ -115,6 +115,17 @@ readonly class UserGroups
         return $result ? new UserGroup((array) $result) : null;
     }
 
+    public function resolveGroup(mixed $group): ?UserGroup
+    {
+        return match (true) {
+            is_int($group) => $this->getGroupById($group),
+            is_string($group) && ctype_digit($group) => $this->getGroupById((int) $group),
+            is_string($group) && Str::isUuid($group) => $this->getGroupByUid($group),
+            is_string($group) && trim($group) !== '' => $this->getGroupByHandle(trim($group)),
+            default => null,
+        };
+    }
+
     /**
      * Returns the Craft Team edition’s user group.
      */

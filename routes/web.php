@@ -1,11 +1,14 @@
 <?php
 
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
+use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
+use CraftCms\Cms\Http\Controllers\Auth\OAuthController;
 use CraftCms\Cms\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use CraftCms\Cms\Http\Controllers\Auth\VerifyEmailController;
+use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Site\Sites;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +27,17 @@ if (Edition::get()->registersFrontendUserRoutes()) {
         if (Cms::config()->logoutPath !== false) {
             Route::get(Cms::config()->logoutPath, [LoginController::class, 'logout']);
         }
+    });
+}
+
+if (OAuth::isAvailable()) {
+    Route::middleware([RequireEdition::class.':'.Edition::Pro->value])->group(function () {
+        Route::get('oauth/{provider}/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
+        Route::get('oauth/{provider}/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
+
+        Route::prefix(Cms::config()->cpTrigger)->middleware('craft.cp')->group(function () {
+            Route::get('oauth/{provider}/redirect', [OAuthController::class, 'redirect']);
+        });
     });
 }
 

@@ -50,6 +50,9 @@ class TestCase extends Orchestra
     #[Override]
     protected function setUp(): void
     {
+        // This is so route registration in tests work
+        $_SERVER['CRAFT_EDITION'] = Edition::Pro->handle();
+
         parent::setUp();
 
         app()->setLocale('en-US');
@@ -61,8 +64,7 @@ class TestCase extends Orchestra
         Config::set('app.timezone', 'America/Los_Angeles');
         date_default_timezone_set('America/Los_Angeles');
 
-        // Tests run in Pro and Cp by default
-        Edition::set(Edition::Pro);
+        // Tests run in Cp by default
         TemplateMode::set(TemplateMode::Cp);
 
         File::cleanDirectory(config_path('craft/project'));
