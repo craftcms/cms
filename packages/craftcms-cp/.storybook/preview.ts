@@ -10,6 +10,7 @@ import {withThemeByDataAttribute} from '@storybook/addon-themes';
 import {setCustomElementsManifest} from '@storybook/web-components';
 import manifest from '../dist/custom-elements.json' with {type: 'json'};
 import {setStorybookHelpersConfig} from '@wc-toolkit/storybook-helpers';
+import {within as withinShadow} from 'shadow-dom-testing-library';
 
 setStorybookHelpersConfig({
   /** hides the `arg ref` label on each control */
@@ -29,6 +30,9 @@ icons.addIconResolver('craft', (iconSet: string, name: string) => {
 });
 
 const preview: Preview = {
+  beforeEach({canvasElement, canvas}) {
+    Object.assign(canvas, {...withinShadow(canvasElement)});
+  },
   parameters: {
     controls: {
       expanded: true,

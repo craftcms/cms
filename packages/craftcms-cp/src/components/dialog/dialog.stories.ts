@@ -1,4 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
+import {expect, waitFor} from 'storybook/test';
 
 import {html} from 'lit';
 
@@ -23,7 +24,9 @@ const meta = {
       <craft-dialog label="Dialog" id="storybook-dialog">
         This is some text within a dialog.
 
-        <craft-button slot="footer" data-dialog="close">Close</craft-button>
+        <craft-button slot="footer" data-dialog="close" autofocus
+          >Close</craft-button
+        >
       </craft-dialog>
 
       <craft-button @click="${openDialog}">Open Dialog</craft-button>
@@ -37,4 +40,16 @@ type Story = StoryObj<any>;
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Default: Story = {
   args: {},
+  play: async ({canvas, userEvent}) => {
+    const openBtn = canvas.getByShadowText(/Open Dialog/i);
+    const dialog = canvas.getByShadowRole('dialog');
+    const closeBtn = canvas.getByShadowText(/Close/i);
+    await userEvent.click(openBtn);
+
+    await expect(dialog).toHaveClass('open');
+    await waitFor(() => expect(closeBtn).toHaveFocus());
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(openBtn).toHaveFocus());
+    await expect(dialog).not.toHaveClass('open');
+  },
 };
