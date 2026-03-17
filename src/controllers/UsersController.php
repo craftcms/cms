@@ -379,7 +379,7 @@ class UsersController extends Controller
             $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
             Craft::error(sprintf('%s tried to impersonate userId: %s but something went wrong.',
                 $userSession->getIdentity()?->username ?? 'Unknown user', $userId), __METHOD__);
-            return null;
+            return $this->redirectToPostedUrl();
         }
 
         return $this->_handleSuccessfulLogin($user);
