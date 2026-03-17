@@ -28,6 +28,7 @@ use Override;
  * @method static void activateUser(\CraftCms\Cms\User\Elements\User $user)
  * @method static void deactivateUser(\CraftCms\Cms\User\Elements\User $user)
  * @method static void verifyEmailForUser(\CraftCms\Cms\User\Elements\User $user)
+ * @method static void unverifyEmailForUser(\CraftCms\Cms\User\Elements\User $user)
  * @method static void unlockUser(\CraftCms\Cms\User\Elements\User $user)
  * @method static void suspendUser(\CraftCms\Cms\User\Elements\User $user)
  * @method static void unsuspendUser(\CraftCms\Cms\User\Elements\User $user)
