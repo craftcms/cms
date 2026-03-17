@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Console\Commands;
+namespace CraftCms\Cms\Email\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
-use CraftCms\Cms\SystemMessage\Actions\SendTestMailAction;
-use CraftCms\Cms\Utility\Utilities\MailSettings;
+use CraftCms\Cms\Email\Actions\SendTestMailAction;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Console\Command;
 use Override;
 
@@ -20,6 +20,7 @@ class SendTestMailCommand extends Command
     #[Override]
     protected $signature = 'craft:mailer:test
         {--to= : Email address that should receive the test message.}
+        {--site= : Site handle to test site-specific mail overrides.}
     ';
 
     #[Override]
@@ -30,6 +31,12 @@ class SendTestMailCommand extends Command
 
     public function handle(SendTestMailAction $sendTestMail): int
     {
+        $siteId = $this->resolveSiteId();
+
+        if ($siteId === false) {
+            return self::FAILURE;
+        }
+
         $to = $this->option('to');
 
         if (! is_string($to) || $to === '') {
@@ -50,16 +57,40 @@ class SendTestMailCommand extends Command
 
         table(
             headers: ['Setting', 'Value'],
-            rows: collect(MailSettings::settings())
+            rows: collect($sendTestMail->settings($siteId))
                 ->map(fn (string $value, string $setting) => [$setting, $value])
                 ->values()
                 ->all(),
         );
 
-        $sendTestMail->handle($to);
+        $sendTestMail->handle($to, $siteId);
 
         $this->components->success('Email sent successfully! Check your inbox.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Resolves the --site option to a site ID.
+     *
+     * @return int|null|false null if no site specified, false on error, int on success
+     */
+    private function resolveSiteId(): int|null|false
+    {
+        $siteHandle = $this->option('site');
+
+        if (! is_string($siteHandle) || $siteHandle === '') {
+            return null;
+        }
+
+        $site = Sites::getSiteByHandle($siteHandle);
+
+        if ($site === null) {
+            $this->components->error("Invalid site handle: {$siteHandle}");
+
+            return false;
+        }
+
+        return $site->id;
     }
 }
