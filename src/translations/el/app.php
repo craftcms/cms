@@ -2253,6 +2253,7 @@ return [
     '{attribute} must be a date.' => 'Το {attribute} πρέπει να είναι ημερομηνία.',
     '{attribute} must be a time.' => 'Το {attribute} πρέπει να είναι ώρα.',
     '{attribute} must be an array.' => 'Το {attribute} πρέπει να είναι πίνακας.',
+    '{attribute} must be between {min} and {max}.' => '{attribute} must be between {min} and {max}.',
     '{attribute} must be no earlier than {min}.' => 'Το {attribute} δεν πρέπει να είναι νωρίτερα από {min}.',
     '{attribute} must be no greater than {max}.' => 'Το {attribute} δεν πρέπει να είναι μεγαλύτερο από {max}.',
     '{attribute} must be no later than {max}.' => 'Το {attribute} δεν πρέπει να είναι αργότερα από {max}.',
