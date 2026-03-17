@@ -4,18 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage\Mailables;
 
-use CraftCms\Cms\Email\Data\EmailSettings;
-use CraftCms\Cms\Email\Data\MailSettings;
+use CraftCms\Cms\Email\Mailables\CraftMailable;
 use CraftCms\Cms\SystemMessage\Actions\FormatSystemMessageMailAction;
 use CraftCms\Cms\SystemMessage\Actions\RenderSystemMessageAction;
 use CraftCms\Cms\SystemMessage\Data\RenderedSystemMessage;
-use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailable;
 
-class SystemMessageMailable extends Mailable
+class SystemMessageMailable extends CraftMailable
 {
-    use Queueable;
-
     public function __construct(
         public string $key,
         public array $variables = [],
@@ -49,25 +44,5 @@ class SystemMessageMailable extends Mailable
         }
 
         return $mailable->markdown('mail.system-message', $formattedMessage->viewData);
-    }
-
-    private function applyEmailSettings(): MailSettings
-    {
-        $settings = EmailSettings::fromProjectConfig();
-        $resolved = $settings->resolveForSite($this->siteId);
-
-        if ($resolved->fromEmail) {
-            $this->from($resolved->fromEmail, $resolved->fromName ?? '');
-        }
-
-        if ($resolved->replyToEmail) {
-            $this->replyTo($resolved->replyToEmail);
-        }
-
-        if ($resolved->mailer) {
-            $this->mailer($resolved->mailer);
-        }
-
-        return $resolved;
     }
 }
