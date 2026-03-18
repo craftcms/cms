@@ -42,6 +42,10 @@ readonly class CustomFieldIdeHelperGenerator
             return;
         }
 
+        if (! File::exists($outputPath.'/.gitignore')) {
+            File::put($outputPath.'/.gitignore', '*');
+        }
+
         $content = $this->buildHelperContent();
 
         try {
