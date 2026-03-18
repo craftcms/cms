@@ -403,9 +403,9 @@ const ALL_COMPONENTS = [
     importPath: '../components/copy-button/copy-button',
   },
   {
-    tagName: 'craft-dialog',
-    className: 'CraftDialog',
-    importPath: '../components/dialog/dialog',
+    tagName: 'craft-modal',
+    className: 'CraftModal',
+    importPath: '../components/modal/modal',
   },
   {
     tagName: 'craft-disclosure',

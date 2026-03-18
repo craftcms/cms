@@ -1,7 +1,7 @@
 import {css} from 'lit';
 
 export default css`
-  .modal-window {
+  ::slotted([slot='content']) {
     display: block;
     background-color: white;
     border-radius: var(--c-modal-radius);

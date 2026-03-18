@@ -276,10 +276,98 @@
       </nav>
 
       <div class="mt-4 flex gap-2">
-        <craft-button type="button" @click="openModal('create')" size="small">
-          <craft-icon name="plus" slot="prefix"></craft-icon>
-          {{ t('New Group') }}
-        </craft-button>
+        <craft-modal>
+          <craft-button
+            slot="invoker"
+            type="button"
+            @click="openModal('create')"
+            size="small"
+          >
+            <craft-icon name="plus" slot="prefix"></craft-icon>
+            {{ t('New Group') }}
+          </craft-button>
+          <div slot="content">This is my content that has been opened
+            <ModalForm
+              :is-active="modalActive"
+              @close="
+                modalActive = false;
+                form.reset();
+              "
+              @submit="saveGroup"
+              :loading="form.processing"
+            >
+              <craft-input
+                name="id"
+                id="id"
+                v-model="form.id"
+                type="hidden"
+              ></craft-input>
+              <Deferred data="nameSuggestions">
+                <template #fallback>
+                  <craft-input
+                    readonly
+                    name="readonly-name"
+                    :label="t('Group Name')"
+                    :help-text="
+                      t('What this group will be called in the control panel.')
+                    "
+                  >
+                    <div slot="after">
+                      <craft-callout
+                        variant="info"
+                        appearance="plain"
+                        class="p-0"
+                        icon="lightbulb"
+                      >
+                        {{ t('This can begin with an environment variable.') }}
+                        <a
+                          href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+                          >{{ t('Learn more') }}</a
+                        >
+                      </craft-callout>
+                    </div>
+                  </craft-input>
+                </template>
+                <craft-input
+                  :label="t('Group Name')"
+                  id="name"
+                  name="name"
+                  required
+                  :help-text="
+                    t('What this group will be called in the control panel.')
+                  "
+                  :has-feedback-for="form.errors?.name ? 'error' : ''"
+                >
+                  <InputCombobox
+                    :options="nameSuggestions"
+                    v-model="form.name"
+                    slot="input"
+                  />
+                  <div slot="after">
+                    <craft-callout
+                      variant="info"
+                      appearance="plain"
+                      class="p-0"
+                      icon="lightbulb"
+                    >
+                      {{ t('This can begin with an environment variable.') }}
+                      <a
+                        href="https://craftcms.com/docs/5.x/configure.html#control-panel-settings"
+                        >{{ t('Learn more') }}</a
+                      >
+                    </craft-callout>
+                  </div>
+
+                  <div slot="feedback">
+                    <ul class="error-list" v-if="form.errors?.name">
+                      <li>{{ form.errors.name }}</li>
+                    </ul>
+                  </div>
+                </craft-input>
+              </Deferred>
+            </ModalForm>
+          </div>
+        </craft-modal>
       </div>
     </template>
 

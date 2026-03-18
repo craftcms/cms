@@ -45,7 +45,7 @@
     <div class="overlay" v-if="isActive" @click="emit('close')"></div>
   </Transition>
 
-  <craft-dialog :open="isActive">
+  <craft-modal :opened="isActive">
     <div
       :class="{
         [widthClass]: true,
@@ -53,7 +53,7 @@
     >
       <slot></slot>
     </div>
-  </craft-dialog>
+  </craft-modal>
 </template>
 
 <style scoped>
