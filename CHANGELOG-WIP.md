@@ -6,6 +6,7 @@
 
 ## Extensibility
 - Added `CraftCms\Cms\Support\Arr`.
+- Added `CraftCms\Cms\Support\File`.
 - Added `CraftCms\Cms\Support\Facades\Path`.
 - Added `CraftCms\Cms\Support\Path`.
 - Added `CraftCms\Cms\Support\Str`.
@@ -66,6 +67,7 @@
   - `App:licensingIssuesHash()` --> `app(\CraftCms\Cms\License\License::class)->issuesHash()`
   -
 - Deprecated `Craft::createGuzzleClient()`. `CraftCms\Cms\Support\Facades\Http::create()` should be used instead.
+- Deprecated `craft\helpers\FileHelper`. `CraftCms\Cms\Support\File` should be used instead.
 
 ### Deprecator
 - Added `CraftCms\Cms\Support\Facades\Deprecator`.
