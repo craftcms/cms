@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Providers;
 
-use Craft;
-use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
@@ -16,6 +14,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Updates;
+use CraftCms\Cms\Support\File;
 use GuzzleHttp\Utils;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Application;
@@ -241,7 +240,7 @@ class AppServiceProvider extends ServiceProvider
     private function bootAliases(): void
     {
         Aliases::set('@root', Env::get('CRAFT_ROOT_PATH', $this->app->basePath()));
-        Aliases::set('@craftcms', FileHelper::normalizePath($this->root));
+        Aliases::set('@craftcms', File::normalizePath($this->root));
         Aliases::set('@package', '@craftcms/src');
         Aliases::set('@resources', "{$this->root}/resources");
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Commands;
 
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\Support\File;
@@ -50,7 +49,7 @@ class BackupCommand extends Command
                 $path = getcwd().DIRECTORY_SEPARATOR.$path;
             }
 
-            $path = FileHelper::normalizePath($path);
+            $path = File::normalizePath($path);
 
             if (is_dir($path)) {
                 $path .= DIRECTORY_SEPARATOR.basename($backups->getBackupFilePath(

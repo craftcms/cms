@@ -9,9 +9,12 @@ namespace craft\helpers;
 
 use Craft;
 use CraftCms\Cms\Support\File;
+use FilesystemIterator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use RuntimeException;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
@@ -340,12 +343,69 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function writeToFile(string $file, string $contents, array $options = []): void
     {
-        try {
-            File::writeToFile($file, $contents, $options);
-        } catch (RuntimeException $e) {
-            throw new Exception($e->getMessage(), (int) $e->getCode(), $e);
-        } catch (\ErrorException $e) {
-            throw new ErrorException($e->getMessage(), (int) $e->getCode(), $e->getSeverity(), $e->getFile(), $e->getLine(), $e);
+        $file = static::normalizePath($file);
+        $dir = dirname($file);
+
+        if (!is_dir($dir)) {
+            if (!isset($options['createDirs']) || $options['createDirs']) {
+                static::createDirectory($dir);
+            } else {
+                throw new InvalidArgumentException("Cannot write to \"$file\" because the parent directory doesn't exist.");
+            }
+        }
+
+        if (!static::isWritable($file)) {
+            throw new ErrorException("The file path \"$file\" is not writable.");
+        }
+
+        if (function_exists('disk_free_space')) {
+            $freeBytes = disk_free_space($dir);
+
+            if ($freeBytes === false) {
+                Log::warning("Could not determine the free disk space for \"$dir\".");
+            } else {
+                $bytes = StringHelper::byteLength($contents);
+                if ($bytes > $freeBytes) {
+                    throw new ErrorException(sprintf(
+                        "Insufficient disk space to write \"%s\". %s bytes free, %s bytes required.",
+                        $file,
+                        $freeBytes,
+                        $bytes,
+                    ));
+                }
+            }
+        }
+
+        if (isset($options['lock'])) {
+            $lock = (bool)$options['lock'];
+        } else {
+            $lock = static::useFileLocks();
+        }
+
+        if ($lock) {
+            $mutex = Craft::$app->getMutex();
+            $lockName = md5($file);
+            if (!$mutex->acquire($lockName, 3)) {
+                throw new ErrorException("Unable to acquire a lock for file \"$file\".");
+            }
+        } else {
+            $lockName = $mutex = null;
+        }
+
+        $flags = 0;
+        if (!empty($options['append'])) {
+            $flags |= FILE_APPEND;
+        }
+
+        if (file_put_contents($file, $contents, $flags) === false) {
+            throw new ErrorException("Unable to write new contents to \"$file\".");
+        }
+
+        // Invalidate opcache
+        static::invalidate($file);
+
+        if ($lock) {
+            $mutex->release($lockName);
         }
     }
 
@@ -363,13 +423,19 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function writeGitignoreFile(string $path, array $options = []): void
     {
-        try {
-            File::writeGitignoreFile($path, $options);
-        } catch (RuntimeException $e) {
-            throw new Exception($e->getMessage(), (int) $e->getCode(), $e);
-        } catch (\ErrorException $e) {
-            throw new ErrorException($e->getMessage(), (int) $e->getCode(), $e->getSeverity(), $e->getFile(), $e->getLine(), $e);
+        $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
+
+        if (is_file($gitignorePath)) {
+            return;
         }
+
+        $contents = "*\n!.gitignore\n";
+        $options = array_merge([
+            // Prevent a segfault if this is called recursively
+            'lock' => false,
+        ], $options);
+
+        static::writeToFile($gitignorePath, $contents, $options);
     }
 
     /**

@@ -30,6 +30,7 @@ use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Images;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
@@ -752,11 +753,11 @@ class Assets
 
         $volume = $asset->getVolume();
 
-        $imagePath = Craft::$app->getPath()->getImageEditorSourcesPath();
+        $imagePath = Path::imageEditorSources();
         $assetSourcesDirectory = $imagePath . '/' . $assetId;
         $targetSizedPath = $assetSourcesDirectory . '/' . $size;
         $targetFilePath = $targetSizedPath . '/' . $assetId . '.' . $asset->getExtension();
-        FileHelper::createDirectory($targetSizedPath);
+        File::ensureDirectoryExists($targetSizedPath);
 
         // You never know.
         if (is_file($targetFilePath)) {
@@ -764,7 +765,7 @@ class Assets
         }
 
         // Maybe we have larger sources available we can use.
-        if (FileHelper::createDirectory($assetSourcesDirectory)) {
+        if (File::makeDirectory($assetSourcesDirectory)) {
             $handle = opendir($assetSourcesDirectory);
 
             if ($handle === false) {
@@ -945,7 +946,7 @@ class Assets
 
         $svg = static::iconSvg($extension);
 
-        \CraftCms\Cms\Support\File::writeToFile($path, $svg);
+        File::writeToFile($path, $svg);
 
         return $path;
     }

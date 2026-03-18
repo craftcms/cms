@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -1111,10 +1110,10 @@ class Html
             throw new InvalidArgumentException("Invalid file path: $file");
         }
 
-        $file = FileHelper::absolutePath(Aliases::get($file), '/');
+        $file = File::absolutePath(Aliases::get($file), '/');
 
         // make sure it's contained within the project rot
-        $rootPath = FileHelper::absolutePath(Aliases::get('@root'), '/');
+        $rootPath = File::absolutePath(Aliases::get('@root'), '/');
         if (! str_starts_with($file, "$rootPath/")) {
             throw new InvalidArgumentException(sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));
         }
@@ -1130,7 +1129,7 @@ class Html
 
         if ($mimeType === null) {
             try {
-                $mimeType = FileHelper::getMimeType($file);
+                $mimeType = File::getMimeType($file);
             } catch (Throwable $e) {
                 Log::warning("Unable to determine the MIME type for $file: ".$e->getMessage(), [__METHOD__]);
                 report($e);

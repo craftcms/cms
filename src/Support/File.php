@@ -10,14 +10,14 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
 use ErrorException;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Mime\MimeTypes;
 use Throwable;
 use ZipArchive;
+
+use function Illuminate\Filesystem\join_paths;
 
 class File extends \Illuminate\Support\Facades\File
 {
@@ -460,55 +460,17 @@ class File extends \Illuminate\Support\Facades\File
      *
      * @param  string  $file  the file path
      * @param  string  $contents  the new file contents
-     * @param  array  $options  options for file write. Valid options are:
-     *                          - `createDirs`: bool, whether to create parent directories if they do
-     *                          not exist. Defaults to `true`.
-     *                          - `append`: bool, whether the contents should be appended to the
-     *                          existing contents. Defaults to false.
+     * @param  bool  $append  whether to append to existing contents
      *
-     * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
-     * @throws RuntimeException if the parent directory can't be created
      * @throws ErrorException in case of failure
      */
-    public static function writeToFile(string $file, string $contents, array $options = []): void
+    public static function writeToFile(string $file, string $contents, bool $append = false): void
     {
         $file = static::normalizePath($file);
-        $dir = dirname($file);
 
-        if (! is_dir($dir)) {
-            if (! isset($options['createDirs']) || $options['createDirs']) {
-                static::makeDirectory($dir);
-            } else {
-                throw new InvalidArgumentException("Cannot write to \"$file\" because the parent directory doesn't exist.");
-            }
-        }
+        static::makeDirectory(dirname($file));
 
-        if (! static::isWritable($file)) {
-            throw new ErrorException("The file path \"$file\" is not writable.");
-        }
-
-        if (function_exists('disk_free_space')) {
-            $freeBytes = disk_free_space($dir);
-
-            if ($freeBytes === false) {
-                Log::info("Could not determine the free disk space for \"$dir\".");
-            } else {
-                $bytes = strlen($contents);
-                if ($bytes > $freeBytes) {
-                    throw new ErrorException(sprintf(
-                        'Insufficient disk space to write "%s". %s bytes free, %s bytes required.',
-                        $file,
-                        $freeBytes,
-                        $bytes,
-                    ));
-                }
-            }
-        }
-
-        $flags = 0;
-        if (! empty($options['append'])) {
-            $flags |= FILE_APPEND;
-        }
+        $flags = $append ? FILE_APPEND : 0;
 
         if (file_put_contents($file, $contents, $flags) === false) {
             throw new ErrorException("Unable to write new contents to \"$file\".");
@@ -520,26 +482,16 @@ class File extends \Illuminate\Support\Facades\File
 
     /**
      * Creates a `.gitignore` file in the given directory if one doesn't exist yet.
-     *
-     * @param  array  $options  options for file write. Valid options are:
-     *                          - `createDirs`: bool, whether to create parent directories if they do
-     *                          not exist. Defaults to `true`.
-     *
-     * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
-     * @throws RuntimeException if the parent directory can't be created
-     * @throws ErrorException in case of failure
      */
-    public static function writeGitignoreFile(string $path, array $options = []): void
+    public static function writeGitignoreFile(string $path): void
     {
-        $gitignorePath = $path.DIRECTORY_SEPARATOR.'.gitignore';
+        $gitignorePath = join_paths($path, '.gitignore');
 
         if (is_file($gitignorePath)) {
             return;
         }
 
-        $contents = "*\n!.gitignore\n";
-
-        static::writeToFile($gitignorePath, $contents, $options);
+        app(Filesystem::class)->put($gitignorePath, "*\n!.gitignore\n");
     }
 
     /**
@@ -552,13 +504,16 @@ class File extends \Illuminate\Support\Facades\File
     {
         // Go through all of them and move them forward.
         for ($i = $max; $i > 0; $i--) {
-            $thisFile = $basePath.($i == 1 ? '' : '.'.($i - 1));
-            if (file_exists($thisFile)) {
-                if ($i === $max) {
-                    @unlink($thisFile);
-                } else {
-                    @rename($thisFile, "$basePath.$i");
-                }
+            $thisFile = $basePath.($i === 1 ? '' : '.'.($i - 1));
+
+            if (! file_exists($thisFile)) {
+                continue;
+            }
+
+            if ($i === $max) {
+                @unlink($thisFile);
+            } else {
+                @rename($thisFile, "$basePath.$i");
             }
         }
     }
@@ -571,6 +526,7 @@ class File extends \Illuminate\Support\Facades\File
     public static function invalidate(string $file): void
     {
         clearstatcache(true, $file);
+
         if (function_exists('opcache_invalidate') && filter_var(ini_get('opcache.enable'), FILTER_VALIDATE_BOOLEAN)) {
             @opcache_invalidate($file, true);
         }

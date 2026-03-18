@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\ProjectConfig\Commands;
 
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -51,11 +50,11 @@ class ExportCommand extends Command
 
         if ($path !== null) {
             // Prefix with the working directory if a relative path or no path is given
-            if (str_starts_with($path, '.') || ! str_contains(FileHelper::normalizePath($path, '/'), '/')) {
+            if (str_starts_with($path, '.') || ! str_contains(File::normalizePath($path, '/'), '/')) {
                 $path = join_paths(getcwd(), $path);
             }
 
-            $path = FileHelper::normalizePath($path);
+            $path = File::normalizePath($path);
         } else {
             $path = getcwd();
         }

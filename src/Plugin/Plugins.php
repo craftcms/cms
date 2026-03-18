@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin;
 
-use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -134,7 +133,7 @@ class Plugins
             // Normalize the base path (and find the actual path, not a possibly-symlinked path)
             if (isset($plugin['basePath'])) {
                 if (($basePath = realpath($plugin['basePath'])) !== false) {
-                    $plugin['basePath'] = FileHelper::normalizePath($basePath);
+                    $plugin['basePath'] = File::normalizePath($basePath);
                 } else {
                     Log::warning("Invalid plugin base path: {$plugin['basePath']}", [__METHOD__]);
                     unset($plugin['basePath']);
@@ -308,7 +307,7 @@ class Plugins
         // Figure out the path to the folder that contains this class
         try {
             // Add a trailing slash so we don't get false positives
-            $classPath = Str::finish(FileHelper::normalizePath(dirname(new ReflectionClass($class)->getFileName())), '/');
+            $classPath = Str::finish(File::normalizePath(dirname(new ReflectionClass($class)->getFileName())), '/');
         } catch (ReflectionException) {
             return $this->classPluginHandles[$class] = null;
         }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use craft\helpers\Cp;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -141,7 +141,7 @@ class VolumesController
         $subpath = $request->input('subpath');
 
         if (! empty($subpath)) {
-            $subpath = FileHelper::normalizePath(ltrim(trim((string) $subpath), '/'));
+            $subpath = File::normalizePath(ltrim(trim((string) $subpath), '/'));
         }
 
         $volume = new Volume([

@@ -26,7 +26,6 @@ use craft\errors\AssetException;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\helpers\FileHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\services\ElementSources;
@@ -2339,7 +2338,7 @@ JS, [
         $volume = $this->getVolume();
 
         if ($volume->sourceDisk() instanceof LocalFilesystemAdapter) {
-            return FileHelper::normalizePath($volume->sourceDisk()->path($this->getPath()));
+            return File::normalizePath($volume->sourceDisk()->path($this->getPath()));
         }
 
         return Path::assetSources($this->id.'.'.$this->getExtension());
@@ -3335,13 +3334,12 @@ JS;
             return false;
         }
 
-        $tempFilePath = FileHelper::normalizePath($tempFilePath);
+        $tempFilePath = File::normalizePath($tempFilePath);
 
         // Make sure it's within a known temp path, the project root, or storage/ folder
-        $pathService = app(\CraftCms\Cms\Support\Path::class);
         $allowedRoots = [
-            [$pathService->temp(), true],
-            [$pathService->tempAssetUploads(), true],
+            [Path::temp(), true],
+            [Path::tempAssetUploads(), true],
             [sys_get_temp_dir(), true],
             [Aliases::get('@root', false), false],
             [Aliases::get('@storage', false), false],
@@ -3364,7 +3362,7 @@ JS;
         }
 
         // Make sure it's *not* within a system directory though
-        $systemDirs = $pathService->system();
+        $systemDirs = Path::system();
         $systemDirs = array_map($this->_normalizeTempPath(...), $systemDirs);
         $systemDirs = array_filter($systemDirs, fn ($value) => $value !== false);
 
@@ -3380,7 +3378,7 @@ JS;
             return false;
         }
 
-        return FileHelper::normalizePath($path).DIRECTORY_SEPARATOR;
+        return File::normalizePath($path).DIRECTORY_SEPARATOR;
     }
 
     /**

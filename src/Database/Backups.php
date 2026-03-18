@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Database;
 
 use Closure;
 use Craft;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Events\AfterCreateBackup;
@@ -373,7 +372,7 @@ final readonly class Backups
 
     private function createMysqlDefaultsFile(Connection $connection): string
     {
-        $path = FileHelper::normalizePath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.uniqid('craft-db-', true).'.cnf';
+        $path = File::normalizePath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.uniqid('craft-db-', true).'.cnf';
         $config = $this->getConnectionConfig($connection);
         $socket = (string) ($connection->getConfig('unix_socket') ?? '');
 
