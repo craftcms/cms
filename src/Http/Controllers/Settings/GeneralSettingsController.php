@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use craft\helpers\Assets;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Rebrand;
 use CraftCms\Cms\Cp\SelectOptions;
@@ -127,7 +128,7 @@ readonly class GeneralSettingsController
             $image = $request->file($key);
             Storage::disk('rebrand')->deleteDirectory($folder);
             if ($image) {
-                $safeName = Assets::prepareAssetName($image->getClientOriginalName(), true, true);
+                $safeName = AssetsHelper::prepareAssetName($image->getClientOriginalName(), true, true);
                 $image->storePubliclyAs($folder, $safeName, 'rebrand');
             }
         }

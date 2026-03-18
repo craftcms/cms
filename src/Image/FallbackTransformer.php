@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use craft\helpers\Assets;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
@@ -28,7 +28,7 @@ readonly class FallbackTransformer implements ImageTransformerInterface
 
         return UrlHelper::actionUrl('assets/generate-fallback-transform', [
             'transform' => Crypt::encrypt(sprintf('%s,%s', $asset->id, $transformString)),
-        ] + Assets::revParams($asset), showScriptName: false);
+        ] + AssetsHelper::revParams($asset), showScriptName: false);
     }
 
     public function invalidateAssetTransforms(Asset $asset): void

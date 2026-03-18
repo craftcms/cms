@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
-use craft\helpers\Assets as AssetsHelper;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

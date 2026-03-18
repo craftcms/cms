@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use craft\helpers\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
@@ -161,7 +161,7 @@ class ImageTransformHelper
                         File::delete($file->getPathname());
                     }
 
-                    Assets::downloadFile($volume->sourceDisk(), $asset->getPath(), $tempFilePath);
+                    AssetsHelper::downloadFile($volume->sourceDisk(), $asset->getPath(), $tempFilePath);
 
                     if (! is_file($tempFilePath) || filesize($tempFilePath) === 0) {
                         if (is_file($tempFilePath) && ! File::delete($tempFilePath)) {

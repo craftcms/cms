@@ -8,7 +8,7 @@
 namespace craft\validators;
 
 use craft\helpers\Assets;
-use craft\helpers\Assets as AssetsHelper;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Cms;

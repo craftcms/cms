@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\helpers\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\File;
@@ -67,7 +67,7 @@ readonly class PhotoController
             abort_if(! $user, 400, 'Invalid user ID: '.$request->integer('userId'));
 
             // Move to our own temp location
-            $fileLocation = Assets::tempFilePath($uploadedFile->extension());
+            $fileLocation = AssetsHelper::tempFilePath($uploadedFile->extension());
             $file = $uploadedFile->move(dirname($fileLocation), basename($fileLocation));
             $this->users->saveUserPhoto($fileLocation, $user, $uploadedFile->getClientOriginalName(), $file->getMimeType());
 
