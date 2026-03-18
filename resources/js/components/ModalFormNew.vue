@@ -7,14 +7,12 @@
     (e: 'submit'): void;
   }>();
   withDefaults(
-    defineProps<
-      {
-        loading?: boolean;
-        title?: string;
-        resetLabel?: string;
-        submitLabel?: string;
-      }
-    >(),
+    defineProps<{
+      loading?: boolean;
+      title?: string;
+      resetLabel?: string;
+      submitLabel?: string;
+    }>(),
     {
       overlay: true,
       loading: false,
@@ -25,6 +23,12 @@
 
   function submitHandler() {
     emit('submit');
+  }
+
+  function resetHandler(event: Event) {
+    const {target} = event;
+    target!.dispatchEvent(new Event('close-overlay', {bubbles: true}));
+    emit('close');
   }
 </script>
 
@@ -38,7 +42,7 @@
 
       <slot></slot>
       <template #secondary-action>
-        <craft-button type="reset" @click="emit('close')" appearance="plain">
+        <craft-button type="reset" @click="resetHandler" appearance="plain">
           {{ resetLabel }}
         </craft-button>
       </template>

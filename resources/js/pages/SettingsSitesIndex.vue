@@ -232,7 +232,7 @@
               </craft-action-item>
               <div slot="content">
                 <ModalForm
-                  @close="form.reset();"
+                  @close="form.reset()"
                   @submit="saveGroup"
                   :loading="form.processing"
                 >
@@ -372,7 +372,7 @@
           </craft-button>
           <div slot="content">
             <ModalForm
-              @close="form.reset();"
+              @close="form.reset()"
               @submit="saveGroup"
               :loading="form.processing"
             >
