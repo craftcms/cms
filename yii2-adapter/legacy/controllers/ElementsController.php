@@ -12,7 +12,6 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\events\DefineElementEditorHtmlEvent;
-use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Template;
@@ -25,6 +24,7 @@ use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -2829,7 +2829,7 @@ JS, [
      */
     private function _validateElementType(string $elementType): void
     {
-        if (!Component::validateComponentClass($elementType, ElementInterface::class)) {
+        if (!ComponentHelper::validateComponentClass($elementType, ElementInterface::class)) {
             $message = (new InvalidTypeException($elementType, ElementInterface::class))->getMessage();
             throw new BadRequestHttpException($message);
         }

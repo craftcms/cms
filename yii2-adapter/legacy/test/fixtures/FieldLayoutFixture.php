@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ModelInterface;
 use craft\helpers\Component;
 use craft\test\DbFixtureTrait;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -97,7 +98,7 @@ abstract class FieldLayoutFixture extends DbFixture
                     // create field component, save it and add to layout elements
                     if ($fieldClass instanceof FieldInterface) {
                         /** @var FieldInterface|Field $field */
-                        $field = $this->_fields[] = Component::createComponent($fieldConfig, FieldInterface::class);
+                        $field = $this->_fields[] = ComponentHelper::createComponent($fieldConfig, FieldInterface::class);
 
                         if (!$fieldsService->saveField($field)) {
                             $this->throwModelError($field);

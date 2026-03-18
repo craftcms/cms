@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use craft\base\ElementInterface;
-use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Template;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\RelationalField;
@@ -233,7 +233,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
 
             foreach ($this->types as $typeId) {
                 if (isset($types[$typeId])) {
-                    $this->_linkTypes[$typeId] = Component::createComponent([
+                    $this->_linkTypes[$typeId] = ComponentHelper::createComponent([
                         'type' => $types[$typeId],
                         'settings' => $this->typeSettings[$typeId] ?? [],
                     ], BaseLinkType::class);
@@ -263,7 +263,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         // See if any unselected types support it
         foreach (self::types() as $typeId => $type) {
             if (! isset($linkTypes[$typeId]) && $type !== UrlType::class) {
-                $linkType = Component::createComponent($type, BaseLinkType::class);
+                $linkType = ComponentHelper::createComponent($type, BaseLinkType::class);
                 if ($linkType->supports($value)) {
                     return $linkType::id();
                 }
@@ -341,7 +341,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
 
         foreach ($types->all() as $typeId => $typeClass) {
             /** @var BaseLinkType $linkType */
-            $linkType = $linkTypes[$typeId] ?? Component::createComponent($typeClass, BaseLinkType::class);
+            $linkType = $linkTypes[$typeId] ?? ComponentHelper::createComponent($typeClass, BaseLinkType::class);
             $typeSettingsHtml = InputNamespace::namespaceInputs(
                 fn () => $readOnly ? $linkType->getReadOnlySettingsHtml() : $linkType->getSettingsHtml(),
                 "typeSettings[$typeId]",
@@ -518,7 +518,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 if (! $type) {
                     throw new InvalidArgumentException("Invalid link type: $typeId");
                 }
-                $linkType = Component::createComponent($type, BaseLinkType::class);
+                $linkType = ComponentHelper::createComponent($type, BaseLinkType::class);
             }
 
             $config['value'] = $linkType->normalizeValue($value);
@@ -528,7 +528,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             }
 
             $typeId = $this->resolveType($value);
-            $config['linkType'] = $linkTypes[$typeId] ?? Component::createComponent(self::types()[$typeId], BaseLinkType::class);
+            $config['linkType'] = $linkTypes[$typeId] ?? ComponentHelper::createComponent(self::types()[$typeId], BaseLinkType::class);
         }
 
         return new LinkData($config['value'], $config['linkType']);
@@ -553,7 +553,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             if (! isset($linkTypes[$valueTypeId])) {
                 $type = self::types()[$valueTypeId] ?? null;
                 if ($type) {
-                    $linkTypes[$valueTypeId] = Component::createComponent($type, BaseLinkType::class);
+                    $linkTypes[$valueTypeId] = ComponentHelper::createComponent($type, BaseLinkType::class);
                 } else {
                     $value = null;
                 }

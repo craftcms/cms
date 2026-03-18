@@ -7,9 +7,9 @@ namespace CraftCms\Cms\Field;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\AdminTable;
-use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
@@ -989,7 +989,6 @@ class Fields
 
         $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
-        $config = ComponentHelper::cleanseConfig($config);
 
         $layout = $this->createLayout($config);
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -364,7 +363,6 @@ class EntryTypesController
         $settings = array_filter(Arr::get($postedSettings, $settingsNamespace, []));
 
         if (! empty($settings)) {
-            $settings = Component::cleanseConfig($settings);
             foreach ($settings as $key => $value) {
                 $entryType->{$key} = $value;
             }

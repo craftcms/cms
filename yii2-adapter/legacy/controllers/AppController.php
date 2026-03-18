@@ -466,7 +466,7 @@ class AppController extends Controller
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
                     if (!empty($config['overrides'])) {
-                        Typecast::configure($component, Component::cleanseConfig($config['overrides']));
+                        Typecast::configure($component, $config['overrides']);
                     }
                     $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
                 }

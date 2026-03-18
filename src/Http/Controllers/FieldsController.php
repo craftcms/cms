@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
@@ -104,7 +104,7 @@ class FieldsController
         $oldType = $request->input('oldType');
         $field = $this->fieldsService->createField($type);
 
-        if ($oldType && Component::validateComponentClass($oldType, FieldInterface::class)) {
+        if ($oldType && ComponentHelper::validateComponentClass($oldType, FieldInterface::class)) {
             $settingsStr = $request->input('settings', '');
             parse_str((string) $settingsStr, $postedOldSettings);
             $oldNamespace = $request->input('oldNamespace');
@@ -122,7 +122,6 @@ class FieldsController
                 }
             }, ARRAY_FILTER_USE_KEY);
 
-            $settings = Component::cleanseConfig($settings);
             Typecast::configure($field, $settings);
         }
 
@@ -291,7 +290,7 @@ class FieldsController
             'thumbAlignment' => ['nullable', 'string'],
         ]);
 
-        $fieldLayoutConfig = Component::cleanseConfig($request->input('fieldLayoutConfig'));
+        $fieldLayoutConfig = $request->input('fieldLayoutConfig');
         $fieldLayout = $fields->createLayout($fieldLayoutConfig);
 
         return new JsonResponse([
@@ -335,7 +334,7 @@ class FieldsController
 
         $uid = $request->input('uid');
         $elementType = $request->input('elementType');
-        $layoutConfig = Component::cleanseConfig($request->array('layoutConfig'));
+        $layoutConfig = $request->array('layoutConfig');
 
         abort_if(! isset($layoutConfig['tabs']), 400, 'Layout config doesn’t have any tabs.');
 
@@ -351,8 +350,6 @@ class FieldsController
             $settings = Arr::get($postedSettings, $settingsNamespace, []);
             $componentConfig = array_merge($componentConfig, $settings);
         }
-
-        $componentConfig = Component::cleanseConfig($componentConfig);
 
         $isTab = false;
 
