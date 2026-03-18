@@ -18,12 +18,6 @@ export default class CraftModal extends OverlayMixin(LitElement) {
     };
   }
 
-  override firstUpdated() {
-    const contentNode = this._overlayContentNode;
-    console.log(contentNode);
-    contentNode.setAttribute('aria-label', 'My Dialog');
-  }
-
   override render() {
     return html`
       <slot name="invoker"></slot>
