@@ -60,6 +60,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use SplFileInfo;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -1426,7 +1427,7 @@ class ProjectConfig
             ->ignoreVCS(false)
             ->files()
             ->in($path)
-            ->filter(fn (\SplFileInfo $file): bool => fnmatch('*.yaml', $file->getFilename(), FNM_CASEFOLD));
+            ->filter(fn (SplFileInfo $file): bool => fnmatch('*.yaml', $file->getFilename(), FNM_CASEFOLD));
 
         $list = [];
         foreach ($finder as $file) {
@@ -1505,9 +1506,7 @@ class ProjectConfig
             $basePath = Path::projectConfig();
 
             // Delete everything except hidden files/folders
-            File::clearDirectory($basePath, [
-                'except' => ['.*', '.*/'],
-            ]);
+            File::cleanDirectory($basePath, except: ['.*', '.*/']);
 
             $projectConfigNames = $config->get(self::PATH_META_NAMES);
 
@@ -1537,9 +1536,7 @@ class ProjectConfig
             if (isset($basePath)) {
                 // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
                 try {
-                    File::clearDirectory($basePath, [
-                        'except' => ['.*', '.*/'],
-                    ]);
+                    File::cleanDirectory($basePath, except: ['.*', '.*/']);
                 } catch (Throwable) {
                     // oh well
                 }

@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use CraftCms\Cms\Support\File;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -18,6 +19,7 @@ use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Mime\MimeTypes;
 use Throwable;
+use UnexpectedValueException;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use ZipArchive;
@@ -119,7 +121,7 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function createDirectory($path, $mode = null, $recursive = true): bool
     {
         try {
-            return File::createDirectory((string) $path, $mode !== null ? (int) $mode : null, (bool) $recursive);
+            return File::makeDirectory((string) $path, $mode !== null ? (int) $mode : null, (bool) $recursive);
         } catch (RuntimeException $e) {
             throw new Exception($e->getMessage(), (int) $e->getCode(), $e);
         }
@@ -161,11 +163,42 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function clearDirectory(string $dir, array $options = []): void
     {
-        try {
-            File::clearDirectory($dir, $options);
-        } catch (\ErrorException $e) {
-            throw new ErrorException($e->getMessage(), (int) $e->getCode(), $e->getSeverity(), $e->getFile(), $e->getLine(), $e);
+        if (!is_dir($dir)) {
+            throw new InvalidArgumentException("The dir argument must be a directory: $dir");
         }
+
+        // Adapted from [[removeDirectory()]], plus addition of filters, and minus the root directory removal at the end
+        if (!($handle = opendir($dir))) {
+            return;
+        }
+
+        if (!isset($options['basePath'])) {
+            $options['basePath'] = realpath($dir);
+            $options = static::normalizeOptions($options);
+        }
+
+        while (($file = readdir($handle)) !== false) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
+            if (static::filterPath($path, $options)) {
+                if (is_dir($path)) {
+                    try {
+                        static::removeDirectory($path, $options);
+                    } catch (UnexpectedValueException $e) {
+                        // Ignore if the folder has already been removed.
+                        if (!str_contains($e->getMessage(), 'No such file or directory')) {
+                            Log::warning("Tried to remove " . $path . ", but it doesn't exist.");
+                            throw $e;
+                        }
+                    }
+                } else {
+                    static::unlink($path);
+                }
+            }
+        }
+        closedir($handle);
     }
 
     /**

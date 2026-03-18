@@ -39,7 +39,7 @@ readonly class ClearCachesController
 
             if (is_string($action)) {
                 try {
-                    File::clearDirectory($action);
+                    File::cleanDirectory($action);
                 } catch (InvalidArgumentException) {
                     // the directory doesn't exist
                 } catch (Throwable $e) {

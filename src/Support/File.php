@@ -17,7 +17,6 @@ use RuntimeException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Mime\MimeTypes;
 use Throwable;
-use UnexpectedValueException;
 use ZipArchive;
 
 class File extends \Illuminate\Support\Facades\File
@@ -146,52 +145,6 @@ class File extends \Illuminate\Support\Facades\File
     }
 
     /**
-     * Copies a whole directory as another one.
-     *
-     * @param  string  $directory  the source directory
-     * @param  string  $destination  the destination directory
-     * @param  array  $options  options for directory copy. Valid options are:
-     *                          - `fileMode`: integer, the permission to be set for newly copied files. Defaults to `Cms::config()->defaultFileMode`.
-     *                          - `dirMode`: integer, the permission to be set for newly created directories. Defaults to `Cms::config()->defaultDirMode`.
-     *
-     * @throws InvalidArgumentException if the directory is invalid or unsupported options are used
-     * @throws ErrorException if the directory cannot be copied
-     */
-    public static function copyDirectory(string $directory, string $destination, array $options = []): void
-    {
-        $options['fileMode'] ??= Cms::config()->defaultFileMode;
-        $options['dirMode'] ??= Cms::config()->defaultDirMode;
-
-        $unsupportedOptions = array_diff(array_keys($options), ['fileMode', 'dirMode']);
-        if (! empty($unsupportedOptions)) {
-            throw new InvalidArgumentException(
-                'Unsupported copyDirectory options: '.implode(', ', $unsupportedOptions),
-            );
-        }
-
-        $directory = static::normalizePath($directory);
-        $destination = static::normalizePath($destination);
-
-        if ($directory === $destination || str_starts_with($destination, $directory.DIRECTORY_SEPARATOR)) {
-            throw new InvalidArgumentException('Trying to copy a directory to itself or a subdirectory.');
-        }
-
-        if (! is_dir($directory)) {
-            throw new InvalidArgumentException("Unable to open directory: $directory");
-        }
-
-        if (! app(Filesystem::class)->copyDirectory($directory, $destination)) {
-            throw new ErrorException("Unable to copy directory: $directory");
-        }
-
-        static::applyModesRecursively(
-            $destination,
-            (int) $options['dirMode'],
-            (int) $options['fileMode'],
-        );
-    }
-
-    /**
      * Creates a new directory.
      *
      * @param  string  $path  path of the directory to be created.
@@ -201,67 +154,45 @@ class File extends \Illuminate\Support\Facades\File
      *
      * @throws RuntimeException if the directory cannot be created
      */
-    public static function createDirectory(string $path, ?int $mode = null, bool $recursive = true): bool
+    public static function makeDirectory(string $path, ?int $mode = null, bool $recursive = true, $force = true): bool
     {
-        if ($mode === null) {
-            $mode = Cms::config()->defaultDirMode;
-        }
-
         if (is_dir($path)) {
             return true;
         }
 
-        if (! app(Filesystem::class)->makeDirectory($path, $mode, $recursive, true) && ! is_dir($path)) {
-            return false;
-        }
-
-        try {
-            return @chmod($path, $mode);
-        } catch (Throwable $e) {
-            throw new RuntimeException("Failed to change permissions for directory \"$path\": ".$e->getMessage(), (int) $e->getCode(), $e);
-        }
+        return app(Filesystem::class)->makeDirectory($path, $mode ?? Cms::config()->defaultDirMode, $recursive, $force);
     }
 
     /**
      * Removes all of a directory's contents recursively.
      *
-     * @param  string  $dir  the directory to be cleared.
-     * @param  array  $options  options for directory clearing. Valid options are:
-     *                          - `except`: array, list of glob patterns for files/directories to exclude. Patterns ending with `/` match directories only.
-     *                          - `only`: array, list of glob patterns for files to include (directories are always traversed).
-     *                          - `filter`: callable, a callback that receives the file path and returns `true` to include, `false` to exclude.
-     *
-     * @throws InvalidArgumentException if the dir is invalid
-     * @throws ErrorException in case of failure
+     * @param  string  $directory  the directory to be cleaned.
+     * @param  array  $except  list of glob patterns for files/directories to exclude. Patterns ending with `/` match directories only.
      */
-    public static function clearDirectory(string $dir, array $options = []): void
+    public static function cleanDirectory(string $directory, array $except = []): bool
     {
-        if (! is_dir($dir)) {
-            throw new InvalidArgumentException("The dir argument must be a directory: $dir");
+        if (! is_dir($directory)) {
+            return false;
         }
 
-        if (empty($options)) {
-            app(Filesystem::class)->cleanDirectory($dir);
-
-            return;
+        if (empty($except)) {
+            return app(Filesystem::class)->cleanDirectory($directory);
         }
 
         $finder = Finder::create()
             ->ignoreDotFiles(false)
             ->ignoreVCS(false)
             ->depth('== 0')
-            ->in($dir);
+            ->in($directory);
 
         // Separate directory-specific patterns (ending with '/') from file patterns
         $fileExcept = [];
         $dirExcept = [];
-        if (! empty($options['except'])) {
-            foreach ($options['except'] as $pattern) {
-                if (str_ends_with((string) $pattern, '/')) {
-                    $dirExcept[] = rtrim((string) $pattern, '/');
-                } else {
-                    $fileExcept[] = $pattern;
-                }
+        foreach ($except as $pattern) {
+            if (str_ends_with((string) $pattern, '/')) {
+                $dirExcept[] = rtrim((string) $pattern, '/');
+            } else {
+                $fileExcept[] = $pattern;
             }
         }
 
@@ -282,43 +213,16 @@ class File extends \Illuminate\Support\Facades\File
                 continue;
             }
 
-            // Check 'only' patterns (files only)
-            if (! empty($options['only']) && ! $item->isDir()) {
-                $included = false;
-                foreach ($options['only'] as $pattern) {
-                    if (fnmatch($pattern, $name)) {
-                        $included = true;
-                        break;
-                    }
-                }
-
-                if (! $included) {
-                    continue;
-                }
-            }
-
-            // Check 'filter' callback
-            if (isset($options['filter']) && is_callable($options['filter'])) {
-                $result = call_user_func($options['filter'], $item->getPathname());
-                if ($result === false) {
-                    continue;
-                }
-            }
-
-            $path = $item->getPathname();
             if ($item->isDir() && ! $item->isLink()) {
-                try {
-                    app(Filesystem::class)->deleteDirectory($path);
-                } catch (UnexpectedValueException $e) {
-                    if (! str_contains($e->getMessage(), 'No such file or directory')) {
-                        Log::info('Tried to remove '.$path.", but it doesn't exist.");
-                        throw $e;
-                    }
-                }
-            } else {
-                app(Filesystem::class)->delete($path);
+                app(Filesystem::class)->deleteDirectory($item->getPathname());
+
+                continue;
             }
+
+            app(Filesystem::class)->delete($item->getPathname());
         }
+
+        return true;
     }
 
     /**
@@ -573,7 +477,7 @@ class File extends \Illuminate\Support\Facades\File
 
         if (! is_dir($dir)) {
             if (! isset($options['createDirs']) || $options['createDirs']) {
-                static::createDirectory($dir);
+                static::makeDirectory($dir);
             } else {
                 throw new InvalidArgumentException("Cannot write to \"$file\" because the parent directory doesn't exist.");
             }
@@ -824,19 +728,5 @@ class File extends \Illuminate\Support\Facades\File
         }
 
         return uniqid($name, true).$ext;
-    }
-
-    private static function applyModesRecursively(string $path, int $dirMode, int $fileMode): void
-    {
-        @chmod($path, $dirMode);
-
-        $finder = Finder::create()
-            ->ignoreDotFiles(false)
-            ->ignoreVCS(false)
-            ->in($path);
-
-        foreach ($finder as $item) {
-            @chmod($item->getPathname(), $item->isDir() ? $dirMode : $fileMode);
-        }
     }
 }
