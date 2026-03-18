@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RuntimeException;
-use Symfony\Component\Filesystem\Exception\IOException;
-use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Mime\MimeTypes;
 use Throwable;
@@ -150,8 +148,8 @@ class File extends \Illuminate\Support\Facades\File
     /**
      * Copies a whole directory as another one.
      *
-     * @param  string  $src  the source directory
-     * @param  string  $dst  the destination directory
+     * @param  string  $directory  the source directory
+     * @param  string  $destination  the destination directory
      * @param  array  $options  options for directory copy. Valid options are:
      *                          - `fileMode`: integer, the permission to be set for newly copied files. Defaults to `Cms::config()->defaultFileMode`.
      *                          - `dirMode`: integer, the permission to be set for newly created directories. Defaults to `Cms::config()->defaultDirMode`.
@@ -159,15 +157,10 @@ class File extends \Illuminate\Support\Facades\File
      * @throws InvalidArgumentException if the directory is invalid or unsupported options are used
      * @throws ErrorException if the directory cannot be copied
      */
-    public static function copyDirectory(string $src, string $dst, array $options = []): void
+    public static function copyDirectory(string $directory, string $destination, array $options = []): void
     {
-        if (! isset($options['fileMode'])) {
-            $options['fileMode'] = Cms::config()->defaultFileMode;
-        }
-
-        if (! isset($options['dirMode'])) {
-            $options['dirMode'] = Cms::config()->defaultDirMode;
-        }
+        $options['fileMode'] ??= Cms::config()->defaultFileMode;
+        $options['dirMode'] ??= Cms::config()->defaultDirMode;
 
         $unsupportedOptions = array_diff(array_keys($options), ['fileMode', 'dirMode']);
         if (! empty($unsupportedOptions)) {
@@ -176,23 +169,23 @@ class File extends \Illuminate\Support\Facades\File
             );
         }
 
-        $src = static::normalizePath($src);
-        $dst = static::normalizePath($dst);
+        $directory = static::normalizePath($directory);
+        $destination = static::normalizePath($destination);
 
-        if ($src === $dst || str_starts_with($dst, $src.DIRECTORY_SEPARATOR)) {
+        if ($directory === $destination || str_starts_with($destination, $directory.DIRECTORY_SEPARATOR)) {
             throw new InvalidArgumentException('Trying to copy a directory to itself or a subdirectory.');
         }
 
-        if (! is_dir($src)) {
-            throw new InvalidArgumentException("Unable to open directory: $src");
+        if (! is_dir($directory)) {
+            throw new InvalidArgumentException("Unable to open directory: $directory");
         }
 
-        if (! app(Filesystem::class)->copyDirectory($src, $dst)) {
-            throw new ErrorException("Unable to copy directory: $src");
+        if (! app(Filesystem::class)->copyDirectory($directory, $destination)) {
+            throw new ErrorException("Unable to copy directory: $directory");
         }
 
         static::applyModesRecursively(
-            $dst,
+            $destination,
             (int) $options['dirMode'],
             (int) $options['fileMode'],
         );
@@ -226,68 +219,6 @@ class File extends \Illuminate\Support\Facades\File
             return @chmod($path, $mode);
         } catch (Throwable $e) {
             throw new RuntimeException("Failed to change permissions for directory \"$path\": ".$e->getMessage(), (int) $e->getCode(), $e);
-        }
-    }
-
-    /**
-     * Removes a directory (and all its content) recursively.
-     *
-     * @param  string  $dir  the directory to be deleted recursively.
-     * @param  array  $options  options for directory remove. Valid options are:
-     *                          - `traverseSymlinks`: bool, whether symlinks to the directories should be traversed too.
-     *                          Defaults to `false`, meaning the content of the symlinked directory would not be deleted.
-     *                          Only symlink would be removed in that default case.
-     */
-    public static function removeDirectory(string $dir, array $options = []): void
-    {
-        if (! is_dir($dir)) {
-            return;
-        }
-
-        if (empty($options) && ! is_link($dir) && app(Filesystem::class)->deleteDirectory($dir)) {
-            return;
-        }
-
-        try {
-            if (! empty($options['traverseSymlinks']) || ! is_link($dir)) {
-                if ($handle = opendir($dir)) {
-                    while (($file = readdir($handle)) !== false) {
-                        if ($file === '.') {
-                            continue;
-                        }
-                        if ($file === '..') {
-                            continue;
-                        }
-                        $path = $dir.DIRECTORY_SEPARATOR.$file;
-                        if (is_dir($path)) {
-                            static::removeDirectory($path, $options);
-                        } else {
-                            app(Filesystem::class)->delete($path);
-                        }
-                    }
-
-                    closedir($handle);
-                }
-            }
-
-            if (is_link($dir)) {
-                app(Filesystem::class)->delete($dir);
-            } else {
-                rmdir($dir);
-            }
-        } catch (ErrorException $e) {
-            if (! is_dir($dir)) {
-                return;
-            }
-
-            $fs = new SymfonyFilesystem;
-
-            try {
-                $fs->remove($dir);
-            } catch (IOException) {
-                // throw the original exception instead
-                throw $e;
-            }
         }
     }
 
@@ -377,7 +308,7 @@ class File extends \Illuminate\Support\Facades\File
             $path = $item->getPathname();
             if ($item->isDir() && ! $item->isLink()) {
                 try {
-                    static::removeDirectory($path, $options);
+                    app(Filesystem::class)->deleteDirectory($path);
                 } catch (UnexpectedValueException $e) {
                     if (! str_contains($e->getMessage(), 'No such file or directory')) {
                         Log::info('Tried to remove '.$path.", but it doesn't exist.");
@@ -895,9 +826,6 @@ class File extends \Illuminate\Support\Facades\File
         return uniqid($name, true).$ext;
     }
 
-    /**
-     * Applies directory and file modes recursively.
-     */
     private static function applyModesRecursively(string $path, int $dirMode, int $fileMode): void
     {
         @chmod($path, $dirMode);

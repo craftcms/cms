@@ -9,8 +9,11 @@ namespace craft\helpers;
 
 use Craft;
 use CraftCms\Cms\Support\File;
+use Illuminate\Filesystem\Filesystem;
 use InvalidArgumentException;
 use RuntimeException;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Mime\MimeTypes;
@@ -127,7 +130,19 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function removeDirectory($dir, $options = []): void
     {
-        File::removeDirectory((string) $dir, $options);
+        try {
+            parent::removeDirectory($dir, $options);
+        } catch (ErrorException $e) {
+            // Try Symfony's thing as a fallback
+            $fs = new SymfonyFilesystem();
+
+            try {
+                $fs->remove($dir);
+            } catch (IOException) {
+                // throw the original exception instead
+                throw $e;
+            }
+        }
     }
 
     /**

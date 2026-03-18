@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Commands;
 
 use Craft;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\Database\Commands\Concerns\ManagesDatabaseTables;
@@ -76,7 +75,7 @@ class RestoreCommand extends Command
 
             if (! $finder->hasResults()) {
                 $this->components->error("No files unzipped from $path.");
-                File::removeDirectory($tempDir);
+                File::deleteDirectory($tempDir);
 
                 return self::FAILURE;
             }
@@ -115,7 +114,7 @@ class RestoreCommand extends Command
 
         if (isset($tempDir)) {
             $this->components->task('Deleting the temp directory', function () use ($tempDir) {
-                FileHelper::removeDirectory($tempDir);
+                File::deleteDirectory($tempDir);
             });
         }
 
