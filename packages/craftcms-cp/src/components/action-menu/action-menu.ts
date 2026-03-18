@@ -31,15 +31,6 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
     }
   `;
 
-  @queryAssignedElements({selector: 'craft-action-item'})
-  actionItems!: CraftActionItem[];
-
-  @queryAssignedElements({slot: 'invoker'})
-  invokerNodes!: HTMLElement[];
-
-  @queryAssignedElements({slot: 'content'})
-  contentNodes!: HTMLElement[];
-
   private uid: string;
 
   // @ts-ignore
@@ -49,41 +40,30 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
     };
   }
 
-  private _addEventListeners() {
-    // Close the menu when an item is clicked.
-    // @TODO is this good or bad?
-    this.actionItems.forEach((item) => {
-      item.addEventListener('click', (e) => {
-        e.target?.dispatchEvent(new Event('close-overlay', {bubbles: true}));
-      });
-    });
-  }
-
-  private _setupInvoker() {
-    const firstInvoker = this.invokerNodes[0];
-    if (firstInvoker) {
-      firstInvoker.setAttribute('id', `invoker-${this.uid}`);
-      firstInvoker.setAttribute('aria-controls', `content-${this.uid}`);
+  private __setupInvoker() {
+    const invoker = this._overlayInvokerNode;
+    if (invoker) {
+      invoker.setAttribute('id', `invoker-${this.uid}`);
+      invoker.setAttribute('aria-controls', `content-${this.uid}`);
     }
   }
 
-  private _setupContent() {
-    const firstContent = this.contentNodes[0];
-    if (firstContent) {
-      firstContent.setAttribute('id', `content-${this.uid}`);
-      firstContent.setAttribute('role', 'none');
+  private __setupContent() {
+    const content = this._overlayContentNode;
+    if (content) {
+      content.setAttribute('id', `content-${this.uid}`);
+      content.setAttribute('role', 'none');
     }
   }
 
   override _setupOverlayCtrl() {
     super._setupOverlayCtrl();
-    this._setupInvoker();
-    this._setupContent();
+    this.__setupInvoker();
+    this.__setupContent();
   }
 
   override firstUpdated() {
     this.uid = uuid();
-    this._addEventListeners();
   }
 
   protected override render(): unknown {
