@@ -10,9 +10,9 @@ namespace craft\elements\exporters;
 use craft\base\ElementExporter;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
+use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -70,7 +70,7 @@ class Expanded extends ElementExporter
             // we need to split attributes to the date ones and all other;
             // pass all other to toArray()
             // and then return DateTimeHelper::toIso8601($date, false); for all the date ones
-            $datetimeAttributes = ComponentHelper::datetimeAttributes($element);
+            $datetimeAttributes = Component::datetimeAttributes($element);
             $otherAttributes = array_diff(array_keys($attributes), $datetimeAttributes);
 
             $elementArr = $element->toArray($otherAttributes);

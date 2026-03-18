@@ -12,6 +12,7 @@ use craft\base\Model;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
+use CraftCms\Cms\Cp\Icons;
 use DateTime;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -88,10 +89,10 @@ class Component extends ComponentHelper
     public static function iconSvg(?string $icon, string $label): string
     {
         if ($icon === null) {
-            return Cp::fallbackIconSvg($label);
+            return Icons::fallbackSvg($label);
         }
 
-        return Cp::iconSvg($icon, $label);
+        return Icons::svg($icon, $label);
     }
 
     /**

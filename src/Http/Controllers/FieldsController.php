@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use CraftCms\Cms\Component\ComponentHelper;
@@ -15,6 +14,10 @@ use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
+use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -191,7 +194,7 @@ class FieldsController
         }
 
         return $this->asModelSuccess($field, t('Field saved.'), 'field', [
-            'selectorHtml' => Cp::layoutElementSelectorHtml(new CustomField($field), true),
+            'selectorHtml' => app(FieldLayoutDesigner::class)->layoutElementSelectorHtml(new CustomField($field), true),
         ], $redirect);
     }
 
@@ -273,7 +276,7 @@ class FieldsController
             }
         }
 
-        $selectorHtml = Cp::layoutElementSelectorHtml($element);
+        $selectorHtml = app(FieldLayoutDesigner::class)->layoutElementSelectorHtml($element);
 
         return new JsonResponse([
             'config' => ['type' => $element::class] + $element->toArray(),
@@ -294,7 +297,7 @@ class FieldsController
         $fieldLayout = $fields->createLayout($fieldLayoutConfig);
 
         return new JsonResponse([
-            'previewHtml' => Cp::cardPreviewHtml($fieldLayout),
+            'previewHtml' => app(CardDesigner::class)->previewHtml($fieldLayout),
         ]);
     }
 
@@ -438,7 +441,7 @@ class FieldsController
                 } else {
                     $option['labelHtml'] = Html::beginTag('div', ['class' => 'inline-flex']).
                         Html::tag('span', Html::encode($name)).
-                        Html::tag('span', Cp::iconSvg('triangle-exclamation'), ['class' => ['cp-icon', 'small', 'warning']]).
+                        Html::tag('span', Icons::svg('triangle-exclamation'), ['class' => ['cp-icon', 'small', 'warning']]).
                         Html::endTag('div');
                 }
                 $fieldTypeOptions[] = $option;
@@ -496,7 +499,7 @@ class FieldsController
                 ])
                 ->editUrl($field->id ? "settings/fields/edit/$field->id" : null);
         } else {
-            $response->noticeHtml(Cp::readOnlyNoticeHtml());
+            $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
         }
 
         $response
@@ -526,7 +529,7 @@ JS, [
                     ]);
             }
             $response
-                ->metaSidebarHtml(Cp::metadataHtml([
+                ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml([
                     t('ID') => $field->id,
                     t('Used by') => function () use ($field) {
                         $layouts = $this->fieldsService->findFieldUsages($field);
@@ -572,7 +575,7 @@ JS, [
                                 'class' => ['flex', 'flex-nowrap', 'gap-s'],
                             ]);
                             if ($icon) {
-                                $labelHtml .= Html::tag('div', Cp::iconSvg($icon), [
+                                $labelHtml .= Html::tag('div', Icons::svg($icon), [
                                     'class' => array_filter([
                                         'cp-icon',
                                         'small',

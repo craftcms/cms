@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\User\Elements\User;
@@ -135,7 +136,7 @@ trait EditUserTrait
             $response->crumbs([
                 ...$user->getCrumbs(),
                 [
-                    'html' => Cp::elementChipHtml($user, [
+                    'html' => app(ElementHtml::class)->elementChipHtml($user, [
                         'showDraftName' => false,
                         'class' => 'chromeless',
                     ]),
@@ -154,7 +155,7 @@ trait EditUserTrait
                 fn (array $item) => ! str_starts_with($item['id'] ?? '', 'action-edit-'),
             ));
 
-            $response->metaSidebarHtml($user->getSidebarHtml(false).Cp::metadataHtml($user->getMetadata()));
+            $response->metaSidebarHtml($user->getSidebarHtml(false).app(ContentHtml::class)->metadataHtml($user->getMetadata()));
         }
 
         return $response;

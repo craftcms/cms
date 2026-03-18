@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\AssetsHelper;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
@@ -420,7 +420,7 @@ class Assets extends BaseRelationField
     #[Override]
     protected function previewHtml(ElementCollection $elements): string
     {
-        return Cp::elementPreviewHtml(
+        return app(PreviewHtml::class)->elementPreviewHtml(
             $elements->all(),
             showLabel: $this->previewMode === self::PREVIEW_MODE_FULL,
         );

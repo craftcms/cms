@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -100,7 +101,7 @@ JS, [
                 Html::beginTag('div', [
                     'class' => 'chip-actions',
                 ]).
-                Cp::disclosureMenu([], [
+                app(MenuHtml::class)->disclosureMenu([], [
                     'omitIfEmpty' => false,
                     'hiddenLabel' => t('Actions'),
                     'buttonAttributes' => [
@@ -113,7 +114,7 @@ JS, [
                 Html::endTag('div'). // .chip-content
                 Html::endTag('div'); // .chip;
         } else {
-            $html = Cp::textHtml(array_merge($textInputAttributes, [
+            $html = FormFields::textHtml(array_merge($textInputAttributes, [
                 'value' => $value,
             ]));
         }

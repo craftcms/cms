@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Responses;
 
 use Craft;
-use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -326,7 +327,7 @@ class CpScreenResponse implements Responsable
      * - `url` – The URL that the breadcrumb should link to
      * - `icon` – The icon which should be displayed beside the label
      * - `menu` – The menu items which should be displayed alongside the breadcrumb
-     *   (see [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties)
+     *   (see [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties)
      * - `current` – Whether the breadcrumb represents the current page
      *
      * This will only be used by full-page screens.
@@ -527,7 +528,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the context menu items.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      */
     public function contextMenuItems(?callable $value): self
     {
@@ -559,7 +560,7 @@ class CpScreenResponse implements Responsable
     /**
      * Sets the action menu items.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      */
     public function actionMenuItems(?callable $value): self
     {
@@ -837,12 +838,12 @@ class CpScreenResponse implements Responsable
         if (isset($this->site) && Sites::isMultiSite()) {
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
-                'icon' => Cp::earthIcon(),
+                'icon' => Icons::earth(),
                 'label' => t($this->site->getName(), category: 'site'),
                 'menu' => [
                     'label' => t('Select site'),
                     'items' => ! empty($this->selectableSites)
-                        ? Cp::siteMenuItems($this->selectableSites, $this->site, [
+                        ? app(MenuHtml::class)->siteMenuItems($this->selectableSites, $this->site, [
                             'includeOmittedSites' => true,
                         ])
                         : null,
@@ -953,13 +954,13 @@ class CpScreenResponse implements Responsable
         }
 
         $render = function () use ($itemsFactory, $config): ?string {
-            $items = Cp::normalizeMenuItems($itemsFactory() ?? []);
+            $items = app(MenuHtml::class)->normalizeMenuItems($itemsFactory() ?? []);
 
             if (empty($items)) {
                 return null;
             }
 
-            return Cp::disclosureMenu($items, $config);
+            return app(MenuHtml::class)->disclosureMenu($items, $config);
         };
 
         if ($namespace) {

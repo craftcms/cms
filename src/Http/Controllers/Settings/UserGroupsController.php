@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use craft\helpers\Cp;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -115,7 +115,7 @@ readonly class UserGroupsController
                 );
             })
             ->when($this->readOnly, function (CpScreenResponse $response) {
-                $response->noticeHtml(Cp::readOnlyNoticeHtml());
+                $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
             });
     }
 

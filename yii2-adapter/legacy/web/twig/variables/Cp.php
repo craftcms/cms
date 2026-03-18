@@ -12,13 +12,16 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpSettingsEvent;
-use craft\helpers\Cp as CpHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
 use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
@@ -172,7 +175,7 @@ class Cp extends Component
      */
     public function getRequestedSite(): ?Site
     {
-        return CpHelper::requestedSite();
+        return app(RequestedSite::class)->get();
     }
 
     /**
@@ -414,7 +417,7 @@ class Cp extends Component
      */
     public function getAlerts(): array
     {
-        return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
+        return app(Alerts::class)->get(request()->path());
     }
 
     /**
@@ -662,7 +665,7 @@ class Cp extends Component
      */
     public function field(string $input, array $config = []): string
     {
-        return CpHelper::fieldHtml($input, $config);
+        return FormFields::fieldHtml($input, $config);
     }
 
     /**
@@ -674,7 +677,7 @@ class Cp extends Component
      */
     public function fieldLayoutDesigner(FieldLayout $fieldLayout, array $config = []): string
     {
-        return CpHelper::fieldLayoutDesignerHtml($fieldLayout, $config);
+        return app(FieldLayoutDesigner::class)->html($fieldLayout, $config);
     }
 
     public static function registerEvents(): void

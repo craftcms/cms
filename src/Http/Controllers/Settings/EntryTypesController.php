@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\EntryTypes;
@@ -158,7 +160,7 @@ class EntryTypesController
                             'action' => 'entry-types/delete',
                             'destructive' => true,
                         ])
-                        ->metaSidebarHtml(Cp::metadataHtml([
+                        ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml([
                             t('ID') => $entryTypeData->id,
                             t('Used by') => function () use ($entryTypeData) {
                                 $usages = $entryTypeData->findUsages();
@@ -177,7 +179,7 @@ class EntryTypesController
                                     $labelHtml = Html::beginTag('span', [
                                         'class' => ['flex', 'flex-nowrap', 'gap-s'],
                                     ]).
-                                        Html::tag('div', Cp::iconSvg($icon), [
+                                        Html::tag('div', Icons::svg($icon), [
                                             'class' => ['cp-icon', 'small'],
                                         ]).
                                         Html::tag('span', Html::encode($label)).
@@ -196,7 +198,7 @@ class EntryTypesController
                         ]));
                 },
                 default: function (CpScreenResponse $response) {
-                    $response->noticeHtml(Cp::readOnlyNoticeHtml());
+                    $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
                 },
             );
     }
@@ -374,7 +376,7 @@ class EntryTypesController
             }
         }
 
-        $chipHtml = Cp::chipHtml($entryType, [
+        $chipHtml = app(ElementHtml::class)->chipHtml($entryType, [
             'showHandle' => true,
             'showIndicators' => true,
             'showDescription' => true,

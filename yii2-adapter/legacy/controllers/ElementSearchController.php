@@ -9,10 +9,10 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
@@ -107,7 +107,7 @@ class ElementSearchController extends Controller
                 $return[] = [
                     'id' => $element->id,
                     'title' => $element->title,
-                    'html' => Cp::chipHtml($element, [
+                    'html' => app(ElementHtml::class)->chipHtml($element, [
                         'hyperlink' => false,
                         'class' => 'chromeless',
                     ]),

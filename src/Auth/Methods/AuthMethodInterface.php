@@ -120,7 +120,7 @@ interface AuthMethodInterface extends ComponentInterface
     /**
      * Returns action menu items for the authentication method, when active.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      */
     public function getActionMenuItems(): array;
 

@@ -9,13 +9,13 @@ namespace craft\controllers;
 
 use Craft;
 use craft\elements\Category;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\web\Controller;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
@@ -259,7 +259,7 @@ class CategoriesController extends Controller
             throw new BadRequestHttpException("Invalid category group handle: $groupHandle");
         }
 
-        $site = Cp::requestedSite();
+        $site = app(RequestedSite::class)->get();
 
         if (!$site) {
             throw new ForbiddenHttpException('User not authorized to edit content in any sites.');

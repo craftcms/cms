@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\helpers\Cp;
 use craft\helpers\DateRange;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -194,7 +194,7 @@ JS,
                 attributes: ['class' => ['flex', 'flex-nowrap']],
                 content: Html::label(t('From'), 'start-date-date').
                 Html::tag('div',
-                    Cp::dateHtml([
+                    FormFields::dateHtml([
                         'id' => 'start-date',
                         'name' => 'startDate',
                         'value' => $this->getStartDate(),
@@ -206,7 +206,7 @@ JS,
                     attributes: ['class' => ['flex', 'flex-nowrap']],
                     content: Html::label(t('To'), 'end-date-date').
                     Html::tag('div',
-                        Cp::dateHtml([
+                        FormFields::dateHtml([
                             'id' => 'end-date',
                             'name' => 'endDate',
                             'value' => $this->getEndDate(),
@@ -221,14 +221,14 @@ JS,
                 Html::tag(
                     'div',
                     attributes: ['class' => ['flex', 'flex-nowrap']],
-                    content: Cp::textHtml([
+                    content: FormFields::textHtml([
                         'id' => $periodValueId,
                         'name' => 'periodValue',
                         'value' => $this->periodValue,
                         'size' => '5',
                     ]).
                     Html::hiddenLabel(t('Period Type'), $periodTypeId).
-                    Cp::selectHtml([
+                    FormFields::selectHtml([
                         'id' => $periodTypeId,
                         'name' => 'periodType',
                         'value' => $this->periodType,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Validation\Rule;
 use Override;
@@ -39,7 +39,7 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
 
         return
             Html::hiddenLabel(Html::encode($this->getLabel()), $selectId).
-            Cp::selectHtml([
+            FormFields::selectHtml([
                 'id' => $selectId,
                 'name' => 'value',
                 'options' => $this->options(),

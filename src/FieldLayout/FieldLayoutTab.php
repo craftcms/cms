@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -101,7 +102,7 @@ class FieldLayoutTab extends FieldLayoutComponent
             Html::tag('h3', Html::encode($this->name), [
                 'class' => 'fld-tab__name',
             ]).
-            ($this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
+            ($this->hasConditions() ? Html::tag('div', Icons::svg('diamond'), [
                 'class' => array_filter(array_merge(['cp-icon', 'puny', 'orange'])),
                 'title' => t('This tab is conditional'),
                 'aria' => ['label' => t('This tab is conditional')],
@@ -156,7 +157,7 @@ class FieldLayoutTab extends FieldLayoutComponent
 
     protected function settingsHtml(): ?string
     {
-        return Cp::textFieldHtml([
+        return FormFields::textFieldHtml([
             'label' => t('Name'),
             'name' => 'name',
             'value' => $this->name,

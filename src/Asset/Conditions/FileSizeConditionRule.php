@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Conditions;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -47,7 +47,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
         return Html::tag('div',
             parent::inputHtml().
             Html::hiddenLabel(t('Unit'), $unitId).
-            Cp::selectHtml([
+            FormFields::selectHtml([
                 'name' => 'unit',
                 'id' => $unitId,
                 'options' => [

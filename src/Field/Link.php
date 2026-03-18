@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use craft\helpers\Template;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\RelationalField;
@@ -324,7 +324,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             'value' => $type::id(),
         ])->all();
 
-        $html = Cp::checkboxSelectFieldHtml([
+        $html = FormFields::checkboxSelectFieldHtml([
             'label' => t('Allowed Link Types'),
             'id' => 'types',
             'fieldClass' => 'mb-0',
@@ -363,14 +363,14 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
 
         $html .=
             Html::tag('hr').
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Show the “Label” field'),
                 'id' => 'show-label-field',
                 'name' => 'showLabelField',
                 'on' => $this->showLabelField,
                 'disabled' => $readOnly,
             ]).
-            Cp::checkboxSelectFieldHtml([
+            FormFields::checkboxSelectFieldHtml([
                 'label' => t('Advanced Fields'),
                 'id' => 'attribute-fields',
                 'name' => 'advancedFields',
@@ -397,7 +397,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
                 'id' => 'advanced',
                 'class' => 'hidden',
             ]).
-            Cp::textFieldHtml([
+            FormFields::textFieldHtml([
                 'label' => t('Max Length'),
                 'instructions' => t('The maximum length (in bytes) the field can hold.'),
                 'id' => 'maxLength',
@@ -413,7 +413,7 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
 
         if (Cms::config()->enableGql) {
             $html .=
-                Cp::selectFieldHtml([
+                FormFields::selectFieldHtml([
                     'label' => t('GraphQL Mode'),
                     'id' => 'graphql-mode',
                     'name' => 'graphqlMode',
@@ -588,7 +588,7 @@ $('#$namespacedId-type').on('change', e => {
 JS;
             HtmlStack::js($js);
 
-            $innerHtml = Cp::selectHtml([
+            $innerHtml = FormFields::selectHtml([
                 'id' => "$id-type",
                 'describedBy' => $this->describedBy,
                 'name' => $typeInputName,
@@ -646,7 +646,7 @@ JS;
             Html::endTag('div');
 
         if ($this->showLabelField) {
-            $html .= Cp::textFieldHtml([
+            $html .= FormFields::textFieldHtml([
                 'fieldClass' => 'my-m',
                 'fieldAttributes' => [
                     'data' => ['label-field' => true],
@@ -672,7 +672,7 @@ JS;
 
             foreach ($this->advancedFields as $field) {
                 $html .= match ($field) {
-                    'urlSuffix' => Cp::textFieldHtml([
+                    'urlSuffix' => FormFields::textFieldHtml([
                         'fieldClass' => 'info-icon-instructions',
                         'label' => t('URL Suffix'),
                         'instructions' => t('Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.', [
@@ -683,20 +683,20 @@ JS;
                         'name' => "$this->handle[urlSuffix]",
                         'value' => $value?->urlSuffix,
                     ]),
-                    'target' => Cp::lightswitchFieldHtml([
+                    'target' => FormFields::lightswitchFieldHtml([
                         'label' => t('Open in a new tab'),
                         'id' => "$id-target",
                         'name' => "$this->handle[target]",
                         'on' => $value?->target,
                         'value' => '_blank',
                     ]),
-                    'title' => Cp::textFieldHtml([
+                    'title' => FormFields::textFieldHtml([
                         'label' => t('Title Text'),
                         'id' => "$id-title",
                         'name' => "$this->handle[title]",
                         'value' => $value?->title,
                     ]),
-                    'class' => Cp::textFieldHtml([
+                    'class' => FormFields::textFieldHtml([
                         'fieldClass' => 'info-icon-instructions',
                         'class' => 'code',
                         'label' => t('Class Name'),
@@ -705,14 +705,14 @@ JS;
                         'name' => "$this->handle[class]",
                         'value' => $value?->class,
                     ]),
-                    'id' => Cp::textFieldHtml([
+                    'id' => FormFields::textFieldHtml([
                         'class' => 'code',
                         'label' => t('ID'),
                         'id' => "$id-id",
                         'name' => "$this->handle[id]",
                         'value' => $value?->id,
                     ]),
-                    'rel' => Cp::textfieldHtml([
+                    'rel' => FormFields::textFieldHtml([
                         'fieldClass' => 'info-icon-instructions',
                         'class' => 'code',
                         'label' => t('Relation ({ex})', ['ex' => '<code>rel</code>']),
@@ -721,20 +721,20 @@ JS;
                         'name' => "$this->handle[rel]",
                         'value' => $value?->rel,
                     ]),
-                    'ariaLabel' => Cp::textFieldHtml([
+                    'ariaLabel' => FormFields::textFieldHtml([
                         'label' => t('ARIA Label'),
                         'id' => "$id-aria-label",
                         'name' => "$this->handle[ariaLabel]",
                         'value' => $value?->ariaLabel,
                     ]),
-                    'download' => Cp::lightswitchFieldHtml([
+                    'download' => FormFields::lightswitchFieldHtml([
                         'label' => t('Download'),
                         'id' => "$id-download",
                         'name' => "$this->handle[download]",
                         'on' => $value?->download,
                         'toggle' => "$id-filename-field",
                     ]).
-                        Cp::textFieldHtml([
+                        FormFields::textFieldHtml([
                             'fieldClass' => ! $value?->download ? 'hidden' : null,
                             'fieldAttributes' => [
                                 'data' => ['filename-field' => true],

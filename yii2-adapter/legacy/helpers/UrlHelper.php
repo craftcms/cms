@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
@@ -670,8 +671,8 @@ class UrlHelper
 
         if ($cpUrl) {
             // site param
-            if (!isset($params['site']) && Sites::isMultiSite() && Cp::requestedSite() !== null) {
-                $params['site'] = Cp::requestedSite()->handle;
+            if (!isset($params['site']) && Sites::isMultiSite() && app(RequestedSite::class)->get() !== null) {
+                $params['site'] = app(RequestedSite::class)->get()->handle;
             }
         } else {
             // token/siteToken/preview params

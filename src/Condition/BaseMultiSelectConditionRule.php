@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -112,7 +112,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 
         return
             Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId).
-            Cp::selectizeHtml([
+            FormFields::selectizeHtml([
                 'id' => $multiSelectId,
                 'class' => 'flex-grow',
                 'name' => 'values',

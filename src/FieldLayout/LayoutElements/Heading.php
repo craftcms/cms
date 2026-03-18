@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Html;
 use Override;
 
@@ -39,7 +39,7 @@ class Heading extends BaseUiElement
 
     protected function settingsHtml(): ?string
     {
-        return Cp::textFieldHtml([
+        return FormFields::textFieldHtml([
             'label' => t('Heading'),
             'id' => 'heading',
             'name' => 'heading',

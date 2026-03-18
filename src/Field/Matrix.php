@@ -10,12 +10,12 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\NestedElementManager;
 use craft\events\BulkElementsEvent;
-use craft\helpers\Cp;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -599,7 +599,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $namespace = InputNamespace::get();
             $entryTypeSelectHtml = InputNamespace::with(
                 namespace: null,
-                callback: fn () => InputNamespace::namespaceInputs(fn () => Cp::entryTypeSelectHtml([
+                callback: fn () => InputNamespace::namespaceInputs(fn () => FormFields::entryTypeSelectHtml([
                     ...$entryTypeSelectConfig,
                     'id' => 'TEMP_ID',
                 ]), $namespace),

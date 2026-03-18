@@ -13,7 +13,6 @@ use craft\elements\actions\UnsuspendUsers;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\NestedElementManager;
-use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -23,6 +22,7 @@ use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -516,7 +516,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             ],
             'isCredentialed' => [
                 'label' => t('Credentialed'),
-                'placeholder' => fn () => Template::raw(Cp::statusLabelHtml([
+                'placeholder' => fn () => Template::raw(app(StatusHtml::class)->statusLabelHtml([
                     'color' => Color::Teal,
                     'label' => t('Credentialed'),
                     'icon' => 'check',
@@ -528,7 +528,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             ],
             'is2faEnabled' => [
                 'label' => t('Two-Step Verification'),
-                'placeholder' => fn () => Template::raw(Cp::statusLabelHtml([
+                'placeholder' => fn () => Template::raw(app(StatusHtml::class)->statusLabelHtml([
                     'color' => Color::Teal,
                     'label' => t('Two-Step Verification'),
                     'icon' => 'check',
@@ -1920,7 +1920,7 @@ JS, [
             case 'is2faEnabled':
                 $enabled = app(\CraftCms\Cms\Auth\Auth::class)->hasActiveMethod($this);
                 if ($this->viewMode === 'cards') {
-                    return Cp::statusLabelHtml([
+                    return app(StatusHtml::class)->statusLabelHtml([
                         'color' => $enabled ? Color::Teal : Color::Gray,
                         'label' => t('Two-Step Verification'),
                         'icon' => $enabled ? 'check' : 'xmark',
@@ -1943,7 +1943,7 @@ JS, [
             case 'isCredentialed':
                 $value = $this->getIsCredentialed();
                 if ($this->viewMode === 'cards') {
-                    return Cp::statusLabelHtml([
+                    return app(StatusHtml::class)->statusLabelHtml([
                         'color' => $value ? Color::Teal : Color::Gray,
                         'label' => t('Credentialed'),
                         'icon' => $value ? 'check' : 'xmark',

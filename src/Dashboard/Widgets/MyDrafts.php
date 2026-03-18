@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Html;
@@ -50,7 +51,7 @@ class MyDrafts extends Widget
     #[Override]
     public function getSettingsHtml(): string
     {
-        return Cp::textFieldHtml([
+        return FormFields::textFieldHtml([
             'label' => t('Limit'),
             'id' => 'limit',
             'name' => 'limit',
@@ -87,7 +88,7 @@ class MyDrafts extends Widget
         ]);
 
         foreach ($drafts as $draft) {
-            $chip = Cp::elementChipHtml($draft, [
+            $chip = app(ElementHtml::class)->elementChipHtml($draft, [
                 'hyperlink' => true,
             ]);
             $html .= Html::tag('li', $chip, [

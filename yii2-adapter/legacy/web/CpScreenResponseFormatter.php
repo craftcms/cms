@@ -8,8 +8,9 @@
 namespace craft\web;
 
 use Craft;
-use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -148,14 +149,14 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         if (Sites::isMultiSite() && isset($behavior->site)) {
             $siteMenuItems = !empty($behavior->selectableSites)
-                ? Cp::siteMenuItems($behavior->selectableSites, $behavior->site, [
+                ? app(MenuHtml::class)->siteMenuItems($behavior->selectableSites, $behavior->site, [
                     'includeOmittedSites' => true,
                 ])
                 : [];
 
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
-                'icon' => Cp::earthIcon(),
+                'icon' => Icons::earth(),
                 'label' => t($behavior->site->getName(), category: 'site'),
                 'menu' => [
                     'label' => t('Select site'),
@@ -264,13 +265,13 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         }
 
         $render = function() use ($itemsFactory, $config): ?string {
-            $items = Cp::normalizeMenuItems($itemsFactory() ?? []);
+            $items = app(MenuHtml::class)->normalizeMenuItems($itemsFactory() ?? []);
 
             if (empty($items)) {
                 return null;
             }
 
-            return Cp::disclosureMenu($items, $config);
+            return app(MenuHtml::class)->disclosureMenu($items, $config);
         };
 
         if ($namespace) {

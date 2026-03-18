@@ -12,7 +12,6 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\events\DefineElementEditorHtmlEvent;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -25,6 +24,9 @@ use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -771,7 +773,7 @@ JS, [
         return [
             ...$crumbs,
             [
-                'html' => Cp::elementChipHtml($element, [
+                'html' => app(ElementHtml::class)->elementChipHtml($element, [
                     'showDraftName' => !$current,
                     'class' => 'chromeless',
                     'hyperlink' => true,
@@ -1315,7 +1317,7 @@ JS, [
         $components[] = $element->getSidebarHtml(!$canSave);
 
         if ($this->id) {
-            $components[] = Cp::metadataHtml($element->getMetadata());
+            $components[] = app(ContentHtml::class)->metadataHtml($element->getMetadata());
         }
 
         return trim(implode("\n", $components));
@@ -2582,7 +2584,7 @@ JS, [
                     throw new ForbiddenHttpException('User not authorized to edit content for this site.');
                 }
             } else {
-                $site = Cp::requestedSite();
+                $site = app(RequestedSite::class)->get();
                 if (!$site) {
                     throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
                 }
@@ -2947,7 +2949,7 @@ JS, [
         ];
         $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element), [
             'details' => !$element->dateDeleted
-                ? Cp::elementChipHtml($element, ['hyperlink' => true])
+                ? app(ElementHtml::class)->elementChipHtml($element, ['hyperlink' => true])
                 : null,
         ]);
 

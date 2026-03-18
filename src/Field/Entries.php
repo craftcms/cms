@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
 use craft\elements\db\EntryQuery;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
@@ -195,7 +195,7 @@ class Entries extends BaseRelationField
 
         $mockup->sectionId = $section->id;
 
-        return Cp::chipHtml($mockup);
+        return app(ElementHtml::class)->chipHtml($mockup);
     }
 
     #[Override]

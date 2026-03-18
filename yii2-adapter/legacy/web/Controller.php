@@ -10,12 +10,12 @@ namespace craft\web;
 use Craft;
 use craft\base\ModelInterface;
 use craft\events\DefineBehaviorsEvent;
-use craft\helpers\Cp;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Identifiable;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -446,7 +446,7 @@ abstract class Controller extends \yii\web\Controller
 
         $notificationSettings = [];
         if ($model instanceof Chippable) {
-            $notificationSettings['details'] = Cp::chipHtml($model);
+            $notificationSettings['details'] = app(ElementHtml::class)->chipHtml($model);
         }
 
         return $this->asSuccess(

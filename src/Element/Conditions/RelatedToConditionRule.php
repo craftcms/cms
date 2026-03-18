@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Conditions;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Condition\BaseElementSelectConditionRule;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -75,7 +75,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 
         return Html::hiddenLabel($this->getLabel(), $id).
             Html::tag('div',
-                Cp::selectHtml([
+                FormFields::selectHtml([
                     'id' => $id,
                     'name' => 'elementType',
                     'options' => $this->_elementTypeOptions(),

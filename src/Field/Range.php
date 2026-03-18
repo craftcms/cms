@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -173,7 +173,7 @@ class Range extends Field implements InlineEditableFieldInterface, MergeableFiel
     #[Override]
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        return Cp::rangeHtml([
+        return FormFields::rangeHtml([
             'id' => $this->getInputId(),
             'name' => $this->handle,
             'suffix' => $this->suffix,

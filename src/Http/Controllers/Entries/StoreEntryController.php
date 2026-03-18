@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
 use Craft;
-use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
@@ -127,7 +127,7 @@ readonly class StoreEntryController
             $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
 
             if ($this->request->isCpRequest()) {
-                $data['elementHtml'] = Cp::elementChipHtml($entry);
+                $data['elementHtml'] = app(ElementHtml::class)->elementChipHtml($entry);
             }
         }
 

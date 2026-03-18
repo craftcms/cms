@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Support\Arr;
@@ -179,7 +180,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             }
             $type = $this->elementType()::displayName();
 
-            return Cp::autosuggestFieldHtml([
+            return FormFields::autosuggestFieldHtml([
                 'suggestEnvVars' => true,
                 'suggestionFilter' => fn ($value) => is_int($value) && $value > 0,
                 'required' => true,
@@ -196,7 +197,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             ]);
         }
 
-        return Cp::elementSelectHtml($this->elementSelectConfig());
+        return FormFields::elementSelectHtml($this->elementSelectConfig());
     }
 
     /**
@@ -212,7 +213,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
 
         return $this->elementType()::find()
             ->site('*')
-            ->preferSites(array_filter([Cp::requestedSite()?->id]))
+            ->preferSites(array_filter([app(RequestedSite::class)->get()?->id]))
             ->unique()
             ->id($elementIds)
             ->status(null)

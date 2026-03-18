@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -306,7 +306,7 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
             $defaultValue = MoneyHelper::toNumber(new MoneyLibrary($this->defaultValue, new Currency($this->currency)));
         }
 
-        return Cp::moneyInputHtml([
+        return FormFields::moneyInputHtml([
             'id' => $this->getInputId(),
             'name' => $this->handle,
             'size' => $this->size,
