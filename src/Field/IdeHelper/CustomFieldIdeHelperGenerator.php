@@ -38,7 +38,7 @@ readonly class CustomFieldIdeHelperGenerator
 
         $outputPath = $this->getOutputPath();
 
-        if (! $this->ensureDirectory($outputPath)) {
+        if (! File::makeDirectory($outputPath)) {
             return;
         }
 
@@ -65,23 +65,6 @@ readonly class CustomFieldIdeHelperGenerator
         }
 
         return base_path($path);
-    }
-
-    private function ensureDirectory(string $path): bool
-    {
-        try {
-            File::ensureDirectoryExists($path);
-
-            if (! File::exists($path.'/.gitignore')) {
-                File::put($path.'/.gitignore', '*');
-            }
-
-            return File::isWritable($path);
-        } catch (Throwable $e) {
-            Log::warning('IDE helper directory is not writable: '.$e->getMessage());
-
-            return false;
-        }
     }
 
     private function buildHelperContent(): string

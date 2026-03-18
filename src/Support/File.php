@@ -328,36 +328,6 @@ class File extends \Illuminate\Support\Facades\File
     }
 
     /**
-     * Tests whether a file/directory is writable.
-     *
-     * @param  string  $path  the file/directory path to test
-     * @return bool whether the path is writable
-     */
-    public static function isWritable(string $path): bool
-    {
-        // If it's a directory, test on a temp sub file
-        if (is_dir($path)) {
-            return static::isWritable($path.DIRECTORY_SEPARATOR.uniqid('test_writable', true).'.tmp');
-        }
-
-        // Remember whether the file already existed
-        $exists = file_exists($path);
-
-        if (($f = @fopen($path, 'ab')) === false) {
-            return false;
-        }
-
-        @fclose($f);
-
-        // Delete the file if it didn't exist already
-        if (! $exists) {
-            app(Filesystem::class)->delete($path);
-        }
-
-        return true;
-    }
-
-    /**
      * Returns the MIME type of the specified file.
      *
      * @param  string  $file  the file name.

@@ -253,7 +253,26 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function isWritable(string $path): bool
     {
-        return File::isWritable($path);
+        // If it's a directory, test on a temp sub file
+        if (is_dir($path)) {
+            return static::isWritable($path . DIRECTORY_SEPARATOR . uniqid('test_writable', true) . '.tmp');
+        }
+
+        // Remember whether the file already existed
+        $exists = file_exists($path);
+
+        if (($f = @fopen($path, 'ab')) === false) {
+            return false;
+        }
+
+        @fclose($f);
+
+        // Delete the file if it didn't exist already
+        if (!$exists) {
+            static::unlink($path);
+        }
+
+        return true;
     }
 
     /**
