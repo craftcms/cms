@@ -177,7 +177,9 @@ class ImageTransformHelper
 
                     // And delete it after the request, if nobody wants it.
                     if (Cms::config()->maxCachedCloudImageSize === 0) {
-                        File::deleteFileAfterRequest($imageSourcePath);
+                        app()->terminating(function () use ($imageSourcePath) {
+                            File::delete($imageSourcePath);
+                        });
                     }
 
                     if (! File::delete($tempFilePath)) {

@@ -25,11 +25,6 @@ use ZipArchive;
 class File extends \Illuminate\Support\Facades\File
 {
     /**
-     * A list of files to be deleted once the request ends.
-     */
-    private static array $_filesToBeDeleted = [];
-
-    /**
      * Normalizes a file/directory path.
      *
      * Normalizes directory separators, resolves `.` and `..` segments,
@@ -876,32 +871,6 @@ class File extends \Illuminate\Support\Facades\File
         }
 
         return reset($extensions);
-    }
-
-    /**
-     * Deletes a file after the request ends.
-     */
-    public static function deleteFileAfterRequest(string $filename): void
-    {
-        if (empty(self::$_filesToBeDeleted)) {
-            register_shutdown_function([static::class, 'deleteQueuedFiles']);
-        }
-
-        self::$_filesToBeDeleted[] = $filename;
-    }
-
-    /**
-     * Delete all files queued up for deletion.
-     */
-    public static function deleteQueuedFiles(): void
-    {
-        foreach (array_unique(self::$_filesToBeDeleted) as $source) {
-            if (file_exists($source)) {
-                app(Filesystem::class)->delete($source);
-            }
-        }
-
-        self::$_filesToBeDeleted = [];
     }
 
     /**

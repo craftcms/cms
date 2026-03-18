@@ -531,17 +531,19 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function deleteFileAfterRequest(string $filename): void
     {
-        File::deleteFileAfterRequest($filename);
+        app()->terminating(function() use ($filename) {
+            File::delete($filename);
+        });
     }
 
     /**
      * Delete all files queued up for deletion.
      *
      * @since 4.0.0
+     * @deprecated No longer queues files for batch deletion. Files are now deleted individually via terminating callbacks.
      */
     public static function deleteQueuedFiles(): void
     {
-        File::deleteQueuedFiles();
     }
 
     /**
