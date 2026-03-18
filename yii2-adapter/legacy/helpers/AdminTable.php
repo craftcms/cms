@@ -19,6 +19,7 @@ use yii\db\Expression;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
+ * @deprecated 6.0.0 use Laravel Pagination instead.
  */
 abstract class AdminTable
 {
