@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig;
 
 use craft\helpers\FileHelper;
-use craft\helpers\Path;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;

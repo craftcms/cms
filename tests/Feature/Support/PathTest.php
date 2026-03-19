@@ -225,3 +225,16 @@ test('laravel path service only creates the base directory when a subpath is pro
         ->and(File::exists($composerBackupPath))->toBeFalse()
         ->and(File::exists(dirname((string) $composerBackupPath).'/.gitignore'))->toBeTrue();
 });
+
+test('ensurePathIsContained', function (bool $expected, string $path) {
+    expect(Path::ensurePathIsContained($path))->toBe($expected);
+})->with([
+    [true, '/'],
+    [true, ''],
+    [true, 'in/a/path'],
+    [false, '../test'],
+    [true, './test'],
+    [true, 'test'],
+    [false, 'foo////../../bar'],
+    [true, 'foo/0/0/0/../../bar'],
+]);

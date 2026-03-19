@@ -220,6 +220,32 @@ class Path
         ];
     }
 
+    /**
+     * Ensures that a relative path never goes deeper than its root directory.
+     */
+    public static function ensurePathIsContained(string $path): bool
+    {
+        // Sanitize
+        $path = Str::convertToUtf8($path);
+
+        $segs = Arr::whereNotEmpty(preg_split('/[\\/\\\\]/', $path));
+        $level = 0;
+
+        foreach ($segs as $seg) {
+            if ($seg === '..') {
+                $level--;
+            } elseif ($seg !== '.') {
+                $level++;
+            }
+
+            if ($level < 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private function aliasOrDefault(string $alias, string $path): string
     {
         return FileHelper::normalizePath(Aliases::get($alias, false) ?: $path);
