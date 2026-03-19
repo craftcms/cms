@@ -118,7 +118,9 @@ class Str extends \Illuminate\Support\Str
 
         $encoding ??= static::encoding($str);
 
-        return mb_convert_encoding($str, 'UTF-8', $encoding);
+        $str = mb_convert_encoding($str, 'UTF-8', $encoding);
+
+        return str_replace("\0", '', $str);
     }
 
     /**
