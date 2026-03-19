@@ -22,7 +22,14 @@ class HtmlPurifierSanitizer implements HtmlSanitizerInterface
 
     public function sanitize(string $input): string
     {
-        $config = HTMLPurifier_Config::create(value($this->config));
+        if ($this->config instanceof Closure) {
+            // For Closure configs, start from the default configuration so we can
+            // apply Craft's configuration and then let the Closure further modify it.
+            $config = HTMLPurifier_Config::createDefault();
+        } else {
+            // For array or null configs, use them directly.
+            $config = HTMLPurifier_Config::create($this->config);
+        }
         $config->autoFinalize = false;
 
         $purifier = \HTMLPurifier::instance($config);

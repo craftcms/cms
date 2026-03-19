@@ -39,7 +39,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         }
 
         if ($config === null) {
-            return app(HtmlSanitizers::class)->sanitize($content);
+            return parent::process($content);
         }
 
         if (!is_array($config)) {
