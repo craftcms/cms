@@ -264,10 +264,16 @@ class Cp
         bool $single = false,
         bool $autoReload = true,
     ): string {
-        $html = app(ElementHtml::class)->chipHtml($element, [
+        $resolvedInputName = null;
+
+        if ($inputName !== null) {
+            $resolvedInputName = $inputName . ($single ? '' : '[]');
+        }
+
+        $html = app(ElementHtml::class)->elementChipHtml($element, [
             'autoReload' => $autoReload,
             'context' => $context,
-            'inputName' => $inputName . ($single ? '' : '[]'),
+            'inputName' => $resolvedInputName,
             'showDraftName' => $showDraftName,
             'showLabel' => $showLabel,
             'showStatus' => $showStatus,
