@@ -1,4 +1,20 @@
 {
+  "_AdminTable.css": {
+    "file": "assets/AdminTable.css",
+    "src": "_AdminTable.css"
+  },
+  "_AdminTable.js": {
+    "file": "AdminTable.js",
+    "name": "AdminTable",
+    "imports": [
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_nav-item-D3exy0bq.js"
+    ],
+    "css": [
+      "assets/AdminTable.css"
+    ]
+  },
   "_AppLayout.css": {
     "file": "assets/AppLayout.css",
     "src": "_AppLayout.css"
@@ -7,24 +23,52 @@
     "file": "AppLayout.js",
     "name": "AppLayout",
     "imports": [
-      "_cp3.js"
+      "__plugin-vue_export-helper.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_useAnnouncer.js"
     ],
     "css": [
       "assets/AppLayout.css"
     ]
   },
-  "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js": {
-    "file": "CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-    "name": "CalloutReadOnly.vue_vue_type_script_setup_true_lang",
+  "_CalloutReadOnly.js": {
+    "file": "CalloutReadOnly.js",
+    "name": "CalloutReadOnly",
     "imports": [
-      "_cp3.js"
+      "__plugin-vue_export-helper.js",
+      "_nav-item-D3exy0bq.js"
     ]
   },
-  "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js": {
-    "file": "DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
-    "name": "DeleteSiteModal.vue_vue_type_script_setup_true_lang",
+  "_CpGlobalSidebar.js": {
+    "file": "CpGlobalSidebar.js",
+    "name": "CpGlobalSidebar",
     "imports": [
-      "_cp3.js"
+      "_decorate.js",
+      "_Queue-wGK97jCw.js",
+      "_lit.js",
+      "_decorators.js"
+    ]
+  },
+  "_CpQueueIndicator.js": {
+    "file": "CpQueueIndicator.js",
+    "name": "CpQueueIndicator",
+    "imports": [
+      "_decorate.js",
+      "_Queue-wGK97jCw.js",
+      "_lit.js",
+      "_decorators.js",
+      "_queue.js"
+    ]
+  },
+  "_DeleteSiteModal.js": {
+    "file": "DeleteSiteModal.js",
+    "name": "DeleteSiteModal",
+    "imports": [
+      "__plugin-vue_export-helper.js",
+      "_nav-item-D3exy0bq.js",
+      "_ModalForm.js",
+      "_wayfinder.js"
     ]
   },
   "_IndexLayout.css": {
@@ -35,11 +79,20 @@
     "file": "IndexLayout.js",
     "name": "IndexLayout",
     "imports": [
-      "_cp3.js",
+      "__plugin-vue_export-helper.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
       "_AppLayout.js"
     ],
     "css": [
       "assets/IndexLayout.css"
+    ]
+  },
+  "_Input.js": {
+    "file": "Input.js",
+    "name": "Input",
+    "imports": [
+      "__plugin-vue_export-helper.js"
     ]
   },
   "_InputCombobox.css": {
@@ -50,26 +103,78 @@
     "file": "InputCombobox.js",
     "name": "InputCombobox",
     "imports": [
-      "_cp3.js"
+      "__plugin-vue_export-helper.js",
+      "_keyboard.js"
     ],
     "css": [
       "assets/InputCombobox.css"
+    ]
+  },
+  "_Modal.css": {
+    "file": "assets/Modal.css",
+    "src": "_Modal.css"
+  },
+  "_Modal.js": {
+    "file": "Modal.js",
+    "name": "Modal",
+    "imports": [
+      "__plugin-vue_export-helper.js",
+      "_dist.js"
+    ],
+    "css": [
+      "assets/Modal.css"
+    ]
+  },
+  "_ModalForm.js": {
+    "file": "ModalForm.js",
+    "name": "ModalForm",
+    "imports": [
+      "__plugin-vue_export-helper.js",
+      "_nav-item-D3exy0bq.js",
+      "_Modal.js",
+      "_Pane.js"
+    ]
+  },
+  "_Pane.css": {
+    "file": "assets/Pane.css",
+    "src": "_Pane.css"
+  },
+  "_Pane.js": {
+    "file": "Pane.js",
+    "name": "Pane",
+    "imports": [
+      "__plugin-vue_export-helper.js"
+    ],
+    "css": [
+      "assets/Pane.css"
+    ]
+  },
+  "_Queue-wGK97jCw.js": {
+    "file": "Queue-wGK97jCw.js",
+    "name": "Queue-wGK97jCw",
+    "imports": [
+      "_lit.js",
+      "_decorators.js",
+      "_decorate-DpHfxayW.js"
     ]
   },
   "_SectionsController.js": {
     "file": "SectionsController.js",
     "name": "SectionsController",
     "imports": [
-      "_cp3.js"
+      "_wayfinder.js"
     ]
   },
-  "_cp2.css": {
-    "file": "assets/cp2.css",
-    "src": "_cp2.css"
-  },
-  "_cp3.js": {
-    "file": "cp3.js",
-    "name": "cp",
+  "__plugin-vue_export-helper.js": {
+    "file": "_plugin-vue_export-helper.js",
+    "name": "_plugin-vue_export-helper",
+    "imports": [
+      "_Queue-wGK97jCw.js",
+      "_lit.js",
+      "_decorators.js",
+      "_nav-item-D3exy0bq.js",
+      "_decorate-DpHfxayW.js"
+    ],
     "dynamicImports": [
       "node_modules/@lion/ui/components/form-core/translations/bg-BG.js",
       "node_modules/@lion/ui/components/form-core/translations/bg.js",
@@ -106,7 +211,6 @@
       "node_modules/@lion/ui/components/form-core/translations/uk-UA.js",
       "node_modules/@lion/ui/components/form-core/translations/uk.js",
       "node_modules/@lion/ui/components/form-core/translations/zh.js",
-      "node_modules/@lion/ui/components/form-core/translations/en.js",
       "node_modules/@lion/ui/components/input-file/translations/bg-BG.js",
       "node_modules/@lion/ui/components/input-file/translations/bg.js",
       "node_modules/@lion/ui/components/input-file/translations/cs-CZ.js",
@@ -140,7 +244,6 @@
       "node_modules/@lion/ui/components/input-file/translations/uk-UA.js",
       "node_modules/@lion/ui/components/input-file/translations/uk.js",
       "node_modules/@lion/ui/components/input-file/translations/zh.js",
-      "node_modules/@lion/ui/components/input-file/translations/en.js",
       "node_modules/@popperjs/core/dist/esm/popper.js",
       "node_modules/@lion/ui/components/combobox/translations/bg.js",
       "node_modules/@lion/ui/components/combobox/translations/cs.js",
@@ -156,8 +259,33 @@
       "node_modules/@lion/ui/components/combobox/translations/ru.js",
       "node_modules/@lion/ui/components/combobox/translations/sk.js",
       "node_modules/@lion/ui/components/combobox/translations/uk.js",
-      "node_modules/@lion/ui/components/combobox/translations/zh.js",
-      "node_modules/@lion/ui/components/combobox/translations/en.js",
+      "node_modules/@lion/ui/components/combobox/translations/zh.js"
+    ]
+  },
+  "_cp2.css": {
+    "file": "assets/cp2.css",
+    "src": "_cp2.css"
+  },
+  "_cp3.js": {
+    "file": "cp3.js",
+    "name": "cp",
+    "imports": [
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_AdminTable.js",
+      "_keyboard.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_useFetch.js",
+      "_queue.js",
+      "_ModalForm.js",
+      "_useAnnouncer.js",
+      "_Modal.js",
+      "_Pane.js",
+      "_Input.js",
+      "_wayfinder.js"
+    ],
+    "dynamicImports": [
       "resources/js/pages/Install.vue",
       "resources/js/pages/SettingsEmailPage.vue",
       "resources/js/pages/SettingsGeneralPage.vue",
@@ -173,20 +301,100 @@
       "assets/cp2.css"
     ]
   },
+  "_decorate-DpHfxayW.js": {
+    "file": "decorate-DpHfxayW.js",
+    "name": "decorate-DpHfxayW"
+  },
+  "_decorate.js": {
+    "file": "decorate.js",
+    "name": "decorate"
+  },
+  "_decorators.js": {
+    "file": "decorators.js",
+    "name": "decorators",
+    "imports": [
+      "_lit.js"
+    ]
+  },
+  "_dist.js": {
+    "file": "dist.js",
+    "name": "dist",
+    "imports": [
+      "__plugin-vue_export-helper.js"
+    ]
+  },
+  "_keyboard.js": {
+    "file": "keyboard.js",
+    "name": "keyboard",
+    "imports": [
+      "__plugin-vue_export-helper.js"
+    ]
+  },
+  "_lit.js": {
+    "file": "lit.js",
+    "name": "lit"
+  },
+  "_nav-item-D3exy0bq.js": {
+    "file": "nav-item-D3exy0bq.js",
+    "name": "nav-item-D3exy0bq",
+    "imports": [
+      "_lit.js",
+      "_decorators.js",
+      "_decorate-DpHfxayW.js"
+    ]
+  },
+  "_nav-list-DezDYLKE.js": {
+    "file": "nav-list-DezDYLKE.js",
+    "name": "nav-list-DezDYLKE",
+    "imports": [
+      "_lit.js"
+    ]
+  },
+  "_queue.js": {
+    "file": "queue.js",
+    "name": "queue"
+  },
+  "_useAnnouncer.css": {
+    "file": "assets/useAnnouncer.css",
+    "src": "_useAnnouncer.css"
+  },
+  "_useAnnouncer.js": {
+    "file": "useAnnouncer.js",
+    "name": "useAnnouncer",
+    "imports": [
+      "__plugin-vue_export-helper.js"
+    ],
+    "css": [
+      "assets/useAnnouncer.css"
+    ]
+  },
   "_useEditableTable.js": {
     "file": "useEditableTable.js",
     "name": "useEditableTable",
     "imports": [
-      "_cp3.js",
+      "__plugin-vue_export-helper.js",
+      "_AdminTable.js",
       "_InputCombobox.js"
+    ]
+  },
+  "_useFetch.js": {
+    "file": "useFetch.js",
+    "name": "useFetch",
+    "imports": [
+      "__plugin-vue_export-helper.js",
+      "_dist.js"
     ]
   },
   "_useInputGenerator.js": {
     "file": "useInputGenerator.js",
     "name": "useInputGenerator",
     "imports": [
-      "_cp3.js"
+      "__plugin-vue_export-helper.js"
     ]
+  },
+  "_wayfinder.js": {
+    "file": "wayfinder.js",
+    "name": "wayfinder"
   },
   "node_modules/@lion/ui/components/combobox/translations/bg.js": {
     "file": "bg.js",
@@ -279,7 +487,7 @@
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/bg-BG.js": {
-    "file": "bg-BG2.js",
+    "file": "bg-BG.js",
     "name": "bg-BG",
     "src": "node_modules/@lion/ui/components/form-core/translations/bg-BG.js",
     "isDynamicEntry": true,
@@ -288,13 +496,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/bg.js": {
-    "file": "bg3.js",
+    "file": "bg2.js",
     "name": "bg",
     "src": "node_modules/@lion/ui/components/form-core/translations/bg.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/cs-CZ.js": {
-    "file": "cs-CZ2.js",
+    "file": "cs-CZ.js",
     "name": "cs-CZ",
     "src": "node_modules/@lion/ui/components/form-core/translations/cs-CZ.js",
     "isDynamicEntry": true,
@@ -303,13 +511,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/cs.js": {
-    "file": "cs3.js",
+    "file": "cs2.js",
     "name": "cs",
     "src": "node_modules/@lion/ui/components/form-core/translations/cs.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/de-DE.js": {
-    "file": "de-DE2.js",
+    "file": "de-DE.js",
     "name": "de-DE",
     "src": "node_modules/@lion/ui/components/form-core/translations/de-DE.js",
     "isDynamicEntry": true,
@@ -318,13 +526,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/de.js": {
-    "file": "de3.js",
+    "file": "de2.js",
     "name": "de",
     "src": "node_modules/@lion/ui/components/form-core/translations/de.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/en-AU.js": {
-    "file": "en-AU2.js",
+    "file": "en-AU.js",
     "name": "en-AU",
     "src": "node_modules/@lion/ui/components/form-core/translations/en-AU.js",
     "isDynamicEntry": true,
@@ -333,7 +541,7 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/en-GB.js": {
-    "file": "en-GB2.js",
+    "file": "en-GB.js",
     "name": "en-GB",
     "src": "node_modules/@lion/ui/components/form-core/translations/en-GB.js",
     "isDynamicEntry": true,
@@ -342,7 +550,7 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/en-US.js": {
-    "file": "en-US2.js",
+    "file": "en-US.js",
     "name": "en-US",
     "src": "node_modules/@lion/ui/components/form-core/translations/en-US.js",
     "isDynamicEntry": true,
@@ -351,13 +559,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/en.js": {
-    "file": "en3.js",
+    "file": "en2.js",
     "name": "en",
     "src": "node_modules/@lion/ui/components/form-core/translations/en.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/es-ES.js": {
-    "file": "es-ES2.js",
+    "file": "es-ES.js",
     "name": "es-ES",
     "src": "node_modules/@lion/ui/components/form-core/translations/es-ES.js",
     "isDynamicEntry": true,
@@ -366,13 +574,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/es.js": {
-    "file": "es3.js",
+    "file": "es2.js",
     "name": "es",
     "src": "node_modules/@lion/ui/components/form-core/translations/es.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/fr-BE.js": {
-    "file": "fr-BE2.js",
+    "file": "fr-BE.js",
     "name": "fr-BE",
     "src": "node_modules/@lion/ui/components/form-core/translations/fr-BE.js",
     "isDynamicEntry": true,
@@ -381,7 +589,7 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/fr-FR.js": {
-    "file": "fr-FR2.js",
+    "file": "fr-FR.js",
     "name": "fr-FR",
     "src": "node_modules/@lion/ui/components/form-core/translations/fr-FR.js",
     "isDynamicEntry": true,
@@ -390,13 +598,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/fr.js": {
-    "file": "fr3.js",
+    "file": "fr2.js",
     "name": "fr",
     "src": "node_modules/@lion/ui/components/form-core/translations/fr.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/hu-HU.js": {
-    "file": "hu-HU2.js",
+    "file": "hu-HU.js",
     "name": "hu-HU",
     "src": "node_modules/@lion/ui/components/form-core/translations/hu-HU.js",
     "isDynamicEntry": true,
@@ -405,13 +613,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/hu.js": {
-    "file": "hu3.js",
+    "file": "hu2.js",
     "name": "hu",
     "src": "node_modules/@lion/ui/components/form-core/translations/hu.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/it-IT.js": {
-    "file": "it-IT2.js",
+    "file": "it-IT.js",
     "name": "it-IT",
     "src": "node_modules/@lion/ui/components/form-core/translations/it-IT.js",
     "isDynamicEntry": true,
@@ -420,13 +628,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/it.js": {
-    "file": "it3.js",
+    "file": "it2.js",
     "name": "it",
     "src": "node_modules/@lion/ui/components/form-core/translations/it.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/nl-BE.js": {
-    "file": "nl-BE2.js",
+    "file": "nl-BE.js",
     "name": "nl-BE",
     "src": "node_modules/@lion/ui/components/form-core/translations/nl-BE.js",
     "isDynamicEntry": true,
@@ -435,7 +643,7 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/nl-NL.js": {
-    "file": "nl-NL2.js",
+    "file": "nl-NL.js",
     "name": "nl-NL",
     "src": "node_modules/@lion/ui/components/form-core/translations/nl-NL.js",
     "isDynamicEntry": true,
@@ -444,13 +652,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/nl.js": {
-    "file": "nl3.js",
+    "file": "nl2.js",
     "name": "nl",
     "src": "node_modules/@lion/ui/components/form-core/translations/nl.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/pl-PL.js": {
-    "file": "pl-PL2.js",
+    "file": "pl-PL.js",
     "name": "pl-PL",
     "src": "node_modules/@lion/ui/components/form-core/translations/pl-PL.js",
     "isDynamicEntry": true,
@@ -459,13 +667,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/pl.js": {
-    "file": "pl3.js",
+    "file": "pl2.js",
     "name": "pl",
     "src": "node_modules/@lion/ui/components/form-core/translations/pl.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/ro-RO.js": {
-    "file": "ro-RO2.js",
+    "file": "ro-RO.js",
     "name": "ro-RO",
     "src": "node_modules/@lion/ui/components/form-core/translations/ro-RO.js",
     "isDynamicEntry": true,
@@ -474,13 +682,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/ro.js": {
-    "file": "ro3.js",
+    "file": "ro2.js",
     "name": "ro",
     "src": "node_modules/@lion/ui/components/form-core/translations/ro.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/ru-RU.js": {
-    "file": "ru-RU2.js",
+    "file": "ru-RU.js",
     "name": "ru-RU",
     "src": "node_modules/@lion/ui/components/form-core/translations/ru-RU.js",
     "isDynamicEntry": true,
@@ -489,13 +697,13 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/ru.js": {
-    "file": "ru3.js",
+    "file": "ru2.js",
     "name": "ru",
     "src": "node_modules/@lion/ui/components/form-core/translations/ru.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/sk-SK.js": {
-    "file": "sk-SK2.js",
+    "file": "sk-SK.js",
     "name": "sk-SK",
     "src": "node_modules/@lion/ui/components/form-core/translations/sk-SK.js",
     "isDynamicEntry": true,
@@ -504,7 +712,7 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/sk.js": {
-    "file": "sk3.js",
+    "file": "sk2.js",
     "name": "sk",
     "src": "node_modules/@lion/ui/components/form-core/translations/sk.js",
     "isDynamicEntry": true
@@ -525,7 +733,7 @@
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/uk-UA.js": {
-    "file": "uk-UA2.js",
+    "file": "uk-UA.js",
     "name": "uk-UA",
     "src": "node_modules/@lion/ui/components/form-core/translations/uk-UA.js",
     "isDynamicEntry": true,
@@ -534,19 +742,19 @@
     ]
   },
   "node_modules/@lion/ui/components/form-core/translations/uk.js": {
-    "file": "uk3.js",
+    "file": "uk2.js",
     "name": "uk",
     "src": "node_modules/@lion/ui/components/form-core/translations/uk.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/form-core/translations/zh.js": {
-    "file": "zh3.js",
+    "file": "zh2.js",
     "name": "zh",
     "src": "node_modules/@lion/ui/components/form-core/translations/zh.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/bg-BG.js": {
-    "file": "bg-BG.js",
+    "file": "bg-BG2.js",
     "name": "bg-BG",
     "src": "node_modules/@lion/ui/components/input-file/translations/bg-BG.js",
     "isDynamicEntry": true,
@@ -555,13 +763,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/bg.js": {
-    "file": "bg2.js",
+    "file": "bg3.js",
     "name": "bg",
     "src": "node_modules/@lion/ui/components/input-file/translations/bg.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/cs-CZ.js": {
-    "file": "cs-CZ.js",
+    "file": "cs-CZ2.js",
     "name": "cs-CZ",
     "src": "node_modules/@lion/ui/components/input-file/translations/cs-CZ.js",
     "isDynamicEntry": true,
@@ -570,13 +778,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/cs.js": {
-    "file": "cs2.js",
+    "file": "cs3.js",
     "name": "cs",
     "src": "node_modules/@lion/ui/components/input-file/translations/cs.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/de-DE.js": {
-    "file": "de-DE.js",
+    "file": "de-DE2.js",
     "name": "de-DE",
     "src": "node_modules/@lion/ui/components/input-file/translations/de-DE.js",
     "isDynamicEntry": true,
@@ -585,13 +793,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/de.js": {
-    "file": "de2.js",
+    "file": "de3.js",
     "name": "de",
     "src": "node_modules/@lion/ui/components/input-file/translations/de.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/en-AU.js": {
-    "file": "en-AU.js",
+    "file": "en-AU2.js",
     "name": "en-AU",
     "src": "node_modules/@lion/ui/components/input-file/translations/en-AU.js",
     "isDynamicEntry": true,
@@ -600,7 +808,7 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/en-GB.js": {
-    "file": "en-GB.js",
+    "file": "en-GB2.js",
     "name": "en-GB",
     "src": "node_modules/@lion/ui/components/input-file/translations/en-GB.js",
     "isDynamicEntry": true,
@@ -609,7 +817,7 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/en-US.js": {
-    "file": "en-US.js",
+    "file": "en-US2.js",
     "name": "en-US",
     "src": "node_modules/@lion/ui/components/input-file/translations/en-US.js",
     "isDynamicEntry": true,
@@ -618,13 +826,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/en.js": {
-    "file": "en2.js",
+    "file": "en3.js",
     "name": "en",
     "src": "node_modules/@lion/ui/components/input-file/translations/en.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/es-ES.js": {
-    "file": "es-ES.js",
+    "file": "es-ES2.js",
     "name": "es-ES",
     "src": "node_modules/@lion/ui/components/input-file/translations/es-ES.js",
     "isDynamicEntry": true,
@@ -633,13 +841,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/es.js": {
-    "file": "es2.js",
+    "file": "es3.js",
     "name": "es",
     "src": "node_modules/@lion/ui/components/input-file/translations/es.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/fr-BE.js": {
-    "file": "fr-BE.js",
+    "file": "fr-BE2.js",
     "name": "fr-BE",
     "src": "node_modules/@lion/ui/components/input-file/translations/fr-BE.js",
     "isDynamicEntry": true,
@@ -648,7 +856,7 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/fr-FR.js": {
-    "file": "fr-FR.js",
+    "file": "fr-FR2.js",
     "name": "fr-FR",
     "src": "node_modules/@lion/ui/components/input-file/translations/fr-FR.js",
     "isDynamicEntry": true,
@@ -657,13 +865,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/fr.js": {
-    "file": "fr2.js",
+    "file": "fr3.js",
     "name": "fr",
     "src": "node_modules/@lion/ui/components/input-file/translations/fr.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/hu-HU.js": {
-    "file": "hu-HU.js",
+    "file": "hu-HU2.js",
     "name": "hu-HU",
     "src": "node_modules/@lion/ui/components/input-file/translations/hu-HU.js",
     "isDynamicEntry": true,
@@ -672,13 +880,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/hu.js": {
-    "file": "hu2.js",
+    "file": "hu3.js",
     "name": "hu",
     "src": "node_modules/@lion/ui/components/input-file/translations/hu.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/it-IT.js": {
-    "file": "it-IT.js",
+    "file": "it-IT2.js",
     "name": "it-IT",
     "src": "node_modules/@lion/ui/components/input-file/translations/it-IT.js",
     "isDynamicEntry": true,
@@ -687,13 +895,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/it.js": {
-    "file": "it2.js",
+    "file": "it3.js",
     "name": "it",
     "src": "node_modules/@lion/ui/components/input-file/translations/it.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/nl-BE.js": {
-    "file": "nl-BE.js",
+    "file": "nl-BE2.js",
     "name": "nl-BE",
     "src": "node_modules/@lion/ui/components/input-file/translations/nl-BE.js",
     "isDynamicEntry": true,
@@ -702,7 +910,7 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/nl-NL.js": {
-    "file": "nl-NL.js",
+    "file": "nl-NL2.js",
     "name": "nl-NL",
     "src": "node_modules/@lion/ui/components/input-file/translations/nl-NL.js",
     "isDynamicEntry": true,
@@ -711,13 +919,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/nl.js": {
-    "file": "nl2.js",
+    "file": "nl3.js",
     "name": "nl",
     "src": "node_modules/@lion/ui/components/input-file/translations/nl.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/pl-PL.js": {
-    "file": "pl-PL.js",
+    "file": "pl-PL2.js",
     "name": "pl-PL",
     "src": "node_modules/@lion/ui/components/input-file/translations/pl-PL.js",
     "isDynamicEntry": true,
@@ -726,13 +934,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/pl.js": {
-    "file": "pl2.js",
+    "file": "pl3.js",
     "name": "pl",
     "src": "node_modules/@lion/ui/components/input-file/translations/pl.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/ro-RO.js": {
-    "file": "ro-RO.js",
+    "file": "ro-RO2.js",
     "name": "ro-RO",
     "src": "node_modules/@lion/ui/components/input-file/translations/ro-RO.js",
     "isDynamicEntry": true,
@@ -741,13 +949,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/ro.js": {
-    "file": "ro2.js",
+    "file": "ro3.js",
     "name": "ro",
     "src": "node_modules/@lion/ui/components/input-file/translations/ro.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/ru-RU.js": {
-    "file": "ru-RU.js",
+    "file": "ru-RU2.js",
     "name": "ru-RU",
     "src": "node_modules/@lion/ui/components/input-file/translations/ru-RU.js",
     "isDynamicEntry": true,
@@ -756,13 +964,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/ru.js": {
-    "file": "ru2.js",
+    "file": "ru3.js",
     "name": "ru",
     "src": "node_modules/@lion/ui/components/input-file/translations/ru.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/sk-SK.js": {
-    "file": "sk-SK.js",
+    "file": "sk-SK2.js",
     "name": "sk-SK",
     "src": "node_modules/@lion/ui/components/input-file/translations/sk-SK.js",
     "isDynamicEntry": true,
@@ -771,13 +979,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/sk.js": {
-    "file": "sk2.js",
+    "file": "sk3.js",
     "name": "sk",
     "src": "node_modules/@lion/ui/components/input-file/translations/sk.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/uk-UA.js": {
-    "file": "uk-UA.js",
+    "file": "uk-UA2.js",
     "name": "uk-UA",
     "src": "node_modules/@lion/ui/components/input-file/translations/uk-UA.js",
     "isDynamicEntry": true,
@@ -786,13 +994,13 @@
     ]
   },
   "node_modules/@lion/ui/components/input-file/translations/uk.js": {
-    "file": "uk2.js",
+    "file": "uk3.js",
     "name": "uk",
     "src": "node_modules/@lion/ui/components/input-file/translations/uk.js",
     "isDynamicEntry": true
   },
   "node_modules/@lion/ui/components/input-file/translations/zh.js": {
-    "file": "zh2.js",
+    "file": "zh3.js",
     "name": "zh",
     "src": "node_modules/@lion/ui/components/input-file/translations/zh.js",
     "isDynamicEntry": true
@@ -803,14 +1011,35 @@
     "src": "node_modules/@popperjs/core/dist/esm/popper.js",
     "isDynamicEntry": true
   },
+  "packages/craftcms-cp/dist/components/nav-item/nav-item.ts.mjs": {
+    "file": "nav-item.ts.js",
+    "name": "nav-item.ts",
+    "src": "packages/craftcms-cp/dist/components/nav-item/nav-item.ts.mjs",
+    "isDynamicEntry": true,
+    "imports": [
+      "_lit.js",
+      "_decorators.js",
+      "_nav-item-D3exy0bq.js"
+    ]
+  },
+  "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs": {
+    "file": "nav-list.ts.js",
+    "name": "nav-list.ts",
+    "src": "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
+    "isDynamicEntry": true,
+    "imports": [
+      "_lit.js",
+      "_nav-list-DezDYLKE.js"
+    ]
+  },
   "resources/css/cp.css": {
     "file": "assets/cp.css",
-    "src": "resources/css/cp.css",
-    "isEntry": true,
     "name": "cp",
     "names": [
       "cp.css"
-    ]
+    ],
+    "src": "resources/css/cp.css",
+    "isEntry": true
   },
   "resources/images/install/account.png": {
     "file": "assets/account.png",
@@ -828,33 +1057,29 @@
     "file": "assets/site.png",
     "src": "resources/images/install/site.png"
   },
-  "resources/js/components/CpGlobalSidebar.ts": {
-    "file": "CpGlobalSidebar.js",
-    "name": "CpGlobalSidebar",
-    "src": "resources/js/components/CpGlobalSidebar.ts",
-    "isDynamicEntry": true,
-    "imports": [
-      "_cp3.js"
-    ]
-  },
-  "resources/js/components/CpQueueIndicator.ts": {
-    "file": "CpQueueIndicator.js",
-    "name": "CpQueueIndicator",
-    "src": "resources/js/components/CpQueueIndicator.ts",
-    "isDynamicEntry": true,
-    "imports": [
-      "_cp3.js"
-    ]
-  },
   "resources/js/cp.ts": {
     "file": "cp.js",
     "name": "cp",
     "src": "resources/js/cp.ts",
     "isEntry": true,
     "imports": [
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_AdminTable.js",
       "_cp3.js",
-      "resources/js/components/CpGlobalSidebar.ts",
-      "resources/js/components/CpQueueIndicator.ts"
+      "_lit.js",
+      "_decorators.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_CpQueueIndicator.js",
+      "_nav-list-DezDYLKE.js",
+      "_useFetch.js",
+      "_ModalForm.js",
+      "_CpGlobalSidebar.js",
+      "_useAnnouncer.js",
+      "_Modal.js",
+      "_Pane.js",
+      "_Input.js"
     ]
   },
   "resources/js/legacy.ts": {
@@ -863,11 +1088,27 @@
     "src": "resources/js/legacy.ts",
     "isEntry": true,
     "imports": [
-      "_cp3.js"
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_AdminTable.js",
+      "_cp3.js",
+      "_lit.js",
+      "_decorators.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_nav-list-DezDYLKE.js",
+      "_useFetch.js",
+      "_ModalForm.js",
+      "_useAnnouncer.js",
+      "_Modal.js",
+      "_Pane.js",
+      "_Input.js"
     ],
     "dynamicImports": [
-      "resources/js/components/CpGlobalSidebar.ts",
-      "resources/js/components/CpQueueIndicator.ts"
+      "packages/craftcms-cp/dist/components/nav-list/nav-list.ts.mjs",
+      "packages/craftcms-cp/dist/components/nav-item/nav-item.ts.mjs",
+      "_CpGlobalSidebar.js",
+      "_CpQueueIndicator.js"
     ]
   },
   "resources/js/pages/Install.vue": {
@@ -876,7 +1117,16 @@
     "src": "resources/js/pages/Install.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_cp3.js"
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_lit.js",
+      "_decorators.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_nav-list-DezDYLKE.js",
+      "_useFetch.js",
+      "_Modal.js",
+      "_Pane.js"
     ],
     "css": [
       "assets/Install.css"
@@ -894,11 +1144,22 @@
     "src": "resources/js/pages/SettingsEmailPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_cp3.js",
-      "_AppLayout.js",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_AdminTable.js",
+      "_InputCombobox.js",
+      "_lit.js",
+      "_decorators.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_nav-list-DezDYLKE.js",
       "_useEditableTable.js",
-      "_InputCombobox.js"
+      "_AppLayout.js",
+      "_CalloutReadOnly.js",
+      "_useAnnouncer.js",
+      "_Pane.js",
+      "_Input.js",
+      "_wayfinder.js"
     ]
   },
   "resources/js/pages/SettingsGeneralPage.vue": {
@@ -907,9 +1168,17 @@
     "src": "resources/js/pages/SettingsGeneralPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_cp3.js",
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_lit.js",
+      "_decorators.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_nav-list-DezDYLKE.js",
       "_AppLayout.js",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js"
+      "_CalloutReadOnly.js",
+      "_useAnnouncer.js",
+      "_wayfinder.js"
     ],
     "css": [
       "assets/SettingsGeneralPage.css"
@@ -921,9 +1190,16 @@
     "src": "resources/js/pages/SettingsIndexPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_cp3.js",
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_lit.js",
+      "_decorators.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_nav-list-DezDYLKE.js",
       "_AppLayout.js",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js"
+      "_CalloutReadOnly.js",
+      "_useAnnouncer.js"
     ],
     "css": [
       "assets/SettingsIndexPage.css"
@@ -935,13 +1211,23 @@
     "src": "resources/js/pages/SettingsSectionsEditPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_cp3.js",
-      "_AppLayout.js",
-      "_useInputGenerator.js",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "_SectionsController.js",
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_AdminTable.js",
+      "_InputCombobox.js",
+      "_lit.js",
+      "_decorators.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_nav-list-DezDYLKE.js",
       "_useEditableTable.js",
-      "_InputCombobox.js"
+      "_SectionsController.js",
+      "_AppLayout.js",
+      "_CalloutReadOnly.js",
+      "_useAnnouncer.js",
+      "_Pane.js",
+      "_useInputGenerator.js",
+      "_wayfinder.js"
     ],
     "css": [
       "assets/SettingsSectionsEditPage.css"
@@ -953,9 +1239,18 @@
     "src": "resources/js/pages/SettingsSectionsIndexPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_cp3.js",
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_AdminTable.js",
+      "_lit.js",
+      "_decorators.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_nav-list-DezDYLKE.js",
       "_SectionsController.js",
-      "_AppLayout.js"
+      "_AppLayout.js",
+      "_useAnnouncer.js",
+      "_Pane.js"
     ]
   },
   "resources/js/pages/SettingsSitesEdit.vue": {
@@ -964,12 +1259,22 @@
     "src": "resources/js/pages/SettingsSitesEdit.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_cp3.js",
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_InputCombobox.js",
+      "_lit.js",
+      "_decorators.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_nav-list-DezDYLKE.js",
+      "_DeleteSiteModal.js",
+      "_ModalForm.js",
       "_AppLayout.js",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
-      "_useInputGenerator.js",
-      "_InputCombobox.js"
+      "_CalloutReadOnly.js",
+      "_useAnnouncer.js",
+      "_Modal.js",
+      "_Pane.js",
+      "_useInputGenerator.js"
     ]
   },
   "resources/js/pages/SettingsSitesIndex.vue": {
@@ -978,12 +1283,24 @@
     "src": "resources/js/pages/SettingsSitesIndex.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_cp3.js",
-      "_CalloutReadOnly.vue_vue_type_script_setup_true_lang.js",
-      "_DeleteSiteModal.vue_vue_type_script_setup_true_lang.js",
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_AdminTable.js",
       "_InputCombobox.js",
+      "_lit.js",
+      "_decorators.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_nav-list-DezDYLKE.js",
+      "_DeleteSiteModal.js",
+      "_ModalForm.js",
+      "_AppLayout.js",
+      "_CalloutReadOnly.js",
+      "_useAnnouncer.js",
+      "_Modal.js",
+      "_Pane.js",
       "_IndexLayout.js",
-      "_AppLayout.js"
+      "_wayfinder.js"
     ],
     "css": [
       "assets/SettingsSitesIndex.css"
@@ -995,7 +1312,12 @@
     "src": "resources/js/pages/Updater.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_cp3.js"
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_lit.js",
+      "_decorators.js",
+      "_nav-item-D3exy0bq.js",
+      "_nav-list-DezDYLKE.js"
     ],
     "css": [
       "assets/Updater.css"
@@ -1007,9 +1329,16 @@
     "src": "resources/js/pages/UtilitiesShowPage.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_cp3.js",
-      "_IndexLayout.js",
-      "_AppLayout.js"
+      "__plugin-vue_export-helper.js",
+      "_Queue-wGK97jCw.js",
+      "_lit.js",
+      "_decorators.js",
+      "_dist.js",
+      "_nav-item-D3exy0bq.js",
+      "_nav-list-DezDYLKE.js",
+      "_AppLayout.js",
+      "_useAnnouncer.js",
+      "_IndexLayout.js"
     ]
   }
 }

@@ -1,1 +1,1 @@
-import o from"./cs2.js";const t={...o};export{t as default};
+import e from"./cs2.js";var t={...e};export{t as default};
