@@ -70,4 +70,6 @@ class CraftSpinner extends HTMLElement {
   }
 }
 
-customElements.define('craft-spinner', CraftSpinner);
+if (!customElements.get('craft-spinner')) {
+  customElements.define('craft-spinner', CraftSpinner);
+}

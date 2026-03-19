@@ -89,12 +89,12 @@ class CpAsset extends AssetBundle
         DatepickerI18nAsset::class,
         SelectizeAsset::class,
         VelocityAsset::class,
-        FileUploadAsset::class,
+        // FileUploadAsset::class,
         XregexpAsset::class,
         FabricAsset::class,
         IframeResizerAsset::class,
         ThemeAsset::class,
-        PicturefillAsset::class,
+        // PicturefillAsset::class,
     ];
 
     /**

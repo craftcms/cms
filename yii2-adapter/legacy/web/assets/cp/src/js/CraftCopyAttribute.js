@@ -83,4 +83,6 @@ class CraftCopyAttribute extends HTMLElement {
   }
 }
 
-customElements.define('craft-copy-attribute', CraftCopyAttribute);
+if (!customElements.get('craft-copy-attribute')) {
+  customElements.define('craft-copy-attribute', CraftCopyAttribute);
+}

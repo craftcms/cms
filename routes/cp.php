@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use craft\helpers\Cp;
+use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Assets\IndexController as AssetsIndexController;
@@ -44,8 +46,11 @@ use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
+use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 /**
  * Admin requests that do not require a login
@@ -250,4 +255,15 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
     });
 
     Route::post('updates', [UpdaterController::class, 'index']);
+
+    Route::get('tests/field-layout-designer', function () {
+        $entryType = EntryTypes::getEntryTypeById(2);
+        Craft::$app->view->registerAssetBundle(CpAsset::class);
+
+        return Inertia::render('TestPage', [
+            'contentHtml' => Cp::fieldLayoutDesignerHtml($entryType->getFieldLayout()),
+            'bodyHtml' => HtmlStack::bodyHtml(),
+            'headHtml' => HtmlStack::headHtml(),
+        ]);
+    });
 });
