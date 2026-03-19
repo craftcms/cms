@@ -29,8 +29,11 @@ use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
 use Illuminate\Routing\Router;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\Event;
@@ -43,9 +46,8 @@ class RouteServiceProvider extends ServiceProvider
     public function register(): void
     {
         /**
-         * These middleware are special and need to
-         * run before any other middleware as they
-         * rewrite the request
+         * These middleware must run before all others
+         * as they rewrite the incoming request.
          */
         $kernel = $this->app->get(HttpKernel::class);
         $kernel->setGlobalMiddleware(array_merge([
@@ -53,6 +55,13 @@ class RouteServiceProvider extends ServiceProvider
             HandleTokenRequest::class,
             HandleActionRequest::class,
         ], $kernel->getGlobalMiddleware()));
+
+        LaravelRouteServiceProvider::loadCachedRoutesUsing(function (): void {
+            require $this->app->getCachedRoutesPath();
+
+            $this->bootMaintenanceModeExceptions();
+            $this->bootRequestForgeryExceptions();
+        });
     }
 
     public function boot(Router $router, Routes $routes): void
@@ -61,7 +70,11 @@ class RouteServiceProvider extends ServiceProvider
 
         $this->bootMiddleware($router);
         $this->loadRoutesFrom(dirname(__DIR__).'/../routes/routes.php');
-        $this->bootMaintenanceModeExceptions();
+
+        if (! $this->app->routesAreCached()) {
+            $this->bootMaintenanceModeExceptions();
+            $this->bootRequestForgeryExceptions();
+        }
 
         $this->app->booted(function () use ($routes, $router): void {
             if (! Cms::isInstalled()) {
@@ -80,6 +93,22 @@ class RouteServiceProvider extends ServiceProvider
 
             $routes->handleDeletedSite($event);
         });
+    }
+
+    private function bootRequestForgeryExceptions(): void
+    {
+        /**
+         * Actions that should not have CSRF token verification. These are automatically
+         * mapped to `/{cpTrigger}/{actionTrigger}/route` and `/{actionTrigger}/{route}`
+         */
+        PreventRequestForgery::except(collect([
+            'graphql/api',
+            'preview/preview',
+        ])->flatMap(fn (string $route) => [
+            $route,
+            Cms::config()->actionTrigger.Str::start($route, '/'),
+            Cms::config()->cpTrigger.'/'.Cms::config()->actionTrigger.Str::start($route, '/'),
+        ])->all());
     }
 
     /**
@@ -109,19 +138,19 @@ class RouteServiceProvider extends ServiceProvider
             SendPoweredByHeader::class,
             Enforce2fa::class,
             SetHeaders::class,
-        ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
+        ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([
             RequireCpRequest::class,
             CheckRequirements::class,
             HandleInertiaRequests::class,
             EnforceLicenses::class,
-        ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
+        ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
 
         collect([
             'web',
             AuthenticateSession::class,
             RunQueue::class,
-        ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
+        ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
     }
 }
