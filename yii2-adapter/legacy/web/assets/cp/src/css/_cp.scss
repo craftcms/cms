@@ -349,6 +349,8 @@ li.crumb .btn.menubtn,
 
   &:not(:hover, :active, [aria-expanded='true']) {
     background-color: transparent;
+    border-color: transparent;
+    color: inherit;
   }
 
   &:not(.m) {

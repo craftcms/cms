@@ -718,37 +718,11 @@ class CpScreenResponse implements Responsable
 
     public function toResponse($request): Response
     {
-        if ($this->inertiaPage) {
-            return $this->inertiaResponse($request);
-        }
-
         if ($request->wantsJson()) {
             return $this->jsonResponse($request);
         }
 
         return $this->response($request);
-    }
-
-    private function inertiaResponse(Request $request): Response
-    {
-        if ($this->prepareScreen) {
-            ($this->prepareScreen)($this, $request);
-        }
-
-        $crumbs = $this->crumbs;
-        if ($this->title) {
-            $crumbs[] = ['label' => $this->title];
-        }
-
-        $props = array_filter([
-            'title' => $this->title,
-            'crumbs' => $crumbs,
-        ], fn ($value) => $value !== null);
-
-        return Inertia::render(
-            $this->inertiaPage,
-            [...$props, ...$this->inertiaProps],
-        )->toResponse($request);
     }
 
     private function jsonResponse(Request $request): JsonResponse
@@ -868,52 +842,59 @@ class CpScreenResponse implements Responsable
             Craft::$app->getView()->registerAssetBundle(ContentWindowAsset::class);
         }
 
+        $props = [
+            'docTitle' => $docTitle,
+            'title' => $this->title,
+            'selectedSubnavItem' => $this->selectedSubnavItem,
+            'crumbs' => array_map(function (array $crumb): array {
+                if (isset($crumb['url'])) {
+                    $crumb['url'] = UrlHelper::cpUrl($crumb['url']);
+                }
+
+                return $crumb;
+            }, $crumbs ?? []),
+            'contextMenu' => $this->contextMenu(),
+            'toolbar' => $toolbar,
+            'actionMenu' => $this->actionMenu(config: [
+                'hiddenLabel' => t('Actions'),
+                'buttonAttributes' => [
+                    'id' => 'action-btn',
+                    'class' => ['action-btn', 'hairline-dark', 'm'],
+                    'title' => t('Actions'),
+                ],
+            ]),
+            'submitButtonLabel' => $this->submitButtonLabel,
+            'additionalButtons' => $addlButtons,
+            'tabs' => $this->tabs,
+            'fullPageForm' => $isForm,
+            'mainAttributes' => $this->mainAttributes,
+            'mainFormAttributes' => $this->formAttributes,
+            'formActions' => array_map(function (array $action): array {
+                if (isset($action['redirect'])) {
+                    $action['redirect'] = Crypt::encrypt($action['redirect']);
+                }
+
+                return $action;
+            }, $altActions ?? []),
+            'saveShortcutRedirect' => $this->saveShortcutRedirectUrl,
+            'contentNotice' => $notice,
+            'content' => $content,
+            'details' => $sidebar,
+            'sidebar' => $pageSidebar,
+            'errorSummary' => $errorSummary,
+        ];
+
+        if ($this->inertiaPage) {
+            return Inertia::render($this->inertiaPage, [
+                ...$this->inertiaProps,
+                ...$props,
+                'bodyHtml' => HtmlStack::bodyHtml(),
+                'headHtml' => HtmlStack::headHtml(),
+            ])->toResponse($request);
+        }
+
         // Render and return the template
-        return response(pageTemplate(
-            '_layouts/cp',
-            [
-                'docTitle' => $docTitle,
-                'title' => $this->title,
-                'selectedSubnavItem' => $this->selectedSubnavItem,
-                'crumbs' => array_map(function (array $crumb): array {
-                    if (isset($crumb['url'])) {
-                        $crumb['url'] = UrlHelper::cpUrl($crumb['url']);
-                    }
-
-                    return $crumb;
-                }, $crumbs ?? []),
-                'contextMenu' => $this->contextMenu(),
-                'toolbar' => $toolbar,
-                'actionMenu' => $this->actionMenu(config: [
-                    'hiddenLabel' => t('Actions'),
-                    'buttonAttributes' => [
-                        'id' => 'action-btn',
-                        'class' => ['action-btn', 'hairline-dark', 'm'],
-                        'title' => t('Actions'),
-                    ],
-                ]),
-                'submitButtonLabel' => $this->submitButtonLabel,
-                'additionalButtons' => $addlButtons,
-                'tabs' => $this->tabs,
-                'fullPageForm' => $isForm,
-                'mainAttributes' => $this->mainAttributes,
-                'mainFormAttributes' => $this->formAttributes,
-                'formActions' => array_map(function (array $action): array {
-                    if (isset($action['redirect'])) {
-                        $action['redirect'] = Crypt::encrypt($action['redirect']);
-                    }
-
-                    return $action;
-                }, $altActions ?? []),
-                'saveShortcutRedirect' => $this->saveShortcutRedirectUrl,
-                'contentNotice' => $notice,
-                'content' => $content,
-                'details' => $sidebar,
-                'sidebar' => $pageSidebar,
-                'errorSummary' => $errorSummary,
-            ],
-            TemplateMode::Cp
-        ));
+        return response(pageTemplate('_layouts/cp', $props, TemplateMode::Cp));
     }
 
     private function contextMenu(?string $namespace = null): ?string

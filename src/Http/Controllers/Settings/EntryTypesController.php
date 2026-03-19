@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
+use Craft;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use craft\web\assets\cpbridge\CpBridgeAsset;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -128,11 +130,14 @@ class EntryTypesController
             }
         }
 
+        Craft::$app->view->registerAssetBundle(CpBridgeAsset::class);
+
         return new CpScreenResponse()
             ->editUrl($entryTypeData->getCpEditUrl())
             ->title(trim($entryTypeData->name) ?: t('Edit Entry Type'))
             ->addCrumb(t('Settings'), 'settings')
             ->addCrumb(t('Entry Types'), 'settings/entry-types')
+            ->inertiaPage('SettingsEntryTypesEditPage')
             ->contentTemplate('settings/entry-types/_edit.twig', [
                 'entryTypeId' => $entryTypeData->id,
                 'entryType' => $entryTypeData,

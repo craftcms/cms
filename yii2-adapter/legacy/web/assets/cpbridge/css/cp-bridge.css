@@ -1,0 +1,524 @@
+/**
+ * CP Bridge CSS Variables
+ *
+ * When the CpBridgeAsset is loaded, we do our best to re-theme the legacy CP
+ * markup to be at home in the new CP design by mapping legacy variables
+ * to our new tokens
+ */
+:root {
+  --CHANGE: red;
+  /* ============================================================================
+     PRIMITIVE COLORS
+     Color palette values - these map to Tailwind-style color scales
+     ============================================================================ */
+
+  /* Gray scale */
+  --black: var(--color-black);
+  --white: var(--color-white);
+  --gray-050: var(--color-slate-50);
+  --gray-100: var(--color-slate-100);
+  --gray-150: var(--color-slate-150, var(--color-slate-100));
+  --gray-200: var(--color-slate-200);
+  --gray-300: var(--color-slate-300);
+  --gray-350: var(--color-slate-350, var(--color-slate-400));
+  --gray-400: var(--color-slate-400);
+  --gray-500: var(--color-slate-500);
+  --gray-550: var(--color-slate-550, var(--color-slate-500));
+  --gray-600: var(--color-slate-600);
+  --gray-700: var(--color-slate-700);
+  --gray-800: var(--color-slate-800);
+  --gray-900: var(--color-slate-900);
+  --gray-1000: var(--color-slate-950);
+
+  /* HSL variants for color mixing */
+  /* @TODO Update these usages to use color-mix or something */
+  /*--gray-050-hsl: var(--CHANGE);*/
+  /*--gray-100-hsl: var(--CHANGE);*/
+  /*--gray-150-hsl: var(--CHANGE);*/
+  /*--gray-200-hsl: var(--CHANGE);*/
+  /*--gray-300-hsl: var(--CHANGE);*/
+  /*--gray-350-hsl: var(--CHANGE);*/
+  /*--gray-400-hsl: var(--CHANGE);*/
+  /*--gray-500-hsl: var(--CHANGE);*/
+  /*--gray-550-hsl: var(--CHANGE);*/
+  /*--gray-600-hsl: var(--CHANGE);*/
+  /*--gray-700-hsl: var(--CHANGE);*/
+  /*--gray-800-hsl: var(--CHANGE);*/
+  /*--gray-900-hsl: var(--CHANGE);*/
+  /*--gray-1000-hsl: var(--CHANGE);*/
+
+  /* Red */
+  --red-050: var(--color-red-50);
+  --red-100: var(--color-red-100);
+  --red-300: var(--color-red-300);
+  --red-600: var(--color-red-600);
+  --red-800: var(--color-red-800);
+
+  /* Blue */
+  --blue-100: var(--color-blue-100);
+  --blue-300: var(--color-blue-300);
+  --blue-600: var(--color-blue-600);
+  --blue-800: var(--color-blue-800);
+
+  /* Sky */
+  --sky-050: var(--color-sky-50);
+  --sky-100: var(--color-sky-100);
+  --sky-300: var(--color-sky-300);
+  --sky-500: var(--color-sky-500);
+  --sky-600: var(--color-sky-600);
+  --sky-700: var(--color-sky-700);
+
+  /* Teal */
+  --teal-100: var(--color-teal-100);
+  --teal-300: var(--color-teal-300);
+  --teal-550: var(--color-teal-500);
+  --teal-700: var(--color-teal-700);
+
+  /* Emerald / Green */
+  --emerald-500: var(--color-emerald-500);
+  --green-500: var(--color-green-500);
+  --green-600: var(--color-green-600);
+
+  /* Lime */
+  --lime-500: var(--color-lime-500);
+
+  /* Yellow */
+  --yellow-050: var(--color-yellow-50);
+  --yellow-300: var(--color-yellow-300);
+  --yellow-500: var(--color-yellow-500);
+
+  /* Amber */
+  --amber-050: var(--color-amber-50);
+  --amber-100: var(--color-amber-100);
+  --amber-300: var(--color-amber-300);
+  --amber-500: var(--color-amber-500);
+  --amber-600: var(--color-amber-600);
+  --amber-700: var(--color-amber-700);
+
+  /* Orange */
+  --orange-400: var(--color-orange-400);
+
+  /* Pink */
+  --pink-400: var(--color-pink-400);
+  --pink-500: var(--color-pink-500);
+
+  /* Rose */
+  --rose-500: var(--color-rose-500);
+  --rose-600: var(--color-rose-600);
+
+  /* Fuchsia */
+  --fuchsia-500: var(--color-fuchsia-500);
+  --fuchsia-600: var(--color-fuchsia-600);
+  --fuchsia-700: var(--color-fuchsia-700);
+
+  /* Purple */
+  --purple-500: var(--color-purple-500);
+
+  /* Violet */
+  --violet-500: var(--color-violet-500);
+  --violet-600: var(--color-violet-600);
+  --violet-700: var(--color-violet-700);
+
+  /* Indigo */
+  --indigo-500: var(--color-indigo-500);
+  --indigo-600: var(--color-indigo-600);
+  --indigo-700: var(--color-indigo-700);
+
+  /* Cyan */
+  --cyan-500: var(--color-cyan-500);
+
+  /* ============================================================================
+     SURFACES / BACKGROUNDS
+     Background colors for various UI surfaces
+     ============================================================================ */
+
+  --body-bg: var(--c-surface-default);
+  --bg-color: var(--c-surface-default);
+  --bg-color-hsl: var(--CHANGE);
+  --shade-bg: rgba(0, 0, 0, 0.05);
+  --sidebar-bg: var(--c-surface-overlay);
+  --modal-bg: var(--c-modal-fill);
+  --login-modal-bg: var(--c-surface-overlay);
+  --header-bg: var(--CHANGE);
+  --secondary-pane-bg: var(--c-surface-sunken);
+
+  /* ============================================================================
+     TEXT / FOREGROUND COLORS
+     Text and icon colors
+     ============================================================================ */
+
+  --text-color: var(--c-text-default);
+  --light-text-color: var(--c-text-quiet);
+  --medium-text-color: var(--c-text-quiet);
+  --medium-dark-text-color: var(--c-text-quiet);
+  --link-color: var(--c-text-link);
+  --icon-color: var(--c-text-quiet);
+  --tab-label-color: var(--c-text-quiet);
+
+  /* Input text */
+  --fg-input: var(--c-input-text);
+  --fg-subtle: var(--c-text-quiet);
+
+  /* ============================================================================
+     SEMANTIC COLORS
+     Colors that convey meaning (success, warning, error, etc.)
+     ============================================================================ */
+
+  /* Primary / Brand */
+  --primary-color: var(--c-button-primary-fill);
+  --bg-primary: var(--c-button-primary-fill);
+
+  /* Secondary */
+  --secondary-color: var(--c-color-neutral-fill-normal);
+  --bg-secondary: var(--c-color-neutral-fill-normal);
+
+  /* Success */
+  --fg-success: var(--c-color-success-on-normal);
+  --success-color: var(--c-color-success-on-normal);
+  --enabled-color: var(--c-status-enabled-fill);
+  --bg-enabled: var(--c-color-success-fill-loud);
+
+  /* Warning */
+  --fg-warning: var(--c-color-warning-on-normal);
+  --warning-color: var(--c-color-warning-on-normal);
+  --warning-background: var(--c-color-warning-fill-quiet);
+  --warning-border-color: var(--c-color-warning-border-normal);
+  --bg-warning: var(--c-color-warning-fill-quiet);
+  --border-warning: var(--c-color-warning-border-normal);
+  --border-warning-emphasis: var(--c-color-warning-border-loud);
+  --indicator-border-color: var(--c-color-warning-border-loud);
+  --indicator-icon-color: var(--c-color-warning-on-normal);
+
+  /* Error / Danger */
+  --fg-error: var(--c-color-danger-on-normal);
+  --error-color: var(--c-color-danger-on-normal);
+  --error-color-rgb: 216 31 35;
+
+  /* Notice / Info */
+  --fg-notice: var(--c-color-info-on-normal);
+  --notice-color: var(--c-color-info-on-normal);
+  --notice-background: var(--c-color-info-fill-quiet);
+  --notice-border-color: var(--c-color-info-border-normal);
+  --bg-notice: var(--c-color-info-fill-quiet);
+  --border-notice: var(--c-color-info-border-normal);
+
+  /* Pending */
+  --pending-color: var(--c-status-pending-fill);
+  --bg-pending: var(--c-status-pending-fill);
+
+  /* Disabled */
+  --disabled-color: var(--c-status-disabled-fill);
+  --bg-disabled: var(--c-status-disabled-fill);
+
+  /* ============================================================================
+     SELECTION COLORS
+     Colors for selected/highlighted states
+     ============================================================================ */
+
+  --bg-selection-light: var(--c-color-accent-fill-quiet);
+  --bg-selection-dark: var(--c-color-accent-fill-loud);
+  --light-sel-color: var(--c-color-accent-fill-quiet);
+  --dark-sel-color: var(--c-color-accent-fill-loud);
+  --selected-bg-color: var(--c-color-accent-fill-quiet);
+  --selected-item-color: var(--c-color-accent-fill-loud);
+  --highlight-color: var(--c-color-accent-fill-quiet);
+
+  /* ============================================================================
+     BORDERS
+     Border colors and hairlines
+     ============================================================================ */
+
+  --hairline-color: var(--c-color-neutral-border-quiet);
+  --border-hairline: var(--c-color-neutral-border-quiet);
+  --medium-hairline-color: var(--c-color-neutral-border-normal);
+  --border-hairline-medium: var(--c-color-neutral-border-normal);
+  --dark-hairline-color: var(--c-color-neutral-border-loud);
+  --border-hairline-dark: var(--c-color-neutral-border-loud);
+  --header-border: var(--c-color-neutral-border-quiet);
+  --hr-border: var(--c-color-neutral-border-quiet);
+  --pane-border: var(--c-pane-border-color);
+  --secondary-pane-border: var(--c-color-neutral-border-quiet);
+
+  /* ============================================================================
+     FOCUS STATES
+     Focus outlines and rings for accessibility
+     ============================================================================ */
+
+  --focus-outline-light: var(--c-color-accent-border-quiet);
+  --focus-outline-medium: var(--c-color-accent-border-normal);
+  --focus-outline-dark: var(--c-color-accent-border-loud);
+  --light-focus-color: var(--c-color-accent-border-quiet);
+  --medium-focus-color: var(--c-color-accent-border-normal);
+  --dark-focus-color: var(--c-color-accent-border-loud);
+
+  --focus-ring: var(--CHANGE);
+  --focus-ring-alpha: var(--CHANGE);
+  --focus-ring-color: var(--c-color-accent-border-normal);
+  --focus-ring-light: 0 0 0 3px var(--c-color-accent-fill-quiet);
+  --focus-ring-medium: 0 0 0 3px var(--c-color-accent-fill-normal);
+  --focus-ring-dark: 0 0 0 3px var(--c-color-accent-fill-loud);
+  --light-focus-ring: var(--focus-ring-light);
+  --medium-focus-ring: var(--focus-ring-medium);
+  --dark-focus-ring: var(--focus-ring-dark);
+  --focus-ring-inner: var(--CHANGE);
+  --focus-ring-inner-light: var(--CHANGE);
+  --focus-ring-outset: var(--CHANGE);
+  --light-focus-hsl: 212deg, 96%, 78%;
+  --dark-focus-hsl: 203deg, 84%, 38%;
+  --inner-focus-ring: var(--focus-ring-inner);
+
+  /* ============================================================================
+     SPACING
+     Spacing scale for margins, padding, gaps
+     ============================================================================ */
+
+  --spacing: var(--c-spacing);
+  --2xs: var(--c-spacing-xs);
+  --xs: var(--c-spacing-sm);
+  --s: var(--c-spacing-md);
+  --m: var(--c-spacing-lg);
+  --l: var(--c-spacing-xl);
+  --xl: var(--c-spacing-2xl);
+  --padding: var(--c-spacing-lg);
+  --neg-padding: calc(var(--padding) * -1);
+  --content-padding: var(--c-spacing-lg);
+  --row-gap: var(--c-spacing-md);
+  --hr-margin: var(--c-spacing-lg);
+
+  /* ============================================================================
+     BORDER RADIUS
+     Corner rounding values
+     ============================================================================ */
+
+  --radius-sm: var(--c-radius-sm);
+  --radius-md: var(--c-radius-md);
+  --radius-lg: var(--c-radius-lg);
+  --border-radius: var(--c-radius-md);
+  --small-border-radius: var(--c-radius-sm);
+  --medium-border-radius: var(--c-radius-md);
+  --large-border-radius: var(--c-radius-lg);
+  --menu-border-radius: var(--c-radius-md);
+  --pane-border-radius: var(--c-pane-radius);
+  --secondary-pane-border-radius: var(--c-radius-md);
+
+  /* ============================================================================
+     TYPOGRAPHY
+     Font sizes, weights, and line heights
+     ============================================================================ */
+
+  --font-size: var(--c-text-base);
+  --font-weight-regular: 400;
+  --font-weight-bold: 700;
+  --lh: var(--c-leading-normal);
+  --size-line-height: var(--c-leading-normal);
+
+  /* ============================================================================
+     SIZING
+     Common size values for UI elements
+     ============================================================================ */
+
+  --touch-target-size: var(--c-size-control-sm);
+  --size-touch-target: var(--c-size-control-sm);
+  --icon-size: var(--c-size-icon-md);
+  --size-icon: var(--c-size-icon-md);
+  --checkbox-size: var(--c-size-control-xs);
+  --radio-size: var(--c-size-control-xs);
+  --thumb-size: var(--CHANGE);
+  --size: var(--CHANGE);
+  --width: var(--CHANGE);
+  --max-lines: var(--CHANGE);
+
+  /* ============================================================================
+     LAYOUT
+     Layout-specific dimensions
+     ============================================================================ */
+
+  --global-sidebar-width: 240px;
+  --header-height: var(--c-size-control-lg);
+  --header-padding: var(--c-spacing-md);
+  --heading-width: var(--CHANGE);
+  --details-width: 350px;
+  --page-title-columns: var(--CHANGE);
+  --size-main-content: var(--CHANGE);
+  --separator-width: 1px;
+
+  /* ============================================================================
+     SHADOWS
+     Box shadow values
+     ============================================================================ */
+
+  --modal-shadow: var(--c-modal-shadow);
+  --secondary-pane-shadow: var(--c-shadow-sm);
+  --slideout-footer-shadow: var(--c-shadow-md);
+
+  /* ============================================================================
+     BUTTONS
+     Button appearance variables
+     ============================================================================ */
+
+  /* Default buttons */
+  --button-bg: var(--c-color-fill-normal, var(--c-color-neutral-fill-normal));
+  --button-bg--hover: color-mix(
+    in oklab,
+    var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)),
+    var(--c-color-mix-hover)
+  );
+  --button-bg--active: color-mix(
+    in oklab,
+    var(--c-color-fill-normal, var(--c-color-neutral-fill-normal)),
+    var(--c-color-mix-active)
+  );
+  --button-border: var(--c-button-default-border);
+  --button-border--hover: var(--c-button-default-border-hover);
+  --button-border--active: var(--CHANGE);
+  --button-border-radius: var(--c-radius-md);
+  --button-padding: var(--c-spacing-md);
+
+  /* Primary buttons */
+  --primary-button-bg: var(--c-button-primary-fill);
+  --primary-button-bg--hover: var(--c-button-primary-fill-hover);
+  --primary-button-bg--active: var(--CHANGE);
+  --primary-button-border: var(--c-button-primary-border);
+  --primary-button-border--hover: var(--c-button-primary-border-hover);
+  --primary-button-border--active: var(--CHANGE);
+  --primary-button-text-color: var(--c-button-primary-text);
+
+  /* Secondary buttons */
+  --secondary-button-bg: var(--c-button-default-fill);
+  --secondary-button-bg--hover: var(--c-button-default-fill-hover);
+  --secondary-button-bg--active: var(--CHANGE);
+  --secondary-button-border: var(--c-button-default-border);
+  --secondary-button-border--hover: var(--c-button-default-border-hover);
+  --secondary-button-border--active: var(--CHANGE);
+  --secondary-button-text-color: var(--c-button-default-text);
+
+  /* ============================================================================
+     FORM INPUTS
+     Input field appearance
+     ============================================================================ */
+
+  --input-bg: var(--c-input-fill);
+  --input-color: var(--c-input-text);
+  --input-border: 1px solid var(--c-input-border-color);
+  --input-border-color: var(--c-input-border-color);
+  --input-border-radius: var(--c-input-radius);
+  --input-height: var(--c-form-control-height);
+
+  /* ============================================================================
+     UI CONTROLS
+     Generic interactive element styles
+     ============================================================================ */
+
+  --ui-control-fg: var(--c-text-default);
+  --ui-control-fg-hover: var(--c-text-default);
+  --ui-control-fg-active: color-mix(
+    in oklab,
+    var(--c-color-fill-loud, var(--c-color-neutral-fill-quiet)),
+    var(--c-color-mix-active)
+  );
+  --ui-control-color: var(--ui-control-fg);
+  --ui-control-hover-color: var(--ui-control-fg-hover);
+  --ui-control-active-color: var(--ui-control-fg-active);
+
+  --ui-control-bg: var(--c-color-neutral-fill-quiet);
+  --ui-control-bg-hover: var(--c-color-neutral-fill-normal);
+  --ui-control-bg-active: var(--c-color-neutral-fill-loud);
+  --ui-control-bg-static: var(--c-color-neutral-fill-quiet);
+  --ui-control-bg-color: var(--ui-control-bg);
+  --ui-control-hover-bg-color: var(--ui-control-bg-hover);
+  --ui-control-active-bg-color: var(--ui-control-bg-active);
+  --ui-control-static-bg-color: var(--ui-control-bg-static);
+
+  --ui-control-radius: var(--c-form-control-radius);
+  --ui-control-border-radius: var(--ui-control-radius);
+  --ui-control-height: var(--c-form-control-height);
+  --ui-control-height-small: var(--c-size-control-sm);
+  --ui-control-height--small: var(--ui-control-height-small);
+
+  /* ============================================================================
+     PANES
+     Content panel styles
+     ============================================================================ */
+
+  --pane-padding: var(--c-pane-padding);
+  --pane-x-padding-default: var(--c-pane-padding);
+  --pane-y-padding-default: var(--c-pane-padding);
+  --modal-padding: var(--c-modal-padding);
+
+  /* ============================================================================
+     NAVIGATION
+     Sidebar and nav item styles
+     ============================================================================ */
+
+  /* Sidebar */
+  --sidebar-bgColor: var(--sidebar-bg);
+
+  /* Nav items */
+  --nav-item-badge-bg: var(--c-color-danger-fill-loud);
+  --nav-item-badge-fg: var(--c-color-danger-on-loud);
+  --nav-item-badge-bgColor: var(--nav-item-badge-bg);
+  --nav-item-badge-fgColor: var(--nav-item-badge-fg);
+
+  --nav-item-fg-active: var(--c-text-default);
+  --nav-item-bg-active: var(--c-color-neutral-fill-normal);
+  --nav-item-fgColor-active: var(--nav-item-fg-active);
+  --nav-item-bgColor-active: var(--nav-item-bg-active);
+
+  --nav-item-fg-hover: var(--c-text-default);
+  --nav-item-bg-hover: var(--c-color-neutral-fill-quiet);
+  --nav-item-fgColor-hover: var(--nav-item-fg-hover);
+  --nav-item-bgColor-hover: var(--nav-item-bg-hover);
+
+  --nav-item-gutter-width: var(--c-spacing-md);
+  --nav-item-indicator-size: 8px;
+  --nav-item-prefix-ratio: 1;
+  --nav-item-prefix-width: var(--c-size-icon-md);
+  --nav-item-trigger-size: var(--c-size-control-sm);
+  --source-item-toggle-size: var(--c-size-control-sm);
+
+  /* ============================================================================
+     SLIDEOUT
+     Slideout panel styles
+     ============================================================================ */
+
+  --slideout-footer-bg: var(--c-surface-overlay);
+  --slideout-footer-border: var(--c-color-neutral-border-quiet);
+
+  /* ============================================================================
+     INTERACTION STATES
+     Hover and interaction backgrounds
+     ============================================================================ */
+
+  --hover-bg-color: var(--c-color-neutral-fill-quiet);
+  --interaction-background-color: var(--c-color-neutral-fill-quiet);
+  --outline-color: var(--c-color-accent-border-normal);
+  --overlay-opacity: 0.5;
+
+  /* ============================================================================
+     STATUS LABELS
+     Status indicator badge styles
+     ============================================================================ */
+
+  --status-label-bg-color: var(--CHANGE);
+  --status-label-text-color: var(--CHANGE);
+
+  /* ============================================================================
+     DISCLOSURE / ACCORDION
+     Expandable content styles
+     ============================================================================ */
+
+  --disclosure-icon-transform: rotate(0deg);
+  --disclosure-icon-transform-active: rotate(90deg);
+
+  /* ============================================================================
+     MISCELLANEOUS
+     Other variables that don't fit elsewhere
+     ============================================================================ */
+
+  --arrow-angle: var(--CHANGE);
+  --arrow-c: var(--CHANGE);
+  --arrow-height: var(--CHANGE);
+  --arrow-width: var(--CHANGE);
+  --background-position-x: var(--CHANGE);
+  --background-position-y: var(--CHANGE);
+}

@@ -1,6 +1,5 @@
 @charset "UTF-8";
 @use 'sass:color';
-@use 'variables';
 @use '@craftcms/sass/mixins';
 
 @mixin striped-bg($size, $color: mixins.$grey100) {
