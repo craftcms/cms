@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where sites with missing `enabled` values were being treated as enabled. ([#18572](https://github.com/craftcms/cms/issues/18572))
+
 ## 5.9.17 - 2026-03-17
 
 - Added `craft\helpers\DateTimeHelper::testTimeToSeconds()`.
