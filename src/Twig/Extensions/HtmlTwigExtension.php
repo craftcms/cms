@@ -20,6 +20,7 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
+use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
 class HtmlTwigExtension extends AbstractExtension

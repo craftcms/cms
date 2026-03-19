@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Support\Facades\HtmlSanitizers as HtmlSanitizersFacade;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
+use Illuminate\Support\Collection;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
@@ -27,6 +28,23 @@ test('registered sanitizer names can be used', function () {
     $sanitized = $this->sanitizers->sanitize('<a href="https://craftcms.com" onclick="bad()">Craft</a><strong>bad</strong>', 'links-only');
 
     expect($sanitized)->toMatchSnapshot();
+});
+
+test('all returns registered sanitizers', function () {
+    $linksOnlySanitizer = new HtmlSanitizer((new HtmlSanitizerConfig)
+        ->allowElement('a')
+        ->allowAttribute('href', ['a'])
+    );
+
+    $this->sanitizers->register('links-only', $linksOnlySanitizer);
+
+    $sanitizers = $this->sanitizers->all();
+
+    expect($sanitizers)
+        ->toBeInstanceOf(Collection::class)
+        ->toHaveKeys(['default', 'links-only'])
+        ->and($sanitizers->get('default'))->toBeInstanceOf(HtmlSanitizerInterface::class)
+        ->and($sanitizers->get('links-only'))->toBe($linksOnlySanitizer);
 });
 
 test('default config can be customized with a callback', function () {

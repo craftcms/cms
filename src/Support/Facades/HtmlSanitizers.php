@@ -13,6 +13,7 @@ use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
  * @method static void register(string $name, Closure|HtmlSanitizerInterface $definition)
  * @method static void defaults(Closure $callback)
  * @method static bool has(string $name)
+ * @method static \Illuminate\Support\Collection<string, HtmlSanitizerInterface> all()
  * @method static string sanitize(string $html, HtmlSanitizerInterface|string|null $sanitizer = null)
  * @method static HtmlSanitizerInterface sanitizer(string|null $name = null)
  * @method static \Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig defaultConfig()

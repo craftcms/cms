@@ -56,6 +56,15 @@ class HtmlPurifierTest extends TestCase
         self::assertNotEmpty(Deprecator::getRequestLogs());
     }
 
+    public function testConvertToUtf8(): void
+    {
+        $config = HTMLPurifier_Config::createDefault();
+        $config->set('Core.Encoding', 'iso-8859-1');
+        $string = iconv('UTF-8', 'ISO-8859-1//IGNORE', 'Café');
+
+        self::assertSame('Café', HtmlPurifier::convertToUtf8($string, $config));
+    }
+
     /**
      * @return array
      */

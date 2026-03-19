@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Support\HtmlSanitizer;
 use Closure;
 use CraftCms\Cms\Support\HtmlSanitizer\AttributeSanitizers\VideoEmbedUrlSanitizer;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
@@ -44,6 +45,14 @@ class HtmlSanitizers
     public function has(string $name): bool
     {
         return isset($this->definitions[$name]);
+    }
+
+    /** @return Collection<string, HtmlSanitizerInterface> */
+    public function all(): Collection
+    {
+        return collect($this->definitions)
+            ->keys()
+            ->mapWithKeys(fn (string $name) => [$name => $this->sanitizer($name)]);
     }
 
     public function sanitize(string $html, HtmlSanitizerInterface|string|null $sanitizer = null): string
