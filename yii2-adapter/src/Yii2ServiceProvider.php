@@ -19,6 +19,7 @@ use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
+use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use Illuminate\Support\Facades\Artisan;
@@ -120,6 +121,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         new I18NCompatibility()->boot();
         new TestToEmailAddressCompatibility()->boot();
+        app(LegacyHtmlPurifierConfigRegistrar::class)->boot();
 
         /**
          * Load legacy Craft

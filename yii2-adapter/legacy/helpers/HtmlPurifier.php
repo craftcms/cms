@@ -9,6 +9,9 @@ namespace craft\helpers;
 
 use craft\htmlpurifier\RelAttrLinkTypeDef;
 use craft\htmlpurifier\VideoEmbedUrlDef;
+use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
+use CraftCms\Yii2Adapter\HtmlPurifier\HtmlPurifierSanitizer;
 use HTMLPurifier_Config;
 use HTMLPurifier_Encoder;
 use HTMLPurifier_HTMLDefinition;
@@ -21,6 +24,25 @@ use HTMLPurifier_HTMLDefinition;
  */
 class HtmlPurifier extends \yii\helpers\HtmlPurifier
 {
+    public static function process($content, $config = null)
+    {
+        Deprecator::log('craft\\helpers\\HtmlPurifier::process', 'Calling `craft\\helpers\\HtmlPurifier::process()` is deprecated. Register an HTML sanitizer on `CraftCms\\Cms\\Support\\HtmlSanitizer\\HtmlSanitizers` instead.');
+
+        if ($config instanceof \Closure) {
+            return parent::process($content, $config);
+        }
+
+        if ($config === null) {
+            return app(HtmlSanitizers::class)->sanitize($content);
+        }
+
+        if (!is_array($config)) {
+            return parent::process($content, $config);
+        }
+
+        return app(HtmlSanitizers::class)->sanitize($content, new HtmlPurifierSanitizer($config));
+    }
+
     /**
      * @param string $string
      * @return string
