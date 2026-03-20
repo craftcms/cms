@@ -14,7 +14,7 @@ use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use yii\base\Exception;
 
 /**
