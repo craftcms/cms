@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'Velg hvilke tabellkolonner som skal være synlige som standard.',
     'Choose which table columns should be visible for this source by default.' => 'Velg hvilke tabellkolonner som skal være synlige for denne kilden som standard.',
     'Choose which user groups should have access to this source.' => 'Velg hvilken brukergruppe som skal ha tilgang til denne kilden.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'Velg hvilke brukere som må bruke totrinnsverifiesring når de får tilgang til kontrollpanelet.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'Velg',
     'City' => 'By',
     'City/Town' => 'By/Sted',
