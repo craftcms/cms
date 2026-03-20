@@ -51,6 +51,15 @@ describe('URL detection', function () {
         [false, 'C:\foo\bar.txt'],
     ]);
 
+    test('detects protocol-relative URLs', function (bool $expected, string $url) {
+        expect(URL::isProtocolRelativeUrl($url))->toBe($expected);
+    })->with([
+        'protocol-relative' => [true, '//cdn.craftcms.com/assets/app.css'],
+        'root-relative' => [false, '/assets/app.css'],
+        'absolute' => [false, 'https://cdn.craftcms.com/assets/app.css'],
+        'relative' => [false, 'assets/app.css'],
+    ]);
+
     test('detects full URLs', function (bool $expected, string $url) {
         expect(URL::isFullUrl($url))->toBe($expected);
     })->with([
@@ -151,10 +160,35 @@ describe('query and encoding helpers', function () {
             'https://www.craftcms.com/',
             '?param1=some/path',
         ],
+        'query-string-with-fragment' => [
+            'https://www.craftcms.com/?param1=value#anchor',
+            'https://www.craftcms.com/',
+            '?param1=value#anchor',
+        ],
         'pre-queried-url' => [
             'https://www.craftcms.com/?param3=name3&param1=name&param2=name2',
             'https://www.craftcms.com/?param3=name3',
             '?param1=name&param2=name2',
+        ],
+    ]);
+
+    test('removes query params from a URL', function (string $expected, string $url, string $param) {
+        expect(URL::removeParam($url, $param))->toBe($expected);
+    })->with([
+        'removes-middle-param' => [
+            'https://craftcms.com/?bar=2#anchor',
+            'https://craftcms.com/?foo=1&bar=2#anchor',
+            'foo',
+        ],
+        'removes-last-param' => [
+            'https://craftcms.com/#anchor',
+            'https://craftcms.com/?foo=1#anchor',
+            'foo',
+        ],
+        'keeps-url-when-param-is-missing' => [
+            'https://craftcms.com/?foo=1#anchor',
+            'https://craftcms.com/?foo=1#anchor',
+            'bar',
         ],
     ]);
 
@@ -176,6 +210,7 @@ describe('query and encoding helpers', function () {
         'no-scheme' => ['imaurl', 'imaurl', ''],
         'empty-string' => ['', '', ''],
         'protocol-relative' => ['https://cdn.craftcms.com', '//cdn.craftcms.com', 'https'],
+        'root-relative' => ['https://localhost/news', '/news', 'https'],
         'php-replace' => ['php://www.craftcms.com/', 'https://www.craftcms.com/', 'php'],
         'ftp-replace' => ['ftp://craftcms.com/', 'https://craftcms.com/', 'ftp'],
         'custom-protocol' => ['walawalabingbang://craftcms.com/', 'http://craftcms.com/', 'walawalabingbang'],
@@ -226,6 +261,7 @@ describe('path helpers', function () {
         ['/', 'https://test.com'],
         ['/', 'https://test.com/'],
         ['/foo/bar', 'https://test.com/foo/bar'],
+        ['/foo/bar', 'https://test.com/foo/bar?query=value#anchor'],
         ['/', '//test.com'],
         ['/', '//test.com/'],
         ['/foo/bar', '//test.com/foo/bar'],
@@ -237,6 +273,7 @@ describe('path helpers', function () {
         ['https://google.com', 'https://google.com'],
         ['http://facebook.com', 'http://facebook.com'],
         ['ftp://www.craftcms.com', 'ftp://www.craftcms.com/why/craft/is/cool/'],
+        ['//cdn.craftcms.com', '//cdn.craftcms.com/assets/app.js'],
         ['walawalabingbang://gt.com', 'walawalabingbang://gt.com/'],
         ['sftp://volkswagen', 'sftp://volkswagen////222////222'],
     ]);
@@ -247,7 +284,58 @@ describe('path helpers', function () {
 
         Cms::config()->useSslOnTokenizedUrls = false;
         expect(URL::getSchemeForTokenizedUrl())->toBe('http');
+
+        Cms::config()->useSslOnTokenizedUrls = 'auto';
+        Cms::config()->baseCpUrl = 'https://cms.example.test';
+        expect(URL::getSchemeForTokenizedUrl(cp: true))->toBe('https');
+
+        Cms::config()->baseCpUrl = 'http://cms.example.test';
+        expect(URL::getSchemeForTokenizedUrl(cp: true))->toBe('http');
     });
+});
+
+describe('base and control panel helpers', function () {
+    it('returns base URLs and hosts', function () {
+        swapUrlRequest('https://localhost/news');
+
+        expect(URL::baseUrl())->toBe('https://localhost/')
+            ->and(URL::baseSiteUrl())->toBe('https://localhost/')
+            ->and(URL::host())->toBe('https://localhost')
+            ->and(URL::siteHost())->toBe('https://localhost');
+
+        Cms::config()->baseCpUrl = 'https://cms.example.test';
+        swapUrlRequest('https://localhost/admin/dashboard');
+
+        expect(URL::baseUrl())->toBe('https://cms.example.test/')
+            ->and(URL::baseCpUrl())->toBe('https://cms.example.test/')
+            ->and(URL::host())->toBe('https://cms.example.test')
+            ->and(URL::cpHost())->toBe('https://cms.example.test');
+    });
+
+    test('returns control panel referral URLs', function (?string $expected, ?string $referrer) {
+        swapUrlRequest('https://localhost/admin/dashboard');
+
+        if ($referrer !== null) {
+            request()->headers->set('referer', $referrer);
+        }
+
+        expect(URL::cpReferralUrl())->toBe($expected);
+    })->with([
+        'missing-referrer' => [null, null],
+        'self-referrer' => [null, 'https://localhost/admin/dashboard'],
+        'external-referrer' => [null, 'https://craftcms.com/admin/dashboard'],
+        'cp-referrer' => ['https://localhost/admin/entries', 'https://localhost/admin/entries'],
+    ]);
+
+    test('prepends the control panel trigger', function (string $expected, ?string $cpTrigger, string $path) {
+        Cms::config()->cpTrigger = $cpTrigger;
+
+        expect(URL::prependCpTrigger($path))->toBe($expected);
+    })->with([
+        'default-trigger' => ['admin/settings', 'admin', 'settings'],
+        'empty-path' => ['admin', 'admin', ''],
+        'missing-trigger' => ['settings', null, 'settings'],
+    ]);
 });
 
 describe('generated URLs', function () {
@@ -289,10 +377,27 @@ describe('generated URLs', function () {
             ->toBe('https://localhost/actions/endpoint');
     });
 
+    it('creates control panel action URLs', function () {
+        swapUrlRequest('https://localhost/admin/dashboard');
+
+        expect(URL::actionUrl('endpoint', null, null, false))
+            ->toBe(buildExpectedUrl('{cpUrl}/actions/endpoint', 'https'));
+    });
+
     it('throws for invalid site IDs', function () {
         expect(fn () => URL::siteUrl('', null, null, 12892))
             ->toThrow(Exception::class, 'Invalid site ID: 12892');
     });
+});
+
+it('appends active site tokens to site URLs', function () {
+    $siteToken = 'site-token';
+    $siteTokenParam = Cms::config()->siteToken;
+
+    swapUrlRequest('https://localhost/news', parameters: [$siteTokenParam => $siteToken]);
+
+    expect(URL::url('endpoint'))->toBe("https://localhost/endpoint?$siteTokenParam=$siteToken")
+        ->and(URL::siteUrl('endpoint'))->toBe("https://localhost/endpoint?$siteTokenParam=$siteToken");
 });
 
 it('appends active route tokens to site URLs', function () {
