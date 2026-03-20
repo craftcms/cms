@@ -10,9 +10,9 @@ namespace crafttests\unit\elements;
 use craft\base\Element;
 use craft\base\Event;
 use craft\events\DefineUrlEvent;
-use craft\helpers\UrlHelper;
 use craft\test\TestCase;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Support\URL;
 use UnitTester;
 
 /**
@@ -66,13 +66,13 @@ class EntryElementTest extends TestCase
                 null,
             ],
             [
-                fn(int $siteId) => UrlHelper::siteUrl('foo/bar', siteId: $siteId),
+                fn(int $siteId) => URL::siteUrl('foo/bar', siteId: $siteId),
                 'foo/bar',
                 null,
                 null,
             ],
             [
-                fn(int $siteId) => UrlHelper::siteUrl('foo/bar', siteId: $siteId),
+                fn(int $siteId) => URL::siteUrl('foo/bar', siteId: $siteId),
                 'foo/bar',
                 function(DefineUrlEvent $event) {
                     $event->url = null;
@@ -110,11 +110,11 @@ class EntryElementTest extends TestCase
                 },
             ],
             [
-                fn(int $siteId) => UrlHelper::siteUrl('foo/bar', ['baz' => 'qux'], siteId: $siteId),
+                fn(int $siteId) => URL::siteUrl('foo/bar', ['baz' => 'qux'], siteId: $siteId),
                 'foo/bar',
                 null,
                 function(DefineUrlEvent $event) {
-                    $event->url = UrlHelper::urlWithParams($event->url, ['baz' => 'qux']);
+                    $event->url = URL::urlWithParams($event->url, ['baz' => 'qux']);
                 },
             ],
         ];

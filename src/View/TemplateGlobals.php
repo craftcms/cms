@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
-use craft\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Application;
@@ -74,9 +74,9 @@ readonly class TemplateGlobals
             'devMode' => $this->app->hasDebugModeEnabled(),
             'isInstalled' => $isInstalled,
             'isUpdateInfoCached' => $this->updates->isUpdateInfoCached(),
-            'loginUrl' => UrlHelper::siteUrl($this->generalConfig->getLoginPath()),
-            'logoutUrl' => UrlHelper::siteUrl($this->generalConfig->getLogoutPath()),
-            'setPasswordUrl' => $setPasswordRequestPath !== null ? UrlHelper::siteUrl($setPasswordRequestPath) : null,
+            'loginUrl' => URL::siteUrl($this->generalConfig->getLoginPath()),
+            'logoutUrl' => URL::siteUrl($this->generalConfig->getLogoutPath()),
+            'setPasswordUrl' => $setPasswordRequestPath !== null ? URL::siteUrl($setPasswordRequestPath) : null,
             'now' => now(),
             'today' => today(),
             'tomorrow' => today()->addDay(),

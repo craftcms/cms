@@ -13,7 +13,6 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\events\SsoEvent;
 use craft\events\UserGroupsAssignEvent;
-use craft\helpers\UrlHelper;
 use craft\services\Sso;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -111,7 +111,7 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     protected function getRequestUrl(): ?string
     {
-        return UrlHelper::actionUrl('sso/request', ['provider' => $this->handle], null, false);
+        return URL::actionUrl('sso/request', ['provider' => $this->handle], null, false);
     }
 
     /**
@@ -121,7 +121,7 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     protected function getResponseUrl(): ?string
     {
-        return UrlHelper::actionUrl('sso/response', ['provider' => $this->handle], null, false);
+        return URL::actionUrl('sso/response', ['provider' => $this->handle], null, false);
     }
 
     /**

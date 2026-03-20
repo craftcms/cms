@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Auth\OAuth;
 
 use Composer\InstalledVersions;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Models\SsoIdentity;
 use CraftCms\Cms\Auth\OAuth\Actions\ButtonRenderer;
 use CraftCms\Cms\Auth\OAuth\Actions\IdentityResolver;
@@ -26,6 +25,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserGroups;
 use Illuminate\Container\Attributes\Scoped;
@@ -156,12 +156,12 @@ class OAuth
     {
         $path = sprintf('oauth/%s/redirect', $provider->handle);
 
-        return $isCpRequest ? UrlHelper::cpUrl($path) : UrlHelper::siteUrl($path);
+        return $isCpRequest ? URL::cpUrl($path) : URL::siteUrl($path);
     }
 
     public function callbackPath(ProviderDefinition $provider, bool $isCpRequest = false): string
     {
-        return UrlHelper::siteUrl(
+        return URL::siteUrl(
             sprintf('oauth/%s/callback', $provider->handle),
             $isCpRequest ? ['context' => self::CP_CONTEXT_VALUE] : [],
         );

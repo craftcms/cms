@@ -10,8 +10,8 @@ namespace craft\web;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\URL;
 use Throwable;
 use yii\base\Application as BaseApplication;
 use yii\web\Cookie;
@@ -234,7 +234,7 @@ class Response extends \CraftCms\Yii2Adapter\Web\Response
     public function redirect($url, $statusCode = 302, $checkAjax = true): self
     {
         if (is_string($url)) {
-            $url = UrlHelper::encodeUrl(UrlHelper::url($url));
+            $url = URL::encodeUrl(URL::url($url));
         }
 
         if ($this->format === TemplateResponseFormatter::FORMAT) {

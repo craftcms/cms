@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -203,7 +203,7 @@ readonly class ActionController
             ]);
         }
 
-        $uri = Str::start(UrlHelper::prependCpTrigger($sourcePath[0]['uri']), '/');
+        $uri = Str::start(URL::prependCpTrigger($sourcePath[0]['uri']), '/');
 
         return Uri::of($uri)
             ->withQuery([

@@ -9,17 +9,17 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\helpers\UrlHelper;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\RouteToken\RouteTokens;
+use CraftCms\Cms\Support\URL;
+use Exception;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Request;
 use Mockery;
 use UnitTester;
-use yii\base\Exception;
 
 /**
  * Unit tests for the Url Helper class.
@@ -59,7 +59,7 @@ class UrlHelperTest extends TestCase
      */
     public function testBuildQuery(string $expected, array $params): void
     {
-        self::assertSame($expected, UrlHelper::buildQuery($params));
+        self::assertSame($expected, URL::buildQuery($params));
     }
 
     /**
@@ -69,7 +69,7 @@ class UrlHelperTest extends TestCase
      */
     public function testIsRootRelativeUrl(bool $expected, string $url): void
     {
-        self::assertSame($expected, UrlHelper::isRootRelativeUrl($url));
+        self::assertSame($expected, URL::isRootRelativeUrl($url));
     }
 
     /**
@@ -79,7 +79,7 @@ class UrlHelperTest extends TestCase
      */
     public function testIsAbsoluteUrl(bool $expected, string $url): void
     {
-        self::assertSame($expected, UrlHelper::isAbsoluteUrl($url));
+        self::assertSame($expected, URL::isAbsoluteUrl($url));
     }
 
     /**
@@ -89,7 +89,7 @@ class UrlHelperTest extends TestCase
      */
     public function testIsFullUrl(bool $expected, string $url): void
     {
-        self::assertSame($expected, UrlHelper::isFullUrl($url));
+        self::assertSame($expected, URL::isFullUrl($url));
     }
 
     /**
@@ -117,9 +117,9 @@ class UrlHelperTest extends TestCase
 
         $expected = $this->_prepExpectedUrl($expected, $scheme);
 
-        self::assertSame($expected, UrlHelper::cpUrl($path, $params, $scheme));
+        self::assertSame($expected, URL::cpUrl($path, $params, $scheme));
 
-        self::assertSame($expected, UrlHelper::url($path, $params, $scheme));
+        self::assertSame($expected, URL::url($path, $params, $scheme));
     }
 
     /**
@@ -130,7 +130,7 @@ class UrlHelperTest extends TestCase
      */
     public function testUrlWithScheme(string $expected, string $url, string $scheme): void
     {
-        self::assertSame($expected, UrlHelper::urlWithScheme($url, $scheme));
+        self::assertSame($expected, URL::urlWithScheme($url, $scheme));
     }
 
     /**
@@ -142,7 +142,7 @@ class UrlHelperTest extends TestCase
     public function testUrlWithToken(string $expected, string $url, string $token): void
     {
         Cms::config()->useSslOnTokenizedUrls = true;
-        self::assertSame($expected, UrlHelper::urlWithToken($url, $token));
+        self::assertSame($expected, URL::urlWithToken($url, $token));
     }
 
     /**
@@ -153,7 +153,7 @@ class UrlHelperTest extends TestCase
      */
     public function testUrlWithParams(string $expected, string $url, array|string $params): void
     {
-        self::assertSame($expected, UrlHelper::urlWithParams($url, $params));
+        self::assertSame($expected, URL::urlWithParams($url, $params));
     }
 
     /**
@@ -163,7 +163,7 @@ class UrlHelperTest extends TestCase
      */
     public function testStripQueryString(string $expected, string $url): void
     {
-        self::assertSame($expected, UrlHelper::stripQueryString($url));
+        self::assertSame($expected, URL::stripQueryString($url));
     }
 
     /**
@@ -171,7 +171,7 @@ class UrlHelperTest extends TestCase
      */
     public function testEncodeParams(string $expected, string $url): void
     {
-        self::assertSame($expected, UrlHelper::encodeParams($url));
+        self::assertSame($expected, URL::encodeParams($url));
     }
 
     /**
@@ -179,7 +179,7 @@ class UrlHelperTest extends TestCase
      */
     public function testEncodeUrl(string $expected, string $url): void
     {
-        self::assertSame($expected, UrlHelper::encodeUrl($url));
+        self::assertSame($expected, URL::encodeUrl($url));
     }
 
     /**
@@ -191,7 +191,7 @@ class UrlHelperTest extends TestCase
      */
     public function testRootRelativeUrl(string $expected, string $url): void
     {
-        self::assertSame($expected, UrlHelper::rootRelativeUrl($url));
+        self::assertSame($expected, URL::rootRelativeUrl($url));
     }
 
     /**
@@ -212,7 +212,7 @@ class UrlHelperTest extends TestCase
 
         $scheme ??= 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
-        self::assertSame($expected, UrlHelper::url($path, $params, $scheme, $showScriptName));
+        self::assertSame($expected, URL::url($path, $params, $scheme, $showScriptName));
     }
 
     /**
@@ -222,7 +222,7 @@ class UrlHelperTest extends TestCase
      */
     public function testHostInfoRetrieval(string $expected, string $url): void
     {
-        self::assertSame($expected, UrlHelper::hostInfo($url));
+        self::assertSame($expected, URL::hostInfo($url));
     }
 
     /**
@@ -234,10 +234,10 @@ class UrlHelperTest extends TestCase
         $config = Cms::config();
 
         $config->useSslOnTokenizedUrls = true;
-        self::assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
+        self::assertSame('https', URL::getSchemeForTokenizedUrl());
 
         $config->useSslOnTokenizedUrls = false;
-        self::assertSame('http', UrlHelper::getSchemeForTokenizedUrl());
+        self::assertSame('http', URL::getSchemeForTokenizedUrl());
     }
 
     /**
@@ -252,7 +252,7 @@ class UrlHelperTest extends TestCase
     {
         $scheme ??= 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
-        self::assertSame($expected, UrlHelper::siteUrl($path, $params, $scheme, $siteId));
+        self::assertSame($expected, URL::siteUrl($path, $params, $scheme, $siteId));
     }
 
     /**
@@ -274,8 +274,8 @@ class UrlHelperTest extends TestCase
         ]));
 
         $expected = TestSetup::SITE_URL . 'endpoint?token=t0k3n';
-        self::assertSame($expected, UrlHelper::url('endpoint'));
-        self::assertSame($expected, UrlHelper::siteUrl('endpoint'));
+        self::assertSame($expected, URL::url('endpoint'));
+        self::assertSame($expected, URL::siteUrl('endpoint'));
     }
 
     /**
@@ -284,7 +284,7 @@ class UrlHelperTest extends TestCase
     public function testActionUrl(): void
     {
         $expected = TestSetup::SITE_URL . 'actions/endpoint';
-        self::assertSame($expected, UrlHelper::actionUrl('endpoint', null, null, false));
+        self::assertSame($expected, URL::actionUrl('endpoint', null, null, false));
     }
 
     /**
@@ -293,7 +293,7 @@ class UrlHelperTest extends TestCase
     public function testSiteUrlExceptions(): void
     {
         $this->tester->expectThrowable(Exception::class, function() {
-            UrlHelper::siteUrl('', null, null, 12892);
+            URL::siteUrl('', null, null, 12892);
         });
     }
 

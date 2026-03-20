@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Models\Authenticator;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -10,6 +9,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Tests\TestClasses\OAuth\CustomIdentityResolver;
 use CraftCms\Cms\Tests\TestClasses\OAuth\CustomUserGroupResolver;
 use CraftCms\Cms\Tests\TestClasses\OAuth\CustomUserPopulator;
@@ -66,7 +66,7 @@ function oauthControllerLoginUrl(bool $isCpRequest): string
 {
     return $isCpRequest
         ? cp_url('login')
-        : UrlHelper::siteUrl(app(GeneralConfig::class)->getLoginPath());
+        : URL::siteUrl(app(GeneralConfig::class)->getLoginPath());
 }
 
 function completeOAuthControllerCallback(

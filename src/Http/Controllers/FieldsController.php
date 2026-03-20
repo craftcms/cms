@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\UrlHelper;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
@@ -37,6 +36,7 @@ use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -186,7 +186,7 @@ class FieldsController
         }
 
         if ($request->input('addAnother')) {
-            $redirect = UrlHelper::cpUrl('settings/fields/new', [
+            $redirect = URL::cpUrl('settings/fields/new', [
                 'type' => $field::class,
             ]);
         } else {
@@ -486,7 +486,7 @@ class FieldsController
         if (! $this->readOnly) {
             $response
                 ->action('fields/save-field')
-                ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/fields')
+                ->redirectUrl(URL::cpReferralUrl() ?? 'settings/fields')
                 ->addAltAction(t('Save and continue editing'), [
                     'redirect' => 'settings/fields/edit/{id}',
                     'shortcut' => true,

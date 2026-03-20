@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Asset;
 
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -27,6 +26,7 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use DateTime;
 use Exception;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
@@ -134,7 +134,7 @@ class AssetsHelper
         $revParams = static::revParams($asset, $dateUpdated);
 
         if (! $fsOnly) {
-            return UrlHelper::urlWithParams($url, $revParams);
+            return URL::urlWithParams($url, $revParams);
         }
 
         /** @var Collection<int, string> $baseUrls */
@@ -157,7 +157,7 @@ class AssetsHelper
             return $url;
         }
 
-        return UrlHelper::urlWithParams($url, $revParams);
+        return URL::urlWithParams($url, $revParams);
     }
 
     private static function diskBaseUrl(FilesystemAdapter $disk): ?string

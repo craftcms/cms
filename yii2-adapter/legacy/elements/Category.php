@@ -17,7 +17,6 @@ use craft\elements\actions\Restore;
 use craft\elements\conditions\categories\CategoryCondition;
 use craft\elements\db\CategoryQuery;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
-use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
@@ -32,6 +31,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Auth;
@@ -488,11 +488,11 @@ class Category extends Element
         $crumbs = [
             [
                 'label' => t('Categories'),
-                'url' => UrlHelper::url('categories'),
+                'url' => URL::url('categories'),
             ],
             [
                 'label' => t($group->name, category: 'site'),
-                'url' => UrlHelper::url('categories/' . $group->handle),
+                'url' => URL::url('categories/' . $group->handle),
             ],
         ];
 
@@ -642,7 +642,7 @@ class Category extends Element
             $path .= sprintf('-%s', str_replace('/', '-', $this->slug));
         }
 
-        return UrlHelper::cpUrl($path);
+        return URL::cpUrl($path);
     }
 
     /**
@@ -650,7 +650,7 @@ class Category extends Element
      */
     public function getPostEditUrl(): ?string
     {
-        return UrlHelper::cpUrl('categories');
+        return URL::cpUrl('categories');
     }
 
     /**

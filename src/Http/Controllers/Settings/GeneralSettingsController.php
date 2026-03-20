@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use craft\helpers\Assets;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Rebrand;
@@ -15,6 +13,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Validation\Rules\RequiresEditionRule;
 use CraftCms\Cms\Validation\Rules\TimezoneRule;
 use Illuminate\Contracts\View\View;
@@ -45,7 +44,7 @@ readonly class GeneralSettingsController
                 ...SelectOptions::getEnvOptions(),
             ],
             'crumbs' => [
-                ['label' => t('Settings'), 'url' => UrlHelper::cpUrl('settings')],
+                ['label' => t('Settings'), 'url' => URL::cpUrl('settings')],
                 ['label' => t('General Settings')],
             ],
             'siteIcon' => $this->rebrand->getImage('icon') ? Arr::only($this->rebrand->getImage('icon'), ['url', 'name']) : null,

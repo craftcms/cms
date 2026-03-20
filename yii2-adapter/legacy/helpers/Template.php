@@ -14,6 +14,7 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Twig;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Twig\TwigExceptionMapper;
 use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\Enums\Position;
@@ -368,7 +369,7 @@ class Template
     public static function css(string $css, array $options = [], ?string $key = null): void
     {
         // Is this a CSS file?
-        if (preg_match('/^[^\r\n]+\.css(\.gz)?$/i', $css) || UrlHelper::isAbsoluteUrl($css)) {
+        if (preg_match('/^[^\r\n]+\.css(\.gz)?$/i', $css) || URL::isAbsoluteUrl($css)) {
             HtmlStack::cssFile($css, $options, $key);
         } else {
             HtmlStack::css($css, $options, $key);
@@ -398,7 +399,7 @@ class Template
     public static function js(string $js, array $options = [], ?string $key = null): void
     {
         // Is this a JS file?
-        if (preg_match('/^[^\r\n]+\.js(\.gz)?$/i', $js) || UrlHelper::isAbsoluteUrl($js)) {
+        if (preg_match('/^[^\r\n]+\.js(\.gz)?$/i', $js) || URL::isAbsoluteUrl($js)) {
             HtmlStack::jsFile($js, $options, $key);
         } else {
             $position = Position::tryFrom($options['position']) ?? Position::BodyEnd;

@@ -9,7 +9,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\MissingComponentInterface;
 use craft\helpers\Template as TemplateHelper;
-use craft\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
@@ -36,6 +35,7 @@ use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Sequence;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Twig\Nodes\Expressions\Binaries\HasEveryBinary;
 use CraftCms\Cms\Twig\Nodes\Expressions\Binaries\HasSomeBinary;
 use CraftCms\Cms\Twig\NodeVisitors\EventTagAdder;
@@ -247,16 +247,16 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
     {
         return [
             new TwigFunction('app', $this->appFunction(...)),
-            new TwigFunction('actionUrl', UrlHelper::actionUrl(...)),
+            new TwigFunction('actionUrl', URL::actionUrl(...)),
             new TwigFunction('alias', Aliases::get(...)),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', $this->cloneFunction(...)),
             new TwigFunction('configure', Typecast::configure(...)),
-            new TwigFunction('cpUrl', UrlHelper::cpUrl(...)),
+            new TwigFunction('cpUrl', URL::cpUrl(...)),
             new TwigFunction('create', $this->createFunction(...)),
             new TwigFunction('dump', $this->dumpFunction(...), ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
-            new TwigFunction('encodeUrl', UrlHelper::encodeUrl(...)),
+            new TwigFunction('encodeUrl', URL::encodeUrl(...)),
             new TwigFunction('entryType', $this->entryTypeFunction(...)),
             new TwigFunction('expression', $this->expressionFunction(...)),
             new TwigFunction('fieldValueSql', $this->fieldValueSqlFunction(...)),
@@ -271,8 +271,8 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('renderObjectTemplate', $this->renderObjectTemplate(...)),
             new TwigFunction('seq', $this->seqFunction(...)),
             new TwigFunction('session', $this->sessionFunction(...)),
-            new TwigFunction('siteUrl', UrlHelper::siteUrl(...)),
-            new TwigFunction('url', UrlHelper::url(...)),
+            new TwigFunction('siteUrl', URL::siteUrl(...)),
+            new TwigFunction('url', URL::url(...)),
 
             new TwigFunction('addresses', fn (array $config = []) => new AddressQuery($config)),
             new TwigFunction('assets', fn (array $config = []) => new AssetQuery($config)),

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
@@ -205,7 +205,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
                         'options' => array_map(fn ($operator) => ['value' => $operator, 'label' => $this->operatorLabel($operator)], $operators),
                         'inputAttributes' => [
                             'hx' => [
-                                'post' => $this->reloadOnOperatorChange ? UrlHelper::actionUrl('conditions/render') : false,
+                                'post' => $this->reloadOnOperatorChange ? URL::actionUrl('conditions/render') : false,
                             ],
                         ],
                     ])

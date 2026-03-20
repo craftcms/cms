@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use craft\helpers\DateTimeHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Shared\Enums\DateRangePeriod;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\URL;
 use DateTime;
 use Exception;
 use Illuminate\Validation\Rule;
@@ -185,7 +185,7 @@ JS,
             Html::hiddenInput('rangeType', $this->rangeType, [
                 'id' => $inputId,
                 'hx' => [
-                    'post' => UrlHelper::actionUrl('conditions/render'),
+                    'post' => URL::actionUrl('conditions/render'),
                 ],
             ]);
 

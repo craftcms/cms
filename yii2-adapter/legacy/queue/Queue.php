@@ -14,13 +14,13 @@ use craft\errors\MutexException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue as QueueHelper;
-use craft\helpers\UrlHelper;
 use craft\queue\jobs\Proxy;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use DateTime;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -621,7 +621,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         // Include JS that tells the browser to fire an Ajax request to kick off a new queue runner
         // (Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!)
-        $url = Json::encode(UrlHelper::actionUrl('queue/run', null, null, false));
+        $url = Json::encode(URL::actionUrl('queue/run', null, null, false));
         $js = <<<EOD
 <script type="text/javascript">
 /*<![CDATA[*/

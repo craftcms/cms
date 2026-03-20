@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\RegisterCpAlerts;
 use CraftCms\Cms\Edition;
@@ -14,6 +13,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
@@ -89,7 +89,7 @@ readonly class Alerts
             $this->updates->isCriticalUpdateAvailable()
         ) {
             $alerts[] = t('A critical update is available.').
-                ' <a class="go nowrap" href="'.UrlHelper::url('utilities/updates').'">'.t('Go to Updates').'</a>';
+                ' <a class="go nowrap" href="'.URL::url('utilities/updates').'">'.t('Go to Updates').'</a>';
         }
 
         if (Edition::get() < Edition::Pro) {
@@ -110,7 +110,7 @@ readonly class Alerts
             ($this->projectConfig->writeYamlAutomatically || $this->projectConfig->get('dateModified') <= $this->projectConfig->get('dateModified', true))
         ) {
             $alerts[] = t('Your project config YAML files contain pending changes.').
-                ' '.'<a class="go" href="'.UrlHelper::url('utilities/project-config').'">'.t('Review').'</a>';
+                ' '.'<a class="go" href="'.URL::url('utilities/project-config').'">'.t('Review').'</a>';
         }
 
         if (

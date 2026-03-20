@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Gql;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Support\URL;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -60,7 +60,7 @@ readonly class GraphiqlController extends GqlController
         }
 
         return view('graphql.graphiql', [
-            'url' => UrlHelper::actionUrl('graphql/api'),
+            'url' => URL::actionUrl('graphql/api'),
             'schemas' => $schemas,
             'selectedSchema' => $selectedSchema,
         ]);

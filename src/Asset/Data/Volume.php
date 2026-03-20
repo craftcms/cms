@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Data;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\VolumeRules;
 use CraftCms\Cms\Component\Component;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Auth;
@@ -308,7 +308,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             return null;
         }
 
-        return UrlHelper::cpUrl("settings/assets/volumes/$this->id");
+        return URL::cpUrl("settings/assets/volumes/$this->id");
     }
 
     public function validateFieldLayout(): void

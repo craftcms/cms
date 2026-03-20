@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table;
@@ -22,6 +21,7 @@ use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\URL;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -73,7 +73,7 @@ readonly class SectionsController
 
         return Inertia::render('SettingsSectionsIndexPage', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => UrlHelper::cpUrl('settings')],
+                ['label' => t('Settings'), 'url' => URL::cpUrl('settings')],
                 ['label' => t('Sections')],
             ],
             'title' => t('Sections'),

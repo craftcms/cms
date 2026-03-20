@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Providers;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
@@ -160,10 +159,10 @@ class AppServiceProvider extends ServiceProvider
 
         UrlGenerator::macro('defaultReturnUrl', function (): string {
             if (request()->isCpRequest() && Gate::check('accessCp')) {
-                return UrlHelper::cpUrl(Cms::config()->getPostCpLoginRedirect());
+                return \CraftCms\Cms\Support\URL::cpUrl(Cms::config()->getPostCpLoginRedirect());
             }
 
-            return UrlHelper::siteUrl(Cms::config()->getPostLoginRedirect());
+            return \CraftCms\Cms\Support\URL::siteUrl(Cms::config()->getPostLoginRedirect());
         });
 
         UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {

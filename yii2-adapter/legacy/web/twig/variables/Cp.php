@@ -12,7 +12,6 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpSettingsEvent;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Alerts;
@@ -34,6 +33,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use DateTime;
@@ -390,7 +390,7 @@ class Cp extends Component
                 $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', Str::ascii(str_replace('/', '-', $item['url'])));
             }
 
-            $item['url'] = UrlHelper::url($item['url']);
+            $item['url'] = URL::url($item['url']);
 
             if (!isset($item['external'])) {
                 $item['external'] = false;

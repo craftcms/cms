@@ -18,7 +18,6 @@ use craft\errors\ExitException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
-use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
@@ -27,6 +26,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\URL;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -478,7 +478,7 @@ class Application extends \yii\web\Application
 
             // Redirect to the installer if Dev Mode is enabled
             if (app()->hasDebugModeEnabled()) {
-                $url = UrlHelper::url('install');
+                $url = URL::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
             }

@@ -7,12 +7,12 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\base\NestedElementInterface;
 use craft\helpers\ElementHelper;
 use craft\helpers\Template;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\BeforeDefineUrl;
 use CraftCms\Cms\Element\Events\DefineUrl;
 use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Twig\Markup;
 
@@ -94,7 +94,7 @@ trait HasRoutesAndUrls
         // If BeforeDefineUrl::$url is set to null, only respect that if $handled is true
         if ($url === null && ! $handled && isset($this->uri)) {
             $path = $this->getIsHomepage() ? '' : $this->uri;
-            $url = UrlHelper::siteUrl($path, null, null, $this->siteId);
+            $url = URL::siteUrl($path, null, null, $this->siteId);
         }
 
         // Fire a 'defineUrl' event
