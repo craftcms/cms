@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where GraphQL results were getting cached even if they contained transform generation URLs. ([#18581](https://github.com/craftcms/cms/issues/18581))
+
 ## 4.17.11 - 2026-03-17
 
 - Fixed an error that could occur after running the `utils/fix-field-layout-uids` command. ([#18516](https://github.com/craftcms/cms/issues/18516))
