@@ -9,7 +9,7 @@ import {
   useVueTable,
 } from '@tanstack/vue-table';
 import CraftSwitch from '@craftcms/cp/vue/CraftSwitch.vue';
-import InputCombobox from '@/components/InputCombobox.vue';
+import InputCombobox from '@/components/form/InputCombobox.vue';
 import type {SelectItem, SelectOption} from '@/types';
 
 type MaybeGetter<T> = T | (() => T);
@@ -23,6 +23,7 @@ interface BaseColumnOptions<T extends Record<string, any>> {
   size?: number;
   meta?: Record<string, any>;
   disabled?: MaybeGetter<boolean> | ((row: Row<T>) => boolean);
+  placeholder?: string;
 }
 
 interface TextColumnOptions<
@@ -261,6 +262,7 @@ export function useEditableTable<T extends Record<string, any>>(
         modelValue: row.original[column.id],
         options: opts,
         class: cellOptions?.class,
+        placeholder: cellOptions?.placeholder,
         requireOptionMatch: cellOptions?.requireOptionMatch,
         transformModelValue: cellOptions?.transformModelValue,
         'onUpdate:modelValue': (value: string) => {
@@ -352,6 +354,7 @@ export function useEditableTable<T extends Record<string, any>>(
         transformModelValue,
         onChange,
         class: opts.class ?? '',
+        placeholder: opts.placeholder ?? '',
       });
       return baseHelper.accessor(accessor as any, columnDef);
     },

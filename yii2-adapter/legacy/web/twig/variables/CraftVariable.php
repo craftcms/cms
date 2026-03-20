@@ -84,6 +84,10 @@ class CraftVariable extends ServiceLocator
      */
     public function __construct($config = [])
     {
+        if (!class_exists(Craft::class)) {
+            return;
+        }
+
         $this->app = Craft::$app;
 
         if (Edition::isAtLeast(Edition::Pro)) {

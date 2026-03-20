@@ -15,7 +15,7 @@
     TransitionRoot,
   } from '@headlessui/vue';
   import type {SelectItem, SelectOption} from '@/types';
-  import InputComboboxOption from '@/components/InputComboboxOption.vue';
+  import InputComboboxOption from '@/components/form/InputComboboxOption.vue';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void;
@@ -27,6 +27,7 @@
       requireOptionMatch?: boolean;
       transformModelValue?: (newValue: SelectOption | null) => string;
       class?: HTMLAttributes['class'];
+      placeholder?: string;
     }>(),
     {
       modelValue: '',
@@ -41,27 +42,25 @@
     get() {
       let selectedItem = null;
 
-      if (props.modelValue && props.modelValue !== '') {
-        props.options.forEach((item) => {
-          if (item.type === 'optgroup') {
-            item.options.forEach((option) => {
-              if (option.value === props.modelValue) {
-                selectedItem = option;
-              }
-            });
-          } else {
-            if (item.value === props.modelValue) {
-              selectedItem = item;
+      props.options.forEach((item) => {
+        if (item.type === 'optgroup') {
+          item.options.forEach((option) => {
+            if (option.value === props.modelValue) {
+              selectedItem = option;
             }
+          });
+        } else {
+          if (item.value === props.modelValue) {
+            selectedItem = item;
           }
-        });
-
-        if (!selectedItem && !props.requireOptionMatch) {
-          selectedItem = {
-            label: props.modelValue,
-            value: props.modelValue,
-          };
         }
+      });
+
+      if (!selectedItem && !props.requireOptionMatch) {
+        selectedItem = {
+          label: props.modelValue,
+          value: props.modelValue,
+        };
       }
 
       return selectedItem;
@@ -149,7 +148,7 @@
         class="input"
         :class="props.class"
         :displayValue="displayValue"
-        v-bind="$attrs"
+        :placeholder="placeholder"
       />
       <ComboboxButton
         class="absolute inset-y-1 right-1 flex items-center"

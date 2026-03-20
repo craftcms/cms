@@ -6,6 +6,7 @@ export default css`
   }
 
   :host {
+    --c-option-wide-threshold: 640;
     padding-inline: var(--c-spacing-md);
     padding-block: var(--c-spacing-sm);
     font: inherit;
@@ -34,6 +35,11 @@ export default css`
   .hint {
     color: color-mix(in srgb, currentColor, transparent 25%);
     align-self: end;
+    font-size: 0.8em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   :host([active]) .hint {
@@ -42,7 +48,11 @@ export default css`
 
   .choice-field__label {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     max-width: 100%;
+  }
+
+  :host([wide]) .choice-field__label {
+    align-items: baseline;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 `;

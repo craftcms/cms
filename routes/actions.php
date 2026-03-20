@@ -71,7 +71,6 @@ use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
-use CraftCms\Cms\Http\Controllers\Utilities\MailSettingsController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
@@ -80,23 +79,8 @@ use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Http\Middleware\RequireToken;
-use CraftCms\Cms\Support\Str;
-use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
-
-/**
- * Actions that should not have CSRF token verification. These are automatically
- * mapped to `/{cpTrigger}/{actionTrigger}/route` and `/{actionTrigger}/{route}`
- */
-PreventRequestForgery::except(collect([
-    'graphql/api',
-    'preview/preview',
-])->flatMap(fn (string $route) => [
-    $route,
-    Cms::config()->actionTrigger.Str::start($route, '/'),
-    Cms::config()->cpTrigger.'/'.Cms::config()->actionTrigger.Str::start($route, '/'),
-])->all());
 
 /**
  * Actions that are accessible both with and without CP can be registered here.
@@ -211,9 +195,6 @@ Route::prefix(implode('/', [
 
         // DbBackup
         Route::post('utilities/db-backup-perform-action', DbBackupController::class);
-
-        // Mail Settings
-        Route::post('utilities/send-test-mail', MailSettingsController::class);
 
         // DeprecationErrors
         Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);

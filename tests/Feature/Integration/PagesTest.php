@@ -141,13 +141,6 @@ it('renders utility pages', function (string $url, string $title, array $extraCo
         ],
     ],
     ['url' => '/utilities/updates', 'title' => 'Updates'],
-    [
-        'url' => '/utilities/mail-settings',
-        'title' => 'Email Settings',
-        'extraContent' => [
-            ['rendered' => '<MailSettings'],
-        ],
-    ],
 
     [
         'url' => '/utilities/project-config',

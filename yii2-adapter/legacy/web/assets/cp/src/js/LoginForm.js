@@ -158,7 +158,7 @@ Craft.LoginForm = Garnish.Base.extend(
       const data = {
         loginName: this.$usernameInput.val(),
         password: this.$passwordInput.val(),
-        rememberMe: this.$rememberMeCheckbox.prop('checked') ? 'y' : '',
+        rememberMe: this.$rememberMeCheckbox.prop('checked') ? '1' : '',
       };
 
       Craft.sendActionRequest('POST', 'users/login', {data})

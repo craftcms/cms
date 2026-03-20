@@ -1,1 +1,1 @@
-import o from"./sk2.js";const t={...o};export{t as default};
+import e from"./sk2.js";var t={...e};export{t as default};
