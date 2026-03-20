@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'Veldu hvaða töfludálkar eiga að vera sýnilegir sjálfgefið.',
     'Choose which table columns should be visible for this source by default.' => 'Veldu sjálfgefið hvaða töfludálkar ættu að vera sýnilegir fyrir þennan uppruna.',
     'Choose which user groups should have access to this source.' => 'Veldu hvaða notendahópar eiga að hafa aðgang að þessum uppruna.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'Veldu hvaða notendur verða að nota tvíþætta staðfestingu þegar þeir fá aðgang að stjórnborðinu.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'Veldu',
     'City' => 'Borg',
     'City/Town' => 'Borg/bær',
