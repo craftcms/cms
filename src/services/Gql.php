@@ -534,7 +534,7 @@ class Gql extends Component
 
                 [$dep, $duration] = $elementsService->stopCollectingCacheInfo();
 
-                if (empty($event->result['errors']) && $cacheKey && $this->shouldCache($event->result ?? [])) {
+                if (empty($event->result['errors']) && $cacheKey && $this->shouldCache($event->result)) {
                     $this->setCachedResult($cacheKey, $event->result, $dep, $duration);
                 }
             }
