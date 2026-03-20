@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'Válassza ki, hogy alapértelmezésben melyik oszlopok legyenek láthatók.',
     'Choose which table columns should be visible for this source by default.' => 'Válassza ki, hogy alapértelmezésben melyik oszlopok legyenek láthatóak ennél a forrásnál.',
     'Choose which user groups should have access to this source.' => 'Válassza ki, mely felhasználócsoportok férjenek hozzá ehhez a forráshoz.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'Válassza ki, hogy mely felhasználóknak kell kétlépéses ellenőrzést használniuk a vezérlőpult elérésekor.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'Kiválasztás',
     'City' => 'Város',
     'City/Town' => 'Város',
