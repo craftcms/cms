@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume as LegacyVolume;
@@ -39,6 +38,7 @@ use DateInterval;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Uri;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
@@ -163,9 +163,9 @@ class AppController extends Controller
         $this->requireCpRequest();
 
         $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
-        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
-            'items' => array_map(fn($issue) => $issue[2], $issues),
-        ]);
+        $cartUrl = Uri::of("$consoleUrl/cart/new")
+            ->withQuery(['items' => array_map(fn($issue) => $issue[2], $issues)])
+            ->value();
 
         $cookie = $this->request->getCookies()->get(app(License::class)->shunCookieName());
         $data = $cookie ? Json::decode($cookie->value) : null;

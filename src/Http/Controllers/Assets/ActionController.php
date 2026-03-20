@@ -19,6 +19,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Uri;
 use Symfony\Component\HttpFoundation\Response;
 use ZipArchive;
 
@@ -203,13 +204,14 @@ readonly class ActionController
         }
 
         $uri = Str::start(UrlHelper::prependCpTrigger($sourcePath[0]['uri']), '/');
-        $url = UrlHelper::urlWithParams($uri, [
-            'search' => $asset->filename,
-            'includeSubfolders' => '0',
-            'sourcePathStep' => "folder:$folder->uid",
-        ]);
 
-        return redirect($url);
+        return Uri::of($uri)
+            ->withQuery([
+                'search' => $asset->filename,
+                'includeSubfolders' => '0',
+                'sourcePathStep' => "folder:$folder->uid",
+            ])
+            ->redirect();
     }
 
     public function moveInfo(Request $request): Response

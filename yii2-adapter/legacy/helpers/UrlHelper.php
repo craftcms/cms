@@ -7,7 +7,6 @@
 
 namespace craft\helpers;
 
-use Craft;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\RequestedSite;

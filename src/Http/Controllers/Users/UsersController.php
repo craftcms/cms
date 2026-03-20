@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use craft\web\CpScreenResponseBehavior;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
@@ -24,6 +23,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Uri;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpFoundation\Response;
@@ -68,9 +68,9 @@ readonly class UsersController
         $editUrl = $user->getCpEditUrl();
 
         if (! $request->wantsJson()) {
-            return redirect(UrlHelper::urlWithParams($editUrl, [
-                'fresh' => 1,
-            ]));
+            return Uri::of($editUrl)
+                ->withQuery(['fresh' => 1])
+                ->redirect();
         }
 
         return $this->asModelSuccess($user, t('{type} created.', [

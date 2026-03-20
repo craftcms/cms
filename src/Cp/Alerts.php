@@ -21,6 +21,7 @@ use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Uri;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -61,9 +62,9 @@ readonly class Alerts
         }
 
         if (! empty($resolvableLicenseAlerts)) {
-            $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
-                'items' => $resolvableLicenseItems,
-            ]);
+            $cartUrl = Uri::of("$consoleUrl/cart/new")
+                ->withQuery(['items' => $resolvableLicenseItems])
+                ->value();
 
             array_unshift($alerts, [
                 'content' => Html::tag('h2', t('License purchase required.')).

@@ -22,6 +22,7 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use Illuminate\Support\Uri;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -321,9 +322,9 @@ class CategoriesController extends Controller
         ]));
 
         if (!$this->request->getAcceptsJson()) {
-            $response->redirect(UrlHelper::urlWithParams($editUrl, [
-                'fresh' => 1,
-            ]));
+            $response->redirect(Uri::of($editUrl)
+                ->withQuery(['fresh' => 1])
+                ->value());
         }
 
         return $response;

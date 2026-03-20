@@ -42,6 +42,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Uri;
 use InvalidArgumentException;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -470,9 +471,9 @@ class Cp extends Component
         ]);
 
         $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
-        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
-            'items' => $issues->map(fn($issue) => $issue[2])->all(),
-        ]);
+        $cartUrl = Uri::of("$consoleUrl/cart/new")
+            ->withQuery(['items' => $issues->map(fn($issue) => $issue[2])->all()])
+            ->value();
 
         return [
             'message' => $message,
