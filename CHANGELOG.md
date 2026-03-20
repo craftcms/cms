@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed a bug where sites with missing `enabled` values were being treated as enabled. ([#18572](https://github.com/craftcms/cms/issues/18572))
+
+## 5.9.17 - 2026-03-17
+
 - Added `craft\helpers\DateTimeHelper::testTimeToSeconds()`.
 - Fixed an error that could occur after running the `utils/fix-field-layout-uids` command. ([#18516](https://github.com/craftcms/cms/issues/18516))
 - Fixed a JavaScript error that could occur if any field layout elements were configured with unsupported widths. ([#18552](https://github.com/craftcms/cms/issues/18552))
