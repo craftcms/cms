@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => '기본적으로 표시되는 테이블 열을 선택하십시오.',
     'Choose which table columns should be visible for this source by default.' => '기본적으로 이 소스에 대해 표시될 테이블 열을 선택하세요.',
     'Choose which user groups should have access to this source.' => '이 소스에 액세스해야 하는 사용자 그룹을 선택합니다.',
-    'Choose which users must use two-step verification when accessing the control panel.' => '제어판에 액세스할 때 2단계 인증을 사용해야 하는 사용자를 선택하십시오.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => '선택',
     'City' => '도시명',
     'City/Town' => '시/도',
