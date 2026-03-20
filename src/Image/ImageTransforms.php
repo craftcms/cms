@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image;
 
 use Craft;
-use craft\helpers\Assets as AssetsHelper;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Database\Table;

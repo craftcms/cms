@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use Craft;
-use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -142,7 +142,9 @@ class Assets
         $extension = $asset->getExtension();
 
         if (! ImageHelper::canManipulateAsImage($extension)) {
-            return $iconFallback ? AssetsHelper::iconUrl($extension) : null;
+            return $iconFallback ? UrlHelper::actionUrl('assets/icon', [
+                'extension' => $extension,
+            ]) : null;
         }
 
         $transform = Craft::createObject(ImageTransform::class, [
@@ -159,7 +161,9 @@ class Assets
         }
 
         if ($url === null) {
-            return $iconFallback ? AssetsHelper::iconUrl($extension) : null;
+            return $iconFallback ? UrlHelper::actionUrl('assets/icon', [
+                'extension' => $extension,
+            ]) : null;
         }
 
         return AssetsHelper::revUrl($url, $asset, fsOnly: true);

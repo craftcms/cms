@@ -23,7 +23,6 @@ use craft\elements\actions\ShowInFolder;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\AssetException;
-use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Template;
@@ -31,6 +30,7 @@ use craft\helpers\UrlHelper;
 use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Events\AfterGenerateTransform;
@@ -458,7 +458,7 @@ class Asset extends Element
         // Only match the first folder ID - ignore nested folders
         if (isset($volume)) {
             $fs = $volume->getFs();
-            $isTemp = Assets::isTempUploadFs($fs);
+            $isTemp = AssetsHelper::isTempUploadFs($fs);
 
             $actions[] = [
                 'type' => PreviewAsset::class,
@@ -818,7 +818,7 @@ class Asset extends Element
             }
         }
 
-        if (Assets::isTempUploadFs($queryFolder->getFs())) {
+        if (AssetsHelper::isTempUploadFs($queryFolder->getFs())) {
             return false;
         }
 
@@ -1360,7 +1360,7 @@ class Asset extends Element
         }
 
         $volume = $this->getVolume();
-        if (Assets::isTempUploadFs($volume->getFs())) {
+        if (AssetsHelper::isTempUploadFs($volume->getFs())) {
             return null;
         }
 
@@ -1776,7 +1776,7 @@ JS, [
                 continue;
             }
 
-            [$value, $unit] = Assets::parseSrcsetSize($size);
+            [$value, $unit] = AssetsHelper::parseSrcsetSize($size);
 
             $sizeTransform = $transform ? $transform->toArray() : [];
 
@@ -2028,11 +2028,11 @@ JS, [
         }
 
         $fs = $volume->getFs();
-        if (! $fs->hasUrls || Assets::isTempUploadFs($fs)) {
+        if (! $fs->hasUrls || AssetsHelper::isTempUploadFs($fs)) {
             return null;
         }
 
-        return Html::encodeSpaces(Assets::generateUrl($this));
+        return Html::encodeSpaces(AssetsHelper::generateUrl($this));
     }
 
     protected function thumbUrl(int $size): ?string
@@ -2044,7 +2044,7 @@ JS, [
         $forCard = $size % 128 === 0;
 
         if (! $forCard && $this->getWidth() && $this->getHeight()) {
-            [$width, $height] = Assets::scaledDimensions((int) $this->getWidth(), (int) $this->getHeight(), $size, $size);
+            [$width, $height] = AssetsHelper::scaledDimensions((int) $this->getWidth(), (int) $this->getHeight(), $size, $size);
         } else {
             $width = $height = $size;
         }
@@ -2058,7 +2058,7 @@ JS, [
             return file_get_contents(Aliases::get('@app/elements/thumbs/folder.svg'));
         }
 
-        return Assets::iconSvg($this->getExtension());
+        return AssetsHelper::iconSvg($this->getExtension());
     }
 
     protected function thumbAlt(): ?string
@@ -2091,7 +2091,7 @@ JS, [
     public function getPreviewThumbImg(int $desiredWidth, int $desiredHeight): string
     {
         $srcsets = [];
-        [$width, $height] = Assets::scaledDimensions((int) $this->getWidth(), (int) $this->getHeight(), $desiredWidth, $desiredHeight);
+        [$width, $height] = AssetsHelper::scaledDimensions((int) $this->getWidth(), (int) $this->getHeight(), $desiredWidth, $desiredHeight);
         $thumbSizes = [
             [$width, $height],
             [$width * 2, $height * 2],
@@ -2354,7 +2354,7 @@ JS, [
     {
         $tempFilename = File::uniqueName($this->_filename);
         $tempPath = Path::temp($tempFilename);
-        Assets::downloadFile($this->getVolume()->sourceDisk(), $this->getPath(), $tempPath);
+        AssetsHelper::downloadFile($this->getVolume()->sourceDisk(), $this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -2505,7 +2505,7 @@ JS, [
                 ]);
 
             case 'kind':
-                return Assets::getFileKindLabel($this->kind);
+                return AssetsHelper::getFileKindLabel($this->kind);
 
             case 'size':
                 if (! isset($this->size)) {
@@ -2780,7 +2780,7 @@ JS;
     private function locationHtml(): string
     {
         $volume = $this->getVolume();
-        $isTemp = Assets::isTempUploadFs($volume->getFs());
+        $isTemp = AssetsHelper::isTempUploadFs($volume->getFs());
 
         if (! $isTemp) {
             $uri = "assets/$volume->handle";
@@ -2873,7 +2873,7 @@ JS;
     {
         if (! isset($this->_filename)) {
             if (isset($this->newLocation)) {
-                [, $this->filename] = Assets::parseFileLocation($this->newLocation);
+                [, $this->filename] = AssetsHelper::parseFileLocation($this->newLocation);
             } elseif (isset($this->newFilename)) {
                 $this->filename = $this->newFilename;
                 $this->newFilename = null;
@@ -2894,7 +2894,7 @@ JS;
 
         // Get the (new?) folder ID
         if (isset($this->newLocation)) {
-            [$folderId] = Assets::parseFileLocation($this->newLocation);
+            [$folderId] = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
         }
@@ -2909,13 +2909,13 @@ JS;
 
         // Give it a default title based on the file name, if it doesn't have a title yet
         if (! $this->id && ! $this->title) {
-            $this->title = Assets::filename2Title(pathinfo($this->_filename, PATHINFO_FILENAME));
+            $this->title = AssetsHelper::filename2Title(pathinfo($this->_filename, PATHINFO_FILENAME));
         }
 
         // Set the field layout
         $volume = Folders::getFolderById($folderId)->getVolume();
 
-        if (! Assets::isTempUploadFs($volume->getFs())) {
+        if (! AssetsHelper::isTempUploadFs($volume->getFs())) {
             $this->fieldLayoutId = $volume->fieldLayoutId;
         }
 
@@ -2928,7 +2928,7 @@ JS;
     private function _setKind(): void
     {
         if (isset($this->_filename)) {
-            $this->kind = Assets::getFileKindByExtension($this->_filename);
+            $this->kind = AssetsHelper::getFileKindByExtension($this->_filename);
         }
     }
 
@@ -2943,7 +2943,7 @@ JS;
             if (
                 isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE &&
+                AssetsHelper::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE &&
                 ($this->sanitizeOnUpload ?? (
                     ! request()->isCpRequest() ||
                     Cms::config()->sanitizeCpImageUploads
@@ -2959,7 +2959,7 @@ JS;
             if (
                 isset($this->tempFilePath) &&
                 in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                Assets::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE
+                AssetsHelper::getFileKindByExtension($this->tempFilePath) === self::KIND_IMAGE
             ) {
                 $imageSize = getimagesize($this->tempFilePath);
                 if (isset($imageSize[0])) {
@@ -3126,7 +3126,7 @@ JS;
         $volume = $this->getVolume();
         $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
-        if (Assets::isTempUploadFs($volume->getFs()) || Auth::id() == $this->uploaderId) {
+        if (AssetsHelper::isTempUploadFs($volume->getFs()) || Auth::id() === $this->uploaderId) {
             $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {
@@ -3211,7 +3211,7 @@ JS;
     {
         // Get the (new?) folder ID & filename
         if (isset($this->newLocation)) {
-            [$folderId, $filename] = Assets::parseFileLocation($this->newLocation);
+            [$folderId, $filename] = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
             $filename = $this->_filename;
@@ -3251,7 +3251,7 @@ JS;
 
                 $tempFilename = File::uniqueName($filename);
                 $tempPath = Path::temp($tempFilename);
-                Assets::downloadFile($oldVolume->sourceDisk(), $oldPath, $tempPath);
+                AssetsHelper::downloadFile($oldVolume->sourceDisk(), $oldPath, $tempPath);
             }
 
             // Try to open a file stream
@@ -3301,7 +3301,7 @@ JS;
 
         // If there was a new file involved, update file data.
         if ($tempPath && file_exists($tempPath)) {
-            $this->kind = Assets::getFileKindByExtension($filename);
+            $this->kind = AssetsHelper::getFileKindByExtension($filename);
 
             if ($this->kind === self::KIND_IMAGE) {
                 [$this->_width, $this->_height] = ImageHelper::imageSize($tempPath);

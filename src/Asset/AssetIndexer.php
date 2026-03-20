@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use Craft;
-use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db as DbHelper;
 use CraftCms\Cms\Asset\Data\AssetIndexEntry;
 use CraftCms\Cms\Asset\Data\IndexingSession;
