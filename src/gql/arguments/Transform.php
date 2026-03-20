@@ -72,7 +72,7 @@ class Transform extends Arguments
             'immediately' => [
                 'name' => 'immediately',
                 'type' => Type::boolean(),
-                'description' => '[_Deprecated_] This argument is deprecated and has no effect.',
+                'description' => 'Whether the transform should be generated immediately or only when the image is requested used the generated URL',
             ],
         ];
     }
