@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Gql\Resolvers\Mutations;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Events\AfterReplaceAsset;

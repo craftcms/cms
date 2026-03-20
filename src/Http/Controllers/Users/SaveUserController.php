@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\helpers\Assets;
 use craft\helpers\UrlHelper;
 use craft\web\UploadedFile;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -379,7 +379,7 @@ readonly class SaveUserController
 
         // Did they upload a new one?
         if ($photo = $request->file('photo')) {
-            $fileLocation = Assets::tempFilePath($photo->extension());
+            $fileLocation = AssetsHelper::tempFilePath($photo->extension());
             $photo->move(Str::beforeLast($fileLocation, '/'), Str::afterLast($fileLocation, '/'));
             $filename = $photo->getClientOriginalName();
             $mimeType = $photo->getMimeType();
@@ -406,7 +406,7 @@ readonly class SaveUserController
                     return;
                 }
 
-                $fileLocation = Assets::tempFilePath($extension);
+                $fileLocation = AssetsHelper::tempFilePath($extension);
                 $data = base64_decode($matches['data']);
                 File::writeToFile($fileLocation, $data);
                 $newPhoto = true;

@@ -6,10 +6,10 @@ namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use Craft;
 use craft\errors\UploadFailedException;
-use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
