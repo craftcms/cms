@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'Varsayılan olarak hangi tablo sütunlarının görüneceğini seçin.',
     'Choose which table columns should be visible for this source by default.' => 'Varsayılan olarak bu kaynak için hangi tablo sütunlarının görüneceğini seçin.',
     'Choose which user groups should have access to this source.' => 'Bu kaynağa hangi kullanıcı gruplarının erişebileceğini seçin.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'Kontrol paneline erişirken hangi kullanıcıların iki adımlı doğrulamayı kullanacağını seçin.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'Seçiniz',
     'City' => 'Şehir',
     'City/Town' => 'Şehir/Kasaba',
