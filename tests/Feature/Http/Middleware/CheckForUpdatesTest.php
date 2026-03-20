@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;

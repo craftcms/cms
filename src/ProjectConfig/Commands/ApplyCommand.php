@@ -14,7 +14,7 @@ use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\Events\RemovingItem;
 use CraftCms\Cms\ProjectConfig\Events\UpdatingItem;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Event;
 

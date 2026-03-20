@@ -30,7 +30,6 @@ use CraftCms\Cms\User\Events\UserGroupPermissionsSaved;
 use CraftCms\Cms\User\Events\UserPermissionsSaved;
 use CraftCms\Cms\User\Models\UserPermission;
 use CraftCms\Cms\Utility\Utilities;
-use CraftCms\Cms\Utility\Utilities\MailSettings;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Container\Attributes\Singleton;
@@ -732,7 +731,6 @@ class UserPermissions
                 // Admins only
                 if (in_array($class::id(), [
                     ProjectConfigUtility::id(),
-                    MailSettings::id(),
                 ], true)) {
                     return null;
                 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage\Actions;
 
+use CraftCms\Cms\Email\Data\EmailSettings;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\SystemMessage\Data\RenderedSystemMessage;
 use CraftCms\Cms\SystemMessage\SystemMessageRenderContext;
 use CraftCms\Cms\SystemMessage\SystemMessages;
@@ -37,11 +37,13 @@ readonly class RenderSystemMessageAction
                 throw new InvalidArgumentException("Invalid system message key: $key");
             }
 
+            $resolved = EmailSettings::fromProjectConfig()->resolveForSite($siteId);
+
             $variables += [
                 'emailKey' => $key,
-                'fromEmail' => $this->fromEmail(),
-                'replyToEmail' => $this->replyToEmail(),
-                'fromName' => $this->fromName(),
+                'fromEmail' => $resolved->fromEmail,
+                'replyToEmail' => $resolved->replyToEmail,
+                'fromName' => $resolved->fromName,
                 'language' => $language,
             ];
 
@@ -77,20 +79,5 @@ readonly class RenderSystemMessageAction
         return request()->isSiteRequest()
             ? app()->getLocale()
             : $this->sites->getPrimarySite()->getLanguage();
-    }
-
-    private function fromEmail(): ?string
-    {
-        return Env::configValue('mail.from.address', fallbackEnvs: ['MAIL_FROM_ADDRESS', 'FROM_EMAIL_ADDRESS']);
-    }
-
-    private function fromName(): ?string
-    {
-        return Env::configValue('mail.from.name', fallbackEnvs: ['MAIL_FROM_NAME', 'FROM_EMAIL_NAME']);
-    }
-
-    private function replyToEmail(): ?string
-    {
-        return Env::configValue('mail.reply_to.address');
     }
 }

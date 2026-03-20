@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage\Actions;
 
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Email\Data\MailSettings;
 use CraftCms\Cms\SystemMessage\Data\FormattedSystemMessageMail;
 use CraftCms\Cms\SystemMessage\Data\RenderedSystemMessage;
 use CraftCms\Cms\SystemMessage\SystemMessageRenderContext;
@@ -14,12 +14,11 @@ use CraftCms\Cms\View\TemplateMode;
 readonly class FormatSystemMessageMailAction
 {
     public function __construct(
-        private GeneralConfig $generalConfig,
         private SystemMessageRenderContext $renderContext,
         private TemplateRenderer $templateRenderer,
     ) {}
 
-    public function handle(RenderedSystemMessage $message): FormattedSystemMessageMail
+    public function handle(RenderedSystemMessage $message, MailSettings $settings): FormattedSystemMessageMail
     {
         $viewData = array_merge($message->variables, [
             'subject' => $message->subject,
@@ -29,7 +28,7 @@ readonly class FormatSystemMessageMailAction
             'language' => $message->language,
         ]);
 
-        if ($this->generalConfig->systemMessageTemplate === null) {
+        if ($settings->template === null) {
             return new FormattedSystemMessageMail(
                 usesCustomTemplate: false,
                 htmlBody: $message->htmlBody,
@@ -41,7 +40,7 @@ readonly class FormatSystemMessageMailAction
             siteId: $message->siteId,
             language: $message->language,
             callback: fn () => $this->templateRenderer->renderTemplate(
-                template: $this->generalConfig->systemMessageTemplate,
+                template: $settings->template,
                 variables: $viewData,
                 templateMode: TemplateMode::Site,
             ),

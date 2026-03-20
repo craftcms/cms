@@ -362,7 +362,7 @@ class Raster extends Image
             }
         }
 
-        $this->crop($x1, $x2, $y1, $y2);
+        $this->crop((int) $x1, (int) $x2, (int) $y1, (int) $y2);
 
         return $this;
     }

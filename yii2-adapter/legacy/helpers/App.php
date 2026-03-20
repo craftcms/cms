@@ -710,14 +710,14 @@ class App
         if ($settings?->template) {
             Deprecator::log(
                 'craft\\models\\MailSettings::$template',
-                '`craft\\models\\MailSettings::$template` is deprecated and no longer has any effect. Use a Laravel mailable view instead.',
+                '`craft\\models\\MailSettings::$template` is deprecated. Set the template via the email settings in Settings → Email instead.',
             );
         }
 
         if ($settings && !empty($settings->siteOverrides)) {
             Deprecator::log(
                 'craft\\models\\MailSettings::$siteOverrides',
-                '`craft\\models\\MailSettings::$siteOverrides` is deprecated and no longer has any effect. Configure Laravel mailers per environment instead.',
+                '`craft\\models\\MailSettings::$siteOverrides` is deprecated and no longer has any effect. Use the email settings in Settings → Email instead.',
             );
         }
 
