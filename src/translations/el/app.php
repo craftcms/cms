@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'Επιλέξτε ποιες στήλες πίνακα θα είναι ορατές από προεπιλογή.',
     'Choose which table columns should be visible for this source by default.' => 'Επιλέξτε ποιες στήλες πίνακα θα είναι ορατές για αυτή την πηγή από προεπιλογή.',
     'Choose which user groups should have access to this source.' => 'Επιλέξτε ποιες ομάδες χρηστών θα έχουν πρόσβαση σε αυτή την πηγή.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'Επιλέξτε ποιοι χρήστες πρέπει να χρησιμοποιούν επαλήθευση δύο βημάτων κατά την πρόσβαση στον πίνακα ελέγχου.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'Επιλογή',
     'City' => 'Πόλη',
     'City/Town' => 'Πόλη/Κωμόπολη',
