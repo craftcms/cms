@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Updates\Commands;
+namespace CraftCms\Cms\Update\Commands;
 
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Api;

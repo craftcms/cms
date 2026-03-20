@@ -13,7 +13,7 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\View\View;

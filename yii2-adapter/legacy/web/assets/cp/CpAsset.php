@@ -52,7 +52,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;

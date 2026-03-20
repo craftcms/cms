@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Updates\Data;
+namespace CraftCms\Cms\Update\Data;
 
-use CraftCms\Cms\Updates\Events\CriticalUpdateReleased;
+use CraftCms\Cms\Update\Events\CriticalUpdateReleased;
 use DateTimeInterface;
 use Illuminate\Support\Facades\Date;
 

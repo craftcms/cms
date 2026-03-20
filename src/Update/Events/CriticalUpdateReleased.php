@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Updates\Events;
+namespace CraftCms\Cms\Update\Events;
 
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
-use CraftCms\Cms\Updates\Data\Update;
+use CraftCms\Cms\Update\Data\Update;
 
 class CriticalUpdateReleased
 {

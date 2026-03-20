@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Updates\Commands;
+namespace CraftCms\Cms\Update\Commands;
 
 use Closure;
 use Composer\Semver\VersionParser;
@@ -17,10 +17,10 @@ use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Updates\Data\Update;
-use CraftCms\Cms\Updates\Data\UpdateRelease;
-use CraftCms\Cms\Updates\Enums\UpdateStatus;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Data\Update;
+use CraftCms\Cms\Update\Data\UpdateRelease;
+use CraftCms\Cms\Update\Enums\UpdateStatus;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\File;
