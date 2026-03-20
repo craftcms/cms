@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'اختر أعمدة الجدول التي ينبغي أن تكون ظاهرة بشكلٍ افتراضي.',
     'Choose which table columns should be visible for this source by default.' => 'اختر أعمدة الجدول التي ينبغي أن تكون ظاهرة لهذا المصدر بشكلٍ افتراضي.',
     'Choose which user groups should have access to this source.' => 'اختر مجموعات المستخدمين التي يجب أن يكون لها حق الوصول إلى هذا المصدر.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'اختر المستخدمين الذين يجب أن يستخدموا التحقق بخطوتين عند الوصول إلى لوحة التحكم.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'اختر',
     'City' => 'المدينة',
     'City/Town' => 'المدينة/البلدة',
