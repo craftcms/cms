@@ -320,7 +320,7 @@ return [
     'Choose which table columns should be visible by default.' => 'ستون‌های جدول را که باید به‌طور پیش‌فرض قابل نمایش باشند انتخاب کنید.',
     'Choose which table columns should be visible for this source by default.' => 'انتخاب نمایید که کدام ستون‌های جدول باید به‌صورت پیش‌فرض برای این منبع قابل مشاهده باشند.',
     'Choose which user groups should have access to this source.' => 'انتخاب نمایید کدام گروه‌های کاربری باید به این منبع دسترسی داشته باشند.',
-    'Choose which users must use two-step verification when accessing the control panel.' => 'کاربرانی را باید هنگام دسترسی به پانل کنترل از تایید دو مرحله‌ای استفاده کنند، انتخاب کنید.',
+    'Choose which users must use two-step verification to sign in.' => 'Choose which users must use two-step verification to sign in.',
     'Choose' => 'انتخاب کردن',
     'City' => 'شهر',
     'City/Town' => 'شهر/شهرک',
