@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where sites with missing `enabled` values were being treated as enabled. ([#18572](https://github.com/craftcms/cms/issues/18572))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-33m5-hqp9-97pw)
 
 ## 5.9.17 - 2026-03-17
 
