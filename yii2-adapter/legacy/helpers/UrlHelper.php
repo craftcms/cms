@@ -16,6 +16,7 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Updates\Updates;
+use Illuminate\Support\Uri;
 use yii\base\Exception;
 
 /**
@@ -204,7 +205,9 @@ class UrlHelper
         }
 
         if (static::isProtocolRelativeUrl($url)) {
-            return $scheme . ':' . $url;
+            return Uri::of($url)
+                ->withScheme($scheme)
+                ->value();
         }
 
         if (static::isRootRelativeUrl($url)) {
@@ -212,7 +215,13 @@ class UrlHelper
             $url = static::siteHost() . $url;
         }
 
-        return preg_replace('/^https?:/', $scheme . ':', $url);
+        if (!preg_match('/^https?:/', $url)) {
+            return $url;
+        }
+
+        return Uri::of($url)
+            ->withScheme($scheme)
+            ->value();
     }
 
     /**
@@ -258,16 +267,13 @@ class UrlHelper
      */
     public static function rootRelativeUrl(string $url): string
     {
-        $url = static::urlWithScheme($url, 'http');
-        if (strlen($url) > 7 && ($slash = strpos($url, '/', 7)) !== false) {
-            return substr($url, $slash);
+        if (static::isAbsoluteUrl($url) || static::isProtocolRelativeUrl($url) || static::isRootRelativeUrl($url)) {
+            $path = Uri::of($url)->path();
+
+            return $path === '/' ? '/' : '/' . ltrim($path, '/');
         }
-        // Is this a host without a URI?
-        if (str_contains($url, '//')) {
-            return '/';
-        }
-        // Must just be a URI, then
-        return '/' . $url;
+
+        return '/' . ltrim($url, '/');
     }
 
     /**
@@ -296,8 +302,9 @@ class UrlHelper
         }
 
         $path = trim($path, '/');
+        $request = request();
 
-        if (request()->isCpRequest()) {
+        if ($request->isCpRequest()) {
             $path = static::prependCpTrigger($path);
             $cpUrl = true;
         } else {
@@ -305,7 +312,7 @@ class UrlHelper
         }
 
         // Stick with SSL if the current request is over SSL and a scheme wasn't defined
-        if ($scheme === null && !app()->runningInConsole() && request()->secure()) {
+        if ($scheme === null && !app()->runningInConsole() && $request->secure()) {
             $scheme = 'https';
         }
 
@@ -398,9 +405,9 @@ class UrlHelper
         $generalConfig = Cms::config();
         $path = $generalConfig->actionTrigger . '/' . trim($path, '/');
 
-        $request = Craft::$app->getRequest();
+        $request = request();
 
-        if ($generalConfig->headlessMode || $request->getIsCpRequest()) {
+        if ($generalConfig->headlessMode || $request->isCpRequest()) {
             $path = static::prependCpTrigger($path);
             $cpUrl = true;
         } else {
@@ -408,7 +415,7 @@ class UrlHelper
         }
 
         // Stick with SSL if the current request is over SSL and a scheme wasn't defined
-        if ($scheme === null && !app()->runningInConsole() && $request->getIsSecureConnection()) {
+        if ($scheme === null && !app()->runningInConsole() && $request->secure()) {
             $scheme = 'https';
         }
 
@@ -428,16 +435,10 @@ class UrlHelper
      */
     public static function stripQueryString(string $url): string
     {
-        if (($qIndex = mb_strpos($url, '?')) !== false) {
-            $url = mb_substr($url, 0, $qIndex);
-        }
-
-        // Just in case the URL had an invalid query string
-        if (($qIndex = mb_strpos($url, '&')) !== false) {
-            $url = mb_substr($url, 0, $qIndex);
-        }
-
-        return $url;
+        return str($url)
+            ->before('?')
+            ->before('&')
+            ->value();
     }
 
     /**
@@ -464,14 +465,12 @@ class UrlHelper
 
         // Is the base URL set to https?
         $baseUrl = $cp ? static::baseCpUrl() : static::baseSiteUrl();
-        $scheme = parse_url($baseUrl, PHP_URL_SCHEME);
-        if ($scheme !== false && strtolower($scheme) === 'https') {
+        if (strtolower((string) Uri::of($baseUrl)->scheme()) === 'https') {
             return 'https';
         }
 
         // Is the current request over SSL?
-        $request = Craft::$app->getRequest();
-        if (!app()->runningInConsole() && $request->getIsSecureConnection()) {
+        if (!app()->runningInConsole() && request()->secure()) {
             return 'https';
         }
 
@@ -487,9 +486,10 @@ class UrlHelper
      */
     public static function baseUrl(): string
     {
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
+        if (request()->isCpRequest()) {
             return static::baseCpUrl();
         }
+
         return static::baseSiteUrl();
     }
 
@@ -582,10 +582,15 @@ class UrlHelper
      */
     public static function cpReferralUrl(): ?string
     {
-        $referrer = Craft::$app->getRequest()->getReferrer();
+        $request = request();
+        $referrer = $request->header('referer');
+
+        if ($referrer === null || $referrer === '') {
+            return null;
+        }
 
         // Make sure it didn't refer itself
-        if ($referrer === Craft::$app->getRequest()->getFullUri()) {
+        if ($referrer === $request->fullUrl()) {
             return null;
         }
 
@@ -605,24 +610,21 @@ class UrlHelper
      */
     public static function hostInfo(string $url): string
     {
-        // If there's no host info in the base URL, default to the request's host info
-        if (($slashes = strpos($url, '//')) === false) {
-            $request = Craft::$app->getRequest();
-            if (app()->runningInConsole()) {
-                return '';
+        $uri = Uri::of($url);
+
+        if (($authority = $uri->authority()) !== null) {
+            if (($scheme = $uri->scheme()) !== null) {
+                return "$scheme://$authority";
             }
-            return $request->getHostInfo();
+
+            return "//$authority";
         }
 
-        $host = $url;
-
-        // Trim off the URI
-        $uriPos = strpos($host, '/', $slashes + 2);
-        if ($uriPos !== false) {
-            $host = substr($host, 0, $uriPos);
+        if (app()->runningInConsole()) {
+            return '';
         }
 
-        return $host;
+        return request()->schemeAndHttpHost();
     }
 
     /**
@@ -668,6 +670,7 @@ class UrlHelper
         $fragment ??= $baseFragment;
 
         $generalConfig = Cms::config();
+        $request = request();
 
         if ($cpUrl) {
             // site param
@@ -676,14 +679,14 @@ class UrlHelper
             }
         } else {
             // token/siteToken/preview params
-            if (!isset($params[$generalConfig->siteToken]) && ($siteToken = request()->siteToken()) !== null) {
+            if (!isset($params[$generalConfig->siteToken]) && ($siteToken = $request->siteToken()) !== null) {
                 $params[$generalConfig->siteToken] = $siteToken;
             }
-            if (request()->isSiteRequest()) {
+            if ($request->isSiteRequest()) {
                 if (
                     $addToken &&
                     !isset($params[$generalConfig->tokenParam]) &&
-                    ($token = request()->getToken()) !== null &&
+                    ($token = $request->getToken()) !== null &&
                     app(RouteTokens::class)->getRemainingTokenUsages($token) !== 0
                 ) {
                     $params[$generalConfig->tokenParam] = $token;
@@ -692,11 +695,11 @@ class UrlHelper
                 if (
                     !isset($params['x-craft-preview']) &&
                     !isset($params['x-craft-live-preview']) &&
-                    request()->isPreview()
+                    $request->isPreview()
                 ) {
-                    if (($previewToken = request()->query('x-craft-preview')) !== null) {
+                    if (($previewToken = $request->query('x-craft-preview')) !== null) {
                         $params['x-craft-preview'] = $previewToken;
-                    } elseif (($previewToken = request()->query('x-craft-live-preview')) !== null) {
+                    } elseif (($previewToken = $request->query('x-craft-live-preview')) !== null) {
                         $params['x-craft-live-preview'] = $previewToken;
                     }
                 }
@@ -718,14 +721,15 @@ class UrlHelper
         }
 
         if ($showScriptName) {
+            $scriptName = basename($request->getScriptName() ?: 'index.php');
             $baseUrl = sprintf('%s/%s',
                 rtrim($baseUrl, '/'),
-                (app()->runningInConsole() ? 'index.php' : basename(Craft::$app->getRequest()->getScriptUrl())),
+                app()->runningInConsole() ? 'index.php' : $scriptName,
             );
         }
 
         if ($scheme === null && !static::isAbsoluteUrl($baseUrl)) {
-            $scheme = !app()->runningInConsole() && Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
+            $scheme = !app()->runningInConsole() && $request->secure() ? 'https' : 'http';
         }
 
         if ($scheme !== null) {
