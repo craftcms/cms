@@ -681,7 +681,7 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
 
 ## Updates
 
-The `craft\services\Updates` internal service has been removed. `CraftCms\Cms\Updates\Updates` should be used instead.
+The `craft\services\Updates` internal service has been removed. `CraftCms\Cms\Update\Updates` should be used instead.
 
 Moved the following controllers:
 - `craft\controllers\ConfigSyncController` => `CraftCms\Cms\Http\Controllers\ConfigSyncController`
@@ -693,17 +693,17 @@ Moved the following controllers:
 - `craft\controllers\UpdaterController` => `CraftCms\Cms\Http\Controllers\Updates\UpdaterController`
 - `craft\controllers\UpdatesController` => `CraftCms\Cms\Http\Controllers\Updates\UpdatesController`
 - `craft\console\controllers\UpdateController` in favor of these commands:
-  - `CraftCms\Cms\Updates\Commands\UpdateCommand`
-  - `CraftCms\Cms\Updates\Commands\ComposerInstallCommand`
-  - `CraftCms\Cms\Updates\Commands\InfoCommand`
+  - `CraftCms\Cms\Update\Commands\UpdateCommand`
+  - `CraftCms\Cms\Update\Commands\ComposerInstallCommand`
+  - `CraftCms\Cms\Update\Commands\InfoCommand`
 
 #### Deprecations & removals
 - Deprecated `craft\helpers\Install`. `CraftCms\Cms\Site\Concerns\SiteDefaults` should be used instead.
 - Deprecated `craft\helpers\Update`. The only method was `checkPhpConstraint` which is now available on `CraftCms\Cms\Support\PHP::checkConstraint()`
-- Removed `craft\events\UpdateReleaseEvent` in favor of `CraftCms\Cms\Updates\Events\CriticalUpdateReleasedEvent`
-- Removed `craft\models\Update`. `CraftCms\Cms\Updates\Data\Update` should be used instead.
-- Removed `craft\models\UpdateRelease`. `CraftCms\Cms\Updates\Data\UpdateRelease` should be used instead.
-- Removed `craft\models\Updates`. `CraftCms\Cms\Updates\Data\Updates` should be used instead.
+- Removed `craft\events\UpdateReleaseEvent` in favor of `CraftCms\Cms\Update\Events\CriticalUpdateReleasedEvent`
+- Removed `craft\models\Update`. `CraftCms\Cms\Update\Data\Update` should be used instead.
+- Removed `craft\models\UpdateRelease`. `CraftCms\Cms\Update\Data\UpdateRelease` should be used instead.
+- Removed `craft\models\Updates`. `CraftCms\Cms\Update\Data\Updates` should be used instead.
 
 ### Users
 

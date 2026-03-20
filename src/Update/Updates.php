@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Updates;
+namespace CraftCms\Cms\Update;
 
 use Craft;
 use CraftCms\Cms\Cms;
@@ -16,7 +16,7 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\Updates\Data\Updates as UpdatesData;
+use CraftCms\Cms\Update\Data\Updates as UpdatesData;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;

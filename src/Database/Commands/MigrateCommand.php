@@ -10,7 +10,7 @@ use CraftCms\Cms\Database\Events\RegisterMigrators;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Contracts\Console\Isolatable;

@@ -174,7 +174,7 @@
 
 **Event removed:**
 ```
-- Removed `craft\events\UpdateReleaseEvent` in favor of `CraftCms\Cms\Updates\Events\CriticalUpdateReleasedEvent`.
+- Removed `craft\events\UpdateReleaseEvent` in favor of `CraftCms\Cms\Update\Events\CriticalUpdateReleasedEvent`.
 ```
 
 **Database column removed:**

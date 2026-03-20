@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Updates\Enums;
+namespace CraftCms\Cms\Update\Enums;
 
 /**
  * @internal

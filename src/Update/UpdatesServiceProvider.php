@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Updates;
+namespace CraftCms\Cms\Update;
 
-use CraftCms\Cms\Updates\Commands\ComposerInstallCommand;
-use CraftCms\Cms\Updates\Commands\InfoCommand;
-use CraftCms\Cms\Updates\Commands\UpdateCommand;
+use CraftCms\Cms\Update\Commands\ComposerInstallCommand;
+use CraftCms\Cms\Update\Commands\InfoCommand;
+use CraftCms\Cms\Update\Commands\UpdateCommand;
 use Illuminate\Support\ServiceProvider;
 
 /**

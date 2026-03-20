@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Updates\Commands;
+namespace CraftCms\Cms\Update\Commands;
 
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\PHP;
-use CraftCms\Cms\Updates\Data\Update;
-use CraftCms\Cms\Updates\Data\Updates as UpdatesData;
-use CraftCms\Cms\Updates\Enums\UpdateStatus;
+use CraftCms\Cms\Update\Data\Update;
+use CraftCms\Cms\Update\Data\Updates as UpdatesData;
+use CraftCms\Cms\Update\Enums\UpdateStatus;
 
 use function Laravel\Prompts\spin;
 
