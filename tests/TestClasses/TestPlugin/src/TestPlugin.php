@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Tests\TestClasses\TestPlugin\src;
 
 use Closure;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
+use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -148,6 +149,24 @@ class TestPlugin extends Plugin
     public function getMigrator(): Migrator
     {
         return $this->customMigrator ?? parent::getMigrator();
+    }
+
+    #[Override]
+    public function createInstallMigration(): ?object
+    {
+        $installMigrationPath = $this->getBasePath().'/migrations/Install.php';
+
+        if (! is_file($installMigrationPath)) {
+            return null;
+        }
+
+        $migration = require $installMigrationPath;
+
+        if ($migration instanceof Migration) {
+            return $migration;
+        }
+
+        return parent::createInstallMigration();
     }
 
     #[Override]

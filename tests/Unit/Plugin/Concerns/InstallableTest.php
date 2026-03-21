@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\migrations\Install as InstallMigration;
+use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\Tests\FakeMigrator;
 
@@ -25,7 +25,7 @@ it('runs the install migration and logs pending migrations', function () {
     expect($plugin->didCallBeforeInstall)->toBeTrue()
         ->and($plugin->didCallAfterInstall)->toBeTrue()
         ->and($plugin->isInstalled)->toBeTrue()
-        ->and($migrator->runMigrationArgument)->toBeInstanceOf(InstallMigration::class)
+        ->and($migrator->runMigrationArgument)->toBeInstanceOf(Migration::class)
         ->and($migrator->runMigrationMethod)->toBe('up')
         ->and($migrator->loggedMigrations)->toBe([
             ['Install', 1],
