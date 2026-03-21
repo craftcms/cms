@@ -12,6 +12,7 @@ use ReflectionClass;
 abstract class Plugin extends ServiceProvider implements PluginInterface
 {
     use Concerns\HasCommands;
+    use Concerns\HasConfig;
     use Concerns\HasEditions;
     use Concerns\HasElementTypes;
     use Concerns\HasFieldtypes;
