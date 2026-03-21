@@ -12,6 +12,7 @@ use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -144,6 +145,24 @@ it('can save settings', function () {
 
     Event::assertDispatched(SavingPluginSettings::class);
     Event::assertDispatched(PluginSettingsSaved::class);
+});
+
+it('prefers plugin config values over stored settings', function () {
+    app()->offsetUnset(TestPlugin::class);
+
+    Config::set('craft.test-plugin', [
+        'foo' => 'from-config',
+    ]);
+
+    $plugin = $this->plugins->createPlugin('test-plugin', [
+        ...$this->plugins->getStoredPluginInfo('test-plugin'),
+        'settings' => [
+            'foo' => 'from-settings',
+        ],
+    ]);
+
+    expect($plugin)->toBeInstanceOf(TestPlugin::class);
+    expect($plugin->getSettings()?->foo)->toBe('from-config');
 });
 
 it('can cancel saving with a before event', function () {
