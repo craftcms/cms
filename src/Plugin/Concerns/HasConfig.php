@@ -11,12 +11,12 @@ trait HasConfig
 
     public function bootHasConfig(): void
     {
-        $handle = self::getInstance()->handle;
-        $source = sprintf('%s/config/%s.php', $this->getBasePath(), $handle);
-
         if (! $this->config) {
             return;
         }
+
+        $handle = self::getInstance()->handle;
+        $source = sprintf('%s/config/%s.php', $this->getBasePath(), $handle);
 
         if (! file_exists($source)) {
             return;

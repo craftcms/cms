@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Tests\TestClasses\TestPlugin;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
+
+const PLUGIN_BASE_PATH = __DIR__.'/../../../TestClasses/TestPlugin/src';
 
 beforeEach(function () {
     app()->forgetInstance(TestPlugin::class);
@@ -24,6 +26,7 @@ it('merges plugin config and registers publish paths', function () {
         'name' => 'Test Plugin',
     ]);
 
+    $plugin->useBasePath(PLUGIN_BASE_PATH);
     $plugin->bootHasConfig();
 
     expect(Config::get('craft.test-plugin'))->toBe([
@@ -32,7 +35,7 @@ it('merges plugin config and registers publish paths', function () {
     ]);
 
     expect(ServiceProvider::pathsToPublish(TestPlugin::class, 'test-plugin'))->toBe([
-        dirname(__DIR__, 3).'/TestClasses/config/test-plugin.php' => config_path('craft/test-plugin.php'),
+        PLUGIN_BASE_PATH.'/config/test-plugin.php' => config_path('craft/test-plugin.php'),
     ]);
 });
 
@@ -47,6 +50,7 @@ it('does not register config when disabled', function () {
         'name' => 'Test Plugin',
     ]);
 
+    $plugin->useBasePath(PLUGIN_BASE_PATH);
     $plugin->config = false;
     $plugin->bootHasConfig();
 

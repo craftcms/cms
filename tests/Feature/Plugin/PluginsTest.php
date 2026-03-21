@@ -10,7 +10,7 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Tests\TestClasses\TestPlugin;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Event;
 

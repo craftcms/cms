@@ -5,11 +5,13 @@ declare(strict_types=1);
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Tests\TestClasses\TestPlugin;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 
 function loadTestPlugin(): void
 {
     $plugins = app(Plugins::class);
+
+    $basePathOverride = dirname(__DIR__).'/TestClasses/TestPlugin/src';
 
     $reflectionClass = new ReflectionClass($plugins);
 
@@ -18,6 +20,7 @@ function loadTestPlugin(): void
             'handle' => 'test-plugin',
             'name' => 'Test Plugin',
             'version' => '1.0.1',
+            'basePathOverride' => $basePathOverride,
         ]),
     ]);
 
@@ -27,7 +30,7 @@ function loadTestPlugin(): void
             'packageName' => 'craftcms/test-plugin',
             'version' => '1.0.1',
             'class' => TestPlugin::class,
-            'basePath' => dirname(__DIR__).'/TestClasses',
+            'basePath' => $basePathOverride,
         ],
     ]);
 
