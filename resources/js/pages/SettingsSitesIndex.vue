@@ -54,6 +54,11 @@
     name: props.group?.name ?? '',
   });
 
+  const actionLabels = {
+    rename: t('Rename Group'),
+    create: t('New Group'),
+  };
+
   function saveGroup() {
     form.clearErrors().submit(store(), {
       onSuccess: () => {
@@ -241,9 +246,8 @@
           </craft-button>
 
           <div slot="content">
-            <!-- Now just a plain action item, no craft-modal inside -->
             <craft-action-item @click="openRenameModal">
-              {{ t('Rename Group') }}
+              {{ actionLabels.rename }}
             </craft-action-item>
 
             <craft-action-item
@@ -257,11 +261,12 @@
         </craft-action-menu>
 
         <craft-modal ref="renameGroupModal">
-          <div slot="content">
+          <div slot="content" :aria-label="actionLabels.rename">
             <ModalForm
               @close="form.reset()"
               @submit="saveGroup"
               :loading="form.processing"
+              :title="actionLabels.rename"
             >
               <craft-input
                 name="id"
@@ -377,13 +382,14 @@
             size="small"
           >
             <craft-icon name="plus" slot="prefix"></craft-icon>
-            {{ t('New Group') }}
+            {{ actionLabels.create }}
           </craft-button>
-          <div slot="content">
+          <div slot="content" :aria-label="actionLabels.create">
             <ModalForm
               @close="form.reset()"
               @submit="saveGroup"
               :loading="form.processing"
+              :title="actionLabels.create"
             >
               <craft-input
                 name="id"

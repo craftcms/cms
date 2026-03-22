@@ -4094,6 +4094,10 @@ svg {
     border-style: var(--c-modal-border-style);
     border-color: var(--c-modal-border-color);
   }
+
+  .overlays__backdrop {
+    background-color: red;
+  }
 `,SM=class extends yb(Le){static get styles(){return[super.styles??[],wM]}_defineOverlayConfig(){return{..._M()}}render(){return J`
       <slot name="invoker"></slot>
       <div id="overlay-content-node-wrapper">

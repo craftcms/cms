@@ -9,4 +9,8 @@ export default css`
     border-style: var(--c-modal-border-style);
     border-color: var(--c-modal-border-color);
   }
+
+  .overlays__backdrop {
+    background-color: red;
+  }
 `;
