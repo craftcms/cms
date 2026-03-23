@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\Users\PasskeysController;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Session;
 
@@ -55,8 +56,10 @@ describe('creationOptions', function () {
             ->assertOk()
             ->json();
 
-        expect($response['options'])->toBeArray();
-        expect($response['options'])->toHaveKeys(['challenge', 'rp', 'user']);
+        $options = Json::decode($response['options']);
+
+        expect($options)->toBeArray();
+        expect($options)->toHaveKeys(['challenge', 'rp', 'user']);
     });
 });
 
