@@ -11,6 +11,7 @@
 - Fixed a bug where exceptions thrown when sending emails weren’t getting handled properly. ([#18597](https://github.com/craftcms/cms/issues/18597))
 - Fixed a bug where unordered lists weren’t getting styled correctly within Tip/Warning/Markdown field layout UI elements. ([#18598](https://github.com/craftcms/cms/issues/18598))
 - Fixed an error that could occur when upgrading to Craft 5. ([#18576](https://github.com/craftcms/cms/issues/18576))
+- Fixed a bug where nested Matrix entries’ Title fields were getting validation errors if blank, even if the nested entry was disabled. ([#18611](https://github.com/craftcms/cms/discussions/18611))
 
 ## 5.9.17 - 2026-03-17
 
