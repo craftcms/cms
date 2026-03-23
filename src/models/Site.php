@@ -204,7 +204,7 @@ class Site extends Model implements Chippable
         }
 
         if ($parse) {
-            return App::parseBooleanEnv($this->_enabled) ?? true;
+            return App::parseBooleanEnv($this->_enabled) ?? false;
         }
         return $this->_enabled;
     }

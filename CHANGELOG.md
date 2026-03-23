@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where GraphQL results were getting cached even if they contained transform generation URLs. ([#18581](https://github.com/craftcms/cms/issues/18581))
+- Fixed a bug where `aria-activedescendant`, `aria-flowto`, and `aria-owns` attributes weren’t getting namespaced by `{% namespace %}` tags. ([#18577](https://github.com/craftcms/cms/issues/18577))
+- Fixed a bug where sites with missing `enabled` values were being treated as enabled. ([#18572](https://github.com/craftcms/cms/issues/18572))
+- Fixed a bug where GraphQL fields within fragments weren’t getting eager-loaded if the fragment’s type condition referenced an interface (e.g. `on EntryInterface`) rather than a specific type name. ([#18588](https://github.com/craftcms/cms/issues/18588))
+
 ## 5.9.17 - 2026-03-17
 
 - Added `craft\helpers\DateTimeHelper::testTimeToSeconds()`.
