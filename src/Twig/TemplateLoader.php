@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig;
 
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Twig\Loader\LoaderInterface;
 use Twig\Source;
 

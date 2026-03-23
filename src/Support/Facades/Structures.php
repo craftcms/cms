@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static \CraftCms\Cms\Structure\Data\Structure|null getStructureById(int $structureId, bool $withTrashed = false)
  * @method static \CraftCms\Cms\Structure\Data\Structure|null getStructureByUid(string $structureUid, bool $withTrashed = false)
- * @method static void fillGapsInElements(\craft\base\ElementInterface[] $elements)
- * @method static void applyBranchLimitToElements(\craft\base\ElementInterface[] $elements, int $branchLimit)
+ * @method static void fillGapsInElements(mixed[] $elements)
+ * @method static void applyBranchLimitToElements(mixed[] $elements, int $branchLimit)
  * @method static bool saveStructure(\CraftCms\Cms\Structure\Data\Structure $structure)
  * @method static bool deleteStructureById(int $structureId)
  * @method static int getElementLevelDelta(int $structureId, \craft\base\ElementInterface $element)

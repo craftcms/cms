@@ -24,9 +24,6 @@ use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
-/**
- * General config class
- */
 class GeneralConfig extends BaseConfig
 {
     use Conditionable;
@@ -2267,8 +2264,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     *
-     * @defaultAlt 1 day
      */
     public mixed $previewTokenDuration = null;
 
@@ -2935,24 +2930,6 @@ class GeneralConfig extends BaseConfig
      * @group Security
      */
     public bool $storeUserIps = false;
-
-    /**
-     * @var string|null The site template that should be used when rendering system message emails.
-     *
-     * If this is `null`, system messages will use Laravel’s default markdown email rendering.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->systemMessageTemplate('mail/system-message.twig');
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SYSTEM_MESSAGE_TEMPLATE=mail/system-message.twig
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public ?string $systemMessageTemplate = null;
 
     /**
      * @var string|null The URL to a CSS file that should be included when rendering system templates on the front end,
@@ -5514,8 +5491,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      *
-     * @defaultAlt 1 day
-     *
      * @see $previewTokenDuration
      */
     public function previewTokenDuration(mixed $value): self
@@ -6136,31 +6111,6 @@ class GeneralConfig extends BaseConfig
     public function storeUserIps(bool $value = true): self
     {
         $this->storeUserIps = $value;
-
-        return $this;
-    }
-
-    /**
-     * The site template that should be used when rendering system message emails.
-     *
-     * If this is `null`, system messages will use Laravel’s default markdown email rendering.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->systemMessageTemplate('mail/system-message.twig');
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SYSTEM_MESSAGE_TEMPLATE=mail/system-message.twig
-     * ```
-     * :::
-     *
-     * @group System
-     *
-     * @see $systemMessageTemplate
-     */
-    public function systemMessageTemplate(?string $value): self
-    {
-        $this->systemMessageTemplate = $value;
 
         return $this;
     }

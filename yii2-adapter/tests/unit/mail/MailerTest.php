@@ -149,10 +149,14 @@ class MailerTest extends TestCase
 
     public function testSendMessageUsesConfiguredSystemMessageTemplate(): void
     {
-        $generalConfig = Cms::config();
         $originalTemplatesPath = Aliases::get('@templates');
-        $generalConfig->systemMessageTemplate = 'mail/custom-system-message.twig';
         Aliases::set('@templates', dirname(__DIR__, 4) . '/tests/Support/templates');
+
+        $projectConfig = app(ProjectConfig::class);
+        $originalEmail = $projectConfig->get('email');
+        $projectConfig->set('email', array_merge($originalEmail ?? [], [
+            'template' => 'mail/custom-system-message.twig',
+        ]));
 
         try {
             $this->_sendMail('test@craft.test');
@@ -165,7 +169,67 @@ class MailerTest extends TestCase
             self::assertStringContainsString('https://craftcms.com', (string)$symfonyEmail->getHtmlBody());
             self::assertSame('test@craft.test', array_key_first($lastMessage->to));
         } finally {
-            $generalConfig->systemMessageTemplate = null;
+            if ($originalEmail === null) {
+                $projectConfig->remove('email');
+            } else {
+                $projectConfig->set('email', $originalEmail);
+            }
+            Aliases::set('@templates', $originalTemplatesPath);
+        }
+    }
+
+    public function testLegacyTemplatePropertyIsForwardedToNewSystem(): void
+    {
+        $originalTemplatesPath = Aliases::get('@templates');
+        Aliases::set('@templates', dirname(__DIR__, 4) . '/tests/Support/templates');
+
+        try {
+            $this->mailer->template = 'mail/custom-system-message.twig';
+
+            $this->_sendMail('test@craft.test');
+
+            $lastMessage = $this->tester->grabLastSentEmail();
+            $symfonyEmail = $lastMessage->getSymfonyEmail();
+
+            self::assertStringContainsString('custom-system-message', (string)$symfonyEmail->getHtmlBody());
+            self::assertStringContainsString('account_activation', (string)$symfonyEmail->getHtmlBody());
+        } finally {
+            $this->mailer->template = null;
+            Aliases::set('@templates', $originalTemplatesPath);
+        }
+    }
+
+    public function testLegacySiteOverridesTemplateIsForwardedToNewSystem(): void
+    {
+        $originalTemplatesPath = Aliases::get('@templates');
+        Aliases::set('@templates', dirname(__DIR__, 4) . '/tests/Support/templates');
+        $site = Sites::getPrimarySite();
+
+        try {
+            $this->mailer->siteOverrides = [
+                $site->uid => [
+                    'template' => 'mail/site-specific-message.twig',
+                ],
+            ];
+
+            $user = Craft::$app->getUsers()->getUserById(1);
+            $message = $this->mailer->composeFromKey('account_activation', [
+                'user' => $user,
+                'link' => 'https://craftcms.com',
+                'name' => 'This is a name',
+            ]);
+            $message->setTo('test@craft.test');
+            $message->siteId = $site->id;
+
+            $this->mailer->send($message);
+
+            $lastMessage = $this->tester->grabLastSentEmail();
+            $symfonyEmail = $lastMessage->getSymfonyEmail();
+
+            self::assertStringContainsString('site-specific-message', (string)$symfonyEmail->getHtmlBody());
+            self::assertStringNotContainsString('custom-system-message', (string)$symfonyEmail->getHtmlBody());
+        } finally {
+            $this->mailer->siteOverrides = [];
             Aliases::set('@templates', $originalTemplatesPath);
         }
     }

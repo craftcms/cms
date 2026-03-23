@@ -13,7 +13,6 @@ use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\Cms\Utility\Utilities\DbBackup;
 use CraftCms\Cms\Utility\Utilities\DeprecationErrors;
 use CraftCms\Cms\Utility\Utilities\FindAndReplace;
-use CraftCms\Cms\Utility\Utilities\MailSettings;
 use CraftCms\Cms\Utility\Utilities\Migrations;
 use CraftCms\Cms\Utility\Utilities\PhpInfo;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
@@ -45,7 +44,6 @@ readonly class Utilities
                 SystemReport::class,
                 ProjectConfigUtility::class,
                 PhpInfo::class,
-                MailSettings::class,
             )
             ->when(
                 Edition::isAtLeast(Edition::Pro),
@@ -100,10 +98,6 @@ readonly class Utilities
 
         // The Project Config utility is for admins only!
         if ($class === ProjectConfigUtility::class && ! $user?->isAdmin()) {
-            return false;
-        }
-
-        if ($class === MailSettings::class && ! $user?->isAdmin()) {
             return false;
         }
 

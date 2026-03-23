@@ -1183,17 +1183,17 @@ class Elements extends Component
      * callback function.
      *
      * @param callable $callback
-     *
+     * @return mixed
      * @since 5.3.0
      */
-    public function ensureBulkOp(callable $callback): void
+    public function ensureBulkOp(callable $callback): mixed
     {
         if (empty($this->bulkKeys)) {
             $bulkKey = $this->beginBulkOp();
         }
 
         try {
-            $callback();
+            return $callback();
         } finally {
             if (isset($bulkKey)) {
                 $this->endBulkOp($bulkKey);
@@ -3895,7 +3895,7 @@ class Elements extends Component
             }
         }
 
-        $this->ensureBulkOp(function() use (
+        $success = $this->ensureBulkOp(function() use (
             $element,
             $isNewElement,
             $originalFirstSave,
@@ -4312,7 +4312,13 @@ class Elements extends Component
                     }
                 }
             }
+
+            return true;
         });
+
+        if (!$success) {
+            return false;
+        }
 
         // Fire an 'afterSaveElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ELEMENT)) {

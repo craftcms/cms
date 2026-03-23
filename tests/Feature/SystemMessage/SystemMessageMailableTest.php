@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\User\Elements\User;
@@ -39,8 +39,10 @@ it('uses the affiliated site when building mail outside site requests', function
 
 it('renders system messages through the configured site template and preserves the plain-text body', function () {
     Aliases::set('@templates', dirname(__DIR__, 2).'/Support/templates');
-    app()->forgetScopedInstances();
-    app(GeneralConfig::class)->systemMessageTemplate = 'mail/custom-system-message.twig';
+    ProjectConfig::set('email', array_merge(
+        ProjectConfig::get('email') ?? [],
+        ['template' => 'mail/custom-system-message.twig'],
+    ));
 
     $user = UserModel::factory()->createElement();
     $user = User::find()->id($user->id)->one();
@@ -61,4 +63,89 @@ it('renders system messages through the configured site template and preserves t
         ->and($html)->toContain($user->email)
         ->and($html)->not->toContain('<table class="wrapper"')
         ->and(trim($plainText))->toBe($renderedMessage->textBody);
+});
+
+it('renders system messages through a site-specific template override', function () {
+    $site = Sites::getPrimarySite();
+
+    Aliases::set('@templates', dirname(__DIR__, 2).'/Support/templates');
+    ProjectConfig::set('email', array_merge(
+        ProjectConfig::get('email') ?? [],
+        [
+            'template' => 'mail/custom-system-message.twig',
+            'siteOverrides' => [
+                $site->uid => [
+                    'template' => 'mail/site-specific-message.twig',
+                ],
+            ],
+        ],
+    ));
+
+    $user = UserModel::factory()->createElement([
+        'affiliatedSiteId' => $site->id,
+    ]);
+    $user = User::find()->id($user->id)->one();
+
+    $mailable = app(SystemMessages::class)
+        ->mailable('forgot_password', $user, ['link' => 'https://example.test/reset']);
+
+    $html = $mailable->render();
+
+    // Should use the site-specific template, not the global one
+    expect($html)->toContain('site-specific-message')
+        ->and($html)->not->toContain('custom-system-message')
+        ->and($html)->not->toContain('<table class="wrapper"');
+});
+
+it('falls back to the global template when no site-specific override is set', function () {
+    $site = Sites::getPrimarySite();
+
+    Aliases::set('@templates', dirname(__DIR__, 2).'/Support/templates');
+    ProjectConfig::set('email', array_merge(
+        ProjectConfig::get('email') ?? [],
+        [
+            'template' => 'mail/custom-system-message.twig',
+            'siteOverrides' => [
+                $site->uid => [
+                    'fromEmail' => 'override@example.com',
+                    // No template override — should fall back to the global one
+                ],
+            ],
+        ],
+    ));
+
+    $user = UserModel::factory()->createElement([
+        'affiliatedSiteId' => $site->id,
+    ]);
+    $user = User::find()->id($user->id)->one();
+
+    $mailable = app(SystemMessages::class)
+        ->mailable('forgot_password', $user, ['link' => 'https://example.test/reset']);
+
+    $html = $mailable->render();
+
+    // Should fall back to the global custom template
+    expect($html)->toContain('custom-system-message')
+        ->and($html)->not->toContain('site-specific-message')
+        ->and($html)->not->toContain('<table class="wrapper"');
+});
+
+it('uses the default markdown template when no template is configured', function () {
+    ProjectConfig::set('email', array_merge(
+        ProjectConfig::get('email') ?? [],
+        ['template' => null],
+    ));
+
+    $user = UserModel::factory()->createElement();
+    $user = User::find()->id($user->id)->one();
+
+    $mailable = app(SystemMessages::class)
+        ->mailable('forgot_password', $user, ['link' => 'https://example.test/reset']);
+
+    $html = $mailable->render();
+
+    // Should use the default markdown template (contains the wrapper table)
+    expect($html)->toContain('<table class="wrapper"')
+        ->and($html)->not->toContain('custom-system-message')
+        ->and($html)->not->toContain('site-specific-message');
 });

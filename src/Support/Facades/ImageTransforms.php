@@ -18,7 +18,7 @@ use Override;
  * @method static bool deleteTransform(\CraftCms\Cms\Image\Data\ImageTransform $transform)
  * @method static void handleDeletedTransform(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
  * @method static void eagerLoadTransforms(\CraftCms\Cms\Asset\Elements\Asset[] $assets, array $transforms)
- * @method static \CraftCms\Cms\Image\Contracts\ImageTransformerInterface getImageTransformer(string $class, array $config = [])
+ * @method static mixed getImageTransformer(string $class, array $config = [])
  * @method static string[] getAllImageTransformers()
  * @method static void deleteAllTransformData(\CraftCms\Cms\Asset\Elements\Asset $asset)
  * @method static void deleteResizedAssetVersion(\CraftCms\Cms\Asset\Elements\Asset $asset)

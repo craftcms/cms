@@ -1183,7 +1183,7 @@ li.breadcrumb-toggle-wrapper {
   word-wrap: break-word;
 
   & > hr {
-    margin-inline: calc(var(--xl) * -1);
+    margin-inline: calc(var(--padding) * -1);
   }
 }
 

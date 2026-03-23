@@ -40,7 +40,7 @@ use Override;
  * @method static array getOrSetContentArguments(string $elementType, callable $setter)
  * @method static array getFieldLayoutArguments(\CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout)
  * @method static array defineContentArgumentsForFieldLayouts(string $elementType, \CraftCms\Cms\FieldLayout\FieldLayout[] $fieldLayouts)
- * @method static array defineContentArgumentsForFields(string $elementType, \CraftCms\Cms\Field\Contracts\FieldInterface[] $fields)
+ * @method static array defineContentArgumentsForFields(string $elementType, mixed[] $fields)
  * @method static array defineContentArgumentsForGeneratedFields(string $elementType, array $fields)
  * @method static array getContentArguments(array $contexts, string $elementType)
  * @method static \Error[] handleQueryErrors(\Error[] $errors, callable $formatter)

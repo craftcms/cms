@@ -15,6 +15,8 @@ use craft\db\Command;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
+use craft\db\Query;
+use craft\db\Table;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\models\MailSettings;
@@ -41,6 +43,7 @@ use CraftCms\Yii2Adapter\Cache;
 use InvalidArgumentException;
 use yii\base\Event;
 use yii\base\Exception;
+use yii\db\Exception as DbException;
 use yii\db\sqlite\Schema as SqliteSchema;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
@@ -711,14 +714,14 @@ class App
         if ($settings?->template) {
             Deprecator::log(
                 'craft\\models\\MailSettings::$template',
-                '`craft\\models\\MailSettings::$template` is deprecated and no longer has any effect. Use a Laravel mailable view instead.',
+                '`craft\\models\\MailSettings::$template` is deprecated. Set the template via the email settings in Settings → Email instead.',
             );
         }
 
         if ($settings && !empty($settings->siteOverrides)) {
             Deprecator::log(
                 'craft\\models\\MailSettings::$siteOverrides',
-                '`craft\\models\\MailSettings::$siteOverrides` is deprecated and no longer has any effect. Configure Laravel mailers per environment instead.',
+                '`craft\\models\\MailSettings::$siteOverrides` is deprecated and no longer has any effect. Use the email settings in Settings → Email instead.',
             );
         }
 
@@ -1006,6 +1009,57 @@ class App
     {
         foreach ($properties as $name => $value) {
             $object->$name = $value;
+        }
+    }
+
+    /**
+     * Returns the path for a CP resource by its URI.
+     *
+     * @since 5.9.15
+     * @deprecated 6.0.0
+     */
+    public static function resourcePathByUri(string $uri): string
+    {
+        if (!\CraftCms\Cms\Support\Facades\Path::ensurePathIsContained($uri)) {
+            throw new InvalidArgumentException("Invalid resource: $uri");
+        }
+
+        $assetManager = Craft::$app->getAssetManager();
+        $path = "$assetManager->basePath/$uri";
+
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        $slash = strpos($uri, '/');
+        $hash = substr($uri, 0, $slash);
+        $sourcePath = self::resourceSourcePathByHash($hash, $assetManager);
+
+        if (!$sourcePath) {
+            throw new InvalidArgumentException("Invalid resource: $uri");
+        }
+
+        $filePath = substr($uri, strlen($hash) + 1);
+        [$publishedDir] = $assetManager->publish(Craft::alias($sourcePath));
+        $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
+
+        if (!file_exists($publishedPath)) {
+            throw new InvalidArgumentException("$filePath does not exist.");
+        }
+
+        return $publishedPath;
+    }
+
+    private static function resourceSourcePathByHash(string $hash, AssetManager $assetManager): string|false
+    {
+        try {
+            return (new Query())
+                ->select(['path'])
+                ->from(Table::RESOURCEPATHS)
+                ->where(['hash' => $hash])
+                ->scalar();
+        } catch (DbException) {
+            return Craft::$app->getCache()->get($assetManager->getCacheKeyForPathHash($hash));
         }
     }
 }

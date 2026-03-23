@@ -15,6 +15,7 @@ use CraftCms\Cms\Cms;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
+use DateTimeInterface;
 use DateTimeZone;
 use Exception;
 use Illuminate\Support\Facades\Config;
@@ -616,6 +617,16 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider timeToSecondsDataProvider
+     * @param int|null $expected
+     * @param int|string|DateTimeInterface|null $time
+     */
+    public function testTimeToSeconds(?int $expected, int|string|DateTimeInterface|null $time): void
+    {
+        self::assertSame($expected, DateTimeHelper::timeToSeconds($time));
+    }
+
+    /**
      * @return void
      */
     public function testFirstWeekDay(): void
@@ -699,6 +710,24 @@ class DateTimeHelperTest extends TestCase
             [true, '1 year'],
             [true, '1 month'],
             [true, '1 minutes'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function timeToSecondsDataProvider(): array
+    {
+        return [
+            [3600, 3600],
+            [3660, 3660],
+            [3661, 3661],
+            [3600, '01'],
+            [3660, '01:01'],
+            [3661, '01:01:01'],
+            [3661, new DateTime('2026-05-17 01:01:01', new DateTimeZone('UTC'))],
+            [3661, new DateTime('2026-05-17 01:01:01', new DateTimeZone('America/Los_Angeles'))],
+            [null, null],
         ];
     }
 

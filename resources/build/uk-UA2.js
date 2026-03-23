@@ -1,1 +1,1 @@
-import o from"./uk3.js";const r={...o};export{r as default};
+import e from"./uk3.js";var t={...e};export{t as default};

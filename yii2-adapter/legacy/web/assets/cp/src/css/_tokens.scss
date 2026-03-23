@@ -45,24 +45,26 @@
   Focus Rings
   */
   --focus-ring-alpha: 0.85;
-  --focus-ring-light: 0 0 0 1px
-      hsl(from var(--focus-outline-light) h s calc(l + 10)),
+  --focus-ring-light:
+    0 0 0 1px hsl(from var(--focus-outline-light) h s calc(l + 10)),
     0 0 0 3px rgb(from var(--focus-outline-light) r g b / 97%);
-  --focus-ring-medium: 0 0 0 1px
-      hsl(from var(--focus-outline-medium) h s calc(l + 10)),
+  --focus-ring-medium:
+    0 0 0 1px hsl(from var(--focus-outline-medium) h s calc(l + 10)),
     0 0 0 3px rgb(from var(--focus-outline-medium) r g b / 97%);
-  --focus-ring-dark: 0 0 0 1px
-      hsl(from var(--focus-outline-dark) h s calc(l + 20)),
+  --focus-ring-dark:
+    0 0 0 1px hsl(from var(--focus-outline-dark) h s calc(l + 20)),
     0 0 0 3px rgb(from var(--focus-outline-dark) r g b / 97%);
   --focus-ring: var(--focus-ring-medium);
-  --focus-ring-outset: 0 0 0 1px currentcolor,
-    0 0 0 3px var(--focus-outline-medium),
+  --focus-ring-outset:
+    0 0 0 1px currentcolor, 0 0 0 3px var(--focus-outline-medium),
     0 0 6px 2px
       hsl(from var(--focus-outline-medium) h s l / var(--focus-ring-alpha));
-  --focus-ring-inner: inset 0 0 0 1px var(--focus-outline-medium),
+  --focus-ring-inner:
+    inset 0 0 0 1px var(--focus-outline-medium),
     inset 0 0 0 3px
       hsl(from var(--focus-outline-medium) h s l / var(--focus-ring-alpha));
-  --focus-ring-inner-light: inset 0 0 0 1px var(--focus-outline-light),
+  --focus-ring-inner-light:
+    inset 0 0 0 1px var(--focus-outline-light),
     inset 0 0 0 3px
       hsl(from var(--focus-outline-light) h s l / var(--focus-ring-alpha));
 

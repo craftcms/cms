@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool isUpdateInfoCached()
  * @method static int totalAvailableUpdates(bool $check = false)
  * @method static bool isCriticalUpdateAvailable(bool $check = false)
- * @method static \CraftCms\Cms\Updates\Data\Updates getUpdates(bool $refresh = false)
- * @method static \CraftCms\Cms\Updates\Data\Updates cacheUpdates(\CraftCms\Cms\Updates\Data\Updates $updatesData)
+ * @method static \CraftCms\Cms\Update\Data\Updates getUpdates(bool $refresh = false)
+ * @method static \CraftCms\Cms\Update\Data\Updates cacheUpdates(\CraftCms\Cms\Update\Data\Updates $updatesData)
  * @method static bool areMigrationsPending(bool $includeContent = false)
  * @method static string[] pendingMigrationHandles(bool $includeContent = false)
  * @method static void runMigrations(string[] $handles)
@@ -23,13 +23,13 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool isCraftUpdatePending()
  * @method static bool updateCraftVersionInfo()
  *
- * @see \CraftCms\Cms\Updates\Updates
+ * @see \CraftCms\Cms\Update\Updates
  */
 class Updates extends Facade
 {
     #[\Override]
     protected static function getFacadeAccessor(): string
     {
-        return \CraftCms\Cms\Updates\Updates::class;
+        return \CraftCms\Cms\Update\Updates::class;
     }
 }

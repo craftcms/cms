@@ -10,7 +10,7 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Exception;
 use Illuminate\Support\Uri;
 
