@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Diff;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Path;

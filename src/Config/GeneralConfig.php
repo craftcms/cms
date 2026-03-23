@@ -6,9 +6,9 @@ namespace CraftCms\Cms\Config;
 
 use Closure;
 use Craft;
-use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;

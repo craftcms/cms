@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Gql;
 
-use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Http\Responses\GqlResponse;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites as SiteSites;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTimeZone;

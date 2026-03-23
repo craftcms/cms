@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Nodes;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;

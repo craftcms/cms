@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Validation\Rules;
 
 use Closure;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
 use DateTime;

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Shared\Enums\DateRangePeriod;
 use CraftCms\Cms\Shared\Enums\DateRangeType;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;

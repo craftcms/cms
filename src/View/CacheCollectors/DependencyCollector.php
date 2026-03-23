@@ -6,7 +6,7 @@ namespace CraftCms\Cms\View\CacheCollectors;
 
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\View\Contracts\CacheCollectorInterface;
 use CraftCms\Cms\View\Data\TemplateCacheContext;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
