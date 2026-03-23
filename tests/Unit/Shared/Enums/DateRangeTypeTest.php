@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Shared\Enums\DateRangeType;
+use CraftCms\Cms\Support\DateTimeHelper;
 
 beforeEach(function () {
     DateTimeHelper::pause();

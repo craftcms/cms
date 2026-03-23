@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -29,6 +30,7 @@ use function CraftCms\Cms\t;
  * Class DateTimeHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 6.0.0
  */
 class DateTimeHelper
@@ -64,6 +66,7 @@ class DateTimeHelper
 
     /**
      * @var string[] Supported relative time units.
+     *
      * @see relativeTimeStatement()
      * @see relativeTimeToSeconds()
      * @since 5.2.0
@@ -95,6 +98,7 @@ class DateTimeHelper
 
     /**
      * @var DateTime[]
+     *
      * @see pause()
      * @see resume()
      */
@@ -118,11 +122,12 @@ class DateTimeHelper
      *      - `timezone` – A [valid PHP timezone](https://php.net/manual/en/timezones.php). If set, this will override
      *        the assumed timezone per `$assumeSystemTimeZone`.
      *
-     * @param string|int|array|DateTimeInterface|null $value The value that should be converted to a DateTime object.
-     * @param bool $assumeSystemTimeZone Whether it should be assumed that the value was set in the system timezone if
-     * the timezone was not specified. If this is `false`, UTC will be assumed.
-     * @param bool $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
+     * @param  string|int|array|DateTimeInterface|null  $value  The value that should be converted to a DateTime object.
+     * @param  bool  $assumeSystemTimeZone  Whether it should be assumed that the value was set in the system timezone if
+     *                                      the timezone was not specified. If this is `false`, UTC will be assumed.
+     * @param  bool  $setToSystemTimeZone  Whether to set the resulting DateTime object to the system timezone.
      * @return DateTime|false The DateTime object, or `false` if $object could not be converted to one
+     *
      * @throws Exception
      */
     public static function toDateTime(mixed $value, bool $assumeSystemTimeZone = false, bool $setToSystemTimeZone = true): DateTime|false
@@ -174,12 +179,12 @@ class DateTimeHelper
 
                 if (! empty($value['time'])) {
                     [$time, $timeFormat] = static::parseTime($value['time'], $locale);
-                    $format .= ' ' . $timeFormat;
-                    $date .= ' ' . $time;
+                    $format .= ' '.$timeFormat;
+                    $date .= ' '.$time;
                 }
 
                 $format .= ' e';
-                $date .= ' ' . $timeZone;
+                $date .= ' '.$timeZone;
 
                 $dateTime = DateTime::createFromFormat("!$format", $date);
 
@@ -210,7 +215,7 @@ class DateTimeHelper
      *  - Difference to Greenwich time (GMT) in hours, with/without a colon between the hours and minutes (+0200, -0200, +02:00, -02:00)
      *  - A PHP timezone identifier (UTC, GMT, Atlantic/Azores)
      *
-     * @param string $timeZone The timezone to be normalized
+     * @param  string  $timeZone  The timezone to be normalized
      * @return string|false The PHP timezone identifier, or `false` if it could not be determined
      */
     public static function normalizeTimeZone(string $timeZone): string|false
@@ -241,7 +246,7 @@ class DateTimeHelper
      * [DateTime::ISO8601](https://php.net/manual/en/class.datetime.php#datetime.constants.iso8601) (with or without
      * the colon between the hours and minutes of the timezone).
      *
-     * @param mixed $value The timestamp to check
+     * @param  mixed  $value  The timestamp to check
      * @return bool Whether the value is an ISO-8601 date string
      */
     public static function isIso8601(mixed $value): bool
@@ -252,8 +257,8 @@ class DateTimeHelper
     /**
      * Converts a date to an ISO-8601 string.
      *
-     * @param mixed $date The date, in any format that [[toDateTime()]] supports.
-     * @param bool $setToUtc Whether the resulting string should be set to UTC.
+     * @param  mixed  $date  The date, in any format that [[toDateTime()]] supports.
+     * @param  bool  $setToUtc  Whether the resulting string should be set to UTC.
      * @return string|false The date formatted as an ISO-8601 string, or `false` if $date was not a valid date
      */
     public static function toIso8601(mixed $date, bool $setToUtc = false): string|false
@@ -281,7 +286,8 @@ class DateTimeHelper
      * If this method is called multiple times, [[resume()]] will need to be called an equal number of times before
      * time is actually resumed.
      *
-     * @param DateTime|null $now A `DateTime` object that should represent the current time for the duration of the pause
+     * @param  DateTime|null  $now  A `DateTime` object that should represent the current time for the duration of the pause
+     *
      * @since 4.1.0
      */
     public static function pause(?DateTime $now = null): void
@@ -302,8 +308,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to the current time (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.1.0
      */
     public static function now(?DateTimeZone $timeZone = null): DateTime
@@ -321,8 +327,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to midnight of the current day (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.3.0
      */
     public static function today(?DateTimeZone $timeZone = null): DateTime
@@ -333,8 +339,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to midnight of the following day (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.3.0
      */
     public static function tomorrow(?DateTimeZone $timeZone = null): DateTime
@@ -345,8 +351,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to midnight of the previous day (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.3.0
      */
     public static function yesterday(?DateTimeZone $timeZone = null): DateTime
@@ -357,8 +363,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to midnight of the first day of this week, according to the user's preferences (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.3.0
      */
     public static function thisWeek(?DateTimeZone $timeZone = null): DateTime
@@ -386,8 +392,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to midnight of the first day of next week, according to the user's preferences (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.3.0
      */
     public static function nextWeek(?DateTimeZone $timeZone = null): DateTime
@@ -398,8 +404,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to midnight of the first day of last week, according to the user's preferences (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.3.0
      */
     public static function lastWeek(?DateTimeZone $timeZone = null): DateTime
@@ -410,8 +416,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to midnight of the first day of this month (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.3.0
      */
     public static function thisMonth(?DateTimeZone $timeZone = null): DateTime
@@ -424,8 +430,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to midnight of the first day of next month (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.3.0
      */
     public static function nextMonth(?DateTimeZone $timeZone = null): DateTime
@@ -436,8 +442,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to midnight of the first day of last month (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.3.0
      */
     public static function lastMonth(?DateTimeZone $timeZone = null): DateTime
@@ -448,8 +454,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to midnight of the first day of this year (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.3.0
      */
     public static function thisYear(?DateTimeZone $timeZone = null): DateTime
@@ -462,8 +468,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to midnight of the first day of next year (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.3.0
      */
     public static function nextYear(?DateTimeZone $timeZone = null): DateTime
@@ -474,8 +480,8 @@ class DateTimeHelper
     /**
      * Returns a [[DateTime]] object set to midnight of the first day of last year (factoring in whether time is [[pause()|paused]]).
      *
-     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
-     * @return DateTime
+     * @param  DateTimeZone|null  $timeZone  The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     *
      * @since 4.3.0
      */
     public static function lastYear(?DateTimeZone $timeZone = null): DateTime
@@ -485,8 +491,6 @@ class DateTimeHelper
 
     /**
      * Returns a [[DateTime]] object set to the current time (factoring in whether time is [[pause()|paused]]), in the UTC time zone.
-     *
-     * @return DateTime
      */
     public static function currentUTCDateTime(): DateTime
     {
@@ -495,18 +499,12 @@ class DateTimeHelper
 
     /**
      * Returns the current Unix time stamp (factoring in whether time is [[pause()|paused]]).
-     *
-     * @return int
      */
     public static function currentTimeStamp(): int
     {
         return static::now()->getTimestamp();
     }
 
-    /**
-     * @param mixed $timestamp
-     * @return bool
-     */
     public static function isValidTimeStamp(mixed $timestamp): bool
     {
         if (! is_numeric($timestamp)) {
@@ -521,7 +519,7 @@ class DateTimeHelper
     /**
      * Returns true if given date is today.
      *
-     * @param mixed $date The timestamp to check
+     * @param  mixed  $date  The timestamp to check
      * @return bool true if date is today, false otherwise.
      */
     public static function isToday(mixed $date): bool
@@ -535,7 +533,7 @@ class DateTimeHelper
     /**
      * Returns true if given date was yesterday
      *
-     * @param mixed $date The timestamp to check
+     * @param  mixed  $date  The timestamp to check
      * @return bool true if date was yesterday, false otherwise.
      */
     public static function isYesterday(mixed $date): bool
@@ -549,7 +547,7 @@ class DateTimeHelper
     /**
      * Returns true if given date is in this year
      *
-     * @param mixed $date The timestamp to check
+     * @param  mixed  $date  The timestamp to check
      * @return bool true if date is in this year, false otherwise.
      */
     public static function isThisYear(mixed $date): bool
@@ -563,7 +561,7 @@ class DateTimeHelper
     /**
      * Returns true if given date is in this week
      *
-     * @param mixed $date The timestamp to check
+     * @param  mixed  $date  The timestamp to check
      * @return bool true if date is in this week, false otherwise.
      */
     public static function isThisWeek(mixed $date): bool
@@ -577,7 +575,7 @@ class DateTimeHelper
     /**
      * Returns true if given date is in this month
      *
-     * @param mixed $date The timestamp to check
+     * @param  mixed  $date  The timestamp to check
      * @return bool True if date is in this month, false otherwise.
      */
     public static function isThisMonth(mixed $date): bool
@@ -591,10 +589,11 @@ class DateTimeHelper
     /**
      * Returns true if specified datetime was within the interval specified, else false.
      *
-     * @param mixed $date The timestamp to check
-     * @param mixed $timeInterval The numeric value with space then time type.
-     * Example of valid types: '6 hours', '2 days', '1 minute'.
+     * @param  mixed  $date  The timestamp to check
+     * @param  mixed  $timeInterval  The numeric value with space then time type.
+     *                               Example of valid types: '6 hours', '2 days', '1 minute'.
      * @return bool Whether the $dateString was within the specified $timeInterval.
+     *
      * @throws InvalidArgumentException
      */
     public static function isWithinLast(mixed $date, mixed $timeInterval): bool
@@ -628,7 +627,7 @@ class DateTimeHelper
     /**
      * Returns true if the specified date was in the past, otherwise false.
      *
-     * @param mixed $date The timestamp to check
+     * @param  mixed  $date  The timestamp to check
      * @return bool true if the specified date was in the past, false otherwise.
      */
     public static function isInThePast(mixed $date): bool
@@ -639,9 +638,10 @@ class DateTimeHelper
     /**
      * Converts a value into a DateInterval object.
      *
-     * @param mixed $value The value, represented as either a [[\DateInterval]] object, an interval duration string, or a number of seconds.
-     * @return DateInterval|false
+     * @param  mixed  $value  The value, represented as either a [[\DateInterval]] object, an interval duration string, or a number of seconds.
+     *
      * @throws InvalidArgumentException
+     *
      * @since 4.2.1
      */
     public static function toDateInterval(mixed $value): DateInterval|false
@@ -655,7 +655,7 @@ class DateTimeHelper
         }
 
         if (is_numeric($value)) {
-            $value = (int)$value;
+            $value = (int) $value;
             $now = static::now(new DateTimeZone('UTC'));
             $sign = $value < 0 ? '-' : '+';
             $then = (clone $now)->modify(sprintf('%s%s seconds', $sign, abs($value)));
@@ -666,7 +666,7 @@ class DateTimeHelper
         if (is_string($value)) {
             try {
                 return new DateInterval($value);
-            } catch (Exception $exception) {
+            } catch (Exception) {
             }
         }
 
@@ -675,13 +675,10 @@ class DateTimeHelper
 
     /**
      * Returns the number of seconds that a given DateInterval object spans.
-     *
-     * @param DateInterval $dateInterval
-     * @return int
      */
     public static function intervalToSeconds(DateInterval $dateInterval): int
     {
-        $reference = new DateTimeImmutable();
+        $reference = new DateTimeImmutable;
         $endTime = $reference->add($dateInterval);
 
         return $endTime->getTimestamp() - $reference->getTimestamp();
@@ -690,8 +687,6 @@ class DateTimeHelper
     /**
      * Converts a time to an integer (the number of seconds since midnight).
      *
-     * @param int|string|DateTimeInterface|null $time
-     * @return int|null
      * @since 5.9.17
      */
     public static function timeToSeconds(int|string|DateTimeInterface|null $time): ?int
@@ -714,10 +709,10 @@ class DateTimeHelper
     /**
      * Returns a human-friendly duration string for the given date interval or number of seconds.
      *
-     * @param mixed $dateInterval The value, represented as either a [[\DateInterval]] object, an interval duration string, or a number of seconds.
-     * @param bool|null $showSeconds Whether the duration string should include the number of seconds
-     * @param string|null $language The language code that should be used. (Defaults to the current application language.)
-     * @return string
+     * @param  mixed  $dateInterval  The value, represented as either a [[\DateInterval]] object, an interval duration string, or a number of seconds.
+     * @param  bool|null  $showSeconds  Whether the duration string should include the number of seconds
+     * @param  string|null  $language  The language code that should be used. (Defaults to the current application language.)
+     *
      * @since 4.2.0
      */
     public static function humanDuration(mixed $dateInterval, ?bool $showSeconds = null, ?string $language = null): string
@@ -797,18 +792,15 @@ class DateTimeHelper
             $string .= ',';
         }
 
-        $string .= ' ' . t('and', locale: $language) . ' ';
+        $string .= ' '.t('and', locale: $language).' ';
 
-        return $string . $last;
+        return $string.$last;
     }
 
     /**
      * Returns a [relative time statement](https://www.php.net/manual/en/datetime.formats.php#datetime.formats.relative)
      * based on the given number and unit.
      *
-     * @param int $number
-     * @param string $unit
-     * @return string
      * @since 5.2.0
      */
     public static function relativeTimeStatement(int $number, string $unit): string
@@ -828,14 +820,11 @@ class DateTimeHelper
     /**
      * Converts a relative time (number and unit) to seconds.
      *
-     * @param int $number
-     * @param string $unit
-     * @return int
      * @since 5.2.0
      */
     public static function relativeTimeToSeconds(int $number, string $unit): int
     {
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable;
         $then = $now->modify(static::relativeTimeStatement($number, $unit));
 
         return $then->getTimestamp() - $now->getTimestamp();
@@ -844,7 +833,6 @@ class DateTimeHelper
     /**
      * Returns the index of the first day of the week (0-6), according to the user's preferences.
      *
-     * @return int
      * @since 4.3.0
      */
     public static function firstWeekDay(): int
@@ -856,10 +844,6 @@ class DateTimeHelper
 
     /**
      * Normalizes and returns a date string along with the format it was set in.
-     *
-     * @param string $value
-     * @param Locale $locale
-     * @return array
      */
     protected static function parseDate(string $value, Locale $locale): array
     {
@@ -900,17 +884,13 @@ class DateTimeHelper
 
     /**
      * Normalizes and returns a time string along with the format it was set in.
-     *
-     * @param string $value
-     * @param Locale $locale
-     * @return array
      */
     protected static function parseTime(string $value, Locale $locale): array
     {
         $value = trim($value);
 
         if (preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $value, $matches)) {
-            return [$value, 'H:i' . (isset($matches[1]) ? ':s' : '')];
+            return [$value, 'H:i'.(isset($matches[1]) ? ':s' : '')];
         }
 
         $format = $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
@@ -928,18 +908,18 @@ class DateTimeHelper
             $matches[] = $pmAlt;
         }
 
-        $quoted = implode('|', array_map(fn ($value) => preg_quote($value, '/'), $matches));
+        $quoted = implode('|', array_map(fn ($value) => preg_quote((string) $value, '/'), $matches));
 
         if (preg_match("/(.*)($quoted)(.*)/iu", $value, $parts)) {
-            $value = $parts[1] . $parts[3];
+            $value = $parts[1].$parts[3];
 
-            if (in_array(mb_strtolower($parts[2]), [mb_strtolower($am), mb_strtolower($amAlt)])) {
+            if (in_array(mb_strtolower($parts[2]), [mb_strtolower($am), mb_strtolower((string) $amAlt)])) {
                 $value .= 'AM';
             } else {
                 $value .= 'PM';
             }
 
-            $format = str_replace('A', '', $format) . 'A';
+            $format = str_replace('A', '', $format).'A';
         }
 
         return [
@@ -948,11 +928,6 @@ class DateTimeHelper
         ];
     }
 
-    /**
-     * @param mixed $value
-     * @param string $defaultTimeZone
-     * @return DateTime|null
-     */
     protected static function parseDateTime(mixed $value, string $defaultTimeZone): ?DateTime
     {
         $value = trim((string) $value);
@@ -987,16 +962,16 @@ class DateTimeHelper
                     )?
                 )?$/x', $value, $matches)) {
             $format = 'Y-m-d H:i:s';
-            $date = $matches['year'] .
-                '-' . (! empty($matches['mon']) ? sprintf('%02d', $matches['mon']) : '01') .
-                '-' . (! empty($matches['day']) ? sprintf('%02d', $matches['day']) : '01') .
-                ' ' . (! empty($matches['hour']) ? sprintf('%02d', $matches['hour']) : '00') .
-                ':' . (! empty($matches['min']) ? $matches['min'] : '00') .
-                ':' . (! empty($matches['sec']) ? $matches['sec'] : '00');
+            $date = $matches['year'].
+                '-'.(! empty($matches['mon']) ? sprintf('%02d', $matches['mon']) : '01').
+                '-'.(! empty($matches['day']) ? sprintf('%02d', $matches['day']) : '01').
+                ' '.(! empty($matches['hour']) ? sprintf('%02d', $matches['hour']) : '00').
+                ':'.(! empty($matches['min']) ? $matches['min'] : '00').
+                ':'.(! empty($matches['sec']) ? $matches['sec'] : '00');
 
             if (! empty($matches['ampm'])) {
                 $format .= ' A';
-                $date .= ' ' . $matches['ampm'];
+                $date .= ' '.$matches['ampm'];
             }
 
             if (! empty($matches['tz'])) {
@@ -1005,10 +980,10 @@ class DateTimeHelper
                     $date .= $matches['tzd'];
                 } elseif (! empty($matches['tz2'])) {
                     $format .= ' e';
-                    $date .= ' ' . static::normalizeTimeZone($matches['tz2']);
+                    $date .= ' '.static::normalizeTimeZone($matches['tz2']);
                 } elseif (! empty($matches['tz3'])) {
                     $format .= ' e';
-                    $date .= ' ' . $matches['tz3'];
+                    $date .= ' '.$matches['tz3'];
                 } else {
                     $format .= 'e';
                     $date .= 'UTC';

@@ -6,24 +6,24 @@ use craft\helpers\DateTimeHelper as LegacyDateTimeHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\DateTimeHelper;
 
-function supportSystemDateTime(string $dateTime = '2018-08-09 20:00:00'): \DateTime
+function supportSystemDateTime(string $dateTime = '2018-08-09 20:00:00'): DateTime
 {
-    $systemTimeZone = new \DateTimeZone(app()->getTimezone());
-    $date = new \DateTime($dateTime, new \DateTimeZone('UTC'));
+    $systemTimeZone = new DateTimeZone(app()->getTimezone());
+    $date = new DateTime($dateTime, new DateTimeZone('UTC'));
     $date->setTimezone($systemTimeZone);
 
     return $date;
 }
 
-function supportSystemDateTimeAtMidnight(): \DateTime
+function supportSystemDateTimeAtMidnight(): DateTime
 {
     return supportSystemDateTime('2018-08-09 00:00:00');
 }
 
-function supportTokyoToSystemDateTime(): \DateTime
+function supportTokyoToSystemDateTime(): DateTime
 {
-    $date = new \DateTime('2018-08-09 20:00:00', new \DateTimeZone('Asia/Tokyo'));
-    $date->setTimezone(new \DateTimeZone(app()->getTimezone()));
+    $date = new DateTime('2018-08-09 20:00:00', new DateTimeZone('Asia/Tokyo'));
+    $date->setTimezone(new DateTimeZone(app()->getTimezone()));
 
     return $date;
 }
@@ -31,9 +31,9 @@ function supportTokyoToSystemDateTime(): \DateTime
 beforeEach(function () {
     config()->set('app.timezone', 'America/Los_Angeles');
 
-    $this->systemTimeZone = new \DateTimeZone(app()->getTimezone());
-    $this->utcTimeZone = new \DateTimeZone('UTC');
-    $this->asiaTokyoTimeZone = new \DateTimeZone('Asia/Tokyo');
+    $this->systemTimeZone = new DateTimeZone(app()->getTimezone());
+    $this->utcTimeZone = new DateTimeZone('UTC');
+    $this->asiaTokyoTimeZone = new DateTimeZone('Asia/Tokyo');
 
     Cms::config()->defaultWeekStartDay = 1;
 });
@@ -60,7 +60,7 @@ describe('constants', function () {
 
 describe('pause and date anchors', function () {
     test('pauses and resumes current time', function () {
-        $now = (new \DateTime('now'))->modify('-1 minute');
+        $now = new DateTime('now')->modify('-1 minute');
         $timestamp = $now->getTimestamp();
 
         DateTimeHelper::pause($now);
@@ -77,123 +77,123 @@ describe('pause and date anchors', function () {
     });
 
     test('returns today', function () {
-        DateTimeHelper::pause(new \DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
 
         expect(DateTimeHelper::today($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-04-06 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-04-06 00:00:00', $this->utcTimeZone));
     });
 
     test('returns tomorrow', function () {
-        DateTimeHelper::pause(new \DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
 
         expect(DateTimeHelper::tomorrow($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-04-07 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-04-07 00:00:00', $this->utcTimeZone));
     });
 
     test('returns yesterday', function () {
-        DateTimeHelper::pause(new \DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
 
         expect(DateTimeHelper::yesterday($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-04-05 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-04-05 00:00:00', $this->utcTimeZone));
     });
 
     test('returns this week using configured first weekday', function () {
-        DateTimeHelper::pause(new \DateTime('2024-04-10 10:43:12', $this->utcTimeZone));
+        DateTimeHelper::pause(new DateTime('2024-04-10 10:43:12', $this->utcTimeZone));
 
         expect(DateTimeHelper::firstWeekDay())->toBe(1)
             ->and(DateTimeHelper::thisWeek($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-04-08 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-04-08 00:00:00', $this->utcTimeZone));
 
         Cms::config()->defaultWeekStartDay = 0;
 
         expect(DateTimeHelper::firstWeekDay())->toBe(0)
             ->and(DateTimeHelper::thisWeek($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-04-07 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-04-07 00:00:00', $this->utcTimeZone));
     });
 
     test('returns next week using configured first weekday', function () {
-        DateTimeHelper::pause(new \DateTime('2024-04-10 10:43:12', $this->utcTimeZone));
+        DateTimeHelper::pause(new DateTime('2024-04-10 10:43:12', $this->utcTimeZone));
 
         expect(DateTimeHelper::firstWeekDay())->toBe(1)
             ->and(DateTimeHelper::nextWeek($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-04-15 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-04-15 00:00:00', $this->utcTimeZone));
 
         Cms::config()->defaultWeekStartDay = 0;
 
         expect(DateTimeHelper::firstWeekDay())->toBe(0)
             ->and(DateTimeHelper::nextWeek($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-04-14 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-04-14 00:00:00', $this->utcTimeZone));
     });
 
     test('returns last week using configured first weekday', function () {
-        DateTimeHelper::pause(new \DateTime('2024-04-10 10:43:12', $this->utcTimeZone));
+        DateTimeHelper::pause(new DateTime('2024-04-10 10:43:12', $this->utcTimeZone));
 
         expect(DateTimeHelper::firstWeekDay())->toBe(1)
             ->and(DateTimeHelper::lastWeek($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-04-01 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-04-01 00:00:00', $this->utcTimeZone));
 
         Cms::config()->defaultWeekStartDay = 0;
 
         expect(DateTimeHelper::firstWeekDay())->toBe(0)
             ->and(DateTimeHelper::lastWeek($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-03-31 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-03-31 00:00:00', $this->utcTimeZone));
     });
 
     test('returns this month', function () {
-        DateTimeHelper::pause(new \DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
 
         expect(DateTimeHelper::thisMonth($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-04-01 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-04-01 00:00:00', $this->utcTimeZone));
     });
 
     test('returns next month', function () {
-        DateTimeHelper::pause(new \DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
 
         expect(DateTimeHelper::nextMonth($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-05-01 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-05-01 00:00:00', $this->utcTimeZone));
     });
 
     test('returns last month', function () {
-        DateTimeHelper::pause(new \DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
 
         expect(DateTimeHelper::lastMonth($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-03-01 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-03-01 00:00:00', $this->utcTimeZone));
     });
 
     test('returns this year', function () {
-        DateTimeHelper::pause(new \DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
 
         expect(DateTimeHelper::thisYear($this->utcTimeZone))
-            ->toEqual(new \DateTime('2024-01-01 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2024-01-01 00:00:00', $this->utcTimeZone));
     });
 
     test('returns last year', function () {
-        DateTimeHelper::pause(new \DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
 
         expect(DateTimeHelper::lastYear($this->utcTimeZone))
-            ->toEqual(new \DateTime('2023-01-01 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2023-01-01 00:00:00', $this->utcTimeZone));
     });
 
     test('returns next year', function () {
-        DateTimeHelper::pause(new \DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
+        DateTimeHelper::pause(new DateTime('2024-04-06 10:43:12', $this->utcTimeZone));
 
         expect(DateTimeHelper::nextYear($this->utcTimeZone))
-            ->toEqual(new \DateTime('2025-01-01 00:00:00', $this->utcTimeZone));
+            ->toEqual(new DateTime('2025-01-01 00:00:00', $this->utcTimeZone));
     });
 
     test('returns current utc datetime', function () {
         expect(DateTimeHelper::currentUTCDateTime()->format('Y-m-d H:i:s'))
-            ->toBe((new \DateTime('now', $this->utcTimeZone))->format('Y-m-d H:i:s'));
+            ->toBe(new DateTime('now', $this->utcTimeZone)->format('Y-m-d H:i:s'));
     });
 
     test('returns current timestamp', function () {
         expect(DateTimeHelper::currentTimeStamp())
-            ->toBe((new \DateTime('now', $this->utcTimeZone))->getTimestamp());
+            ->toBe(new DateTime('now', $this->utcTimeZone)->getTimestamp());
     });
 });
 
 describe('toDateTime', function () {
-    test('converts supported values', function (callable|\DateTime|false $expected, mixed $value) {
+    test('converts supported values', function (callable|DateTime|false $expected, mixed $value) {
         if (is_callable($expected)) {
             $expected = $expected();
         }
@@ -210,28 +210,28 @@ describe('toDateTime', function () {
             return;
         }
 
-        expect($date)->toBeInstanceOf(\DateTime::class)
+        expect($date)->toBeInstanceOf(DateTime::class)
             ->and(abs($date->getTimestamp() - $expected->getTimestamp()))->toBeLessThanOrEqual(1);
     })->with([
-        'timestamp' => [new \DateTime('@1625575906'), 1625575906],
-        'now' => [fn() => new \DateTime(), 'now'],
+        'timestamp' => [new DateTime('@1625575906'), 1625575906],
+        'now' => [fn () => new DateTime, 'now'],
         'no params' => [false, ['date' => '', 'time' => '']],
         'invalid separator' => [false, '2018.08.09 20:00:00'],
         'null type' => [false, null],
         'empty string' => [false, ''],
         'empty array' => [false, []],
-        'year' => [fn() => new \DateTime('2021-01-01 00:00:00', new \DateTimeZone('UTC')), '2021'],
-        'datetime with timezone' => [fn() => new \DateTime('2021-09-01T12:00', new \DateTimeZone('Europe/Berlin')), ['datetime' => '2021-09-01T12:00', 'timezone' => 'Europe/Berlin']],
-        'datetime immutable' => [fn() => new \DateTime('@1625575906'), fn() => new \DateTimeImmutable('@1625575906')],
-        'other locale' => [new \DateTime('2023-09-26 00:00:00', new \DateTimeZone('UTC')), ['date' => '26/9/2023', 'locale' => 'en-GB']],
-        'constructor' => [new \DateTime('2am', new \DateTimeZone('America/Los_Angeles')), '2am'],
+        'year' => [fn () => new DateTime('2021-01-01 00:00:00', new DateTimeZone('UTC')), '2021'],
+        'datetime with timezone' => [fn () => new DateTime('2021-09-01T12:00', new DateTimeZone('Europe/Berlin')), ['datetime' => '2021-09-01T12:00', 'timezone' => 'Europe/Berlin']],
+        'datetime immutable' => [fn () => new DateTime('@1625575906'), fn () => new DateTimeImmutable('@1625575906')],
+        'other locale' => [new DateTime('2023-09-26 00:00:00', new DateTimeZone('UTC')), ['date' => '26/9/2023', 'locale' => 'en-GB']],
+        'constructor' => [new DateTime('2am', new DateTimeZone('America/Los_Angeles')), '2am'],
     ]);
 
     test('converts values in explicit timezones to the system timezone', function (mixed $value, callable $expectedResult) {
         $expectedDate = $expectedResult();
         $date = DateTimeHelper::toDateTime($value);
 
-        expect($date)->toBeInstanceOf(\DateTime::class)
+        expect($date)->toBeInstanceOf(DateTime::class)
             ->and($date?->getTimezone()->getName())->toBe($this->systemTimeZone->getName())
             ->and($expectedDate->getTimezone()->getName())->toBe($this->systemTimeZone->getName())
             ->and($date?->format('Y-m-d H:i:s'))->toBe($expectedDate->format('Y-m-d H:i:s'));
@@ -253,37 +253,37 @@ describe('toDateTime', function () {
 
         $date = DateTimeHelper::toDateTime($value, false, false);
 
-        expect($date)->toBeInstanceOf(\DateTime::class)
+        expect($date)->toBeInstanceOf(DateTime::class)
             ->and($date?->getTimezone()->getName())->toBe($this->utcTimeZone->getName());
     })->with([
         'mysql' => '2018-08-08 20:00:00',
-        'array' => fn() => ['date' => '08-09-2018', 'time' => '08:00 PM'],
+        'array' => fn () => ['date' => '08-09-2018', 'time' => '08:00 PM'],
         'w3c format' => '2018-08-09T20:00:00',
-        'datetime object' => new \DateTime('2018-08-09', new \DateTimeZone('UTC')),
+        'datetime object' => new DateTime('2018-08-09', new DateTimeZone('UTC')),
     ]);
 
-    test('respects passed timezone when system timezone conversion is disabled', function (mixed $value, \DateTime $expectedDate, \DateTimeZone $expectedTimeZone) {
+    test('respects passed timezone when system timezone conversion is disabled', function (mixed $value, DateTime $expectedDate, DateTimeZone $expectedTimeZone) {
         $date = DateTimeHelper::toDateTime($value, false, false);
 
-        expect($date)->toBeInstanceOf(\DateTime::class)
+        expect($date)->toBeInstanceOf(DateTime::class)
             ->and($date?->getTimezone()->getName())->toBe($expectedTimeZone->getName())
             ->and($expectedDate->getTimezone()->getName())->toBe($expectedTimeZone->getName())
             ->and($date?->format('Y-m-d H:i:s'))->toBe($expectedDate->format('Y-m-d H:i:s'));
     })->with([
         'mysql format' => [
             '2018-08-09 20:00:00',
-            new \DateTime('2018-08-09 20:00:00', new \DateTimeZone('UTC')),
-            new \DateTimeZone('UTC'),
+            new DateTime('2018-08-09 20:00:00', new DateTimeZone('UTC')),
+            new DateTimeZone('UTC'),
         ],
         'array format' => [
             ['date' => '08-09-2018', 'time' => '08:00 PM', 'timezone' => 'Asia/Tokyo'],
-            new \DateTime('2018-08-09 20:00:00', new \DateTimeZone('Asia/Tokyo')),
-            new \DateTimeZone('Asia/Tokyo'),
+            new DateTime('2018-08-09 20:00:00', new DateTimeZone('Asia/Tokyo')),
+            new DateTimeZone('Asia/Tokyo'),
         ],
         'w3c format' => [
             '2018-08-09T20:00:00+09:00',
-            new \DateTime('2018-08-09 20:00:00', new \DateTimeZone('+09:00')),
-            new \DateTimeZone('+09:00'),
+            new DateTime('2018-08-09 20:00:00', new DateTimeZone('+09:00')),
+            new DateTimeZone('+09:00'),
         ],
     ]);
 
@@ -295,24 +295,24 @@ describe('toDateTime', function () {
         $expectedDate = $expectedResult();
         $date = DateTimeHelper::toDateTime($value);
 
-        expect($date)->toBeInstanceOf(\DateTime::class)
+        expect($date)->toBeInstanceOf(DateTime::class)
             ->and($date?->format('Y-m-d H:i:s'))->toBe($expectedDate->format('Y-m-d H:i:s'));
     })->with([
-        'invalid date valid time' => [fn() => ['date' => '2018-08-09', 'time' => '08:00 PM'], fn() => supportSystemDateTime()],
-        'invalid date format' => [fn() => ['date' => '2018-08-09'], supportSystemDateTimeAtMidnight(...)],
-        'basic mysql format' => ['2018-08-09 20:00:00', fn() => supportSystemDateTime()],
-        'array diff separator slash' => [fn() => ['date' => '08/09/2018', 'time' => '08:00 PM'], fn() => supportSystemDateTime()],
-        'array diff separator dot' => [fn() => ['date' => '08.09.2018', 'time' => '08:00 PM'], fn() => supportSystemDateTime()],
-        'array format' => [fn() => ['date' => '08-09-2018', 'time' => '08:00 PM'], fn() => supportSystemDateTime()],
-        'w3c format' => ['2018-08-09T20:00:00', fn() => supportSystemDateTime()],
-        'unix timestamp' => ['1533844800', fn() => supportSystemDateTime()],
+        'invalid date valid time' => [fn () => ['date' => '2018-08-09', 'time' => '08:00 PM'], supportSystemDateTime(...)],
+        'invalid date format' => [fn () => ['date' => '2018-08-09'], supportSystemDateTimeAtMidnight(...)],
+        'basic mysql format' => ['2018-08-09 20:00:00', supportSystemDateTime(...)],
+        'array diff separator slash' => [fn () => ['date' => '08/09/2018', 'time' => '08:00 PM'], supportSystemDateTime(...)],
+        'array diff separator dot' => [fn () => ['date' => '08.09.2018', 'time' => '08:00 PM'], supportSystemDateTime(...)],
+        'array format' => [fn () => ['date' => '08-09-2018', 'time' => '08:00 PM'], supportSystemDateTime(...)],
+        'w3c format' => ['2018-08-09T20:00:00', supportSystemDateTime(...)],
+        'unix timestamp' => ['1533844800', supportSystemDateTime(...)],
     ]);
 
     test('defaults empty array date to today', function () {
         $date = DateTimeHelper::toDateTime(['date' => '', 'time' => '08:00PM']);
 
-        $created = new \DateTime('now', $this->utcTimeZone);
-        $expectedDate = new \DateTime($created->format('Y-m-d').' 20:00:00', $this->utcTimeZone);
+        $created = new DateTime('now', $this->utcTimeZone);
+        $expectedDate = new DateTime($created->format('Y-m-d').' 20:00:00', $this->utcTimeZone);
         $expectedDate->setTimezone($this->systemTimeZone);
 
         expect($date?->format('Y-m-d H:i:s'))->toBe($expectedDate->format('Y-m-d H:i:s'));
@@ -340,7 +340,7 @@ describe('normalization and formatting helpers', function () {
         'placeholder' => [false, 'YYYY-MM-DDTHH:MM:SS+HH:MM'],
         'date only' => [false, '2008-09-15'],
         'plain string' => [false, 'I am not a string'],
-        'datetime object' => [false, new \DateTime('2018-09-21')],
+        'datetime object' => [false, new DateTime('2018-09-21')],
         'false' => [false, false],
         'null' => [false, null],
     ]);
@@ -348,8 +348,8 @@ describe('normalization and formatting helpers', function () {
     test('formats iso8601 values', function (string|false $expected, mixed $date) {
         expect(DateTimeHelper::toIso8601($date))->toBe($expected);
     })->with((function () {
-        $amsterdamTime = new \DateTime('2018-08-08 20:00:00', new \DateTimeZone('Europe/Amsterdam'));
-        $tokyoTime = new \DateTime('2018-08-08 20:00:00', new \DateTimeZone('Asia/Tokyo'));
+        $amsterdamTime = new DateTime('2018-08-08 20:00:00', new DateTimeZone('Europe/Amsterdam'));
+        $tokyoTime = new DateTime('2018-08-08 20:00:00', new DateTimeZone('Asia/Tokyo'));
 
         return [
             'tokyo' => ['2018-08-08T20:00:00+09:00', $tokyoTime],
@@ -424,7 +424,7 @@ describe('relative time helpers', function () {
 
 describe('date checks', function () {
     test('checks whether a date is today', function () {
-        $date = new \DateTime('now');
+        $date = new DateTime('now');
         expect(DateTimeHelper::isToday($date))->toBeTrue();
 
         $date->modify('-1 days');
@@ -438,7 +438,7 @@ describe('date checks', function () {
     });
 
     test('checks whether a date is yesterday', function () {
-        $date = new \DateTime('now');
+        $date = new DateTime('now');
         $date->modify('-1 days');
         expect(DateTimeHelper::isYesterday($date))->toBeTrue();
 
@@ -448,11 +448,11 @@ describe('date checks', function () {
         $date->modify('+2 days');
         expect(DateTimeHelper::isYesterday($date))->toBeFalse();
 
-        expect(DateTimeHelper::isYesterday(new \DateTime('yesterday')))->toBeTrue();
+        expect(DateTimeHelper::isYesterday(new DateTime('yesterday')))->toBeTrue();
     });
 
     test('checks whether a date is in this year', function () {
-        $date = new \DateTime('now');
+        $date = new DateTime('now');
         expect(DateTimeHelper::isThisYear($date))->toBeTrue();
 
         $date->modify('-1 years');
@@ -463,7 +463,7 @@ describe('date checks', function () {
     });
 
     test('checks whether a date is in this week', function () {
-        $date = new \DateTime('now');
+        $date = new DateTime('now');
         expect(DateTimeHelper::isThisWeek($date))->toBeTrue();
 
         $date->modify('-1 weeks');
@@ -477,7 +477,7 @@ describe('date checks', function () {
     });
 
     test('checks whether a date is in the past', function () {
-        $date = new \DateTime('now', $this->systemTimeZone);
+        $date = new DateTime('now', $this->systemTimeZone);
         $date->modify('-5 seconds');
         expect(DateTimeHelper::isInThePast($date))->toBeTrue();
 
@@ -489,7 +489,7 @@ describe('date checks', function () {
     });
 
     test('checks whether a date is in this month', function () {
-        $date = new \DateTime('now');
+        $date = new DateTime('now');
         expect(DateTimeHelper::isThisMonth($date))->toBeTrue();
 
         $date->modify('-35 days');
@@ -512,7 +512,7 @@ describe('interval helpers', function () {
     });
 
     test('converts intervals to seconds', function (int $expected, string $duration) {
-        $interval = new \DateInterval($duration);
+        $interval = new DateInterval($duration);
 
         expect([
             $expected,
@@ -529,8 +529,8 @@ describe('timestamps and times', function () {
     test('validates timestamps', function (bool $expected, mixed $timestamp) {
         expect(DateTimeHelper::isValidTimeStamp($timestamp))->toBe($expected);
     })->with((function () {
-        $amsterdamTime = new \DateTime('2018-12-30 20:00:00', new \DateTimeZone('Europe/Amsterdam'));
-        $tokyoTime = new \DateTime('2018-12-30 20:00:00', new \DateTimeZone('Asia/Tokyo'));
+        $amsterdamTime = new DateTime('2018-12-30 20:00:00', new DateTimeZone('Europe/Amsterdam'));
+        $tokyoTime = new DateTime('2018-12-30 20:00:00', new DateTimeZone('Asia/Tokyo'));
 
         return [
             'amsterdam timestamp' => [true, $amsterdamTime->getTimestamp()],
@@ -545,7 +545,7 @@ describe('timestamps and times', function () {
         ];
     })());
 
-    test('converts times to seconds', function (?int $expected, int|string|\DateTimeInterface|null $time) {
+    test('converts times to seconds', function (?int $expected, int|string|DateTimeInterface|null $time) {
         expect(DateTimeHelper::timeToSeconds($time))->toBe($expected);
     })->with([
         'int hour' => [3600, 3600],
@@ -554,8 +554,8 @@ describe('timestamps and times', function () {
         'string hour' => [3600, '01'],
         'string hour minute' => [3660, '01:01'],
         'string full' => [3661, '01:01:01'],
-        'datetime utc' => [3661, new \DateTime('2026-05-17 01:01:01', new \DateTimeZone('UTC'))],
-        'datetime los angeles' => [3661, new \DateTime('2026-05-17 01:01:01', new \DateTimeZone('America/Los_Angeles'))],
+        'datetime utc' => [3661, new DateTime('2026-05-17 01:01:01', new DateTimeZone('UTC'))],
+        'datetime los angeles' => [3661, new DateTime('2026-05-17 01:01:01', new DateTimeZone('America/Los_Angeles'))],
         'null' => [null, null],
     ]);
 

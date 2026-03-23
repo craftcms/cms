@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Support\DateTimeHelper;
 
 require_once __DIR__.'/GraphqlCommandTestHelpers.php';
 
