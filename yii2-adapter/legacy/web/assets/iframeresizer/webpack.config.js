@@ -13,9 +13,7 @@ module.exports = getConfig({
             from: require.resolve('iframe-resizer/js/iframeResizer.js'),
           },
           {
-            from: require.resolve(
-              'iframe-resizer/js/iframeResizer.contentWindow.js'
-            ),
+            from: require.resolve('iframe-resizer/js/iframeResizer.contentWindow.js'),
           },
         ],
       }),
