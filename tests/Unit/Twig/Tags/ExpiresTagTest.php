@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Twig\TemplateRenderer;
 
 beforeEach(function () {

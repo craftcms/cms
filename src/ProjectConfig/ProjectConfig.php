@@ -6,7 +6,7 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
 use craft\helpers\App;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use craft\services\ElementSources;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Data\Volume;

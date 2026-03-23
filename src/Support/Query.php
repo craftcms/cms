@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use DateTimeInterface;

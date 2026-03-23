@@ -13,7 +13,7 @@ use craft\elements\actions\UnsuspendUsers;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\NestedElementManager;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use craft\helpers\Template;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -1420,14 +1420,18 @@ XML;
      */
     public function getCooldownEndTime(): ?DateTime
     {
-        // There was an old bug that where a user’s lockoutDate could be null if they’ve
-        // passed their cooldownDuration already, but there account status is still locked.
-        // If that’s the case, just let it return null as if they are past the cooldownDuration.
+        // There was an old bug where a user's lockoutDate could be null if they've
+        // passed their cooldownDuration already, but their account status is still locked.
+        // If that's the case, just let it return null as if they are past the cooldownDuration.
         if ($this->locked && $this->lockoutDate) {
             $generalConfig = Cms::config();
-            $interval = DateTimeHelper::secondsToInterval($generalConfig->cooldownDuration);
+            $cooldownDuration = (int) $generalConfig->cooldownDuration;
             $cooldownEnd = clone $this->lockoutDate;
-            $cooldownEnd->add($interval);
+
+            if ($cooldownDuration !== 0) {
+                $sign = $cooldownDuration < 0 ? '-' : '+';
+                $cooldownEnd->modify(sprintf('%s%s seconds', $sign, abs($cooldownDuration)));
+            }
 
             return $cooldownEnd;
         }

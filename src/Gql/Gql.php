@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Gql;
 use Craft;
 use craft\base\ElementInterface as BaseElementInterface;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;

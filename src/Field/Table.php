@@ -8,7 +8,7 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ArrayHelper;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use CraftCms\Cms\Cp\FormFields;

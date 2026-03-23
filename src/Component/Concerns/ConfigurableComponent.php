@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Component\Concerns;
 
 use BackedEnum;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Component\Events\DefineSettingsAttributes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;

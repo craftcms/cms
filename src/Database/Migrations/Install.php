@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Migrations;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use craft\web\Response;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
