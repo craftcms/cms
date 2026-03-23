@@ -60,7 +60,7 @@ describe('HtmlTwigExtension', function () {
     });
 
     it('rejects custom flavors when encode is enabled', function () {
-        $extension = new HtmlTwigExtension($this->pageLifecycle, $this->env);
+        $extension = new HtmlTwigExtension;
 
         $extension->markdownFilter('**bold**', 'gfm', false, true);
     })->throws(InvalidArgumentException::class, 'The Markdown flavor cannot be specified when passing `encode=true`.');
