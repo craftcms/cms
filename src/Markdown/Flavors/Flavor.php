@@ -11,16 +11,18 @@ abstract class Flavor
 {
     protected function environment(MarkdownOptions $options, string $softBreak = "\n"): Environment
     {
-        return new Environment([
-            'html_input' => 'allow',
-            'allow_unsafe_links' => $options->allowUnsafeLinks,
-            'max_nesting_level' => PHP_INT_MAX,
-            'max_delimiters_per_line' => PHP_INT_MAX,
-            'renderer' => [
-                'block_separator' => "\n",
-                'inner_separator' => "\n",
+        $config = [];
+
+        if (! $options->allowUnsafeLinks) {
+            $config['allow_unsafe_links'] = false;
+        }
+
+        if ($softBreak !== "\n") {
+            $config['renderer'] = [
                 'soft_break' => $softBreak,
-            ],
-        ]);
+            ];
+        }
+
+        return new Environment($config);
     }
 }

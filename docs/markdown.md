@@ -204,6 +204,13 @@ If you do not need that legacy compatibility, prefer the standard `original`, `g
 
 Legacy parser classes still exist in `yii2-adapter/legacy/markdown/`, but they now forward to the new Markdown service.
 
+The compatibility toggles that still affect rendering are:
+
+- `parseJavaScriptLinks` on the legacy parser classes
+- `enableNewlines` on `GithubMarkdown`
+
+The legacy `html5` and `codeAttributesOnPre` properties no longer map to CommonMark options. If they are changed from their defaults, Craft logs a deprecation warning and ignores them.
+
 Those classes are deprecated. New code should call the Markdown facade or resolve `CraftCms\Cms\Markdown\Markdown` from the container directly.
 
 ## Testing

@@ -8,6 +8,8 @@
 
 namespace craft\markdown;
 
+use CraftCms\Cms\Support\Facades\Deprecator;
+
 /**
  * Markdown parser
  *
@@ -23,5 +25,17 @@ class MarkdownExtra extends BaseMarkdownParser
     protected function flavor(): string
     {
         return 'extra';
+    }
+
+    protected function logIgnoredSettings(): void
+    {
+        parent::logIgnoredSettings();
+
+        if ($this->codeAttributesOnPre) {
+            Deprecator::log(
+                sprintf('%s::$codeAttributesOnPre', static::class),
+                sprintf('`%s::$codeAttributesOnPre` is deprecated and ignored. Code block attributes use the CommonMark defaults.', static::class),
+            );
+        }
     }
 }

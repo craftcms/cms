@@ -3,7 +3,13 @@
 use craft\helpers\Cp;
 use craft\markdown\GithubMarkdown;
 use craft\markdown\Markdown;
+use craft\markdown\MarkdownExtra;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use yii\helpers\Markdown as MarkdownHelper;
+
+beforeEach(function() {
+    app()->forgetScopedInstances();
+});
 
 it('renders markdown through the yii helper flavors', function() {
     expect(MarkdownHelper::process('**bold**'))->toBe("<p><strong>bold</strong></p>\n")
@@ -40,4 +46,28 @@ it('honors the github parser newline toggle', function() {
 
     expect($parser->parse("line one\nline two"))
         ->toBe("<p>line one<br>\nline two</p>\n");
+});
+
+it('logs that the legacy html5 toggle is ignored', function() {
+    $parser = new Markdown();
+    $parser->html5 = false;
+
+    $parser->parse("line one  \nline two");
+
+    $logs = array_values(Deprecator::getRequestLogs());
+
+    expect($logs)->toHaveCount(1)
+        ->and($logs[0]->message)->toContain('HTML5 output is always used');
+});
+
+it('logs that the legacy codeAttributesOnPre toggle is ignored', function() {
+    $parser = new MarkdownExtra();
+    $parser->codeAttributesOnPre = true;
+
+    $parser->parse("``` {.foo}\nbar\n```");
+
+    $logs = array_values(Deprecator::getRequestLogs());
+
+    expect($logs)->toHaveCount(1)
+        ->and($logs[0]->message)->toContain('Code block attributes use the CommonMark defaults');
 });

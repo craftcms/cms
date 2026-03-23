@@ -8,6 +8,7 @@
 
 namespace craft\markdown;
 
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
 
 abstract class BaseMarkdownParser
@@ -23,6 +24,8 @@ abstract class BaseMarkdownParser
      */
     public function parse(string $markdown): string
     {
+        $this->logIgnoredSettings();
+
         return MarkdownFacade::parse(
             markdown: $markdown,
             flavor: $this->flavor(),
@@ -35,10 +38,22 @@ abstract class BaseMarkdownParser
      */
     public function parseParagraph(string $markdown): string
     {
+        $this->logIgnoredSettings();
+
         return MarkdownFacade::parseParagraph(
             markdown: $markdown,
             flavor: $this->flavor(),
             allowUnsafeLinks: $this->parseJavaScriptLinks,
         );
+    }
+
+    protected function logIgnoredSettings(): void
+    {
+        if (!$this->html5) {
+            Deprecator::log(
+                sprintf('%s::$html5', static::class),
+                sprintf('`%s::$html5` is deprecated and ignored. HTML5 output is always used.', static::class),
+            );
+        }
     }
 }
