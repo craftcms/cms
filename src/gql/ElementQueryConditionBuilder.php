@@ -157,7 +157,7 @@ class ElementQueryConditionBuilder extends Component
 
         // Load up all eager loading rules.
         $extractedConditions = [
-            'with' => $this->_traversAndBuildPlans($startingNode, $rootPlan, $startingParentField, null, $startingParentField ? $startingParentField->context : 'global'),
+            'with' => $this->_traverseAndBuildPlans($startingNode, $rootPlan, $startingParentField, null, $startingParentField ? $startingParentField->context : 'global'),
         ];
 
         if (!empty($rootPlan->criteria['withTransforms'])) {
@@ -385,7 +385,7 @@ class ElementQueryConditionBuilder extends Component
      * @param string $context the context in which to search fields
      * @return array
      */
-    private function _traversAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, ?FieldInterface $parentField = null, ?Node $wrappingFragment = null, string $context = 'global'): array
+    private function _traverseAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, ?FieldInterface $parentField = null, ?Node $wrappingFragment = null, string $context = 'global'): array
     {
         $subNodes = $parentNode->selectionSet->selections ?? [];
         $plans = [];
@@ -536,7 +536,7 @@ class ElementQueryConditionBuilder extends Component
                             $traverseContext = $context;
                         }
 
-                        $plan->nested = $this->_traversAndBuildPlans($subNode, $plan, $nodeName === self::LOCALIZED_NODENAME ? $parentField : $craftContentField, $wrappingFragment, $traverseContext);
+                        $plan->nested = $this->_traverseAndBuildPlans($subNode, $plan, $nodeName === self::LOCALIZED_NODENAME ? $parentField : $craftContentField, $wrappingFragment, $traverseContext);
                     }
                 }
                 // If not, see if it's a fragment
@@ -558,7 +558,7 @@ class ElementQueryConditionBuilder extends Component
                     // Build the prefix, load the context and proceed in a recursive manner
                     try {
                         $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
-                        $plan->nested = $this->_traversAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $gqlFragmentEntity->getFieldContext());
+                        $plan->nested = $this->_traverseAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $gqlFragmentEntity->getFieldContext());
 
                         // Correct the handles and, maybe, aliases.
                         foreach ($plan->nested as $nestedPlan) {
@@ -570,11 +570,11 @@ class ElementQueryConditionBuilder extends Component
                         }
                         // This is to be expected, depending on whether the fragment is targeted towards the field itself instead of its subtypes.
                     } catch (InvalidArgumentException) {
-                        $plan->nested = $this->_traversAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $context);
+                        $plan->nested = $this->_traverseAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $context);
                     }
                     // If we are not, just expand the fragment and traverse it as if on the same level in the query tree
                 } else {
-                    $plan->nested = $this->_traversAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $context);
+                    $plan->nested = $this->_traverseAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $context);
                 }
             }
 
