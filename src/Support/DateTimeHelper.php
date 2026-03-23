@@ -646,6 +646,8 @@ class DateTimeHelper
      */
     public static function toDateInterval(mixed $value): DateInterval|false
     {
+        $exception = null;
+
         if ($value instanceof DateInterval) {
             return $value;
         }
@@ -666,7 +668,7 @@ class DateTimeHelper
         if (is_string($value)) {
             try {
                 return new DateInterval($value);
-            } catch (Exception) {
+            } catch (Exception $exception) {
             }
         }
 
