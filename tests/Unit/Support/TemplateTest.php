@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Template;
+use CraftCms\Cms\View\HtmlStack;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
 use Twig\Loader\ArrayLoader;
@@ -109,6 +110,17 @@ describe('contextWithoutTemplate', function () {
         ]))->toBe([
             'value' => 'kept',
         ]);
+    });
+});
+
+describe('js', function () {
+    it('defaults to the body-end position when no position option is provided', function () {
+        $htmlStack = app(HtmlStack::class);
+        $htmlStack->clear();
+
+        Template::js('var x = 1');
+
+        expect($htmlStack->bodyEndHtml())->toContain('var x = 1;');
     });
 });
 

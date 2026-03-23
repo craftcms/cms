@@ -169,7 +169,7 @@ class Template
             return;
         }
 
-        $position = Position::tryFrom($options['position']) ?? Position::BodyEnd;
+        $position = Position::tryFrom($options['position'] ?? Position::BodyEnd->value) ?? Position::BodyEnd;
         HtmlStack::js($js, $position, $key);
     }
 
