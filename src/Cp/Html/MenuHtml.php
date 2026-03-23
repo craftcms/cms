@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Html;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\SiteGroups;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
@@ -171,7 +171,7 @@ readonly class MenuHtml
             $groupSiteItems = $groupSites->map(fn (Site $site) => [
                 'status' => $sites[$site->id]['status'] ?? null,
                 'label' => t($site->getName(), category: 'site'),
-                'url' => UrlHelper::cpUrl($path, ['site' => $site->handle] + $params),
+                'url' => URL::cpUrl($path, ['site' => $site->handle] + $params),
                 'hidden' => ! isset($sites[$site->id]),
                 'selected' => $site->id === $selectedSite?->id,
                 'attributes' => [

@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Http\Controllers\Updates;
 
 use Composer\Semver\Comparator;
 use Craft;
-use craft\helpers\UrlHelper;
 use craft\web\Application;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -16,6 +15,7 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
@@ -75,7 +75,7 @@ class UpdaterController extends BaseUpdaterController
             'title' => $this->pageTitle(),
             'initialState' => $state,
             'actionPrefix' => 'updater',
-            'returnUrl' => UrlHelper::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect()),
+            'returnUrl' => URL::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect()),
         ])->toResponse($this->request);
     }
 
@@ -309,7 +309,7 @@ class UpdaterController extends BaseUpdaterController
     #[Override]
     protected function returnUrl(): string
     {
-        return UrlHelper::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
+        return URL::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
     }
 
     #[Override]

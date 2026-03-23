@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Responses;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\MenuHtml;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
@@ -352,7 +352,7 @@ class CpScreenResponse implements Responsable
 
         $this->crumbs[] = [
             'label' => $label,
-            'url' => $url ? UrlHelper::cpUrl($url) : null,
+            'url' => $url ? URL::cpUrl($url) : null,
         ];
 
         return $this;
@@ -793,7 +793,7 @@ class CpScreenResponse implements Responsable
         $errorSummary = $this->errorSummary ? InputNamespace::namespaceInputs($this->errorSummary, $namespace) : null;
 
         return new JsonResponse([
-            'editUrl' => $this->editUrl ? UrlHelper::cpUrl($this->editUrl) : null,
+            'editUrl' => $this->editUrl ? URL::cpUrl($this->editUrl) : null,
             'namespace' => $namespace,
             'title' => $this->title,
             'notice' => $notice,
@@ -878,7 +878,7 @@ class CpScreenResponse implements Responsable
                 'selectedSubnavItem' => $this->selectedSubnavItem,
                 'crumbs' => array_map(function (array $crumb): array {
                     if (isset($crumb['url'])) {
-                        $crumb['url'] = UrlHelper::cpUrl($crumb['url']);
+                        $crumb['url'] = URL::cpUrl($crumb['url']);
                     }
 
                     return $crumb;

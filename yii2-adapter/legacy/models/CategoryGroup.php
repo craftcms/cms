@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Category;
-use craft\helpers\UrlHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -22,6 +21,7 @@ use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use DateTime;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -145,7 +145,7 @@ class CategoryGroup extends Model implements
         if (!$this->id || !Auth::user()?->isAdmin()) {
             return null;
         }
-        return UrlHelper::cpUrl("settings/categories/$this->id");
+        return URL::cpUrl("settings/categories/$this->id");
     }
 
     /**

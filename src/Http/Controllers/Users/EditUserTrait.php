@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Users;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
 use Illuminate\Http\Request;
@@ -199,6 +199,6 @@ trait EditUserTrait
             default => "$basePath/$screen",
         };
 
-        return UrlHelper::cpUrl($path);
+        return URL::cpUrl($path);
     }
 }

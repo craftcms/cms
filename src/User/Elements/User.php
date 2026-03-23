@@ -15,7 +15,6 @@ use craft\elements\db\EagerLoadPlan;
 use craft\elements\NestedElementManager;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Template;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
@@ -50,6 +49,7 @@ use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -1455,14 +1455,14 @@ XML;
     protected function cpEditUrl(): ?string
     {
         if (request()->isCpRequest() && $this->getIsCurrent()) {
-            return UrlHelper::cpUrl('myaccount');
+            return URL::cpUrl('myaccount');
         }
 
         if (Edition::get() === Edition::Solo) {
             return null;
         }
 
-        return UrlHelper::cpUrl("users/$this->id");
+        return URL::cpUrl("users/$this->id");
     }
 
     #[Override]

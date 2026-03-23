@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\Serializable;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
@@ -44,6 +42,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -540,7 +539,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return null;
         }
 
-        return UrlHelper::cpUrl("settings/fields/edit/$this->id");
+        return URL::cpUrl("settings/fields/edit/$this->id");
     }
 
     public function getActionMenuItems(): array

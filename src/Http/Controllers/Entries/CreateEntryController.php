@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Http\Controllers\Entries;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -113,9 +113,7 @@ readonly class CreateEntryController
         ]));
 
         if (! $this->request->wantsJson()) {
-            $response->headers->set('Location', UrlHelper::urlWithParams($editUrl, [
-                'fresh' => 1,
-            ]));
+            $response->headers->set('Location', URL::urlWithParams($editUrl, ['fresh' => 1]));
         }
 
         return $response;

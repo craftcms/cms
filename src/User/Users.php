@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use craft\web\Request;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -32,6 +31,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\ActivatingUser;
@@ -1226,25 +1226,25 @@ class Users
         $cp = (
             Edition::get()->value < Edition::Pro->value ||
             ($isCpRequest && $user->can('accessCp')) ||
-            (Cms::config()->headlessMode && ! UrlHelper::isAbsoluteUrl($fePath))
+            (Cms::config()->headlessMode && ! URL::isAbsoluteUrl($fePath))
         );
-        $scheme = UrlHelper::getSchemeForTokenizedUrl($cp);
+        $scheme = URL::getSchemeForTokenizedUrl($cp);
         $siteId = $isCpRequest ? $user->affiliatedSiteId : null;
 
         if (! $cp) {
-            return UrlHelper::siteUrl($fePath, $params, $scheme, siteId: $siteId);
+            return URL::siteUrl($fePath, $params, $scheme, siteId: $siteId);
         }
 
         // Only use cpUrl() if this is a control panel request, or the base control panel URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
         if (Cms::config()->baseCpUrl || $isCpRequest) {
-            $url = UrlHelper::cpUrl($cpPath, $params, $scheme);
+            $url = URL::cpUrl($cpPath, $params, $scheme);
         } else {
-            $path = UrlHelper::prependCpTrigger($cpPath);
-            $url = UrlHelper::siteUrl($path, $params, $scheme, siteId: $siteId);
+            $path = URL::prependCpTrigger($cpPath);
+            $url = URL::siteUrl($path, $params, $scheme, siteId: $siteId);
         }
 
-        if (UrlHelper::isRootRelativeUrl($url)) {
+        if (URL::isRootRelativeUrl($url)) {
             $request = request();
             if (! app()->runningInConsole()) {
                 $url = rtrim($request->getSchemeAndHttpHost().$request->getBaseUrl(), '/').$url;

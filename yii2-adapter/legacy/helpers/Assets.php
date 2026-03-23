@@ -25,6 +25,7 @@ use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
 use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\URL;
 use DateTime;
 use Exception;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
@@ -66,7 +67,7 @@ class Assets extends AssetsHelper
 
         $revParams = self::revParams($asset, $dateUpdated);
 
-        return sprintf('?%s', UrlHelper::buildQuery($revParams));
+        return sprintf('?%s', URL::buildQuery($revParams));
     }
 
     /**
@@ -97,7 +98,7 @@ class Assets extends AssetsHelper
             throw new InvalidArgumentException("$extension isn’t a valid file extension.");
         }
 
-        return UrlHelper::actionUrl('assets/icon', [
+        return URL::actionUrl('assets/icon', [
             'extension' => $extension,
         ]);
     }

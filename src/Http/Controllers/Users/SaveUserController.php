@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Auth;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
@@ -453,7 +453,7 @@ readonly class SaveUserController
         }
 
         $postCpLoginRedirect = $this->generalConfig->getPostCpLoginRedirect();
-        $url = UrlHelper::cpUrl($postCpLoginRedirect);
+        $url = URL::cpUrl($postCpLoginRedirect);
 
         return redirect($url);
     }
@@ -464,7 +464,7 @@ readonly class SaveUserController
     private function redirectUserAfterAccountActivation(User $user): Response
     {
         $activateAccountSuccessPath = $this->generalConfig->getActivateAccountSuccessPath();
-        $url = UrlHelper::siteUrl($activateAccountSuccessPath);
+        $url = URL::siteUrl($activateAccountSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);
     }

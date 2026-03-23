@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
@@ -184,7 +183,7 @@ class Html
         }
 
         HtmlStack::html(template('_special/async-csrf-input', [
-            'url' => UrlHelper::actionUrl('users/session-info'),
+            'url' => URL::actionUrl('users/session-info'),
         ], templateMode: TemplateMode::Cp));
 
         return self::tag('craft-csrf-input');
@@ -309,7 +308,7 @@ class Html
     {
         if ($url !== null) {
             // Use UrlHelper::url() instead of Url::to()
-            $options['href'] = UrlHelper::url($url);
+            $options['href'] = URL::url($url);
         }
 
         return self::tag('a', $text, $options);

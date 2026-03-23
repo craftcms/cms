@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Asset;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -35,6 +34,7 @@ use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -142,7 +142,7 @@ class Assets
         $extension = $asset->getExtension();
 
         if (! ImageHelper::canManipulateAsImage($extension)) {
-            return $iconFallback ? UrlHelper::actionUrl('assets/icon', [
+            return $iconFallback ? URL::actionUrl('assets/icon', [
                 'extension' => $extension,
             ]) : null;
         }
@@ -161,7 +161,7 @@ class Assets
         }
 
         if ($url === null) {
-            return $iconFallback ? UrlHelper::actionUrl('assets/icon', [
+            return $iconFallback ? URL::actionUrl('assets/icon', [
                 'extension' => $extension,
             ]) : null;
         }

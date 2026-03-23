@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\OAuth\OAuth;
@@ -142,8 +141,8 @@ readonly class OAuthController extends AuthenticationController
     private function defaultReturnUrl(bool $isCpRequest): string
     {
         return $isCpRequest
-            ? UrlHelper::cpUrl($this->generalConfig->getPostCpLoginRedirect())
-            : UrlHelper::siteUrl($this->generalConfig->getPostLoginRedirect());
+            ? \CraftCms\Cms\Support\URL::cpUrl($this->generalConfig->getPostCpLoginRedirect())
+            : \CraftCms\Cms\Support\URL::siteUrl($this->generalConfig->getPostLoginRedirect());
     }
 
     private function loginUrl(bool $isCpRequest): string
@@ -156,7 +155,7 @@ readonly class OAuthController extends AuthenticationController
             throw new RuntimeException('The loginPath config setting is disabled.');
         }
 
-        return UrlHelper::siteUrl($loginPath);
+        return \CraftCms\Cms\Support\URL::siteUrl($loginPath);
     }
 
     private function getAuthError(User $user, bool $isCpRequest): ?AuthError

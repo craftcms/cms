@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Gql\Resolvers\Mutations;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Gql\Resolvers\ElementMutationResolver;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Support\URL;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -220,7 +220,7 @@ class Asset extends ElementMutationResolver
             }
 
             if (empty($fileInformation['filename'])) {
-                $filename = AssetsHelper::prepareAssetName(pathinfo(UrlHelper::stripQueryString($url), PATHINFO_BASENAME));
+                $filename = AssetsHelper::prepareAssetName(pathinfo(URL::stripQueryString($url), PATHINFO_BASENAME));
             } else {
                 $filename = AssetsHelper::prepareAssetName($fileInformation['filename']);
             }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\URL;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -348,7 +348,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                                 ],
                                 'hx' => [
                                     'vals' => ['uid' => $rule->uid],
-                                    'post' => UrlHelper::actionUrl('conditions/remove-rule'),
+                                    'post' => URL::actionUrl('conditions/remove-rule'),
                                 ],
                             ]).
                             Html::endTag('div');
@@ -374,7 +374,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                     $this->sortable ? 'sortable' : null,
                 ]),
                 'hx' => [
-                    'post' => UrlHelper::actionUrl('conditions/render'),
+                    'post' => URL::actionUrl('conditions/render'),
                     'trigger' => 'end', // sortable library triggers this event
                 ],
             ]
@@ -568,7 +568,7 @@ JS,
             Html::hiddenInput($rule ? 'type' : 'new-rule-type', $ruleValue, [
                 'id' => $inputId,
                 'hx' => [
-                    'post' => UrlHelper::actionUrl('conditions/render'),
+                    'post' => URL::actionUrl('conditions/render'),
                 ],
             ]);
     }

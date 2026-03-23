@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Data;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Actionable;
@@ -28,6 +27,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Support\Facades\Auth;
 use Stringable;
@@ -224,7 +224,7 @@ JS, [
             return null;
         }
 
-        return UrlHelper::cpUrl("settings/entry-types/$this->id");
+        return URL::cpUrl("settings/entry-types/$this->id");
     }
 
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Address\Conditions;
 
 use craft\base\ElementInterface;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Cp\FormFields;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Addresses;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\URL;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -83,7 +83,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
             'value' => $this->countryCode,
             'inputAttributes' => [
                 'hx' => [
-                    'post' => UrlHelper::actionUrl('conditions/render'),
+                    'post' => URL::actionUrl('conditions/render'),
                 ],
             ],
         ]);

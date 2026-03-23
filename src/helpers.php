@@ -8,8 +8,8 @@ use BackedEnum;
 use Closure;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Twig\TemplateRenderer;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\RedirectResponse;
@@ -34,14 +34,19 @@ function t(string|Stringable|null $id, array $parameters = [], ?string $category
     return I18N::translate($id ?? '', $parameters, $category, $locale);
 }
 
-function action_url(string $url = ''): string
+function action_url(string $path = '', array|string|null $params = null, ?string $scheme = null): string
 {
-    return Str::start($url, Str::finish(Cms::config()->actionTrigger, '/'));
+    return URL::actionUrl($path, $params, $scheme);
 }
 
-function cp_url(string $url = ''): string
+function cp_url(string $path = '', array|string|null $params = null, ?string $scheme = null): string
 {
-    return Str::start($url, Str::finish(Cms::config()->cpTrigger, '/'));
+    return URL::cpUrl($path, $params, $scheme);
+}
+
+function site_url(string $path = '', array|string|null $params = null, ?string $scheme = null, ?int $siteId = null): string
+{
+    return URL::siteUrl($path, $params, $scheme, $siteId);
 }
 
 function cp_redirect(string $url, int $status = 302, array $headers = [], ?bool $secure = null): RedirectResponse
