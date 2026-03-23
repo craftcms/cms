@@ -646,8 +646,6 @@ class DateTimeHelper
      */
     public static function toDateInterval(mixed $value): DateInterval|false
     {
-        $exception = null;
-
         if ($value instanceof DateInterval) {
             return $value;
         }
@@ -672,7 +670,7 @@ class DateTimeHelper
             }
         }
 
-        throw new InvalidArgumentException('Unable to convert the value to a DateInterval.', 0, $exception ?? null);
+        throw new InvalidArgumentException('Unable to convert the value to a DateInterval.');
     }
 
     /**

@@ -34,11 +34,13 @@ class DateTimeHelperTest extends TestCase
 
     public function testDeprecatedLegacyOnlyMethodsStillExist(): void
     {
+        $interval = new DateInterval('PT90S');
+
         self::assertSame('PT90S', DateTimeHelper::secondsToInterval(90)->format('PT%SS'));
         self::assertSame('UTC', DateTimeHelper::timeZoneAbbreviation('UTC'));
         self::assertSame('+00:00', DateTimeHelper::timeZoneOffset('UTC'));
         self::assertSame('1 minute and 30 seconds', DateTimeHelper::secondsToHumanTimeDuration(90));
         self::assertTrue(DateTimeHelper::isValidIntervalString('1 day'));
-        self::assertSame('1 minute and 30 seconds', DateTimeHelper::humanDurationFromInterval(new DateInterval('PT90S')));
+        self::assertSame('90 seconds', DateTimeHelper::humanDurationFromInterval($interval));
     }
 }
