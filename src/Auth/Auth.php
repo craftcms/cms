@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Session;
 use InvalidArgumentException;
 use RuntimeException;
 use SensitiveParameter;
-use Webauthn\PublicKeyCredentialRequestOptions;
+use Webauthn\Exception\InvalidUserHandleException;
 
 use function CraftCms\Cms\t;
 
@@ -279,7 +279,7 @@ class Auth
         return true;
     }
 
-    public function authenticateWithPasskey(User $user, PublicKeyCredentialRequestOptions|array|string $requestOptions, string $response): bool
+    public function authenticateWithPasskey(User $user, string $requestOptions, string $response): bool
     {
         event($event = new Authenticating);
 
@@ -305,6 +305,8 @@ class Auth
         // Validate the security key
         try {
             $keyValid = $this->passkeys->verifyPasskey($user, $requestOptions, $response);
+        } catch (InvalidUserHandleException) {
+            $keyValid = $this->passkeys->verifyPasskey($user, $requestOptions, $response, checkOldUserHandle: true);
         } catch (InvalidArgumentException) {
             $keyValid = false;
         }

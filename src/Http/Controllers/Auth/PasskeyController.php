@@ -20,8 +20,10 @@ readonly class PasskeyController extends AuthenticationController
 {
     public function requestOptions(Passkeys $passkeys): JsonResponse
     {
+        $serializer = $passkeys->webauthnServer()->getSerializer();
+
         return new JsonResponse([
-            'options' => $passkeys->getPasskeyRequestOptions(),
+            'options' => $serializer->serialize($passkeys->getPasskeyRequestOptions(), 'json'),
         ]);
     }
 

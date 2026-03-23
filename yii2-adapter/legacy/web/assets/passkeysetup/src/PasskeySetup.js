@@ -104,7 +104,9 @@ Craft.PasskeySetup = Garnish.Base.extend({
     let regResponse;
 
     try {
-      regResponse = await startRegistration(data.options);
+      regResponse = await startRegistration({
+        optionsJSON: JSON.parse(data.options),
+      });
     } catch (e) {
       Craft.cp.displayError(e?.message);
       return;

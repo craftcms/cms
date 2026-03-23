@@ -147,7 +147,7 @@ class Site extends Component implements Chippable, Stringable
         }
 
         if ($parse) {
-            return Env::parseBoolean($this->_enabled) ?? true;
+            return Env::parseBoolean($this->_enabled) ?? false;
         }
 
         return $this->_enabled;
