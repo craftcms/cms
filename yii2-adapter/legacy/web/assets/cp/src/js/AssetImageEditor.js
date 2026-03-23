@@ -1443,10 +1443,31 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.storeCropperState(cropperState);
         this.storeFocalPointState(focalPointState);
 
+        // Temporarily bypass fabric.js's _set normalization for scale properties.
+        // fabric.js normalizes negative scaleX/scaleY by toggling flipX/flipY and
+        // making the value positive. During animation, set() is called on every
+        // frame, so each frame with a negative scale value toggles flipX/flipY.
+        // The final flip state becomes non-deterministic based on frame count.
+        var originalSet = this.image._set;
+        this.image._set = function (key, value) {
+          if (key === 'scaleX' || key === 'scaleY') {
+            this[key] = value;
+            this.dirty = true;
+            return this;
+          }
+          return originalSet.call(this, key, value);
+        };
+
+        // Ensure flipX/flipY are reset before animating, in case a previous
+        // buggy animation left them in an inconsistent state.
+        this.image.flipX = false;
+        this.image.flipY = false;
+
         this.image.animate(properties, {
           onChange: this.canvas.renderAll.bind(this.canvas),
           duration: this.settings.animationDuration,
           onComplete: () => {
+            this.image._set = originalSet;
             this.animationInProgress = false;
             if (this.focalPoint) {
               // Well this is handy

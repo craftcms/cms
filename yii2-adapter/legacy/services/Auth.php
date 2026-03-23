@@ -13,6 +13,8 @@ use CraftCms\Cms\Auth\Events\RegisterAuthMethods;
 use CraftCms\Cms\Auth\Events\SettingPassword;
 use CraftCms\Cms\Auth\Methods\AuthMethodInterface;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
+use CraftCms\Cms\Auth\Passkeys\WebauthnServer;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use DateTime;
@@ -272,6 +274,17 @@ class Auth extends Component
         PublicKeyCredentialRequestOptions|array|string $requestOptions,
         string $response,
     ): bool {
+        if (is_array($requestOptions)) {
+            $requestOptions = Json::encode($requestOptions);
+        }
+
+        if (!is_string($requestOptions)) {
+            $requestOptions = app(Passkeys::class)
+                ->webauthnServer()
+                ->getSerializer()
+                ->serialize($requestOptions, 'json');
+        }
+
         return app(Passkeys::class)->verifyPasskey($user, $requestOptions, $response);
     }
 
@@ -285,6 +298,16 @@ class Auth extends Component
     public function deletePasskey(User $user, string $uid): void
     {
         app(Passkeys::class)->deletePasskey($user, $uid);
+    }
+
+    /**
+     * Returns the WebAuthn server.
+     *
+     * @deprecated 6.0.0 use {@see Passkeys::webauthnServer} instead.
+     */
+    public function webauthnServer(): WebauthnServer
+    {
+        return app(Passkeys::class)->webauthnServer();
     }
 
     public static function registerEvents(): void

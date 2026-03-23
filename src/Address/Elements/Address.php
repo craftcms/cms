@@ -489,6 +489,20 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     #[Override]
+    public function getChipLabelHtml(): string
+    {
+        $html = (string) parent::getChipLabelHtml();
+
+        if ($html !== '') {
+            return $html;
+        }
+
+        return t('Untitled {type}', [
+            'type' => self::lowerDisplayName(),
+        ]);
+    }
+
+    #[Override]
     protected function cacheTags(): array
     {
         $tags = [];

@@ -344,7 +344,7 @@ class Gql
 
                 [$dep, $duration] = $elementsService->stopCollectingCacheInfo();
 
-                if (empty($result['errors']) && $cacheKey) {
+                if (empty($result['errors']) && $cacheKey && $this->shouldCache($result)) {
                     $this->setCachedResult($cacheKey, $result, $dep, $duration);
                 }
             }
@@ -374,6 +374,25 @@ class Gql
     public function getCachedResult(string $cacheKey): ?array
     {
         return DependencyCache::get($cacheKey) ?: null;
+    }
+
+    private function shouldCache(array $result): bool
+    {
+        foreach ($result as $value) {
+            if (is_string($value)) {
+                if (str_contains(stripslashes($value), 'assets/generate-transform')) {
+                    return false;
+                }
+
+                continue;
+            }
+
+            if (is_array($value) && ! $this->shouldCache($value)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function setCachedResult(

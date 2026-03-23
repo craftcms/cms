@@ -141,8 +141,8 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
-            'minTime' => $this->min,
-            'maxTime' => $this->max,
+            'minTime' => DateTimeHelper::timeToSeconds($this->min),
+            'maxTime' => DateTimeHelper::timeToSeconds($this->max),
             'minuteIncrement' => $this->minuteIncrement,
         ]);
     }

@@ -11,6 +11,8 @@ use Carbon\CarbonInterval;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
+use craft\helpers\App;
+use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
@@ -34,11 +36,13 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use DateInterval;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
+use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
@@ -99,17 +103,35 @@ class AppController extends Controller
      */
     public function actionResourceJs(string $url): Response
     {
-        if (!str_starts_with($url, Craft::$app->getAssetManager()->baseUrl)) {
+        $assetManager = Craft::$app->getAssetManager();
+        $baseUrl = Str::finish($assetManager->baseUrl, '/');
+
+        if (!str_starts_with($url, $baseUrl)) {
             throw new BadRequestHttpException("$url does not appear to be a resource URL");
         }
 
-        // Close the PHP session in case this takes a while
-        Session::save();
+        $resourceUri = preg_replace('/^(.*)\?.*/', '$1', substr($url, strlen($baseUrl)));
 
-        $response = Http::create()->get($url);
-        $this->response->setCacheHeaders();
-        $this->response->getHeaders()->set('content-type', 'application/javascript');
-        return $this->asRaw($response->getBody());
+        if (!$assetManager->cacheSourcePaths) {
+            // Close the PHP session in case this takes a while
+            Session::save();
+
+            $response = Http::create()->get($url);
+            $this->response->setCacheHeaders();
+            $this->response->getHeaders()->set('content-type', 'application/javascript');
+
+            return $this->asRaw($response->getBody());
+        }
+
+        try {
+            $publishedPath = App::resourcePathByUri($resourceUri);
+        } catch (InvalidArgumentException $exception) {
+            throw new BadRequestHttpException($exception->getMessage(), previous: $exception);
+        }
+
+        return $this->response->sendFile($publishedPath, null, [
+            'inline' => true,
+        ]);
     }
 
     /**

@@ -24,9 +24,6 @@ use yii\base\InvalidConfigException;
 
 use function CraftCms\Cms\t;
 
-/**
- * General config class
- */
 class GeneralConfig extends BaseConfig
 {
     use Conditionable;
@@ -2267,8 +2264,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     *
-     * @defaultAlt 1 day
      */
     public mixed $previewTokenDuration = null;
 
@@ -5495,8 +5490,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     *
-     * @defaultAlt 1 day
      *
      * @see $previewTokenDuration
      */

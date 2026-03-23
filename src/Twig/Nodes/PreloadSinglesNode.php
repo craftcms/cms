@@ -22,7 +22,7 @@ class PreloadSinglesNode extends Node
 
         $compiler
             ->write(sprintf(
-                "%s::preloadSingles([%s]);\n",
+                "%s::preloadSingles([%s], \$context);\n",
                 Template::class,
                 implode(', ', array_map(fn (string $handle) => "'$handle'", $this->getAttribute('handles'))),
             ));
