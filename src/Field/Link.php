@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use craft\base\ElementInterface;
-use craft\helpers\Template;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Cp\FormFields;
@@ -36,6 +35,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Template;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
