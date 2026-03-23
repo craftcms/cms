@@ -668,7 +668,7 @@ class DateTimeHelper
         if (is_string($value)) {
             try {
                 return new DateInterval($value);
-            } catch (Exception $exception) {
+            } catch (Exception) {
             }
         }
 
