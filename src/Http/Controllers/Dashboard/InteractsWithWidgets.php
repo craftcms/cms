@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -16,7 +16,7 @@ trait InteractsWithWidgets
         $icon = $widget::icon();
         $label = $widget::displayName();
 
-        return $icon ? Cp::iconSvg($icon, $label) : Cp::fallbackIconSvg($label);
+        return $icon ? Icons::svg($icon, $label) : Icons::fallbackSvg($label);
     }
 
     protected function getWidgetInfo(WidgetInterface $widget): array|false

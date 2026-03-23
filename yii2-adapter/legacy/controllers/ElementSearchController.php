@@ -9,10 +9,10 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Component;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Exceptions\InvalidTypeException;
@@ -50,7 +50,7 @@ class ElementSearchController extends Controller
         $excludeIds = $this->request->getBodyParam('excludeIds') ?? [];
         $search = trim($this->request->getBodyParam('search'));
 
-        if (!Component::validateComponentClass($elementType, ElementInterface::class)) {
+        if (!ComponentHelper::validateComponentClass($elementType, ElementInterface::class)) {
             $message = (new InvalidTypeException($elementType, ElementInterface::class))->getMessage();
             throw new BadRequestHttpException($message);
         }
@@ -65,7 +65,7 @@ class ElementSearchController extends Controller
             // Remove unsupported criteria attributes
             $criteria = ElementHelper::cleanseQueryCriteria($criteria);
 
-            Typecast::configure($query, Component::cleanseConfig($criteria));
+            Typecast::configure($query, $criteria);
         }
 
         if ($conditionConfig) {
@@ -107,7 +107,7 @@ class ElementSearchController extends Controller
                 $return[] = [
                     'id' => $element->id,
                     'title' => $element->title,
-                    'html' => Cp::chipHtml($element, [
+                    'html' => app(ElementHtml::class)->chipHtml($element, [
                         'hyperlink' => false,
                         'class' => 'chromeless',
                     ]),

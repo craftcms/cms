@@ -5,21 +5,20 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
-use craft\helpers\Component;
+use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Json;
 use Override;
-use RuntimeException;
 
 /**
  * Provides a base implementation for dashboard widgets.
  */
-abstract class Widget extends \CraftCms\Cms\Component\Component implements WidgetInterface
+abstract class Widget extends Component implements WidgetInterface
 {
     use ConfigurableComponent;
     use SavableComponent;
@@ -144,15 +143,8 @@ EOD;
             $config = $config->toArray();
         }
 
-        $class = Arr::pull($config, 'type');
         $config = Arr::except($config, ['uid', 'userId', 'sortOrder', 'enabled']);
 
-        if (! $class || ! Component::validateComponentClass($class, WidgetInterface::class)) {
-            throw new RuntimeException('The config passed into Widget::fromConfig() did not specify a valid type: '.Json::encode($config));
-        }
-
-        $config = Component::mergeSettings($config);
-
-        return app()->make($class, ['config' => $config]);
+        return ComponentHelper::createComponent($config, WidgetInterface::class);
     }
 }

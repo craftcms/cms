@@ -16,9 +16,11 @@ use craft\elements\actions\MoveDown;
 use craft\elements\actions\MoveUp;
 use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\ElementIndexHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -448,7 +450,7 @@ class NestedElementManager extends Component
 
                 if (!empty($elements)) {
                     $html .= Html::ul()->items(...array_map(
-                        fn(ElementInterface $element) => Html::li(Cp::elementCardHtml($element, [
+                        fn(ElementInterface $element) => Html::li(app(ElementHtml::class)->elementCardHtml($element, [
                             'context' => 'field',
                             'showActionMenu' => true,
                             'selectable' => $config['selectable'],
@@ -562,7 +564,7 @@ class NestedElementManager extends Component
                     $settings['indexSettings']['actions'][] = $actionConfig;
                 }
 
-                return Cp::elementIndexHtml($this->elementType, [
+                return app(ElementIndexHtml::class)->html($this->elementType, [
                     'class' => [$config['prevalidate'] ? 'prevalidate' : ''],
                     'context' => 'embedded-index',
                     'defaultSort' => $config['defaultSort'],
@@ -651,7 +653,7 @@ class NestedElementManager extends Component
                     } else {
                         $settings['createAttributes'] = array_map(function(array $attributes) {
                             if (isset($attributes['icon'])) {
-                                $attributes['icon'] = Cp::iconSvg($attributes['icon']);
+                                $attributes['icon'] = Icons::svg($attributes['icon']);
                             }
                             if (isset($attributes['color']) && $attributes['color'] instanceof Color) {
                                 $attributes['color'] = $attributes['color']->value;

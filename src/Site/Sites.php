@@ -170,7 +170,7 @@ class Sites
      *
      * > [!NOTE]
      * > This will always return the primary site for control panel requests. To fetch the site the control panel
-     * > is currently working with, based on the `site` query string param, use [[\craft\helpers\Cp::requestedSite()]].
+     * > is currently working with, based on the `site` query string param, use [[\CraftCms\Cms\Cp\RequestedSite::get()]].
      *
      * @return Site the current site
      *

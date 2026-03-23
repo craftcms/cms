@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html as HtmlHelper;
 use Illuminate\Support\Facades\Auth;
@@ -65,7 +65,7 @@ class FullNameField extends TextField
         $isAdmin = Auth::user()?->isAdmin();
 
         return HtmlHelper::beginTag('div', ['class' => ['flex', 'flex-nowrap', 'fullwidth']]).
-            Cp::textFieldHtml([
+            FormFields::textFieldHtml([
                 'id' => 'firstName',
                 'status' => $status,
                 'fieldClass' => 'flex-grow',
@@ -85,7 +85,7 @@ class FullNameField extends TextField
                     $isAdmin ? $this->copyAttributeAction(['attribute' => 'firstName']) : null,
                 ]),
             ]).
-            Cp::textFieldHtml([
+            FormFields::textFieldHtml([
                 'id' => 'lastName',
                 'status' => $status,
                 'fieldClass' => 'flex-grow',

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use craft\helpers\DateRange;
 use CraftCms\Cms\Element\Conditions\DateCreatedConditionRule;
 use CraftCms\Cms\Element\Conditions\DateUpdatedConditionRule;
 use CraftCms\Cms\Element\Conditions\IdConditionRule;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Shared\Enums\DateRangeType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -101,7 +101,7 @@ describe('config round-trip', function () {
         $condition->addConditionRule($sectionRule);
 
         $postDateRule = $condition->createConditionRule(PostDateConditionRule::class);
-        $postDateRule->rangeType = DateRange::TYPE_RANGE;
+        $postDateRule->rangeType = DateRangeType::Range->value;
         $postDateRule->startDate = '2025-01-01';
         $postDateRule->endDate = '2025-12-31';
         $condition->addConditionRule($postDateRule);
@@ -118,7 +118,7 @@ describe('config round-trip', function () {
         expect($restoredRules[0]->operator)->toBe('notempty');
 
         expect($restoredRules[1])->toBeInstanceOf(PostDateConditionRule::class);
-        expect($restoredRules[1]->rangeType)->toBe(DateRange::TYPE_RANGE);
+        expect($restoredRules[1]->rangeType)->toBe(DateRangeType::Range->value);
         expect($restoredRules[1]->startDate)->not->toBeNull();
         expect($restoredRules[1]->endDate)->not->toBeNull();
     });
@@ -160,7 +160,7 @@ describe('modifyQuery', function () {
         $condition->addConditionRule($sectionRule);
 
         $postDateRule = $condition->createConditionRule(PostDateConditionRule::class);
-        $postDateRule->rangeType = DateRange::TYPE_RANGE;
+        $postDateRule->rangeType = DateRangeType::Range->value;
         $postDateRule->startDate = '2025-06-01';
         $postDateRule->endDate = '2025-06-30';
         $condition->addConditionRule($postDateRule);
@@ -189,7 +189,7 @@ describe('matchElement', function () {
         $condition->addConditionRule($sectionRule);
 
         $postDateRule = $condition->createConditionRule(PostDateConditionRule::class);
-        $postDateRule->rangeType = DateRange::TYPE_RANGE;
+        $postDateRule->rangeType = DateRangeType::Range->value;
         $postDateRule->startDate = '2025-06-01';
         $postDateRule->endDate = '2025-06-30';
         $condition->addConditionRule($postDateRule);
@@ -217,7 +217,7 @@ describe('matchElement', function () {
         $condition->addConditionRule($sectionRule);
 
         $postDateRule = $condition->createConditionRule(PostDateConditionRule::class);
-        $postDateRule->rangeType = DateRange::TYPE_RANGE;
+        $postDateRule->rangeType = DateRangeType::Range->value;
         $postDateRule->startDate = '2025-06-01';
         $postDateRule->endDate = '2025-06-30';
         $condition->addConditionRule($postDateRule);

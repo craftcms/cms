@@ -6,9 +6,10 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
 use craft\elements\conditions\users\UserCondition;
-use craft\helpers\Cp;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -224,7 +225,7 @@ class CustomField extends BaseField
         if ($field instanceof ContentBlock) {
             $options = [];
             $label = $this->selectorLabel();
-            $nestedOptions = Cp::cardPreviewOptions($field->getFieldLayout(), false);
+            $nestedOptions = app(CardDesigner::class)->previewOptions($field->getFieldLayout(), false);
             foreach ($nestedOptions as $key => $option) {
                 $options[] = [
                     'label' => "$label → {$option['label']}",
@@ -259,7 +260,7 @@ class CustomField extends BaseField
         if ($field instanceof ContentBlock) {
             $options = [];
             $label = $this->selectorLabel();
-            $nestedOptions = Cp::cardThumbOptions($field->getFieldLayout());
+            $nestedOptions = app(CardDesigner::class)->thumbOptions($field->getFieldLayout());
             foreach ($nestedOptions as $key => $option) {
                 $options[] = [
                     'label' => "$label → {$option['label']}",
@@ -659,7 +660,7 @@ class CustomField extends BaseField
         $editCondition->name = 'editCondition';
         $editCondition->forProjectConfig = true;
 
-        $editConditionsHtml = Cp::fieldHtml($editCondition->getBuilderHtml(), [
+        $editConditionsHtml = FormFields::fieldHtml($editCondition->getBuilderHtml(), [
             'label' => t('Current User Condition'),
             'instructions' => t('Only make editable for users who match the following rules:'),
         ]);
@@ -679,7 +680,7 @@ class CustomField extends BaseField
             $elementEditCondition->name = 'elementEditCondition';
             $elementEditCondition->forProjectConfig = true;
 
-            $editConditionsHtml .= Cp::fieldHtml($elementEditCondition->getBuilderHtml(), [
+            $editConditionsHtml .= FormFields::fieldHtml($elementEditCondition->getBuilderHtml(), [
                 'label' => t('{type} Condition', [
                     'type' => $elementType::displayName(),
                 ]),

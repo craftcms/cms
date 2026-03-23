@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -162,7 +162,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
     private function settingsHtml(bool $readOnly): string
     {
         return
-            Cp::editableTableFieldHtml([
+            FormFields::editableTableFieldHtml([
                 'label' => t('Palette'),
                 'name' => 'palette',
                 'instructions' => t('Define the available colors to choose from.'),
@@ -190,7 +190,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
                 'data' => ['error-key' => 'palette'],
                 'static' => $readOnly,
             ]).
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Allow custom colors'),
                 'id' => 'allow-custom-colors',
                 'name' => 'allowCustomColors',
@@ -293,7 +293,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
         $id = $this->getInputId();
 
         if (empty($this->palette)) {
-            return Cp::colorHtml([
+            return FormFields::colorHtml([
                 'id' => $id,
                 'describedBy' => $this->describedBy,
                 'name' => $this->handle,
@@ -325,7 +325,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
                     'max-width' => '100%',
                 ],
             ]).
-            Cp::colorSelectFieldHtml([
+            FormFields::colorSelectFieldHtml([
                 'id' => $id,
                 'labelledBy' => $this->getLabelId(),
                 'describedBy' => $this->describedBy,
@@ -378,7 +378,7 @@ class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEdit
                 ]).
                 Html::label(t('Custom color:'), "$id-custom-input")
                     ->id($customLabelId).
-                Cp::colorHtml([
+                FormFields::colorHtml([
                     'id' => "$id-custom-input",
                     'labelledBy' => $customLabelId,
                     'describedBy' => $this->describedBy,

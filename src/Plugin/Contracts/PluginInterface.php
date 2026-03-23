@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Contracts;
 
+use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Validation\Contracts\Validatable;
@@ -225,7 +226,7 @@ interface PluginInterface
      * ```
      *
      * @see PluginTrait::$hasCpSection
-     * @see Cp::nav()
+     * @see Navigation::getItems()
      */
     public function getCpNavItem(): ?array;
 

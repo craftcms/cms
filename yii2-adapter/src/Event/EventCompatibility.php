@@ -20,6 +20,7 @@ use craft\fields\BaseOptionsField as LegacyBaseOptionsField;
 use craft\fields\Link as LegacyLinkField;
 use craft\fields\Matrix as LegacyMatrixField;
 use craft\helpers\Assets;
+use craft\helpers\Cp as CpHelper;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\FieldLayout;
 use craft\services\Addresses;
@@ -96,6 +97,7 @@ readonly class EventCompatibility
          * Helpers
          */
         Assets::registerEvents();
+        CpHelper::registerEvents();
 
         /**
          * Services

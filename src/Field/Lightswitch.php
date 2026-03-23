@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\LightswitchFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -119,14 +120,14 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Inli
     private function settingsHtml(bool $readOnly): string
     {
         return
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Default Value'),
                 'id' => 'default',
                 'name' => 'default',
                 'on' => $this->default,
                 'disabled' => $readOnly,
             ]).
-            Cp::textFieldHtml([
+            FormFields::textFieldHtml([
                 'label' => t('OFF Label'),
                 'instructions' => t('The label text to display beside the lightswitch’s disabled state.'),
                 'id' => 'off-label',
@@ -134,7 +135,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Inli
                 'value' => $this->offLabel,
                 'disabled' => $readOnly,
             ]).
-            Cp::textFieldHtml([
+            FormFields::textFieldHtml([
                 'label' => t('ON Label'),
                 'instructions' => t('The label text to display beside the lightswitch’s enabled state.'),
                 'id' => 'on-label',
@@ -142,7 +143,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Inli
                 'value' => $this->onLabel,
                 'disabled' => $readOnly,
             ]).
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Show ON/OFF labels in cards'),
                 'instructions' => t('Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'),
                 'id' => 'show-labels-in-cards',
@@ -233,7 +234,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Inli
             $element->viewMode === 'cards' &&
             (! $this->showLabelsInCards || ! $canShowLabel)
         ) {
-            return Cp::statusLabelHtml([
+            return app(StatusHtml::class)->statusLabelHtml([
                 'color' => $value ? ColorEnum::Teal : ColorEnum::Gray,
                 'label' => $this->getUiLabel(),
                 'icon' => $value ? 'check' : 'xmark',
@@ -241,7 +242,7 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Inli
         }
 
         if (($value && $this->onLabel) || (! $value && $this->offLabel)) {
-            return Cp::statusLabelHtml([
+            return app(StatusHtml::class)->statusLabelHtml([
                 'color' => $value ? ColorEnum::Teal : ColorEnum::Gray,
                 'label' => t($value ? $this->onLabel : $this->offLabel, category: 'site'),
                 'icon' => $value ? 'check' : 'xmark',

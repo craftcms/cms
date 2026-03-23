@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Address\Conditions;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -76,7 +76,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
     #[Override]
     protected function inputHtml(): string
     {
-        $countrySelect = Cp::selectFieldHtml([
+        $countrySelect = FormFields::selectFieldHtml([
             'id' => 'country-code',
             'name' => 'countryCode',
             'options' => Addresses::getCountryList(),
@@ -92,7 +92,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
 
         $adminSelectize =
             Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId).
-            Cp::selectizeHtml([
+            FormFields::selectizeHtml([
                 'id' => $multiSelectId,
                 'class' => 'selectize fullwidth',
                 'name' => 'values',

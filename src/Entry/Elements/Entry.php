@@ -24,13 +24,15 @@ use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\entries\SectionConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\db\EagerLoadPlan;
-use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -650,7 +652,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ],
             'authors' => [
                 'label' => t('Authors'),
-                'placeholder' => fn () => $currentUser ? Cp::elementChipHtml($currentUser) : '',
+                'placeholder' => fn () => $currentUser ? app(ElementHtml::class)->elementChipHtml($currentUser) : '',
             ],
             'parent' => [
                 'label' => t('Parent'),
@@ -674,7 +676,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ],
             'revisionCreator' => [
                 'label' => t('Last Edited By'),
-                'placeholder' => fn () => $currentUser ? Cp::elementChipHtml($currentUser) : '',
+                'placeholder' => fn () => $currentUser ? app(ElementHtml::class)->elementChipHtml($currentUser) : '',
             ],
             'drafts' => [
                 'label' => t('Drafts'),
@@ -1198,7 +1200,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $sections = Sections::getEditableSections();
 
             // Filter out any sections that aren’t enabled for this site
-            $requestedSite = Cp::requestedSite();
+            $requestedSite = app(RequestedSite::class)->get();
             if ($requestedSite) {
                 $sections = $sections->filter(fn (Section $s) => in_array($requestedSite->id, $s->getSiteIds()));
             }
@@ -1260,7 +1262,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             foreach ($ancestors->all() as $ancestor) {
                 if ($elementsService->canView($ancestor, $user)) {
                     $crumbs[] = [
-                        'html' => Cp::elementChipHtml($ancestor, [
+                        'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
                             'class' => 'chromeless',
                             'hyperlink' => true,
                         ]),
@@ -1966,7 +1968,7 @@ JS, [
                 $authors = $this->getAuthors();
                 $html = '';
                 foreach ($authors as $author) {
-                    $html .= Cp::elementChipHtml($author);
+                    $html .= app(ElementHtml::class)->elementChipHtml($author);
                 }
 
                 return $html;
@@ -1976,13 +1978,13 @@ JS, [
                     return '';
                 }
 
-                return Cp::chipHtml($section, [
+                return app(ElementHtml::class)->chipHtml($section, [
                     'class' => 'chromeless',
                     'showThumb' => false,
                 ]);
             case 'type':
                 try {
-                    return Cp::chipHtml($this->getType(), [
+                    return app(ElementHtml::class)->chipHtml($this->getType(), [
                         'class' => 'chromeless',
                         'showThumb' => $this->viewMode !== 'cards',
                     ]);
@@ -1999,17 +2001,17 @@ JS, [
     {
         switch ($attribute) {
             case 'postDate':
-                return Cp::dateTimeFieldHtml([
+                return FormFields::dateTimeFieldHtml([
                     'name' => 'postDate',
                     'value' => $this->postDate,
                 ]);
             case 'expiryDate':
-                return Cp::dateTimeFieldHtml([
+                return FormFields::dateTimeFieldHtml([
                     'name' => 'expiryDate',
                     'value' => $this->expiryDate,
                 ]);
             case 'slug':
-                return Cp::textHtml([
+                return FormFields::textHtml([
                     'name' => 'slug',
                     'value' => $this->slug,
                 ]);
@@ -2017,7 +2019,7 @@ JS, [
                 $authors = $this->getAuthors();
                 $section = $this->getSection();
 
-                return Cp::elementSelectHtml([
+                return FormFields::elementSelectHtml([
                     'status' => $this->getAttributeStatus('authorIds'),
                     'label' => t('{max, plural, =1{Author} other {Authors}}', [
                         'max' => $section->maxAuthors ?? PHP_INT_MAX,
@@ -2138,7 +2140,7 @@ JS, [
                 return null;
             }
 
-            return Cp::customSelectFieldHtml([
+            return FormFields::customSelectFieldHtml([
                 'fieldClass' => 'entry-type-select',
                 'status' => $this->getAttributeStatus('typeId'),
                 'label' => t('Entry Type'),
@@ -2183,7 +2185,7 @@ JS, [
                         ->one();
                 }
 
-                return Cp::elementSelectFieldHtml([
+                return FormFields::elementSelectFieldHtml([
                     'label' => t('Parent'),
                     'id' => 'parentId',
                     'name' => 'parentId',
@@ -2209,7 +2211,7 @@ JS, [
                 $fields['authors'] = (function () use ($static, $section, $user) {
                     $authors = $this->getAuthors();
 
-                    return Cp::elementSelectFieldHtml([
+                    return FormFields::elementSelectFieldHtml([
                         'status' => $this->getAttributeStatus('authorIds'),
                         'label' => t('{max, plural, =1{Author} other {Authors}}', [
                             'max' => $section->maxAuthors ?? PHP_INT_MAX,
@@ -2236,7 +2238,7 @@ JS, [
             });
 
             // Post Date
-            $fields['postDate'] = Cp::dateTimeFieldHtml([
+            $fields['postDate'] = FormFields::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('postDate'),
                 'label' => t('Post Date'),
                 'id' => 'postDate',
@@ -2247,7 +2249,7 @@ JS, [
             ]);
 
             // Expiry Date
-            $fields['expiryDate'] = Cp::dateTimeFieldHtml([
+            $fields['expiryDate'] = FormFields::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('expiryDate'),
                 'label' => t('Expiry Date'),
                 'id' => 'expiryDate',

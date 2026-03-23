@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates;
 use CraftCms\Cms\Utility\Utilities\Upgrade;
@@ -103,7 +103,7 @@ readonly class UtilitiesController
         }
 
         try {
-            $svg = Cp::iconSvg($icon);
+            $svg = Icons::svg($icon);
             if ($svg !== '') {
                 return $svg;
             }

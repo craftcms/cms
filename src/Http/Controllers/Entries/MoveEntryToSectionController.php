@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
-use craft\helpers\Cp;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
@@ -99,7 +99,7 @@ readonly class MoveEntryToSectionController
         } else {
             $listHtml = '';
             foreach ($compatibleSections as $section) {
-                $listHtml .= Cp::chipHtml($section, [
+                $listHtml .= app(ElementHtml::class)->chipHtml($section, [
                     'selectable' => true,
                     'class' => 'fullwidth',
                 ]);

@@ -6,9 +6,9 @@ namespace CraftCms\Cms\FieldLayout;
 
 use craft\base\ElementInterface;
 use craft\elements\conditions\users\UserCondition;
-use craft\helpers\Cp;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\FieldLayout\Events\DefineShowInForm;
 use CraftCms\Cms\Support\Facades\Conditions;
@@ -232,7 +232,7 @@ abstract class FieldLayoutComponent extends Component
         $userCondition->name = 'userCondition';
         $userCondition->forProjectConfig = true;
 
-        $html .= Cp::fieldHtml($userCondition->getBuilderHtml(), [
+        $html .= FormFields::fieldHtml($userCondition->getBuilderHtml(), [
             'label' => t('Current User Condition'),
             'instructions' => t('Only show for users who match the following rules:'),
         ]);
@@ -252,7 +252,7 @@ abstract class FieldLayoutComponent extends Component
             $elementCondition->name = 'elementCondition';
             $elementCondition->forProjectConfig = true;
 
-            $html .= Cp::fieldHtml($elementCondition->getBuilderHtml(), [
+            $html .= FormFields::fieldHtml($elementCondition->getBuilderHtml(), [
                 'label' => t('{type} Condition', [
                     'type' => $elementType::displayName(),
                 ]),

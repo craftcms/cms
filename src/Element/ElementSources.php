@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Element;
 
 use craft\base\ElementInterface;
 use craft\db\CoalesceColumnsExpression;
-use craft\helpers\Cp;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
@@ -424,7 +424,7 @@ class ElementSources
             }
 
             if (isset($attributes[$key]['icon']) && in_array($attributes[$key]['icon'], ['world', 'earth'])) {
-                $attributes[$key]['icon'] = Cp::earthIcon();
+                $attributes[$key]['icon'] = Icons::earth();
             }
         }
 

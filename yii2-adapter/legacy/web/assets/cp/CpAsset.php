@@ -10,7 +10,6 @@ namespace craft\web\assets\cp;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Assets;
-use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\validators\UserPasswordValidator;
@@ -38,6 +37,7 @@ use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Section\Data\Section;
@@ -283,7 +283,7 @@ JS;
             'publishableSections' => $upToDate ? $this->_publishableSections($currentUser) : [],
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
-            'siteId' => $upToDate ? (Cp::requestedSite()->id ?? Sites::getCurrentSite()->id) : null,
+            'siteId' => $upToDate ? (app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id) : null,
             'sites' => $this->_sites(),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,

@@ -12,6 +12,7 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
@@ -897,7 +898,7 @@ class ElementHelper
                 'title' => t('Visit webpage'),
                 'aria-label' => t('View'),
             ]) .
-            Html::tag('span', Cp::iconSvg('world'), [
+            Html::tag('span', Icons::svg('world'), [
                 'class' => ['cp-icon', 'small', 'inline-flex'],
             ]) .
             Html::endTag('a');

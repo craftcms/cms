@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Validation\Rule;
@@ -198,7 +198,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
             (count($operators) > 1
                 ? (
                     Html::hiddenLabel(t('Operator'), 'operator').
-                    Cp::selectHtml([
+                    FormFields::selectHtml([
                         'id' => 'operator',
                         'name' => 'operator',
                         'value' => $this->operator,

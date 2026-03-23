@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
 use Craft;
-use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
@@ -146,7 +146,7 @@ readonly class CreateEntryController
             $site = $this->sites->getSiteById($siteId);
             abort_if(is_null($site), 400, "Invalid site ID: $siteId");
         } else {
-            $site = Cp::requestedSite();
+            $site = app(RequestedSite::class)->get();
             abort_if(is_null($site), 403, 'User not authorized to edit content in any sites.');
         }
 

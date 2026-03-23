@@ -23,7 +23,6 @@ use craft\elements\actions\ShowInFolder;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\errors\AssetException;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -44,6 +43,8 @@ use CraftCms\Cms\Asset\Exceptions\VolumeException;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -668,7 +669,7 @@ class Asset extends Element
             ],
             'uploader' => [
                 'label' => t('Uploaded By'),
-                'placeholder' => fn () => ($uploader = Auth::user()) ? Cp::elementChipHtml($uploader) : '',
+                'placeholder' => fn () => ($uploader = Auth::user()) ? app(ElementHtml::class)->elementChipHtml($uploader) : '',
             ],
         ]);
 
@@ -2497,7 +2498,7 @@ JS, [
             case 'uploader':
                 $uploader = $this->getUploader();
 
-                return $uploader ? Cp::elementChipHtml($uploader) : '';
+                return $uploader ? app(ElementHtml::class)->elementChipHtml($uploader) : '';
 
             case 'filename':
                 return Html::tag('span', Html::encode($this->_filename), [
@@ -2546,7 +2547,7 @@ JS, [
     protected function inlineAttributeInputHtml(string $attribute): string
     {
         return match ($attribute) {
-            'alt' => Cp::textareaHtml([
+            'alt' => FormFields::textareaHtml([
                 'name' => 'alt',
                 'value' => $this->alt,
             ]),
@@ -2726,7 +2727,7 @@ JS;
     protected function metaFieldsHtml(bool $static): string
     {
         return implode("\n", [
-            Cp::textFieldHtml([
+            FormFields::textFieldHtml([
                 'label' => t('Filename'),
                 'attribute' => 'newLocation',
                 'id' => 'new-filename',
@@ -2762,7 +2763,7 @@ JS;
             t('Uploaded by') => function () {
                 $uploader = $this->getUploader();
 
-                return $uploader ? Cp::elementChipHtml($uploader) : false;
+                return $uploader ? app(ElementHtml::class)->elementChipHtml($uploader) : false;
             },
             t('Dimensions') => function () {
                 $dimensions = $this->getDimensions();

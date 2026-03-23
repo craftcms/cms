@@ -17,11 +17,12 @@ use craft\elements\actions\Restore;
 use craft\elements\conditions\categories\CategoryCondition;
 use craft\elements\db\CategoryQuery;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
-use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -506,7 +507,7 @@ class Category extends Element
         foreach ($ancestors->all() as $ancestor) {
             if ($elementsService->canView($ancestor, $user)) {
                 $crumbs[] = [
-                    'html' => Cp::elementChipHtml($ancestor, [
+                    'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
                         'class' => 'chromeless',
                         'hyperlink' => true,
                     ]),
@@ -695,7 +696,7 @@ class Category extends Element
                         ->one();
                 }
 
-                return Cp::elementSelectFieldHtml([
+                return FormFields::elementSelectFieldHtml([
                     'label' => t('Parent'),
                     'id' => 'parentId',
                     'name' => 'parentId',
@@ -787,15 +788,13 @@ class Category extends Element
      */
     protected function inlineAttributeInputHtml(string $attribute): string
     {
-        switch ($attribute) {
-            case 'slug':
-                return Cp::textHtml([
-                    'name' => 'slug',
-                    'value' => $this->slug,
-                ]);
-            default:
-                return parent::inlineAttributeInputHtml($attribute);
-        }
+        return match ($attribute) {
+            'slug' => FormFields::textHtml([
+                'name' => 'slug',
+                'value' => $this->slug,
+            ]),
+            default => parent::inlineAttributeInputHtml($attribute),
+        };
     }
 
     /**

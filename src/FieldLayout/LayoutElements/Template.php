@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Environment;
@@ -80,7 +80,7 @@ class Template extends BaseUiElement
 
     protected function settingsHtml(): ?string
     {
-        return Cp::autosuggestFieldHtml([
+        return FormFields::autosuggestFieldHtml([
             'label' => t('Template'),
             'instructions' => t('The path to a template file within your `templates/` folder.'),
             'tip' => t('The template will be rendered with an `element` variable.'),
