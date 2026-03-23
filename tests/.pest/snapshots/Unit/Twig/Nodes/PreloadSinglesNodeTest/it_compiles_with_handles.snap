@@ -1,1 +1,1 @@
-craft\helpers\Template::preloadSingles(['homepage', 'about', 'contact'], $context);
+CraftCms\Cms\Support\Template::preloadSingles(['homepage', 'about', 'contact'], $context);

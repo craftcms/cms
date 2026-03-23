@@ -10,9 +10,9 @@ namespace craft\web;
 use Craft;
 use craft\events\ExceptionEvent;
 use craft\events\RedirectEvent;
-use craft\helpers\Template;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Twig\TwigExceptionMapper;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
@@ -285,7 +285,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     public function renderCallStackItem($file, $line, $class, $method, $args, $index): string
     {
-        $templateInfo = Template::resolveTemplatePathAndLine($file ?? '', $line);
+        $templateInfo = app(TwigExceptionMapper::class)->resolveTemplatePathAndLine($file ?? '', $line);
 
         if ($templateInfo !== false) {
             [$file, $line] = $templateInfo;
