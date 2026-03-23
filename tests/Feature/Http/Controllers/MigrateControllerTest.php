@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\MigrateController;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 

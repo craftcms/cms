@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static string cache(string $path = '', bool $create = true)
  * @method static string licenseKey()
  * @method static array system()
+ * @method static bool ensurePathIsContained(string $path)
  *
  * @see \CraftCms\Cms\Support\Path
  */

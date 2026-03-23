@@ -17,7 +17,7 @@
   import CpLink from '@/components/CpLink.vue';
   import Badge from '@/components/Badge.vue';
   import {index} from '@routes/cp/settings/sites';
-  import InputCombobox from '@/components/InputCombobox.vue';
+  import InputCombobox from '@/components/form/InputCombobox.vue';
   import IndexLayout from '@/layout/IndexLayout.vue';
 
   const props = defineProps<{

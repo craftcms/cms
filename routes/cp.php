@@ -20,6 +20,7 @@ use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
+use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
@@ -139,6 +140,15 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::post('settings/general', [GeneralSettingsController::class, 'store'])
             ->middleware([RequireAdminChanges::class])
             ->name('settings.general.store');
+
+        // Email
+        Route::get('settings/email', [EmailSettingsController::class, 'index'])
+            ->name('settings.email.index');
+        Route::post('settings/email', [EmailSettingsController::class, 'store'])
+            ->middleware([RequireAdminChanges::class])
+            ->name('settings.email.store');
+        Route::post('settings/email/test', [EmailSettingsController::class, 'test'])
+            ->name('settings.email.test');
 
         // GraphQL
         Route::get('graphql', GqlIndexController::class);

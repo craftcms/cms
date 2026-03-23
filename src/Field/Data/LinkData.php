@@ -83,7 +83,13 @@ class LinkData implements Serializable, Stringable
      */
     public function getUrl(): string
     {
-        return sprintf('%s%s', $this->getValue(), $this->urlSuffix ?? '');
+        $url = $this->getValue();
+
+        if ($url === '') {
+            return $url;
+        }
+
+        return sprintf('%s%s', $url, $this->urlSuffix ?? '');
     }
 
     /**

@@ -762,6 +762,31 @@ class DateTimeHelper
     }
 
     /**
+     * Converts a time to an integer (the number of seconds since midnight).
+     *
+     * @param int|string|DateTimeInterface|null $time
+     * @return int|null
+     * @since 5.9.17
+     */
+    public static function timeToSeconds(int|string|DateTimeInterface|null $time): ?int
+    {
+        if (is_int($time) || $time === null) {
+            return $time;
+        }
+
+        if (is_string($time)) {
+            [$hours, $minutes, $seconds] = array_pad(explode(':', $time), 3, 0);
+        } else {
+            /** @var DateTimeInterface $time */
+            $hours = (int)$time->format('H');
+            $minutes = (int)$time->format('i');
+            $seconds = (int)$time->format('s');
+        }
+
+        return (int)$hours * 3600 + (int)$minutes * 60 + (int)$seconds;
+    }
+
+    /**
      * Returns a human-friendly duration string for the given date interval or number of seconds.
      *
      * @param mixed $dateInterval The value, represented as either a [[\DateInterval]] object, an interval duration string, or a number of seconds.

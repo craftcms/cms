@@ -9,7 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\I18N;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Users;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Foundation\Application;

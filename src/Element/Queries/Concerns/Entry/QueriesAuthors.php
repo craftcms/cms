@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 
+use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Support\Facades\UserGroups;
+use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Data\UserGroup;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -106,13 +109,39 @@ trait QueriesAuthors
             return;
         }
 
-        $query->subQuery->whereExists(
-            DB::table(Table::ENTRIES_AUTHORS, 'entries_authors')
-                ->join(new Alias(Table::USERGROUPS_USERS, 'usergroups_users'), 'usergroups_users.userId', '=',
-                    'entries_authors.authorId')
-                ->whereColumn('entries.id', 'entries_authors.entryId')
-                ->whereNumericParam('usergroups_users.groupId', $query->authorGroupId),
-        );
+        // Checking multiple groups?
+        if (
+            is_array($this->authorGroupId) &&
+            is_string(reset($this->authorGroupId)) &&
+            strtolower(reset($this->authorGroupId)) === 'and'
+        ) {
+            $groupIdChecks = array_slice($this->authorGroupId, 1);
+        } else {
+            $groupIdChecks = [$this->authorGroupId];
+        }
+
+        foreach ($groupIdChecks as $i => $groupIdCheck) {
+            if (
+                is_array($groupIdCheck) &&
+                is_string(reset($groupIdCheck)) &&
+                strtolower(reset($groupIdCheck)) === 'not'
+            ) {
+                $groupIdOperator = 'whereNotExists';
+                array_shift($groupIdCheck);
+                if (empty($groupIdCheck)) {
+                    continue;
+                }
+            } else {
+                $groupIdOperator = 'whereExists';
+            }
+
+            $query->subQuery->$groupIdOperator(
+                DB::table(Table::ENTRIES_AUTHORS, "entries_authors$i")
+                    ->join(new Alias(Table::USERGROUPS_USERS, "usergroups_users$i"), "usergroups_users$i.userId", '=', "entries_authors$i.authorId")
+                    ->whereColumn('entries.id', "entries_authors$i.entryId")
+                    ->whereNumericParam("usergroups_users$i.groupId", $groupIdCheck),
+            );
+        }
     }
 
     /**
@@ -188,28 +217,24 @@ trait QueriesAuthors
      */
     public function authorGroup(mixed $value): static
     {
-        if ($value instanceof UserGroup) {
-            $this->authorGroupId = $value->id;
-
-            return $this;
+        if (is_string($value) && ($group = UserGroups::getGroupByHandle($value))) {
+            $value = $group;
         }
 
-        if (is_iterable($value)) {
-            $collection = collect($value);
-            if ($collection->every(fn ($v) => $v instanceof UserGroup)) {
-                $this->authorGroupId = $collection->pluck('id')->all();
-
-                return $this;
-            }
-        }
-
-        if ($value !== null) {
-            $this->authorGroupId = DB::table(Table::USERGROUPS)
-                ->whereParam('handle', $value)
+        if (Query::normalizeParam($value, fn ($item) => $item instanceof UserGroup ? $item->id : null)) {
+            $this->authorGroupId = $value;
+        } else {
+            $values = QueryParam::toArray($value);
+            $operator = QueryParam::extractOperator($values);
+            $groupIds = DB::table(Table::USERGROUPS)
+                ->select('id')
+                ->whereParam('handle', $values)
                 ->pluck('id')
                 ->all();
-        } else {
-            $this->authorGroupId = null;
+
+            $this->authorGroupId = $operator === null
+                ? $groupIds
+                : [$operator, ...$groupIds];
         }
 
         return $this;

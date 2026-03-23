@@ -28,7 +28,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
@@ -857,10 +857,7 @@ class Sites
     private function allSites(?bool $withDisabled = null): Collection
     {
         if ($withDisabled === null) {
-            $withDisabled = (
-                app()->runningInConsole() ||
-                (request()->isCpRequest() && Auth::check())
-            );
+            $withDisabled = ! request()->isSiteRequest() || request()->isActionRequest();
         }
 
         return $withDisabled ? $this->allSitesById : $this->enabledSitesById;

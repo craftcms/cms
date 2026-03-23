@@ -8,7 +8,10 @@
 namespace craft\mail;
 
 use Craft;
+use craft\config\GeneralConfig;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Email\Data\EmailSettings;
+use CraftCms\Cms\Email\Data\MailSettings;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Twig;
@@ -57,7 +60,7 @@ class Mailer extends \yii\symfonymailer\Mailer
     /**
      * @var array Site overrides
      * @since 5.6.0
-     * @deprecated 6.0.0 configure Laravel mailers per environment instead.
+     * @deprecated 6.0.0 Use the email settings in Settings → Email instead.
      */
     public array $siteOverrides = [];
 
@@ -110,14 +113,14 @@ class Mailer extends \yii\symfonymailer\Mailer
         if ($this->template) {
             Deprecator::log(
                 'craft\\mail\\Mailer::$template',
-                '`craft\\mail\\Mailer::$template` is deprecated and no longer has any effect. Use a Laravel mailable view instead.',
+                '`craft\\mail\\Mailer::$template` is deprecated. Set the template via the email settings in Settings → Email instead.',
             );
         }
 
         if (!empty($this->siteOverrides)) {
             Deprecator::log(
                 'craft\\mail\\Mailer::$siteOverrides',
-                '`craft\\mail\\Mailer::$siteOverrides` is deprecated and no longer has any effect. Configure Laravel mailers per environment instead.',
+                '`craft\\mail\\Mailer::$siteOverrides` is deprecated. Use the email settings in Settings → Email instead.',
             );
         }
 
@@ -170,7 +173,9 @@ class Mailer extends \yii\symfonymailer\Mailer
                     siteId: $mailable->siteId,
                 );
 
-                $formatted = app(FormatSystemMessageMailAction::class)->handle($rendered);
+                $resolved = $this->resolveMailSettings($message->siteId);
+
+                $formatted = app(FormatSystemMessageMailAction::class)->handle($rendered, $resolved);
 
                 $message->language = $rendered->language;
                 $message->setSubject($rendered->subject);
@@ -188,7 +193,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             }
 
             // Apply the testToEmailAddress config setting.
-            if ($generalConfig instanceof \craft\config\GeneralConfig) {
+            if ($generalConfig instanceof GeneralConfig) {
                 $testToEmailAddress = $generalConfig->getTestToEmailAddress();
                 if (!empty($testToEmailAddress)) {
                     $message->setTo($testToEmailAddress);
@@ -213,6 +218,54 @@ class Mailer extends \yii\symfonymailer\Mailer
                 Twig::set($twig);
             }
         }
+    }
+
+    /**
+     * Resolves mail settings by merging project config email settings
+     * with any legacy template/siteOverrides properties set on the mailer.
+     */
+    private function resolveMailSettings(?int $siteId = null): MailSettings
+    {
+        $settings = EmailSettings::fromProjectConfig();
+
+        // Forward legacy $this->template onto the email settings
+        if ($this->template) {
+            $settings = new EmailSettings(
+                fromEmail: $settings->fromEmail,
+                fromName: $settings->fromName,
+                replyToEmail: $settings->replyToEmail,
+                mailer: $settings->mailer,
+                template: $this->template,
+                siteOverrides: $settings->siteOverrides,
+            );
+        }
+
+        // Forward legacy $this->siteOverrides onto the email settings
+        if (!empty($this->siteOverrides)) {
+            $mergedOverrides = $settings->siteOverrides;
+
+            foreach ($this->siteOverrides as $siteUid => $overrideData) {
+                $existing = $mergedOverrides[$siteUid] ?? new MailSettings();
+
+                $mergedOverrides[$siteUid] = new MailSettings(
+                    fromEmail: $overrideData['fromEmail'] ?? $existing->fromEmail,
+                    fromName: $overrideData['fromName'] ?? $existing->fromName,
+                    replyToEmail: $overrideData['replyToEmail'] ?? $existing->replyToEmail,
+                    template: $overrideData['template'] ?? $existing->template,
+                );
+            }
+
+            $settings = new EmailSettings(
+                fromEmail: $settings->fromEmail,
+                fromName: $settings->fromName,
+                replyToEmail: $settings->replyToEmail,
+                mailer: $settings->mailer,
+                template: $settings->template,
+                siteOverrides: $mergedOverrides,
+            );
+        }
+
+        return $settings->resolveForSite($siteId);
     }
 
     /**

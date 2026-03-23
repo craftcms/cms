@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Utility\Utilities;
 
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Updates\Updates as UpdatesService;
+use CraftCms\Cms\Update\Updates as UpdatesService;
 use CraftCms\Cms\Utility\Utility;
 use Override;
 

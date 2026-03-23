@@ -79,5 +79,7 @@ it('can query entries by author groups', function () {
     expect(entryQuery()->authorGroup($userGroup2->handle)->count())->toBe(1);
     expect(entryQuery()->authorGroup('not '.$userGroup2->handle)->count())->toBe(1);
     expect(entryQuery()->authorGroup([$userGroup1->handle, $userGroup2->handle])->count())->toBe(2);
+    expect(entryQuery()->authorGroup(['not', $userGroup1->handle])->count())->toBe(1);
+    expect(entryQuery()->authorGroup(['not', $userGroup1->handle, $userGroup2->handle])->count())->toBe(0);
     expect(entryQuery()->authorGroup(implode(', ', [$userGroup1->handle, $userGroup2->handle]))->count())->toBe(2);
 });

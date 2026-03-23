@@ -136,7 +136,6 @@ Modify with `cp-table--auto` to apply table-layout: auto
   --_cell-spacing-block: var(--c-spacing-md);
   text-align: left;
   width: 100%;
-  border-collapse: separate;
   border-spacing: 0;
   font-variant-numeric: tabular-nums;
 
@@ -163,8 +162,15 @@ Modify with `cp-table--auto` to apply table-layout: auto
     }
   }
 
+  td,
+  th,
   tr:not(:last-child) {
-    border-bottom: 1px solid var(--c-color-neutral-border-quiet);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  }
+
+  td:not(:first-child),
+  th:not(:first-child) {
+    border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   textarea,

@@ -1,1 +1,1 @@
-import r from"./fr2.js";const o={...r};export{o as default};
+import e from"./fr2.js";var t={...e};export{t as default};

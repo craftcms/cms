@@ -18,7 +18,7 @@ use Override;
  * @method static void registerDisk(string $handle, array|null $filesystemConfig = null)
  * @method static void purgeDisk(string $handle)
  * @method static bool saveFilesystem(\CraftCms\Cms\Filesystem\Contracts\FsInterface $fs, bool $runValidation = true)
- * @method static \CraftCms\Cms\Filesystem\Contracts\FsInterface createFilesystem(string|array $config)
+ * @method static mixed createFilesystem(string|array $config)
  * @method static bool removeFilesystem(\CraftCms\Cms\Filesystem\Contracts\FsInterface $fs)
  * @method static void handleChangedFilesystem(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent|null $event = null)
  * @method static void handleDeletedFilesystem(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent|null $event = null)

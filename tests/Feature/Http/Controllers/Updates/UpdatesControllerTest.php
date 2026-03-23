@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
-use CraftCms\Cms\Updates\Data\Update;
-use CraftCms\Cms\Updates\Data\UpdateRelease;
-use CraftCms\Cms\Updates\Enums\UpdateStatus;
+use CraftCms\Cms\Update\Data\Update;
+use CraftCms\Cms\Update\Data\UpdateRelease;
+use CraftCms\Cms\Update\Enums\UpdateStatus;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;

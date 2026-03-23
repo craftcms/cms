@@ -49,6 +49,7 @@ groups:
   behaviors: [tests/unit/behaviors]
   db: [tests/unit/db]
   elements: [tests/unit/elements]
+  filters: [tests/unit/filters]
   helpers: [tests/unit/helpers]
   mail: [tests/unit/mail]
   search: [tests/unit/search]

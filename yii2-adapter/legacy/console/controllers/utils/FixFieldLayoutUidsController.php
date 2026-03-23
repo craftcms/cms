@@ -10,6 +10,7 @@ namespace craft\console\controllers\utils;
 use craft\console\Controller;
 use craft\helpers\Console;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
 use yii\console\ExitCode;
 
@@ -53,6 +54,10 @@ class FixFieldLayoutUidsController extends Controller
     {
         if (is_array($config['fieldLayouts'] ?? null)) {
             $modified = false;
+            $packed = isset($config['fieldLayouts'][ProjectConfig::ASSOC_KEY]);
+            if ($packed) {
+                $config['fieldLayouts'] = ProjectConfigHelper::unpackAssociativeArray($config['fieldLayouts']);
+            }
             foreach ($config['fieldLayouts'] as $fieldLayoutUid => &$fieldLayoutConfig) {
                 $this->topLevelUids[$fieldLayoutUid][] = $path;
                 if (is_array($fieldLayoutConfig)) {
@@ -61,6 +66,10 @@ class FixFieldLayoutUidsController extends Controller
                 }
             }
             if ($modified) {
+                if ($packed) {
+                    $config['fieldLayouts'] = ProjectConfigHelper::packAssociativeArray($config['fieldLayouts']);
+                }
+
                 app(ProjectConfig::class)->set($path, $config);
             }
             return;
@@ -68,9 +77,17 @@ class FixFieldLayoutUidsController extends Controller
 
         if (is_array($config['fieldLayout'] ?? null)) {
             $modified = false;
+            $packed = isset($config['fieldLayout'][ProjectConfig::ASSOC_KEY]);
+            if ($packed) {
+                $config['fieldLayout'] = ProjectConfigHelper::unpackAssociativeArray($config['fieldLayout']);
+            }
             $fieldLayoutPath = sprintf('%sfieldLayout', $path ? "$path." : '');
             $this->_fixUidsInLayout($config['fieldLayout'], $count, $fieldLayoutPath, $uids, $modified);
             if ($modified) {
+                if ($packed) {
+                    $config['fieldLayout'] = ProjectConfigHelper::packAssociativeArray($config['fieldLayout']);
+                }
+
                 app(ProjectConfig::class)->set($path, $config);
             }
             return;

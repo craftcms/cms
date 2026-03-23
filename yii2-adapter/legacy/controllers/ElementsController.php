@@ -377,7 +377,7 @@ class ElementsController extends Controller
         [$docTitle, $title] = $this->_editElementTitles($element);
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
-        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? ElementHelper::postEditUrl($element);
+        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? UrlHelper::cpReferralUrl() ?? ElementHelper::postEditUrl($element);
 
         // Site statuses
         if ($canEditMultipleSites) {
@@ -1737,9 +1737,9 @@ JS, [
 
         $newElementInfo = [];
 
-        DbFacade::transaction(function() use ($elementInfo, $newAttributes, &$newElementInfo) {
+        $result = DbFacade::transaction(function() use ($elementInfo, $newAttributes, &$newElementInfo) {
             $elementsService = Craft::$app->getElements();
-            $elementsService->ensureBulkOp(function() use ($elementInfo, $newAttributes, &$newElementInfo, $elementsService) {
+            return $elementsService->ensureBulkOp(function() use ($elementInfo, $newAttributes, &$newElementInfo, $elementsService) {
                 foreach ($elementInfo as $info) {
                     $element = $this->_element($info);
 
@@ -1771,8 +1771,14 @@ JS, [
 
                     $newElementInfo[] = $newElement->toArray($newElement->attributes());
                 }
+
+                return null;
             });
         });
+
+        if ($result !== null) {
+            return $result;
+        }
 
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $elementInfo[0]['type'];

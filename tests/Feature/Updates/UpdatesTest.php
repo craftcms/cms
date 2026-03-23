@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Api;
-use CraftCms\Cms\Updates\Data\Update;
-use CraftCms\Cms\Updates\Data\UpdateRelease;
-use CraftCms\Cms\Updates\Data\Updates as UpdatesData;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Data\Update;
+use CraftCms\Cms\Update\Data\UpdateRelease;
+use CraftCms\Cms\Update\Data\Updates as UpdatesData;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
