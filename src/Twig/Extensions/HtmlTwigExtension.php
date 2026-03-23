@@ -10,6 +10,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\View\InputNamespace;
@@ -21,7 +22,6 @@ use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use yii\base\InvalidConfigException;
-use yii\helpers\Markdown;
 
 class HtmlTwigExtension extends AbstractExtension
 {
@@ -163,10 +163,10 @@ class HtmlTwigExtension extends AbstractExtension
         }
 
         if ($inlineOnly) {
-            return Markdown::processParagraph((string) $markdown, $flavor);
+            return Markdown::parseParagraph((string) $markdown, $flavor);
         }
 
-        return Markdown::process((string) $markdown, $flavor);
+        return Markdown::parse((string) $markdown, $flavor);
     }
 
     /**

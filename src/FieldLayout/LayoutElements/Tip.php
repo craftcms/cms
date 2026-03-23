@@ -8,9 +8,9 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Override;
-use yii\helpers\Markdown;
 
 use function CraftCms\Cms\t;
 
@@ -99,7 +99,7 @@ class Tip extends BaseUiElement
             $classes[] = 'dismissible';
         }
 
-        $tip = Markdown::process(Html::encode(t($this->tip, category: 'site')), 'pre-encoded');
+        $tip = Markdown::parse(Html::encode(t($this->tip, category: 'site')), 'pre-encoded');
         $closeBtn = $this->dismissible
             ? Html::button('', [
                 'class' => 'tip-dismiss-btn',

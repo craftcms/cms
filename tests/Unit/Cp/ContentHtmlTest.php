@@ -34,6 +34,12 @@ describe('parseMarkdown', function () {
     it('converts markdown to html', function () {
         $html = app(ContentHtml::class)->parseMarkdown('**bold**');
 
-        expect($html)->toContain('<strong>bold</strong>');
+        expect($html)->toBe("<p><strong>bold</strong></p>\n");
+    });
+
+    it('relies on commonmark unsafe link handling by default', function () {
+        $html = app(ContentHtml::class)->parseMarkdown('[test](javascript:alert(1))');
+
+        expect($html)->toBe("<p><a>test</a></p>\n");
     });
 });

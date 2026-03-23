@@ -8,15 +8,18 @@
 
 namespace craft\markdown;
 
-use cebe\markdown\Markdown as BaseMarkdown;
-
 /**
  * Markdown parser
+ *
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Facades\Markdown::parse()} instead.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.2
  */
-class Markdown extends BaseMarkdown
+class Markdown extends BaseMarkdownParser
 {
-    use SafeLinkTrait;
+    protected function flavor(): string
+    {
+        return 'original';
+    }
 }
