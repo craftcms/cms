@@ -56,11 +56,11 @@ class Markdown
 
     public function parseParagraph(string $markdown, ?string $flavor = null, bool $allowUnsafeLinks = false): string
     {
-        return $this->convert($markdown, new MarkdownOptions(
+        return rtrim($this->convert($markdown, new MarkdownOptions(
             flavor: $flavor,
             inlineOnly: true,
             allowUnsafeLinks: $allowUnsafeLinks,
-        ));
+        )), "\n");
     }
 
     public function convert(string $markdown, MarkdownOptions $options): string

@@ -52,7 +52,7 @@ describe('HtmlTwigExtension', function () {
         $extension = new HtmlTwigExtension($this->pageLifecycle, $this->env);
 
         expect($extension->markdownFilter('**bold**'))->toBe("<p><strong>bold</strong></p>\n");
-        expect($extension->markdownFilter('**bold**', null, true))->toBe("<strong>bold</strong>\n");
+        expect($extension->markdownFilter('**bold**', null, true))->toBe('<strong>bold</strong>');
         expect($extension->markdownFilter('`<b>`', null, false, true))->toBe("<p><code>&lt;b&gt;</code></p>\n");
         expect($extension->parseAttrFilter('not a tag'))->toBe([]);
         expect($extension->dataUrlFunction('/no/such/file.txt'))->toBe('');

@@ -16,7 +16,7 @@ describe('Markdown', function () {
     });
 
     it('renders inline-only markdown', function () {
-        expect($this->markdown->parseParagraph('**bold**'))->toBe("<strong>bold</strong>\n");
+        expect($this->markdown->parseParagraph('**bold**'))->toBe('<strong>bold</strong>');
     });
 
     it('uses comment line breaks for gfm-comment', function () {
