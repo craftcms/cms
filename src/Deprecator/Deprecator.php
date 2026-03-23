@@ -7,13 +7,14 @@ namespace CraftCms\Cms\Deprecator;
 use Craft;
 use craft\base\Component;
 use craft\elements\db\ElementQuery;
-use craft\helpers\Template;
 use craft\web\twig\Extension;
 use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Twig\TemplateResolver;
+use CraftCms\Cms\Twig\TwigExceptionMapper;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -226,7 +227,7 @@ class Deprecator
     }
 
     /**
-     * Returns whether the given trace is a call to [[\craft\heplers\Template::attribute()]]
+     * Returns whether the given trace is a call to [[Template::attribute()]]
      *
      * @param  array  $traces  debug_backtrace() results leading up to [[log()]]
      * @param  int  $index  The trace index to check
@@ -258,7 +259,7 @@ class Deprecator
             $file = $trace['file'] ?? null;
             $line = $trace['line'] ?? null;
             try {
-                $templateInfo = Template::resolveTemplatePathAndLine($file ?? '', $line);
+                $templateInfo = app(TwigExceptionMapper::class)->resolveTemplatePathAndLine($file ?? '', $line);
             } catch (Throwable) {
                 $templateInfo = false;
             }

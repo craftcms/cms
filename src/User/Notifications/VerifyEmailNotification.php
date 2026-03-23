@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Notifications;
 
-use craft\helpers\Template;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\User\Elements\User;
