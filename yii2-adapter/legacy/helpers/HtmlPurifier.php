@@ -7,8 +7,13 @@
 
 namespace craft\helpers;
 
+use Closure;
 use craft\htmlpurifier\RelAttrLinkTypeDef;
 use craft\htmlpurifier\VideoEmbedUrlDef;
+use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\HtmlPurifier\HtmlPurifierSanitizer;
 use HTMLPurifier_Config;
 use HTMLPurifier_Encoder;
 use HTMLPurifier_HTMLDefinition;
@@ -18,12 +23,36 @@ use HTMLPurifier_HTMLDefinition;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. Use {@see HtmlSanitizers} for HTML sanitization or {@see Str} for UTF-8 cleanup instead.
  */
 class HtmlPurifier extends \yii\helpers\HtmlPurifier
 {
     /**
+     * @deprecated in 6.0.0. Use {@see HtmlSanitizers::sanitize()} instead.
+     */
+    public static function process($content, $config = null)
+    {
+        Deprecator::log('craft\\helpers\\HtmlPurifier::process', 'Calling `craft\\helpers\\HtmlPurifier::process()` is deprecated. Register an HTML sanitizer on `CraftCms\\Cms\\Support\\HtmlSanitizer\\HtmlSanitizers` instead.');
+
+        if ($config instanceof Closure) {
+            return parent::process($content, $config);
+        }
+
+        if ($config === null) {
+            return parent::process($content);
+        }
+
+        if (!is_array($config)) {
+            return parent::process($content, $config);
+        }
+
+        return app(HtmlSanitizers::class)->sanitize($content, new HtmlPurifierSanitizer($config));
+    }
+
+    /**
      * @param string $string
      * @return string
+     * @deprecated in 6.0.0.
      */
     public static function cleanUtf8(string $string): string
     {
@@ -34,15 +63,16 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
      * @param string $string
      * @param HTMLPurifier_Config $config
      * @return string
+     * @deprecated in 6.0.0. Use {@see Str::convertToUtf8()} instead.
      */
     public static function convertToUtf8(string $string, HTMLPurifier_Config $config): string
     {
-        /** @phpstan-ignore-next-line */
-        return HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
+        return Str::convertToUtf8($string, strtolower($config->get('Core.Encoding')));
     }
 
     /**
      * @inheritdoc
+     * @deprecated in 6.0.0. Use {@see HtmlSanitizers::defaults()} or a custom sanitizer registration instead.
      */
     public static function configure($config): void
     {

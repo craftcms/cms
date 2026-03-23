@@ -16,7 +16,7 @@ describe('Legacy Twig Extension', function () {
         $filterNames = array_map(fn ($filter) => $filter->getName(), $extension->getFilters());
         $globals = $extension->getGlobals();
 
-        expect($filterNames)->toContain('ucfirst', 'ucwords');
+        expect($filterNames)->toContain('purify', 'ucfirst', 'ucwords');
         expect($globals)->toHaveKey('view');
     });
 });
