@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CraftCms\Cms\Tests\TestClasses;
+namespace CraftCms\Cms\Tests\TestClasses\TestPlugin\src;
 
 use CraftCms\Cms\Plugin\PluginSettings;
 use Override;

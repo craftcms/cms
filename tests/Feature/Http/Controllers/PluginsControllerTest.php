@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\PluginsController;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -96,19 +97,26 @@ test('editSettings returns 404 for non-existent plugin', function () {
 test('editSettings returns 403 when allowAdminChanges is false and plugin lacks readonly support', function () {
     Cms::config()->allowAdminChanges = false;
 
-    // Test plugin doesn't have readonly support
-    $response = get(action([PluginsController::class, 'editSettings'], ['test-plugin']));
+    app(Plugins::class)->getPlugin('test-plugin')->hasReadOnlyCpSettings = false;
 
-    // Should be 403 or 404 depending on plugin state
-    expect($response->status())->toBeIn([403, 404]);
+    get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
+        ->assertForbidden();
 });
 
 test('editSettings loads for existing plugin', function () {
-    // The test plugin should be loaded
-    $response = get(action([PluginsController::class, 'editSettings'], ['test-plugin']));
+    get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
+        ->assertOk()
+        ->assertSee('Test Plugin')
+        ->assertSee('settings-foo');
+});
 
-    // May be 404 if plugin not installed, or 200 if it is
-    expect($response->status())->toBeIn([200, 404]);
+test('editSettings returns read-only settings response when supported', function () {
+    Cms::config()->allowAdminChanges = false;
+
+    get(action([PluginsController::class, 'editSettings'], ['test-plugin']))
+        ->assertOk()
+        ->assertSee('settings-foo')
+        ->assertSee('disabled');
 });
 
 test('saveSettings validates pluginHandle', function () {
@@ -121,6 +129,15 @@ test('saveSettings returns 404 for non-existent plugin', function () {
         'pluginHandle' => 'non-existent-plugin',
     ])
         ->assertNotFound();
+});
+
+test('saveSettings persists plugin settings', function () {
+    postJson(action([PluginsController::class, 'saveSettings']), [
+        'pluginHandle' => 'test-plugin',
+        'settings' => ['foo' => 'bar'],
+    ])->assertOk();
+
+    expect(app(Plugins::class)->getPlugin('test-plugin')->getSettings()->foo)->toBe('bar');
 });
 
 test('respects read-only mode for install', function () {
