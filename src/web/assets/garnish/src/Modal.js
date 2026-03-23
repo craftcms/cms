@@ -222,7 +222,6 @@ export default Base.extend(
 
       setTimeout(() => {
         let $focusTarget = this.$triggerElement ?? this.settings.triggerElement;
-
         if (typeof $focusTarget === 'function') {
           $focusTarget = $focusTarget();
         }

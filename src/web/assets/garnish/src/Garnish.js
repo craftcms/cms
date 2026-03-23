@@ -528,7 +528,7 @@ Garnish = $.extend(Garnish, {
   },
 
   getFocusedElement: function () {
-    return $(document.activeElement);
+    return $(':focus');
   },
 
   /**
