@@ -1,1 +1,1 @@
-craft\helpers\Template::beginProfile("template", "index.twig");
+app('CraftCms\Cms\View\TemplateProfiler')->beginProfile("template", "index.twig");

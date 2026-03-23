@@ -18,9 +18,9 @@ if (is_array($context['_seq']) || (is_object($context['_seq']) && $context['_seq
     $context['loop']['last'] = 1 === $length;
 }
 foreach ($context['_seq'] as $context["_key"] => $context["item"]) {
-    $_thisItemLevel = (int)craft\helpers\Template::attribute($this->env, $this->getSourceContext(), $context["item"], 'level', [], Twig\Template::ANY_CALL, false, true);
-    $_thisItemLft = (int)craft\helpers\Template::attribute($this->env, $this->getSourceContext(), $context["item"], 'lft', [], Twig\Template::ANY_CALL, false, true);
-    $_thisItemRgt = (int)craft\helpers\Template::attribute($this->env, $this->getSourceContext(), $context["item"], 'rgt', [], Twig\Template::ANY_CALL, false, true);
+    $_thisItemLevel = (int)CraftCms\Cms\Support\Template::attribute($this->env, $this->getSourceContext(), $context["item"], 'level', [], Twig\Template::ANY_CALL, false, true);
+    $_thisItemLft = (int)CraftCms\Cms\Support\Template::attribute($this->env, $this->getSourceContext(), $context["item"], 'lft', [], Twig\Template::ANY_CALL, false, true);
+    $_thisItemRgt = (int)CraftCms\Cms\Support\Template::attribute($this->env, $this->getSourceContext(), $context["item"], 'rgt', [], Twig\Template::ANY_CALL, false, true);
     if (isset($_contextsByLevel)) {
         if (
             $_thisItemLevel > $context['nav']['level'] + 1 ||

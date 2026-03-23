@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Nodes;
 
 use Craft;
-use craft\helpers\Template;
+use CraftCms\Cms\Support\Template;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;

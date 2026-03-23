@@ -12,7 +12,6 @@ use DateTimeInterface;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionNamedType;
-use ReflectionProperty;
 use ReflectionUnionType;
 use RuntimeException;
 
@@ -213,14 +212,16 @@ class Typecast
             self::resolveClassTypes($class);
         }
 
-        return self::$types[$class][$property] ?? false;
+        return self::$types[$class][$property]
+            ?? self::$types[$class]['_'.lcfirst($property)] // Underscore prefixed private
+            ?? false;
     }
 
     private static function resolveClassTypes(string $class): void
     {
         self::$types[$class] = [];
 
-        $properties = new ReflectionClass($class)->getProperties(ReflectionProperty::IS_PUBLIC);
+        $properties = new ReflectionClass($class)->getProperties();
 
         foreach ($properties as $ref) {
             if ($ref->isStatic()) {
