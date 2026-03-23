@@ -74,7 +74,7 @@ class WelcomeCommand extends Command
 
         echo PHP_EOL;
 
-        $tagline = ' ✦ A new install ✦ ';
+        $tagline = ' ✦ Build bespoke content experiences ✦ ';
         [$red, $green, $blue] = $gradient[3];
         echo "\e[48;2;{$red};{$green};{$blue}m\e[30m\e[1m{$tagline}\e[0m  \e[38;5;245mv{$version}\e[0m".PHP_EOL;
 
