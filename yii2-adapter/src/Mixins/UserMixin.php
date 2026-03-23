@@ -6,7 +6,9 @@ namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
 use CraftCms\Cms\Auth\Auth;
+use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Json;
 use SensitiveParameter;
 use Webauthn\PublicKeyCredentialRequestOptions;
 
@@ -28,6 +30,17 @@ class UserMixin
     {
         return function(PublicKeyCredentialRequestOptions|array|string $requestOptions, string $response): bool {
             Deprecator::log('User-authenticateWithPasskey', 'Calling ->authenticateWithPasskey on a User is deprecated. Use app(UserProvider::class)->validatePasskey() instead.');
+
+            if (is_array($requestOptions)) {
+                $requestOptions = Json::encode($requestOptions);
+            }
+
+            if (!is_string($requestOptions)) {
+                $requestOptions = app(Passkeys::class)
+                    ->webauthnServer()
+                    ->getSerializer()
+                    ->serialize($requestOptions, 'json');
+            }
 
             /** @phpstan-ignore-next-line */
             return app(Auth::class)->authenticateWithPasskey($this, $requestOptions, $response);

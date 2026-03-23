@@ -14,6 +14,7 @@ use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Update\Updates;
 use yii\base\Exception;
 
@@ -583,13 +584,21 @@ class UrlHelper
     {
         $referrer = Craft::$app->getRequest()->getReferrer();
 
-        // Make sure it didn't refer itself
-        if ($referrer === Craft::$app->getRequest()->getFullUri()) {
+        if ($referrer === null) {
             return null;
         }
 
         // Make sure the CP referred it
         if (!str_starts_with($referrer, self::baseCpUrl())) {
+            return null;
+        }
+
+        // to ensure we're comparing uris strip base cp url and query string from the referrer first
+        $referrerFullUri = ltrim(Str::after($referrer, self::baseCpUrl()), '/');
+        $referrerFullUri = substr($referrerFullUri, 0, strpos($referrerFullUri, '?') ?: null);
+
+        // Make sure it didn't refer itself
+        if ($referrerFullUri === Craft::$app->getRequest()->getFullUri()) {
             return null;
         }
 

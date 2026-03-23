@@ -328,11 +328,7 @@ system:
   timeZone: UTC
 EOL;
     $input2 = <<<'EOL'
-<<<<<<< Updated upstream
 dateModified: 1603054241
-=======
-dateModified: 1603054240
->>>>>>> Stashed changes
 system:
   edition: pro
   live: true
@@ -350,12 +346,8 @@ system:
   timeZone: UTC
 EOL;
     $input3 = <<<'EOL'
-<<<<<<< Updated upstream
 dateModified: 1603054241
 foo: bar
-=======
-dateModified: 1603054240
->>>>>>> Stashed changes
 system:
   edition: pro
   live: true
@@ -365,10 +357,7 @@ system:
 EOL;
     $expected3 = <<<'EOL'
 dateModified: __TIMESTAMP__
-<<<<<<< Updated upstream
 foo: bar
-=======
->>>>>>> Stashed changes
 system:
   edition: pro
   live: true
@@ -377,11 +366,8 @@ system:
   timeZone: UTC
 EOL;
     $input4 = <<<'EOL'
-<<<<<<< Updated upstream
 foo: bar
 dateModified: 1603054241
-=======
->>>>>>> Stashed changes
 system:
   edition: pro
   live: true
@@ -391,10 +377,7 @@ system:
 dateModified: 1603054240
 EOL;
     $expected4 = <<<'EOL'
-<<<<<<< Updated upstream
 foo: bar
-=======
->>>>>>> Stashed changes
 dateModified: __TIMESTAMP__
 system:
   edition: pro
