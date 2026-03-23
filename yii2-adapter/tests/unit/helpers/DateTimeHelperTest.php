@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use CraftCms\Cms\Support\DateTimeHelper as SupportDateTimeHelper;
