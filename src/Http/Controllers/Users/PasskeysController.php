@@ -52,9 +52,10 @@ JS);
     public function creationOptions(Request $request): JsonResponse
     {
         $this->requireConfirmedPassword();
+        $serializer = $this->passkeys->webauthnServer()->getSerializer();
 
         return new JsonResponse([
-            'options' => $this->passkeys->getPasskeyCreationOptions($request->user()),
+            'options' => $serializer->serialize($this->passkeys->getPasskeyCreationOptions($request->user()), 'json'),
         ]);
     }
 

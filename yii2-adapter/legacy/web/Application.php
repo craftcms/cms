@@ -21,15 +21,11 @@ use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Typecast;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use IntlDateFormatter;
@@ -40,6 +36,7 @@ use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\ExitException as YiiExitException;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\debug\Module as YiiDebugModule;
@@ -381,25 +378,11 @@ class Application extends \yii\web\Application
         }
 
         $resourceUri = substr($requestPath, strlen($resourceBaseUri));
-        $slash = strpos($resourceUri, '/');
-        $hash = substr($resourceUri, 0, $slash);
-        $sourcePath = $this->resourceSourcePathByHash($hash);
 
-        if (!$sourcePath) {
-            return;
-        }
-
-        $filePath = substr($resourceUri, strlen($hash) + 1);
-        if (!Path::ensurePathIsContained($filePath)) {
-            throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
-        }
-
-        // Publish the directory
-        [$publishedDir] = $this->getAssetManager()->publish(Aliases::get($sourcePath));
-
-        $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
-        if (!file_exists($publishedPath)) {
-            throw new NotFoundHttpException("$filePath does not exist.");
+        try {
+            $publishedPath = App::resourcePathByUri($resourceUri);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestHttpException($e->getMessage(), previous: $e);
         }
 
         $response = $this->getResponse();
@@ -414,18 +397,6 @@ class Application extends \yii\web\Application
             'inline' => true,
         ]);
         $this->end();
-    }
-
-    private function resourceSourcePathByHash(string $hash): string|null
-    {
-        try {
-            return DB::table(Table::RESOURCEPATHS)
-                ->where('hash', $hash)
-                ->value('path');
-        } catch (QueryException) {
-            // Craft isn't installed yet. See if it's cached as a fallback.
-            return Cache::get(Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash));
-        }
     }
 
     /**

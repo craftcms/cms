@@ -10,9 +10,7 @@ module.exports = getConfig({
       new CopyWebpackPlugin({
         patterns: [
           {
-            from: require.resolve(
-              'blueimp-file-upload/js/jquery.fileupload.js'
-            ),
+            from: require.resolve('blueimp-file-upload/js/jquery.fileupload.js'),
           },
         ],
       }),
