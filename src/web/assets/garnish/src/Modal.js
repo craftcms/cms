@@ -35,7 +35,6 @@ export default Base.extend(
 
       if (!this.settings.triggerElement) {
         this.settings.triggerElement = Garnish.getFocusedElement();
-        console.log(this.settings.triggerElement);
       }
 
       // Create the shade
@@ -223,7 +222,7 @@ export default Base.extend(
 
       setTimeout(() => {
         let $focusTarget = this.$triggerElement ?? this.settings.triggerElement;
-        console.log($focusTarget);
+
         if (typeof $focusTarget === 'function') {
           $focusTarget = $focusTarget();
         }

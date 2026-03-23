@@ -528,7 +528,7 @@ Garnish = $.extend(Garnish, {
   },
 
   getFocusedElement: function () {
-    return $(':focus');
+    return $(document.activeElement);
   },
 
   /**
@@ -1043,12 +1043,12 @@ $.extend($.event.special, {
 
       $elem.on({
         'mousedown.garnish-activate': function (e) {
-          // Prevent buttons from getting focus on click
           if (
             e.currentTarget.nodeName === 'BUTTON' ||
             e.currentTarget.role === 'button'
           ) {
             e.preventDefault();
+            e.currentTarget.focus();
           }
         },
         'click.garnish-activate': function (e) {
