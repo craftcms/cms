@@ -10,9 +10,7 @@ namespace craft\web\assets\cp;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Assets;
-use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\UrlHelper;
 use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
 use craft\web\assets\animationblocker\AnimationBlockerAsset;
@@ -38,6 +36,7 @@ use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Section\Data\Section;
@@ -51,6 +50,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
@@ -176,11 +176,11 @@ JS;
             'Pro' => Edition::Pro->value,
             'Enterprise' => Edition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
-            'actionUrl' => UrlHelper::actionUrl(),
+            'actionUrl' => URL::actionUrl(),
             'asciiCharMap' => Str::asciiCharMap(true, app()->getLocale()),
             'baseApiUrl' => Api::craftApiEndpoint(),
-            'baseSiteUrl' => UrlHelper::siteUrl(),
-            'baseUrl' => UrlHelper::url(),
+            'baseSiteUrl' => URL::siteUrl(),
+            'baseUrl' => URL::url(),
             'clientOs' => $request->getClientOs(),
             'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
@@ -212,7 +212,7 @@ JS;
         if ($request->getIsCpRequest()) {
             $data += [
                 'announcements' => $upToDate ? app(Announcements::class)->get() : [],
-                'baseCpUrl' => UrlHelper::cpUrl(),
+                'baseCpUrl' => URL::cpUrl(),
                 'cpTrigger' => $generalConfig->cpTrigger,
             ];
         }
@@ -283,7 +283,7 @@ JS;
             'publishableSections' => $upToDate ? $this->_publishableSections($currentUser) : [],
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
-            'siteId' => $upToDate ? (Cp::requestedSite()->id ?? Sites::getCurrentSite()->id) : null,
+            'siteId' => $upToDate ? (app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id) : null,
             'sites' => $this->_sites(),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,

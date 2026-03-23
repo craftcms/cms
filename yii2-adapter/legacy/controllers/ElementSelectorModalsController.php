@@ -7,7 +7,7 @@
 
 namespace craft\controllers;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use Illuminate\Support\Collection;
 use yii\web\Response;
@@ -53,7 +53,7 @@ class ElementSelectorModalsController extends BaseElementsController
         }
 
         return $this->asJson([
-            'html' => Cp::elementIndexHtml($elementType, [
+            'html' => app(ElementIndexHtml::class)->html($elementType, [
                 'class' => 'content',
                 'context' => $this->context(),
                 'registerJs' => false,

@@ -7,7 +7,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Migrations;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
 use craft\web\Response;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
@@ -28,6 +27,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;

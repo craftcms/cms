@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig;
 
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Container\Attributes\Scoped;
@@ -202,8 +202,8 @@ class TemplateResolver
         $templateMode = TemplateMode::get();
 
         // Normalize the path and name
-        $basePath = FileHelper::normalizePath($basePath);
-        $name = trim(FileHelper::normalizePath($name), '/');
+        $basePath = File::normalizePath($basePath);
+        $name = trim(File::normalizePath($name), '/');
 
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name !== '') {

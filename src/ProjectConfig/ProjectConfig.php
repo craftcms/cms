@@ -6,8 +6,6 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
 use craft\helpers\App;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
 use craft\services\ElementSources;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -37,6 +35,7 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -48,6 +47,7 @@ use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -60,6 +60,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use SplFileInfo;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Application;
@@ -1420,10 +1422,19 @@ class ProjectConfig
             return [];
         }
 
-        return FileHelper::findFiles($path, [
-            'only' => ['*.yaml'],
-            'caseSensitive' => false,
-        ]);
+        $finder = Finder::create()
+            ->ignoreDotFiles(false)
+            ->ignoreVCS(false)
+            ->files()
+            ->in($path)
+            ->filter(fn (SplFileInfo $file): bool => fnmatch('*.yaml', $file->getFilename(), FNM_CASEFOLD));
+
+        $list = [];
+        foreach ($finder as $file) {
+            $list[] = $file->getPathname();
+        }
+
+        return $list;
     }
 
     /**
@@ -1495,9 +1506,7 @@ class ProjectConfig
             $basePath = Path::projectConfig();
 
             // Delete everything except hidden files/folders
-            FileHelper::clearDirectory($basePath, [
-                'except' => ['.*', '.*/'],
-            ]);
+            File::cleanDirectory($basePath, except: ['.*', '.*/']);
 
             $projectConfigNames = $config->get(self::PATH_META_NAMES);
 
@@ -1520,16 +1529,14 @@ class ProjectConfig
                 if (! empty($uids)) {
                     $yamlContent = preg_replace($uids, $replacements, $yamlContent);
                 }
-                FileHelper::writeToFile($filePath, $yamlContent);
+                File::writeToFile($filePath, $yamlContent);
             }
         } catch (Throwable $e) {
             Cache::put(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
             if (isset($basePath)) {
                 // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
                 try {
-                    FileHelper::clearDirectory($basePath, [
-                        'except' => ['.*', '.*/'],
-                    ]);
+                    File::cleanDirectory($basePath, except: ['.*', '.*/']);
                 } catch (Throwable) {
                     // oh well
                 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -28,7 +28,7 @@ abstract class BaseUiElement extends FieldLayoutElement
         $icon = $this->selectorIcon();
         $label = $this->selectorLabel();
 
-        $indicatorHtml = $this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
+        $indicatorHtml = $this->hasConditions() ? Html::tag('div', Icons::svg('diamond'), [
             'class' => ['cp-icon', 'puny', 'orange'],
             'title' => t('This element is conditional'),
             'aria' => ['label' => t('This element is conditional')],
@@ -42,7 +42,7 @@ abstract class BaseUiElement extends FieldLayoutElement
                 ],
             ]).
             Html::beginTag('div', ['class' => 'fld-element-icon']).
-            ($icon ? Cp::iconSvg($icon, $label) : Cp::fallbackIconSvg($label)).
+            ($icon ? Icons::svg($icon, $label) : Icons::fallbackSvg($label)).
             Html::endTag('div'). // .fld-element-icon
             Html::beginTag('div', ['class' => 'field-name']).
             Html::beginTag('div', Arr::merge(

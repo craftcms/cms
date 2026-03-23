@@ -6,9 +6,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements\addresses;
 
 use CommerceGuys\Addressing\Country\Country;
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -75,7 +75,7 @@ class CountryCodeField extends BaseNativeField
             Html::beginTag('div', [
                 'class' => ['flex', 'flex-nowrap'],
             ]).
-            Cp::selectizeHtml([
+            FormFields::selectizeHtml([
                 'id' => 'countryCode',
                 'name' => 'countryCode',
                 'options' => app(Addresses::class)->getCountryList(app()->getLocale()),

@@ -9,10 +9,12 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\ElementRelationParamParser;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Database\Table;
@@ -1007,7 +1009,7 @@ JS, [
         $mockup = new (static::elementType());
         $mockup->title = t('Related {type} Title', ['type' => $mockup->displayName()]);
 
-        return Cp::chipHtml($mockup);
+        return app(ElementHtml::class)->chipHtml($mockup);
     }
 
     /**
@@ -1015,7 +1017,7 @@ JS, [
      */
     protected function previewHtml(ElementCollection $elements): string
     {
-        return Cp::elementPreviewHtml($elements->all());
+        return app(PreviewHtml::class)->elementPreviewHtml($elements->all());
     }
 
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
@@ -1302,14 +1304,14 @@ JS, [
         }
 
         $html =
-            Cp::checkboxFieldHtml([
+            FormFields::checkboxFieldHtml([
                 'checkboxLabel' => t('Relate {type} from a specific site?', ['type' => $pluralType]),
                 'name' => 'useTargetSite',
                 'checked' => $showTargetSite,
                 'toggle' => 'target-site-field',
                 'reverseToggle' => 'show-site-menu-field',
             ]).
-            Cp::selectFieldHtml([
+            FormFields::selectFieldHtml([
                 'fieldClass' => ! $showTargetSite ? ['hidden'] : null,
                 'label' => t('Which site should {type} be related from?', ['type' => $pluralType]),
                 'id' => 'target-site',
@@ -1319,7 +1321,7 @@ JS, [
             ]);
 
         if (static::canShowSiteMenu()) {
-            $html .= Cp::checkboxFieldHtml([
+            $html .= FormFields::checkboxFieldHtml([
                 'fieldset' => true,
                 'fieldClass' => $showTargetSite ? ['hidden'] : null,
                 'checkboxLabel' => t('Show the site menu'),
@@ -1385,7 +1387,7 @@ JS, [
                 $viewModeOptions[] = ['label' => $label, 'value' => $key];
             }
 
-            $html = Cp::selectHtml([
+            $html = FormFields::selectHtml([
                 'id' => 'viewMode',
                 'name' => 'viewMode',
                 'options' => $viewModeOptions,
@@ -1393,7 +1395,7 @@ JS, [
             ]);
         }
 
-        return Cp::fieldHtml($html, [
+        return FormFields::fieldHtml($html, [
             'label' => t('View Mode'),
             'instructions' => t('Choose how the field should look for authors.'),
             'id' => 'viewMode',
@@ -1421,7 +1423,7 @@ JS, [
             $selectionCondition->forProjectConfig = true;
             $selectionCondition->queryParams[] = 'site';
 
-            $selectionConditionHtml = Cp::fieldHtml($selectionCondition->getBuilderHtml(), [
+            $selectionConditionHtml = FormFields::fieldHtml($selectionCondition->getBuilderHtml(), [
                 'label' => t('Selectable {type} Condition', [
                     'type' => $elementType::pluralDisplayName(),
                 ]),

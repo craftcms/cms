@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
@@ -69,7 +69,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
         return
             Html::hiddenLabel(Html::encode($this->getLabel()), 'value').
-            Cp::textHtml($this->inputOptions());
+            FormFields::textHtml($this->inputOptions());
     }
 
     /**

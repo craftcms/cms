@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -34,7 +33,7 @@ class Path
 
     public function config(string $path = ''): string
     {
-        $this->configPath ??= FileHelper::normalizePath($this->app->configPath('craft'));
+        $this->configPath ??= File::normalizePath($this->app->configPath('craft'));
 
         return $this->path($this->configPath, $path);
     }
@@ -248,7 +247,7 @@ class Path
 
     private function aliasOrDefault(string $alias, string $path): string
     {
-        return FileHelper::normalizePath(Aliases::get($alias, false) ?: $path);
+        return File::normalizePath(Aliases::get($alias, false) ?: $path);
     }
 
     private function path(string $basePath, string $path = ''): string
@@ -259,10 +258,10 @@ class Path
     private function directory(string $basePath, string $path = '', bool $create = true, bool $writeGitignore = false): string
     {
         if ($create) {
-            FileHelper::createDirectory($basePath);
+            File::ensureDirectoryExists($basePath);
 
             if ($writeGitignore) {
-                FileHelper::writeGitignoreFile($basePath);
+                File::writeGitignoreFile($basePath);
             }
         }
 

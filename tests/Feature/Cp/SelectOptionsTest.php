@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
-use craft\helpers\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Support\Facades\Filesystems;
 
@@ -277,7 +277,7 @@ describe('getFsOptions', function () {
         foreach ($options as $option) {
             $fs = Filesystems::getFilesystemByHandle($option['value']);
             if ($fs) {
-                expect(Assets::isTempUploadFs($fs))->toBeFalse();
+                expect(AssetsHelper::isTempUploadFs($fs))->toBeFalse();
             }
         }
     });

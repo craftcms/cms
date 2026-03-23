@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Support\File;
 use yii\base\InvalidConfigException;
 
 /**
@@ -89,7 +90,7 @@ class UploadedFile extends \yii\web\UploadedFile
             return false;
         }
 
-        $tempFilename = FileHelper::uniqueName($this->name);
+        $tempFilename = File::uniqueName($this->name);
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
 
         if (!$this->saveAs($tempPath, $deleteTempFile)) {

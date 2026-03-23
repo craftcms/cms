@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
-use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Http\JsonResponse;
@@ -123,7 +123,8 @@ readonly class TransformController
                 $tempPath = ImageTransformHelper::generateTransform($asset, $transform);
             }
 
-            FileHelper::createDirectory(dirname($path));
+            File::ensureDirectoryExists(dirname($path));
+
             rename($tempPath, $path);
         }
 

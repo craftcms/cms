@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\PreviewHandlers;
 
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 
 use function CraftCms\Cms\template;
@@ -16,7 +16,7 @@ class Text extends AssetPreviewHandler
     {
         $localCopy = $this->asset->getCopyOfFile();
         $contents = Html::encode(file_get_contents($localCopy));
-        FileHelper::unlink($localCopy);
+        File::delete($localCopy);
 
         $language = $this->asset->kind === Asset::KIND_HTML ? 'markup' : $this->asset->kind;
 

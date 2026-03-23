@@ -10,6 +10,7 @@ namespace craft\base;
 use Closure;
 use Craft;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Database\Query\Builder;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;
@@ -19,7 +20,12 @@ use yii\validators\Validator;
  */
 abstract class Field extends \CraftCms\Cms\Field\Field
 {
-    use \craft\base\LegacyEventConstants;
+    use LegacyEventConstants;
+
+    public function __construct($config = [])
+    {
+        parent::__construct(Arr::except($config, ['fieldLimit', 'limitUnit']));
+    }
 
     public static function modifyQuery(Builder $query, array $instances, mixed $value): Builder
     {

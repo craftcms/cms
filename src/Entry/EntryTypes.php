@@ -6,7 +6,8 @@ namespace CraftCms\Cms\Entry;
 
 use Craft;
 use craft\helpers\AdminTable;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -30,6 +31,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -46,7 +48,6 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
-use yii\helpers\Markdown;
 
 #[Singleton]
 class EntryTypes
@@ -594,14 +595,14 @@ class EntryTypes
         foreach ($entryTypes as $entryType) {
             $label = Html::encode($entryType->getUiLabel());
             $chipCellContent = Html::beginTag('div', ['class' => 'inline-chips']).
-                Cp::chipHtml($entryType, [
+                app(ElementHtml::class)->chipHtml($entryType, [
                     'labelHtml' => Html::a($label, $entryType->getCpEditUrl(), [
                         'class' => ['chip-label', 'cell-bold'],
                     ]),
                 ]);
             if ($entryType->description) {
                 $chipCellContent .= Html::tag('span',
-                    Html::decodeDoubles(Markdown::process(Html::encodeInvalidTags(Html::encode($entryType->description)),
+                    Html::decodeDoubles(Markdown::parse(Html::encodeInvalidTags(Html::encode($entryType->description)),
                         'gfm-comment')),
                     ['class' => 'info']);
             }
@@ -612,7 +613,7 @@ class EntryTypes
                 'title' => $label,
                 'chip' => $chipCellContent,
                 'handle' => $entryType->handle,
-                'usages' => Cp::componentPreviewHtml($usages[$entryType->id] ?? []),
+                'usages' => app(PreviewHtml::class)->componentPreviewHtml($usages[$entryType->id] ?? []),
             ];
         }
 

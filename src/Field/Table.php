@@ -8,15 +8,15 @@ use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\Types\Generators\TableRowType;
 use CraftCms\Cms\Gql\Types\TableRow;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
@@ -315,7 +315,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
             ],
         ];
 
-        $dropdownSettingsHtml = Cp::editableTableFieldHtml([
+        $dropdownSettingsHtml = FormFields::editableTableFieldHtml([
             'label' => t('Dropdown Options'),
             'instructions' => t('Define the available options.'),
             'id' => '__ID__',
@@ -358,7 +358,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
             'readOnly' => $readOnly,
         ]);
 
-        $defaultsField = Cp::editableTableFieldHtml([
+        $defaultsField = FormFields::editableTableFieldHtml([
             'label' => t('Default Values'),
             'instructions' => t('Define the default values for the field.'),
             'id' => 'defaults',

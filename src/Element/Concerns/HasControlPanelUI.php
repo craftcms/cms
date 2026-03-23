@@ -7,8 +7,10 @@ namespace CraftCms\Cms\Element\Concerns;
 use Craft;
 use craft\base\NestedElementInterface;
 use craft\controllers\ElementsController;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Events\DefineActionMenuItems;
 use CraftCms\Cms\Element\Events\DefineAdditionalButtons;
@@ -151,10 +153,10 @@ trait HasControlPanelUI
     /**
      * Returns action menu items for the element's edit screens.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      *
      * @see getActionMenuItems()
-     * @see Cp::disclosureMenu()
+     * @see MenuHtml::disclosureMenu()
      * @since 5.0.0
      */
     protected function safeActionMenuItems(): array
@@ -286,12 +288,12 @@ JS, [
     /**
      * Returns destructive action menu items for the element's edit screens.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      *
      * `'destructive' => true` will be automatically added to all returned items.
      *
      * @see getActionMenuItems()
-     * @see Cp::disclosureMenu()
+     * @see MenuHtml::disclosureMenu()
      * @since 5.0.0
      */
     protected function destructiveActionMenuItems(): array
@@ -546,7 +548,7 @@ JS, [
     {
         $slug = isset($this->slug) && ! ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
 
-        return Cp::textFieldHtml([
+        return FormFields::textFieldHtml([
             'status' => $this->getAttributeStatus('slug'),
             'label' => t('Slug'),
             'siteId' => $this->siteId,
@@ -604,7 +606,7 @@ JS, [
                 ])
                 : '';
 
-            $statusField = Cp::lightswitchFieldHtml([
+            $statusField = FormFields::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
                 'label' => t($this->getSite()->getName(), category: 'site'),
                 'headingSuffix' => $expandStatusBtn,
@@ -613,7 +615,7 @@ JS, [
                 'status' => $this->getAttributeStatus('enabled'),
             ]);
         } else {
-            $statusField = Cp::lightswitchFieldHtml([
+            $statusField = FormFields::lightswitchFieldHtml([
                 'id' => 'enabled',
                 'label' => t('Enabled'),
                 'name' => 'enabled',
@@ -637,7 +639,7 @@ JS, [
     protected function notesFieldHtml(): string|Stringable
     {
         // todo: this should accept a $static arg
-        return Cp::textareaFieldHtml([
+        return FormFields::textareaFieldHtml([
             'label' => t('Notes about your changes'),
             'labelClass' => 'h6',
             'class' => ['nicetext', 'notes'],
@@ -749,7 +751,7 @@ JS, [
             return [
                 ...$owner->getCrumbs(),
                 [
-                    'html' => Cp::elementChipHtml($owner, [
+                    'html' => app(ElementHtml::class)->elementChipHtml($owner, [
                         'showDraftName' => false,
                         'class' => 'chromeless',
                         'hyperlink' => true,

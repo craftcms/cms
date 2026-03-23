@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Plugin;
-use Illuminate\Support\Facades\File;
+use CraftCms\Cms\Support\File;
 
 /**
  * @mixin Plugin

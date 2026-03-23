@@ -74,6 +74,7 @@ jobs:
             CraftCms\\Cms\\Support\\Facades\\Images \
             CraftCms\\Cms\\Support\\Facades\\ImageTransforms \
             CraftCms\\Cms\\Support\\Facades\\InputNamespace \
+            CraftCms\\Cms\\Support\\Facades\\Markdown \
             CraftCms\\Cms\\Support\\Facades\\Path \
             CraftCms\\Cms\\Support\\Facades\\ProjectConfig \
             CraftCms\\Cms\\Support\\Facades\\Revisions \

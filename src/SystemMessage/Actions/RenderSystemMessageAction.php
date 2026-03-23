@@ -6,11 +6,11 @@ namespace CraftCms\Cms\SystemMessage\Actions;
 
 use CraftCms\Cms\Email\Data\EmailSettings;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\SystemMessage\Data\RenderedSystemMessage;
 use CraftCms\Cms\SystemMessage\SystemMessageRenderContext;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 use InvalidArgumentException;
-use yii\helpers\Markdown;
 
 use function CraftCms\Cms\renderSandboxedString;
 
@@ -59,7 +59,7 @@ readonly class RenderSystemMessageAction
                 language: $language,
                 subject: $subject,
                 textBody: $textBody,
-                htmlBody: Markdown::process($escapedHtmlBody, 'gfm'),
+                htmlBody: Markdown::parse($escapedHtmlBody, 'gfm'),
                 siteId: $siteId,
                 variables: $variables,
             );

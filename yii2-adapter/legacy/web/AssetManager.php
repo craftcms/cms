@@ -11,10 +11,10 @@ use Craft;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\URL;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Database\QueryException;
@@ -171,10 +171,9 @@ class AssetManager extends \yii\web\AssetManager
     {
         $generalConfig = Cms::config();
         if ($generalConfig->buildId) {
-            return UrlHelper::urlWithParams($url, [
-                'buildId' => $generalConfig->buildId,
-            ]);
+            return URL::urlWithParams($url, ['buildId' => $generalConfig->buildId]);
         }
+
         return $url;
     }
 }

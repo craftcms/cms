@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use craft\helpers\DateRange;
 use CraftCms\Cms\Entry\Conditions\AuthorConditionRule;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Conditions\ExpiryDateConditionRule;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Shared\Enums\DateRangeType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Models\User as UserModel;
 
@@ -241,7 +241,7 @@ describe('PostDateConditionRule', function () {
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(PostDateConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_RANGE;
+        $rule->rangeType = DateRangeType::Range->value;
         $rule->startDate = '2025-06-01';
         $rule->endDate = '2025-06-30';
 
@@ -264,7 +264,7 @@ describe('PostDateConditionRule', function () {
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(PostDateConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_RANGE;
+        $rule->rangeType = DateRangeType::Range->value;
         $rule->startDate = '2025-06-01';
         $rule->endDate = '2025-06-30';
 

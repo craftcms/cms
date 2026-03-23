@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Cms;
@@ -24,8 +21,11 @@ use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\Events\TransformingImage;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Database\Query\Builder;
@@ -106,7 +106,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
                 }
 
                 // Return the temporary transform URL
-                return UrlHelper::actionUrl('assets/generate-transform', [
+                return URL::actionUrl('assets/generate-transform', [
                     'transformId' => $index->id,
                 ], showScriptName: false);
             }
@@ -343,7 +343,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
             fclose($stream);
         }
 
-        FileHelper::unlink($tempPath);
+        File::delete($tempPath);
     }
 
     /**
@@ -558,7 +558,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
     {
         $imageCopy = $asset->getCopyOfFile();
 
-        if (FileHelper::isSvg($imageCopy)) {
+        if (File::isSvg($imageCopy)) {
             $size = max($asset->width, $asset->height) ?? 1000;
             /** @var Raster $image */
             $image = app(Images::class)->loadImage($imageCopy, true, $size);

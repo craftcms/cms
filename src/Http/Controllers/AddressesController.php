@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use craft\helpers\Cp;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -41,7 +41,7 @@ readonly class AddressesController
         ]);
 
         $html = InputNamespace::namespaceInputs(
-            fn () => Cp::addressFieldsHtml($address), $request->input('namespace')
+            fn () => FormFields::addressFieldsHtml($address), $request->input('namespace')
         );
 
         return new JsonResponse([

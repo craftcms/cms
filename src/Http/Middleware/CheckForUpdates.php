@@ -8,9 +8,9 @@ use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 

@@ -6,8 +6,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Support\Arr;
@@ -184,7 +185,7 @@ abstract class BaseField extends FieldLayoutElement
         $label = $this->selectorLabel();
         $icon = $this->selectorIcon();
 
-        $indicatorHtml = implode('', array_map(fn (array $indicator) => Html::tag('div', Cp::iconSvg($indicator['icon'], altText: $indicator['label']), [
+        $indicatorHtml = implode('', array_map(fn (array $indicator) => Html::tag('div', Icons::svg($indicator['icon'], altText: $indicator['label']), [
             'class' => array_filter(['cp-icon', 'puny', $indicator['iconColor'] ?? null]),
             'title' => $indicator['label'],
         ]), $this->selectorIndicators()));
@@ -220,7 +221,7 @@ abstract class BaseField extends FieldLayoutElement
         ]);
 
         if ($icon) {
-            return Html::tag('div', Cp::iconSvg($icon), [
+            return Html::tag('div', Icons::svg($icon), [
                 'class' => ['cp-icon', 'medium'],
             ]).$html;
         }
@@ -382,7 +383,7 @@ abstract class BaseField extends FieldLayoutElement
             ]);
         }
 
-        return Cp::fieldHtml($inputHtml, [
+        return FormFields::fieldHtml($inputHtml, [
             'fieldClass' => array_keys(array_filter([
                 'no-status' => ! $showStatus,
             ])),
@@ -763,7 +764,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * Returns any action menu items that should be shown for the field.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      *
      * @param  ElementInterface|null  $element  The element the form is being rendered for
      * @param  bool  $static  Whether the form should be static (non-interactive)

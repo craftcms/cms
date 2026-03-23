@@ -13,16 +13,13 @@ use craft\elements\actions\UnsuspendUsers;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\NestedElementManager;
-use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Template;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -41,6 +38,7 @@ use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -50,6 +48,8 @@ use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Template;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -516,7 +516,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             ],
             'isCredentialed' => [
                 'label' => t('Credentialed'),
-                'placeholder' => fn () => Template::raw(Cp::statusLabelHtml([
+                'placeholder' => fn () => Template::raw(app(StatusHtml::class)->statusLabelHtml([
                     'color' => Color::Teal,
                     'label' => t('Credentialed'),
                     'icon' => 'check',
@@ -528,7 +528,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             ],
             'is2faEnabled' => [
                 'label' => t('Two-Step Verification'),
-                'placeholder' => fn () => Template::raw(Cp::statusLabelHtml([
+                'placeholder' => fn () => Template::raw(app(StatusHtml::class)->statusLabelHtml([
                     'color' => Color::Teal,
                     'label' => t('Two-Step Verification'),
                     'icon' => 'check',
@@ -1420,14 +1420,18 @@ XML;
      */
     public function getCooldownEndTime(): ?DateTime
     {
-        // There was an old bug that where a user’s lockoutDate could be null if they’ve
-        // passed their cooldownDuration already, but there account status is still locked.
-        // If that’s the case, just let it return null as if they are past the cooldownDuration.
+        // There was an old bug where a user's lockoutDate could be null if they've
+        // passed their cooldownDuration already, but their account status is still locked.
+        // If that's the case, just let it return null as if they are past the cooldownDuration.
         if ($this->locked && $this->lockoutDate) {
             $generalConfig = Cms::config();
-            $interval = DateTimeHelper::secondsToInterval($generalConfig->cooldownDuration);
+            $cooldownDuration = (int) $generalConfig->cooldownDuration;
             $cooldownEnd = clone $this->lockoutDate;
-            $cooldownEnd->add($interval);
+
+            if ($cooldownDuration !== 0) {
+                $sign = $cooldownDuration < 0 ? '-' : '+';
+                $cooldownEnd->modify(sprintf('%s%s seconds', $sign, abs($cooldownDuration)));
+            }
 
             return $cooldownEnd;
         }
@@ -1455,14 +1459,14 @@ XML;
     protected function cpEditUrl(): ?string
     {
         if (request()->isCpRequest() && $this->getIsCurrent()) {
-            return UrlHelper::cpUrl('myaccount');
+            return URL::cpUrl('myaccount');
         }
 
         if (Edition::get() === Edition::Solo) {
             return null;
         }
 
-        return UrlHelper::cpUrl("users/$this->id");
+        return URL::cpUrl("users/$this->id");
     }
 
     #[Override]
@@ -1920,7 +1924,7 @@ JS, [
             case 'is2faEnabled':
                 $enabled = app(\CraftCms\Cms\Auth\Auth::class)->hasActiveMethod($this);
                 if ($this->viewMode === 'cards') {
-                    return Cp::statusLabelHtml([
+                    return app(StatusHtml::class)->statusLabelHtml([
                         'color' => $enabled ? Color::Teal : Color::Gray,
                         'label' => t('Two-Step Verification'),
                         'icon' => $enabled ? 'check' : 'xmark',
@@ -1943,7 +1947,7 @@ JS, [
             case 'isCredentialed':
                 $value = $this->getIsCredentialed();
                 if ($this->viewMode === 'cards') {
-                    return Cp::statusLabelHtml([
+                    return app(StatusHtml::class)->statusLabelHtml([
                         'color' => $value ? Color::Teal : Color::Gray,
                         'label' => t('Credentialed'),
                         'icon' => $value ? 'check' : 'xmark',

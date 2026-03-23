@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use craft\helpers\Cp as CpHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
 use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
@@ -20,9 +19,6 @@ readonly class Settings
         private Plugins $pluginsService
     ) {}
 
-    /**
-     * Returns the list of settings.
-     */
     public function all(): array
     {
         $readOnly = ! $this->generalConfig->allowAdminChanges;
@@ -37,7 +33,7 @@ readonly class Settings
         ];
 
         $settings[$label]['sites'] = [
-            'icon' => sprintf('light/%s', CpHelper::earthIcon()),
+            'icon' => sprintf('light/%s', Icons::earth()),
             'label' => t('Sites'),
         ];
 

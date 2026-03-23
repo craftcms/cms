@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image;
 
 use Craft;
-use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\FileHelper;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Database\Table;
@@ -25,6 +24,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -325,9 +325,7 @@ class ImageTransforms
 
         $file = Path::assetSources($asset->id.'.'.pathinfo($asset->getFilename(), PATHINFO_EXTENSION));
 
-        if (file_exists($file)) {
-            FileHelper::unlink($file);
-        }
+        File::delete($file);
     }
 
     public function deleteResizedAssetVersion(Asset $asset): void
@@ -347,7 +345,7 @@ class ImageTransforms
                 }
 
                 foreach ($files as $path) {
-                    if (! FileHelper::unlink($path)) {
+                    if (! File::delete($path)) {
                         Log::warning("Unable to delete the asset thumbnail \"$path\".", [__METHOD__]);
                     }
                 }

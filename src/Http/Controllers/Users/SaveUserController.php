@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\helpers\Assets;
-use craft\helpers\FileHelper;
-use craft\helpers\UrlHelper;
 use craft\web\UploadedFile;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -18,9 +16,11 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
@@ -379,7 +379,7 @@ readonly class SaveUserController
 
         // Did they upload a new one?
         if ($photo = $request->file('photo')) {
-            $fileLocation = Assets::tempFilePath($photo->extension());
+            $fileLocation = AssetsHelper::tempFilePath($photo->extension());
             $photo->move(Str::beforeLast($fileLocation, '/'), Str::afterLast($fileLocation, '/'));
             $filename = $photo->getClientOriginalName();
             $mimeType = $photo->getMimeType();
@@ -395,7 +395,7 @@ readonly class SaveUserController
 
                 if (! $extension && $mimeType) {
                     try {
-                        $extension = FileHelper::getExtensionByMimeType($mimeType);
+                        $extension = File::getExtensionByMimeType($mimeType);
                     } catch (InvalidArgumentException) {
                     }
                 }
@@ -406,9 +406,9 @@ readonly class SaveUserController
                     return;
                 }
 
-                $fileLocation = Assets::tempFilePath($extension);
+                $fileLocation = AssetsHelper::tempFilePath($extension);
                 $data = base64_decode($matches['data']);
-                FileHelper::writeToFile($fileLocation, $data);
+                File::writeToFile($fileLocation, $data);
                 $newPhoto = true;
             }
         }
@@ -417,9 +417,7 @@ readonly class SaveUserController
             try {
                 $this->users->saveUserPhoto($fileLocation, $user, $filename, $mimeType);
             } catch (Throwable $e) {
-                if (file_exists($fileLocation)) {
-                    FileHelper::unlink($fileLocation);
-                }
+                File::delete($fileLocation);
 
                 throw $e;
             }
@@ -455,7 +453,7 @@ readonly class SaveUserController
         }
 
         $postCpLoginRedirect = $this->generalConfig->getPostCpLoginRedirect();
-        $url = UrlHelper::cpUrl($postCpLoginRedirect);
+        $url = URL::cpUrl($postCpLoginRedirect);
 
         return redirect($url);
     }
@@ -466,7 +464,7 @@ readonly class SaveUserController
     private function redirectUserAfterAccountActivation(User $user): Response
     {
         $activateAccountSuccessPath = $this->generalConfig->getActivateAccountSuccessPath();
-        $url = UrlHelper::siteUrl($activateAccountSuccessPath);
+        $url = URL::siteUrl($activateAccountSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);
     }

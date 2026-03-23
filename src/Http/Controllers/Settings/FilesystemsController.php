@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
 use Craft;
-use craft\helpers\Cp;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems;
 use CraftCms\Cms\Http\RespondsWithFlash;
@@ -113,7 +113,7 @@ class FilesystemsController
                         ]);
                 },
                 function (CpScreenResponse $response) {
-                    $response->noticeHtml(Cp::readOnlyNoticeHtml());
+                    $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
                 },
             );
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use craft\web\twig\Extension;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Env;
@@ -37,6 +38,12 @@ arch()
     ->not
     ->toBeUsed()
     ->ignoring(CraftCms\Cms\Support\Arr::class);
+
+arch()
+    ->expect(Illuminate\Support\Facades\File::class)
+    ->not
+    ->toBeUsed()
+    ->ignoring(File::class);
 
 arch()
     ->expect(Str::class)

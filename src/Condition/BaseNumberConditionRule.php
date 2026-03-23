@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use Override;
@@ -84,7 +84,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
 
         return Html::tag('div',
             Html::hiddenLabel(t('Min Value'), 'min').
-            Cp::textHtml([
+            FormFields::textHtml([
                 'type' => $this->inputType(),
                 'id' => 'min',
                 'name' => 'value',
@@ -94,7 +94,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
             ]).
             Html::tag('span', t('and')).
             Html::hiddenLabel(t('Max Value'), 'max').
-            Cp::textHtml([
+            FormFields::textHtml([
                 'type' => $this->inputType(),
                 'id' => 'max',
                 'name' => 'maxValue',

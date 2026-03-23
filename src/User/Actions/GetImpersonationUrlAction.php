@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Actions;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\RouteToken\RouteTokens;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,8 +30,8 @@ readonly class GetImpersonationUrlAction
             return false;
         }
 
-        $url = $user->can('accessCp') ? UrlHelper::cpUrl() : UrlHelper::siteUrl();
+        $url = $user->can('accessCp') ? URL::cpUrl() : URL::siteUrl();
 
-        return UrlHelper::urlWithToken($url, $token);
+        return URL::urlWithToken($url, $token);
     }
 }

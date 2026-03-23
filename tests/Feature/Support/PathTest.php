@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use Illuminate\Support\Facades\Facade;
-use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
     $this->sandboxPath = storage_path('framework/testing/path-service/'.uniqid('', true));
@@ -193,12 +192,12 @@ test('laravel path service falls back to application paths when aliases are unav
 
     $path = ($this->laravelPath)();
 
-    expect($path->storage(create: false))->toBe(FileHelper::normalizePath(app()->storagePath()))
-        ->and($path->tests())->toBe(FileHelper::normalizePath(app()->basePath('tests')))
-        ->and($path->vendor())->toBe(FileHelper::normalizePath(app()->basePath('vendor')))
-        ->and($path->siteTranslations())->toBe(FileHelper::normalizePath(app()->langPath()))
-        ->and($path->system()[0])->toBe(FileHelper::normalizePath(app()->basePath('migrations')))
-        ->and($path->system()[1])->toBe(FileHelper::normalizePath(app()->basePath('yii2-adapter/lib')));
+    expect($path->storage(create: false))->toBe(File::normalizePath(app()->storagePath()))
+        ->and($path->tests())->toBe(File::normalizePath(app()->basePath('tests')))
+        ->and($path->vendor())->toBe(File::normalizePath(app()->basePath('vendor')))
+        ->and($path->siteTranslations())->toBe(File::normalizePath(app()->langPath()))
+        ->and($path->system()[0])->toBe(File::normalizePath(app()->basePath('migrations')))
+        ->and($path->system()[1])->toBe(File::normalizePath(app()->basePath('yii2-adapter/lib')));
 });
 
 test('laravel path service accepts subpaths for representative roots', function () {

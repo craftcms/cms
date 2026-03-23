@@ -12,11 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\events\DefineElementEditorHtmlEvent;
-use craft\helpers\Component;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\helpers\Template;
-use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
 use craft\services\Drafts;
 use craft\web\Controller;
@@ -25,6 +21,10 @@ use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\ComponentHelper;
+use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -48,6 +48,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Template;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\Enums\Position;
@@ -214,7 +216,7 @@ class ElementsController extends Controller
             throw new ServerErrorHttpException('The element doesn’t have an edit page.');
         }
 
-        $editUrl = UrlHelper::removeParam(UrlHelper::cpUrl('edit'), 'site');
+        $editUrl = URL::removeParam(URL::cpUrl('edit'), 'site');
         if (str_starts_with($url, $editUrl)) {
             /** @var UrlManager $urlManager */
             $urlManager = Craft::$app->getUrlManager();
@@ -249,7 +251,7 @@ class ElementsController extends Controller
         }
 
         // Redirect to its edit page
-        $editUrl = $element->getCpEditUrl() ?? UrlHelper::actionUrl('elements/edit', [
+        $editUrl = $element->getCpEditUrl() ?? URL::actionUrl('elements/edit', [
             'draftId' => $element->draftId,
             'siteId' => $element->siteId,
         ]);
@@ -261,9 +263,7 @@ class ElementsController extends Controller
         ]));
 
         if (!$this->request->getAcceptsJson()) {
-            $response->redirect(UrlHelper::urlWithParams($editUrl, [
-                'fresh' => '1',
-            ]));
+            $response->redirect(URL::urlWithParams($editUrl, ['fresh' => '1']));
         }
 
         return $response;
@@ -375,7 +375,7 @@ class ElementsController extends Controller
         [$docTitle, $title] = $this->_editElementTitles($element);
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
-        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? UrlHelper::cpReferralUrl() ?? ElementHelper::postEditUrl($element);
+        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? URL::cpReferralUrl() ?? ElementHelper::postEditUrl($element);
 
         // Site statuses
         if ($canEditMultipleSites) {
@@ -771,7 +771,7 @@ JS, [
         return [
             ...$crumbs,
             [
-                'html' => Cp::elementChipHtml($element, [
+                'html' => app(ElementHtml::class)->elementChipHtml($element, [
                     'showDraftName' => !$current,
                     'class' => 'chromeless',
                     'hyperlink' => true,
@@ -870,7 +870,7 @@ JS, [
 
         $isDraft = $element->getIsDraft();
         $isRevision = $element->getIsRevision();
-        $cpEditUrl = UrlHelper::cpUrl($element->getCpEditUrl(), [
+        $cpEditUrl = URL::cpUrl($element->getCpEditUrl(), [
             'draftId' => null,
             'revisionId' => null,
         ]);
@@ -926,7 +926,7 @@ JS, [
                                 'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
                             ])),
-                        'url' => UrlHelper::urlWithParams($cpEditUrl, array_merge($baseParams, [
+                        'url' => URL::urlWithParams($cpEditUrl, array_merge($baseParams, [
                             'draftId' => $draft->draftId,
                         ])),
                         'selected' => $draft->id === $element->id,
@@ -957,7 +957,7 @@ JS, [
                                 'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
                             ])),
-                        'url' => UrlHelper::urlWithParams($cpEditUrl, array_merge($baseParams, [
+                        'url' => URL::urlWithParams($cpEditUrl, array_merge($baseParams, [
                             'revisionId' => $revision->revisionId,
                         ])),
                         'selected' => $revision->id === $element->id,
@@ -1315,7 +1315,7 @@ JS, [
         $components[] = $element->getSidebarHtml(!$canSave);
 
         if ($this->id) {
-            $components[] = Cp::metadataHtml($element->getMetadata());
+            $components[] = app(ContentHtml::class)->metadataHtml($element->getMetadata());
         }
 
         return trim(implode("\n", $components));
@@ -2588,7 +2588,7 @@ JS, [
                     throw new ForbiddenHttpException('User not authorized to edit content for this site.');
                 }
             } else {
-                $site = Cp::requestedSite();
+                $site = app(RequestedSite::class)->get();
                 if (!$site) {
                     throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
                 }
@@ -2835,7 +2835,7 @@ JS, [
      */
     private function _validateElementType(string $elementType): void
     {
-        if (!Component::validateComponentClass($elementType, ElementInterface::class)) {
+        if (!ComponentHelper::validateComponentClass($elementType, ElementInterface::class)) {
             $message = (new InvalidTypeException($elementType, ElementInterface::class))->getMessage();
             throw new BadRequestHttpException($message);
         }
@@ -2953,7 +2953,7 @@ JS, [
         ];
         $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element), [
             'details' => !$element->dateDeleted
-                ? Cp::elementChipHtml($element, ['hyperlink' => true])
+                ? app(ElementHtml::class)->elementChipHtml($element, ['hyperlink' => true])
                 : null,
         ]);
 
@@ -2978,9 +2978,9 @@ JS, [
             $url = $newElement->getCpEditUrl();
 
             if ($url) {
-                $url = UrlHelper::urlWithParams($url, ['fresh' => 1]);
+                $url = URL::urlWithParams($url, ['fresh' => 1]);
             } else {
-                $url = UrlHelper::actionUrl('elements/edit', [
+                $url = URL::actionUrl('elements/edit', [
                     'draftId' => $newElement->draftId,
                     'siteId' => $newElement->siteId,
                     'fresh' => 1,

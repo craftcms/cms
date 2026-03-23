@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use craft\helpers\Template;
+use CraftCms\Cms\View\TemplateProfiler;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -29,7 +29,7 @@ class ProfileNode extends Node
     public function compile(Compiler $compiler): void
     {
         $compiler
-            ->write(Template::class.'::'.$this->getAttribute('stage').'Profile(')
+            ->write(sprintf("app('%s')->%sProfile(", TemplateProfiler::class, $this->getAttribute('stage')))
             ->repr($this->getAttribute('type'))
             ->raw(', ')
             ->repr($this->getAttribute('name'))

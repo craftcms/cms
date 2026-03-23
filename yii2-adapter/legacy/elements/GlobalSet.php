@@ -9,7 +9,6 @@ namespace craft\elements;
 
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\db\GlobalSetQuery;
-use craft\helpers\UrlHelper;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Log;
 use yii\base\InvalidConfigException;
@@ -275,7 +275,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     protected function cpEditUrl(): ?string
     {
-        return UrlHelper::cpUrl('globals/' . $this->handle);
+        return URL::cpUrl('globals/' . $this->handle);
     }
 
     /**

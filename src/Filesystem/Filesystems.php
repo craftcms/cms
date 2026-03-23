@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Filesystem;
 
-use craft\helpers\Component as ComponentHelper;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Events\FilesystemRenamed;
@@ -24,7 +24,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
-use yii\base\InvalidConfigException;
 
 #[Singleton]
 class Filesystems
@@ -261,7 +260,7 @@ class Filesystems
     {
         try {
             return ComponentHelper::createComponent($config, FsInterface::class);
-        } catch (MissingComponentException|InvalidConfigException $e) {
+        } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
 

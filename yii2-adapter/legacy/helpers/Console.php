@@ -22,6 +22,7 @@ use const STDOUT;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use Laravel artisan command utilities instead.
  */
 class Console extends \yii\helpers\Console
 {

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
-use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
@@ -18,7 +18,6 @@ use CraftCms\Cms\Utility\Utility;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Override;
 use Symfony\Component\Filesystem\Path;
 
@@ -118,7 +117,7 @@ class ClearCaches extends Utility
                 'key' => 'compiled-templates',
                 'label' => t('Compiled templates'),
                 'info' => t('Contents of {path}', [
-                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->compiledTemplates(create: false), Aliases::get('@root'))),
+                    'path' => sprintf('`%s/`', File::relativePath($pathService->compiledTemplates(create: false), Aliases::get('@root'))),
                 ]),
                 'action' => $pathService->compiledTemplates(create: false),
             ],
@@ -126,7 +125,7 @@ class ClearCaches extends Utility
                 'key' => 'compiled-classes',
                 'label' => t('Compiled classes'),
                 'info' => t('Contents of {path}', [
-                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->compiledClasses(create: false), Aliases::get('@root'))),
+                    'path' => sprintf('`%s/`', File::relativePath($pathService->compiledClasses(create: false), Aliases::get('@root'))),
                 ]),
                 'action' => $pathService->compiledClasses(create: false),
             ],
@@ -170,7 +169,7 @@ class ClearCaches extends Utility
                 'key' => 'temp-files',
                 'label' => t('Temp files'),
                 'info' => t('Contents of {path}', [
-                    'path' => sprintf('`%s/`', FileHelper::relativePath($pathService->temp(), Aliases::get('@root'))),
+                    'path' => sprintf('`%s/`', File::relativePath($pathService->temp(), Aliases::get('@root'))),
                 ]),
                 'action' => $pathService->temp(),
             ],

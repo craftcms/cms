@@ -9,19 +9,19 @@ namespace craft\controllers;
 
 use Craft;
 use craft\elements\Category;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\web\Controller;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\URL;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -95,11 +95,11 @@ class CategoriesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => t('Settings'),
-                'url' => UrlHelper::url('settings'),
+                'url' => URL::url('settings'),
             ],
             [
                 'label' => t('Categories'),
-                'url' => UrlHelper::url('settings/categories'),
+                'url' => URL::url('settings/categories'),
             ],
         ];
 
@@ -259,7 +259,7 @@ class CategoriesController extends Controller
             throw new BadRequestHttpException("Invalid category group handle: $groupHandle");
         }
 
-        $site = Cp::requestedSite();
+        $site = app(RequestedSite::class)->get();
 
         if (!$site) {
             throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
@@ -321,9 +321,7 @@ class CategoriesController extends Controller
         ]));
 
         if (!$this->request->getAcceptsJson()) {
-            $response->redirect(UrlHelper::urlWithParams($editUrl, [
-                'fresh' => 1,
-            ]));
+            $response->redirect(URL::urlWithParams($editUrl, ['fresh' => 1]));
         }
 
         return $response;

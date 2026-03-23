@@ -9,8 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\elements\GlobalSet;
-use craft\helpers\Cp;
 use craft\web\Controller;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -148,7 +148,7 @@ class GlobalsController extends Controller
      */
     public function actionEditContent(string $globalSetHandle, ?GlobalSet $globalSet = null): Response
     {
-        $site = Cp::requestedSite();
+        $site = app(RequestedSite::class)->get();
         if (!$site) {
             throw new ForbiddenHttpException('User not permitted to edit content in any sites');
         }

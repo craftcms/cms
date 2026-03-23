@@ -9,6 +9,7 @@ use CraftCms\Cms\Address\Policies\AddressPolicy;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Policies\AssetPolicy;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
@@ -16,11 +17,13 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Policies\EntryPolicy;
 use CraftCms\Cms\Field\Elements\ContentBlock;
 use CraftCms\Cms\Field\Policies\ContentBlockPolicy;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users as UsersFacade;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Policies\UserPolicy;
 use CraftCms\Cms\User\UserPermissions;
 use CraftCms\Cms\User\Users;
+use Illuminate\Auth\Events\Authenticated;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -141,6 +144,11 @@ class AuthServiceProvider extends ServiceProvider
 
     private function registerEvents(): void
     {
+        Event::listen(function (Authenticated $event) {
+            Sites::refreshSites();
+            app(RequestedSite::class)->reset();
+        });
+
         Event::listen(Login::class, function (Login $event) {
             if (! $event->user instanceof User) {
                 return;

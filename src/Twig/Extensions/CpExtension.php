@@ -4,9 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Extensions;
 
-use craft\helpers\Cp;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\ElementIndexHtml;
+use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Cp\Html\StatusHtml;
+use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Foundation\ViteException;
@@ -28,7 +37,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             'CraftTeam' => Edition::Team->value,
             'CraftPro' => Edition::Pro->value,
             'CraftEnterprise' => Edition::Enterprise->value,
-            'requestedSite' => Cp::requestedSite(),
+            'requestedSite' => app(RequestedSite::class)->get(),
         ];
     }
 
@@ -36,20 +45,20 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('cardViewDesigner', Cp::cardViewDesignerHtml(...), ['is_safe' => ['html']]),
-            new TwigFunction('chip', Cp::chipHtml(...), ['is_safe' => ['html']]),
-            new TwigFunction('customSelect', Cp::customSelectHtml(...), ['is_safe' => ['html']]),
-            new TwigFunction('disclosureMenu', Cp::disclosureMenu(...), ['is_safe' => ['html']]),
-            new TwigFunction('elementCard', Cp::elementCardHtml(...), ['is_safe' => ['html']]),
-            new TwigFunction('elementChip', Cp::elementChipHtml(...), ['is_safe' => ['html']]),
-            new TwigFunction('elementIndex', Cp::elementIndexHtml(...), ['is_safe' => ['html']]),
-            new TwigFunction('fieldLayoutDesigner', Cp::fieldLayoutDesignerHtml(...), ['is_safe' => ['html']]),
+            new TwigFunction('cardViewDesigner', app(CardDesigner::class)->html(...), ['is_safe' => ['html']]),
+            new TwigFunction('chip', app(ElementHtml::class)->chipHtml(...), ['is_safe' => ['html']]),
+            new TwigFunction('customSelect', FormFields::customSelectHtml(...), ['is_safe' => ['html']]),
+            new TwigFunction('disclosureMenu', app(MenuHtml::class)->disclosureMenu(...), ['is_safe' => ['html']]),
+            new TwigFunction('elementCard', app(ElementHtml::class)->elementCardHtml(...), ['is_safe' => ['html']]),
+            new TwigFunction('elementChip', app(ElementHtml::class)->elementChipHtml(...), ['is_safe' => ['html']]),
+            new TwigFunction('elementIndex', app(ElementIndexHtml::class)->html(...), ['is_safe' => ['html']]),
+            new TwigFunction('fieldLayoutDesigner', app(FieldLayoutDesigner::class)->html(...), ['is_safe' => ['html']]),
             new TwigFunction('findCrumb', fn (array $items) => $this->findCrumb($items)),
-            new TwigFunction('generatedFieldsTable', Cp::generatedFieldsTableHtml(...), ['is_safe' => ['html']]),
-            new TwigFunction('iconSvg', Cp::iconSvg(...), ['is_safe' => ['html']]),
-            new TwigFunction('siteMenuItems', Cp::siteMenuItems(...)),
-            new TwigFunction('statusIndicator', Cp::statusIndicatorHtml(...), ['is_safe' => ['html']]),
-            new TwigFunction('readOnlyNotice', Cp::readOnlyNoticeHtml(...), ['is_safe' => ['html']]),
+            new TwigFunction('generatedFieldsTable', app(FieldLayoutDesigner::class)->generatedFieldsTableHtml(...), ['is_safe' => ['html']]),
+            new TwigFunction('iconSvg', Icons::svg(...), ['is_safe' => ['html']]),
+            new TwigFunction('siteMenuItems', app(MenuHtml::class)->siteMenuItems(...)),
+            new TwigFunction('statusIndicator', app(StatusHtml::class)->statusIndicatorHtml(...), ['is_safe' => ['html']]),
+            new TwigFunction('readOnlyNotice', app(ContentHtml::class)->readOnlyNoticeHtml(...), ['is_safe' => ['html']]),
             new TwigFunction('vite', $this->vite(...), ['is_safe' => ['html']]),
         ];
     }
@@ -76,7 +85,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     public function getFilters(): array
     {
         return [
-            new TwigFilter('cpmd', Cp::parseMarkdown(...), ['is_safe' => ['html']]),
+            new TwigFilter('cpmd', app(ContentHtml::class)->parseMarkdown(...), ['is_safe' => ['html']]),
         ];
     }
 

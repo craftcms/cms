@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Commands;
 
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Backups;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Translation\I18N;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Override;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -50,7 +49,7 @@ class BackupCommand extends Command
                 $path = getcwd().DIRECTORY_SEPARATOR.$path;
             }
 
-            $path = FileHelper::normalizePath($path);
+            $path = File::normalizePath($path);
 
             if (is_dir($path)) {
                 $path .= DIRECTORY_SEPARATOR.basename($backups->getBackupFilePath(
@@ -102,7 +101,7 @@ class BackupCommand extends Command
         );
 
         if ($this->option('zip')) {
-            $zipPath = FileHelper::zip($path);
+            $zipPath = File::zip($path);
             File::delete($path);
             $path = $zipPath;
         }

@@ -12,13 +12,15 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpSettingsEvent;
-use craft\helpers\Cp as CpHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
 use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
@@ -31,6 +33,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use DateTime;
@@ -39,6 +42,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Uri;
 use InvalidArgumentException;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -172,7 +176,7 @@ class Cp extends Component
      */
     public function getRequestedSite(): ?Site
     {
-        return CpHelper::requestedSite();
+        return app(RequestedSite::class)->get();
     }
 
     /**
@@ -386,7 +390,7 @@ class Cp extends Component
                 $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', Str::ascii(str_replace('/', '-', $item['url'])));
             }
 
-            $item['url'] = UrlHelper::url($item['url']);
+            $item['url'] = URL::url($item['url']);
 
             if (!isset($item['external'])) {
                 $item['external'] = false;
@@ -414,7 +418,7 @@ class Cp extends Component
      */
     public function getAlerts(): array
     {
-        return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
+        return app(Alerts::class)->get(request()->path());
     }
 
     /**
@@ -467,9 +471,9 @@ class Cp extends Component
         ]);
 
         $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
-        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
-            'items' => $issues->map(fn($issue) => $issue[2])->all(),
-        ]);
+        $cartUrl = Uri::of("$consoleUrl/cart/new")
+            ->withQuery(['items' => $issues->map(fn($issue) => $issue[2])->all()])
+            ->value();
 
         return [
             'message' => $message,
@@ -662,7 +666,7 @@ class Cp extends Component
      */
     public function field(string $input, array $config = []): string
     {
-        return CpHelper::fieldHtml($input, $config);
+        return FormFields::fieldHtml($input, $config);
     }
 
     /**
@@ -674,7 +678,7 @@ class Cp extends Component
      */
     public function fieldLayoutDesigner(FieldLayout $fieldLayout, array $config = []): string
     {
-        return CpHelper::fieldLayoutDesignerHtml($fieldLayout, $config);
+        return app(FieldLayoutDesigner::class)->html($fieldLayout, $config);
     }
 
     public static function registerEvents(): void

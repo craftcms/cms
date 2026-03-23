@@ -36,6 +36,7 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Cache;
@@ -840,9 +841,9 @@ class App
         $generalConfig = Craft::$app->getConfig()->getConfigSettings(Config::CATEGORY_GENERAL);
 
         if (app()->runningInConsole() || request()->isSiteRequest()) {
-            $loginUrl = UrlHelper::siteUrl($generalConfig->getLoginPath());
+            $loginUrl = URL::siteUrl($generalConfig->getLoginPath());
         } else {
-            $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
+            $loginUrl = URL::cpUrl(Request::CP_PATH_LOGIN);
         }
 
         return [

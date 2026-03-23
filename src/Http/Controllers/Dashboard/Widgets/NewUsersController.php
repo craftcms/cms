@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Dashboard\Widgets;
 
-use craft\helpers\ChartHelper;
+use CraftCms\Cms\Dashboard\Chart;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Translation\I18N;
 use CraftCms\Cms\User\Elements\User;
@@ -47,7 +47,7 @@ readonly class NewUsersController
         );
 
         // Get the chart data table
-        $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', 'count', '*', [
+        $dataTable = Chart::get($query, $startDate, $endDate, 'users.dateCreated', 'count', '*', [
             'intervalUnit' => $intervalUnit,
             'valueLabel' => t('New {type}', [
                 'type' => User::pluralDisplayName(),
@@ -61,7 +61,7 @@ readonly class NewUsersController
         return new JsonResponse([
             'dataTable' => $dataTable,
             'total' => $total,
-            'formats' => ChartHelper::formats(),
+            'formats' => Chart::formats(),
             'orientation' => $i18N->getLocale()->getOrientation(),
             'scale' => $intervalUnit,
         ]);

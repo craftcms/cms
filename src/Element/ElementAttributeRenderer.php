@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -54,7 +56,7 @@ readonly class ElementAttributeRenderer
             'uid' => $element->getCanonicalUid(),
             'ancestors' => $this->renderAncestorsAttribute($element),
             'parent' => $this->renderParentAttribute($element),
-            'status' => Cp::componentStatusLabelHtml($element),
+            'status' => app(StatusHtml::class)->componentStatusLabelHtml($element),
             'link' => $this->renderLinkAttribute($element),
             'uri' => $this->renderUriAttribute($element),
             'slug' => $this->renderSlugAttribute($element),
@@ -132,7 +134,7 @@ readonly class ElementAttributeRenderer
 
         $html = Html::beginTag('ul', ['class' => 'path']);
         foreach ($ancestors as $ancestor) {
-            $html .= Html::tag('li', Cp::elementChipHtml($ancestor));
+            $html .= Html::tag('li', app(ElementHtml::class)->elementChipHtml($ancestor));
         }
 
         return $html.Html::endTag('ul');
@@ -142,7 +144,7 @@ readonly class ElementAttributeRenderer
     {
         $parent = $this->getSourceElement($element)->getParent();
 
-        return $parent ? Cp::elementChipHtml($parent) : '';
+        return $parent ? app(ElementHtml::class)->elementChipHtml($parent) : '';
     }
 
     private function renderLinkAttribute(ElementInterface $element): string
@@ -220,7 +222,7 @@ readonly class ElementAttributeRenderer
 
         $creator = $revision->getRevisionCreator();
 
-        return $creator ? Cp::elementChipHtml($creator) : '';
+        return $creator ? app(ElementHtml::class)->elementChipHtml($creator) : '';
     }
 
     private function renderDraftsAttribute(ElementInterface $element): string
@@ -238,7 +240,7 @@ readonly class ElementAttributeRenderer
             $draft->setUiLabel($draft->draftName);
         }
 
-        return Cp::elementPreviewHtml(
+        return app(PreviewHtml::class)->elementPreviewHtml(
             $drafts,
             showThumb: false,
             showDraftName: false,

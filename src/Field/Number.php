@@ -17,6 +17,7 @@ use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
@@ -28,7 +29,6 @@ use InvalidArgumentException;
 use Override;
 use Throwable;
 use yii\db\Schema;
-use yii\helpers\Markdown;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -340,11 +340,11 @@ JS;
         };
 
         if ($this->prefix) {
-            $formatted = Markdown::processParagraph(Html::encode($this->prefix)).$formatted;
+            $formatted = Markdown::parseParagraph(Html::encode($this->prefix)).$formatted;
         }
 
         if ($this->suffix) {
-            $formatted .= Markdown::processParagraph(Html::encode($this->suffix));
+            $formatted .= Markdown::parseParagraph(Html::encode($this->suffix));
         }
 
         return $formatted;

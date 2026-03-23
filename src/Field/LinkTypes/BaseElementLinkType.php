@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Field\LinkTypes;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Link;
@@ -96,7 +96,7 @@ abstract class BaseElementLinkType extends BaseLinkType
             return null;
         }
 
-        return Cp::checkboxSelectFieldHtml([
+        return FormFields::checkboxSelectFieldHtml([
             'label' => t('{type} Sources', [
                 'type' => static::elementType()::displayName(),
             ]),
@@ -154,7 +154,7 @@ JS, [
         ]);
 
         return
-            Cp::elementSelectHtml(array_merge($this->elementSelectConfig(), [
+            FormFields::elementSelectHtml(array_merge($this->elementSelectConfig(), [
                 'id' => $id,
                 'elements' => array_filter([$this->element($value)]),
                 'showSiteMenu' => true,
@@ -191,7 +191,7 @@ JS, [
     }
 
     /**
-     * Returns the config array that will be passed to [[Cp::elementSelectHtml()]].
+     * Returns the config array that will be passed to [[\CraftCms\Cms\Cp\FormFields::elementSelectHtml()]].
      */
     protected function elementSelectConfig(): array
     {

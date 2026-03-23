@@ -15,9 +15,9 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Filesystem\Path;
 use Throwable;
@@ -38,8 +38,12 @@ readonly class CustomFieldIdeHelperGenerator
 
         $outputPath = $this->getOutputPath();
 
-        if (! $this->ensureDirectory($outputPath)) {
+        if (! File::makeDirectory($outputPath)) {
             return;
+        }
+
+        if (! File::exists($outputPath.'/.gitignore')) {
+            File::put($outputPath.'/.gitignore', '*');
         }
 
         $content = $this->buildHelperContent();
@@ -65,23 +69,6 @@ readonly class CustomFieldIdeHelperGenerator
         }
 
         return base_path($path);
-    }
-
-    private function ensureDirectory(string $path): bool
-    {
-        try {
-            File::ensureDirectoryExists($path);
-
-            if (! File::exists($path.'/.gitignore')) {
-                File::put($path.'/.gitignore', '*');
-            }
-
-            return File::isWritable($path);
-        } catch (Throwable $e) {
-            Log::warning('IDE helper directory is not writable: '.$e->getMessage());
-
-            return false;
-        }
     }
 
     private function buildHelperContent(): string

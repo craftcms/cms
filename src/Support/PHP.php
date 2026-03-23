@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use Composer\Semver\Semver;
-use craft\helpers\FileHelper;
-use HTMLPurifier_Encoder;
 use Illuminate\Support\Facades\Request;
 use InvalidArgumentException;
 use Symfony\Component\Process\PhpExecutableFinder;
@@ -147,7 +145,7 @@ class PHP
             }
 
             // Normalize
-            $paths[] = FileHelper::normalizePath($path);
+            $paths[] = File::normalizePath($path);
         }
 
         return $paths;
@@ -166,7 +164,7 @@ class PHP
             return true;
         }
 
-        $path = FileHelper::normalizePath($path);
+        $path = File::normalizePath($path);
 
         return array_any(self::$basePaths, fn ($basePath) => str_starts_with($path, (string) $basePath));
     }
@@ -240,9 +238,7 @@ class PHP
      */
     public static function checkForValidIconv(): bool
     {
-        // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
-        // don't consider iconv "installed" if it's there but "unusable".
-        return self::$iconv ?? (self::$iconv = (function_exists('iconv') && HTMLPurifier_Encoder::testIconvTruncateBug() === HTMLPurifier_Encoder::ICONV_OK));
+        return self::$iconv ?? (self::$iconv = function_exists('iconv'));
     }
 
     /**

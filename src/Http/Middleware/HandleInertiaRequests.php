@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Middleware;
 
-use craft\helpers\Cp;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Rebrand;
 use CraftCms\Cms\Edition;
@@ -69,7 +69,7 @@ class HandleInertiaRequests extends Middleware
             $currentUser = $request->user();
         }
 
-        $systemIcon = Cp::iconSvg('c-outline');
+        $systemIcon = Icons::svg('c-outline');
 
         if (Edition::isAtLeast(Edition::Pro) && $rebrand = app(Rebrand::class)) {
             $systemIcon = $rebrand->getImage('icon');

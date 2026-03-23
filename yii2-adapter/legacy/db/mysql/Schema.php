@@ -488,7 +488,7 @@ SQL;
         }
 
         FileHelper::writeToFile($this->tempMyCnfPath, '');
-        // Avoid a “world-writable config file 'my.cnf' is ignored” warning
+        // Avoid a "world-writable config file 'my.cnf' is ignored" warning
         chmod($this->tempMyCnfPath, 0600);
         FileHelper::writeToFile($this->tempMyCnfPath, $contents, ['append']);
 

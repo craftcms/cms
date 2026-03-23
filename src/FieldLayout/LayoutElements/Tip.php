@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use Override;
-use yii\helpers\Markdown;
 
 use function CraftCms\Cms\t;
 
@@ -57,7 +57,7 @@ class Tip extends BaseUiElement
     protected function settingsHtml(): ?string
     {
         return
-            Cp::textareaFieldHtml([
+            FormFields::textareaFieldHtml([
                 'label' => $this->_isTip() ? t('Tip') : t('Warning'),
                 'instructions' => t('Can contain Markdown formatting.'),
                 'class' => ['nicetext'],
@@ -65,7 +65,7 @@ class Tip extends BaseUiElement
                 'name' => 'tip',
                 'value' => $this->tip,
             ]).
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Can be dismissed?'),
                 'instructions' => t('Whether this can be dismissed by a user and not shown again.'),
                 'id' => 'dismissible',
@@ -99,7 +99,7 @@ class Tip extends BaseUiElement
             $classes[] = 'dismissible';
         }
 
-        $tip = Markdown::process(Html::encode(t($this->tip, category: 'site')), 'pre-encoded');
+        $tip = Markdown::parse(Html::encode(t($this->tip, category: 'site')), 'pre-encoded');
         $closeBtn = $this->dismissible
             ? Html::button('', [
                 'class' => 'tip-dismiss-btn',

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Conditions;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
@@ -63,7 +63,7 @@ class LinkFieldConditionRule extends TextFieldConditionRule
             $field->getLinkTypes(),
         );
 
-        return Cp::selectHtml([
+        return FormFields::selectHtml([
             'name' => 'linkType',
             'options' => $linkTypeOptions,
             'value' => $this->linkType,

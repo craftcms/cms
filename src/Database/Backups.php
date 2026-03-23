@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Database;
 
 use Closure;
 use Craft;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Events\AfterCreateBackup;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Database\Events\BeforeCreateBackup;
 use CraftCms\Cms\Database\Events\BeforeRestoreBackup;
 use CraftCms\Cms\Database\Exceptions\CommandFailedException;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Connection;
@@ -42,7 +42,7 @@ final readonly class Backups
     public function getBackupFilePath(?Connection $connection = null, ?string $backupFormat = null): string
     {
         $connection ??= DB::connection();
-        $systemName = FileHelper::sanitizeFilename(Cms::systemName(), ['asciiOnly' => true]);
+        $systemName = File::sanitizeFilename(Cms::systemName(), ['asciiOnly' => true]);
         $systemName = str_replace(['\'', '"'], '', strtolower($systemName));
         $version = Info::fetch()->version ?? Cms::VERSION;
         $filename = ($systemName ? "$systemName--" : '').gmdate('Y-m-d-His')."--v$version";
@@ -372,7 +372,7 @@ final readonly class Backups
 
     private function createMysqlDefaultsFile(Connection $connection): string
     {
-        $path = FileHelper::normalizePath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.uniqid('craft-db-', true).'.cnf';
+        $path = File::normalizePath(sys_get_temp_dir()).DIRECTORY_SEPARATOR.uniqid('craft-db-', true).'.cnf';
         $config = $this->getConnectionConfig($connection);
         $socket = (string) ($connection->getConfig('unix_socket') ?? '');
 
@@ -414,7 +414,7 @@ final readonly class Backups
         usort($files, static fn (string $a, string $b) => filemtime($b) <=> filemtime($a));
 
         foreach (array_slice($files, $maxBackups) as $backupToDelete) {
-            FileHelper::unlink($backupToDelete);
+            File::delete($backupToDelete);
         }
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use craft\helpers\FileHelper;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -39,7 +39,7 @@ readonly class ClearCachesController
 
             if (is_string($action)) {
                 try {
-                    FileHelper::clearDirectory($action);
+                    File::cleanDirectory($action);
                 } catch (InvalidArgumentException) {
                     // the directory doesn't exist
                 } catch (Throwable $e) {

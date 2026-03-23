@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Console\Commands\Twig;
 
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 
 class TwigClearCommand extends Command
 {

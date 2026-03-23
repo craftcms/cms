@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use craft\helpers\Cp;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Search;
 use CraftCms\DependencyAwareCache\Dependency\FileDependency;
@@ -22,7 +22,7 @@ readonly class IconController
         ]);
 
         return new JsonResponse([
-            'iconSvg' => Cp::iconSvg($request->string('icon')->toString()),
+            'iconSvg' => Icons::svg($request->string('icon')->toString()),
         ]);
     }
 

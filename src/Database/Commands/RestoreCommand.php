@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Commands;
 
 use Craft;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\Database\Commands\Concerns\ManagesDatabaseTables;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
-use Illuminate\Support\Facades\File;
 use Override;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Mime\MimeTypes;
 use ZipArchive;
 
@@ -67,16 +67,20 @@ class RestoreCommand extends Command
                 $zip->close();
             });
 
-            $files = FileHelper::findFiles($tempDir);
+            $finder = Finder::create()
+                ->ignoreDotFiles(false)
+                ->ignoreVCS(false)
+                ->files()
+                ->in($tempDir);
 
-            if (empty($files)) {
+            if (! $finder->hasResults()) {
                 $this->components->error("No files unzipped from $path.");
-                FileHelper::removeDirectory($tempDir);
+                File::deleteDirectory($tempDir);
 
                 return self::FAILURE;
             }
 
-            $path = reset($files);
+            $path = $finder->getIterator()->current()->getPathname();
         }
 
         if ($this->tablesExist($connection)) {
@@ -110,7 +114,7 @@ class RestoreCommand extends Command
 
         if (isset($tempDir)) {
             $this->components->task('Deleting the temp directory', function () use ($tempDir) {
-                FileHelper::removeDirectory($tempDir);
+                File::deleteDirectory($tempDir);
             });
         }
 

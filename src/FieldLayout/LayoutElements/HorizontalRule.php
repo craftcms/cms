@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Support\Html;
 use Override;
@@ -26,7 +26,7 @@ class HorizontalRule extends FieldLayoutElement
     public function selectorHtml(): string
     {
         $label = t('Horizontal Rule');
-        $indicatorHtml = $this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
+        $indicatorHtml = $this->hasConditions() ? Html::tag('div', Icons::svg('diamond'), [
             'class' => ['cp-icon', 'puny', 'orange'],
             'title' => t('This element is conditional'),
             'aria' => ['label' => t('This element is conditional')],

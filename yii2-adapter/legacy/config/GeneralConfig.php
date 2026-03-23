@@ -932,6 +932,31 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         return $this;
     }
+
+    /**
+     * Whether to grab an exclusive lock on a file when writing to it by using the `LOCK_EX` flag.
+     *
+     * Some file systems, such as NFS, do not support exclusive file locking.
+     *
+     * If `null`, Craft will try to detect if the underlying file system supports exclusive file locking and cache the results.
+     *
+     * ```php
+     * ->useFileLocks(false)
+     * ```
+     *
+     * @group System
+     *
+     * @see $useFileLocks
+     * @see https://php.net/manual/en/function.file-put-contents.php
+     * @deprecated 6.0.0
+     */
+    public function useFileLocks(?bool $value): self
+    {
+        app()->booting(fn() => Deprecator::log('generalConfig.useFileLocks', 'Calling useFileLocks() is deprecated.'));
+
+        return $this;
+    }
+
     /**
      * Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
      *

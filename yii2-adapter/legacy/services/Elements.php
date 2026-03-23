@@ -30,17 +30,16 @@ use craft\events\InvalidateElementCachesEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
-use craft\helpers\UrlHelper;
 use craft\models\ElementActivity;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\validators\SlugValidator;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -71,6 +70,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
@@ -4590,7 +4590,7 @@ class Elements extends Component
             $siteElement->canSave($user)
         ) {
             $queryParams = Arr::except(Craft::$app->getRequest()->getQueryParams(), 'site');
-            $url = UrlHelper::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
+            $url = URL::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
             $message = Html::beginTag('a', [
                     'href' => $url,
                     'class' => 'cross-site-validate',

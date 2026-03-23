@@ -13,11 +13,8 @@ use craft\base\ElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\helpers\App;
 use craft\helpers\Component;
-use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
-use craft\helpers\Session;
-use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume as LegacyVolume;
@@ -25,6 +22,9 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Cp\Alerts;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -40,6 +40,8 @@ use CraftCms\Cms\Support\Typecast;
 use DateInterval;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Uri;
 use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -111,7 +113,8 @@ class AppController extends Controller
         $resourceUri = preg_replace('/^(.*)\?.*/', '$1', substr($url, strlen($baseUrl)));
 
         if (!$assetManager->cacheSourcePaths) {
-            \Illuminate\Support\Facades\Session::save();
+            // Close the PHP session in case this takes a while
+            Session::save();
 
             $response = Http::create()->get($url);
             $this->response->setCacheHeaders();
@@ -144,7 +147,7 @@ class AppController extends Controller
         $path = $this->request->getRequiredBodyParam('path');
 
         return $this->asJson([
-            'alerts' => Cp::alerts($path, true),
+            'alerts' => app(Alerts::class)->get($path, true),
         ]);
     }
 
@@ -182,9 +185,9 @@ class AppController extends Controller
         $this->requireCpRequest();
 
         $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
-        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
-            'items' => array_map(fn($issue) => $issue[2], $issues),
-        ]);
+        $cartUrl = Uri::of("$consoleUrl/cart/new")
+            ->withQuery(['items' => array_map(fn($issue) => $issue[2], $issues)])
+            ->value();
 
         $cookie = $this->request->getCookies()->get(app(License::class)->shunCookieName());
         $data = $cookie ? Json::decode($cookie->value) : null;
@@ -429,14 +432,15 @@ class AppController extends Controller
             // See if there are any provisional changes we should show
             ElementHelper::loadProvisionalChanges($elements);
 
+            $elementHtml = app(ElementHtml::class);
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {
                     $id = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
                     /** @var 'chip'|'card' $ui */
                     $ui = $instance['ui'] ?? 'chip';
                     $elementHtml[$id][$key] = match ($ui) {
-                        'chip' => Cp::elementChipHtml($element, $instance),
-                        'card' => Cp::elementCardHtml($element, $instance),
+                        'chip' => $elementHtml->elementChipHtml($element, $instance),
+                        'card' => $elementHtml->elementCardHtml($element, $instance),
                     };
                 }
             }
@@ -486,13 +490,13 @@ class AppController extends Controller
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
                     if (!empty($config['overrides'])) {
-                        Typecast::configure($component, Component::cleanseConfig($config['overrides']));
+                        Typecast::configure($component, $config['overrides']);
                     }
-                    $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
+                    $componentHtml[$componentType][$id][] = app(ElementHtml::class)->chipHtml($component, $config);
                 }
 
                 if ($withMenuItems) {
-                    $menuItemHtml[$componentType][$id] = Cp::menuItem([
+                    $menuItemHtml[$componentType][$id] = app(MenuHtml::class)->menuItem([
                         'label' => $component->getUiLabel(),
                         'icon' => $component instanceof Iconic ? $component->getIcon() : null,
                         'attributes' => [
