@@ -8,6 +8,7 @@
 - Added `CraftCms\Cms\Support\Arr`.
 - Added `CraftCms\Cms\Support\File`.
 - Added `CraftCms\Cms\Support\Facades\Path`.
+- Added `CraftCms\Cms\Support\Facades\Markdown`.
 - Added `CraftCms\Cms\Support\Path`.
 - Added `CraftCms\Cms\Support\Str`.
 - Added `CraftCms\Cms\Support\URL`.
@@ -24,6 +25,7 @@
 - Deprecated `Craft::$app->getConfig()->getGeneral()`. `CraftCms\Cms\Config\GeneralConfig` should be used instead. This can be used through dependency injection or through `app(CraftCms\Cms\Config\GeneralConfig::class)`.
 - Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.
 - Deprecated `craft\helpers\App::env()`, `CraftCms\Cms\Support\Env::get()` should be used instead.
+- Deprecated `craft\markdown\Markdown`, `craft\markdown\GithubMarkdown`, `craft\markdown\MarkdownExtra`, and `craft\markdown\PreEncodedMarkdown`. `CraftCms\Cms\Support\Facades\Markdown` should be used instead.
 - Deprecated `craft\helpers\DateRange`. `CraftCms\Cms\Shared\Enums\DateRangeType` and `CraftCms\Cms\Shared\Enums\DateRangePeriod` should be used instead.
 - Deprecated `craft\helpers\Cp`. One of the following classes should be used instead:
   - `CraftCms\Cms\Cp\Alerts`

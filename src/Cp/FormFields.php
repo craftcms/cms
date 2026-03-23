@@ -12,13 +12,13 @@ use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
-use yii\helpers\Markdown;
 use yii\validators\RequiredValidator;
 
 use function CraftCms\Cms\t;
@@ -259,7 +259,7 @@ readonly class FormFields
             Html::tag('span', "$label ", [
                 'class' => 'visually-hidden',
             ]).
-            Html::tag('span', Html::decodeDoubles(Markdown::processParagraph(Html::encodeInvalidTags($message)))).
+            Html::tag('span', Html::decodeDoubles(Markdown::parseParagraph(Html::encodeInvalidTags($message)))).
             Html::endTag('p');
     }
 

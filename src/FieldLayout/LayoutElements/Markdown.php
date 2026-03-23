@@ -6,10 +6,10 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
 use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Override;
-use yii\helpers\Markdown as MarkdownHelper;
 
 use function CraftCms\Cms\t;
 
@@ -79,7 +79,7 @@ class Markdown extends BaseUiElement
 
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $content = Html::tag('div', MarkdownHelper::process(Html::encode($this->content)), [
+        $content = Html::tag('div', MarkdownFacade::parse(Html::encode($this->content)), [
             'class' => array_filter([
                 'markdown',
                 $this->displayInPane ? 'pane' : null,

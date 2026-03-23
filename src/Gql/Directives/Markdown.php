@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql\Directives;
 
 use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
-use yii\helpers\Markdown as MarkdownHelper;
 
 class Markdown extends Directive
 {
@@ -32,7 +32,7 @@ class Markdown extends Directive
                     'name' => 'flavor',
                     'type' => Type::string(),
                     'defaultValue' => self::DEFAULT_FLAVOR,
-                    'description' => 'The “flavor” of Markdown the input should be interpreted with. Accepts the same arguments as yii\\helpers\\Markdown::process().',
+                    'description' => 'The “flavor” of Markdown the input should be interpreted with. Accepts the same flavor names as `CraftCms\\Cms\\Support\\Facades\\Markdown::parse()`.',
                 ]),
                 new FieldArgument([
                     'name' => 'inlineOnly',
@@ -55,9 +55,9 @@ class Markdown extends Directive
         $inlineOnly = $arguments['inlineOnly'] ?? self::DEFAULT_INLINE_ONLY;
 
         if ($inlineOnly) {
-            return MarkdownHelper::processParagraph((string) $value, $arguments['flavor'] ?? self::DEFAULT_FLAVOR);
+            return MarkdownFacade::parseParagraph((string) $value, $arguments['flavor'] ?? self::DEFAULT_FLAVOR);
         }
 
-        return MarkdownHelper::process((string) $value, $arguments['flavor'] ?? self::DEFAULT_FLAVOR);
+        return MarkdownFacade::parse((string) $value, $arguments['flavor'] ?? self::DEFAULT_FLAVOR);
     }
 }

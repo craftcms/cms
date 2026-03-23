@@ -10,13 +10,13 @@ use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\t;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use yii\helpers\Markdown;
 
 use function CraftCms\Cms\t;
 
@@ -94,7 +94,7 @@ readonly class Announcements
                 'icon' => $icon,
                 'label' => $label,
                 'heading' => Html::widont(Html::encode(t($announcement->heading))),
-                'body' => Html::widont(Markdown::processParagraph(Html::encode(t($announcement->body)))),
+                'body' => Html::widont(Markdown::parseParagraph(Html::encode(t($announcement->body)))),
                 'unread' => $announcement->unread,
             ];
         })->all();

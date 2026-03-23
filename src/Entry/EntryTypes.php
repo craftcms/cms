@@ -31,6 +31,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -47,7 +48,6 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
-use yii\helpers\Markdown;
 
 #[Singleton]
 class EntryTypes
@@ -602,7 +602,7 @@ class EntryTypes
                 ]);
             if ($entryType->description) {
                 $chipCellContent .= Html::tag('span',
-                    Html::decodeDoubles(Markdown::process(Html::encodeInvalidTags(Html::encode($entryType->description)),
+                    Html::decodeDoubles(Markdown::parse(Html::encodeInvalidTags(Html::encode($entryType->description)),
                         'gfm-comment')),
                     ['class' => 'info']);
             }
