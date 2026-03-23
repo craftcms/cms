@@ -170,6 +170,16 @@ describe('query and encoding helpers', function () {
             'https://www.craftcms.com/?param3=name3',
             '?param1=name&param2=name2',
         ],
+        'preserves-existing-site-param' => [
+            'https://localhost/admin/content/entries/blog/4?site=defaultSite&draftId=3&fresh=1',
+            'https://localhost/admin/content/entries/blog/4?site=defaultSite&draftId=3',
+            ['fresh' => 1],
+        ],
+        'preserves-existing-version-param' => [
+            'https://localhost/cpresources/hash/app.css?v=123&buildId=456',
+            'https://localhost/cpresources/hash/app.css?v=123',
+            ['buildId' => 456],
+        ],
     ]);
 
     test('removes query params from a URL', function (string $expected, string $url, string $param) {

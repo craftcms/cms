@@ -15,6 +15,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Sections;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefineUserContentSummary;
@@ -23,7 +24,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Uri;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpFoundation\Response;
@@ -68,9 +68,7 @@ readonly class UsersController
         $editUrl = $user->getCpEditUrl();
 
         if (! $request->wantsJson()) {
-            return Uri::of($editUrl)
-                ->withQuery(['fresh' => 1])
-                ->redirect();
+            return redirect(URL::urlWithParams($editUrl, ['fresh' => 1]));
         }
 
         return $this->asModelSuccess($user, t('{type} created.', [

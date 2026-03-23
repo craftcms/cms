@@ -61,7 +61,6 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Uri;
 use Throwable;
 use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
@@ -264,9 +263,7 @@ class ElementsController extends Controller
         ]));
 
         if (!$this->request->getAcceptsJson()) {
-            $response->redirect(Uri::of($editUrl)
-                ->withQuery(['fresh' => '1'])
-                ->value());
+            $response->redirect(URL::urlWithParams($editUrl, ['fresh' => '1']));
         }
 
         return $response;
@@ -929,11 +926,9 @@ JS, [
                                 'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
                             ])),
-                        'url' => Uri::of($cpEditUrl)
-                            ->withQuery(array_merge($baseParams, [
-                                'draftId' => $draft->draftId,
-                            ]))
-                            ->value(),
+                        'url' => URL::urlWithParams($cpEditUrl, array_merge($baseParams, [
+                            'draftId' => $draft->draftId,
+                        ])),
                         'selected' => $draft->id === $element->id,
                     ];
                 }, $drafts),
@@ -962,11 +957,9 @@ JS, [
                                 'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
                             ])),
-                        'url' => Uri::of($cpEditUrl)
-                            ->withQuery(array_merge($baseParams, [
-                                'revisionId' => $revision->revisionId,
-                            ]))
-                            ->value(),
+                        'url' => URL::urlWithParams($cpEditUrl, array_merge($baseParams, [
+                            'revisionId' => $revision->revisionId,
+                        ])),
                         'selected' => $revision->id === $element->id,
                     ];
                 }, $revisions),
@@ -2985,9 +2978,7 @@ JS, [
             $url = $newElement->getCpEditUrl();
 
             if ($url) {
-                $url = Uri::of($url)
-                    ->withQuery(['fresh' => 1])
-                    ->value();
+                $url = URL::urlWithParams($url, ['fresh' => 1]);
             } else {
                 $url = URL::actionUrl('elements/edit', [
                     'draftId' => $newElement->draftId,

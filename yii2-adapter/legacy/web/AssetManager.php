@@ -14,11 +14,11 @@ use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\URL;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Uri;
 use yii\db\Exception as DbException;
 
 /**
@@ -171,9 +171,7 @@ class AssetManager extends \yii\web\AssetManager
     {
         $generalConfig = Cms::config();
         if ($generalConfig->buildId) {
-            return Uri::of($url)
-                ->withQuery(['buildId' => $generalConfig->buildId])
-                ->value();
+            return URL::urlWithParams($url, ['buildId' => $generalConfig->buildId]);
         }
 
         return $url;

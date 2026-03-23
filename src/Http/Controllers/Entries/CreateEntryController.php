@@ -20,9 +20,9 @@ use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
-use Illuminate\Support\Uri;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
@@ -113,9 +113,7 @@ readonly class CreateEntryController
         ]));
 
         if (! $this->request->wantsJson()) {
-            $response->headers->set('Location', Uri::of($editUrl)
-                ->withQuery(['fresh' => 1])
-                ->value());
+            $response->headers->set('Location', URL::urlWithParams($editUrl, ['fresh' => 1]));
         }
 
         return $response;
