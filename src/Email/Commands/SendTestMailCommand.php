@@ -6,10 +6,12 @@ namespace CraftCms\Cms\Email\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Email\Actions\SendTestMailAction;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Console\Command;
 use Override;
 
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\table;
 use function Laravel\Prompts\text;
 
@@ -31,10 +33,18 @@ class SendTestMailCommand extends Command
 
     public function handle(SendTestMailAction $sendTestMail): int
     {
-        $siteId = $this->resolveSiteId();
+        $site = $this->resolveSite();
 
-        if ($siteId === false) {
-            return self::FAILURE;
+        // If a site couldn’t be determined by options, prompt the user:
+        if (! $site) {
+            $siteOptions = Sites::getAllSites()->keyBy('handle');
+            $siteHandle = select(
+                label: 'Choose a site',
+                options: $siteOptions->map(fn ($s) => $s->name),
+                default: Sites::getPrimarySite()->handle,
+            );
+
+            $site = $siteOptions->get($siteHandle);
         }
 
         $to = $this->option('to');
@@ -53,17 +63,18 @@ class SendTestMailCommand extends Command
             );
         }
 
-        $this->components->info("Sending a test email to {$to} with the following settings:");
+        $this->components->info("Sending a test email to <options=underscore>{$to}</> with the following settings:");
 
         table(
             headers: ['Setting', 'Value'],
-            rows: collect($sendTestMail->settings($siteId))
+            rows: collect($sendTestMail->settings($site->id))
                 ->map(fn (string $value, string $setting) => [$setting, $value])
+                ->push(['Site', "{$site->name} (ID #{$site->id})"])
                 ->values()
                 ->all(),
         );
 
-        $sendTestMail->handle($to, $siteId);
+        $sendTestMail->handle($to, $site->id);
 
         $this->components->success('Email sent successfully! Check your inbox.');
 
@@ -71,11 +82,11 @@ class SendTestMailCommand extends Command
     }
 
     /**
-     * Resolves the --site option to a site ID.
+     * Resolves the --site option to a site.
      *
-     * @return int|null|false null if no site specified, false on error, int on success
+     * @return Site|null Site if discoverable by handle
      */
-    private function resolveSiteId(): int|null|false
+    private function resolveSite(): ?Site
     {
         $siteHandle = $this->option('site');
 
@@ -83,14 +94,6 @@ class SendTestMailCommand extends Command
             return null;
         }
 
-        $site = Sites::getSiteByHandle($siteHandle);
-
-        if ($site === null) {
-            $this->components->error("Invalid site handle: {$siteHandle}");
-
-            return false;
-        }
-
-        return $site->id;
+        return Sites::getSiteByHandle($siteHandle);
     }
 }
