@@ -61,6 +61,7 @@ test('sends a test email with site-specific overrides', function () {
     Mail::assertSent(
         SystemMessageMailable::class,
         fn (SystemMessageMailable $mailable): bool => $mailable->hasTo('test@example.com') &&
+            $mailable->hasFrom('site@example.com', 'Site Sender') &&
             $mailable->siteId === $site->id,
     );
 });
