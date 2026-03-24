@@ -113,10 +113,15 @@
   - `CraftCms\Cms\Asset\Commands\CleanupAssetIndexesCommand` => `php craft index-assets:cleanup`
   - `CraftCms\Cms\Asset\Commands\IndexAllAssetsCommand` => `php craft index-assets:all`
   - `CraftCms\Cms\Asset\Commands\IndexOneAssetCommand` => `php craft index-assets:one`
+- `craft\console\controllers\BaseSystemStatusController`, `craft\console\controllers\OnController`, and `craft\console\controllers\OffController` have been removed in favor of the classes below:
+  - `CraftCms\Cms\Console\Commands\System\OnCommand` => `php craft on`
+  - `CraftCms\Cms\Console\Commands\System\OffCommand` => `php craft off`
 - `craft\console\controllers\ElementsController` has been removed in favor of the classes below:
   - `CraftCms\Cms\Element\Commands\DeleteCommand` => `php craft elements:delete`
   - `CraftCms\Cms\Element\Commands\DeleteAllOfTypeCommand` => `php craft elements:delete-all-of-type`
   - `CraftCms\Cms\Element\Commands\RestoreCommand` => `php craft elements:restore`
+- `craft\console\controllers\UpdateStatusesController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Entry\Commands\UpdateStatusesCommand` => `php craft update-statuses`
 
 ### Mutex
 
