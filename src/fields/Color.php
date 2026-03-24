@@ -480,9 +480,7 @@ class Color extends Field implements
     {
         /** @var ColorData|null $value */
         if (!$value) {
-            return Html::beginTag('div', ['class' => ['color', 'small', 'static']]) .
-                Html::tag('div', options: ['class' => 'color-preview']) .
-                Html::endTag('div');
+            return '';
         }
 
         $html = Html::beginTag('div', ['class' => ['color', 'small', 'static']]) .

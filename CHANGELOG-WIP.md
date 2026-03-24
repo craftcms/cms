@@ -7,6 +7,7 @@
 - Matrix fields’ “Expand”, “Collapse”, and “Copy” field-level actions now always affect all nested entries, regardless of whether any entries are selected. ([#18561](https://github.com/craftcms/cms/pull/18561))
 - Matrix fields no longer have “Duplicate” and “Delete” field-level actions. ([#18561](https://github.com/craftcms/cms/pull/18561))
 - Number fields now show their selected currency beside their input, if their Preview Format setting is set to “As currency values”. ([#18498](https://github.com/craftcms/cms/pull/18498))
+- Color field previews are now blank for fields without a value. ([#18614](https://github.com/craftcms/cms/issues/18614))
 - Text condition rules now have “does not equal” operators.
 - Editable table columns now set `min-width` styles based on their configured widths, if set. ([#18534](https://github.com/craftcms/cms/issues/18534))
 - Address edit screens now have “Field settings” action menu items. ([#18544](https://github.com/craftcms/cms/discussions/18544))
