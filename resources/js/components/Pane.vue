@@ -62,34 +62,34 @@
   <component
     :is="as"
     :class="{
-      pane: true,
-      'pane--code': variant === 'code',
-      'pane--error': variant === 'error',
-      'pane--outline': appearance === 'outline',
-      'pane--raised': appearance === 'raised',
+      'cp-pane': true,
+      'cp-pane--code': variant === 'code',
+      'cp-pane--error': variant === 'error',
+      'cp-pane--outline': appearance === 'outline',
+      'cp-pane--raised': appearance === 'raised',
     }"
     v-bind="$attrs"
   >
     <slot name="header" v-if="showHeader">
-      <div class="pane__header">
+      <div class="cp-pane__header">
         <slot name="title">
           <h1 v-if="title" class="text-lg">
             {{ title }}
           </h1>
         </slot>
-        <div class="pane__actions">
+        <div class="cp-pane__actions">
           <slot name="header-actions"></slot>
         </div>
       </div>
     </slot>
 
     <slot name="body">
-      <div class="pane__body">
+      <div class="cp-pane__body">
         <slot></slot>
       </div>
     </slot>
     <slot name="footer" v-if="showFooter">
-      <div class="pane__footer">
+      <div class="cp-pane__footer">
         <slot name="actions">
           <div class="actions">
             <slot name="secondary-action"></slot>
@@ -102,7 +102,7 @@
 </template>
 
 <style scoped lang="scss">
-  .pane {
+  .cp-pane {
     --_pane-spacing: v-bind(computedPadding);
     --_bg-color: var(--c-pane-fill);
     --_radius: var(--c-pane-radius);
@@ -117,13 +117,13 @@
     overflow: hidden;
   }
 
-  .pane--raised {
+  .cp-pane--raised {
     --c-pane-fill: var(--c-surface-raised);
     --c-pane-border-color: var(--c-color-neutral-border-quiet);
     --c-pane-shadow: var(--c-shadow-raised);
   }
 
-  .pane--code {
+  .cp-pane--code {
     background: var(--c-color-neutral-fill-quiet);
     border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);
@@ -132,11 +132,11 @@
     overflow: auto;
   }
 
-  .pane--outline {
+  .cp-pane--outline {
     --c-pane-border-color: var(--c-color-neutral-border-quiet);
   }
 
-  .pane__header {
+  .cp-pane__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -144,12 +144,12 @@
     padding-block: var(--_pane-spacing) 0;
   }
 
-  .pane__body {
+  .cp-pane__body {
     padding-inline: var(--_pane-spacing);
     padding-block: var(--_pane-spacing) calc(var(--_pane-spacing) * 1.5);
   }
 
-  .pane__footer {
+  .cp-pane__footer {
     background-color: var(--_bg-color);
     border-top: 1px solid var(--c-color-neutral-border-quiet);
     padding-inline: var(--_pane-spacing);

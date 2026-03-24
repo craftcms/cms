@@ -3148,7 +3148,7 @@ h2 + .actions {
   }
 }
 
-table {
+table:not(.cp-table) {
   &.fixed-layout {
     table-layout: fixed;
   }
