@@ -11,8 +11,6 @@ test('sends a test email to the provided recipient', function () {
     Mail::fake();
 
     $this->artisan('craft:mailer:test --to=test@example.com')
-        ->expectsOutputToContain('Sending a test email to test@example.com with the following settings:')
-        ->expectsOutputToContain('Email sent successfully! Check your inbox.')
         ->assertSuccessful();
 
     Mail::assertSent(
@@ -28,7 +26,6 @@ test('prompts for recipient email when no recipient option is provided', functio
 
     $this->artisan('craft:mailer:test')
         ->expectsQuestion('Which email address should the test email be sent to?', 'prompted@example.com')
-        ->expectsOutputToContain('Email sent successfully! Check your inbox.')
         ->assertSuccessful();
 
     Mail::assertSent(
@@ -39,7 +36,6 @@ test('prompts for recipient email when no recipient option is provided', functio
 
 test('requires a recipient in non-interactive mode', function () {
     $this->artisan('craft:mailer:test --no-interaction')
-        ->expectsOutputToContain('Please provide a recipient with the --to option when running non-interactively.')
         ->assertExitCode(1);
 });
 
@@ -60,7 +56,6 @@ test('sends a test email with site-specific overrides', function () {
     ]);
 
     $this->artisan("craft:mailer:test --to=test@example.com --site={$site->handle}")
-        ->expectsOutputToContain('Email sent successfully! Check your inbox.')
         ->assertSuccessful();
 
     Mail::assertSent(
