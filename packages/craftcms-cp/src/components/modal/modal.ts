@@ -7,8 +7,25 @@ import styles from './modal.styles';
  * @summary Modal that extends the LionDialog web component
  */
 export default class CraftModal extends OverlayMixin(LitElement) {
+  name?: string;
   static override get styles(): CSSResultGroup {
     return [super.styles ?? [], styles];
+  }
+
+  static override get properties() {
+    return {
+      ...super.properties,
+      name: {type: String },
+    };
+  }
+
+  override firstUpdated() {
+    const contentNode = this._overlayContentNode;
+
+    if (contentNode) {
+      if (!this.name) return;
+      contentNode.setAttribute('aria-label', this.name);
+    }
   }
 
   // @ts-ignore
