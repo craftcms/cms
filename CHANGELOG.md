@@ -62,11 +62,11 @@
 - The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is no longer set by default for database connections. ([#18474](https://github.com/craftcms/cms/issues/18474))
 - Added `craft\elements\Entry::canMove()`.
 - Fixed a bug where element selector modals weren’t showing any results if they were limited to sources that only exist for a different site than the active one. ([#18478](https://github.com/craftcms/cms/issues/18478))
-- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-44px-qjjc-xrhq, GHSA-vgjg-248p-rfm2, GHSA-x76w-8c62-48mg)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) access control vulnerability. (GHSA-6mrr-q3pj-h53w)
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-3pvf-vxrv-hh9c, GHSA-5pgf-h923-m958)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-86vw-x4ww-x467)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-f582-6gf6-gx4g)
+- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. ([GHSA-44px-qjjc-xrhq](https://github.com/craftcms/cms/security/advisories/GHSA-44px-qjjc-xrhq), [GHSA-vgjg-248p-rfm2](https://github.com/craftcms/cms/security/advisories/GHSA-vgjg-248p-rfm2), [GHSA-x76w-8c62-48mg](https://github.com/craftcms/cms/security/advisories/GHSA-x76w-8c62-48mg))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) access control vulnerability. ([GHSA-6mrr-q3pj-h53w](https://github.com/craftcms/cms/security/advisories/GHSA-6mrr-q3pj-h53w))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. ([GHSA-3pvf-vxrv-hh9c](https://github.com/craftcms/cms/security/advisories/GHSA-3pvf-vxrv-hh9c), [GHSA-5pgf-h923-m958](https://github.com/craftcms/cms/security/advisories/GHSA-5pgf-h923-m958))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-86vw-x4ww-x467](https://github.com/craftcms/cms/security/advisories/GHSA-86vw-x4ww-x467))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-f582-6gf6-gx4g](https://github.com/craftcms/cms/security/advisories/GHSA-f582-6gf6-gx4g))
 
 ## 5.9.13 - 2026-02-24
 
@@ -78,7 +78,7 @@
 - Fixed a bug where drafts within “My Drafts” widgets weren’t getting hyperlinked. ([#18456](https://github.com/craftcms/cms/issues/18456))
 - Fixed a bug where nested entries were getting assigned new IDs if they were edited multiple times for the same owner element draft. ([#18461](https://github.com/craftcms/cms/issues/18461))
 - Fixed a bug where the “New Tab” button within field layout designers could be positioned incorrectly. ([#18450](https://github.com/craftcms/cms/issues/18450))
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-2fph-6v5w-89hh)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-2fph-6v5w-89hh](https://github.com/craftcms/cms/security/advisories/GHSA-2fph-6v5w-89hh))
 
 ## 5.9.12 - 2026-02-18
 
