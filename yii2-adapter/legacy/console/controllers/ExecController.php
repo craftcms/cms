@@ -18,6 +18,7 @@ use yii\console\ExitCode;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
+ * @deprecated 6.0.0 use `php artisan tinker` instead.
  */
 class ExecController extends Controller
 {

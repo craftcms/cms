@@ -37,6 +37,7 @@ use yii\console\ExitCode;
  * available commands will be displayed.
  *
  * @since 3.7.56
+ * @deprecated 6.0.0
  */
 class HelpController extends BaseHelpController
 {

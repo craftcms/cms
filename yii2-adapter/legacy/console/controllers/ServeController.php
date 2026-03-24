@@ -18,6 +18,7 @@ use yii\console\controllers\ServeController as BaseServeController;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.10
+ * @deprecated 6.0.0 use `php artisan serve` instead.
  */
 class ServeController extends BaseServeController
 {
