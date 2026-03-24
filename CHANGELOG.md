@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added `craft\controllers\ElementIndexesController::$fieldLayouts`.
+- `craft\services\ElementSources::getTableAttributes()` now has a `$fieldLayouts` argument.
 - Fixed a bug where GraphQL results were getting cached even if they contained transform generation URLs. ([#18581](https://github.com/craftcms/cms/issues/18581))
 - Fixed a bug where `aria-activedescendant`, `aria-flowto`, and `aria-owns` attributes weren’t getting namespaced by `{% namespace %}` tags. ([#18577](https://github.com/craftcms/cms/issues/18577))
 - Fixed a bug where sites with missing `enabled` values were being treated as enabled. ([#18572](https://github.com/craftcms/cms/issues/18572))
@@ -13,6 +15,7 @@
 - Fixed an error that could occur when upgrading to Craft 5. ([#18576](https://github.com/craftcms/cms/issues/18576))
 - Fixed a bug where nested Matrix entries’ Title fields were getting validation errors if blank, even if the nested entry was disabled. ([#18611](https://github.com/craftcms/cms/discussions/18611))
 - Fixed an infinite recursion bug that could occur if the `loginPath`, `logoutPath`, `setPasswordPath`, or `verifyEmailPath` config settings were set to a callable that called the `sites` service. ([#18605](https://github.com/craftcms/cms/issues/18605))
+- Fixed a bug where Matrix fields in Index view mode could be missing custom field columns. ([#18590](https://github.com/craftcms/cms/issues/18590))
 
 ## 5.9.17 - 2026-03-17
 
