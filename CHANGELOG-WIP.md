@@ -124,6 +124,8 @@
   - `CraftCms\Cms\Entry\Commands\UpdateStatusesCommand` => `php craft update-statuses`
 - `craft\console\controllers\utils\FixElementUidsController` has been removed in favor of the class below:
   - `CraftCms\Cms\Console\Commands\Utils\FixElementUidsCommand` => `php craft utils:fix-element-uids`
+- `craft\console\controllers\utils\FixFieldLayoutUidsController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\FixFieldLayoutUidsCommand` => `php craft utils:fix-field-layout-uids`
 
 ### Mutex
 
