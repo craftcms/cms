@@ -126,6 +126,8 @@
   - `CraftCms\Cms\Console\Commands\Utils\FixElementUidsCommand` => `php craft utils:fix-element-uids`
 - `craft\console\controllers\utils\FixFieldLayoutUidsController` has been removed in favor of the class below:
   - `CraftCms\Cms\Console\Commands\Utils\FixFieldLayoutUidsCommand` => `php craft utils:fix-field-layout-uids`
+- `craft\console\controllers\utils\PruneOrphanedEntriesController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\PruneOrphanedEntriesCommand` => `php craft utils:prune-orphaned-entries`
 
 ### Mutex
 
