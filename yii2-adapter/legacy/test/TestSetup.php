@@ -59,6 +59,7 @@ use craft\web\UploadedFile;
 use craft\web\User;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Event\PostCreateTables;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -464,6 +465,7 @@ class TestSetup
         );
 
         $migration->up();
+        app(LaravelMigrations::class)->ensureSessionsTable();
     }
 
     /**
