@@ -16,6 +16,8 @@ use CraftCms\Cms\Console\Commands\Setup\CloudCommand;
 use CraftCms\Cms\Console\Commands\Setup\DatabaseCredentialsCommand;
 use CraftCms\Cms\Console\Commands\Setup\SetupCommand;
 use CraftCms\Cms\Console\Commands\Setup\WelcomeCommand;
+use CraftCms\Cms\Console\Commands\System\OffCommand;
+use CraftCms\Cms\Console\Commands\System\OnCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigCacheCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigClearCommand;
 use CraftCms\Cms\Console\Commands\UpCommand;
@@ -42,6 +44,10 @@ class ConsoleServiceProvider extends ServiceProvider
         DatabaseCredentialsCommand::class,
         SetupCommand::class,
         CloudCommand::class,
+
+        // System
+        OffCommand::class,
+        OnCommand::class,
 
         // Env
         EnvShowCommand::class,
