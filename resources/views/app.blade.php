@@ -4,11 +4,14 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script>window.Cp = {};</script>
+        {!! $headHtml !!}
         @vite(['resources/css/cp.css', 'resources/js/cp.ts'], 'vendor/craft/build')
         @inertiaHead
     </head>
     <body>
         @inertia
+
+        {!! $bodyHtml !!}
         <script>
           let CpConfig = {!! json_encode(\CraftCms\Cms\Cp\Cp::config()) !!};
         </script>

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Middleware;
 
+use Closure;
+use Craft;
+use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
@@ -14,9 +17,12 @@ use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 use Inertia\Middleware;
 use Override;
+use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\cp_url;
@@ -42,6 +48,20 @@ class HandleInertiaRequests extends Middleware
     public function version(Request $request): ?string
     {
         return parent::version($request);
+    }
+
+    #[Override]
+    public function handle(Request $request, Closure $next): Response
+    {
+        $htmlStack = app(HtmlStack::class);
+        Craft::$app->view->registerAssetBundle(CpAsset::class);
+
+        View::share([
+            'headHtml' => $htmlStack->headHtml(),
+            'bodyHtml' => $htmlStack->bodyHtml(),
+        ]);
+
+        return parent::handle($request, $next);
     }
 
     /**

@@ -1,12 +1,15 @@
 <script setup lang="ts">
   import type {EntryType} from '@/types';
-  import {computed, ref} from 'vue';
-  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {computed, ref, useTemplateRef} from 'vue';
+  import {appendBodyHtml, appendHeadHtml, t} from '@craftcms/cp';
   import ReorderButton from '@/components/ReorderButton.vue';
   import ActionMenu from '@/components/ActionMenu.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import Text from '@/components/Text.vue';
-  import {create} from '@actions/Settings/EntryTypesController';
+  import {
+    create,
+    renderOverrideSettings,
+  } from '@actions/Settings/EntryTypesController';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void;
@@ -53,6 +56,44 @@
     }
     emit('update:modelValue', newValue);
   }
+
+  const slideout = useTemplateRef('slideout');
+  const slideoutHtml = ref<{
+    settingsHtml?: string;
+  } | null>(null);
+
+  async function openSlideout(id: number) {
+    // console.log({Craft: window.Craft, id});
+    try {
+      const response = await fetch(renderOverrideSettings().url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id,
+        }),
+      });
+
+      const {settingsHtml, headHtml, bodyHtml} = await response.json();
+      slideoutHtml.value = settingsHtml;
+
+      if (headHtml) {
+        await appendHeadHtml(headHtml);
+      }
+
+      if (bodyHtml) {
+        await appendBodyHtml(bodyHtml);
+        console.log('body appended');
+      }
+
+      Craft.initUiElements(slideout.value);
+      console.log('ui initialized');
+    } catch (e) {
+      Craft.cp.displayError(e?.response?.data?.message);
+      throw e;
+    }
+  }
 </script>
 
 <template>
@@ -74,6 +115,7 @@
               {
                 label: t('Settings'),
                 icon: 'gear',
+                onClick: () => openSlideout(type.id),
               },
               {
                 label: t('Remove'),
@@ -138,6 +180,12 @@
       {{ t('Create') }}
     </a>
   </div>
+
+  <Teleport to="body">
+    <div class="slideout right-0" v-if="slideoutHtml">
+      <div v-html="slideoutHtml" ref="slideout"></div>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped lang="scss">

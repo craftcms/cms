@@ -1,1 +1,3 @@
-@tailwind base;
+@scope (.slideout-container) {
+  @tailwind base;
+}

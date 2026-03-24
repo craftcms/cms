@@ -1,0 +1,622 @@
+/**
+ * Legacy Token Mapping
+ *
+ * This file maps legacy CSS variables to the new token system defined in
+ * @craftcms/cp tokens.css. Import this file to provide backwards compatibility
+ * for legacy styles.
+ *
+ * Variables mapped to --CHANGE require manual review and update.
+ */
+
+:root {
+  /**
+   * Placeholder for variables that need manual review
+   */
+  --CHANGE: red;
+
+  /**
+   * Color Palette Mapping
+   * Legacy colors (--{color}-{number}) to new format (--color-{color}-{number})
+   */
+
+  /* White/Black */
+  --white: var(--color-white, #fff);
+  --black: var(--color-black, #000);
+
+  /* Gray */
+  --gray-050: var(--color-gray-50);
+  --gray-100: var(--color-gray-100);
+  --gray-150: var(--color-gray-150);
+  --gray-200: var(--color-gray-200);
+  --gray-300: var(--color-gray-300);
+  --gray-350: var(--color-gray-350);
+  --gray-400: var(--color-gray-400);
+  --gray-500: var(--color-gray-500);
+  --gray-550: var(--color-gray-550);
+  --gray-600: var(--color-gray-600);
+  --gray-700: var(--color-gray-700);
+  --gray-800: var(--color-gray-800);
+  --gray-900: var(--color-gray-900);
+  --gray-1000: var(--color-gray-1000);
+
+  /* Gray HSL versions */
+  --gray-050-hsl: var(--color-gray-50-hsl);
+  --gray-100-hsl: var(--color-gray-100-hsl);
+  --gray-150-hsl: var(--color-gray-150-hsl);
+  --gray-200-hsl: var(--color-gray-200-hsl);
+  --gray-300-hsl: var(--color-gray-300-hsl);
+  --gray-350-hsl: var(--color-gray-350-hsl);
+  --gray-400-hsl: var(--color-gray-400-hsl);
+  --gray-500-hsl: var(--color-gray-500-hsl);
+  --gray-550-hsl: var(--color-gray-550-hsl);
+  --gray-600-hsl: var(--color-gray-600-hsl);
+  --gray-700-hsl: var(--color-gray-700-hsl);
+  --gray-800-hsl: var(--color-gray-800-hsl);
+  --gray-900-hsl: var(--color-gray-900-hsl);
+  --gray-1000-hsl: var(--color-gray-1000-hsl);
+
+  /* Red - direct mapping (Tailwind red scale) */
+  --red-050: var(--color-red-50);
+  --red-100: var(--color-red-100);
+  --red-200: var(--color-red-200);
+  --red-300: var(--color-red-300);
+  --red-400: var(--color-red-400);
+  --red-500: var(--color-red-500);
+  --red-600: var(--color-red-600);
+  --red-700: var(--color-red-700);
+  --red-800: var(--color-red-800);
+  --red-900: var(--color-red-900);
+  --red-950: var(--color-red-950);
+
+  /* Orange */
+  --orange-050: var(--color-orange-50);
+  --orange-100: var(--color-orange-100);
+  --orange-200: var(--color-orange-200);
+  --orange-300: var(--color-orange-300);
+  --orange-400: var(--color-orange-400);
+  --orange-500: var(--color-orange-500);
+  --orange-600: var(--color-orange-600);
+  --orange-700: var(--color-orange-700);
+  --orange-800: var(--color-orange-800);
+  --orange-900: var(--color-orange-900);
+  --orange-950: var(--color-orange-950);
+
+  /* Amber */
+  --amber-050: var(--color-amber-50);
+  --amber-100: var(--color-amber-100);
+  --amber-200: var(--color-amber-200);
+  --amber-300: var(--color-amber-300);
+  --amber-400: var(--color-amber-400);
+  --amber-500: var(--color-amber-500);
+  --amber-600: var(--color-amber-600);
+  --amber-700: var(--color-amber-700);
+  --amber-800: var(--color-amber-800);
+  --amber-900: var(--color-amber-900);
+  --amber-950: var(--color-amber-950);
+
+  /* Yellow */
+  --yellow-050: var(--color-yellow-50);
+  --yellow-100: var(--color-yellow-100);
+  --yellow-200: var(--color-yellow-200);
+  --yellow-300: var(--color-yellow-300);
+  --yellow-400: var(--color-yellow-400);
+  --yellow-500: var(--color-yellow-500);
+  --yellow-600: var(--color-yellow-600);
+  --yellow-700: var(--color-yellow-700);
+  --yellow-750: var(--color-yellow-750);
+  --yellow-800: var(--color-yellow-800);
+  --yellow-900: var(--color-yellow-900);
+  --yellow-950: var(--color-yellow-950);
+
+  /* Lime */
+  --lime-050: var(--color-lime-50);
+  --lime-100: var(--color-lime-100);
+  --lime-200: var(--color-lime-200);
+  --lime-300: var(--color-lime-300);
+  --lime-400: var(--color-lime-400);
+  --lime-500: var(--color-lime-500);
+  --lime-600: var(--color-lime-600);
+  --lime-700: var(--color-lime-700);
+  --lime-800: var(--color-lime-800);
+  --lime-900: var(--color-lime-900);
+  --lime-950: var(--color-lime-950);
+
+  /* Green */
+  --green-050: var(--color-green-50);
+  --green-100: var(--color-green-100);
+  --green-200: var(--color-green-200);
+  --green-300: var(--color-green-300);
+  --green-400: var(--color-green-400);
+  --green-500: var(--color-green-500);
+  --green-600: var(--color-green-600);
+  --green-700: var(--color-green-700);
+  --green-800: var(--color-green-800);
+  --green-900: var(--color-green-900);
+  --green-950: var(--color-green-950);
+
+  /* Emerald */
+  --emerald-050: var(--color-emerald-50);
+  --emerald-100: var(--color-emerald-100);
+  --emerald-200: var(--color-emerald-200);
+  --emerald-300: var(--color-emerald-300);
+  --emerald-400: var(--color-emerald-400);
+  --emerald-500: var(--color-emerald-500);
+  --emerald-550: var(--color-emerald-550);
+  --emerald-600: var(--color-emerald-600);
+  --emerald-700: var(--color-emerald-700);
+  --emerald-800: var(--color-emerald-800);
+  --emerald-900: var(--color-emerald-900);
+  --emerald-950: var(--color-emerald-950);
+
+  /* Teal */
+  --teal-050: var(--color-teal-50);
+  --teal-100: var(--color-teal-100);
+  --teal-200: var(--color-teal-200);
+  --teal-300: var(--color-teal-300);
+  --teal-400: var(--color-teal-400);
+  --teal-500: var(--color-teal-500);
+  --teal-550: var(--color-teal-550);
+  --teal-600: var(--color-teal-600);
+  --teal-700: var(--color-teal-700);
+  --teal-800: var(--color-teal-800);
+  --teal-900: var(--color-teal-900);
+  --teal-950: var(--color-teal-950);
+
+  /* Cyan */
+  --cyan-050: var(--color-cyan-50);
+  --cyan-100: var(--color-cyan-100);
+  --cyan-200: var(--color-cyan-200);
+  --cyan-300: var(--color-cyan-300);
+  --cyan-400: var(--color-cyan-400);
+  --cyan-500: var(--color-cyan-500);
+  --cyan-600: var(--color-cyan-600);
+  --cyan-700: var(--color-cyan-700);
+  --cyan-800: var(--color-cyan-800);
+  --cyan-900: var(--color-cyan-900);
+  --cyan-950: var(--color-cyan-950);
+
+  /* Sky */
+  --sky-050: var(--color-sky-50);
+  --sky-100: var(--color-sky-100);
+  --sky-200: var(--color-sky-200);
+  --sky-300: var(--color-sky-300);
+  --sky-400: var(--color-sky-400);
+  --sky-500: var(--color-sky-500);
+  --sky-600: var(--color-sky-600);
+  --sky-700: var(--color-sky-700);
+  --sky-800: var(--color-sky-800);
+  --sky-900: var(--color-sky-900);
+  --sky-950: var(--color-sky-950);
+
+  /* Blue */
+  --blue-050: var(--color-blue-50);
+  --blue-100: var(--color-blue-100);
+  --blue-200: var(--color-blue-200);
+  --blue-300: var(--color-blue-300);
+  --blue-400: var(--color-blue-400);
+  --blue-500: var(--color-blue-500);
+  --blue-600: var(--color-blue-600);
+  --blue-700: var(--color-blue-700);
+  --blue-800: var(--color-blue-800);
+  --blue-900: var(--color-blue-900);
+  --blue-950: var(--color-blue-950);
+
+  /* Indigo */
+  --indigo-050: var(--color-indigo-50);
+  --indigo-100: var(--color-indigo-100);
+  --indigo-200: var(--color-indigo-200);
+  --indigo-300: var(--color-indigo-300);
+  --indigo-400: var(--color-indigo-400);
+  --indigo-500: var(--color-indigo-500);
+  --indigo-600: var(--color-indigo-600);
+  --indigo-700: var(--color-indigo-700);
+  --indigo-800: var(--color-indigo-800);
+  --indigo-900: var(--color-indigo-900);
+  --indigo-950: var(--color-indigo-950);
+
+  /* Violet */
+  --violet-050: var(--color-violet-50);
+  --violet-100: var(--color-violet-100);
+  --violet-200: var(--color-violet-200);
+  --violet-300: var(--color-violet-300);
+  --violet-400: var(--color-violet-400);
+  --violet-500: var(--color-violet-500);
+  --violet-600: var(--color-violet-600);
+  --violet-700: var(--color-violet-700);
+  --violet-800: var(--color-violet-800);
+  --violet-900: var(--color-violet-900);
+  --violet-950: var(--color-violet-950);
+
+  /* Purple */
+  --purple-050: var(--color-purple-50);
+  --purple-100: var(--color-purple-100);
+  --purple-200: var(--color-purple-200);
+  --purple-300: var(--color-purple-300);
+  --purple-400: var(--color-purple-400);
+  --purple-500: var(--color-purple-500);
+  --purple-600: var(--color-purple-600);
+  --purple-700: var(--color-purple-700);
+  --purple-800: var(--color-purple-800);
+  --purple-900: var(--color-purple-900);
+  --purple-950: var(--color-purple-950);
+
+  /* Fuchsia */
+  --fuchsia-050: var(--color-fuchsia-50);
+  --fuchsia-100: var(--color-fuchsia-100);
+  --fuchsia-200: var(--color-fuchsia-200);
+  --fuchsia-300: var(--color-fuchsia-300);
+  --fuchsia-400: var(--color-fuchsia-400);
+  --fuchsia-500: var(--color-fuchsia-500);
+  --fuchsia-600: var(--color-fuchsia-600);
+  --fuchsia-700: var(--color-fuchsia-700);
+  --fuchsia-800: var(--color-fuchsia-800);
+  --fuchsia-900: var(--color-fuchsia-900);
+  --fuchsia-950: var(--color-fuchsia-950);
+
+  /* Pink */
+  --pink-050: var(--color-pink-50);
+  --pink-100: var(--color-pink-100);
+  --pink-200: var(--color-pink-200);
+  --pink-300: var(--color-pink-300);
+  --pink-400: var(--color-pink-400);
+  --pink-500: var(--color-pink-500);
+  --pink-600: var(--color-pink-600);
+  --pink-700: var(--color-pink-700);
+  --pink-800: var(--color-pink-800);
+  --pink-900: var(--color-pink-900);
+  --pink-950: var(--color-pink-950);
+
+  /* Rose */
+  --rose-050: var(--color-rose-50);
+  --rose-100: var(--color-rose-100);
+  --rose-200: var(--color-rose-200);
+  --rose-300: var(--color-rose-300);
+  --rose-400: var(--color-rose-400);
+  --rose-500: var(--color-rose-500);
+  --rose-600: var(--color-rose-600);
+  --rose-700: var(--color-rose-700);
+  --rose-800: var(--color-rose-800);
+  --rose-900: var(--color-rose-900);
+  --rose-950: var(--color-rose-950);
+
+  /**
+   * Spacing
+   */
+  --2xs: var(--c-spacing-xs); /* 2px -> closest is xs (2px) */
+  --xs: var(--c-spacing-sm); /* 4px -> sm (4px) */
+  --s: var(--c-spacing-md); /* 8px -> md (8px) */
+  --m: var(--c-spacing-lg); /* 14px -> closest is lg (16px) */
+  --l: var(--c-spacing-lg); /* 18px -> lg (16px) */
+  --xl: var(--c-spacing-xl); /* 24px -> xl (32px) - note: different values */
+  --padding: var(--c-spacing-lg);
+  --neg-padding: calc(var(--c-spacing-lg) * -1);
+
+  /**
+   * Sizing
+   */
+  --size-touch-target: var(--c-size-control-md);
+  --size-icon: var(--c-size-icon-md);
+  --size-line-height: var(--c-leading-normal);
+  --touch-target-size: var(--c-size-control-sm);
+  --icon-size: var(--c-size-icon-md);
+  --lh: var(--c-leading-normal);
+
+  /**
+   * Border Radius
+   */
+  --radius-sm: var(--c-radius-sm);
+  --radius-md: var(--c-radius-md);
+  --radius-lg: var(--c-radius-lg);
+  --radius-full: var(--c-radius-full);
+  --radius-circle: 50%;
+  --border-radius: var(--c-radius-md);
+  --small-border-radius: var(--c-radius-sm);
+  --medium-border-radius: var(--c-radius-md);
+  --large-border-radius: var(--c-radius-lg);
+  --menu-border-radius: var(--c-radius-md);
+
+  /**
+   * Typography
+   */
+  --font-size: var(--c-text-base);
+  --font-weight-regular: 400;
+  --font-weight-bold: 700;
+
+  /**
+   * Surfaces / Backgrounds
+   */
+  --body-bg: var(--c-surface-default);
+  --bg-color: var(--c-surface-default);
+  --modal-bg: var(--c-surface-overlay);
+  --login-modal-bg: var(--c-surface-overlay);
+  --header-bg: var(--c-surface-raised);
+  --sidebar-bg: var(--c-surface-default);
+  --secondary-pane-bg: var(--c-surface-sunken);
+  --shade-bg: rgba(0 0 0 / 25%);
+  --input-bg: var(--c-input-fill);
+
+  /**
+   * Semantic Background Colors
+   */
+  --bg-primary: var(--c-button-primary-fill);
+  --bg-secondary: var(--c-color-neutral-fill-loud);
+  --bg-selection-light: var(--c-color-accent-fill-quiet);
+  --bg-selection-dark: var(--c-color-accent-fill-normal);
+  --bg-error: var(--c-color-danger-fill-quiet);
+  --bg-warning: var(--c-color-warning-fill-quiet);
+  --bg-success: var(--c-color-success-fill-quiet);
+  --bg-notice: var(--c-color-info-fill-quiet);
+  --bg-enabled: var(--c-status-enabled-fill);
+  --bg-pending: var(--c-status-pending-fill);
+  --bg-disabled: var(--c-status-disabled-fill);
+
+  /**
+   * Text Colors
+   */
+  --text-color: var(--c-text-default);
+  --light-text-color: var(--c-text-quiet);
+  --medium-text-color: var(--c-text-quiet);
+  --medium-dark-text-color: var(--c-text-quiet);
+  --link-color: var(--c-text-link);
+
+  /**
+   * Semantic Foreground Colors
+   */
+  --fg-subtle: var(--c-text-quiet);
+  --fg-error: var(--c-color-danger-on-normal);
+  --fg-warning: var(--c-color-warning-on-normal);
+  --fg-success: var(--c-color-success-on-normal);
+  --fg-notice: var(--c-color-info-on-normal);
+  --fg-input: var(--c-text-default);
+
+  /**
+   * Borders
+   */
+  --border-hairline: var(--c-color-neutral-border-quiet);
+  --border-hairline-medium: var(--c-color-neutral-border-normal);
+  --border-hairline-dark: var(--c-color-neutral-border-loud);
+  --hairline-color: var(--c-color-neutral-border-quiet);
+  --medium-hairline-color: var(--c-color-neutral-border-normal);
+  --dark-hairline-color: var(--c-color-neutral-border-loud);
+  --pane-border: var(--c-color-neutral-border-quiet);
+  --header-border: var(--c-color-neutral-border-quiet);
+  --hr-border: var(--c-color-neutral-border-quiet);
+  --input-border: 1px solid var(--c-input-border-color);
+  --input-border-color: var(--c-input-border-color);
+
+  /**
+   * Semantic Border Colors
+   */
+  --border-primary: var(--c-color-brand-border-loud);
+  --border-secondary: var(--c-color-neutral-border-loud);
+  --border-error: var(--c-color-danger-border-quiet);
+  --border-warning: var(--c-color-warning-border-quiet);
+  --border-warning-emphasis: var(--c-color-warning-border-loud);
+  --border-success: var(--c-color-success-border-quiet);
+  --border-notice: var(--c-color-info-border-quiet);
+
+  /**
+   * Focus States
+   */
+  --focus-ring-color: var(--c-color-accent-border-normal);
+  --focus-outline-light: var(--c-color-accent-border-quiet);
+  --focus-outline-medium: var(--c-color-accent-border-normal);
+  --focus-outline-dark: var(--c-color-accent-border-loud);
+  --light-focus-color: var(--c-color-accent-border-quiet);
+  --medium-focus-color: var(--c-color-accent-border-normal);
+  --dark-focus-color: var(--c-color-accent-border-loud);
+  --focus-ring-alpha: 0.85;
+  --focus-ring: var(--CHANGE); /* Complex shadow value - needs manual review */
+  --focus-ring-light: var(--CHANGE);
+  --focus-ring-medium: var(--CHANGE);
+  --focus-ring-dark: var(--CHANGE);
+  --focus-ring-outset: var(--CHANGE);
+  --focus-ring-inner: var(--CHANGE);
+  --focus-ring-inner-light: var(--CHANGE);
+  --light-focus-ring: var(--CHANGE);
+  --medium-focus-ring: var(--CHANGE);
+  --dark-focus-ring: var(--CHANGE);
+  --inner-focus-ring: var(--CHANGE);
+
+  /**
+   * Shadows
+   */
+  --modal-shadow: var(--c-modal-shadow);
+  --pane-shadow: var(--c-pane-shadow);
+  --secondary-pane-shadow: var(--c-shadow-sm);
+
+  /**
+   * UI Controls
+   */
+  --ui-control-fg: var(--c-text-quiet);
+  --ui-control-fg-hover: var(--c-text-default);
+  --ui-control-fg-active: var(--c-text-default);
+  --ui-control-bg: var(--c-form-control-fill);
+  --ui-control-bg-static: var(--c-form-control-fill);
+  --ui-control-bg-hover: var(--c-form-control-fill);
+  --ui-control-bg-active: var(--c-form-control-fill);
+  --ui-control-border: var(--c-form-control-border-color);
+  --ui-control-radius: var(--c-form-control-radius);
+  --ui-control-height: var(--c-form-control-height);
+  --ui-control-height-small: var(--c-size-control-sm);
+  --ui-control-height--small: var(--c-size-control-sm);
+  --ui-control-border-radius: var(--c-form-control-radius);
+  --ui-control-color: var(--c-text-quiet);
+  --ui-control-hover-color: var(--c-text-default);
+  --ui-control-active-color: var(--c-text-default);
+  --ui-control-bg-color: var(--c-form-control-fill);
+  --ui-control-hover-bg-color: var(--c-form-control-fill);
+  --ui-control-active-bg-color: var(--c-form-control-fill);
+  --ui-control-static-bg-color: var(--c-form-control-fill);
+
+  /**
+   * Buttons
+   */
+  --button-bg: var(--c-button-default-fill);
+  --button-bg--hover: var(--c-button-default-fill-hover);
+  --button-bg--active: var(--c-button-default-fill-hover);
+  --button-border: var(--c-button-default-border);
+  --button-border--hover: var(--c-button-default-border-hover);
+  --button-border--active: var(--c-button-default-border-hover);
+  --button-border-radius: var(--c-form-control-radius);
+  --button-padding: var(--c-form-control-spacing-inline);
+  --primary-button-bg: var(--c-button-primary-fill);
+  --primary-button-bg--hover: var(--c-button-primary-fill-hover);
+  --primary-button-bg--active: var(--c-button-primary-fill-hover);
+  --primary-button-border: var(--c-button-primary-border);
+  --primary-button-border--hover: var(--c-button-primary-border-hover);
+  --primary-button-border--active: var(--c-button-primary-border-hover);
+  --primary-button-text-color: var(--c-button-primary-text);
+  --secondary-button-bg: var(--c-button-default-fill);
+  --secondary-button-bg--hover: var(--c-button-default-fill-hover);
+  --secondary-button-bg--active: var(--c-button-default-fill-hover);
+  --secondary-button-border: var(--c-button-default-border);
+  --secondary-button-border--hover: var(--c-button-default-border-hover);
+  --secondary-button-border--active: var(--c-button-default-border-hover);
+  --secondary-button-text-color: var(--c-button-default-text);
+
+  /**
+   * Inputs
+   */
+  --input-height: var(--c-form-control-height);
+  --input-border-radius: var(--c-input-radius);
+
+  /**
+   * Panes
+   */
+  --pane-padding: var(--c-pane-padding);
+  --pane-border-radius: var(--c-pane-radius);
+  --pane-x-padding-default: var(--c-pane-padding);
+  --pane-y-padding-default: var(--c-pane-padding);
+  --secondary-pane-border: var(--c-color-neutral-border-quiet);
+  --secondary-pane-border-radius: var(--c-pane-radius);
+
+  /**
+   * Modals
+   */
+  --modal-padding: var(--c-modal-padding);
+
+  /**
+   * Layout
+   */
+  --header-height: var(--CHANGE); /* Layout-specific - needs manual value */
+  --header-padding: var(--c-spacing-lg);
+  --content-padding: var(--c-pane-padding);
+  --global-sidebar-width: var(
+    --CHANGE
+  ); /* Layout-specific - needs manual value */
+
+  --hr-margin: var(--c-spacing-lg);
+
+  /**
+   * Status Colors
+   */
+  --enabled-color: var(--c-status-enabled-fill);
+  --pending-color: var(--c-status-pending-fill);
+  --disabled-color: var(--c-status-disabled-fill);
+  --status-label-bg-color: var(--CHANGE);
+  --status-label-text-color: var(--CHANGE);
+
+  /**
+   * Nav Items
+   */
+  --nav-item-indicator-size: var(--c-spacing-sm);
+  --nav-item-badge-bg: var(--c-color-neutral-fill-loud);
+  --nav-item-badge-fg: var(--c-text-white);
+  --nav-item-fg-active: var(--c-text-default);
+  --nav-item-fg-hover: var(--c-text-default);
+  --nav-item-bg-active: var(--c-color-neutral-fill-quiet);
+  --nav-item-bg-hover: var(--c-color-neutral-fill-quiet);
+  --nav-item-prefix-width: var(--CHANGE);
+  --nav-item-prefix-ratio: 1;
+  --nav-item-trigger-size: var(--c-size-touch-target);
+  --nav-item-gutter-width: var(--c-spacing-md);
+  --nav-item-badge-bgColor: var(--c-color-neutral-fill-loud);
+  --nav-item-badge-fgColor: var(--c-text-white);
+  --nav-item-fgColor-active: var(--c-text-default);
+  --nav-item-bgColor-active: var(--c-color-neutral-fill-quiet);
+  --nav-item-fgColor-hover: var(--c-text-default);
+  --nav-item-bgColor-hover: var(--c-color-neutral-fill-quiet);
+  --sidebar-bgColor: var(--c-surface-default);
+
+  /**
+   * Miscellaneous
+   */
+  --icon-color: var(--c-text-quiet);
+  --highlight-color: var(--c-color-accent-fill-quiet);
+  --selected-bg-color: var(--c-color-accent-fill-quiet);
+  --selected-item-color: var(--c-color-accent-fill-normal);
+  --hover-bg-color: var(--c-color-neutral-fill-quiet);
+  --interaction-background-color: var(--c-color-neutral-fill-quiet);
+  --light-sel-color: var(--c-color-accent-fill-quiet);
+  --dark-sel-color: var(--c-color-accent-fill-normal);
+  --primary-color: var(--c-button-primary-fill);
+  --secondary-color: var(--c-color-neutral-fill-loud);
+  --input-color: var(--c-text-default);
+  --error-color: var(--c-color-danger-on-normal);
+  --warning-color: var(--c-color-warning-on-normal);
+  --warning-background: var(--c-color-warning-fill-quiet);
+  --warning-border-color: var(--c-color-warning-border-quiet);
+  --success-color: var(--c-color-success-on-normal);
+  --notice-color: var(--c-color-info-on-normal);
+  --notice-background: var(--c-color-info-fill-quiet);
+  --notice-border-color: var(--c-color-info-border-quiet);
+  --indicator-border-color: var(--c-color-warning-border-loud);
+  --indicator-icon-color: var(--c-color-warning-on-normal);
+  --tab-label-color: var(--c-text-quiet);
+  --overlay-opacity: 0.5;
+  --checkbox-size: var(--c-size-control-xs);
+  --radio-size: var(--c-size-control-xs);
+  --thumb-size: var(--c-size-control-sm);
+
+  /**
+   * Slideout
+   */
+  --slideout-footer-bg: var(--c-surface-raised);
+  --slideout-footer-border: var(--c-color-neutral-border-quiet);
+  --slideout-footer-shadow: var(--c-shadow-lg);
+
+  /**
+   * Variables that need context-specific values
+   * These are used in specific components and may need manual mapping
+   */
+  --custom-bg-color: var(--c-color-fill-quiet);
+  --custom-border-color: var(--c-color-border-quiet);
+  --custom-text-color: var(--c-color-on-quiet);
+  --custom-titlebar-bg-color: var(--CHANGE);
+  --custom-sel-titlebar-bg-color: var(--CHANGE);
+  --custom-sel-tab-shadow-color: var(--CHANGE);
+  --outline-color: var(--c-color-accent-border-normal);
+
+  /**
+   * Animation/Transform variables (context-specific)
+   */
+  --disclosure-icon-transform: var(--CHANGE);
+  --disclosure-icon-transform-active: var(--CHANGE);
+  --arrow-angle: var(--CHANGE);
+  --arrow-c: var(--CHANGE);
+  --arrow-height: var(--CHANGE);
+  --arrow-width: var(--CHANGE);
+  --background-position-x: var(--CHANGE);
+  --background-position-y: var(--CHANGE);
+
+  /**
+   * Layout-specific variables (need actual values)
+   */
+  --details-width: var(--CHANGE);
+  --heading-width: var(--CHANGE);
+  --page-title-columns: var(--CHANGE);
+  --row-gap: var(--c-spacing-md);
+  --separator-width: 1px;
+  --size: var(--CHANGE);
+  --size-main-content: var(--CHANGE);
+  --source-item-toggle-size: var(--c-size-touch-target);
+  --spacing: var(--c-spacing);
+  --width: var(--CHANGE);
+  --max-lines: var(--CHANGE);
+
+  /**
+   * Lightswitch specific
+   */
+  --_lightswitch-border-color: var(--c-form-control-border-color);
+}

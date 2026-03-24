@@ -53,8 +53,11 @@ hr {
   display: block;
   width: 100%;
   border: 0;
-  border-top: 1px solid var(--c-color-neutral-border-quiet);
+  height: 0;
+  border-block-start: 1px solid var(--c-color-neutral-border-quiet);
   margin-block: var(--c-spacing-lg);
+  margin-inline: 0;
+  color: transparent;
 }
 
 .index-grid {

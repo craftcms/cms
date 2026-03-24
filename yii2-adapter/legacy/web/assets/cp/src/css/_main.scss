@@ -734,16 +734,6 @@ h2[data-icon]::before {
   font-size: 19px;
 }
 
-/* horizontal rule */
-hr {
-  margin-block: var(--hr-margin);
-  margin-inline: 0;
-  border: none;
-  border-block-start: var(--hr-border);
-  height: 0;
-  color: transparent;
-}
-
 /* paragraphs */
 p {
   margin-block: 1em;
