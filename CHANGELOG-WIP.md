@@ -132,6 +132,8 @@
   - `CraftCms\Cms\Console\Commands\Utils\PruneProvisionalDraftsCommand` => `php craft utils:prune-provisional-drafts`
 - `craft\console\controllers\utils\PruneRevisionsController` has been removed in favor of the class below:
   - `CraftCms\Cms\Console\Commands\Utils\PruneRevisionsCommand` => `php craft utils:prune-revisions`
+- `craft\console\controllers\utils\RepairController::actionProjectConfig()` has been removed in favor of the class below:
+  - `CraftCms\Cms\ProjectConfig\Commands\RepairCommand` => `php craft project-config:repair`
 
 ### Mutex
 
