@@ -1496,10 +1496,15 @@ JS, [
             })();
         } else {
             $showSidebar = false;
+            $key = '__IMP__';
+            if ($config['fieldLayouts'] && $config['context'] === 'embedded-index') {
+                $fieldLayoutIds = array_map(fn(FieldLayout $fieldLayout) => $fieldLayout->id, $config['fieldLayouts']);
+                $key = 'fieldLayouts:' . implode(',', $fieldLayoutIds);
+            }
             $sources = [
                 [
                     'type' => ElementSources::TYPE_NATIVE,
-                    'key' => '__IMP__',
+                    'key' => $key,
                     'label' => Craft::t('app', 'All elements'),
                     'hasThumbs' => $elementType::hasThumbs(),
                     'defaultSort' => $config['defaultSort'],

@@ -29,6 +29,7 @@
             'default-view-mode': source.defaultViewMode ?? false,
             'view-modes': viewModes ?? [],
             'field-layouts': source.fieldLayouts is defined ? source.fieldLayouts|map(layout => layout.getConfig()) : false,
+            'field-layout-ids': source.fieldLayouts is defined ? source.fieldLayouts|map(layout => layout.id) : false,
         }|merge(source.data ?? {}),
         html: _self.sourceInnerHtml(source)
     }) }}

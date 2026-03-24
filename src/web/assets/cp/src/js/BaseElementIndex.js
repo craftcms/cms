@@ -1628,6 +1628,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       params.viewState.inlineEditing = this.inlineEditing;
       params.viewState.nestedInputNamespace = this.nestedInputNamespace;
       params.viewState.static = this.settings.static;
+      params.viewState.fieldLayoutIds =
+        this.$source.data('field-layout-ids') ?? null;
 
       // override viewState.mode in case it's different from what's stored
       params.viewState.mode = this.viewMode;

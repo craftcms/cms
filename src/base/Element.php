@@ -1328,7 +1328,7 @@ abstract class Element extends Component implements ElementInterface
             $variables['attributes'] = Craft::$app->getElementSources()->getTableAttributes(
                 static::class,
                 $sourceKey,
-                $viewState['tableColumns'] ?? null
+                $viewState['tableColumns'] ?? null,
             );
 
             // Prepare the element query for each of the table attributes

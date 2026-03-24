@@ -440,6 +440,13 @@ class ElementSources extends Component
 
         if ($sourceKey === '__IMP__') {
             $sourceAttributes = $this->getTableAttributesForFieldLayouts($elementType::fieldLayouts(null));
+        } elseif (str_starts_with($sourceKey, 'fieldLayouts:')) {
+            $fieldLayouts = $elementType::fieldLayouts(null);
+            $fieldLayoutIds = explode(',', str_replace('fieldLayouts:', '', $sourceKey));
+            if (!empty($fieldLayoutIds)) {
+                $fieldLayouts = array_filter($fieldLayouts, fn($fieldLayout) => in_array($fieldLayout->id, $fieldLayoutIds));
+            }
+            $sourceAttributes = $this->getTableAttributesForFieldLayouts($fieldLayouts);
         } else {
             $sourceAttributes = $this->getSourceTableAttributes($elementType, $sourceKey);
         }
@@ -513,9 +520,18 @@ class ElementSources extends Component
      */
     public function getSourceSortOptions(string $elementType, string $sourceKey): array
     {
-        $fieldLayouts = $sourceKey === '__IMP__'
-            ? $elementType::fieldLayouts(null)
-            : $this->getFieldLayoutsForSource($elementType, $sourceKey);
+        if ($sourceKey === '__IMP__') {
+            $fieldLayouts = $elementType::fieldLayouts(null);
+        } elseif (str_starts_with($sourceKey, 'fieldLayouts:')) {
+            $fieldLayouts = $elementType::fieldLayouts(null);
+            $fieldLayoutIds = explode(',', str_replace('fieldLayouts:', '', $sourceKey));
+            if (!empty($fieldLayoutIds)) {
+                $fieldLayouts = array_filter($fieldLayouts, fn($fieldLayout) => in_array($fieldLayout->id, $fieldLayoutIds));
+            }
+        } else {
+            $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
+        }
+
         $sortOptions = $this->getSortOptionsForFieldLayouts($fieldLayouts);
 
         // Fire a 'defineSourceSortOptions' event
@@ -600,7 +616,7 @@ class ElementSources extends Component
      */
     public function getSourceTableAttributes(string $elementType, string $sourceKey): array
     {
-        if ($sourceKey === '__IMP__') {
+        if ($sourceKey === '__IMP__' || str_starts_with($sourceKey, 'fieldLayouts:')) {
             return [];
         }
 
