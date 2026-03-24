@@ -260,8 +260,8 @@
           </div>
         </craft-action-menu>
 
-        <craft-modal ref="renameGroupModal">
-          <div slot="content" :aria-label="actionLabels.rename">
+        <craft-modal ref="renameGroupModal" :name="actionLabels.rename">
+          <div slot="content">
             <ModalForm
               @close="form.reset()"
               @submit="saveGroup"
@@ -374,7 +374,7 @@
       </nav>
 
       <div class="mt-4 flex gap-2">
-        <craft-modal>
+        <craft-modal :name="actionLabels.create">
           <craft-button
             slot="invoker"
             type="button"
@@ -384,7 +384,7 @@
             <craft-icon name="plus" slot="prefix"></craft-icon>
             {{ actionLabels.create }}
           </craft-button>
-          <div slot="content" :aria-label="actionLabels.create">
+          <div slot="content">
             <ModalForm
               @close="form.reset()"
               @submit="saveGroup"
