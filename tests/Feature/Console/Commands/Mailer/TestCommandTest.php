@@ -66,8 +66,26 @@ test('sends a test email with site-specific overrides', function () {
     );
 });
 
-test('fails with an invalid site handle', function () {
+test('uses the primary site when one is not provided', function () {
+    $primarySite = Sites::getPrimarySite();
+
+    $this->artisan('craft:mailer:test --to=test@example.com')
+        ->assetSuccessful();
+
+    Mail::assertSent(
+        SystemMessageMailable::class,
+        fn (SystemMessageMailable $mailable): bool => $mailable->siteId === $primarySite->id,
+    );
+});
+
+test('defaults to the primary site when an invalid one is provided', function () {
+    $primarySite = Sites::getPrimarySite();
+
     $this->artisan('craft:mailer:test --to=test@example.com --site=nonexistent')
-        ->expectsOutputToContain('Invalid site handle: nonexistent')
-        ->assertExitCode(1);
+        ->assetSuccessful();
+
+    Mail::assertSent(
+        SystemMessageMailable::class,
+        fn (SystemMessageMailable $mailable): bool => $mailable->siteId === $primarySite->id,
+    );
 });
