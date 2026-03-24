@@ -1314,13 +1314,12 @@ JS,
             $scenario = $element->getScenario();
 
             foreach ($entries as $entry) {
+                /** @var Entry $entry */
                 $entry->setOwner($element);
 
-                /** @var Entry $entry */
-                if (
-                    $scenario === Element::SCENARIO_ESSENTIALS ||
-                    ($entry->enabled && $scenario === Element::SCENARIO_LIVE)
-                ) {
+                if (!$entry->enabled) {
+                    $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+                } else {
                     $entry->setScenario($scenario);
                 }
 

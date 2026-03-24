@@ -3,7 +3,16 @@
 ## Unreleased
 
 - Fixed a bug where GraphQL results were getting cached even if they contained transform generation URLs. ([#18581](https://github.com/craftcms/cms/issues/18581))
+- Fixed a bug where `aria-activedescendant`, `aria-flowto`, and `aria-owns` attributes weren’t getting namespaced by `{% namespace %}` tags. ([#18577](https://github.com/craftcms/cms/issues/18577))
 - Fixed a bug where sites with missing `enabled` values were being treated as enabled. ([#18572](https://github.com/craftcms/cms/issues/18572))
+- Fixed a bug where GraphQL fields within fragments weren’t getting eager-loaded if the fragment’s type condition referenced an interface (e.g. `on EntryInterface`) rather than a specific type name. ([#18588](https://github.com/craftcms/cms/issues/18588))
+- Fixed a bug where relation fields were getting marked as translatable if they used a custom translation method, even if the rendered translation key was blank. ([#18580](https://github.com/craftcms/cms/issues/18580))
+- Fixed a bug where section and field chips in the “Used by” column of the Entry Types index page weren’t getting hyperlinked. ([#18589](https://github.com/craftcms/cms/issues/18589))
+- Fixed a bug where exceptions thrown when sending emails weren’t getting handled properly. ([#18597](https://github.com/craftcms/cms/issues/18597))
+- Fixed a bug where unordered lists weren’t getting styled correctly within Tip/Warning/Markdown field layout UI elements. ([#18598](https://github.com/craftcms/cms/issues/18598))
+- Fixed an error that could occur when upgrading to Craft 5. ([#18576](https://github.com/craftcms/cms/issues/18576))
+- Fixed a bug where nested Matrix entries’ Title fields were getting validation errors if blank, even if the nested entry was disabled. ([#18611](https://github.com/craftcms/cms/discussions/18611))
+- Fixed an infinite recursion bug that could occur if the `loginPath`, `logoutPath`, `setPasswordPath`, or `verifyEmailPath` config settings were set to a callable that called the `sites` service. ([#18605](https://github.com/craftcms/cms/issues/18605))
 
 ## 5.9.17 - 2026-03-17
 
@@ -54,11 +63,11 @@
 - The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is no longer set by default for database connections. ([#18474](https://github.com/craftcms/cms/issues/18474))
 - Added `craft\elements\Entry::canMove()`.
 - Fixed a bug where element selector modals weren’t showing any results if they were limited to sources that only exist for a different site than the active one. ([#18478](https://github.com/craftcms/cms/issues/18478))
-- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-44px-qjjc-xrhq, GHSA-vgjg-248p-rfm2, GHSA-x76w-8c62-48mg)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) access control vulnerability. (GHSA-6mrr-q3pj-h53w)
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-3pvf-vxrv-hh9c, GHSA-5pgf-h923-m958)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-86vw-x4ww-x467)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-f582-6gf6-gx4g)
+- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. ([GHSA-44px-qjjc-xrhq](https://github.com/craftcms/cms/security/advisories/GHSA-44px-qjjc-xrhq), [GHSA-vgjg-248p-rfm2](https://github.com/craftcms/cms/security/advisories/GHSA-vgjg-248p-rfm2), [GHSA-x76w-8c62-48mg](https://github.com/craftcms/cms/security/advisories/GHSA-x76w-8c62-48mg))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) access control vulnerability. ([GHSA-6mrr-q3pj-h53w](https://github.com/craftcms/cms/security/advisories/GHSA-6mrr-q3pj-h53w))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. ([GHSA-3pvf-vxrv-hh9c](https://github.com/craftcms/cms/security/advisories/GHSA-3pvf-vxrv-hh9c), [GHSA-5pgf-h923-m958](https://github.com/craftcms/cms/security/advisories/GHSA-5pgf-h923-m958))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-86vw-x4ww-x467](https://github.com/craftcms/cms/security/advisories/GHSA-86vw-x4ww-x467))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. ([GHSA-f582-6gf6-gx4g](https://github.com/craftcms/cms/security/advisories/GHSA-f582-6gf6-gx4g))
 
 ## 5.9.13 - 2026-02-24
 
@@ -70,7 +79,7 @@
 - Fixed a bug where drafts within “My Drafts” widgets weren’t getting hyperlinked. ([#18456](https://github.com/craftcms/cms/issues/18456))
 - Fixed a bug where nested entries were getting assigned new IDs if they were edited multiple times for the same owner element draft. ([#18461](https://github.com/craftcms/cms/issues/18461))
 - Fixed a bug where the “New Tab” button within field layout designers could be positioned incorrectly. ([#18450](https://github.com/craftcms/cms/issues/18450))
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-2fph-6v5w-89hh)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-2fph-6v5w-89hh](https://github.com/craftcms/cms/security/advisories/GHSA-2fph-6v5w-89hh))
 
 ## 5.9.12 - 2026-02-18
 
