@@ -57,6 +57,7 @@ it('publishes and applies Laravel optional migrations during install', function 
     });
 
     $migrator = new FakeMigrator;
+    $migrator->tracked = 'craft';
 
     app(LaravelMigrations::class)->install($migrator);
 
@@ -64,7 +65,7 @@ it('publishes and applies Laravel optional migrations during install', function 
 
     expect($artisan->calls)->toHaveCount(6)
         ->and(array_column($artisan->calls, 0))->toBe(array_keys($migrationMap))
-        ->and($migrator->tracked)->toBe('content')
+        ->and($migrator->tracked)->toBe('craft')
         ->and($migrator->runArguments[0])->toBe([
             $this->databasePath.'/migrations/2026_01_01_000000_create_cache_table.php',
             $this->databasePath.'/migrations/2026_01_01_000001_create_jobs_table.php',
@@ -112,6 +113,7 @@ it('is idempotent when the Laravel optional migrations already exist', function 
     });
 
     $migrator = new FakeMigrator;
+    $migrator->tracked = 'craft';
     $migrator->loggedMigrations = [
         ['2026_01_01_000000_create_cache_table', 1],
         ['2026_01_01_000001_create_jobs_table', 1],
@@ -126,6 +128,7 @@ it('is idempotent when the Laravel optional migrations already exist', function 
     $artisan = Artisan::getFacadeRoot();
 
     expect($artisan->calls)->toHaveCount(6)
+        ->and($migrator->tracked)->toBe('craft')
         ->and($migrator->runArguments)->toBe([])
         ->and($migrator->loggedMigrations)->toHaveCount(6);
 });

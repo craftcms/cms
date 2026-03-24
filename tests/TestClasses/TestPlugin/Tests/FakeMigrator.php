@@ -35,6 +35,12 @@ class FakeMigrator extends Migrator
     }
 
     #[\Override]
+    public function getTrack(): ?string
+    {
+        return $this->tracked;
+    }
+
+    #[\Override]
     public function setPaths(array $paths): self
     {
         $this->configuredPaths = $paths;

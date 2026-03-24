@@ -24,15 +24,21 @@ class LaravelMigrations
             return;
         }
 
-        $migrator->track('content');
+        $originalTrack = $migrator->getTrack();
 
-        $pendingMigrations = $migrator->getPendingMigrations($migrationPaths);
+        try {
+            $migrator->track('content');
 
-        if (empty($pendingMigrations)) {
-            return;
+            $pendingMigrations = $migrator->getPendingMigrations($migrationPaths);
+
+            if (empty($pendingMigrations)) {
+                return;
+            }
+
+            $migrator->run($pendingMigrations);
+        } finally {
+            $migrator->track($originalTrack ?? 'content');
         }
-
-        $migrator->run($pendingMigrations);
     }
 
     public function ensureSessionsTable(): void
