@@ -27,6 +27,7 @@ use CraftCms\Cms\Console\Commands\Utils\FixElementUidsCommand;
 use CraftCms\Cms\Console\Commands\Utils\FixFieldLayoutUidsCommand;
 use CraftCms\Cms\Console\Commands\Utils\PruneOrphanedEntriesCommand;
 use CraftCms\Cms\Console\Commands\Utils\PruneProvisionalDraftsCommand;
+use CraftCms\Cms\Console\Commands\Utils\PruneRevisionsCommand;
 use CraftCms\Cms\Console\Commands\Utils\UpdateUsernamesCommand;
 use CraftCms\Cms\GarbageCollection\Commands\RunCommand;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -73,6 +74,7 @@ class ConsoleServiceProvider extends ServiceProvider
         DeleteEmptyVolumeFoldersCommand::class,
         FixFieldLayoutUidsCommand::class,
         FixElementUidsCommand::class,
+        PruneRevisionsCommand::class,
         PruneProvisionalDraftsCommand::class,
         PruneOrphanedEntriesCommand::class,
         UpdateUsernamesCommand::class,

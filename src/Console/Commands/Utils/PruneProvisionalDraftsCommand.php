@@ -14,8 +14,6 @@ use Illuminate\Database\Connection;
 use Illuminate\Support\Collection;
 use Override;
 
-use function Laravel\Prompts\spin;
-
 class PruneProvisionalDraftsCommand extends Command
 {
     use CraftCommand;
@@ -33,12 +31,12 @@ class PruneProvisionalDraftsCommand extends Command
 
     public function handle(Connection $connection): int
     {
-        $elements = spin(
-            fn () => $this->elementsWithExtraProvisionalDrafts($connection),
-            'Finding elements with multiple provisional drafts per user...'
+        $this->components->task(
+            'Finding elements with multiple provisional drafts per user',
+            function () use (&$elements, $connection) {
+                $elements = $this->elementsWithExtraProvisionalDrafts($connection);
+            },
         );
-
-        $this->components->task('Finding elements with multiple provisional drafts per user...');
 
         if ($elements->isEmpty()) {
             $this->components->success('Nothing to prune.');
@@ -64,25 +62,27 @@ class PruneProvisionalDraftsCommand extends Command
                 ->site('*')
                 ->unique()
                 ->status(null)
-                ->orderBy(['dateUpdated' => SORT_DESC])
+                ->orderByDesc('dateUpdated')
                 ->offset(1)
                 ->all();
 
-            $this->components->task(
+            $this->components->twoColumnDetail(
                 $this->taskLabel($elementType::displayName(), $element->id, $element->creatorId, $extraDraftCount),
-                function () use ($elementsService, $extraDrafts) {
-                    if ($this->option('dry-run')) {
-                        return;
-                    }
-
-                    foreach ($extraDrafts as $extraDraft) {
-                        $elementsService->deleteElement($extraDraft, true);
-                    }
-                }
+                '<fg=yellow;options=bold>MATCHED</>',
             );
 
             if (count($extraDrafts) !== $extraDraftCount) {
                 $this->components->warn("Expected to find $extraDraftCount provisional ".Str::plural('draft', $extraDraftCount).', but found '.count($extraDrafts).'.');
+            }
+
+            foreach ($extraDrafts as $extraDraft) {
+                $this->line('  - '.$this->draftLogLine($extraDraft->id, $extraDraft->draftId));
+
+                if ($this->option('dry-run')) {
+                    continue;
+                }
+
+                $elementsService->deleteElement($extraDraft, true);
             }
 
             $prunedDraftCount += count($extraDrafts);
@@ -130,5 +130,12 @@ class PruneProvisionalDraftsCommand extends Command
     private function dryRunPrefix(): string
     {
         return $this->option('dry-run') ? '[DRY RUN] ' : '';
+    }
+
+    private function draftLogLine(int $elementId, int $draftId): string
+    {
+        $action = $this->option('dry-run') ? 'Would delete' : 'Deleting';
+
+        return "$action provisional draft $draftId (element $elementId)";
     }
 }

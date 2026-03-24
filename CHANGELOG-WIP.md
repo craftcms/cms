@@ -130,6 +130,8 @@
   - `CraftCms\Cms\Console\Commands\Utils\PruneOrphanedEntriesCommand` => `php craft utils:prune-orphaned-entries`
 - `craft\console\controllers\utils\PruneProvisionalDraftsController` has been removed in favor of the class below:
   - `CraftCms\Cms\Console\Commands\Utils\PruneProvisionalDraftsCommand` => `php craft utils:prune-provisional-drafts`
+- `craft\console\controllers\utils\PruneRevisionsController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\PruneRevisionsCommand` => `php craft utils:prune-revisions`
 
 ### Mutex
 
