@@ -1275,7 +1275,8 @@ class Sites extends Component
     {
         if ($withDisabled === null) {
             $request = Craft::$app->getRequest();
-            $withDisabled = !$request->getIsSiteRequest() || $request->getIsActionRequest();
+
+            $withDisabled = !$request->getIsSiteRequest() && $request->getIsActionRequest();
         }
 
         return $withDisabled ? $this->_allSitesById : $this->_enabledSitesById;
