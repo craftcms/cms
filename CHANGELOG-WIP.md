@@ -128,6 +128,8 @@
   - `CraftCms\Cms\Console\Commands\Utils\FixFieldLayoutUidsCommand` => `php craft utils:fix-field-layout-uids`
 - `craft\console\controllers\utils\PruneOrphanedEntriesController` has been removed in favor of the class below:
   - `CraftCms\Cms\Console\Commands\Utils\PruneOrphanedEntriesCommand` => `php craft utils:prune-orphaned-entries`
+- `craft\console\controllers\utils\PruneProvisionalDraftsController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\PruneProvisionalDraftsCommand` => `php craft utils:prune-provisional-drafts`
 
 ### Mutex
 
