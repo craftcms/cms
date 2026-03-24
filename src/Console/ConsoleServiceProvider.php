@@ -23,6 +23,7 @@ use CraftCms\Cms\Console\Commands\Twig\TwigClearCommand;
 use CraftCms\Cms\Console\Commands\UpCommand;
 use CraftCms\Cms\Console\Commands\Utils\AsciiFilenamesCommand;
 use CraftCms\Cms\Console\Commands\Utils\DeleteEmptyVolumeFoldersCommand;
+use CraftCms\Cms\Console\Commands\Utils\FixElementUidsCommand;
 use CraftCms\Cms\Console\Commands\Utils\UpdateUsernamesCommand;
 use CraftCms\Cms\GarbageCollection\Commands\RunCommand;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -67,6 +68,7 @@ class ConsoleServiceProvider extends ServiceProvider
         // Utils
         AsciiFilenamesCommand::class,
         DeleteEmptyVolumeFoldersCommand::class,
+        FixElementUidsCommand::class,
         UpdateUsernamesCommand::class,
     ];
 
