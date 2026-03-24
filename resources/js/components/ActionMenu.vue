@@ -52,16 +52,17 @@
       <craft-action-item
         v-for="(action, idx) in safeActions"
         :key="`safe-${idx}`"
-        @click="action.onClick?.()"
-        v-bind="action"
+        :icon="action.icon"
+        @click="action.onClick"
         >{{ action.label }}</craft-action-item
       >
       <hr class="m-0" />
       <craft-action-item
         v-for="(action, idx) in dangerousActions"
         :key="`dangerous-${idx}`"
-        @click="action.onClick?.()"
-        v-bind="action"
+        :icon="action.icon"
+        :variant="action.variant"
+        @click="action.onClick"
         >{{ action.label }}</craft-action-item
       >
     </div>

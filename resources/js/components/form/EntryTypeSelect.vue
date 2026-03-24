@@ -10,6 +10,8 @@
     create,
     renderOverrideSettings,
   } from '@actions/Settings/EntryTypesController';
+  import Craft from '@routes/index';
+  import {html, render} from 'lit';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void;
@@ -57,13 +59,66 @@
     emit('update:modelValue', newValue);
   }
 
-  const slideout = useTemplateRef('slideout');
-  const slideoutHtml = ref<{
-    settingsHtml?: string;
-  } | null>(null);
+  const slideout = ref<Craft.Slideout | null>(null);
+
+  function createSlideout(innerHtml: string) {
+    const template = `
+      <div class="entry-type-override-settings-body">
+        <div class="fields">${innerHtml}</div>
+      </div>
+      <div class="entry-type-override-settings-footer justify-end gap-2">
+        <craft-button type="button" data-action="close">
+          ${t('Close')}
+        </craft-button>
+        <craft-button type="submit" data-action="apply">${t('Apply')}</craft-button>
+      </div>
+    `;
+
+    const slideout = new window.Craft.Slideout(template, {
+      containerElement: 'form',
+      containerAttributes: {
+        action: '',
+        method: 'post',
+        novalidate: '',
+        class: 'entry-type-override-settings',
+      },
+    });
+
+    // Bind up the buttons
+    slideout.$container[0]
+      .querySelectorAll('[data-action]')
+      .forEach((el: HTMLElement) => {
+        el.addEventListener('click', (e: Event) => {
+          const target = e.target as HTMLElement;
+          if (!target) {
+            return;
+          }
+
+          const action = target.dataset.action;
+          switch (action) {
+            case 'close':
+              slideout.close();
+              break;
+            case 'apply':
+              slideout.$container[0].requestSubmit();
+              break;
+          }
+        });
+      });
+
+    slideout.on('open', () => {
+      console.log('opened');
+      // Focus first text field
+    });
+
+    slideout.on('close', () => {
+      slideout.destroy();
+    });
+
+    return slideout;
+  }
 
   async function openSlideout(id: number) {
-    // console.log({Craft: window.Craft, id});
     try {
       const response = await fetch(renderOverrideSettings().url, {
         method: 'POST',
@@ -76,7 +131,7 @@
       });
 
       const {settingsHtml, headHtml, bodyHtml} = await response.json();
-      slideoutHtml.value = settingsHtml;
+      slideout.value = createSlideout(settingsHtml);
 
       if (headHtml) {
         await appendHeadHtml(headHtml);
@@ -84,13 +139,12 @@
 
       if (bodyHtml) {
         await appendBodyHtml(bodyHtml);
-        console.log('body appended');
       }
 
-      Craft.initUiElements(slideout.value);
-      console.log('ui initialized');
+      window.Craft.initUiElements(slideout.$container);
     } catch (e) {
-      Craft.cp.displayError(e?.response?.data?.message);
+      console.error({e});
+      window.Craft.cp.displayError(e?.response?.data?.message);
       throw e;
     }
   }
@@ -181,11 +235,19 @@
     </a>
   </div>
 
-  <Teleport to="body">
-    <div class="slideout right-0" v-if="slideoutHtml">
-      <div v-html="slideoutHtml" ref="slideout"></div>
-    </div>
-  </Teleport>
+  <!--<Teleport to="body">-->
+  <!--  <div class="slideout right-0" v-if="slideoutHtml" ref="slideoutTemplate">-->
+  <!--    <div class="entry-type-override-settings-body">-->
+  <!--      <div class="fields" v-html="slideoutHtml"></div>-->
+  <!--    </div>-->
+  <!--    <div class="entry-type-override-settings-footer">-->
+  <!--      <craft-button type="button" @click="() => slideout.close()">{{-->
+  <!--        t('Close')-->
+  <!--      }}</craft-button>-->
+  <!--      <craft-button type="submit">{{ t('Apply') }}</craft-button>-->
+  <!--    </div>-->
+  <!--  </div>-->
+  <!--</Teleport>-->
 </template>
 
 <style scoped lang="scss">
