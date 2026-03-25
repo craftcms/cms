@@ -14,7 +14,6 @@
       submitLabel?: string;
     }>(),
     {
-      overlay: true,
       loading: false,
       resetLabel: t('Cancel'),
       submitLabel: t('Save'),
