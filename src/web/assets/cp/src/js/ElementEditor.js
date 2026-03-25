@@ -57,6 +57,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
 
     activityTooltips: null,
+    _checkActivityTimeout: null,
 
     get tipDismissBtn() {
       return this.$container.find('.tip-dismiss-btn');
@@ -239,7 +240,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       // handle closing tips
       this.handleDismissibleTips();
 
-      if (this.isFullPage && Craft.messageReceiver) {
+      if (Craft.messageReceiver) {
         // Listen on Craft.broadcaster to ignore any messages sent by this very page
         Craft.broadcaster.addEventListener('message', (ev) => {
           if (
@@ -257,29 +258,43 @@ Craft.ElementEditor = Garnish.Base.extend(
               this.settings.reloadOnBroadcastSave ||
               ev.data.draftId !== this.settings.draftId
             ) {
-              Craft.setUrl(
-                Craft.getUrl(document.location.href, {
-                  scrollY: window.scrollY,
-                })
-              );
-              window.location.reload();
+              if (this.isFullPage) {
+                Craft.setUrl(
+                  Craft.getUrl(document.location.href, {
+                    scrollY: window.scrollY,
+                  })
+                );
+                window.location.reload();
+              } else if (this.slideout) {
+                this.queue?.push(async () => {
+                  this.slideout.reload();
+                });
+              }
             }
           } else if (
             ev.data.event === 'deleteDraft' &&
             ev.data.canonicalId === this.settings.canonicalId &&
             ev.data.draftId === this.settings.draftId
           ) {
-            const url = new URL(window.location.href);
-            url.searchParams.delete('draftId');
-            if (url.href !== document.location.href) {
-              window.location.href = url;
-            } else {
-              Craft.setUrl(
-                Craft.getUrl(document.location.href, {
-                  scrollY: window.scrollY,
-                })
-              );
-              window.location.reload();
+            if (this.isFullPage) {
+              const url = new URL(window.location.href);
+              url.searchParams.delete('draftId');
+              if (url.href !== document.location.href) {
+                window.location.href = url;
+              } else {
+                Craft.setUrl(
+                  Craft.getUrl(document.location.href, {
+                    scrollY: window.scrollY,
+                  })
+                );
+                window.location.reload();
+              }
+            } else if (this.slideout) {
+              this.queue?.push(async () => {
+                this.slideout.settings.elementId = ev.data.id;
+                this.slideout.settings.draftId = false;
+                this.slideout.reload();
+              });
             }
           }
         });
@@ -439,7 +454,7 @@ Craft.ElementEditor = Garnish.Base.extend(
             Craft.t('app', 'Are you sure you want to discard your changes?')
           )
         ) {
-          this.queue.unshift(
+          this.queue?.unshift(
             () =>
               new Promise((resolve, reject) => {
                 if (this.isFullPage) {
@@ -1307,7 +1322,7 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @returns {Promise}
      */
     checkForm: function (force, saveDraft = null) {
-      return this.queue.push(
+      return this.queue?.push(
         () =>
           new Promise((resolve, reject) => {
             // If this is a revision, there's nothing to check
@@ -1407,7 +1422,7 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @returns {Promise}
      */
     saveDraft: function () {
-      return this.queue.push(
+      return this.queue?.push(
         () =>
           new Promise((resolve, reject) => {
             this._saveDraftInternal(this.serializeForm(true))
@@ -2338,7 +2353,7 @@ Craft.ElementEditor = Garnish.Base.extend(
         return;
       }
 
-      this.queue.push(
+      this.queue?.push(
         () =>
           new Promise((resolve, reject) => {
             Craft.sendActionRequest('POST', 'elements/recent-activity', {
@@ -2472,7 +2487,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
                 this.trigger('checkActivity', data);
 
-                setTimeout(() => {
+                this._checkActivityTimeout = setTimeout(() => {
                   this._checkActivity();
                 }, 15000);
                 resolve();
@@ -2493,12 +2508,14 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     destroy: function () {
-      this.queue.destroy();
+      this.queue?.destroy();
       delete this.queue;
       this.formObserver?.destroy();
       delete this.formObserver;
       this.preview?.destroy();
       delete this.preview;
+      this.$container.removeData('elementEditor');
+      clearTimeout(this._checkActivityTimeout);
       this.base();
     },
   },
