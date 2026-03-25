@@ -10,8 +10,7 @@
     create,
     renderOverrideSettings,
   } from '@actions/Settings/EntryTypesController';
-  import Craft from '@routes/index';
-  import {html, render} from 'lit';
+  import type {SlideoutInstance} from '@/types/globals';
 
   const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<number>): void;
@@ -59,7 +58,7 @@
     emit('update:modelValue', newValue);
   }
 
-  const slideout = ref<Craft.Slideout | null>(null);
+  const slideout = ref<SlideoutInstance | null>(null);
 
   function createSlideout(innerHtml: string) {
     const template = `
@@ -74,7 +73,7 @@
       </div>
     `;
 
-    const slideout = new window.Craft.Slideout(template, {
+    const slideout = new Craft.Slideout(template, {
       containerElement: 'form',
       containerAttributes: {
         action: '',
@@ -141,10 +140,9 @@
         await appendBodyHtml(bodyHtml);
       }
 
-      window.Craft.initUiElements(slideout.$container);
-    } catch (e) {
-      console.error({e});
-      window.Craft.cp.displayError(e?.response?.data?.message);
+      Craft?.initUiElements(slideout.value.$container);
+    } catch (e: any) {
+      Craft.cp?.displayError?.(e?.response?.data?.message);
       throw e;
     }
   }
