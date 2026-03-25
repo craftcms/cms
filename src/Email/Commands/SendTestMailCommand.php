@@ -35,7 +35,10 @@ class SendTestMailCommand extends Command
     {
         $site = $this->resolveSite();
 
-        // If a site couldn’t be determined by options, prompt the user:
+        if (! $site && ! $this->input->isInteractive()) {
+            $site = Sites::getPrimarySite();
+        }
+
         if (! $site) {
             $siteOptions = Sites::getAllSites()->keyBy('handle');
             $siteHandle = select(
@@ -82,12 +85,16 @@ class SendTestMailCommand extends Command
     }
 
     /**
-     * Resolves the --site option to a site.
+     * Resolves the requested site, defaulting to the primary site on single-site installs.
      *
-     * @return Site|null Site if discoverable by handle
+     * @return Site|null Site if discoverable by handle, otherwise null on multi-site installs
      */
     private function resolveSite(): ?Site
     {
+        if (! Sites::isMultiSite()) {
+            return Sites::getPrimarySite();
+        }
+
         $siteHandle = $this->option('site');
 
         if (! is_string($siteHandle) || $siteHandle === '') {

@@ -80,6 +80,20 @@ test('sends a test email with site-specific overrides', function () {
     );
 });
 
+test('uses the primary site when one is not provided on a single-site install', function () {
+    Mail::fake();
+
+    $primarySite = Sites::getPrimarySite();
+
+    $this->artisan('craft:mailer:test --to=test@example.com')
+        ->assertSuccessful();
+
+    Mail::assertSent(
+        SystemMessageMailable::class,
+        fn (SystemMessageMailable $mailable): bool => $mailable->siteId === $primarySite->id,
+    );
+});
+
 test('prompts for a site when one is not provided', function () {
     Mail::fake();
 
