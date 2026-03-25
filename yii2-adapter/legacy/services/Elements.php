@@ -18,7 +18,6 @@ use craft\controllers\AppController;
 use craft\db\QueryAbortedException;
 use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQuery;
 use craft\errors\ElementNotFoundException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\BulkOpEvent;
@@ -1548,7 +1547,6 @@ class Elements extends Component
         ?bool $updateSearchIndex = null,
         bool $touch = false,
     ): void {
-        /** @var ElementQuery $query */
         // Fire a 'beforeResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
             $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENTS, new ElementQueryEvent([
@@ -1643,7 +1641,6 @@ class Elements extends Component
         array|int $siteIds = null,
         bool $continueOnError = false,
     ): void {
-        /** @var ElementQuery $query */
         // Fire a 'beforePropagateElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENTS)) {
             $this->trigger(self::EVENT_BEFORE_PROPAGATE_ELEMENTS, new ElementQueryEvent([
