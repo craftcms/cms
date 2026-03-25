@@ -3995,6 +3995,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Re-implement each as a supported call similar
      * to Laravel's ->each on query builder.
+     * @return ?\yii\db\BatchQueryResult
      */
     public function each($batchSize = 100, $db = null)
     {
