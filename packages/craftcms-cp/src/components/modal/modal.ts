@@ -9,7 +9,7 @@ import styles from './modal.styles';
  */
 export default class CraftModal extends OverlayMixin(LitElement) {
   @property({type: String})
-  name: string;
+  name: string | null = null;
 
   // @ts-ignore
   _defineOverlayConfig() {
@@ -26,6 +26,8 @@ export default class CraftModal extends OverlayMixin(LitElement) {
    * Applies an aria-label to the content node with the name property.
    */
   __setAccessibleName() {
+    if (!this.name) return;
+
     const contentNode = this._overlayContentNode;
 
     if (contentNode) {

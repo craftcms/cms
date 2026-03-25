@@ -4094,7 +4094,7 @@ svg {
     border-style: var(--c-modal-border-style);
     border-color: var(--c-modal-border-color);
   }
-`,$w=class extends yb(De){_defineOverlayConfig(){return{...S2()}}static get styles(){return[super.styles??[],E2]}__setAccessibleName(){let t=this._overlayContentNode;if(t){if(!this.name)return;t.setAttribute("aria-label",this.name)}}firstUpdated(t){super.firstUpdated(t),t.has("name")&&this.__setAccessibleName()}updated(t){super.updated(t),t.has("name")&&this.__setAccessibleName()}render(){return J`
+`,$w=class extends yb(De){constructor(...t){super(...t),this.name=null}_defineOverlayConfig(){return{...S2()}}static get styles(){return[super.styles??[],E2]}__setAccessibleName(){if(!this.name)return;let t=this._overlayContentNode;if(t){if(!this.name)return;t.setAttribute("aria-label",this.name)}}firstUpdated(t){super.firstUpdated(t),t.has("name")&&this.__setAccessibleName()}updated(t){super.updated(t),t.has("name")&&this.__setAccessibleName()}render(){return J`
       <slot name="invoker"></slot>
       <div id="overlay-content-node-wrapper">
         <slot name="content"></slot>
