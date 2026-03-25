@@ -331,7 +331,7 @@
   --login-modal-bg: var(--c-surface-overlay);
   --header-bg: var(--c-surface-raised);
   --sidebar-bg: var(--c-surface-default);
-  --secondary-pane-bg: var(--c-surface-sunken);
+  --secondary-pane-bg: var(--c-surface-raised);
   --shade-bg: rgba(0 0 0 / 25%);
   --input-bg: var(--c-input-fill);
 
@@ -527,7 +527,7 @@
   --nav-item-fg-hover: var(--c-text-default);
   --nav-item-bg-active: var(--c-color-neutral-fill-quiet);
   --nav-item-bg-hover: var(--c-color-neutral-fill-quiet);
-  --nav-item-prefix-width: var(--CHANGE);
+  --nav-item-prefix-width:  1.875rem;;
   --nav-item-prefix-ratio: 1;
   --nav-item-trigger-size: var(--c-size-touch-target);
   --nav-item-gutter-width: var(--c-spacing-md);
