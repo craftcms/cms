@@ -53,13 +53,15 @@ class HandleInertiaRequests extends Middleware
     #[Override]
     public function handle(Request $request, Closure $next): Response
     {
-        $htmlStack = app(HtmlStack::class);
         Craft::$app->view->registerAssetBundle(CpAsset::class);
+        $htmlStack = app(HtmlStack::class);
 
-        View::share([
-            'headHtml' => $htmlStack->headHtml(),
-            'bodyHtml' => $htmlStack->bodyHtml(),
-        ]);
+        View::composer('app', function ($view) use ($htmlStack) {
+            $view->with([
+                'headHtml' => $htmlStack->headHtml(),
+                'bodyHtml' => $htmlStack->bodyHtml(),
+            ]);
+        });
 
         return parent::handle($request, $next);
     }
