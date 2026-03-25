@@ -14,6 +14,8 @@ class FakeMigrator extends Migrator
 
     public array $resetArguments = [];
 
+    public array $runArguments = [];
+
     public ?string $tracked = null;
 
     public array $configuredPaths = [];
@@ -30,6 +32,12 @@ class FakeMigrator extends Migrator
         $this->tracked = $track;
 
         return $this;
+    }
+
+    #[\Override]
+    public function getTrack(): ?string
+    {
+        return $this->tracked;
     }
 
     #[\Override]
@@ -55,6 +63,15 @@ class FakeMigrator extends Migrator
         {
             public function __construct(private FakeMigrator $migrator) {}
 
+            public function getNextBatchNumber(): int
+            {
+                if (empty($this->migrator->loggedMigrations)) {
+                    return 1;
+                }
+
+                return max(array_column($this->migrator->loggedMigrations, 1)) + 1;
+            }
+
             public function log(string $migration, int $batch): void
             {
                 $this->migrator->loggedMigrations[] = [$migration, $batch];
@@ -63,9 +80,38 @@ class FakeMigrator extends Migrator
     }
 
     #[\Override]
+    public function run($paths = [], array $options = []): array
+    {
+        $this->runArguments = [$paths, $options];
+
+        $paths = empty($paths) ? $this->pendingMigrations : $paths;
+        $batch = $this->getRepository()->getNextBatchNumber();
+        $loggedMigrations = [];
+
+        foreach ($paths as $path) {
+            $migrationName = $this->getMigrationName($path);
+
+            if (in_array($migrationName, $loggedMigrations, true)) {
+                continue;
+            }
+
+            $this->getRepository()->log($migrationName, $batch);
+            $loggedMigrations[] = $migrationName;
+        }
+
+        return $paths;
+    }
+
+    #[\Override]
     public function getPendingMigrations($paths = []): array
     {
-        return $this->pendingMigrations;
+        if (empty($paths)) {
+            return $this->pendingMigrations;
+        }
+
+        $loggedMigrations = array_map(fn (array $migration) => $migration[0], $this->loggedMigrations);
+
+        return array_values(array_filter($paths, fn (string $path) => ! in_array($this->getMigrationName($path), $loggedMigrations, true)));
     }
 
     #[\Override]

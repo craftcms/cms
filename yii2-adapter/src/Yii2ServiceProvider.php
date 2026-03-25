@@ -4,6 +4,7 @@ namespace CraftCms\Yii2Adapter;
 
 use Craft;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Support\Env;
@@ -180,6 +181,12 @@ class Yii2ServiceProvider extends ServiceProvider
     {
         try {
             if (app()->environment('workbench') || app()->environment('testing')) {
+                return;
+            }
+
+            if (!Schema::hasTable(Table::SESSIONS)) {
+                app(LaravelMigrations::class)->ensureSessionsTable();
+
                 return;
             }
 

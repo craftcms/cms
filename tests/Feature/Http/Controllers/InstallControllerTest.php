@@ -3,8 +3,14 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\LaravelMigrations;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Http\Controllers\InstallController;
+use CraftCms\Cms\Tests\TestClasses\TestPlugin\Tests\FakeMigrator;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 
@@ -153,3 +159,87 @@ it('can validate site', function (array $data, array $errors) {
         'errors' => ['language'],
     ],
 ]);
+
+test('install invokes the Laravel optional migration installer', function () {
+    $migrator = new FakeMigrator;
+
+    $migrator->pendingMigrations = [
+        '/tmp/2026_01_01_000000_first_migration.php',
+        '/tmp/2026_01_01_000001_second_migration.php',
+    ];
+
+    $this->mock(LaravelMigrations::class)
+        ->shouldReceive('install')
+        ->once()
+        ->with($migrator);
+
+    $response = (new InstallController)->install(
+        Request::create('/install', 'POST', [
+            'account' => [
+                'email' => 'support@pixelandtonic.com',
+                'username' => 'admin',
+                'password' => 'asupersecretpassword',
+            ],
+            'site' => [
+                'name' => 'Craft',
+                'baseUrl' => '$APP_URL',
+                'language' => 'en-US',
+            ],
+        ]),
+        $migrator,
+        app(LaravelMigrations::class),
+    );
+
+    expect($response->getStatusCode())->toBe(200)
+        ->and($migrator->tracked)->toBe('craft')
+        ->and($migrator->loggedMigrations)->toBe([
+            ['Install', 1],
+            ['2026_01_01_000000_first_migration', 1],
+            ['2026_01_01_000001_second_migration', 1],
+        ]);
+});
+
+test('install command invokes the Laravel optional migration installer', function () {
+    $migrator = new FakeMigrator;
+
+    $migrator->pendingMigrations = [
+        '/tmp/2026_01_01_000000_first_migration.php',
+        '/tmp/2026_01_01_000001_second_migration.php',
+    ];
+
+    DB::table('info')->delete();
+
+    app()->instance(Migrator::class, $migrator);
+
+    $this->mock(LaravelMigrations::class)
+        ->shouldReceive('install')
+        ->once()
+        ->with($migrator);
+
+    $this->artisan('craft:install', [
+        '--email' => 'support@pixelandtonic.com',
+        '--username' => 'admin',
+        '--password' => 'asupersecretpassword',
+        '--siteName' => 'Craft',
+        '--siteUrl' => '$APP_URL',
+        '--language' => 'en-US',
+    ])->assertSuccessful();
+
+    expect($migrator->loggedMigrations)->toBe([
+        ['Install', 1],
+        ['2026_01_01_000000_first_migration', 1],
+        ['2026_01_01_000001_second_migration', 1],
+    ]);
+});
+
+test('Laravel migration installer can recreate the sessions table', function () {
+    expect(Schema::hasTable('sessions'))->toBeTrue();
+
+    Schema::drop('sessions');
+
+    expect(Schema::hasTable('sessions'))->toBeFalse();
+
+    app(LaravelMigrations::class)->ensureSessionsTable();
+
+    expect(Schema::hasTable('sessions'))->toBeTrue();
+});

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Workbench\Database\Seeders;
 
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -70,6 +71,8 @@ class DatabaseSeeder extends Seeder
             email: 'support@craftcms.com',
             site: $site,
         )->up();
+
+        app(LaravelMigrations::class)->ensureSessionsTable();
 
         $site = Sites::getCurrentSite();
 
