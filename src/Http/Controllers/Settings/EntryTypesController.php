@@ -397,7 +397,7 @@ class EntryTypesController
     {
         $request->validate(['id' => ['required', 'integer']]);
 
-        $id = $request->input('id');
+        $id = (int) $request->input('id');
         $original = $this->entryTypes->getEntryTypeById($id);
 
         abort_if(is_null($original), 400, "Invalid entry type ID: $id");

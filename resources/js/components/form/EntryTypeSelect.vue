@@ -1,12 +1,13 @@
 <script setup lang="ts">
   import type {EntryType} from '@/types';
-  import {computed, ref, useTemplateRef} from 'vue';
+  import {computed, ref} from 'vue';
   import {appendBodyHtml, appendHeadHtml, t} from '@craftcms/cp';
   import ReorderButton from '@/components/ReorderButton.vue';
   import ActionMenu from '@/components/ActionMenu.vue';
   import CraftInput from '@craftcms/cp/vue/CraftInput.vue';
   import Text from '@/components/Text.vue';
   import {
+    applyOverrideSettings,
     create,
     renderOverrideSettings,
   } from '@actions/Settings/EntryTypesController';
@@ -58,52 +59,96 @@
     emit('update:modelValue', newValue);
   }
 
-  const slideout = ref<SlideoutInstance | null>(null);
+  const slideout = ref<SlideoutInstance | undefined>(undefined);
+  const overrides = ref({});
 
-  function createSlideout(innerHtml: string) {
+  function createSlideout(
+    innerHtml: string,
+    {namespace = '', id = null}: {namespace: string; id: null | number}
+  ) {
     const template = `
       <div class="entry-type-override-settings-body">
-        <div class="fields">${innerHtml}</div>
+        <div class="fields">
+          ${namespace ? `<input type="hidden" name="settingsNamespace" value="${namespace}" />` : ''}
+          ${id ? `<input type="hidden" name="id" value="${id}" />` : ''}
+          ${innerHtml}
+        </div>
       </div>
       <div class="entry-type-override-settings-footer justify-end gap-2">
         <craft-button type="button" data-action="close">
           ${t('Close')}
         </craft-button>
-        <craft-button type="submit" data-action="apply">${t('Apply')}</craft-button>
+        <craft-button type="submit">${t('Apply')}</craft-button>
       </div>
     `;
 
     const slideout = new Craft.Slideout(template, {
       containerElement: 'form',
       containerAttributes: {
-        action: '',
+        action: applyOverrideSettings().url,
         method: 'post',
         novalidate: '',
         class: 'entry-type-override-settings',
       },
     });
 
-    // Bind up the buttons
-    slideout.$container[0]
-      .querySelectorAll('[data-action]')
-      .forEach((el: HTMLElement) => {
-        el.addEventListener('click', (e: Event) => {
-          const target = e.target as HTMLElement;
-          if (!target) {
-            return;
-          }
+    const form = slideout.$container[0];
+    if (!form) {
+      return;
+    }
 
-          const action = target.dataset.action;
-          switch (action) {
-            case 'close':
-              slideout.close();
-              break;
-            case 'apply':
-              slideout.$container[0].requestSubmit();
-              break;
+    form.addEventListener('submit', async (event: SubmitEvent) => {
+      event.preventDefault();
+      const target = event.target as HTMLFormElement;
+      const body = new FormData(target);
+
+      // We need to massage our form data into the format the server is expecting
+      const postData = {
+        id: body.get('id'),
+        settingsNamespace: body.get('settingsNamespace'),
+        settings: new URLSearchParams(body as any).toString(),
+      };
+
+      try {
+        const {data} = await Craft.sendActionRequest(
+          'POST',
+          applyOverrideSettings().url,
+          {
+            data: postData,
           }
-        });
+        );
+
+        // set the data to some state
+        // The data comes back with `chipHtml` and `config`
+        overrides.value = {
+          ...overrides.value,
+          [data.config.id]: data.config,
+        };
+        slideout.close();
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+    // Bind up the buttons
+    form.querySelectorAll('[data-action]').forEach((el: HTMLElement) => {
+      el.addEventListener('click', (e: Event) => {
+        const target = e.target as HTMLElement;
+        if (!target) {
+          return;
+        }
+
+        const action = target.dataset.action;
+        switch (action) {
+          case 'close':
+            slideout.close();
+            break;
+          // case 'apply':
+          //   form.requestSubmit();
+          //   break;
+        }
       });
+    });
 
     slideout.on('open', () => {
       console.log('opened');
@@ -119,18 +164,16 @@
 
   async function openSlideout(id: number) {
     try {
-      const response = await fetch(renderOverrideSettings().url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id,
-        }),
-      });
+      const {data} = await Craft.sendActionRequest(
+        'POST',
+        renderOverrideSettings().url,
+        {
+          data: {id},
+        }
+      );
 
-      const {settingsHtml, headHtml, bodyHtml} = await response.json();
-      slideout.value = createSlideout(settingsHtml);
+      const {settingsHtml, headHtml, bodyHtml, namespace} = data;
+      slideout.value = createSlideout(settingsHtml, {namespace, id});
 
       if (headHtml) {
         await appendHeadHtml(headHtml);
@@ -140,7 +183,7 @@
         await appendBodyHtml(bodyHtml);
       }
 
-      Craft?.initUiElements(slideout.value.$container);
+      Craft?.initUiElements(slideout.value?.$container);
     } catch (e: any) {
       Craft.cp?.displayError?.(e?.response?.data?.message);
       throw e;
@@ -157,8 +200,10 @@
         :data-color="type.color?.value ?? 'white'"
       >
         <div :data-id="type.id">
-          <div class="font-bold">{{ type.name }}</div>
-          <code>{{ type.handle }}</code>
+          <div class="font-bold">
+            {{ overrides[type.id]?.name ?? type.name }}
+          </div>
+          <code>{{ overrides[type.id]?.handle ?? type.handle }}</code>
         </div>
 
         <div slot="suffix" class="flex gap-1 items-center">
