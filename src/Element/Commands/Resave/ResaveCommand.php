@@ -21,7 +21,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Console\Command;
 use Illuminate\Console\View\TaskResult;
-use Illuminate\Support\LazyCollection;
 use Throwable;
 
 use function CraftCms\Cms\normalizeValue;
@@ -331,7 +330,8 @@ abstract class ResaveCommand extends Command
 
         $elementsService = Craft::$app->getElements();
         $fail = false;
-        $elements = $this->elementCursor($query)
+        $elements = $query
+            ->cursor()
             ->skip((int) ($query->offset ?? 0));
 
         if ($query->limit) {
@@ -475,25 +475,6 @@ abstract class ResaveCommand extends Command
     protected function optionalOption(string $name): mixed
     {
         return $this->hasOption($name) ? $this->input->getOption($name) : null;
-    }
-
-    /**
-     * @return LazyCollection<int, ElementInterface>
-     */
-    protected function elementCursor(ElementQueryInterface $query): LazyCollection
-    {
-        if (method_exists($query, 'cursor')) {
-            /** @var LazyCollection<int, ElementInterface> $elements */
-            $elements = $query->cursor();
-
-            return $elements;
-        }
-
-        return LazyCollection::make(function () use ($query) {
-            foreach ($query->all() as $element) {
-                yield $element;
-            }
-        });
     }
 
     protected function propagateElement(ElementInterface $element, Elements $elementsService): void
