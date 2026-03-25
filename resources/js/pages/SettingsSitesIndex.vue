@@ -54,9 +54,13 @@
     name: props.group?.name ?? '',
   });
 
-  const actionLabels = {
-    rename: t('Rename Group'),
-    create: t('New Group'),
+  const MODAL_ACTIONS = {
+    rename: {
+      label: t('Rename Group'),
+    },
+    create: {
+      label: t('New Group'),
+    },
   };
 
   function saveGroup() {
@@ -247,7 +251,7 @@
 
           <div slot="content">
             <craft-action-item @click="openRenameModal">
-              {{ actionLabels.rename }}
+              {{ MODAL_ACTIONS.rename.label }}
             </craft-action-item>
 
             <craft-action-item
@@ -260,13 +264,13 @@
           </div>
         </craft-action-menu>
 
-        <craft-modal ref="renameGroupModal" :name="actionLabels.rename">
+        <craft-modal ref="renameGroupModal" :name="MODAL_ACTIONS.rename.label">
           <div slot="content">
             <ModalForm
               @close="form.reset()"
               @submit="saveGroup"
               :loading="form.processing"
-              :title="actionLabels.rename"
+              :title="MODAL_ACTIONS.rename.label"
             >
               <craft-input
                 name="id"
@@ -374,7 +378,7 @@
       </nav>
 
       <div class="mt-4 flex gap-2">
-        <craft-modal :name="actionLabels.create">
+        <craft-modal :name="MODAL_ACTIONS.create.label">
           <craft-button
             slot="invoker"
             type="button"
@@ -382,14 +386,14 @@
             size="small"
           >
             <craft-icon name="plus" slot="prefix"></craft-icon>
-            {{ actionLabels.create }}
+            {{ MODAL_ACTIONS.create.label }}
           </craft-button>
           <div slot="content">
             <ModalForm
               @close="form.reset()"
               @submit="saveGroup"
               :loading="form.processing"
-              :title="actionLabels.create"
+              :title="MODAL_ACTIONS.create.label"
             >
               <craft-input
                 name="id"

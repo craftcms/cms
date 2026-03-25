@@ -1,5 +1,6 @@
-import type {CSSResultGroup} from 'lit';
+import type {CSSResultGroup, PropertyValues} from 'lit';
 import {html, LitElement} from 'lit';
+import {property} from 'lit/decorators.js';
 import {OverlayMixin, withModalDialogConfig} from '@lion/ui/overlays.js';
 import styles from './modal.styles';
 
@@ -7,19 +8,24 @@ import styles from './modal.styles';
  * @summary Modal that extends the LionDialog web component
  */
 export default class CraftModal extends OverlayMixin(LitElement) {
-  name?: string;
+  @property({type: String})
+  name: string;
+
+  // @ts-ignore
+  _defineOverlayConfig() {
+    return {
+      ...withModalDialogConfig(),
+    };
+  }
+
   static override get styles(): CSSResultGroup {
     return [super.styles ?? [], styles];
   }
 
-  static override get properties() {
-    return {
-      ...super.properties,
-      name: {type: String },
-    };
-  }
-
-  override firstUpdated() {
+  /**
+   * Applies an aria-label to the content node with the name property.
+   */
+  __setAccessibleName() {
     const contentNode = this._overlayContentNode;
 
     if (contentNode) {
@@ -28,11 +34,20 @@ export default class CraftModal extends OverlayMixin(LitElement) {
     }
   }
 
-  // @ts-ignore
-  _defineOverlayConfig() {
-    return {
-      ...withModalDialogConfig(),
-    };
+  override firstUpdated(c: PropertyValues<this>) {
+    super.firstUpdated(c);
+
+    if (c.has('name')) {
+      this.__setAccessibleName();
+    }
+  }
+
+  override updated(c: PropertyValues<this>) {
+    super.updated(c);
+
+    if (c.has('name')) {
+      this.__setAccessibleName();
+    }
   }
 
   override render() {
