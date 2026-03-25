@@ -17,6 +17,8 @@
 - Fixed an infinite recursion bug that could occur if the `loginPath`, `logoutPath`, `setPasswordPath`, or `verifyEmailPath` config settings were set to a callable that called the `sites` service. ([#18605](https://github.com/craftcms/cms/issues/18605))
 - Fixed a bug where Matrix fields in Index view mode could be missing custom field columns. ([#18590](https://github.com/craftcms/cms/issues/18590))
 - Fixed a JavaScript error that could occur when opening a modal. ([#18612](https://github.com/craftcms/cms/pull/18612))
+- Fixed a bug where element chips and cards weren’t getting refreshed when a provisional draft’s changes were discarded in a different tab.
+- Fixed a bug where element attributes weren’t always updating when content changes were made.
 
 ## 5.9.17 - 2026-03-17
 

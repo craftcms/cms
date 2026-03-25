@@ -1071,9 +1071,10 @@ class ElementIndexesController extends BaseElementsController
         }
 
         $attributes = Craft::$app->getElementSources()->getTableAttributes(
-            $this->elementType,
-            $this->sourceKey,
-            $this->viewState['tableColumns'] ?? null,
+            elementType: $this->elementType,
+            sourceKey: $this->sourceKey,
+            customAttributes: $this->viewState['tableColumns'] ?? null,
+            fieldLayouts: $this->fieldLayouts,
         );
         $attributeHtml = [];
 
