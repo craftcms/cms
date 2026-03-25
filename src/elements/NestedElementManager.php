@@ -965,7 +965,7 @@ JS, [
                         } else {
                             // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
                             // its elements have been replaced by the other sites’ nested elements
-                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner)) {
+                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner) || !empty($owner->newSiteIds)) {
                                 $this->duplicateNestedElements($owner, $localizedOwner, force: true);
                             }
                         }
