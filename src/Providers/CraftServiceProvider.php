@@ -49,6 +49,7 @@ class CraftServiceProvider extends AggregateServiceProvider
         AppServiceProvider::class,
         IconServiceProvider::class,
         ConsoleServiceProvider::class,
+        ElementServiceProvider::class,
         EmailServiceProvider::class,
         GqlServiceProvider::class,
         PluginServiceProvider::class,
@@ -61,6 +62,5 @@ class CraftServiceProvider extends AggregateServiceProvider
         EntryServiceProvider::class,
         StructureServiceProvider::class,
         QueueServiceProvider::class,
-        ElementServiceProvider::class,
     ];
 }
