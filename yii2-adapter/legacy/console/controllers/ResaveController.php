@@ -386,7 +386,7 @@ class ResaveController extends Controller
      */
     public function actionTags(): int
     {
-        if (!DeprecatedConcepts::supportsCategories()) {
+        if (!DeprecatedConcepts::supportsTags()) {
             $this->stderr('Tags are not supported.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }

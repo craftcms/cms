@@ -20,7 +20,6 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Console\Command;
-use Illuminate\Console\View\TaskResult;
 use Throwable;
 
 use function CraftCms\Cms\normalizeValue;
@@ -313,14 +312,6 @@ abstract class ResaveCommand extends Command
             return self::SUCCESS;
         }
 
-        if ($query->offset) {
-            $count = max($count - (int) $query->offset, 0);
-        }
-
-        if ($query->limit) {
-            $count = min($count, (int) $query->limit);
-        }
-
         $to = $this->option('set') ? self::normalizeTo($this->option('to')) : null;
 
         $label = isset($this->resolvedPropagateTo) ? 'Propagating' : 'Resaving';
@@ -328,17 +319,7 @@ abstract class ResaveCommand extends Command
 
         $this->components->twoColumnDetail("$label $count $elementsText");
 
-        $elementsService = Craft::$app->getElements();
         $fail = false;
-        $elements = $query
-            ->cursor()
-            ->skip((int) ($query->offset ?? 0));
-
-        if ($query->limit) {
-            $elements = $elements->take((int) $query->limit);
-        }
-
-        $elements = $elements->values();
 
         $set = $this->option('set');
         $ifEmpty = (bool) $this->option('if-empty');
@@ -349,12 +330,14 @@ abstract class ResaveCommand extends Command
             $setEnabledForSite = (bool) normalizeValue($setEnabledForSite);
         }
 
-        $beforeCallback = function (MultiElementActionEvent $e) use ($query, $to, $set, $ifEmpty, $ifInvalid, $setEnabledForSite) {
+        $beforeCallback = function (MultiElementActionEvent $e) use ($count, $query, $to, $set, $ifEmpty, $ifInvalid, $setEnabledForSite) {
             if ($e->query !== $query) {
                 return;
             }
 
             $element = $e->element;
+
+            $this->getOutput()->write("  ⇂ [$e->position/$count] $element ($element->id) ");
 
             if (isset($this->resolvedPropagateTo)) {
                 $siteStatuses = ElementHelper::siteStatusesForElement($element);
@@ -395,70 +378,36 @@ abstract class ResaveCommand extends Command
             }
         };
 
-        foreach ($elements as $position => $element) {
-            $position++;
+        $afterCallback = function (MultiElementActionEvent $e) use ($query, &$fail) {
+            if ($e->query !== $query) {
+                return;
+            }
 
-            $this->components->task(
-                "⇂ [$position/$count] $element ($element->id)",
-                function () use ($elementsService, $position, $element, $query, $beforeCallback, &$fail) {
-                    $event = new MultiElementActionEvent([
-                        'query' => $query,
-                        'element' => $element,
-                        'position' => $position,
-                    ]);
+            $element = $e->element;
 
-                    try {
-                        $beforeCallback($event);
+            if ($e->exception) {
+                $this->error($e->exception->getMessage());
+                $fail = true;
+            } elseif ($element->errors()->isNotEmpty()) {
+                $this->error(implode(', ', $element->errors()->all()));
+                $fail = true;
+            } else {
+                $this->line('<fg=green>✔︎</>');
+            }
+        };
 
-                        if (isset($this->resolvedPropagateTo)) {
-                            $this->propagateElement($element, $elementsService);
-                        } else {
-                            if ($this->resolvedRevisions === false) {
-                                $label = $element->getUiLabel();
-                                $label = $label !== '' ? "$label ($element->id)" : sprintf('%s %s', $element::lowerDisplayName(), $element->id);
-
-                                try {
-                                    if (ElementHelper::isRevision($element)) {
-                                        throw new InvalidElementException($element, "Skipped resaving $label because it's a revision.");
-                                    }
-                                } catch (Throwable $rootException) {
-                                    throw new InvalidElementException($element, "Skipped resaving $label due to an error obtaining its root element: ".$rootException->getMessage());
-                                }
-                            }
-
-                            $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                            $element->resaving = true;
-                            $elementsService->saveElement(
-                                $element,
-                                updateSearchIndex: (bool) $this->option('update-search-index'),
-                                forceTouch: (bool) $this->option('touch'),
-                                saveContent: true,
-                            );
-                        }
-
-                        $event->exception = null;
-                    } catch (Throwable $exception) {
-                        report($exception);
-                        $event->exception = $exception;
-                    }
-
-                    if ($event->exception) {
-                        $this->components->error('error: '.$event->exception->getMessage());
-                        $fail = true;
-
-                        return TaskResult::Failure;
-                    }
-
-                    if ($element->errors()->isNotEmpty()) {
-                        $this->components->error('failed: '.implode(', ', $element->getErrorSummary(true)));
-                        $fail = true;
-
-                        return TaskResult::Failure;
-                    }
-
-                    return TaskResult::Success;
-                }
-            );
+        if (isset($this->resolvedPropagateTo)) {
+            Craft::$app->getElements()->on(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $beforeCallback);
+            Craft::$app->getElements()->on(Elements::EVENT_AFTER_PROPAGATE_ELEMENT, $afterCallback);
+            Craft::$app->getElements()->propagateElements($query, $this->resolvedPropagateTo, true);
+            Craft::$app->getElements()->off(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $beforeCallback);
+            Craft::$app->getElements()->off(Elements::EVENT_AFTER_PROPAGATE_ELEMENT, $afterCallback);
+        } else {
+            Craft::$app->getElements()->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
+            Craft::$app->getElements()->on(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
+            Craft::$app->getElements()->resaveElements($query, true, $this->resolvedRevisions === false, (bool) $this->option('update-search-index'), (bool) $this->option('touch'));
+            Craft::$app->getElements()->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
+            Craft::$app->getElements()->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
         }
 
         $label = isset($this->resolvedPropagateTo) ? 'propagating' : 'resaving';

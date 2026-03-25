@@ -1560,7 +1560,7 @@ class Elements extends Component
             $position = 0;
 
             try {
-                foreach (DbHelper::each($query) as $element) {
+                $query->each(function(ElementInterface $element) use ($continueOnError, $query, &$position, $skipRevisions, $touch, $updateSearchIndex) {
                     /** @var ElementInterface $element */
                     $position++;
 
@@ -1600,7 +1600,8 @@ class Elements extends Component
                         if (!$continueOnError) {
                             throw $e;
                         }
-                        Craft::$app->getErrorHandler()->logException($e);
+
+                        report($e);
                     }
 
                     // Fire an 'afterResaveElement' event
@@ -1612,7 +1613,7 @@ class Elements extends Component
                             'exception' => $e,
                         ]));
                     }
-                }
+                });
             } catch (QueryAbortedException) {
                 // Fail silently
             }
@@ -1659,7 +1660,7 @@ class Elements extends Component
             $position = 0;
 
             try {
-                foreach (DbHelper::each($query) as $element) {
+                $query->each(function(ElementInterface $element) use ($continueOnError, $query, &$position, $siteIds) {
                     /** @var ElementInterface $element */
                     $position++;
 
@@ -1701,7 +1702,8 @@ class Elements extends Component
                         if (!$continueOnError) {
                             throw $e;
                         }
-                        Craft::$app->getErrorHandler()->logException($e);
+
+                        report($e);
                     }
 
                     // Fire an 'afterPropagateElement' event
@@ -1719,7 +1721,7 @@ class Elements extends Component
 
                     // Clear caches
                     $this->invalidateCachesForElement($element);
-                }
+                });
             } catch (QueryAbortedException) {
                 // Fail silently
             }
