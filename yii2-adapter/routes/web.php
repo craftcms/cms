@@ -12,6 +12,7 @@ Route::any('{any}', function() {
     ->middleware([
         'web',
         'craft',
+        'craft.web',
         LegacyMiddleware::class,
     ])
     ->where('any', '.*')

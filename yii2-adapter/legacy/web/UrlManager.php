@@ -16,10 +16,10 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Twig\TemplateResolver;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 use yii\web\UrlRule as YiiUrlRule;
 use function CraftCms\Cms\backTraceAsString;
@@ -89,16 +89,6 @@ class UrlManager extends \yii\web\UrlManager
      * @var array Params that should be included in the
      */
     private array $_routeParams = [];
-
-    /**
-     * @var ElementInterface|false
-     */
-    private ElementInterface|false $_matchedElement;
-
-    /**
-     * @var mixed
-     */
-    private mixed $_matchedElementRoute = null;
 
     /**
      * Constructor.
@@ -230,22 +220,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function getMatchedElement(): ElementInterface|false
     {
-        if (!Craft::$app->getIsInitialized()) {
-            Log::warning(__METHOD__ . "() was called before the application was fully initialized.\n" . "Stack trace:\n" . backTraceAsString(), [__METHOD__]);
-        }
-
-        if (isset($this->_matchedElement)) {
-            return $this->_matchedElement;
-        }
-
-        $request = Craft::$app->getRequest();
-
-        if (app()->runningInConsole()) {
-            return false;
-        }
-
-        $this->_getMatchedElementRoute($request);
-        return $this->_matchedElement ?? false;
+        return Context::getHidden('craft.matchedElement', false);
     }
 
     /**
@@ -261,8 +236,9 @@ class UrlManager extends \yii\web\UrlManager
                 if (is_string($route)) {
                     $route = [$route, []];
                 }
-                $this->_matchedElement = $element;
-                $this->_matchedElementRoute = $route;
+
+                Context::addHidden('craft.matchedElement', $element);
+                Context::addHidden('craft.matchedElementRoute', $route);
                 return;
             }
 
@@ -270,8 +246,8 @@ class UrlManager extends \yii\web\UrlManager
             $element = false;
         }
 
-        $this->_matchedElement = $element ?? false;
-        $this->_matchedElementRoute = $element;
+        Context::addHidden('craft.matchedElement', $element ?? false);
+        Context::addHidden('craft.matchedElementRoute', $element);
     }
 
     /**
@@ -386,39 +362,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getMatchedElementRoute(Request $request): mixed
     {
-        if (isset($this->_matchedElementRoute)) {
-            return $this->_matchedElementRoute;
-        }
-
-        if (
-            !Cms::isInstalled() ||
-            !$request->getIsSiteRequest() ||
-            Cms::config()->headlessMode
-        ) {
-            $this->setMatchedElement(false);
-            return false;
-        }
-
-        $path = $request->getPathInfo();
-
-        // Don't allow routing to the homepage via /__home__
-        if ($path !== Element::HOMEPAGE_URI) {
-            $element = Craft::$app->getElements()->getElementByUri($path, Sites::getCurrentSite()->id, true);
-        } else {
-            $element = null;
-        }
-
-        $this->setMatchedElement($element ?: false);
-
-        if (app()->hasDebugModeEnabled()) {
-            Log::debug(Json::encode([
-                'rule' => 'Element URI: ' . $path,
-                'match' => $this->_matchedElement instanceof ElementInterface,
-                'parent' => null,
-            ]), [__METHOD__]);
-        }
-
-        return $this->_matchedElementRoute;
+        return Context::getHidden('craft.matchedElementRoute', false);
     }
 
     /**

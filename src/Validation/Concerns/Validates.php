@@ -14,6 +14,7 @@ use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use ReflectionClass;
+use Throwable;
 
 /**
  * @mixin Validatable
@@ -40,7 +41,11 @@ trait Validates
         Typecast::properties(static::class, $values);
 
         foreach ($values as $name => $value) {
-            $this->$name = $value;
+            try {
+                $this->$name = $value;
+            } catch (Throwable) {
+                // Property or setter doesn't exist
+            }
         }
     }
 
