@@ -77,9 +77,7 @@ const Cp = {
 
     await createInertiaApp({
       pages: '../pages',
-      setup({el, App, props, plugin}) {
-        const app = createApp({render: () => h(App, props)}).use(plugin);
-
+      withApp(app) {
         app.provide(Queue, queue);
         app.provide(Axios, axios);
         app.provide(Config, config);
@@ -95,8 +93,6 @@ const Cp = {
         app.component('ProjectConfig', ProjectConfig);
         app.component('AssetIndexes', AssetIndexes);
         app.component('SystemMessages', SystemMessages);
-
-        app.mount(el);
       },
     });
 

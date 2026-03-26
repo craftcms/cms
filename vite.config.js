@@ -64,8 +64,8 @@ export default defineConfig(({mode}) => {
       }),
       laravel({
         input: [
-          'resources/js/cp.js',
-          'resources/js/legacy.js',
+          'resources/js/cp.ts',
+          'resources/js/legacy.ts',
           'resources/css/cp.css',
         ],
         publicDirectory: 'resources',
