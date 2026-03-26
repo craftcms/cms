@@ -296,6 +296,23 @@ class Plugin extends Module implements PluginInterface
         return parent::getBasePath();
     }
 
+    public function getMigrationsPath(): string
+    {
+        $laravelPath = dirname($this->getBasePath()) . '/database/migrations';
+
+        if (File::isDirectory($laravelPath)) {
+            return $laravelPath;
+        }
+
+        $legacyPath = $this->getBasePath() . '/migrations';
+
+        if (File::isDirectory($legacyPath)) {
+            return $legacyPath;
+        }
+
+        return $laravelPath;
+    }
+
     /** {@inheritdoc} */
     public static function create(array $config): PluginInterface
     {
@@ -312,13 +329,43 @@ class Plugin extends Module implements PluginInterface
 
     public function createInstallMigration(): ?object
     {
-        if (!File::exists($this->getBasePath() . '/migrations/Install.php')) {
+        $path = $this->getMigrationsPath() . '/Install.php';
+
+        if (!File::exists($path)) {
             return null;
         }
 
-        $namespace = substr(static::class, 0, strrpos(static::class, '\\'));
-        $class = $namespace . '\migrations\Install';
+        $realPath = realpath($path);
+        $migration = $this->findMigrationClassByFile($realPath);
 
+        if ($migration !== null) {
+            return $this->wrapIfNeeded($migration);
+        }
+
+        $migration = require $path;
+
+        if (is_object($migration)) {
+            return $migration;
+        }
+
+        $migration = $this->findMigrationClassByFile($realPath);
+
+        return $migration !== null ? $this->wrapIfNeeded($migration) : null;
+    }
+
+    private function findMigrationClassByFile(string $realPath): ?string
+    {
+        foreach (array_reverse(get_declared_classes()) as $class) {
+            if ($realPath === (new \ReflectionClass($class))->getFileName()) {
+                return $class;
+            }
+        }
+
+        return null;
+    }
+
+    private function wrapIfNeeded(string $class): object
+    {
         if (!is_a($class, Migration::class, true)) {
             return new MigrationWrapper($class);
         }

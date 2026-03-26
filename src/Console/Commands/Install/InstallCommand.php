@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Console\Commands\Install;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Site\Concerns\SiteDefaults;
@@ -49,6 +50,7 @@ class InstallCommand extends Command
         GeneralConfig $generalConfig,
         I18N $i18n,
         Migrator $migrator,
+        LaravelMigrations $laravelMigrations,
     ): int {
         if (Cms::isInstalled(true)) {
             $this->components->warn('Craft is already installed!');
@@ -176,6 +178,8 @@ class InstallCommand extends Command
         foreach ($migrator->getPendingMigrations() as $file) {
             $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
+
+        $laravelMigrations->install($migrator);
 
         $this->ensureProjectConfigFileExists();
 
