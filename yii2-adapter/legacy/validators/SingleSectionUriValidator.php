@@ -12,7 +12,6 @@ use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -44,7 +43,7 @@ class SingleSectionUriValidator extends UriFormatValidator
             ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $model->siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
-            ->where(new Lower('elements_sites.uri'), mb_strtolower($model->uriFormat))
+            ->where('elements_sites.uriLower', mb_strtolower($model->uriFormat))
             ->when(
                 $section->id,
                 fn(Builder $query) => $query->join(new Alias(Table::ENTRIES, 'entries'), 'entries.id', '=', 'elements.id')

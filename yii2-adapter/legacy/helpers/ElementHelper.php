@@ -35,7 +35,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
-use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
 use Twig\Markup;
 use yii\base\Exception;
@@ -268,7 +267,7 @@ class ElementHelper
             ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $element->siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
-            ->where(new Lower('elements_sites.uri'), mb_strtolower($testUri))
+            ->where('elements_sites.uriLower', mb_strtolower($testUri))
             ->when(
                 value: $sourceId = $element->getCanonicalId(),
                 callback: fn(Builder $query) => $query->whereNot('elements.id', $sourceId),

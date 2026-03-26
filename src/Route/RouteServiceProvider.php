@@ -19,6 +19,8 @@ use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
+use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
+use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\RunQueue;
@@ -117,9 +119,11 @@ class RouteServiceProvider extends ServiceProvider
     private function bootMaintenanceModeExceptions(): void
     {
         PreventRequestsDuringMaintenance::except([
+            action([UpdaterController::class, 'precheck']),
             action([UpdaterController::class, 'finish']),
             action([UpdaterController::class, 'backup']),
             action([UpdaterController::class, 'serverCheck']),
+            action([UpdaterController::class, 'migrate']),
             action([ConfigSyncController::class, 'finish']),
             action([PluginStoreInstallController::class, 'finish']),
             action([PluginStoreRemoveController::class, 'finish']),
@@ -145,12 +149,15 @@ class RouteServiceProvider extends ServiceProvider
             CheckRequirements::class,
             HandleInertiaRequests::class,
             EnforceLicenses::class,
+            HandleTemplateRequest::class,
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
 
         collect([
             'web',
             AuthenticateSession::class,
             RunQueue::class,
+            HandleMatchedElementRoute::class,
+            HandleTemplateRequest::class,
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
     }
 }

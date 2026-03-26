@@ -9,6 +9,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
@@ -37,5 +38,8 @@ class UnitTestCase extends Orchestra
 
         Config::set('app.timezone', 'America/Los_Angeles');
         date_default_timezone_set('America/Los_Angeles');
+
+        File::cleanDirectory(config_path('craft/project'));
+        File::cleanDirectory(storage_path('runtime/compiled_classes'));
     }
 }

@@ -22,7 +22,7 @@ readonly class AddLogContext
         Log::shareContext(array_filter([
             'environment' => app()->environment(),
             'userId' => $request->user()?->id,
-            'sessionId' => $request->session()->getId(),
+            'sessionId' => $request->hasSession() ? $request->session()->getId() : null,
             'ips' => $this->generalConfig->storeUserIps ? $request->ips() : null,
         ]));
 

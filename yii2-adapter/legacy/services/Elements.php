@@ -88,7 +88,6 @@ use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
-use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
 use UnitEnum;
 use yii\base\Behavior;
@@ -964,7 +963,7 @@ class Elements extends Component
             ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', 'elements.id')
             ->where('elements_sites.siteId', $siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
-            ->where(new Lower('elements_sites.uri'), mb_strtolower($uri))
+            ->where('elements_sites.uriLower', mb_strtolower($uri))
             ->when(
                 $enabledOnly,
                 fn(Builder $query) => $query->where([
