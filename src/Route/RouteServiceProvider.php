@@ -119,9 +119,11 @@ class RouteServiceProvider extends ServiceProvider
     private function bootMaintenanceModeExceptions(): void
     {
         PreventRequestsDuringMaintenance::except([
+            action([UpdaterController::class, 'precheck']),
             action([UpdaterController::class, 'finish']),
             action([UpdaterController::class, 'backup']),
             action([UpdaterController::class, 'serverCheck']),
+            action([UpdaterController::class, 'migrate']),
             action([ConfigSyncController::class, 'finish']),
             action([PluginStoreInstallController::class, 'finish']),
             action([PluginStoreRemoveController::class, 'finish']),

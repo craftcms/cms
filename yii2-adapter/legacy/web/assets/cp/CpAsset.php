@@ -279,7 +279,7 @@ JS;
                 ?? 'end',
             'previewIframeResizerOptions' => $this->_previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
-            'primarySiteLanguage' => $primarySite->getLanguage(),
+            'primarySiteLanguage' => $primarySite?->getLanguage(),
             'publishableSections' => $upToDate ? $this->_publishableSections($currentUser) : [],
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
