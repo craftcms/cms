@@ -20,6 +20,7 @@
 - Fixed a bug where element chips and cards weren’t getting refreshed when a provisional draft’s changes were discarded in a different tab.
 - Fixed a bug where element attributes weren’t always updating when content changes were made.
 - Fixed a bug where successive edits to nested elements were forgotten. ([#18624](https://github.com/craftcms/cms/issues/18624))
+- Fixed a bug where nested elements weren’t getting duplicated when a new site was added to the owner element. ([#18621](https://github.com/craftcms/cms/issues/18621))
 
 ## 5.9.17 - 2026-03-17
 
