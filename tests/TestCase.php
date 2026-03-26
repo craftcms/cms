@@ -190,7 +190,7 @@ class TestCase extends Orchestra
                 password: 'craftcms2018!!',
                 email: 'support@craftcms.com',
                 site: $site,
-            );
+            )->silent();
 
             Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 
@@ -220,7 +220,7 @@ class TestCase extends Orchestra
         $app->bootstrapWith([LoadEnvironmentVariables::class]);
 
         tap($app->make(ConfigRepository::class), function (ConfigRepository $config) {
-            $config->set('inertia.testing.page_paths', [__DIR__.'/../resources/js/pages']);
+            $config->set('inertia.pages.paths', [__DIR__.'/../resources/js/pages']);
             $config->set('auth.defaults.guard', 'craft');
 
             $connection = env('DB_CONNECTION', 'testing');

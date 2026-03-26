@@ -11,7 +11,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Throwable;
 use yii\base\Application as BaseApplication;
 use yii\web\Cookie;
@@ -234,7 +234,7 @@ class Response extends \CraftCms\Yii2Adapter\Web\Response
     public function redirect($url, $statusCode = 302, $checkAjax = true): self
     {
         if (is_string($url)) {
-            $url = URL::encodeUrl(URL::url($url));
+            $url = Url::encodeUrl(Url::url($url));
         }
 
         if ($this->format === TemplateResponseFormatter::FORMAT) {

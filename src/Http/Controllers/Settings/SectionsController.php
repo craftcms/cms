@@ -21,7 +21,7 @@ use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -73,7 +73,7 @@ readonly class SectionsController
 
         return Inertia::render('SettingsSectionsIndexPage', [
             'crumbs' => fn () => [
-                ['label' => t('Settings'), 'url' => URL::cpUrl('settings')],
+                ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
                 ['label' => t('Sections')],
             ],
             'title' => t('Sections'),

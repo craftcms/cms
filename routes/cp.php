@@ -52,12 +52,14 @@ use Illuminate\Support\Facades\Storage;
  */
 Route::get('install', [InstallController::class, 'index']);
 
-Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
-Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
-Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
-Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
-Route::get(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'show']);
-Route::post(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'store']);
+Route::middleware('craft.web')->group(function () {
+    Route::get(CpAuthPath::Login->value, [LoginController::class, 'showLogin']);
+    Route::get(CpAuthPath::TwoFactorChallenge->value, [TwoFactorAuthenticationController::class, 'showForm']);
+    Route::get(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'show']);
+    Route::post(CpAuthPath::SetPassword->value, [SetPasswordController::class, 'store']);
+    Route::get(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'show']);
+    Route::post(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'store']);
+});
 
 /**
  * Admin requests that require a login

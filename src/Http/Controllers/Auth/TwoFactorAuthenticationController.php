@@ -76,9 +76,9 @@ readonly class TwoFactorAuthenticationController
         if (! $returnUrl) {
             if ($request->isCpRequest()) {
                 // explicitly set the default return URL here, since checkPermission('accessCp') will be false
-                $defaultReturnUrl = \CraftCms\Cms\Support\URL::cpUrl($this->generalConfig->getPostCpLoginRedirect());
+                $defaultReturnUrl = \CraftCms\Cms\Support\Url::cpUrl($this->generalConfig->getPostCpLoginRedirect());
             } else {
-                $defaultReturnUrl = \CraftCms\Cms\Support\URL::siteUrl($this->generalConfig->getPostLoginRedirect());
+                $defaultReturnUrl = \CraftCms\Cms\Support\Url::siteUrl($this->generalConfig->getPostLoginRedirect());
             }
 
             $returnUrl = URL::returnUrl($defaultReturnUrl);

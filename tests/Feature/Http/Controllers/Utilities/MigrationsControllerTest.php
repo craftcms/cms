@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Utility\Utilities\Migrations;
 
@@ -24,10 +24,10 @@ test('unauthorized users cannot access migrations utility', function () {
 
 test('successful migration', function () {
     post(action(MigrationsController::class))
-        ->assertRedirect(URL::cpUrl('utilities/migrations'));
+        ->assertRedirect(Url::cpUrl('utilities/migrations'));
 });
 
 test('migration handles exceptions', function () {
     post(action(MigrationsController::class))
-        ->assertRedirect(URL::cpUrl('utilities/migrations'));
+        ->assertRedirect(Url::cpUrl('utilities/migrations'));
 });

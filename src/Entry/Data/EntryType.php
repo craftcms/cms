@@ -27,7 +27,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Support\Facades\Auth;
 use Stringable;
@@ -224,7 +224,7 @@ JS, [
             return null;
         }
 
-        return URL::cpUrl("settings/entry-types/$this->id");
+        return Url::cpUrl("settings/entry-types/$this->id");
     }
 
     /**

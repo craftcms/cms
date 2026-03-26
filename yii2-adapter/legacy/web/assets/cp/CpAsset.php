@@ -50,7 +50,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
@@ -176,11 +176,11 @@ JS;
             'Pro' => Edition::Pro->value,
             'Enterprise' => Edition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
-            'actionUrl' => URL::actionUrl(),
+            'actionUrl' => Url::actionUrl(),
             'asciiCharMap' => Str::asciiCharMap(true, app()->getLocale()),
             'baseApiUrl' => Api::craftApiEndpoint(),
-            'baseSiteUrl' => URL::siteUrl(),
-            'baseUrl' => URL::url(),
+            'baseSiteUrl' => Url::siteUrl(),
+            'baseUrl' => Url::url(),
             'clientOs' => $request->getClientOs(),
             'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
@@ -212,7 +212,7 @@ JS;
         if ($request->getIsCpRequest()) {
             $data += [
                 'announcements' => $upToDate ? app(Announcements::class)->get() : [],
-                'baseCpUrl' => URL::cpUrl(),
+                'baseCpUrl' => Url::cpUrl(),
                 'cpTrigger' => $generalConfig->cpTrigger,
             ];
         }

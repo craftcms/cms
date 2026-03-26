@@ -49,7 +49,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\Enums\Position;
@@ -216,7 +216,7 @@ class ElementsController extends Controller
             throw new ServerErrorHttpException('The element doesn’t have an edit page.');
         }
 
-        $editUrl = URL::removeParam(URL::cpUrl('edit'), 'site');
+        $editUrl = Url::removeParam(Url::cpUrl('edit'), 'site');
         if (str_starts_with($url, $editUrl)) {
             /** @var UrlManager $urlManager */
             $urlManager = Craft::$app->getUrlManager();
@@ -251,7 +251,7 @@ class ElementsController extends Controller
         }
 
         // Redirect to its edit page
-        $editUrl = $element->getCpEditUrl() ?? URL::actionUrl('elements/edit', [
+        $editUrl = $element->getCpEditUrl() ?? Url::actionUrl('elements/edit', [
             'draftId' => $element->draftId,
             'siteId' => $element->siteId,
         ]);
@@ -263,7 +263,7 @@ class ElementsController extends Controller
         ]));
 
         if (!$this->request->getAcceptsJson()) {
-            $response->redirect(URL::urlWithParams($editUrl, ['fresh' => '1']));
+            $response->redirect(Url::urlWithParams($editUrl, ['fresh' => '1']));
         }
 
         return $response;
@@ -375,7 +375,7 @@ class ElementsController extends Controller
         [$docTitle, $title] = $this->_editElementTitles($element);
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
-        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? URL::cpReferralUrl() ?? ElementHelper::postEditUrl($element);
+        $redirectUrl = $this->request->getValidatedQueryParam('returnUrl') ?? Url::cpReferralUrl() ?? ElementHelper::postEditUrl($element);
 
         // Site statuses
         if ($canEditMultipleSites) {
@@ -870,7 +870,7 @@ JS, [
 
         $isDraft = $element->getIsDraft();
         $isRevision = $element->getIsRevision();
-        $cpEditUrl = URL::cpUrl($element->getCpEditUrl(), [
+        $cpEditUrl = Url::cpUrl($element->getCpEditUrl(), [
             'draftId' => null,
             'revisionId' => null,
         ]);
@@ -926,7 +926,7 @@ JS, [
                                 'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
                             ])),
-                        'url' => URL::urlWithParams($cpEditUrl, array_merge($baseParams, [
+                        'url' => Url::urlWithParams($cpEditUrl, array_merge($baseParams, [
                             'draftId' => $draft->draftId,
                         ])),
                         'selected' => $draft->id === $element->id,
@@ -957,7 +957,7 @@ JS, [
                                 'timestampWithDate' => $timestampWithDate,
                                 'timestamp' => $timestamp,
                             ])),
-                        'url' => URL::urlWithParams($cpEditUrl, array_merge($baseParams, [
+                        'url' => Url::urlWithParams($cpEditUrl, array_merge($baseParams, [
                             'revisionId' => $revision->revisionId,
                         ])),
                         'selected' => $revision->id === $element->id,
@@ -2978,9 +2978,9 @@ JS, [
             $url = $newElement->getCpEditUrl();
 
             if ($url) {
-                $url = URL::urlWithParams($url, ['fresh' => 1]);
+                $url = Url::urlWithParams($url, ['fresh' => 1]);
             } else {
-                $url = URL::actionUrl('elements/edit', [
+                $url = Url::actionUrl('elements/edit', [
                     'draftId' => $newElement->draftId,
                     'siteId' => $newElement->siteId,
                     'fresh' => 1,

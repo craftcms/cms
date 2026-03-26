@@ -13,7 +13,7 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use DateTime;
 use Exception;
 use Illuminate\Validation\Rule;
@@ -185,7 +185,7 @@ JS,
             Html::hiddenInput('rangeType', $this->rangeType, [
                 'id' => $inputId,
                 'hx' => [
-                    'post' => URL::actionUrl('conditions/render'),
+                    'post' => Url::actionUrl('conditions/render'),
                 ],
             ]);
 

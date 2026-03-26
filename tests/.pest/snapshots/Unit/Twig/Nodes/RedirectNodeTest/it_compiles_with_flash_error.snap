@@ -1,3 +1,3 @@
 // line 1
 Craft::$app->getSession()->setError("You must log in first");
-redirect(CraftCms\Cms\Support\URL::url("/login"), 302)->throwResponse();
+redirect(CraftCms\Cms\Support\Url::url("/login"), 302)->throwResponse();

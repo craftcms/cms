@@ -78,7 +78,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
@@ -1290,7 +1290,7 @@ class Asset extends Element
         $crumbs = [
             [
                 'label' => t('Assets'),
-                'url' => URL::cpUrl('assets'),
+                'url' => Url::cpUrl('assets'),
             ],
         ];
 
@@ -1335,7 +1335,7 @@ class Asset extends Element
                 $uri .= "/$subfolder";
                 $crumbs[] = [
                     'label' => $subfolder,
-                    'url' => URL::cpUrl($uri),
+                    'url' => Url::cpUrl($uri),
                 ];
             }
         }
@@ -1368,12 +1368,12 @@ class Asset extends Element
         $filename = preg_replace('/\s+/', '-', $this->getFilename(false));
         $path = "assets/edit/$this->id-$filename";
 
-        return URL::cpUrl($path);
+        return Url::cpUrl($path);
     }
 
     public function getPostEditUrl(): string
     {
-        return URL::cpUrl('assets');
+        return Url::cpUrl('assets');
     }
 
     #[Override]
@@ -1441,7 +1441,7 @@ JS, [
                 'type' => MenuItemType::Link,
                 'icon' => 'magnifying-glass',
                 'label' => t('Show in folder'),
-                'url' => URL::actionUrl('assets/show-in-folder', [
+                'url' => Url::actionUrl('assets/show-in-folder', [
                     'assetId' => $this->id,
                 ]),
             ];
@@ -2786,7 +2786,7 @@ JS;
         if (! $isTemp) {
             $uri = "assets/$volume->handle";
             $items = [
-                Html::a(t(Html::encode($volume->name), category: 'site'), URL::cpUrl($uri)),
+                Html::a(t(Html::encode($volume->name), category: 'site'), Url::cpUrl($uri)),
             ];
         } else {
             $items = [
@@ -2798,7 +2798,7 @@ JS;
             foreach ($subfolders as $subfolder) {
                 if (! $isTemp) {
                     $uri .= "/$subfolder";
-                    $items[] = Html::a($subfolder, URL::cpUrl($uri));
+                    $items[] = Html::a($subfolder, Url::cpUrl($uri));
                 } else {
                     $items[] = Html::tag('span', $subfolder);
                 }

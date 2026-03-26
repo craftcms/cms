@@ -16,7 +16,7 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Facades\Crypt;
 use yii\base\Component;
@@ -101,7 +101,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $errorSummary = $behavior->errorSummary ? InputNamespace::namespaceInputs($behavior->errorSummary, $namespace) : null;
 
         $response->data = [
-            'editUrl' => $behavior->editUrl ? URL::cpUrl($behavior->editUrl) : null,
+            'editUrl' => $behavior->editUrl ? Url::cpUrl($behavior->editUrl) : null,
             'namespace' => $namespace,
             'title' => $behavior->title,
             'notice' => $notice,
@@ -183,7 +183,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'selectedSubnavItem' => $behavior->selectedSubnavItem,
                 'crumbs' => array_map(function(array $crumb): array {
                     if (isset($crumb['url'])) {
-                        $crumb['url'] = URL::cpUrl($crumb['url']);
+                        $crumb['url'] = Url::cpUrl($crumb['url']);
                     }
                     return $crumb;
                 }, $crumbs ?? []),

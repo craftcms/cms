@@ -183,7 +183,7 @@ class Html
         }
 
         HtmlStack::html(template('_special/async-csrf-input', [
-            'url' => URL::actionUrl('users/session-info'),
+            'url' => Url::actionUrl('users/session-info'),
         ], templateMode: TemplateMode::Cp));
 
         return self::tag('craft-csrf-input');
@@ -308,7 +308,7 @@ class Html
     {
         if ($url !== null) {
             // Use UrlHelper::url() instead of Url::to()
-            $options['href'] = URL::url($url);
+            $options['href'] = Url::url($url);
         }
 
         return self::tag('a', $text, $options);

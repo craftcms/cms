@@ -17,7 +17,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -348,7 +348,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                                 ],
                                 'hx' => [
                                     'vals' => ['uid' => $rule->uid],
-                                    'post' => URL::actionUrl('conditions/remove-rule'),
+                                    'post' => Url::actionUrl('conditions/remove-rule'),
                                 ],
                             ]).
                             Html::endTag('div');
@@ -374,7 +374,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                     $this->sortable ? 'sortable' : null,
                 ]),
                 'hx' => [
-                    'post' => URL::actionUrl('conditions/render'),
+                    'post' => Url::actionUrl('conditions/render'),
                     'trigger' => 'end', // sortable library triggers this event
                 ],
             ]
@@ -568,7 +568,7 @@ JS,
             Html::hiddenInput($rule ? 'type' : 'new-rule-type', $ruleValue, [
                 'id' => $inputId,
                 'hx' => [
-                    'post' => URL::actionUrl('conditions/render'),
+                    'post' => Url::actionUrl('conditions/render'),
                 ],
             ]);
     }
