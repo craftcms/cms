@@ -44,7 +44,7 @@ trait Validates
         foreach ($values as $name => $value) {
             try {
                 $this->$name = $value;
-            } catch (UnknownPropertyException|InvalidCallException) {
+            } catch (UnknownPropertyException|InvalidCallException|\yii\base\UnknownPropertyException) {
                 // Property or setter doesn't exist
             }
         }
