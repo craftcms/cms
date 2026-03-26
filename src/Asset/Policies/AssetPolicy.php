@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Policies;
 
-use craft\helpers\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\User\Elements\User;
 
-final class AssetPolicy extends ElementPolicy
+class AssetPolicy extends ElementPolicy
 {
     public function view(User $user, Asset $asset): bool
     {
@@ -23,7 +23,7 @@ final class AssetPolicy extends ElementPolicy
             return $user->can("viewPeerAssets:$volume->uid");
         }
 
-        if (Assets::isTempUploadFs($volume->getFs())) {
+        if (AssetsHelper::isTempUploadFs($volume->getFs())) {
             return true;
         }
 
@@ -49,7 +49,7 @@ final class AssetPolicy extends ElementPolicy
 
         $volume = $asset->getVolume();
 
-        if (Assets::isTempUploadFs($volume->getFs())) {
+        if (AssetsHelper::isTempUploadFs($volume->getFs())) {
             return true;
         }
 

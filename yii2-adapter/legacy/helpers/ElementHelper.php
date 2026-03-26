@@ -12,6 +12,7 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementSources;
@@ -26,6 +27,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use DateTime;
@@ -897,7 +899,7 @@ class ElementHelper
                 'title' => t('Visit webpage'),
                 'aria-label' => t('View'),
             ]) .
-            Html::tag('span', Cp::iconSvg('world'), [
+            Html::tag('span', Icons::svg('world'), [
                 'class' => ['cp-icon', 'small', 'inline-flex'],
             ]) .
             Html::endTag('a');
@@ -962,7 +964,7 @@ class ElementHelper
             return static::addElementEditorUrlParams($url, $element);
         }
 
-        return UrlHelper::cpUrl($url);
+        return URL::cpUrl($url);
     }
 
     /**
@@ -988,7 +990,7 @@ class ElementHelper
             $params['revisionId'] = $element->revisionId;
         }
 
-        return UrlHelper::cpUrl($url, $params);
+        return URL::cpUrl($url, $params);
     }
 
     /**
@@ -1027,7 +1029,7 @@ class ElementHelper
             $url .= "-$element->slug";
         }
 
-        return UrlHelper::cpUrl($url);
+        return URL::cpUrl($url);
     }
 
     /**

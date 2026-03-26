@@ -11,7 +11,7 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class RequireAdminNode extends Node
+class RequireAdminNode extends Node
 {
     #[Override]
     public function compile(Compiler $compiler): void

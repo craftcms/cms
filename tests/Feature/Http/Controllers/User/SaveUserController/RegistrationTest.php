@@ -12,6 +12,7 @@ use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
@@ -209,7 +210,7 @@ it('does not auto-login user after registration', function () {
 
 it('can upload a photo for new user', function () {
     // @TODO: Bulk ops cause issues
-    if (\Illuminate\Support\Facades\DB::isMysql()) {
+    if (DB::isMysql()) {
         $this->markTestSkipped('Bulk ops cause issues with MySQL');
     }
 

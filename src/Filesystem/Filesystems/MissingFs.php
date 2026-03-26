@@ -8,7 +8,7 @@ use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
 use RuntimeException;
 
-final class MissingFs extends Filesystem implements MissingComponentInterface
+class MissingFs extends Filesystem implements MissingComponentInterface
 {
     use MissingComponentTrait;
 

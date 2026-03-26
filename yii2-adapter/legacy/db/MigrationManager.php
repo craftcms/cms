@@ -233,7 +233,7 @@ class MigrationManager extends Component
 
         Log::info("Applying $migrationName", [__METHOD__]);
 
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
+        $isConsoleRequest = app()->runningInConsole();
 
         if (!$isConsoleRequest) {
             ob_start();
@@ -296,7 +296,7 @@ class MigrationManager extends Component
 
         Log::info("Reverting $migrationName", [__METHOD__]);
 
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
+        $isConsoleRequest = app()->runningInConsole();
 
         if (!$isConsoleRequest) {
             ob_start();

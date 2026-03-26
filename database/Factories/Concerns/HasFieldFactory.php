@@ -4,21 +4,25 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database\Factories\Concerns;
 
+use Craft;
 use CraftCms\Cms\Database\Factories\ElementFactoryResult;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\Factory\FactoryFieldConfig;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Collection;
+use Override;
 
 /**
  * Trait for element factories that need to create elements with custom fields.
  *
- * @mixin \Illuminate\Database\Eloquent\Factories\Factory
+ * @mixin Factory
  */
 trait HasFieldFactory
 {
@@ -65,21 +69,25 @@ trait HasFieldFactory
 
     /**
      * Create the element with configured fields and return a result object.
+     *
+     * When `$save` is true (the default), the element is saved via `saveElement()`
+     * and re-queried from the database, ensuring field values are persisted.
      */
-    public function createElementWithFields(array $attributes = []): ElementFactoryResult
+    public function createElementWithFields(array $attributes = [], bool $save = true): ElementFactoryResult
     {
+        $factory = $this->extractElementAttributes($attributes);
+
         /** @var Collection<string, Field> $fields */
         $fields = collect();
 
-        if (empty($this->fieldConfigs)) {
+        if (empty($factory->fieldConfigs)) {
             return new ElementFactoryResult(
-                element: $this->createElement($attributes),
+                element: $factory->createElement($attributes),
                 fields: $fields,
             );
         }
 
-        // Create all fields
-        foreach ($this->fieldConfigs as $config) {
+        foreach ($factory->fieldConfigs as $config) {
             $field = Field::factory()->create([
                 'name' => Str::title($config->handle),
                 'handle' => $config->handle,
@@ -89,29 +97,29 @@ trait HasFieldFactory
             $fields->put($config->handle, $field);
         }
 
-        // Create field layout with all fields
         $fieldLayout = FieldLayout::create([
-            'type' => $this->getElementClass(),
-            'config' => $this->buildFieldLayoutConfig($fields),
+            'type' => $factory->getElementClass(),
+            'config' => $factory->buildFieldLayoutConfig($fields),
         ]);
 
-        // Create the model and link field layout
-        $model = $this->create($attributes);
-        $this->attachFieldLayoutToModel($model, $fieldLayout);
+        $model = $factory->create($attributes);
+        $factory->attachFieldLayoutToModel($model, $fieldLayout);
 
-        // Refresh caches
-        $this->refreshFieldCaches();
+        $factory->refreshFieldCaches();
 
-        // Query for the element
-        $element = $this->queryElement($model->id);
-        $element->setScenario($this->elementScenario ?? Element::SCENARIO_DEFAULT);
+        $element = $factory->queryElement($model->id);
+        $element->setScenario($factory->elementScenario ?? Element::SCENARIO_DEFAULT);
         $element->title = $element->title ?: 'Test entry';
 
-        // Set field values
-        foreach ($this->fieldConfigs as $config) {
+        foreach ($factory->fieldConfigs as $config) {
             if ($config->value !== null) {
                 $element->setFieldValue($config->handle, $config->value);
             }
+        }
+
+        if ($save) {
+            Craft::$app->getElements()->saveElement($element);
+            $element = $factory->queryElement($model->id);
         }
 
         return new ElementFactoryResult(
@@ -159,6 +167,40 @@ trait HasFieldFactory
     {
         EntryTypes::refreshEntryTypes();
         Fields::refreshFields();
+    }
+
+    /**
+     * Extract title and slug from attributes and apply them as factory state.
+     *
+     * Returns a new factory instance with the state applied. The attributes
+     * array is modified by reference to remove the extracted keys.
+     */
+    protected function extractElementAttributes(array &$attributes): static
+    {
+        $factory = clone $this;
+
+        if (Arr::has($attributes, 'title')) {
+            $factory = $factory->title(Arr::pull($attributes, 'title'));
+        }
+
+        if (Arr::has($attributes, 'slug')) {
+            return $factory->slug(Arr::pull($attributes, 'slug'));
+        }
+
+        return $factory;
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     */
+    #[Override]
+    protected function newInstance(array $arguments = []): static
+    {
+        $instance = parent::newInstance($arguments);
+        $instance->fieldConfigs = $this->fieldConfigs;
+        $instance->elementScenario = $this->elementScenario;
+
+        return $instance;
     }
 
     /**

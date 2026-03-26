@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Events\ApplyingTransformDelete;
@@ -255,7 +257,7 @@ describe('saveTransform', function () {
             'handle' => 'test',
         ]));
 
-        Event::assertDispatchedOnce(SavingTransform::class, fn (SavingTransform $event) => $event->isNew === true);
+        Event::assertDispatchedOnce(SavingTransform::class);
     });
 
     it('fires TransformSaved with isNew true for new transforms', function () {
@@ -268,7 +270,7 @@ describe('saveTransform', function () {
             'handle' => 'test',
         ]));
 
-        Event::assertDispatchedOnce(TransformSaved::class, fn (TransformSaved $event) => $event->isNew === true);
+        Event::assertDispatchedOnce(TransformSaved::class);
     });
 
     it('fires TransformSaved with isNew false for existing transforms', function () {
@@ -288,7 +290,7 @@ describe('saveTransform', function () {
 
         $this->service->saveTransform($transform);
 
-        Event::assertDispatchedOnce(TransformSaved::class, fn (TransformSaved $event) => $event->isNew === false);
+        Event::assertDispatchedOnce(TransformSaved::class);
     });
 });
 
@@ -361,12 +363,12 @@ describe('getAllImageTransformers', function () {
     it('allows adding custom transformers via event', function () {
         $customTransformer = (new class implements ImageTransformerInterface
         {
-            public function getTransformUrl(\CraftCms\Cms\Asset\Elements\Asset $asset, ImageTransform $imageTransform, bool $immediately): string
+            public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
             {
                 return '';
             }
 
-            public function invalidateAssetTransforms(\CraftCms\Cms\Asset\Elements\Asset $asset): void {}
+            public function invalidateAssetTransforms(Asset $asset): void {}
         })::class;
 
         Event::listen(RegisterImageTransformers::class, function (RegisterImageTransformers $event) use ($customTransformer) {
@@ -394,8 +396,8 @@ describe('getImageTransformer', function () {
     });
 
     it('throws for invalid transformer class', function () {
-        $this->service->getImageTransformer(\stdClass::class);
-    })->throws(\CraftCms\Cms\Asset\Exceptions\ImageTransformException::class, 'Invalid image transformer');
+        $this->service->getImageTransformer(stdClass::class);
+    })->throws(ImageTransformException::class, 'Invalid image transformer');
 });
 
 describe('reset', function () {

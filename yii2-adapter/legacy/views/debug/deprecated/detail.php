@@ -1,8 +1,8 @@
 <?php
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\URL;
 use yii\helpers\Markdown;
 use function CraftCms\Cms\t;
 
@@ -49,5 +49,5 @@ $logs = $panel->data;
     </div>
 <?php endif; ?>
 
-<p><a href="<?= UrlHelper::cpUrl('utilities/deprecation-errors') ?>"
+<p><a href="<?= URL::cpUrl('utilities/deprecation-errors') ?>"
       target="_parent">View all deprecation warnings</a></p>

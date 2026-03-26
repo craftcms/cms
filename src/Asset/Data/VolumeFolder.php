@@ -10,17 +10,14 @@ use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Traits\Macroable;
 use Override;
 use RuntimeException;
 use Stringable;
 
 use function CraftCms\Cms\t;
 
-final class VolumeFolder extends Component implements Stringable
+class VolumeFolder extends Component implements Stringable
 {
-    use Macroable;
-
     public ?int $id = null;
 
     public int|string|null $parentId = null;

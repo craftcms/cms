@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\Serializable;
-use craft\gql\types\QueryArgument;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
-use craft\models\GqlSchema;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
@@ -36,6 +31,9 @@ use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\FieldElementEvent;
 use CraftCms\Cms\Field\Events\FieldEvent;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Types\QueryArgument;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -44,6 +42,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -53,7 +52,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Override;
@@ -67,7 +65,6 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 {
     use ConfigurableComponent;
     use HasComponentEvents;
-    use Macroable;
     use SavableComponent;
 
     // Translation methods
@@ -542,7 +539,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return null;
         }
 
-        return UrlHelper::cpUrl("settings/fields/edit/$this->id");
+        return URL::cpUrl("settings/fields/edit/$this->id");
     }
 
     public function getActionMenuItems(): array
@@ -820,8 +817,7 @@ JS, [
 
         // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
         // see https://github.com/craftcms/cms/issues/15609
-        $db = Craft::$app->getDb();
-        if ($db->getIsMysql() && is_string($dbType) && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
+        if (DB::isMysql() && is_string($dbType) && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
             $orderBy = new Cast($orderBy, 'CHAR(255)');
         }
 

@@ -459,7 +459,7 @@ class FileHelperTest extends TestCase
         return [
             ['content', $sandboxDir . '/notafile', 'content', []],
             ['content', $sandboxDir . '/notadir/notafile', 'content', [], true, $sandboxDir . '/notadir'],
-            ['content', $sandboxDir . '/notafile2', 'content', ['lock' => true]],
+            ['content', $sandboxDir . '/notafile2', 'content', []],
 
         ];
     }

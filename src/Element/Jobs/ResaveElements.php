@@ -14,7 +14,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use Override;
 use Throwable;
 
-final class ResaveElements extends BatchedElementJob
+class ResaveElements extends BatchedElementJob
 {
     /**
      * Creates a new ResaveElements job.

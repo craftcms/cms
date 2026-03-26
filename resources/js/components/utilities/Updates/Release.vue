@@ -85,19 +85,19 @@
 
 <style scoped lang="scss">
   .release {
-    --_border-color: var(--c-color-neutral-border-subtle);
-    --_bg-color: var(--c-color-neutral-bg-subtle);
+    --_border-color: var(--c-color-neutral-border-quiet);
+    --_bg-color: var(--c-color-neutral-fill-quiet);
 
     background-color: var(--_bg-color);
     border: 1px solid var(--_border-color);
-    color: var(--c-color-neutral-on-subtle);
+    color: var(--c-color-neutral-on-quiet);
     border-radius: var(--c-radius-md);
     overflow: hidden;
   }
 
   .release--critical {
-    --_border-color: var(--c-color-danger-border-subtle);
-    --_bg-color: var(--c-color-danger-bg-subtle);
+    --_border-color: var(--c-color-danger-border-quiet);
+    --_bg-color: var(--c-color-danger-fill-quiet);
   }
 
   .release-trigger,
@@ -114,7 +114,7 @@
     cursor: pointer;
 
     &:hover {
-      background-color: var(--c-color-neutral-bg-hover);
+      background-color: var(--c-color-neutral-fill-normal);
     }
   }
 
@@ -138,8 +138,8 @@
   }
 
   .release-badge {
-    background: var(--c-color-danger-bg);
-    color: var(--c-color-danger-on);
+    background: var(--c-color-danger-fill-loud);
+    color: var(--c-color-danger-on-loud);
     padding: 0.125em 0.5em;
     border-radius: var(--c-radius-sm);
     font-size: 0.75em;
@@ -148,14 +148,14 @@
   }
 
   .release-date {
-    color: var(--c-color-neutral-text-muted);
+    color: var(--c-text-quiet);
     font-size: 0.875em;
   }
 
   .release-notes {
     padding: var(--c-spacing-md);
     border-top: 1px solid var(--_border-color);
-    background-color: var(--c-bg-overlay);
+    background-color: var(--c-surface-overlay);
   }
 
   .release-notes:deep(blockquote) {

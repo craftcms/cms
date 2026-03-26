@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Events;
 
 use craft\base\ElementInterface;
+use CraftCms\Cms\Element\Concerns\HasSources;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 
 /**
  * @event RegisterFieldLayouts The event that is triggered when registering all of the field layouts
  * associated with elements from a given source.
  *
- * {@see \CraftCms\Cms\Element\Concerns\HasSources::fieldLayouts()}
+ * {@see HasSources::fieldLayouts()}
  */
-final class RegisterFieldLayouts
+class RegisterFieldLayouts
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

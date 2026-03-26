@@ -519,7 +519,7 @@ trait DisplayedInIndex
     /**
      * Returns the card attributes for the element type.
      *
-     * @param  \CraftCms\Cms\FieldLayout\FieldLayout|null  $fieldLayout  The field layout
+     * @param  FieldLayout|null  $fieldLayout  The field layout
      * @return array The card attributes
      *
      * @since 5.5.0
@@ -756,7 +756,7 @@ trait DisplayedInIndex
      * @param  string  $sourceKey  The source key
      * @param  string  $attribute  The attribute to sort by
      * @param  int  $dir  The sort direction
-     * @return \Illuminate\Contracts\Database\Query\Expression|bool The orderBy value
+     * @return ExpressionInterface|bool The orderBy value
      */
     private static function resolveSourceSortOption(string $sourceKey, string $attribute, int $dir): ExpressionInterface|bool
     {

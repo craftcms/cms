@@ -39,7 +39,7 @@ test('matrix field enforces min entries', function () {
     $result = EntryModel::factory()
         ->withField('matrixField', Matrix::class, ['entryTypes' => [$entryType->id], 'minEntries' => 1], value: '')
         ->withScenario(Element::SCENARIO_LIVE)
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
 
     $result->element->validate();
 
@@ -61,7 +61,7 @@ test('matrix field surfaces nested entry validation errors', function () {
     $result = EntryModel::factory()
         ->withField('matrixField', Matrix::class, ['entryTypes' => [$entryType->id], 'viewMode' => Matrix::VIEW_MODE_INDEX], value: $value)
         ->withScenario(Element::SCENARIO_LIVE)
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
 
     $result->element->validate();
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\License;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -18,7 +17,8 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Container\Attributes\Singleton;
@@ -30,7 +30,7 @@ use function CraftCms\Cms\t;
  * @internal
  */
 #[Singleton]
-final readonly class License
+readonly class License
 {
     public const string CACHE_KEY_LICENSE_INFO = 'licenseInfo';
 
@@ -268,7 +268,7 @@ final readonly class License
                         'name' => $licenseData->name,
                         'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseData->id}",
                         'buyUrl' => $this->auth->user()?->isAdmin() && $this->generalConfig->allowAdminChanges
-                            ? UrlHelper::cpUrl("plugin-store/buy/$licenseData->handle/$licenseData->currentEdition")
+                            ? URL::cpUrl("plugin-store/buy/$licenseData->handle/$licenseData->currentEdition")
                             : "https://plugins.craftcms.com/$licenseData->handle",
                     ]),
                 null,

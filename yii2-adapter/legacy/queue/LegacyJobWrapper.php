@@ -28,7 +28,7 @@ use Illuminate\Queue\SerializesModels;
  * @internal
  * @deprecated 6.0.0
  */
-final class LegacyJobWrapper implements DescribableJob, ShouldQueue
+class LegacyJobWrapper implements DescribableJob, ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Events;
 
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 
 /**
@@ -11,11 +12,11 @@ use CraftCms\Cms\Entry\Elements\Entry;
  *
  * @see Entry::getAvailableEntryTypes()
  */
-final class DefineEntryTypes
+class DefineEntryTypes
 {
     public function __construct(
         public Entry $entry,
-        /** @var \CraftCms\Cms\Entry\Data\EntryType[] */
+        /** @var EntryType[] */
         public array $entryTypes,
     ) {}
 }

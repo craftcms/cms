@@ -11,10 +11,10 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-final class MigrateSessionsTableCommand extends Command
+class MigrateSessionsTableCommand extends Command
 {
-    use CraftCommand;
     use ConfirmableTrait;
+    use CraftCommand;
 
     protected $signature = 'craft:migrate:sessions-table
         {--force : Force the operation to run when in production or when allowAdminChanges is disabled.}

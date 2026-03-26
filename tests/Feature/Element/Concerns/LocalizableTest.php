@@ -19,7 +19,7 @@ class TestLocalizableElement extends Element
         return 'Test Element';
     }
 
-    #[\Override]
+    #[Override]
     public static function find(): ElementQuery
     {
         return new ElementQuery(static::class);

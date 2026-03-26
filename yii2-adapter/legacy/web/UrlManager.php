@@ -10,7 +10,6 @@ namespace craft\web;
 use Craft;
 use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
-use craft\helpers\UrlHelper;
 use craft\web\UrlRule as CraftUrlRule;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
@@ -19,6 +18,7 @@ use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Twig\TemplateResolver;
 use Illuminate\Support\Facades\Log;
 use yii\web\UrlRule as YiiUrlRule;
@@ -125,7 +125,7 @@ class UrlManager extends \yii\web\UrlManager
 
         /** @var Request $request */
         // Just in case...
-        if ($request->getIsConsoleRequest()) {
+        if (app()->runningInConsole()) {
             return false;
         }
 
@@ -159,7 +159,7 @@ class UrlManager extends \yii\web\UrlManager
         $route = trim($params[0], '/');
         unset($params[0]);
 
-        return UrlHelper::actionUrl($route, $params, null, false);
+        return URL::actionUrl($route, $params, null, false);
     }
 
     /**
@@ -180,7 +180,7 @@ class UrlManager extends \yii\web\UrlManager
         // Create the action URL manually here, so it doesn't get treated as a control panel request
         $path = Cms::config()->actionTrigger . '/' . $route;
 
-        return UrlHelper::siteUrl($path, $params, $scheme);
+        return URL::siteUrl($path, $params, $scheme);
     }
 
     /**
@@ -240,7 +240,7 @@ class UrlManager extends \yii\web\UrlManager
 
         $request = Craft::$app->getRequest();
 
-        if ($request->getIsConsoleRequest()) {
+        if (app()->runningInConsole()) {
             return false;
         }
 
@@ -318,7 +318,7 @@ class UrlManager extends \yii\web\UrlManager
     {
         $request = Craft::$app->getRequest();
 
-        if ($request->getIsConsoleRequest()) {
+        if (app()->runningInConsole()) {
             return [];
         }
 

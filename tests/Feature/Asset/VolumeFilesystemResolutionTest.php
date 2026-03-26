@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use craft\helpers\Assets as AssetsHelper;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\DefineKeywords;
 use CraftCms\Cms\Support\Str;
 
@@ -13,7 +14,7 @@ use CraftCms\Cms\Support\Str;
  * This trait contains methods for generating and retrieving search keywords from element attributes,
  * as well as events for customizing search keyword behavior and registering searchable attributes.
  *
- * @mixin \CraftCms\Cms\Element\Element
+ * @mixin Element
  *
  * @internal
  */

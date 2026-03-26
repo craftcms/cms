@@ -12,7 +12,7 @@ use CraftCms\Cms\User\Elements\User;
  *
  * You may set [[$isValid]] to `false` to prevent the user from getting unsuspended.
  */
-final class UnsuspendingUser extends UserEvent
+class UnsuspendingUser extends UserEvent
 {
     use ValidatableEvent;
 }

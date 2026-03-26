@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Diff;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\AllDependencies;
@@ -20,7 +21,7 @@ use InvalidArgumentException;
 use StdClass;
 use yii\base\InvalidConfigException;
 
-final class ProjectConfigHelper
+class ProjectConfigHelper
 {
     /**
      * Returns a project config compatible value encoded for storage.
@@ -624,7 +625,7 @@ final class ProjectConfigHelper
 
         $timestampLine = "dateModified: $timestamp\n";
 
-        $path = Craft::$app->getPath()->getProjectConfigFilePath();
+        $path = Path::projectConfigFile();
         $handle = fopen($path, 'r');
         $foundTimestamp = false;
 
@@ -721,7 +722,7 @@ final class ProjectConfigHelper
             $newContents .= $timestampLine;
         }
 
-        FileHelper::writeToFile($path, $newContents);
+        File::writeToFile($path, $newContents);
     }
 
     /**

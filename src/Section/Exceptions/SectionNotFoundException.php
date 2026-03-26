@@ -6,4 +6,4 @@ namespace CraftCms\Cms\Section\Exceptions;
 
 use RuntimeException;
 
-final class SectionNotFoundException extends RuntimeException {}
+class SectionNotFoundException extends RuntimeException {}

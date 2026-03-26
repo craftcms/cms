@@ -25,7 +25,7 @@ use yii\base\InvalidConfigException;
  * @property array $serializedFieldValues Array of the element's serialized custom field values, indexed by their handles
  * @property array $fieldValues The element's normalized custom field values, indexed by their handles
  * @property string $fieldContext The field context this element's content uses
- * @property \CraftCms\Cms\FieldLayout\FieldLayout|null $fieldLayout The field layout used by this element
+ * @property FieldLayout|null $fieldLayout The field layout used by this element
  * @property array $fieldParamNamespace The namespace used by custom field params on the request
  *
  * @internal

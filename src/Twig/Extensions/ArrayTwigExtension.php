@@ -20,7 +20,7 @@ use Twig\TwigFunction;
 
 use function CraftCms\Cms\renderObjectTemplate;
 
-final class ArrayTwigExtension extends AbstractExtension
+class ArrayTwigExtension extends AbstractExtension
 {
     #[Override]
     public function getFilters(): array

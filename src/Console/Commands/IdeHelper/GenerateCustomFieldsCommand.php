@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 
 use function CraftCms\Cms\t;
 
-final class GenerateCustomFieldsCommand extends Command
+class GenerateCustomFieldsCommand extends Command
 {
     #[\Override]
     protected $signature = 'craft:ide-helper:custom-fields';

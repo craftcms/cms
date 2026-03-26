@@ -1,8 +1,7 @@
 import {css} from 'lit';
 export default css`
   :host {
-    flex-direction: column;
-    gap: var(--c-spacing-md);
+    display: grid;
   }
 
   .input-group {

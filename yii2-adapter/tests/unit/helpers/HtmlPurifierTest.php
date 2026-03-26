@@ -9,6 +9,7 @@ namespace crafttests\unit\helpers;
 
 use craft\helpers\HtmlPurifier;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use HTMLPurifier_Config;
 
 /**
@@ -41,6 +42,27 @@ class HtmlPurifierTest extends TestCase
         self::assertNull($config->get('HTML.DefinitionID'));
         self::assertSame('', $config->get('Attr.DefaultImageAlt'));
         self::assertSame('', $config->get('Attr.DefaultInvalidImageAlt'));
+    }
+
+    public function testProcessWithForwardableConfig(): void
+    {
+        Deprecator::deleteAllLogs();
+
+        $html = HtmlPurifier::process('<p id="test" bad-attr="bad">Hello</p>', [
+            'Attr.EnableID' => true,
+        ]);
+
+        self::assertSame('<p id="test">Hello</p>', $html);
+        self::assertNotEmpty(Deprecator::getRequestLogs());
+    }
+
+    public function testConvertToUtf8(): void
+    {
+        $config = HTMLPurifier_Config::createDefault();
+        $config->set('Core.Encoding', 'iso-8859-1');
+        $string = iconv('UTF-8', 'ISO-8859-1//IGNORE', 'Café');
+
+        self::assertSame('Café', HtmlPurifier::convertToUtf8($string, $config));
     }
 
     /**

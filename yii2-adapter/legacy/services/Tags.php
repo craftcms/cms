@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\MemoizableArray;
 use craft\db\Table;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
@@ -20,6 +19,7 @@ use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements\addresses;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -18,10 +18,10 @@ use function CraftCms\Cms\t;
 
 class LatLongField extends BaseNativeField
 {
-    #[\Override]
+    #[Override]
     public string $attribute = 'latLong';
 
-    #[\Override]
+    #[Override]
     public bool $requirable = true;
 
     public function __construct($config = [])
@@ -92,7 +92,7 @@ class LatLongField extends BaseNativeField
 
         return
             Html::beginTag('div', ['class' => 'flex-fields']).
-            Cp::textFieldHtml([
+            FormFields::textFieldHtml([
                 'fieldClass' => 'width-50',
                 'label' => t('Latitude'),
                 'id' => 'latitude',
@@ -106,7 +106,7 @@ class LatLongField extends BaseNativeField
                     $isAdmin ? $this->copyAttributeAction(['attribute' => 'latitude']) : null,
                 ]),
             ]).
-            Cp::textFieldHtml([
+            FormFields::textFieldHtml([
                 'fieldClass' => 'width-50',
                 'label' => t('Longitude'),
                 'id' => 'longitude',

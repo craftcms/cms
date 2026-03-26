@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use craft\helpers\Template as TemplateHelper;
+use CraftCms\Cms\Support\Template as TemplateHelper;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -13,7 +13,7 @@ use Twig\Node\Node;
 use Twig\Template;
 
 #[YieldReady]
-final class NavItemNode extends Node
+class NavItemNode extends Node
 {
     public function __construct(AssignContextVariable $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, int $lineno)
     {

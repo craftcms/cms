@@ -24,14 +24,13 @@ use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\conditions\entries\SectionConditionRule;
 use craft\elements\conditions\entries\TypeConditionRule;
 use craft\elements\db\EagerLoadPlan;
-use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -55,13 +54,16 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\entries\EntryTitleField;
+use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -74,6 +76,7 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
@@ -97,7 +100,7 @@ use function CraftCms\Cms\t;
 /**
  * @property int $typeId the entry type’s ID
  * @property EntryType $type the entry type
- * @property \CraftCms\Cms\Section\Data\Section|null $section the entry’s section
+ * @property Section|null $section the entry’s section
  * @property User|null $author the primary entry author
  * @property User[] $authors the entry authors
  * @property int|null $authorId The primary entry author’s ID
@@ -280,7 +283,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 $sources[] = ['heading' => $heading];
 
                 foreach ($sectionsByType[$type] as $section) {
-                    /** @var \CraftCms\Cms\Section\Data\Section $section */
+                    /** @var Section $section */
                     $source = [
                         'key' => 'section:'.$section->uid,
                         'label' => t($section->name, category: 'site'),
@@ -381,12 +384,9 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     protected static function defineActions(string $source): array
     {
         // Get the selected site
-        $controller = Craft::$app->controller;
-        if ($controller instanceof ElementIndexesController) {
-            $elementQuery = $controller->getElementQuery();
-        } else {
-            $elementQuery = null;
-        }
+        $elementQuery = Craft::$app->controller instanceof ElementIndexesController
+            ? Craft::$app->controller->getElementQuery()
+            : null;
         $site = $elementQuery && $elementQuery->siteId
             ? Sites::getSiteById($elementQuery->siteId)
             : Sites::getCurrentSite();
@@ -652,7 +652,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ],
             'authors' => [
                 'label' => t('Authors'),
-                'placeholder' => fn () => $currentUser ? Cp::elementChipHtml($currentUser) : '',
+                'placeholder' => fn () => $currentUser ? app(ElementHtml::class)->elementChipHtml($currentUser) : '',
             ],
             'parent' => [
                 'label' => t('Parent'),
@@ -676,7 +676,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ],
             'revisionCreator' => [
                 'label' => t('Last Edited By'),
-                'placeholder' => fn () => $currentUser ? Cp::elementChipHtml($currentUser) : '',
+                'placeholder' => fn () => $currentUser ? app(ElementHtml::class)->elementChipHtml($currentUser) : '',
             ],
             'drafts' => [
                 'label' => t('Drafts'),
@@ -759,7 +759,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     public static function gqlScopesByContext(mixed $context): array
     {
-        /** @var \CraftCms\Cms\Section\Data\Section $section */
+        /** @var Section $section */
         $section = $context['section'];
 
         return [
@@ -1200,7 +1200,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             $sections = Sections::getEditableSections();
 
             // Filter out any sections that aren’t enabled for this site
-            $requestedSite = Cp::requestedSite();
+            $requestedSite = app(RequestedSite::class)->get();
             if ($requestedSite) {
                 $sections = $sections->filter(fn (Section $s) => in_array($requestedSite->id, $s->getSiteIds()));
             }
@@ -1262,7 +1262,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             foreach ($ancestors->all() as $ancestor) {
                 if ($elementsService->canView($ancestor, $user)) {
                     $crumbs[] = [
-                        'html' => Cp::elementChipHtml($ancestor, [
+                        'html' => app(ElementHtml::class)->elementChipHtml($ancestor, [
                             'class' => 'chromeless',
                             'hyperlink' => true,
                         ]),
@@ -1483,7 +1483,10 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     {
         if (isset($this->fieldId)) {
             /** @var EntryType[] $entryTypes */
-            $entryTypes = $this->getField()->getFieldLayoutProviders();
+            $entryTypes = array_values(array_filter(
+                $this->getField()->getFieldLayoutProviders(),
+                fn ($provider) => $provider instanceof EntryType,
+            ));
         } elseif (isset($this->sectionId)) {
             $entryTypes = $this->getSection()->getEntryTypes();
         } else {
@@ -1778,7 +1781,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $section = $this->getSection();
         if ($section) {
             // Set the default status based on the section's settings
-            /** @var \CraftCms\Cms\Section\Data\SectionSiteSettings $siteSettings */
+            /** @var SectionSiteSettings $siteSettings */
             $siteSettings = Collection::make($section->getSiteSettings())->firstWhere('siteId', $this->siteId);
             $enabled = $siteSettings->enabledByDefault;
         } else {
@@ -1835,7 +1838,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     public function getPostEditUrl(): string
     {
-        return UrlHelper::cpUrl('entries');
+        return URL::cpUrl('entries');
     }
 
     protected function cpRevisionsUrl(): string
@@ -1965,7 +1968,7 @@ JS, [
                 $authors = $this->getAuthors();
                 $html = '';
                 foreach ($authors as $author) {
-                    $html .= Cp::elementChipHtml($author);
+                    $html .= app(ElementHtml::class)->elementChipHtml($author);
                 }
 
                 return $html;
@@ -1975,13 +1978,13 @@ JS, [
                     return '';
                 }
 
-                return Cp::chipHtml($section, [
+                return app(ElementHtml::class)->chipHtml($section, [
                     'class' => 'chromeless',
                     'showThumb' => false,
                 ]);
             case 'type':
                 try {
-                    return Cp::chipHtml($this->getType(), [
+                    return app(ElementHtml::class)->chipHtml($this->getType(), [
                         'class' => 'chromeless',
                         'showThumb' => $this->viewMode !== 'cards',
                     ]);
@@ -1998,17 +2001,17 @@ JS, [
     {
         switch ($attribute) {
             case 'postDate':
-                return Cp::dateTimeFieldHtml([
+                return FormFields::dateTimeFieldHtml([
                     'name' => 'postDate',
                     'value' => $this->postDate,
                 ]);
             case 'expiryDate':
-                return Cp::dateTimeFieldHtml([
+                return FormFields::dateTimeFieldHtml([
                     'name' => 'expiryDate',
                     'value' => $this->expiryDate,
                 ]);
             case 'slug':
-                return Cp::textHtml([
+                return FormFields::textHtml([
                     'name' => 'slug',
                     'value' => $this->slug,
                 ]);
@@ -2016,7 +2019,7 @@ JS, [
                 $authors = $this->getAuthors();
                 $section = $this->getSection();
 
-                return Cp::elementSelectHtml([
+                return FormFields::elementSelectHtml([
                     'status' => $this->getAttributeStatus('authorIds'),
                     'label' => t('{max, plural, =1{Author} other {Authors}}', [
                         'max' => $section->maxAuthors ?? PHP_INT_MAX,
@@ -2137,7 +2140,7 @@ JS, [
                 return null;
             }
 
-            return Cp::customSelectFieldHtml([
+            return FormFields::customSelectFieldHtml([
                 'fieldClass' => 'entry-type-select',
                 'status' => $this->getAttributeStatus('typeId'),
                 'label' => t('Entry Type'),
@@ -2182,7 +2185,7 @@ JS, [
                         ->one();
                 }
 
-                return Cp::elementSelectFieldHtml([
+                return FormFields::elementSelectFieldHtml([
                     'label' => t('Parent'),
                     'id' => 'parentId',
                     'name' => 'parentId',
@@ -2208,7 +2211,7 @@ JS, [
                 $fields['authors'] = (function () use ($static, $section, $user) {
                     $authors = $this->getAuthors();
 
-                    return Cp::elementSelectFieldHtml([
+                    return FormFields::elementSelectFieldHtml([
                         'status' => $this->getAttributeStatus('authorIds'),
                         'label' => t('{max, plural, =1{Author} other {Authors}}', [
                             'max' => $section->maxAuthors ?? PHP_INT_MAX,
@@ -2235,7 +2238,7 @@ JS, [
             });
 
             // Post Date
-            $fields['postDate'] = Cp::dateTimeFieldHtml([
+            $fields['postDate'] = FormFields::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('postDate'),
                 'label' => t('Post Date'),
                 'id' => 'postDate',
@@ -2246,7 +2249,7 @@ JS, [
             ]);
 
             // Expiry Date
-            $fields['expiryDate'] = Cp::dateTimeFieldHtml([
+            $fields['expiryDate'] = FormFields::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('expiryDate'),
                 'label' => t('Expiry Date'),
                 'id' => 'expiryDate',
@@ -2400,21 +2403,15 @@ JS;
 
         // Make sure that the locale has been loaded in case the title format has any Date/Time fields
         // Set Craft to the entry’s site’s language, in case the title format has any static translations
-        $language = app()->getLocale();
-        $locale = I18N::getLocale();
-        $formattingLocale = I18N::getFormattingLocale();
         $site = $this->getSite();
-        $tempLocale = I18N::getLocaleById($site->getLanguage());
-        app()->setLocale($site->getLanguage());
-        Craft::$app->set('locale', $tempLocale);
-        Craft::$app->set('formattingLocale', $tempLocale);
-        $title = renderObjectTemplate($entryType->titleFormat, $this);
+        $title = I18N::withLocale(
+            $site->getLanguage(),
+            $site->getLanguage(),
+            fn () => renderObjectTemplate($entryType->titleFormat, $this),
+        );
         if ($title !== '') {
             $this->title = $title;
         }
-        app()->setLocale($language);
-        Craft::$app->set('locale', $locale);
-        Craft::$app->set('formattingLocale', $formattingLocale);
     }
 
     /**

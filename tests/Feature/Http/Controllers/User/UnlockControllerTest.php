@@ -4,6 +4,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\Controllers\Users\UnlockController;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -31,7 +32,7 @@ test('it unlocks a user', function () {
 });
 
 it('requires moderateUsers permission', function () {
-    \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
+    Gate::before(function ($user, $ability) {
         if ($ability === 'moderateUsers') {
             return false;
         }

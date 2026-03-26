@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Condition;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\URL;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -262,7 +262,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
         $namespacedId = InputNamespace::namespaceId($this->id);
 
         return InputNamespace::namespaceInputs(function () use ($namespacedId, $autofocusAddButton) {
-            $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
+            $isHtmxRequest = request()->headers->has('HX-Request');
             $selectableRules = $this->getSelectableConditionRules();
             $allRulesHtml = '';
             $ruleNum = 1;
@@ -348,7 +348,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                                 ],
                                 'hx' => [
                                     'vals' => ['uid' => $rule->uid],
-                                    'post' => UrlHelper::actionUrl('conditions/remove-rule'),
+                                    'post' => URL::actionUrl('conditions/remove-rule'),
                                 ],
                             ]).
                             Html::endTag('div');
@@ -374,7 +374,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
                     $this->sortable ? 'sortable' : null,
                 ]),
                 'hx' => [
-                    'post' => UrlHelper::actionUrl('conditions/render'),
+                    'post' => URL::actionUrl('conditions/render'),
                     'trigger' => 'end', // sortable library triggers this event
                 ],
             ]
@@ -403,7 +403,7 @@ JS, [InputNamespace::namespaceId($this->id)]);
 
             if ($rulesJs) {
                 if ($isHtmxRequest) {
-                    $html .= html::tag('script', $rulesJs, ['type' => 'text/javascript']);
+                    $html .= Html::tag('script', $rulesJs, ['type' => 'text/javascript']);
                 } else {
                     HtmlStack::js($rulesJs);
                 }
@@ -413,12 +413,12 @@ JS, [InputNamespace::namespaceId($this->id)]);
             // If this is not an htmx request, don't add scripts, since they will be in the page anyway.
             if ($isHtmxRequest) {
                 if ($bodyHtml = HtmlStack::bodyHtml()) {
-                    $html .= html::tag('template', $bodyHtml, [
+                    $html .= Html::tag('template', $bodyHtml, [
                         'class' => ['hx-body-html'],
                     ]);
                 }
                 if ($headHtml = HtmlStack::headHtml()) {
-                    $html .= html::tag('template', $headHtml, [
+                    $html .= Html::tag('template', $headHtml, [
                         'class' => ['hx-head-html'],
                     ]);
                 }
@@ -568,7 +568,7 @@ JS,
             Html::hiddenInput($rule ? 'type' : 'new-rule-type', $ruleValue, [
                 'id' => $inputId,
                 'hx' => [
-                    'post' => UrlHelper::actionUrl('conditions/render'),
+                    'post' => URL::actionUrl('conditions/render'),
                 ],
             ]);
     }

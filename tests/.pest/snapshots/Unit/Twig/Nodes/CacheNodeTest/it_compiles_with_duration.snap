@@ -1,5 +1,5 @@
 // line 1
-$cacheService = Craft::$app->getTemplateCaches();
+$cacheService = app(CraftCms\Cms\View\TemplateCaches::class);
 $request = request();
 $ignoreCache__v0 = ($request->isPreview() || $request->getToken());
 if (!$ignoreCache__v0) {
@@ -16,7 +16,7 @@ if ($cacheBody__v0 === null) {
     yield "cached content";
     $cacheBody__v0 = ob_get_clean();
     if (!$ignoreCache__v0) {
-        $cacheService->endTemplateCache($cacheKey__v0, false, craft\helpers\DateTimeHelper::relativeTimeStatement(1, 'hours'), null, $cacheBody__v0, true);
+        $cacheService->endTemplateCache($cacheKey__v0, false, CraftCms\Cms\Support\DateTimeHelper::relativeTimeStatement(1, 'hours'), null, $cacheBody__v0, true);
     }
 }
 yield $cacheBody__v0;

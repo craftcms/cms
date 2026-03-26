@@ -14,7 +14,7 @@ use CraftCms\Cms\Support\Facades\Addresses;
 
 use function CraftCms\Cms\t;
 
-final class CountryConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class CountryConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     public function getLabel(): string
     {

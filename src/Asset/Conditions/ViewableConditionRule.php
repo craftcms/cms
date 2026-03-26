@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 use function CraftCms\Cms\t;
 
-final class ViewableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class ViewableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     public function getLabel(): string
     {

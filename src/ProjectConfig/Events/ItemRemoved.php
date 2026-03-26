@@ -18,4 +18,4 @@ namespace CraftCms\Cms\ProjectConfig\Events;
  * });
  * ```
  */
-final class ItemRemoved extends ConfigEvent {}
+class ItemRemoved extends ConfigEvent {}

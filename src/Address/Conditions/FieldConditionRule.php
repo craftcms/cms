@@ -17,7 +17,7 @@ use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\t;
 
-final class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
+class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
     use HintableConditionRuleTrait;
 

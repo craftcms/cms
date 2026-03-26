@@ -8,7 +8,7 @@ use CraftCms\Cms\Twig\Extensions\CoreTwigExtension;
 use Twig\Compiler;
 use Twig\Node\Expression\Binary\AbstractBinary;
 
-final class HasEveryBinary extends AbstractBinary
+class HasEveryBinary extends AbstractBinary
 {
     #[\Override]
     public function compile(Compiler $compiler): void

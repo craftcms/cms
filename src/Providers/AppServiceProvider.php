@@ -4,20 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Providers;
 
-use Craft;
-use craft\helpers\FileHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
-use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Updates;
+use CraftCms\Cms\Support\File;
 use GuzzleHttp\Utils;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Foundation\Events\LocaleUpdated;
@@ -29,8 +27,6 @@ use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -47,7 +43,7 @@ use RuntimeException;
 use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\t;
 
-final class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
     private string $root = __DIR__.'/../..';
 
@@ -102,7 +98,7 @@ final class AppServiceProvider extends ServiceProvider
         config([
             'filesystems.disks.rebrand' => [
                 'driver' => 'local',
-                'root' => storage_path('rebrand'),
+                'root' => Path::rebrand(create: false),
                 'url' => implode('/', [
                     config('app.url'),
                     Cms::config()->cpTrigger,
@@ -151,91 +147,7 @@ final class AppServiceProvider extends ServiceProvider
             return $this;
         });
 
-        Request::macro('isCpRequest', fn (): bool => $this->is(
-            Cms::config()->cpTrigger, // /admin
-            Cms::config()->cpTrigger.'/*' // /admin/foo
-            // NOT /adminsarefun
-        ));
-
-        Request::macro('getToken', fn (): ?string => $this->input(Cms::config()->tokenParam, $this->header(HandleTokenRequest::TOKEN_HEADER)));
-
-        Request::macro('isSiteRequest', fn (): bool => ! $this->isCpRequest());
-
-        Request::macro('isActionRequest', fn (): bool => ! empty($this->actionSegments()));
-
-        Request::macro('isPreview', function () {
-            $previewParamValue = $this->input('x-craft-preview') ?? $this->input('x-craft-live-preview') ?? $this->header('X-Craft-Preview-Token');
-
-            if (! $previewParamValue) {
-                return false;
-            }
-
-            try {
-                Crypt::decrypt($previewParamValue);
-            } catch (DecryptException) {
-                return false;
-            }
-
-            if (! Context::hasHidden(HandleTokenRequest::TOKEN_KEY)) {
-                return false;
-            }
-
-            return true;
-        });
-
-        Request::macro('actionSegments', function (): array {
-            $actionTrigger = Cms::config()->actionTrigger;
-
-            $segmentIndex = $this->isCpRequest() ? 2 : 1;
-
-            if ($this->segment($segmentIndex) === $actionTrigger && count($this->segments()) > $segmentIndex) {
-                return array_slice($this->segments(), $segmentIndex);
-            }
-
-            if ($actionParam = $this->get('action')) {
-                if (! is_string($actionParam)) {
-                    abort(400, 'Invalid action param');
-                }
-
-                return array_values(array_filter(explode('/', $actionParam)));
-            }
-
-            return [];
-        });
-
-        Request::macro('actionSegmentsToRoute', function (?array $actionSegments = null): string {
-            $actionSegments ??= $this->actionSegments();
-
-            return implode('/', array_filter([
-                '',
-                $this->isCpRequest() ? Cms::config()->cpTrigger : null,
-                Cms::config()->actionTrigger,
-                ...$actionSegments,
-            ], fn ($value) => ! is_null($value)));
-        });
-
-        Request::macro('duplicateWithUri', fn (string $newUri, ?array $query = null, array $server = []): Request => $this->duplicate(
-            query: $query ?? $this->query->all(),
-            server: array_merge($this->server->all(), $server, [
-                'REQUEST_URI' => $newUri,
-            ]),
-        ));
-
-        Request::macro('getSigned', function (string $key, mixed $default = null): mixed {
-            $value = $this->get($key);
-
-            if (is_null($value)) {
-                return $default;
-            }
-
-            try {
-                $value = Crypt::decrypt($value);
-            } catch (DecryptException) {
-                abort(400, 'Request contained an invalid body param');
-            }
-
-            return $value;
-        });
+        Request::mixin(new RequestMixin);
 
         Response::macro('setNoCacheHeaders', function (bool $replace = true) {
             $this->header('Expires', '0', $replace);
@@ -247,10 +159,10 @@ final class AppServiceProvider extends ServiceProvider
 
         UrlGenerator::macro('defaultReturnUrl', function (): string {
             if (request()->isCpRequest() && Gate::check('accessCp')) {
-                return UrlHelper::cpUrl(Cms::config()->getPostCpLoginRedirect());
+                return \CraftCms\Cms\Support\URL::cpUrl(Cms::config()->getPostCpLoginRedirect());
             }
 
-            return UrlHelper::siteUrl(Cms::config()->getPostLoginRedirect());
+            return \CraftCms\Cms\Support\URL::siteUrl(Cms::config()->getPostLoginRedirect());
         });
 
         UrlGenerator::macro('returnUrl', function (?string $defaultUrl = null): string {
@@ -327,7 +239,7 @@ final class AppServiceProvider extends ServiceProvider
     private function bootAliases(): void
     {
         Aliases::set('@root', Env::get('CRAFT_ROOT_PATH', $this->app->basePath()));
-        Aliases::set('@craftcms', FileHelper::normalizePath($this->root));
+        Aliases::set('@craftcms', File::normalizePath($this->root));
         Aliases::set('@package', '@craftcms/src');
         Aliases::set('@resources', "{$this->root}/resources");
 

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Nodes;
 
 use Craft;
-use craft\helpers\UrlHelper;
+use CraftCms\Cms\Support\URL;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class RedirectNode extends Node
+class RedirectNode extends Node
 {
     #[Override]
     public function compile(Compiler $compiler): void
@@ -34,7 +34,7 @@ final class RedirectNode extends Node
         }
 
         $compiler
-            ->write(Craft::class.'::$app->getResponse()->redirect('.UrlHelper::class.'::url(')
+            ->write(Craft::class.'::$app->getResponse()->redirect('.URL::class.'::url(')
             ->subcompile($this->getNode('path'))
             ->raw('), ')
             ->subcompile($this->getNode('httpStatusCode'))

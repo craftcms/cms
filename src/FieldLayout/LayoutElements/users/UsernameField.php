@@ -16,16 +16,16 @@ use function CraftCms\Cms\t;
 
 class UsernameField extends TextField
 {
-    #[\Override]
+    #[Override]
     public bool $mandatory = true;
 
-    #[\Override]
+    #[Override]
     public string $attribute = 'username';
 
-    #[\Override]
+    #[Override]
     public ?int $maxlength = 255;
 
-    #[\Override]
+    #[Override]
     public bool $autofocus = true;
 
     public function __construct($config = [])

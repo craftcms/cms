@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final class ImageTransformsController
+class ImageTransformsController
 {
     use RespondsWithFlash;
 

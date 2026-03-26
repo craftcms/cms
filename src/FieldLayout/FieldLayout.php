@@ -482,7 +482,7 @@ class FieldLayout extends Component
             new Template,
         ];
 
-        event($event = new DefineUiElements($this, $elements));
+        event($event = new DefineUIElements($this, $elements));
         $elements = $event->elements;
 
         // HR and Line Break should always be last

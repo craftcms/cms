@@ -9,9 +9,9 @@ namespace craft\web;
 
 use Craft;
 use craft\errors\ExitException;
-use craft\helpers\FileHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\TemplateMode;
@@ -83,7 +83,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
         if (!$headers->has('content-type')) {
             $templateFile = Str::chopEnd(strtolower(app(TemplateResolver::class)->resolve($behavior->template)), '.twig');
-            $mimeType = FileHelper::getMimeTypeByExtension($templateFile) ?? 'text/html';
+            $mimeType = File::getMimeTypeByExtension($templateFile) ?? 'text/html';
             $headers->set('content-type', $mimeType . '; charset=' . $response->charset);
         }
     }

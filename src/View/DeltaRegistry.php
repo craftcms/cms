@@ -16,7 +16,7 @@ use Illuminate\Container\Attributes\Scoped;
  * considered pre-modified, so the client-side JavaScript can perform the diff.
  */
 #[Scoped]
-final class DeltaRegistry
+class DeltaRegistry
 {
     private bool $active = false;
 

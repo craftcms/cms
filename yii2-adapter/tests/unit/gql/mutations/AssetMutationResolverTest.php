@@ -7,12 +7,11 @@
 
 namespace crafttests\unit\gql\mutations;
 
-use Craft;
 use craft\gql\resolvers\mutations\Asset;
-use craft\records\Volume;
-use craft\services\Assets;
 use craft\test\TestCase;
+use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
+use CraftCms\Cms\Support\Facades\Folders;
 use GraphQL\Type\Definition\ResolveInfo;
 use Throwable;
 
@@ -33,14 +32,19 @@ class AssetMutationResolverTest extends TestCase
             'saveElement' => new Asset(),
             'recursivelyNormalizeArgumentValues' => $arguments,
         ]);
-        $resolver->setResolutionData('volume', new Volume(['id' => 1]));
+
+        $volume = new Volume();
+        $volume->id = 1;
+        $volume->uid = 'test-volume-uid';
+        $resolver->setResolutionData('volume', $volume);
 
         $folder = new VolumeFolder(['id' => 1, 'volumeId' => 1]);
-        Craft::$app->set('assets', $this->make(Assets::class, [
-            'getRootFolderByVolumeId' => $folder,
-            'getFolderById' => $folder,
-        ]));
 
+        Folders::shouldReceive('getRootFolderByVolumeId')
+            ->with(1)
+            ->andReturn($folder);
+        Folders::shouldReceive('getFolderById')
+            ->andReturn($folder);
 
         $this->expectExceptionMessage($exception);
         $resolver->saveAsset(null, $arguments, null, $this->make(ResolveInfo::class));

@@ -6,11 +6,11 @@ namespace CraftCms\Cms\Twig\Variables;
 
 use Craft;
 use craft\db\Paginator;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Support\URL;
 
-final class Paginate extends Component
+class Paginate extends Component
 {
     public string $basePath {
         get => $this->getBasePath();
@@ -64,7 +64,7 @@ final class Paginate extends Component
 
     public function getBasePath(): string
     {
-        return $this->_basePath ?? ($this->_basePath = Craft::$app->getRequest()->getPathInfo());
+        return $this->_basePath ?? ($this->_basePath = request()->path());
     }
 
     public function setBasePath(string $basePath): void
@@ -92,15 +92,15 @@ final class Paginate extends Component
         }
 
         // Build the URL with the same query string as the current request
-        $url = UrlHelper::url($path, Craft::$app->getRequest()->getQueryStringWithoutPath());
+        $url = URL::url($path, Craft::$app->getRequest()->getQueryStringWithoutPath());
 
         // If using a query param, append or remove it
         if ($useQueryParam) {
             $param = trim($this->pageTrigger, '?=');
             if ($page !== 1) {
-                $url = UrlHelper::urlWithParams($url, [$param => $page]);
+                $url = URL::urlWithParams($url, [$param => $page]);
             } else {
-                $url = UrlHelper::removeParam($url, $param);
+                $url = URL::removeParam($url, $param);
             }
         }
 

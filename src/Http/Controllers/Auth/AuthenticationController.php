@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
@@ -18,10 +17,12 @@ use CraftCms\Cms\User\Events\EmailVerified;
 use CraftCms\Cms\User\Events\VerifyingEmail;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 abstract readonly class AuthenticationController
@@ -53,6 +54,33 @@ abstract readonly class AuthenticationController
         return $this->redirectToPostedUrl($user, $returnUrl);
     }
 
+    protected function finalizeLogin(
+        Request $request,
+        User $user,
+        bool $remember,
+        bool $skipTwoFactor = false,
+    ): Response {
+        if (! $skipTwoFactor && ! $this->generalConfig->disable2fa && $this->auth->hasActiveMethod($user)) {
+            $this->auth->setUser($user);
+
+            if (! $request->isCpRequest() && ! $request->wantsJson()) {
+                if (! $loginPath = $this->generalConfig->getLoginPath()) {
+                    $request->session()->forget('user.id');
+                    throw new RuntimeException('User requires two-step verification, but the loginPath config setting is disabled.');
+                }
+
+                return redirect(\CraftCms\Cms\Support\URL::siteUrl($loginPath, array_filter([
+                    'verify' => 1,
+                    'returnUrl' => $this->getPostedRedirectUrl($user) ?? URL::returnUrl(),
+                ])));
+            }
+
+            return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
+        }
+
+        return $this->completeLogin($request, $user, $remember);
+    }
+
     protected function handleLoginFailure(Request $request, ?AuthError $authError = null, ?User $user = null): Response
     {
         [$authError, $message] = $this->auth->getLoginFailureInfo($authError, $user);
@@ -74,7 +102,7 @@ abstract readonly class AuthenticationController
 
         TemplateMode::set(TemplateMode::Cp);
 
-        return view(Str::start($cpTemplate, ''), $data);
+        return view('craftcms::'.Str::start($cpTemplate, ''), $data);
     }
 
     protected function processTokenRequest(Request $request): Response|array
@@ -102,7 +130,7 @@ abstract readonly class AuthenticationController
 
         event(new VerifyingEmail($user));
 
-        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        /** @var PasswordBroker $broker */
         $broker = Password::broker('craft');
         if (! $broker->tokenExists($user, $request->input('code'))) {
             return $this->processInvalidToken($request, $user);
@@ -130,7 +158,7 @@ abstract readonly class AuthenticationController
         if (! $request->isCpRequest()) {
             $url = Cms::config()->getInvalidUserTokenPath() ?? Cms::config()->getLoginPath();
 
-            return redirect(UrlHelper::siteUrl($url));
+            return redirect(\CraftCms\Cms\Support\URL::siteUrl($url));
         }
 
         return redirect(CpAuthPath::Login->value);
@@ -165,7 +193,7 @@ abstract readonly class AuthenticationController
         }
 
         $postCpLoginRedirect = Cms::config()->getPostCpLoginRedirect();
-        $url = UrlHelper::cpUrl($postCpLoginRedirect);
+        $url = \CraftCms\Cms\Support\URL::cpUrl($postCpLoginRedirect);
 
         return redirect($url);
     }
@@ -173,7 +201,7 @@ abstract readonly class AuthenticationController
     protected function redirectUserAfterAccountActivation(User $user): Response
     {
         $activateAccountSuccessPath = Cms::config()->getActivateAccountSuccessPath();
-        $url = UrlHelper::siteUrl($activateAccountSuccessPath);
+        $url = \CraftCms\Cms\Support\URL::siteUrl($activateAccountSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);
     }
@@ -181,7 +209,7 @@ abstract readonly class AuthenticationController
     protected function redirectUserAfterEmailVerification(User $user): Response
     {
         $verifyEmailSuccessPath = Cms::config()->getVerifyEmailSuccessPath();
-        $url = UrlHelper::siteUrl($verifyEmailSuccessPath);
+        $url = \CraftCms\Cms\Support\URL::siteUrl($verifyEmailSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);
     }

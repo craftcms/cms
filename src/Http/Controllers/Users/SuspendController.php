@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class SuspendController
+readonly class SuspendController
 {
     use AuthorizesRequests;
     use RespondsWithFlash;

@@ -27,7 +27,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final readonly class Revisions
+readonly class Revisions
 {
     /**
      * Creates a new revision for the given element and returns its ID.

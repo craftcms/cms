@@ -8,10 +8,10 @@
 namespace craft\web\assets\d3;
 
 use Craft;
-use craft\helpers\ChartHelper;
 use craft\helpers\Json;
 use craft\web\AssetBundle;
 use craft\web\View;
+use CraftCms\Cms\Dashboard\Chart;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
 
@@ -72,7 +72,7 @@ class D3Asset extends AssetBundle
 
         $js = 'window.d3FormatLocaleDefinition = ' . Json::encode($localeDef) . ";\n" .
             'window.d3TimeFormatLocaleDefinition = ' . $this->formatDef($this->sourcePath . '/d3-time-format/locale') . ";\n" .
-            'window.d3Formats = ' . Json::encode(ChartHelper::formats()) . ';';
+            'window.d3Formats = ' . Json::encode(Chart::formats()) . ';';
 
         $view->registerJs($js, View::POS_BEGIN);
     }

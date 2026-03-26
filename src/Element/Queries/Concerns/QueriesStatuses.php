@@ -160,7 +160,7 @@ trait QueriesStatuses
      * @param  string  $status  The status
      * @return Closure(Builder): Builder The status condition, or false if $status is an unsupported status
      *
-     * @throws \CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException on unsupported status.
+     * @throws QueryAbortedException on unsupported status.
      */
     protected function statusCondition(string $status): Closure
     {

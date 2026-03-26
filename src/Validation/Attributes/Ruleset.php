@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Validation\Attributes;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-final class Ruleset
+class Ruleset
 {
     public function __construct(
         /** @var class-string<\CraftCms\Cms\Validation\Ruleset> */

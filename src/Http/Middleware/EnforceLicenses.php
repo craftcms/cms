@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -13,8 +12,9 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Uri;
 
-final readonly class EnforceLicenses
+readonly class EnforceLicenses
 {
     public function __construct(
         private License $license,
@@ -47,9 +47,9 @@ final readonly class EnforceLicenses
         }
 
         $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
-        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
-            'items' => array_map(fn ($issue) => $issue[2], $licenseIssues),
-        ]);
+        $cartUrl = Uri::of("$consoleUrl/cart/new")
+            ->withQuery(['items' => array_map(fn ($issue) => $issue[2], $licenseIssues)])
+            ->value();
 
         $cookie = $request->cookie($this->license->shunCookieName());
         $data = $cookie ? Json::decode($cookie) : null;

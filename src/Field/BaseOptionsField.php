@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\gql\arguments\OptionField as OptionFieldArguments;
-use craft\gql\resolvers\OptionField as OptionFieldResolver;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Field\Conditions\OptionsFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -17,6 +16,8 @@ use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Field\Events\DefineInputOptions;
+use CraftCms\Cms\Gql\Arguments\OptionField as OptionFieldArguments;
+use CraftCms\Cms\Gql\Resolvers\OptionField as OptionFieldResolver;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -163,7 +164,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         parent::__construct($config);
     }
 
-    #[\Override]
+    #[Override]
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
@@ -305,7 +306,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $rows[] = $option;
         }
 
-        $html = Cp::editableTableFieldHtml([
+        $html = FormFields::editableTableFieldHtml([
             'label' => $this->optionsSettingLabel(),
             'instructions' => t('Define the available options.'),
             'id' => 'options',
@@ -321,7 +322,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         ]);
 
         if (static::$allowCustomOptions) {
-            $html .= Cp::lightswitchFieldHtml([
+            $html .= FormFields::lightswitchFieldHtml([
                 'label' => t('Allow custom options'),
                 'id' => 'custom-options',
                 'name' => 'customOptions',
@@ -527,7 +528,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         if (! $this->isValueEmpty($value, $element)) {
             $parts = [];
             if (isset($value->icon)) {
-                $parts[] = Html::tag('div', Cp::iconSvg($value->icon), [
+                $parts[] = Html::tag('div', Icons::svg($value->icon), [
                     'class' => ['cp-icon', 'small'],
                     'style' => array_filter([
                         '--icon-color' => $value->color,

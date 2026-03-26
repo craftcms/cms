@@ -13,7 +13,7 @@ use CraftCms\Cms\Validation\Attributes\Ruleset;
 use RuntimeException;
 
 #[Ruleset(SectionSiteSettingsRules::class)]
-final class SectionSiteSettings extends Component
+class SectionSiteSettings extends Component
 {
     private ?Section $section = null;
 
@@ -34,7 +34,7 @@ final class SectionSiteSettings extends Component
     /**
      * Returns the section.
      *
-     * @throws \RuntimeException if [[sectionId]] is missing or invalid
+     * @throws RuntimeException if [[sectionId]] is missing or invalid
      */
     public function getSection(): Section
     {

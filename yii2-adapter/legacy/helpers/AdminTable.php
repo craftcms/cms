@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\db\Query;
+use CraftCms\Cms\Support\Typecast;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use yii\db\Expression;
@@ -18,6 +19,7 @@ use yii\db\Expression;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
+ * @deprecated 6.0.0 use Laravel Pagination instead.
  */
 abstract class AdminTable
 {
@@ -74,7 +76,7 @@ abstract class AdminTable
         ];
 
         $currentSortOrderQuery = new Query();
-        $currentSortOrderQuery = Craft::configure($currentSortOrderQuery, $criteria);
+        $currentSortOrderQuery = Typecast::configure($currentSortOrderQuery, $criteria);
 
         $currentSortOrder = $currentSortOrderQuery->scalar();
 

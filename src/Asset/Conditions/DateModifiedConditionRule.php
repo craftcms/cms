@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 use function CraftCms\Cms\t;
 
-final class DateModifiedConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
+class DateModifiedConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
     public function getLabel(): string
     {

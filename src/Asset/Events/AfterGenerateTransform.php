@@ -10,7 +10,7 @@ use CraftCms\Cms\Image\Data\ImageTransform;
 /**
  * @event AfterGenerateTransform The event that is triggered after a transform is generated for an asset.
  */
-final readonly class AfterGenerateTransform
+readonly class AfterGenerateTransform
 {
     public function __construct(
         public Asset $asset,

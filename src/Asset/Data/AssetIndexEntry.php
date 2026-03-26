@@ -6,13 +6,10 @@ namespace CraftCms\Cms\Asset\Data;
 
 use CraftCms\Cms\Component\Component;
 use DateTime;
-use Illuminate\Support\Traits\Macroable;
 use Stringable;
 
-final class AssetIndexEntry extends Component implements Stringable
+class AssetIndexEntry extends Component implements Stringable
 {
-    use Macroable;
-
     public ?int $id = null;
 
     public ?int $volumeId = null;

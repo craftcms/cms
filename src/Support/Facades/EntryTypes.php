@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\Entry\EntryTypes
  */
-final class EntryTypes extends Facade
+class EntryTypes extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Override;
-use yii\helpers\Markdown as MarkdownHelper;
 
 use function CraftCms\Cms\t;
 
@@ -62,14 +62,14 @@ class Markdown extends BaseUiElement
     protected function settingsHtml(): ?string
     {
         return
-            Cp::textareaFieldHtml([
+            FormFields::textareaFieldHtml([
                 'label' => t('Content'),
                 'class' => ['code', 'nicetext'],
                 'id' => 'content',
                 'name' => 'content',
                 'value' => $this->content,
             ]).
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Display content in a pane'),
                 'id' => 'display-in-pane',
                 'name' => 'displayInPane',
@@ -79,7 +79,7 @@ class Markdown extends BaseUiElement
 
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $content = Html::tag('div', MarkdownHelper::process(Html::encode($this->content)), [
+        $content = Html::tag('div', MarkdownFacade::parse(Html::encode($this->content), 'pre-encoded'), [
             'class' => array_filter([
                 'markdown',
                 $this->displayInPane ? 'pane' : null,

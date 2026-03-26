@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Twig;
 
 use Craft;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Twig\Contracts\SafeHtml;
 use CraftCms\Cms\Twig\Events\TwigCreated;
 use CraftCms\Cms\Twig\Extensions\ArrayTwigExtension;
@@ -27,7 +28,7 @@ use Twig\Extension\StringLoaderExtension;
 use Twig\Runtime\EscaperRuntime;
 
 #[Scoped]
-final class Twig
+class Twig
 {
     private ?Environment $cpTwig = null;
 
@@ -181,7 +182,7 @@ final class Twig
 
         $this->options = [
             // See: https://github.com/twigphp/Twig/issues/1951
-            'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
+            'cache' => Path::compiledTemplates(),
             'auto_reload' => true,
             'charset' => 'UTF-8',
         ];

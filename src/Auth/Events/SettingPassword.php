@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Auth\Events;
 use CraftCms\Cms\User\Elements\User;
 use SensitiveParameter;
 
-final class SettingPassword
+class SettingPassword
 {
     public function __construct(
         public User $user,

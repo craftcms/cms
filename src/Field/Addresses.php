@@ -9,11 +9,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\NestedElementManager;
-use craft\gql\arguments\elements\Address as AddressArguments;
-use craft\gql\interfaces\elements\Address as AddressGqlInterface;
-use craft\gql\resolvers\elements\Address as AddressResolver;
-use craft\gql\types\input\Addresses as AddressesInput;
-use craft\helpers\Gql;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Database\Table as DbTable;
@@ -29,6 +24,11 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\Gql\Arguments\Elements\Address as AddressArguments;
+use CraftCms\Cms\Gql\GqlHelper as Gql;
+use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
+use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
+use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -51,7 +51,7 @@ use function CraftCms\Cms\template;
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
-final class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
+class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
 {
     public const string VIEW_MODE_CARDS = 'cards';
 
@@ -355,7 +355,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
             $query->setResultOverride($query->all());
         } elseif ($element && is_array($value)) {
             $query->setResultOverride($this->createAddressesFromSerializedData($value, $element, $fromRequest));
-        } elseif (Craft::$app->getRequest()->getIsPreview()) {
+        } elseif (request()->isPreview()) {
             $query->withProvisionalDrafts();
         }
 
@@ -777,7 +777,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     public function getEagerLoadingGqlConditions(): array
     {
         return [
-            'withProvisionalDrafts' => Craft::$app->getRequest()->getIsPreview(),
+            'withProvisionalDrafts' => request()->isPreview(),
         ];
     }
 

@@ -13,7 +13,7 @@ use CraftCms\Cms\Search\SearchQuery;
  * Any modifications to [[$results]] will be respected when results are scored.
  * Set [[$scores]] to override the resulting element scores returned by [[Search::searchElements()]].
  */
-final class BeforeScoreResults
+class BeforeScoreResults
 {
     public function __construct(
         public ElementQueryInterface $elementQuery,

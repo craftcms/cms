@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry\Validation;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Validation\Rules\HandleRule;
@@ -13,8 +14,8 @@ use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
 
-/** @extends Ruleset<\CraftCms\Cms\Entry\Data\EntryType> */
-final class EntryTypeRules extends Ruleset
+/** @extends Ruleset<EntryType> */
+class EntryTypeRules extends Ruleset
 {
     #[\Override]
     public function defineRules(): array
@@ -23,11 +24,7 @@ final class EntryTypeRules extends Ruleset
             'id' => ['nullable', 'integer'],
             'color' => [
                 'nullable',
-                'string',
-                Rule::in(array_merge(
-                    array_map(fn (Color $color) => $color->value, Color::cases()),
-                    ['__blank__']
-                )),
+                Rule::enum(Color::class),
             ],
             'fieldLayoutId' => ['nullable', 'integer', function (string $attribute, int $value, $fail) {
                 $fieldLayout = Fields::assembleLayoutFromPost();

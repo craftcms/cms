@@ -9,7 +9,7 @@ use craft\base\ElementInterface;
 /**
  * @event RegisterSearchableAttributes event is triggered when registering the searchable attributes for an element type.
  */
-final class RegisterSearchableAttributes
+class RegisterSearchableAttributes
 {
     /**
      * @param  class-string<ElementInterface>  $elementType  The element type class

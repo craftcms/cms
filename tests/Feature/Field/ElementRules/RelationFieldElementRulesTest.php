@@ -12,7 +12,7 @@ test('relation fields enforce min relations', function () {
     $result = EntryModel::factory()
         ->withField('relatedEntries', Entries::class, ['allowLimit' => true, 'minRelations' => 1], value: [])
         ->withScenario(Element::SCENARIO_LIVE)
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
 
     $result->element->validate();
 
@@ -27,7 +27,7 @@ test('relation fields validate related elements when enabled', function () {
     $result = EntryModel::factory()
         ->withField('relatedEntries', Entries::class, ['validateRelatedElements' => true], value: new ElementCollection([$relatedEntry]))
         ->withScenario(Element::SCENARIO_LIVE)
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
 
     $result->element->validate();
 

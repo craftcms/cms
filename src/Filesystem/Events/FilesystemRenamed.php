@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Filesystem\Events;
 
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 
-final class FilesystemRenamed
+class FilesystemRenamed
 {
     public function __construct(
         public FsInterface $filesystem,

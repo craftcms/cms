@@ -8,7 +8,7 @@ namespace CraftCms\Cms\Field\Contracts;
  * SortableFieldInterface defines the common interface to be implemented by field classes that can be available as
  * sort options on element indexes.
  */
-interface SortableFieldInterface
+interface SortableFieldInterface extends FieldInterface
 {
     /**
      * Returns the field’s sort option definition.

@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\MemoizableArray;
 use craft\elements\GlobalSet;
 use craft\errors\ElementNotFoundException;
 use craft\errors\GlobalSetNotFoundException;
@@ -20,6 +19,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

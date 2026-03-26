@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \CraftCms\Cms\Translation\Formatter getFormatter()
  * @method static \CraftCms\Cms\Translation\Locale getLocale()
  * @method static \CraftCms\Cms\Translation\Locale getFormattingLocale()
+ * @method static mixed withLocale(string $language, string|null $formattingLocaleId, callable $callback)
  * @method static \CraftCms\Cms\Translation\Locale getLocaleById(string $localeId)
  * @method static \Illuminate\Support\Collection getAllLocaleIds()
  * @method static \Illuminate\Support\Collection getAllLocales()
@@ -22,14 +23,14 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Illuminate\Support\Collection getSiteLocales()
  * @method static \Illuminate\Support\Collection getEditableLocales()
  * @method static \Illuminate\Support\Collection getEditableLocaleIds()
- * @method static string translate(\Stringable|string $message, array $parameters = [], string|null $category = null, string|null $locale = null)
+ * @method static string translate(\Stringable|string|null $message, array $parameters = [], string|null $category = null, string|null $locale = null)
  * @method static void addCategorySources(\Yiisoft\Translator\CategorySource ...$categories)
  * @method static array getAllTranslationsForLocale(string $locale)
  * @method static string prep(string $message, array $params = [], ?string $category = null, ?string $locale = null)
  *
  * @see \CraftCms\Cms\Translation\I18N
  */
-final class I18N extends Facade
+class I18N extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

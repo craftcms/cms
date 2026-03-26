@@ -9,7 +9,7 @@ use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Session\SessionManager;
 
 #[Scoped]
-final class Impersonation
+class Impersonation
 {
     private const string SESSION_KEY = '__impersonator_id';
 

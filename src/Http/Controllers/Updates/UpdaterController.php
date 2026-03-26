@@ -6,16 +6,17 @@ namespace CraftCms\Cms\Http\Controllers\Updates;
 
 use Composer\Semver\Comparator;
 use Craft;
-use craft\helpers\UrlHelper;
 use craft\web\Application;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\Backups;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -34,7 +35,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  */
-final class UpdaterController extends BaseUpdaterController
+class UpdaterController extends BaseUpdaterController
 {
     public const string ACTION_FORCE_UPDATE = 'force-update';
 
@@ -74,7 +75,7 @@ final class UpdaterController extends BaseUpdaterController
             'title' => $this->pageTitle(),
             'initialState' => $state,
             'actionPrefix' => 'updater',
-            'returnUrl' => UrlHelper::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect()),
+            'returnUrl' => URL::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect()),
         ])->toResponse($this->request);
     }
 
@@ -83,7 +84,7 @@ final class UpdaterController extends BaseUpdaterController
         return $this->send($this->realInitialState(force: true));
     }
 
-    public function backup(): Response
+    public function backup(Backups $backups): Response
     {
         // make sure migrations are pending
         if (! $this->updates->areMigrationsPending()) {
@@ -91,7 +92,7 @@ final class UpdaterController extends BaseUpdaterController
         }
 
         try {
-            app('Craft')->getDb()->backup();
+            $backups->backup();
         } catch (Throwable $e) {
             Log::error('Error backing up the database: '.$e->getMessage(), [__METHOD__]);
 
@@ -308,7 +309,7 @@ final class UpdaterController extends BaseUpdaterController
     #[Override]
     protected function returnUrl(): string
     {
-        return UrlHelper::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
+        return URL::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
     }
 
     #[Override]

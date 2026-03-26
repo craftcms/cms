@@ -14,7 +14,7 @@ use Throwable;
 use function CraftCms\Cms\cp_redirect;
 use function CraftCms\Cms\t;
 
-final readonly class MigrationsController
+readonly class MigrationsController
 {
     public function __construct(Utilities $utilitiesService)
     {

@@ -8,7 +8,7 @@ use CraftCms\Cms\Twig\Nodes\ExitNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-final class ExitTokenParser extends AbstractTokenParser
+class ExitTokenParser extends AbstractTokenParser
 {
     public function parse(Token $token): ExitNode
     {

@@ -14,7 +14,7 @@ class TestHasCanonicalElement extends Element
 {
     public $testAttr;
 
-    #[\Override]
+    #[Override]
     public static function displayName(): string
     {
         return 'Test Element';

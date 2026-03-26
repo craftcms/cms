@@ -36,6 +36,7 @@ uses(UnitTestCase::class)->in('Unit');
 
 ## Core Rules
 
+- Do not add comments in test files — no section separators (e.g., `// -- section --`), no inline explanations, no docblocks. Test names should be descriptive enough on their own. Use `describe()` blocks to group related tests instead of comments.
 - Use `CraftCms\Cms\Cms::config()->cpTrigger` when asserting CP URLs; never hard-code `/admin`.
 - Do not instantiate element classes directly with `new` in tests; use factories to ensure database state.
 - Prefer factories and element queries over Eloquent models when asserting element behavior.

@@ -11,7 +11,7 @@ use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class HeaderNode extends Node
+class HeaderNode extends Node
 {
     #[Override]
     public function compile(Compiler $compiler): void

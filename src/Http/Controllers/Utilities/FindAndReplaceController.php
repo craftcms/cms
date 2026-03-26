@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 use function CraftCms\Cms\t;
 
-final readonly class FindAndReplaceController
+readonly class FindAndReplaceController
 {
     public function __construct(Utilities $utilitiesService)
     {

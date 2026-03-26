@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use Craft;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\View\TemplateCaches;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class CacheNode extends Node
+class CacheNode extends Node
 {
     #[Override]
     public function compile(Compiler $compiler): void
@@ -22,7 +22,7 @@ final class CacheNode extends Node
 
         $compiler
             ->addDebugInfo($this)
-            ->write('$cacheService = '.Craft::class."::\$app->getTemplateCaches();\n")
+            ->write('$cacheService = app('.TemplateCaches::class."::class);\n")
             ->write("\$request = request();\n")
             ->write("\$ignoreCache_$n = (\$request->isPreview() || \$request->getToken()");
 

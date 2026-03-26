@@ -24,7 +24,7 @@ use Override;
  *
  * @property Address $component
  */
-final class AddressRules extends ElementRules
+class AddressRules extends ElementRules
 {
     /**
      * @var list<class-string<BaseNativeField>>

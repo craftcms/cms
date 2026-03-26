@@ -1,0 +1,1 @@
+import"./lit.js";import"./decorators.js";import{t as e}from"./nav-item-BmfEXYuz.js";export{e as default};

@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
-use craft\assetpreviews\Image as ImagePreview;
 use CraftCms\Cms\Asset\Assets;
 use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
+use CraftCms\Cms\Asset\PreviewHandlers\Image as ImagePreview;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use yii\base\NotSupportedException;
 
 use function CraftCms\Cms\t;
 
-final readonly class PreviewController
+readonly class PreviewController
 {
     use EnforcesVolumePermissions;
     use RespondsWithFlash;
@@ -86,7 +86,7 @@ final readonly class PreviewController
         if ($previewHandler) {
             try {
                 $previewHtml = $previewHandler->getPreviewHtml($variables);
-            } catch (NotSupportedException) {
+            } catch (AssetNotPreviewableException) {
                 // No big deal
             }
         }

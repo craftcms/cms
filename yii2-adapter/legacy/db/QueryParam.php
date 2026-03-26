@@ -16,7 +16,7 @@ if (false) {
      * @since 5.0.0
      * @deprecated 6.0.0 use {@see \CraftCms\Cms\Database\QueryParam} instead.
      */
-    final class QueryParam
+    class QueryParam
     {
     }
 }

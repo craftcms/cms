@@ -13,6 +13,7 @@ use craft\elements\db\EagerLoadPlan;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -219,7 +220,7 @@ trait NestedElementTrait
                 }
 
                 $query = $ownerType::find()->id($primaryOwnerId);
-                Craft::configure($query, $this->ownerCriteria());
+                Typecast::configure($query, $this->ownerCriteria());
                 $this->_primaryOwner = $query->one() ?? false;
 
                 if (!$this->_primaryOwner) {
@@ -300,7 +301,7 @@ trait NestedElementTrait
                 }
 
                 $query = $ownerType::find()->id($ownerId);
-                Craft::configure($query, $this->ownerCriteria());
+                Typecast::configure($query, $this->ownerCriteria());
                 $this->_owner = $query->one() ?? false;
 
                 if (!$this->_owner) {
@@ -328,7 +329,7 @@ trait NestedElementTrait
 
                 if (!empty($ownerIds)) {
                     $query = $ownerType::find()->id($ownerIds);
-                    Craft::configure($query, $criteria + $this->ownerCriteria());
+                    Typecast::configure($query, $criteria + $this->ownerCriteria());
                     $this->_owners = $query->all();
                 }
             }

@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\User;
 
 use Craft;
-use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\FileHelper;
-use craft\helpers\UrlHelper;
 use craft\web\Request;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageException;
@@ -28,9 +26,13 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\ActivatingUser;
 use CraftCms\Cms\User\Events\AssigningUserToDefaultGroups;
@@ -55,6 +57,7 @@ use CraftCms\Cms\User\Events\UserUnsuspended;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
+use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -70,7 +73,7 @@ use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Users
+class Users
 {
     /**
      * @var array Cached user preferences.
@@ -358,7 +361,7 @@ final class Users
             $photo->setScenario(Asset::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
             $photo->setFilename($filename);
-            $photo->setMimeType(FileHelper::getMimeType($fileLocation, checkExtension: false) ?? $mimeType);
+            $photo->setMimeType(File::getMimeType($fileLocation, checkExtension: false) ?? $mimeType);
             $photo->newFolderId = $folderId;
             $photo->setVolumeId($volume->id);
 
@@ -707,6 +710,21 @@ final class Users
         }
     }
 
+    public function unverifyEmailForUser(User $user): void
+    {
+        // Bail if they already have an unverified email to begin with
+        if ($user->unverifiedEmail) {
+            return;
+        }
+
+        $userModel = UserModel::findOrFail($user->id);
+        $userModel->unverifiedEmail = $user->email;
+
+        if (! $userModel->save()) {
+            throw new InvalidElementException($user);
+        }
+    }
+
     /**
      * Unlocks a user, bypassing the cooldown phase.
      *
@@ -891,7 +909,7 @@ final class Users
     {
         $userModel = UserModel::findOrFail($user->id);
 
-        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        /** @var PasswordBroker $broker */
         $broker = Password::broker('craft');
         $token = $broker->createToken($user);
 
@@ -1050,14 +1068,14 @@ final class Users
      * Returns the default user groups that the given user should belong to.
      *
      *
-     * @return \CraftCms\Cms\User\Data\UserGroup[]
+     * @return UserGroup[]
      */
     public function getDefaultUserGroups(User $user): array
     {
         $groups = [];
         $uid = app(ProjectConfig::class)->get('users.defaultGroup');
         if ($uid) {
-            $group = \CraftCms\Cms\Support\Facades\UserGroups::getGroupByUid($uid);
+            $group = UserGroups::getGroupByUid($uid);
             if ($group) {
                 $groups[] = $group;
             }
@@ -1208,28 +1226,28 @@ final class Users
         $cp = (
             Edition::get()->value < Edition::Pro->value ||
             ($isCpRequest && $user->can('accessCp')) ||
-            (Cms::config()->headlessMode && ! UrlHelper::isAbsoluteUrl($fePath))
+            (Cms::config()->headlessMode && ! URL::isAbsoluteUrl($fePath))
         );
-        $scheme = UrlHelper::getSchemeForTokenizedUrl($cp);
+        $scheme = URL::getSchemeForTokenizedUrl($cp);
         $siteId = $isCpRequest ? $user->affiliatedSiteId : null;
 
         if (! $cp) {
-            return UrlHelper::siteUrl($fePath, $params, $scheme, siteId: $siteId);
+            return URL::siteUrl($fePath, $params, $scheme, siteId: $siteId);
         }
 
         // Only use cpUrl() if this is a control panel request, or the base control panel URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
         if (Cms::config()->baseCpUrl || $isCpRequest) {
-            $url = UrlHelper::cpUrl($cpPath, $params, $scheme);
+            $url = URL::cpUrl($cpPath, $params, $scheme);
         } else {
-            $path = UrlHelper::prependCpTrigger($cpPath);
-            $url = UrlHelper::siteUrl($path, $params, $scheme, siteId: $siteId);
+            $path = URL::prependCpTrigger($cpPath);
+            $url = URL::siteUrl($path, $params, $scheme, siteId: $siteId);
         }
 
-        if (UrlHelper::isRootRelativeUrl($url)) {
-            $request = Craft::$app->getRequest();
+        if (URL::isRootRelativeUrl($url)) {
+            $request = request();
             if (! app()->runningInConsole()) {
-                $url = rtrim($request->getHostInfo().$request->getBaseUrl(), '/').$url;
+                $url = rtrim($request->getSchemeAndHttpHost().$request->getBaseUrl(), '/').$url;
             }
         }
 

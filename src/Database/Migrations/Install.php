@@ -7,8 +7,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Migrations;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
-use craft\mail\transportadapters\Sendmail;
 use craft\web\Response;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
@@ -29,6 +27,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Str;
@@ -611,17 +610,6 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
             $table->char('uid', 36)->default('0');
         });
-
-        if (! Schema::hasTable('sessions')) {
-            Schema::create('sessions', function (Blueprint $table) {
-                $table->string('id')->primary();
-                $table->foreignId('user_id')->nullable()->index();
-                $table->string('ip_address', 45)->nullable();
-                $table->text('user_agent')->nullable();
-                $table->longText('payload');
-                $table->integer('last_activity')->index();
-            });
-        }
 
         Schema::create('shunnedmessages', function (Blueprint $table) {
             $table->integer('id', true);
@@ -1212,11 +1200,6 @@ class Install extends Migration
 
         return [
             'dateModified' => DateTimeHelper::currentTimeStamp(),
-            'email' => [
-                'fromEmail' => $this->email,
-                'fromName' => $this->site->getName(),
-                'transportType' => Sendmail::class,
-            ],
             'siteGroups' => [
                 $siteGroupUid => [
                     'name' => $this->site->getName(),

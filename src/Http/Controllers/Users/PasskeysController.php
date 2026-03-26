@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final readonly class PasskeysController
+readonly class PasskeysController
 {
     use ConfirmsPasswords;
     use EditUserTrait;
@@ -52,9 +52,10 @@ JS);
     public function creationOptions(Request $request): JsonResponse
     {
         $this->requireConfirmedPassword();
+        $serializer = $this->passkeys->webauthnServer()->getSerializer();
 
         return new JsonResponse([
-            'options' => $this->passkeys->getPasskeyCreationOptions($request->user()),
+            'options' => $serializer->serialize($this->passkeys->getPasskeyCreationOptions($request->user()), 'json'),
         ]);
     }
 

@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Database;
 use CraftCms\Cms\Support\Arr;
 use DateTime;
 
-final class QueryParam
+class QueryParam
 {
     public const string AND = 'and';
 

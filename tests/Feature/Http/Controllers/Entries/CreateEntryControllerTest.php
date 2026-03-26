@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
@@ -16,7 +17,7 @@ beforeEach(function () {
 });
 
 it('requires login', function () {
-    \Illuminate\Support\Facades\Auth::logout();
+    Auth::logout();
 
     get(cp_url('entries/pages/new'))->assertRedirect(cp_url('login'));
 });
@@ -34,10 +35,9 @@ it('requires a valid site when passed', function () {
 });
 
 it('creates a draft and redirects to it', function () {
-    $section = Section::factory()->create([
+    $section = Section::factory()->withEntryTypes(EntryType::factory()->create())->create([
         'handle' => 'blog',
     ]);
-    $section->entryTypes()->save(EntryType::factory()->create(), ['sortOrder' => 1]);
 
     get(cp_url('entries/blog/new'))
         ->assertStatus(302)

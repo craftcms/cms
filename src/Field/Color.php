@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -28,7 +28,7 @@ use function CraftCms\Cms\t;
  *
  * @property string|null $defaultColor
  */
-final class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -153,7 +153,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -162,7 +162,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     private function settingsHtml(bool $readOnly): string
     {
         return
-            Cp::editableTableFieldHtml([
+            FormFields::editableTableFieldHtml([
                 'label' => t('Palette'),
                 'name' => 'palette',
                 'instructions' => t('Define the available colors to choose from.'),
@@ -190,7 +190,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                 'data' => ['error-key' => 'palette'],
                 'static' => $readOnly,
             ]).
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Allow custom colors'),
                 'id' => 'allow-custom-colors',
                 'name' => 'allowCustomColors',
@@ -211,7 +211,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    #[\Override]
+    #[Override]
     public function getMessages(): array
     {
         return [
@@ -293,7 +293,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         $id = $this->getInputId();
 
         if (empty($this->palette)) {
-            return Cp::colorHtml([
+            return FormFields::colorHtml([
                 'id' => $id,
                 'describedBy' => $this->describedBy,
                 'name' => $this->handle,
@@ -325,7 +325,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                     'max-width' => '100%',
                 ],
             ]).
-            Cp::colorSelectFieldHtml([
+            FormFields::colorSelectFieldHtml([
                 'id' => $id,
                 'labelledBy' => $this->getLabelId(),
                 'describedBy' => $this->describedBy,
@@ -378,7 +378,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                 ]).
                 Html::label(t('Custom color:'), "$id-custom-input")
                     ->id($customLabelId).
-                Cp::colorHtml([
+                FormFields::colorHtml([
                     'id' => "$id-custom-input",
                     'labelledBy' => $customLabelId,
                     'describedBy' => $this->describedBy,

@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Conditions;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Condition\BaseElementSelectConditionRule;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\URL;
 
 use function CraftCms\Cms\t;
 
@@ -75,14 +75,14 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 
         return Html::hiddenLabel($this->getLabel(), $id).
             Html::tag('div',
-                Cp::selectHtml([
+                FormFields::selectHtml([
                     'id' => $id,
                     'name' => 'elementType',
                     'options' => $this->_elementTypeOptions(),
                     'value' => $this->elementType,
                     'inputAttributes' => [
                         'hx' => [
-                            'post' => UrlHelper::actionUrl('conditions/render'),
+                            'post' => URL::actionUrl('conditions/render'),
                         ],
                     ],
                 ]).

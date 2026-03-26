@@ -18,25 +18,25 @@ use Override;
  * @method static void setFieldContext(string $fieldContext)
  * @method static \Illuminate\Support\Collection getAllFieldTypes()
  * @method static \Illuminate\Support\Collection getFieldTypesWithContent()
- * @method static \Illuminate\Support\Collection getCompatibleFieldTypes(\CraftCms\Cms\Field\Contracts\FieldInterface $field, bool $includeCurrent = true)
+ * @method static \Illuminate\Support\Collection getCompatibleFieldTypes(mixed $field, bool $includeCurrent = true)
  * @method static bool areFieldTypesCompatible(string $fieldA, string $fieldB)
  * @method static \Illuminate\Support\Collection getNestedEntryFieldTypes()
  * @method static \Illuminate\Support\Collection getRelationalFieldTypes()
- * @method static \CraftCms\Cms\Field\Contracts\FieldInterface createField(string|array $config)
+ * @method static mixed createField(string|array $config)
  * @method static \Illuminate\Support\Collection getAllFields(string|string[]|false|null $context = null)
  * @method static \Illuminate\Support\Collection getFieldsWithContent(string|string[]|false|null $context = null)
  * @method static \Illuminate\Support\Collection getFieldsWithoutContent(string|string[]|false|null $context = null)
  * @method static \Illuminate\Support\Collection getFieldsByType(string $type, string|string[]|false|null $context = null)
- * @method static \CraftCms\Cms\Field\Contracts\FieldInterface|null getFieldById(int $fieldId)
- * @method static \CraftCms\Cms\Field\Contracts\FieldInterface|null getFieldByUid(string $fieldUid)
- * @method static \CraftCms\Cms\Field\Contracts\FieldInterface|null getFieldByHandle(string $handle, string|string[]|false|null $context = null)
+ * @method static mixed|null getFieldById(int $fieldId)
+ * @method static mixed|null getFieldByUid(string $fieldUid)
+ * @method static mixed|null getFieldByHandle(string $handle, string|string[]|false|null $context = null)
  * @method static bool doesFieldWithHandleExist(string $handle, string|null $context = null)
  * @method static array createFieldConfig(\CraftCms\Cms\Field\Contracts\FieldInterface $field)
- * @method static bool saveField(\CraftCms\Cms\Field\Contracts\FieldInterface $field, bool $runValidation = true)
+ * @method static bool saveField(mixed $field, bool $runValidation = true)
  * @method static void prepFieldForSave(\CraftCms\Cms\Field\Contracts\FieldInterface $field)
  * @method static void handleChangedField(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
  * @method static bool deleteFieldById(int $fieldId)
- * @method static bool deleteField(\CraftCms\Cms\Field\Contracts\FieldInterface $field)
+ * @method static bool deleteField(mixed $field)
  * @method static void handleDeletedField(\CraftCms\Cms\ProjectConfig\Events\ConfigEvent $event)
  * @method static void applyFieldDelete(string $fieldUid)
  * @method static void refreshFields()
@@ -59,7 +59,7 @@ use Override;
  *
  * @see \CraftCms\Cms\Field\Fields
  */
-final class Fields extends Facade
+class Fields extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

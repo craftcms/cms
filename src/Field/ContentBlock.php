@@ -9,10 +9,6 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\NestedElementManager;
-use craft\gql\resolvers\elements\ContentBlock as ContentBlockResolver;
-use craft\gql\types\generators\ContentBlock as ContentBlockGenerator;
-use craft\gql\types\input\ContentBlock as ContentBlockInputType;
-use craft\helpers\Gql;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -25,6 +21,10 @@ use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\GqlHelper as Gql;
+use CraftCms\Cms\Gql\Resolvers\Elements\ContentBlock as ContentBlockResolver;
+use CraftCms\Cms\Gql\Types\Generators\ContentBlock as ContentBlockGenerator;
+use CraftCms\Cms\Gql\Types\Input\ContentBlock as ContentBlockInputType;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -35,6 +35,7 @@ use CraftCms\Cms\User\Elements\User;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
@@ -46,7 +47,7 @@ use function CraftCms\Cms\template;
 /**
  * Content Block field type
  */
-final class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface
+class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface
 {
     private const string VIEW_MODE_GROUPED = 'grouped';
 
@@ -392,7 +393,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
             return $this->_createContentBlockFromSerializedData($value, $element, $fromRequest);
         }
 
-        if (Craft::$app->getRequest()->getIsPreview()) {
+        if (request()->isPreview()) {
             $contentBlock = $this->createContentBlockQuery($element)
                 ->withProvisionalDrafts()
                 ->one();
@@ -767,8 +768,6 @@ JS, [
             $contentBlock = $this->createContentBlockQuery($element)->one();
         }
 
-        $request = Craft::$app->getRequest();
-
         $fieldNamespace = $element->getFieldParamNamespace();
         $baseFieldNamespace = $fieldNamespace ? "$fieldNamespace.$this->handle" : null;
 
@@ -781,12 +780,12 @@ JS, [
                 // this is so that extra drafts don't get created for matrix in matrix scenario
                 // where both are set to inline-editable blocks view mode
                 (
-                    $request->getIsConsoleRequest() ||
-                    $request->getActionSegments() !== ['elements', 'update-field-layout']
+                    app()->runningInConsole() ||
+                    request()->actionSegments() !== ['elements', 'update-field-layout']
                 )
             ) {
                 // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                $contentBlock = app(Drafts::class)->createDraft($contentBlock, Craft::$app->getUser()->getId(), null, null, [
+                $contentBlock = app(Drafts::class)->createDraft($contentBlock, Auth::id(), null, null, [
                     'canonicalId' => $contentBlock->id,
                     'primaryOwnerId' => $element->id,
                     'owner' => $element,

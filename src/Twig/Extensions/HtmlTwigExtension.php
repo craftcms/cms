@@ -6,24 +6,24 @@ namespace CraftCms\Cms\Twig\Extensions;
 
 use Craft;
 use craft\errors\AssetException;
-use craft\helpers\HtmlPurifier;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
 use CraftCms\Cms\View\InputNamespace;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Override;
+use Symfony\Component\HtmlSanitizer\HtmlSanitizerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use yii\base\InvalidConfigException;
-use yii\helpers\Markdown;
 
-final class HtmlTwigExtension extends AbstractExtension
+class HtmlTwigExtension extends AbstractExtension
 {
     #[Override]
     public function getFilters(): array
@@ -45,8 +45,8 @@ final class HtmlTwigExtension extends AbstractExtension
             new TwigFilter('parseAttr', $this->parseAttrFilter(...)),
             new TwigFilter('parseRefs', $this->parseRefsFilter(...), ['is_safe' => ['html']]),
             new TwigFilter('prepend', $this->prependFilter(...), ['is_safe' => ['html']]),
-            new TwigFilter('purify', $this->purifyFilter(...), ['is_safe' => ['html']]),
             new TwigFilter('removeClass', $this->removeClassFilter(...), ['is_safe' => ['html']]),
+            new TwigFilter('sanitize', $this->sanitizeFilter(...), ['is_safe' => ['html']]),
         ];
     }
 
@@ -97,27 +97,13 @@ final class HtmlTwigExtension extends AbstractExtension
         }
     }
 
-    public function purifyFilter(?string $html, array|string|null $config = null): ?string
+    public function sanitizeFilter(?string $html, HtmlSanitizerInterface|string|null $sanitizer = null): ?string
     {
         if ($html === null) {
             return null;
         }
 
-        if (is_string($config)) {
-            $path = app()->configPath("craft/htmlpurifier/$config.json");
-            $config = null;
-            if (! is_file($path)) {
-                Log::info("No HTML Purifier config found at $path.");
-            } else {
-                try {
-                    $config = Json::decode(file_get_contents($path));
-                } catch (InvalidArgumentException) {
-                    Log::info("Invalid HTML Purifier config at $path.");
-                }
-            }
-        }
-
-        return HtmlPurifier::process($html, $config);
+        return app(HtmlSanitizers::class)->sanitize($html, $sanitizer);
     }
 
     public function removeClassFilter(string $tag, array|string $class): string
@@ -177,10 +163,10 @@ final class HtmlTwigExtension extends AbstractExtension
         }
 
         if ($inlineOnly) {
-            return Markdown::processParagraph((string) $markdown, $flavor);
+            return Markdown::parseParagraph((string) $markdown, $flavor);
         }
 
-        return Markdown::process((string) $markdown, $flavor);
+        return Markdown::parse((string) $markdown, $flavor);
     }
 
     /**

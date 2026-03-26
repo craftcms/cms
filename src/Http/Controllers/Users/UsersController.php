@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Users;
 
 use Craft;
-use craft\helpers\UrlHelper;
+use craft\web\CpScreenResponseBehavior;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
@@ -15,6 +15,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Sections;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefineUserContentSummary;
@@ -29,7 +30,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class UsersController
+readonly class UsersController
 {
     use AuthorizesRequests;
     use EditUserTrait;
@@ -67,9 +68,7 @@ final readonly class UsersController
         $editUrl = $user->getCpEditUrl();
 
         if (! $request->wantsJson()) {
-            return redirect(UrlHelper::urlWithParams($editUrl, [
-                'fresh' => 1,
-            ]));
+            return redirect(URL::urlWithParams($editUrl, ['fresh' => 1]));
         }
 
         return $this->asModelSuccess($user, t('{type} created.', [
@@ -95,7 +94,7 @@ final readonly class UsersController
         /**
          * This transforms the old Yii CpScreen to the new
          *
-         * @var \craft\web\CpScreenResponseBehavior $cpScreen
+         * @var CpScreenResponseBehavior $cpScreen
          */
         $cpScreen = $response->getBehavior('cp-screen');
         $response = $this->asEditUserScreen($user, self::SCREEN_PROFILE);

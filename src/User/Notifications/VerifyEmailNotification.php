@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Notifications;
 
-use Craft;
-use craft\helpers\Template;
-use CraftCms\Cms\Notifications\Channels\CraftChannel;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\Support\Template;
+use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
+use CraftCms\Cms\SystemMessage\SystemMessages;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Channels\MailChannel;
 use Illuminate\Notifications\Notification;
 use SensitiveParameter;
 
-final class VerifyEmailNotification extends Notification implements ShouldQueue
+class VerifyEmailNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -25,17 +26,18 @@ final class VerifyEmailNotification extends Notification implements ShouldQueue
 
     public function via(mixed $notifiable): array
     {
-        return [CraftChannel::class];
+        return [MailChannel::class];
     }
 
-    public function toCraft(User $user): bool
+    public function toMail(User $user): SystemMessageMailable
     {
         $url = Users::getEmailVerifyUrl($user, $this->token);
         $key = $user->pending ? 'account_activation' : 'verify_new_email';
 
-        return Craft::$app->getMailer()
-            ->composeFromKey($key, ['link' => Template::raw($url)])
-            ->setTo($user)
-            ->send();
+        return app(SystemMessages::class)->mailable(
+            key: $key,
+            user: $user,
+            variables: ['link' => Template::raw($url)],
+        );
     }
 }

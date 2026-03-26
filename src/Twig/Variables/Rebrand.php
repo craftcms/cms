@@ -8,7 +8,7 @@ use Craft;
 use CraftCms\Cms\Cp\Rebrand as RebrandService;
 use CraftCms\Cms\Edition;
 
-final class Rebrand
+class Rebrand
 {
     /**
      * @var string[]|false[]

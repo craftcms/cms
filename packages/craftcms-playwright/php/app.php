@@ -20,6 +20,7 @@
 
 use craft\helpers\App;
 use craft\helpers\StringHelper;
+use modules\DbBackup;
 
 return [
     'id' => App::env('CRAFT_APP_ID') ?: 'CraftCMS',
@@ -27,7 +28,7 @@ return [
         '@'.str_replace('\\', '/', App::env('CODECEPTION_FIXTURES_NAMESPACE')) => '/var/www/repos/repo'.StringHelper::ensureLeft(App::env('CODECEPTION_FIXTURES_PATH'), '/'),
     ],
     'modules' => [
-        'db-backup' => \modules\DbBackup::class,
+        'db-backup' => DbBackup::class,
     ],
     'bootstrap' => ['db-backup'],
 ];

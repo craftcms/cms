@@ -10,7 +10,7 @@ use CraftCms\Cms\View\TemplateMode;
 /**
  * @event RenderingPageTemplate The event that is triggered before a page template gets rendered
  */
-final class RenderingPageTemplate
+class RenderingPageTemplate
 {
     use ValidatableEvent;
 

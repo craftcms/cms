@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Support;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
+use CraftCms\Cms\User\Models\User;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
@@ -22,7 +22,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -40,7 +39,7 @@ use function CraftCms\Cms\normalizeVersion;
  * @internal
  */
 #[Singleton]
-final class Api
+class Api
 {
     private static string $craftApiEndpoint;
 
@@ -151,7 +150,7 @@ final class Api
         }
 
         if ($user = Auth::getUser()) {
-            /** @var \CraftCms\Cms\User\Models\User $user */
+            /** @var User $user */
             $headers['X-Craft-User-Email'] = $user->email;
         }
 

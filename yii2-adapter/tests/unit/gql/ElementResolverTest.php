@@ -14,6 +14,7 @@ use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\models\GqlSchema;
 use craft\test\TestCase;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\ResolveInfo;
 use UnitTester;
@@ -27,22 +28,26 @@ class ElementResolverTest extends TestCase
 
     protected function _before(): void
     {
+        $schema = $this->make(GqlSchema::class, [
+            'scope' => [
+                'volumes.someUid:read',
+            ],
+        ]);
+
         // Mock the GQL schema for the volumes below
         $this->tester->mockMethods(
             Craft::$app,
             'gql',
             [
-                'getActiveSchema' => $this->make(GqlSchema::class, [
-                    'scope' => [
-                        'volumes.someUid:read',
-                    ],
-                ]),
+                'getActiveSchema' => $schema,
             ]
         );
+        app(Gql::class)->setActiveSchema($schema);
     }
 
     protected function _after(): void
     {
+        app(Gql::class)->setActiveSchema(null);
     }
 
     /**

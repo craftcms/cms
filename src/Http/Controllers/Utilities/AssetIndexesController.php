@@ -8,6 +8,7 @@ use Craft;
 use CraftCms\Cms\Asset\AssetIndexer;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
@@ -16,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class AssetIndexesController
+readonly class AssetIndexesController
 {
     use RespondsWithFlash;
 
@@ -205,7 +206,7 @@ final readonly class AssetIndexesController
                 ->all();
 
             foreach ($assets as $asset) {
-                app(\CraftCms\Cms\Image\ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
+                app(ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
                 $asset->keepFileOnDelete = true;
                 Craft::$app->getElements()->deleteElement($asset);
             }

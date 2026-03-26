@@ -7,8 +7,8 @@ namespace CraftCms\Cms\Field;
 use CommerceGuys\Addressing\Country\Country as CountryModel;
 use CommerceGuys\Addressing\Exception\UnknownCountryException;
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use CraftCms\Cms\Address\Addresses;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Conditions\CountryFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -21,7 +21,7 @@ use function CraftCms\Cms\t;
 /**
  * Country represents a Country field.
  */
-final class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -71,7 +71,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
         $options = app(Addresses::class)->getCountryList(app()->getLocale());
         array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
 
-        return Cp::selectizeHtml([
+        return FormFields::selectizeHtml([
             'id' => $this->getInputId(),
             'name' => $this->handle,
             'options' => $options,

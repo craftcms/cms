@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
 use PDOException;
 use Throwable;
 
-final readonly class Cms
+readonly class Cms
 {
     public const string NAME = 'Craft CMS';
 
@@ -46,6 +46,11 @@ final readonly class Cms
         }
 
         return $name ?: config('app.name', 'Craft');
+    }
+
+    public static function systemUid(): ?string
+    {
+        return Info::fetch()->uid;
     }
 
     public static function isInstalled(bool $strict = false): bool

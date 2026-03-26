@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final readonly class DeprecationErrorsController
+readonly class DeprecationErrorsController
 {
     public function __construct(
         Utilities $utilitiesService,

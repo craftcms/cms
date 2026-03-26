@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\Events;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Field;
 use Illuminate\Support\Collection;
 
 /**
  * @event RegisterFieldTypes The event that is triggered when registering field types.
  *
- * Field types must implement {@see FieldInterface}. {@see \CraftCms\Cms\Field\Field} provides a base implementation.
+ * Field types must implement {@see FieldInterface}. {@see Field} provides a base implementation.
  *
  * See [Field Types](https://craftcms.com/docs/5.x/extend/field-types.html) for documentation on creating field types.
  * ---
@@ -23,7 +24,7 @@ use Illuminate\Support\Collection;
  * });
  * ```
  */
-final class RegisterFieldTypes
+class RegisterFieldTypes
 {
     public function __construct(
         /** @var Collection<class-string<FieldInterface>> */

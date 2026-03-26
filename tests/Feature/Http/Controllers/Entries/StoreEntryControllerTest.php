@@ -23,11 +23,10 @@ beforeEach(function () {
     $this->user = User::factory()->admin()->create()->asElement();
     actingAs($this->user);
 
-    $this->section = Section::factory()->create([
+    $this->entryType = EntryType::factory()->create();
+    $this->section = Section::factory()->withEntryTypes($this->entryType)->create([
         'handle' => 'blog',
     ]);
-    $this->entryType = EntryType::factory()->create();
-    $this->section->entryTypes()->save($this->entryType, ['sortOrder' => 1]);
 });
 
 it('requires login', function () {
@@ -68,10 +67,7 @@ it('can create a new entry', function () {
 });
 
 it('can update an existing entry', function () {
-    $entryModel = EntryModel::factory()->create([
-        'sectionId' => $this->section->id,
-        'typeId' => $this->entryType->id,
-    ]);
+    $entryModel = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->create();
 
     post(action(StoreEntryController::class), [
         'entryId' => $entryModel->id,
@@ -83,10 +79,7 @@ it('can update an existing entry', function () {
 });
 
 it('can duplicate an entry', function () {
-    $entryModel = EntryModel::factory()->create([
-        'sectionId' => $this->section->id,
-        'typeId' => $this->entryType->id,
-    ]);
+    $entryModel = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->create();
 
     // Original entry should be enabled by default (from factory)
     // Wait, let's ensure it's enabled
@@ -112,10 +105,7 @@ it('can duplicate an entry', function () {
 
 it('handles provisional drafts', function () {
     // 1. Create a live entry
-    $entryModel = EntryModel::factory()->create([
-        'sectionId' => $this->section->id,
-        'typeId' => $this->entryType->id,
-    ]);
+    $entryModel = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->create();
 
     // 2. Create a provisional draft for this entry
     $liveEntry = Entry::find()->id($entryModel->id)->status(null)->one();
@@ -160,10 +150,7 @@ it('returns JSON response', function () {
 });
 
 it('throws exception when entry is locked', function () {
-    $entryModel = EntryModel::factory()->create([
-        'sectionId' => $this->section->id,
-        'typeId' => $this->entryType->id,
-    ]);
+    $entryModel = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->create();
 
     // Mock Cache::lock to return false (lock acquired by someone else)
     Cache::shouldReceive('lock')

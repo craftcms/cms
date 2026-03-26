@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements\users;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseNativeField;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
@@ -19,7 +19,7 @@ use function CraftCms\Cms\t;
 
 class AffiliatedSiteField extends BaseNativeField
 {
-    #[\Override]
+    #[Override]
     public string $attribute = 'affiliatedSiteId';
 
     public function __construct($config = [])
@@ -67,7 +67,7 @@ class AffiliatedSiteField extends BaseNativeField
             return null;
         }
 
-        return Cp::selectHtml([
+        return FormFields::selectHtml([
             'name' => 'affiliatedSiteId',
             'id' => 'affiliated-site',
             'options' => [

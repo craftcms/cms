@@ -22,7 +22,7 @@ describe('requireAdmin', function () {
     });
 
     it('throws ForbiddenHttpException when user is not an admin', function () {
-        $user = \CraftCms\Cms\User\Models\User::factory()->create(['admin' => false])->asElement();
+        $user = CraftCms\Cms\User\Models\User::factory()->create(['admin' => false])->asElement();
         actingAs($user);
 
         $this->renderer->renderString('{% requireAdmin %}');
@@ -31,7 +31,7 @@ describe('requireAdmin', function () {
 
 describe('requirePermission', function () {
     it('throws when user lacks the permission', function () {
-        $user = \CraftCms\Cms\User\Models\User::factory()->create(['admin' => false])->asElement();
+        $user = CraftCms\Cms\User\Models\User::factory()->create(['admin' => false])->asElement();
         actingAs($user);
 
         $this->renderer->renderString('{% requirePermission "editEntries" %}');

@@ -299,7 +299,8 @@
         inset-block-start: 50%;
         inset-inline-start: 50%;
         z-index: 1;
-        background-image: url('../images/preview/chrome-phone-top.svg'),
+        background-image:
+          url('../images/preview/chrome-phone-top.svg'),
           url('../images/preview/chrome-phone-bottom.svg');
         background-position:
           top center,
@@ -314,7 +315,8 @@
       // Tablet
       &.lp-iframe-container--tablet {
         .lp-device-mask {
-          background-image: url('../images/preview/chrome-tablet-top.svg'),
+          background-image:
+            url('../images/preview/chrome-tablet-top.svg'),
             url('../images/preview/chrome-tablet-bottom.svg');
         }
       }

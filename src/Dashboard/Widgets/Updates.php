@@ -7,14 +7,14 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use Craft;
 use craft\web\assets\updateswidget\UpdatesWidgetAsset;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Updates\Updates as UpdatesService;
+use CraftCms\Cms\Update\Updates as UpdatesService;
 use Illuminate\Support\Facades\Auth;
 use Override;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class Updates extends Widget
+class Updates extends Widget
 {
     public function __construct(
         private readonly UpdatesService $updates,

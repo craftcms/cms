@@ -13,6 +13,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\helpers\Db;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -23,7 +24,6 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Data\UserGroup;
 use DateTime;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidConfigException;
 
@@ -556,27 +556,25 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      */
     public function authorGroup(mixed $value): static
     {
-        if ($value instanceof UserGroup) {
-            $this->authorGroupId = $value->id;
-            return $this;
+        // If the value is a group handle, swap it with the user group
+        if (is_string($value) && ($group = Craft::$app->getUserGroups()->getGroupByHandle($value))) {
+            $value = $group;
         }
 
-        if (is_iterable($value)) {
-            $collection = Collection::make($value);
-            if ($collection->every(fn($v) => $v instanceof UserGroup)) {
-                $this->authorGroupId = $collection->pluck('id')->all();
-                return $this;
-            }
-        }
-
-        if ($value !== null) {
-            $this->authorGroupId = (new Query())
+        if (Db::normalizeParam($value, fn($item) => $item instanceof UserGroup ? $item->id : null)) {
+            $this->authorGroupId = $value;
+        } else {
+            $values = QueryParam::toArray($value);
+            $operator = QueryParam::extractOperator($values);
+            $groupIds = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])
-                ->where(Db::parseParam('handle', $value))
+                ->where(Db::parseParam('handle', $values))
                 ->column();
-        } else {
-            $this->authorGroupId = null;
+
+            $this->authorGroupId = $operator === null
+                ? $groupIds
+                : [$operator, ...$groupIds];
         }
 
         return $this;
@@ -922,12 +920,40 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             }
 
             if ($this->authorGroupId) {
-                $this->subQuery->andWhere(['exists', (new Query())
-                    ->from(['entries_authors' => Table::ENTRIES_AUTHORS])
-                    ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries_authors.authorId]]')
-                    ->where('[[entries.id]] = [[entries_authors.entryId]]')
-                    ->andWhere(Db::parseNumericParam('usergroups_users.groupId', $this->authorGroupId)),
-                ]);
+                // Checking multiple groups?
+                if (
+                    is_array($this->authorGroupId) &&
+                    is_string(reset($this->authorGroupId)) &&
+                    strtolower(reset($this->authorGroupId)) === 'and'
+                ) {
+                    $groupIdChecks = array_slice($this->authorGroupId, 1);
+                } else {
+                    $groupIdChecks = [$this->authorGroupId];
+                }
+
+                foreach ($groupIdChecks as $i => $groupIdCheck) {
+                    if (
+                        is_array($groupIdCheck) &&
+                        is_string(reset($groupIdCheck)) &&
+                        strtolower(reset($groupIdCheck)) === 'not'
+                    ) {
+                        $groupIdOperator = 'not exists';
+                        array_shift($groupIdCheck);
+                        if (empty($groupIdCheck)) {
+                            continue;
+                        }
+                    } else {
+                        $groupIdOperator = 'exists';
+                    }
+
+                    $this->subQuery->andWhere([
+                        $groupIdOperator, (new Query())
+                            ->from(["entries_authors$i" => Table::ENTRIES_AUTHORS])
+                            ->innerJoin(["usergroups_users$i" => Table::USERGROUPS_USERS], "[[usergroups_users$i.userId]] = [[entries_authors$i.authorId]]")
+                            ->where("[[entries.id]] = [[entries_authors$i.entryId]]")
+                            ->andWhere(Db::parseNumericParam("usergroups_users$i.groupId", $groupIdCheck)),
+                    ]);
+                }
             }
         }
 

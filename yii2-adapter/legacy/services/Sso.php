@@ -9,12 +9,12 @@ namespace craft\services;
 
 use Craft;
 use craft\auth\sso\ProviderInterface;
-use craft\base\MemoizableArray;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
 use CraftCms\Cms\Auth\Models\SsoIdentity;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -31,6 +31,7 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @internal
  * @since 5.3.0
+ * @deprecated 6.0.0 use the Laravel Socialite {@see \CraftCms\Cms\Auth\OAuth\OAuth} implementation instead.
  */
 class Sso extends Component
 {

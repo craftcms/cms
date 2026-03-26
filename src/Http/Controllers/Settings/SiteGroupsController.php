@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
 
-final readonly class SiteGroupsController
+readonly class SiteGroupsController
 {
     use RespondsWithFlash;
 

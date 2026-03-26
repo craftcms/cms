@@ -11,7 +11,7 @@ use craft\base\ElementInterface;
  *
  * If `output` is set, it will be used as the rendered output instead of looking for templates.
  */
-final class Render
+class Render
 {
     /**
      * @param  ElementInterface  $element  The element being rendered

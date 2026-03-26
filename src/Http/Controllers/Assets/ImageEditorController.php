@@ -12,6 +12,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Image\ImageTransforms;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +21,7 @@ use yii\base\NotSupportedException;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final readonly class ImageEditorController
+readonly class ImageEditorController
 {
     use EnforcesVolumePermissions;
     use RespondsWithFlash;
@@ -204,7 +205,7 @@ final readonly class ImageEditorController
             $asset->setFocalPoint($focal);
 
             if ($focalChanged) {
-                app(\CraftCms\Cms\Image\ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
+                app(ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
             }
 
             // Only replace file if it changed, otherwise just save changed focal points
@@ -262,7 +263,7 @@ final readonly class ImageEditorController
 
         $asset->setFocalPoint($focalData);
         Craft::$app->getElements()->saveElement($asset);
-        app(\CraftCms\Cms\Image\ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
+        app(ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
 
         return $this->asSuccess();
     }

@@ -101,7 +101,7 @@
             <div class="flex gap-1 items-center text-sm">
               <craft-icon
                 name="circle-check"
-                style="color: var(--c-color-success-bg-emphasis)"
+                style="color: var(--c-color-success-fill-loud)"
               ></craft-icon>
               {{ flash.success }}
             </div>
@@ -110,7 +110,7 @@
             <div class="tw:flex tw:gap-1 tw:items-center tw:text-sm">
               <craft-icon
                 name="triangle-exclamation"
-                style="color: var(--c-color-danger-bg-emphasis)"
+                style="color: var(--c-color-danger-fill-loud)"
               ></craft-icon>
               {{ t('Could not save settings') }}
             </div>
@@ -127,7 +127,10 @@
           </craft-button>
           <craft-action-menu>
             <craft-button slot="invoker" variant="primary" type="button" icon>
-              <craft-icon name="chevron-down"></craft-icon>
+              <craft-icon
+                name="chevron-down"
+                :label="t('More actions')"
+              ></craft-icon>
             </craft-button>
 
             <div slot="content">
@@ -140,7 +143,9 @@
         </craft-button-group>
       </template>
 
-      <div class="bg-white border border-border-subtle rounded-sm shadow-sm">
+      <div
+        class="bg-white border border-neutral-border-quiet rounded-sm shadow-sm"
+      >
         <template v-if="readOnly">
           <CalloutReadOnly />
         </template>
@@ -267,7 +272,7 @@
             v-model="form.retryDuration"
             :has-feedback-for="errors?.retryDuration ? 'error' : ''"
             inputmode="numeric"
-            size="4"
+            maxlength="4"
             :disabled="readOnly"
           >
             <div
@@ -366,7 +371,7 @@
     padding: var(--c-spacing-md);
   }
   .preview {
-    border: 1px solid var(--c-color-neutral-border-subtle);
+    border: 1px solid var(--c-color-neutral-border-quiet);
   }
 
   .preview--icon {

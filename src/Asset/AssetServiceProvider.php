@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Commands\IndexAllAssetsCommand;
 use CraftCms\Cms\Asset\Commands\IndexOneAssetCommand;
 use Illuminate\Support\ServiceProvider;
 
-final class AssetServiceProvider extends ServiceProvider
+class AssetServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {

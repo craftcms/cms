@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 /**
  * @event DefineSourceSortOptions The event that is triggered when defining the available sort options for a source.
  */
-final class DefineSourceSortOptions
+class DefineSourceSortOptions
 {
     public function __construct(
         /**

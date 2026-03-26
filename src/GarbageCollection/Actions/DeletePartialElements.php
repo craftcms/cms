@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
+use craft\base\ElementInterface;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
@@ -13,12 +14,12 @@ use Tpetry\QueryExpressions\Language\Alias;
 /**
  * Deletes elements that are missing data in the given element extension table.
  */
-final class DeletePartialElements extends GarbageCollectionAction
+class DeletePartialElements extends GarbageCollectionAction
 {
     public function __construct(
         GarbageCollection $garbageCollection,
         GeneralConfig $generalConfig,
-        /** @var class-string<\craft\base\ElementInterface> */
+        /** @var class-string<ElementInterface> */
         private readonly string $elementType,
         private readonly string $table,
         private readonly string $foreignKey = 'id',

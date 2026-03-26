@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Hard-deletes any rows in the given table(s) that are due for it.
  */
-final class HardDelete extends GarbageCollectionAction
+class HardDelete extends GarbageCollectionAction
 {
     /**
      * @param  string|string[]  $tables  The table(s) to delete rows from. They must have a `dateDeleted` column.

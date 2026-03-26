@@ -9,7 +9,7 @@ use CraftCms\Cms\Shared\BasePivot;
 use CraftCms\Cms\Site\Models\Site;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class ElementSiteSettings extends BasePivot
+class ElementSiteSettings extends BasePivot
 {
     #[\Override]
     protected $table = Table::ELEMENTS_SITES;

@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
 use Craft;
-use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
@@ -15,6 +14,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\DateTimeHelper;
 use Exception;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
@@ -24,7 +24,7 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-final readonly class StoreEntryController
+readonly class StoreEntryController
 {
     use EnforcesPermissions;
     use RespondsWithFlash;
@@ -127,7 +127,7 @@ final readonly class StoreEntryController
             $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
 
             if ($this->request->isCpRequest()) {
-                $data['elementHtml'] = Cp::elementChipHtml($entry);
+                $data['elementHtml'] = app(ElementHtml::class)->elementChipHtml($entry);
             }
         }
 

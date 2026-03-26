@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates;
 use CraftCms\Cms\Utility\Utilities\Upgrade;
@@ -18,7 +18,7 @@ use InvalidArgumentException;
 use function CraftCms\Cms\cp_redirect;
 use function CraftCms\Cms\template;
 
-final readonly class UtilitiesController
+readonly class UtilitiesController
 {
     public function __construct(
         private Utilities $utilitiesService,
@@ -60,7 +60,7 @@ final readonly class UtilitiesController
 
         return Inertia::render('UtilitiesShowPage', [
             'crumbs' => [
-                ['label' => 'Utilities', 'url' => UrlHelper::cpUrl('utilities')],
+                ['label' => 'Utilities', 'url' => URL::cpUrl('utilities')],
                 ['label' => $class::displayName(), 'url' => null],
             ],
             'id' => $id,
@@ -77,13 +77,13 @@ final readonly class UtilitiesController
         return $this->utilitiesService
             ->getAuthorizedUtilityTypes()
             /**
-             * @var class-string<\CraftCms\Cms\Utility\Utility> $class
+             * @var class-string<Utility> $class
              *
              * @phpstan-ignore argument.unresolvableType
              */
             ->map(fn (string $class) => [
                 'id' => $class::id(),
-                'url' => UrlHelper::cpUrl('utilities/'.$class::id()),
+                'url' => URL::cpUrl('utilities/'.$class::id()),
                 'iconSvg' => $this->utilityIconSvg($class),
                 'displayName' => $class::displayName(),
                 'iconPath' => $class::icon(),
@@ -103,7 +103,7 @@ final readonly class UtilitiesController
         }
 
         try {
-            $svg = Cp::iconSvg($icon);
+            $svg = Icons::svg($icon);
             if ($svg !== '') {
                 return $svg;
             }

@@ -3,6 +3,7 @@
 use CraftCms\Cms\Element\Queries\Events\DefineCacheTags;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Support\Facades\Event;
 
 it('gathers cache tags used after a query was executed', function () {
@@ -12,7 +13,7 @@ it('gathers cache tags used after a query was executed', function () {
 
     entryQuery()->id($entry->id)->all();
 
-    /** @var \CraftCms\DependencyAwareCache\Dependency\TagDependency $dependency */
+    /** @var TagDependency $dependency */
     $dependency = Craft::$app->getElements()->stopCollectingCacheInfo()[0];
 
     expect($dependency->tags)->toContain('element::'.$entry->id);
@@ -23,7 +24,7 @@ it('only adds ids when less than 100 ids have been requested', function () {
 
     entryQuery()->id(range(1, 100))->all();
 
-    /** @var \CraftCms\DependencyAwareCache\Dependency\TagDependency $dependency */
+    /** @var TagDependency $dependency */
     $dependency = Craft::$app->getElements()->stopCollectingCacheInfo()[0];
 
     expect($dependency->tags)->toContain('element::1');
@@ -33,7 +34,7 @@ it('only adds ids when less than 100 ids have been requested', function () {
 
     entryQuery()->id(range(1, 101))->all();
 
-    /** @var \CraftCms\DependencyAwareCache\Dependency\TagDependency $dependency */
+    /** @var TagDependency $dependency */
     $dependency = Craft::$app->getElements()->stopCollectingCacheInfo()[0];
 
     expect($dependency->tags)->not()->toContain('element::1');
@@ -49,7 +50,7 @@ it('can define extra cache tags', function () {
 
     entryQuery()->all();
 
-    /** @var \CraftCms\DependencyAwareCache\Dependency\TagDependency $dependency */
+    /** @var TagDependency $dependency */
     $dependency = Craft::$app->getElements()->stopCollectingCacheInfo()[0];
 
     expect($dependency->tags)->toContain(sprintf(

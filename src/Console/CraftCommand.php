@@ -26,8 +26,7 @@ trait CraftCommand
 
     protected function ensureProjectConfigFileExists(): void
     {
-        /** @var ProjectConfig $projectConfig */
-        $projectConfig = app('Craft')->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
         if (! $projectConfig->writeYamlAutomatically) {
             return;

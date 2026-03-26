@@ -10,7 +10,7 @@ use CraftCms\Cms\Support\Security;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-final readonly class AddLogContext
+readonly class AddLogContext
 {
     public function __construct(
         private GeneralConfig $generalConfig,

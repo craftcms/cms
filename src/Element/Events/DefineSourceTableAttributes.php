@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 /**
  * @event DefineSourceTableAttributes The event that is triggered when defining the available table attributes for a source.
  */
-final class DefineSourceTableAttributes
+class DefineSourceTableAttributes
 {
     public function __construct(
         /**

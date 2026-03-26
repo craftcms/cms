@@ -6,15 +6,17 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Component;
-use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\CardDesigner;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
+use CraftCms\Cms\Cp\Html\ContentHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
@@ -34,6 +36,7 @@ use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -45,7 +48,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class FieldsController
+class FieldsController
 {
     use RespondsWithFlash;
 
@@ -104,7 +107,7 @@ final class FieldsController
         $oldType = $request->input('oldType');
         $field = $this->fieldsService->createField($type);
 
-        if ($oldType && Component::validateComponentClass($oldType, FieldInterface::class)) {
+        if ($oldType && ComponentHelper::validateComponentClass($oldType, FieldInterface::class)) {
             $settingsStr = $request->input('settings', '');
             parse_str((string) $settingsStr, $postedOldSettings);
             $oldNamespace = $request->input('oldNamespace');
@@ -122,9 +125,7 @@ final class FieldsController
                 }
             }, ARRAY_FILTER_USE_KEY);
 
-            $settings = Component::cleanseConfig($settings);
-            Typecast::properties($type, $settings);
-            Craft::configure($field, $settings);
+            Typecast::configure($field, $settings);
         }
 
         $html = template('settings/fields/_type-settings', [
@@ -185,7 +186,7 @@ final class FieldsController
         }
 
         if ($request->input('addAnother')) {
-            $redirect = UrlHelper::cpUrl('settings/fields/new', [
+            $redirect = URL::cpUrl('settings/fields/new', [
                 'type' => $field::class,
             ]);
         } else {
@@ -193,7 +194,7 @@ final class FieldsController
         }
 
         return $this->asModelSuccess($field, t('Field saved.'), 'field', [
-            'selectorHtml' => Cp::layoutElementSelectorHtml(new CustomField($field), true),
+            'selectorHtml' => app(FieldLayoutDesigner::class)->layoutElementSelectorHtml(new CustomField($field), true),
         ], $redirect);
     }
 
@@ -275,7 +276,7 @@ final class FieldsController
             }
         }
 
-        $selectorHtml = Cp::layoutElementSelectorHtml($element);
+        $selectorHtml = app(FieldLayoutDesigner::class)->layoutElementSelectorHtml($element);
 
         return new JsonResponse([
             'config' => ['type' => $element::class] + $element->toArray(),
@@ -292,11 +293,11 @@ final class FieldsController
             'thumbAlignment' => ['nullable', 'string'],
         ]);
 
-        $fieldLayoutConfig = Component::cleanseConfig($request->input('fieldLayoutConfig'));
+        $fieldLayoutConfig = $request->input('fieldLayoutConfig');
         $fieldLayout = $fields->createLayout($fieldLayoutConfig);
 
         return new JsonResponse([
-            'previewHtml' => Cp::cardPreviewHtml($fieldLayout),
+            'previewHtml' => app(CardDesigner::class)->previewHtml($fieldLayout),
         ]);
     }
 
@@ -336,7 +337,7 @@ final class FieldsController
 
         $uid = $request->input('uid');
         $elementType = $request->input('elementType');
-        $layoutConfig = Component::cleanseConfig($request->array('layoutConfig'));
+        $layoutConfig = $request->array('layoutConfig');
 
         abort_if(! isset($layoutConfig['tabs']), 400, 'Layout config doesn’t have any tabs.');
 
@@ -352,8 +353,6 @@ final class FieldsController
             $settings = Arr::get($postedSettings, $settingsNamespace, []);
             $componentConfig = array_merge($componentConfig, $settings);
         }
-
-        $componentConfig = Component::cleanseConfig($componentConfig);
 
         $isTab = false;
 
@@ -442,7 +441,7 @@ final class FieldsController
                 } else {
                     $option['labelHtml'] = Html::beginTag('div', ['class' => 'inline-flex']).
                         Html::tag('span', Html::encode($name)).
-                        Html::tag('span', Cp::iconSvg('triangle-exclamation'), ['class' => ['cp-icon', 'small', 'warning']]).
+                        Html::tag('span', Icons::svg('triangle-exclamation'), ['class' => ['cp-icon', 'small', 'warning']]).
                         Html::endTag('div');
                 }
                 $fieldTypeOptions[] = $option;
@@ -487,7 +486,7 @@ final class FieldsController
         if (! $this->readOnly) {
             $response
                 ->action('fields/save-field')
-                ->redirectUrl(UrlHelper::cpReferralUrl() ?? 'settings/fields')
+                ->redirectUrl(URL::cpReferralUrl() ?? 'settings/fields')
                 ->addAltAction(t('Save and continue editing'), [
                     'redirect' => 'settings/fields/edit/{id}',
                     'shortcut' => true,
@@ -500,7 +499,7 @@ final class FieldsController
                 ])
                 ->editUrl($field->id ? "settings/fields/edit/$field->id" : null);
         } else {
-            $response->noticeHtml(Cp::readOnlyNoticeHtml());
+            $response->noticeHtml(app(ContentHtml::class)->readOnlyNoticeHtml());
         }
 
         $response
@@ -530,7 +529,7 @@ JS, [
                     ]);
             }
             $response
-                ->metaSidebarHtml(Cp::metadataHtml([
+                ->metaSidebarHtml(app(ContentHtml::class)->metadataHtml([
                     t('ID') => $field->id,
                     t('Used by') => function () use ($field) {
                         $layouts = $this->fieldsService->findFieldUsages($field);
@@ -576,7 +575,7 @@ JS, [
                                 'class' => ['flex', 'flex-nowrap', 'gap-s'],
                             ]);
                             if ($icon) {
-                                $labelHtml .= Html::tag('div', Cp::iconSvg($icon), [
+                                $labelHtml .= Html::tag('div', Icons::svg($icon), [
                                     'class' => array_filter([
                                         'cp-icon',
                                         'small',

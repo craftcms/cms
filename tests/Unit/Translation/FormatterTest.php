@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Formatter;
+use CraftCms\Cms\Translation\Locale;
 
 beforeEach(function () {
     $this->formatter = app(Formatter::class);
@@ -86,7 +87,7 @@ test('asTime', function (int|string|DateTime $input, string $output, ?string $fo
 });
 
 test('asTime with Locale', function (int|string|DateTime $input, string $output, ?string $locale = null) {
-    $formatter = new \CraftCms\Cms\Translation\Locale($locale ?? I18N::getLocale()->id)->getFormatter();
+    $formatter = new Locale($locale ?? I18N::getLocale()->id)->getFormatter();
 
     expect($formatter->asTime($input))->toBe($output);
 })->with(function () {
@@ -129,7 +130,7 @@ test('asDate', function (int|string|DateTime $input, string $output, ?string $fo
 });
 
 test('asDate with Locale', function (int|string|DateTime $input, string $output, ?string $locale = null) {
-    $formatter = new \CraftCms\Cms\Translation\Locale($locale ?? I18N::getLocale()->id)->getFormatter();
+    $formatter = new Locale($locale ?? I18N::getLocale()->id)->getFormatter();
 
     expect($formatter->asDate($input))->toBe($output);
 })->with(function () {
@@ -168,7 +169,7 @@ test('asDateTime', function (int|string|DateTime $input, string $output, ?string
 });
 
 test('asDateTime with Locale', function (int|string|DateTime $input, string $output, ?string $locale = null) {
-    $formatter = new \CraftCms\Cms\Translation\Locale($locale ?? I18N::getLocale()->id)->getFormatter();
+    $formatter = new Locale($locale ?? I18N::getLocale()->id)->getFormatter();
 
     expect($formatter->asDateTime($input))->toBe($output);
 })->with(function () {

@@ -11,7 +11,7 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 
 use function Laravel\Prompts\info;
 
-final class ActivationUrlCommand extends Command implements PromptsForMissingInput
+class ActivationUrlCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
     use PromptsForMissingUser;

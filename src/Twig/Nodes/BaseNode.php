@@ -8,4 +8,4 @@ use Twig\Attribute\YieldReady;
 use Twig\Node\Node;
 
 #[YieldReady]
-final class BaseNode extends Node {}
+class BaseNode extends Node {}

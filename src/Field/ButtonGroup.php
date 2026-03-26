@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
@@ -16,9 +16,9 @@ use function CraftCms\Cms\t;
 /**
  * RadioButtons represents a Radio Buttons field.
  */
-final class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
+class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
 {
-    #[\Override]
+    #[Override]
     protected static bool $optionIcons = true;
 
     #[Override]
@@ -42,7 +42,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     public function getSettingsHtml(): string
     {
         return parent::getSettingsHtml().
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Icons only'),
                 'instructions' => t('Whether buttons should only show their icons, hiding their text labels.'),
                 'name' => 'iconsOnly',
@@ -86,7 +86,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
             }
         }
 
-        return Cp::buttonGroupHtml([
+        return FormFields::buttonGroupHtml([
             'id' => $id,
             'name' => $this->handle,
             'static' => $static,

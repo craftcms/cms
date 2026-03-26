@@ -7,8 +7,8 @@
 
 namespace craft\base;
 
-use craft\helpers\Component as ComponentHelper;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;

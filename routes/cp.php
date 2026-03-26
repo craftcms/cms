@@ -13,9 +13,14 @@ use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\EntriesIndexController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
+use CraftCms\Cms\Http\Controllers\Gql\GraphiqlController;
+use CraftCms\Cms\Http\Controllers\Gql\IndexController as GqlIndexController;
+use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
+use CraftCms\Cms\Http\Controllers\Gql\TokensController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
+use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
 use CraftCms\Cms\Http\Controllers\Settings\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
@@ -135,6 +140,29 @@ Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
         Route::post('settings/general', [GeneralSettingsController::class, 'store'])
             ->middleware([RequireAdminChanges::class])
             ->name('settings.general.store');
+
+        // Email
+        Route::get('settings/email', [EmailSettingsController::class, 'index'])
+            ->name('settings.email.index');
+        Route::post('settings/email', [EmailSettingsController::class, 'store'])
+            ->middleware([RequireAdminChanges::class])
+            ->name('settings.email.store');
+        Route::post('settings/email/test', [EmailSettingsController::class, 'test'])
+            ->name('settings.email.test');
+
+        // GraphQL
+        Route::get('graphql', GqlIndexController::class);
+        Route::get('graphiql', GraphiqlController::class);
+        Route::get('graphql/tokens', [TokensController::class, 'index']);
+        Route::get('graphql/tokens/new', [TokensController::class, 'create']);
+        Route::get('graphql/tokens/{tokenId}', [TokensController::class, 'edit'])->whereNumber('tokenId');
+
+        Route::middleware(RequireAdminChanges::class)->group(function () {
+            Route::get('graphql/schemas', [SchemasController::class, 'index']);
+            Route::get('graphql/schemas/new', [SchemasController::class, 'create']);
+            Route::get('graphql/schemas/public', [SchemasController::class, 'editPublic']);
+            Route::get('graphql/schemas/{schemaId}', [SchemasController::class, 'edit'])->whereNumber('schemaId');
+        });
 
         // Plugins
         Route::get('settings/plugins', [PluginsController::class, 'index']);

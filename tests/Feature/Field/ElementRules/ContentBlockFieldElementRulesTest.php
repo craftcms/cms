@@ -46,7 +46,7 @@ test('content block field merges nested field errors onto the element', function
     $result = EntryModel::factory()
         ->withField('contentBlock', ContentBlock::class, $contentBlockSettings, value: ['fields' => ['innerText' => null]])
         ->withScenario(Element::SCENARIO_LIVE)
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
 
     $result->element->validate();
 

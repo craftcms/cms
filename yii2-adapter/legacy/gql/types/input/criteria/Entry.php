@@ -1,37 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\types\input\criteria;
 
-use craft\gql\arguments\elements\Entry as EntryArguments;
-use craft\gql\GqlEntityRegistry;
-use GraphQL\Type\Definition\InputObjectType;
-
 /**
- * Class Entry
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.6.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Types\Input\Criteria\Entry} instead.
  */
-class Entry extends InputObjectType
+class Entry extends \CraftCms\Cms\Gql\Types\Input\Criteria\Entry
 {
-    /**
-     * @return mixed
-     */
-    public static function getType(): mixed
-    {
-        $typeName = 'EntryCriteriaInput';
-
-        return GqlEntityRegistry::getOrCreate($typeName, fn() => new InputObjectType([
-            'name' => $typeName,
-            'fields' => fn() => [
-                ...EntryArguments::getArguments(),
-                ...EntryArguments::getContentArguments(),
-            ],
-        ]));
-    }
 }

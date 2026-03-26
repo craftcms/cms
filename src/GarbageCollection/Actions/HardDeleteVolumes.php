@@ -11,7 +11,7 @@ use stdClass;
 /**
  * Hard delete eligible volumes, deleting the folders one by one to avoid nested dependency errors.
  */
-final class HardDeleteVolumes extends GarbageCollectionAction
+class HardDeleteVolumes extends GarbageCollectionAction
 {
     public function __invoke(): void
     {

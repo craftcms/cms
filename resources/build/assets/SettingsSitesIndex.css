@@ -1,1 +1,1 @@
-.interior[data-v-5e31d72b]{display:grid;grid-template-columns:minmax(7.5rem,16%) 1fr;gap:var(--c-spacing-md);align-items:start}.title[data-v-5e31d72b]{display:flex;align-items:center;gap:var(--c-spacing-md)}.separator[data-v-5e31d72b]{font-size:.8em;font-weight:400;opacity:.5}
+.interior[data-v-7cb6c535]{gap:var(--c-spacing-md);grid-template-columns:minmax(7.5rem,16%) 1fr;align-items:start;display:grid}.title[data-v-7cb6c535]{align-items:center;gap:var(--c-spacing-md);display:flex}.separator[data-v-7cb6c535]{opacity:.5;font-size:.8em;font-weight:400}

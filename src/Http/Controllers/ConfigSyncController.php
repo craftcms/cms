@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use craft\helpers\UrlHelper;
 use craft\web\Application;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
@@ -15,7 +14,8 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -29,7 +29,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  */
-final class ConfigSyncController extends BaseUpdaterController
+class ConfigSyncController extends BaseUpdaterController
 {
     public const string ACTION_RETRY = 'retry';
 
@@ -147,13 +147,13 @@ final class ConfigSyncController extends BaseUpdaterController
         ]);
     }
 
-    #[\Override]
+    #[Override]
     protected function pageTitle(): string
     {
         return t('Project Config Sync');
     }
 
-    #[\Override]
+    #[Override]
     protected function initialData(): array
     {
         $data = [
@@ -174,7 +174,7 @@ final class ConfigSyncController extends BaseUpdaterController
         return $data;
     }
 
-    #[\Override]
+    #[Override]
     protected function initialState(bool $force = false): array
     {
         $incompatibilities = [];
@@ -244,19 +244,19 @@ final class ConfigSyncController extends BaseUpdaterController
         return $this->actionState($this->nextApplyYamlAction());
     }
 
-    #[\Override]
+    #[Override]
     protected function postComposerInstallState(): array
     {
         throw new RuntimeException('postComposerInstallState() is not supported by '.self::class);
     }
 
-    #[\Override]
+    #[Override]
     protected function returnUrl(): string
     {
-        return UrlHelper::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
+        return URL::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
     }
 
-    #[\Override]
+    #[Override]
     protected function actionStatus(string $action): string
     {
         switch ($action) {

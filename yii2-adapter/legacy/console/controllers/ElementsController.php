@@ -10,8 +10,8 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\console\Controller;
-use craft\helpers\Component;
 use craft\helpers\Console;
+use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -135,7 +135,7 @@ class ElementsController extends Controller
 
         $total = $query->count();
 
-        $isValid = Component::validateComponentClass($type, ElementInterface::class);
+        $isValid = ComponentHelper::validateComponentClass($type, ElementInterface::class);
         if ($isValid) {
             $typeLabel = $total === 1 ? $type::lowerDisplayName() : $type::pluralLowerDisplayName();
         } else {

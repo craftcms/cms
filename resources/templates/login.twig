@@ -8,6 +8,8 @@
   {% set logo = craft.rebrand.logo %}
 {% endif %}
 
+{% set loginError = craft.app.session.getError() ?? craft.app.session.getFlash('error') %}
+
 {% set formHtml %}
   <main>
     {% if hasLogo %}
@@ -25,6 +27,7 @@
     {% include '_special/login.twig' with {
       showResetPassword: true,
       showRememberMeCheckbox: true,
+      initialError: loginError,
     } %}
 
     {% if craft.app.request.isCpRequest %}

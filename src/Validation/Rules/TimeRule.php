@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Validation\Rules;
 
 use Closure;
-use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
 use DateTime;
@@ -15,7 +15,7 @@ use RuntimeException;
 
 use function CraftCms\Cms\t;
 
-final class TimeRule implements DataAwareRule, ValidationRule
+class TimeRule implements DataAwareRule, ValidationRule
 {
     /**
      * All of the data under validation.

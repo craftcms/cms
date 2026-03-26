@@ -11,7 +11,7 @@ use CraftCms\Cms\Field\Elements\ContentBlock;
 /**
  * @extends ElementQuery<ContentBlock>
  */
-final class ContentBlockQuery extends ElementQuery
+class ContentBlockQuery extends ElementQuery
 {
     use QueriesNestedElements;
 

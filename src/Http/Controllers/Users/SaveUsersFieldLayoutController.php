@@ -11,7 +11,7 @@ use CraftCms\Cms\User\Users;
 
 use function CraftCms\Cms\t;
 
-final readonly class SaveUsersFieldLayoutController
+readonly class SaveUsersFieldLayoutController
 {
     use RespondsWithFlash;
 

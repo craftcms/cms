@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\Conditions;
 
-use craft\helpers\Cp;
 use CraftCms\Cms\Condition\BaseNumberConditionRule;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Conditions\Contracts\FieldConditionRuleInterface;
 use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Support\Arr;
@@ -79,11 +79,11 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             return Html::tag('div',
                 Html::hiddenLabel(t('Min Value'), 'min').
                 // Min value (value) input
-                Cp::moneyInputHtml($this->inputOptions()).
+                FormFields::moneyInputHtml($this->inputOptions()).
                 Html::tag('span', t('and')).
                 Html::hiddenLabel(t('Max Value'), 'max').
                 // Max value input
-                Cp::moneyInputHtml(array_merge(
+                FormFields::moneyInputHtml(array_merge(
                     $this->inputOptions(),
                     ['id' => 'maxValue', 'name' => 'maxValue', 'value' => $maxValue]
                 )).
@@ -92,7 +92,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             );
         }
 
-        return Cp::moneyInputHtml($this->inputOptions());
+        return FormFields::moneyInputHtml($this->inputOptions());
     }
 
     #[\Override]

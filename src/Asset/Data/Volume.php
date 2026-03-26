@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset\Data;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Validation\VolumeRules;
 use CraftCms\Cms\Component\Component;
@@ -19,12 +18,12 @@ use CraftCms\Cms\Filesystem\Filesystems\MissingFs;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Traits\Macroable;
 use Override;
 use RuntimeException;
 use yii\base\InvalidConfigException;
@@ -41,7 +40,6 @@ use function CraftCms\Cms\t;
 class Volume extends Component implements CpEditable, FieldLayoutProviderInterface
 {
     use HasFieldLayout;
-    use Macroable;
 
     public const string STORAGE_FS_PREFIX = 'fs:';
 
@@ -310,7 +308,7 @@ class Volume extends Component implements CpEditable, FieldLayoutProviderInterfa
             return null;
         }
 
-        return UrlHelper::cpUrl("settings/assets/volumes/$this->id");
+        return URL::cpUrl("settings/assets/volumes/$this->id");
     }
 
     public function validateFieldLayout(): void

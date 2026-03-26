@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/cp';
   import SystemInfo from '@/components/SystemInfo.vue';
-  import {computed, reactive, ref, watch, useTemplateRef} from 'vue';
+  import {t} from '@craftcms/cp/utilities/translate.ts.mjs';
+  import {computed, reactive, ref, useTemplateRef, watch} from 'vue';
   import CpSidebar from '@/components/CpSidebar.vue';
   import {useMediaQuery} from '@vueuse/core';
   import {Head, usePage} from '@inertiajs/vue3';
@@ -108,13 +108,16 @@
           v-if="!isLargeScreen"
           ref="sidebarToggle"
         >
-          <craft-icon :name="sidebarIcon"></craft-icon>
+          <craft-icon
+            :name="sidebarIcon"
+            :label="t('Toggle menu')"
+          ></craft-icon>
         </craft-button>
         <SystemInfo v-if="isLargeScreen" />
 
         <div class="ml-auto"></div>
         <craft-button icon appearance="plain">
-          <craft-icon name="search"></craft-icon>
+          <craft-icon name="search" :label="t('Search')"></craft-icon>
         </craft-button>
       </div>
       <!-- TODO: this is just temporary placement -->
@@ -141,7 +144,7 @@
         <main>
           <slot name="breadcrumbs">
             <div
-              class="px-4 py-2 border-b border-b-border-subtle"
+              class="px-4 py-2 border-b border-b-neutral-border-quiet"
               v-if="crumbs"
             >
               <Breadcrumbs :items="crumbs" />

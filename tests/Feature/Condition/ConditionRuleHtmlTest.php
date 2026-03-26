@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use craft\base\ElementInterface;
-use craft\helpers\DateRange;
 use CraftCms\Cms\Condition\BaseSelectConditionRule;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\DateCreatedConditionRule;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Element\Conditions\StatusConditionRule;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Shared\Enums\DateRangeType;
 
 function createHtmlRule(string $ruleClass): mixed
 {
@@ -230,7 +230,7 @@ describe('BaseMultiSelectConditionRule::getHtml()', function () {
 describe('BaseDateRangeConditionRule::getHtml()', function () {
     it('renders a date range menu button', function () {
         $rule = createHtmlRule(DateCreatedConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_TODAY;
+        $rule->rangeType = DateRangeType::Today->value;
 
         $html = $rule->getHtml();
 
@@ -240,7 +240,7 @@ describe('BaseDateRangeConditionRule::getHtml()', function () {
 
     it('renders all preset range options in the menu', function () {
         $rule = createHtmlRule(DateCreatedConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_TODAY;
+        $rule->rangeType = DateRangeType::Today->value;
 
         $html = $rule->getHtml();
 
@@ -253,7 +253,7 @@ describe('BaseDateRangeConditionRule::getHtml()', function () {
 
     it('renders before/after/range custom options', function () {
         $rule = createHtmlRule(DateCreatedConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_TODAY;
+        $rule->rangeType = DateRangeType::Today->value;
 
         $html = $rule->getHtml();
 
@@ -264,7 +264,7 @@ describe('BaseDateRangeConditionRule::getHtml()', function () {
 
     it('renders empty/not-empty options', function () {
         $rule = createHtmlRule(DateCreatedConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_TODAY;
+        $rule->rangeType = DateRangeType::Today->value;
 
         $html = $rule->getHtml();
 
@@ -274,7 +274,7 @@ describe('BaseDateRangeConditionRule::getHtml()', function () {
 
     it('renders a hidden rangeType input', function () {
         $rule = createHtmlRule(DateCreatedConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_TODAY;
+        $rule->rangeType = DateRangeType::Today->value;
 
         $html = $rule->getHtml();
 
@@ -283,7 +283,7 @@ describe('BaseDateRangeConditionRule::getHtml()', function () {
 
     it('renders date pickers for range type', function () {
         $rule = createHtmlRule(DateCreatedConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_RANGE;
+        $rule->rangeType = DateRangeType::Range->value;
 
         $html = $rule->getHtml();
 
@@ -295,7 +295,7 @@ describe('BaseDateRangeConditionRule::getHtml()', function () {
 
     it('renders period inputs for before type', function () {
         $rule = createHtmlRule(DateCreatedConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_BEFORE;
+        $rule->rangeType = DateRangeType::Before->value;
 
         $html = $rule->getHtml();
 
@@ -308,7 +308,7 @@ describe('BaseDateRangeConditionRule::getHtml()', function () {
 
     it('renders period inputs for after type', function () {
         $rule = createHtmlRule(DateCreatedConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_AFTER;
+        $rule->rangeType = DateRangeType::After->value;
 
         $html = $rule->getHtml();
 
@@ -321,7 +321,7 @@ describe('BaseDateRangeConditionRule::getHtml()', function () {
 
     it('does not render date pickers for preset range types', function () {
         $rule = createHtmlRule(DateCreatedConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_TODAY;
+        $rule->rangeType = DateRangeType::Today->value;
 
         $html = $rule->getHtml();
 
@@ -332,7 +332,7 @@ describe('BaseDateRangeConditionRule::getHtml()', function () {
 
     it('marks the current range type as selected in the menu', function () {
         $rule = createHtmlRule(DateCreatedConditionRule::class);
-        $rule->rangeType = DateRange::TYPE_THIS_WEEK;
+        $rule->rangeType = DateRangeType::ThisWeek->value;
 
         $html = $rule->getHtml();
 

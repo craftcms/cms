@@ -9,16 +9,16 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Yii2Adapter\Yii2ServiceProvider;
+use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-final class AddTagsSupportCommand extends Command
+class AddTagsSupportCommand extends Command
 {
-    use CraftCommand;
     use ConfirmableTrait;
+    use CraftCommand;
 
     protected $signature = 'craft:add-tags-support
         {--force : Force the operation to run when in production or when allowAdminChanges is disabled.}
@@ -34,6 +34,7 @@ final class AddTagsSupportCommand extends Command
 
         if (Schema::hasTable($tagsTable)) {
             $this->info("<fg=cyan>$tagsTable</> table already exists.");
+
             return;
         }
 
@@ -86,7 +87,7 @@ final class AddTagsSupportCommand extends Command
             },
         );
 
-        Yii2ServiceProvider::resetSupport();
+        DeprecatedConcepts::resetSupport();
     }
 
     protected function getDefaultConfirmCallback(): Closure

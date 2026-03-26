@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
@@ -33,7 +34,7 @@ it('can query custom fields', function () {
 
     app(Fields::class)->refreshFields();
 
-    /** @var \CraftCms\Cms\Entry\Elements\Entry $entry */
+    /** @var Entry $entry */
     $entry = entryQuery()->first();
     $entry->title = 'Test entry';
     $entry->setFieldValue('textField', 'Foo');

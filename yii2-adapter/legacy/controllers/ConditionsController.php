@@ -7,14 +7,13 @@
 
 namespace craft\controllers;
 
-use Craft;
-use craft\helpers\Component;
 use craft\web\Controller;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Condition\Contracts\ConditionRuleInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Collection;
 
 /**
@@ -42,11 +41,11 @@ class ConditionsController extends Controller
 
         $this->requireCpRequest();
 
-        $baseConfig = Component::cleanseConfig(Json::decodeIfJson($this->request->getBodyParam('config')));
-        $config = Component::cleanseConfig($this->request->getBodyParam($baseConfig['name']));
+        $baseConfig = Json::decodeIfJson($this->request->getBodyParam('config'));
+        $config = $this->request->getBodyParam($baseConfig['name']);
         $newRuleType = Arr::pull($config, 'new-rule-type');
         $this->_condition = Conditions::createCondition($config);
-        Craft::configure($this->_condition, Arr::except($baseConfig, 'class'));
+        Typecast::configure($this->_condition, Arr::except($baseConfig, 'class'));
 
         if ($newRuleType) {
             $newRuleType = Json::decodeIfJson($newRuleType);

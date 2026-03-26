@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Responses;
 
 use Craft;
-use craft\helpers\Cp;
-use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\MenuHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -16,12 +16,14 @@ use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Traits\Conditionable;
+use Inertia\Inertia;
 use Stringable;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -29,9 +31,23 @@ use function CraftCms\Cms\pageTemplate;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class CpScreenResponse implements Responsable
+class CpScreenResponse implements Responsable
 {
     use Conditionable;
+
+    /**
+     * @var string|null The Inertia page component to render.
+     *
+     * @see inertiaPage()
+     */
+    private ?string $inertiaPage = null;
+
+    /**
+     * @var array Props to pass to the Inertia page component.
+     *
+     * @see inertiaPage()
+     */
+    private array $inertiaProps = [];
 
     /**
      * @var callable|null Callable that will be called before other properties are added to the screen.
@@ -77,7 +93,7 @@ final class CpScreenResponse implements Responsable
     /**
      * @var Site|null The site that should be displayed within the breadcrumbs.
      *
-     * @see site()
+     * @see Site()
      */
     public ?Site $site = null;
 
@@ -311,7 +327,7 @@ final class CpScreenResponse implements Responsable
      * - `url` – The URL that the breadcrumb should link to
      * - `icon` – The icon which should be displayed beside the label
      * - `menu` – The menu items which should be displayed alongside the breadcrumb
-     *   (see [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties)
+     *   (see [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties)
      * - `current` – Whether the breadcrumb represents the current page
      *
      * This will only be used by full-page screens.
@@ -328,7 +344,7 @@ final class CpScreenResponse implements Responsable
      *
      * This will only be used by full-page screens.
      */
-    public function addCrumb(string $label, string $url): self
+    public function addCrumb(string $label, ?string $url = null): self
     {
         if (! is_array($this->crumbs)) {
             $this->crumbs = [];
@@ -336,7 +352,7 @@ final class CpScreenResponse implements Responsable
 
         $this->crumbs[] = [
             'label' => $label,
-            'url' => UrlHelper::cpUrl($url),
+            'url' => $url ? URL::cpUrl($url) : null,
         ];
 
         return $this;
@@ -512,7 +528,7 @@ final class CpScreenResponse implements Responsable
     /**
      * Sets the context menu items.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      */
     public function contextMenuItems(?callable $value): self
     {
@@ -544,7 +560,7 @@ final class CpScreenResponse implements Responsable
     /**
      * Sets the action menu items.
      *
-     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     * See [[\CraftCms\Cms\Cp\Html\MenuHtml::disclosureMenu()]] for documentation on supported item properties.
      */
     public function actionMenuItems(?callable $value): self
     {
@@ -605,6 +621,20 @@ final class CpScreenResponse implements Responsable
         return $this->contentHtml(
             fn () => template($template, $variables, templateMode: TemplateMode::Cp),
         );
+    }
+
+    /**
+     * Sets the Inertia page component and props for this screen.
+     *
+     * When set, `toResponse()` will render an Inertia response instead of a Twig template.
+     * The `title` and `crumbs` properties will be automatically included as props.
+     */
+    public function inertiaPage(?string $value, array $props = []): self
+    {
+        $this->inertiaPage = $value;
+        $this->inertiaProps = $props;
+
+        return $this;
     }
 
     /**
@@ -689,11 +719,37 @@ final class CpScreenResponse implements Responsable
 
     public function toResponse($request): Response
     {
+        if ($this->inertiaPage) {
+            return $this->inertiaResponse($request);
+        }
+
         if ($request->wantsJson()) {
             return $this->jsonResponse($request);
         }
 
         return $this->response($request);
+    }
+
+    private function inertiaResponse(Request $request): Response
+    {
+        if ($this->prepareScreen) {
+            ($this->prepareScreen)($this, $request);
+        }
+
+        $crumbs = $this->crumbs;
+        if ($this->title) {
+            $crumbs[] = ['label' => $this->title];
+        }
+
+        $props = array_filter([
+            'title' => $this->title,
+            'crumbs' => $crumbs,
+        ], fn ($value) => $value !== null);
+
+        return Inertia::render(
+            $this->inertiaPage,
+            [...$props, ...$this->inertiaProps],
+        )->toResponse($request);
     }
 
     private function jsonResponse(Request $request): JsonResponse
@@ -737,7 +793,7 @@ final class CpScreenResponse implements Responsable
         $errorSummary = $this->errorSummary ? InputNamespace::namespaceInputs($this->errorSummary, $namespace) : null;
 
         return new JsonResponse([
-            'editUrl' => $this->editUrl ? UrlHelper::cpUrl($this->editUrl) : null,
+            'editUrl' => $this->editUrl ? URL::cpUrl($this->editUrl) : null,
             'namespace' => $namespace,
             'title' => $this->title,
             'notice' => $notice,
@@ -782,12 +838,12 @@ final class CpScreenResponse implements Responsable
         if (isset($this->site) && Sites::isMultiSite()) {
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
-                'icon' => Cp::earthIcon(),
+                'icon' => Icons::earth(),
                 'label' => t($this->site->getName(), category: 'site'),
                 'menu' => [
                     'label' => t('Select site'),
                     'items' => ! empty($this->selectableSites)
-                        ? Cp::siteMenuItems($this->selectableSites, $this->site, [
+                        ? app(MenuHtml::class)->siteMenuItems($this->selectableSites, $this->site, [
                             'includeOmittedSites' => true,
                         ])
                         : null,
@@ -822,7 +878,7 @@ final class CpScreenResponse implements Responsable
                 'selectedSubnavItem' => $this->selectedSubnavItem,
                 'crumbs' => array_map(function (array $crumb): array {
                     if (isset($crumb['url'])) {
-                        $crumb['url'] = UrlHelper::cpUrl($crumb['url']);
+                        $crumb['url'] = URL::cpUrl($crumb['url']);
                     }
 
                     return $crumb;
@@ -898,13 +954,13 @@ final class CpScreenResponse implements Responsable
         }
 
         $render = function () use ($itemsFactory, $config): ?string {
-            $items = Cp::normalizeMenuItems($itemsFactory() ?? []);
+            $items = app(MenuHtml::class)->normalizeMenuItems($itemsFactory() ?? []);
 
             if (empty($items)) {
                 return null;
             }
 
-            return Cp::disclosureMenu($items, $config);
+            return app(MenuHtml::class)->disclosureMenu($items, $config);
         };
 
         if ($namespace) {
