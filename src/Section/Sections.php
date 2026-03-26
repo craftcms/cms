@@ -78,6 +78,13 @@ class Sections
      */
     private ?MemoizableArray $sections = null;
 
+    /**
+     * @var array<int, SectionSiteSettings[]>
+     *
+     * @see getSectionSiteSettings()
+     */
+    private array $sectionSiteSettings = [];
+
     public function __construct(
         private readonly ProjectConfig $projectConfig,
     ) {}
@@ -363,11 +370,15 @@ class Sections
      */
     public function getSectionSiteSettings(int $sectionId): array
     {
-        return $this->_createSectionSiteSettingsQuery()
-            ->where('sections_sites.sectionId', $sectionId)
-            ->get()
-            ->mapInto(SectionSiteSettings::class)
-            ->all();
+        if (! isset($this->sectionSiteSettings[$sectionId])) {
+            $this->sectionSiteSettings[$sectionId] = $this->_createSectionSiteSettingsQuery()
+                ->where('sections_sites.sectionId', $sectionId)
+                ->get()
+                ->mapInto(SectionSiteSettings::class)
+                ->all();
+        }
+
+        return $this->sectionSiteSettings[$sectionId];
     }
 
     private function _createSectionSiteSettingsQuery(): Builder
@@ -757,6 +768,7 @@ class Sections
     public function refreshSections(): void
     {
         $this->sections = null;
+        $this->sectionSiteSettings = [];
         $this->_sections();
     }
 
