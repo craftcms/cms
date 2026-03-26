@@ -693,7 +693,8 @@ JS, [
             // If this is a draft, its nested element ownership will be duplicated by Drafts::createDraft()
             if ($owner->getIsRevision()) {
                 $this->createRevisions($owner->duplicateOf, $owner);
-            } elseif ($owner->getIsCanonical()) {
+            // getIsUnpublishedDraft is needed for "save as new" duplication
+            } elseif (!$owner->getIsDraft() || $owner->getIsUnpublishedDraft()) {
                 $this->duplicateNestedElements($owner->duplicateOf, $owner, true, !$isNew);
             }
             $resetValue = true;
@@ -965,7 +966,7 @@ JS, [
                         } else {
                             // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
                             // its elements have been replaced by the other sites’ nested elements
-                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner)) {
+                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner) || !empty($owner->newSiteIds)) {
                                 $this->duplicateNestedElements($owner, $localizedOwner, force: true);
                             }
                         }
@@ -1072,15 +1073,15 @@ JS, [
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
+            // Only set the canonicalId if the target owner element is a derivative
+            // and if the target's canonical element is not the same as target element, see
+            // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
             $setCanonicalId = $target->getIsDerivative() && $target->getCanonical()->id !== $target->id;
 
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
                 $newAttributes = [
-                    // Only set the canonicalId if the target owner element is a derivative
-                    // and if the target's canonical element is not the same as target element, see
-                    // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
-                    'canonicalId' => $setCanonicalId ? $element->id : null,
+                    'canonicalId' => $setCanonicalId ? ($element->getCanonical()->getCanonicalId() ?? $element->id) : null,
                     'primaryOwner' => $target,
                     'owner' => $target,
                     'propagating' => false,
@@ -1110,7 +1111,9 @@ JS, [
                             'sortOrder' => $element->getSortOrder(),
                         ], updateTimestamp: false);
                     } else {
-                        $newElementId = $element->getCanonicalId();
+                        // If we're updating the canonical owner element, then go with the nested element’s canonical ID.
+                        // Otherwise, leave the current ID intact.
+                        $newElementId = $target->getIsCanonical() ? $element->getCanonicalId() : $element->id;
                     }
                 } elseif (!$force && $element->getPrimaryOwnerId() === $target->id) {
                     // Only the element ownership was duplicated, so just update its sort order for the target element

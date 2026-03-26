@@ -1326,9 +1326,10 @@ abstract class Element extends Component implements ElementInterface
         if ($viewState['mode'] === 'table') {
             // Get the table columns
             $variables['attributes'] = Craft::$app->getElementSources()->getTableAttributes(
-                static::class,
-                $sourceKey,
-                $viewState['tableColumns'] ?? null
+                elementType: static::class,
+                sourceKey: $sourceKey,
+                customAttributes: $viewState['tableColumns'] ?? null,
+                fieldLayouts: $viewState['fieldLayouts'] ?? null,
             );
 
             // Prepare the element query for each of the table attributes

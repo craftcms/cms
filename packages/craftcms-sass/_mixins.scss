@@ -191,8 +191,8 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin fixed-width-font($size: 0.9em) {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier,
-    monospace;
+  font-family:
+    'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
   font-size: $size !important;
 }
 
@@ -848,7 +848,8 @@ $menuBorderRadius: $mediumBorderRadius;
 @mixin checkered-bg($size) {
   // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
   $halfSize: $size * 0.5;
-  background-image: linear-gradient(
+  background-image:
+    linear-gradient(
       45deg,
       #{color.adjust($grey300, $alpha: -0.75)} 25%,
       transparent 25%

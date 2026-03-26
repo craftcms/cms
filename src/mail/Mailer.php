@@ -14,6 +14,7 @@ use craft\helpers\App;
 use craft\helpers\Template;
 use craft\models\Site;
 use craft\web\View;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -226,6 +227,10 @@ class Mailer extends \yii\symfonymailer\Mailer
             }
 
             return parent::send($message);
+        } catch (TransportExceptionInterface $e) {
+            Craft::warning('Error sending email: ' . $e->getMessage(), __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
+            return false;
         } finally {
             // Set things back to normal
             Craft::$app->language = $language;
