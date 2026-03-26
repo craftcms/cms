@@ -1340,7 +1340,13 @@ JS, [
             }
 
             if (!empty($newOwnershipData)) {
-                Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $newOwnershipData);
+                foreach ($newOwnershipData as $row) {
+                    Db::upsert(Table::ELEMENTS_OWNERS, [
+                        'elementId' => $row[0],
+                        'ownerId' => $row[1],
+                        'sortOrder' => $row[2],
+                    ], false);
+                }
             }
 
             // Keep track of the sites we've already covered
