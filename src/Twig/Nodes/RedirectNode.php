@@ -34,11 +34,10 @@ class RedirectNode extends Node
         }
 
         $compiler
-            ->write(Craft::class.'::$app->getResponse()->redirect('.URL::class.'::url(')
+            ->write('redirect('.URL::class.'::url(')
             ->subcompile($this->getNode('path'))
             ->raw('), ')
             ->subcompile($this->getNode('httpStatusCode'))
-            ->raw(");\n")
-            ->write(Craft::class."::\$app->end();\n");
+            ->raw(')->send();');
     }
 }
