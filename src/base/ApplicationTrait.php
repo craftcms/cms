@@ -1654,6 +1654,7 @@ trait ApplicationTrait
             // If the user is logged in *and* has a preferred time zone, use that
             // (don't actually try to fetch the user, as plugins haven't been loaded yet)
             /** @var UserSession $user */
+            /** @phpstan-ignore-next-line */
             $user = $this->getUser();
             $id = Session::get($user->idParam);
             if ($id) {
