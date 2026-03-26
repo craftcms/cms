@@ -65,10 +65,10 @@ class LegacyMiddleware
             Craft::$app->set('user', Craft::createObject(App::userConfig()));
             Craft::$app->run();
 
-            return $this->createResponse();
+            return self::createResponse();
         } catch (YiiHttpException $e) {
             if ($e->statusCode === 404) {
-                $this->cleanup();
+                self::cleanup();
 
                 // If Yii indicates page does not exist - pass its resolving to Laravel
                 return $next($request);
@@ -77,7 +77,7 @@ class LegacyMiddleware
             throw $e;
         } catch (YiiExitException $e) {
             // In case Yii requests application termination - request is considered handled
-            return $this->createResponse();
+            return self::createResponse();
         }
     }
 
@@ -89,17 +89,17 @@ class LegacyMiddleware
      *@see DummyResponse
      * @see \CraftCms\Yii2Adapter\Web\Response
      */
-    protected function createResponse(): Response
+    public static function createResponse(): Response
     {
         if (headers_sent()) {
-            $this->cleanup();
+            self::cleanup();
 
             return new DummyResponse();
         }
 
         $yiiResponse = Craft::$app ? Craft::$app->get('response') : null;
 
-        $this->cleanup();
+        self::cleanup();
 
         if ($yiiResponse instanceof \CraftCms\Yii2Adapter\Web\Response) {
             return $yiiResponse->getIlluminateResponse(true);
@@ -108,16 +108,20 @@ class LegacyMiddleware
         return new DummyResponse();
     }
 
-    protected function cleanup(): void
+    public static function cleanup(): void
     {
-        $this->app->terminating(function() {
+        app()->terminating(function() {
+            if (!Craft::$app) {
+                return;
+            }
+
             Craft::$classMap = [];
 
             Craft::$app->getSession()->updateFlashCounters();
 
             Craft::setLogger(null);
             Craft::$app = null;
-            $this->app->forgetInstance('Craft');
+            app()->forgetInstance('Craft');
         });
     }
 

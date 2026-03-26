@@ -12,13 +12,11 @@ use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
 use craft\web\UrlRule as CraftUrlRule;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\URL;
-use CraftCms\Cms\Twig\TemplateResolver;
 use Illuminate\Support\Facades\Log;
 use yii\web\UrlRule as YiiUrlRule;
 use function CraftCms\Cms\backTraceAsString;
@@ -289,14 +287,6 @@ class UrlManager extends \yii\web\UrlManager
             /** @var array $rules */
             $rules = require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'common.php';
 
-            if (Edition::get()->value >= Edition::Team->value) {
-                $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'team.php');
-
-                if (Edition::get()->value >= Edition::Pro->value) {
-                    $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'pro.php');
-                }
-            }
-
             $eventName = self::EVENT_REGISTER_CP_URL_RULES;
         } else {
             $rules = Craft::$app->getRoutes()->getConfigFileRoutes();
@@ -325,8 +315,7 @@ class UrlManager extends \yii\web\UrlManager
             return $route;
         }
 
-        // Does it look like they're trying to access a public template path?
-        return $this->_getTemplateRoute($request);
+        return false;
     }
 
     /**
@@ -360,51 +349,5 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         return false;
-    }
-
-    /**
-     * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
-     *
-     * @param Request $request
-     * @return bool
-     */
-    private function _isPublicTemplatePath(Request $request): bool
-    {
-        if ($request->getIsSiteRequest() && !Cms::config()->privateTemplateTrigger) {
-            // If privateTemplateTrigger is set to an empty value, disable all public template routing
-            return false;
-        }
-
-        return app(TemplateResolver::class)->exists($request->getPathInfo(), publicOnly: true);
-    }
-
-    /**
-     * Checks if the path could be a public template path and if so, returns a route to that template.
-     *
-     * @param Request $request
-     * @return array|false
-     */
-    private function _getTemplateRoute(Request $request): array|false
-    {
-        if ($request->getIsSiteRequest() && Cms::config()->headlessMode) {
-            return false;
-        }
-
-        $matches = $this->_isPublicTemplatePath($request);
-        $path = $request->getPathInfo();
-
-        if (app()->hasDebugModeEnabled()) {
-            Log::debug(Json::encode([
-                'rule' => 'Template: ' . $path,
-                'match' => $matches,
-                'parent' => null,
-            ]), [__METHOD__]);
-        }
-
-        if (!$matches) {
-            return false;
-        }
-
-        return ['templates/render', ['template' => $path]];
     }
 }
