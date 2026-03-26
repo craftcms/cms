@@ -63,8 +63,10 @@ Route::post(CpAuthPath::VerifyEmail->value, [VerifyEmailController::class, 'stor
  * Admin requests that require a login
  */
 Route::middleware(['auth:craft', 'can:accessCp'])->group(function () {
+    Route::get('/', [DashboardController::class, 'redirect']);
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     Route::get(CpAuthPath::Logout->value, [LoginController::class, 'logout']);
-    Route::get('dashboard', DashboardController::class);
 
     Route::get('utilities', [UtilitiesController::class, 'index']);
     Route::get('utilities/{id}/{extra?}', [UtilitiesController::class, 'show'])

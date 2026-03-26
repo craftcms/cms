@@ -6,11 +6,13 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
 use Craft;
 use craft\web\assets\dashboard\DashboardAsset;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\HtmlStack;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 
 readonly class DashboardController
@@ -22,7 +24,7 @@ readonly class DashboardController
         private Dashboard $dashboard,
     ) {}
 
-    public function __invoke()
+    public function index()
     {
         /**
          * @var Collection<string, array{iconSvg: mixed, name: string, maxColspan: int|null, settingsHtml?: string, settingsJs?: mixed, selectable: bool}> $widgetTypeInfo
@@ -95,5 +97,10 @@ readonly class DashboardController
         $variables['widgetTypes'] = $widgetTypeInfo;
 
         return view('dashboard/_index', $variables);
+    }
+
+    public function redirect(): RedirectResponse
+    {
+        return redirect(Cms::config()->getPostCpLoginRedirect() ?: route('craft.cp.dashboard'));
     }
 }

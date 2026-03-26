@@ -22,6 +22,7 @@ use InvalidArgumentException;
 use Override;
 use yii\base\InvalidConfigException;
 
+use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\t;
 
 class GeneralConfig extends BaseConfig
@@ -6531,7 +6532,13 @@ class GeneralConfig extends BaseConfig
      */
     public function getPostCpLoginRedirect(): string
     {
-        return ConfigHelper::localizedValue($this->postCpLoginRedirect);
+        $value = ConfigHelper::localizedValue($this->postCpLoginRedirect);
+
+        if ($value) {
+            return cp_url($value);
+        }
+
+        return '';
     }
 
     /**
