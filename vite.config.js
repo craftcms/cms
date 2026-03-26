@@ -80,7 +80,9 @@ export default defineConfig(({mode}) => {
         ],
         detectTls: env.VITE_DETECT_TLS ?? undefined,
       }),
-      inertia(),
+      inertia({
+        ssr: false
+      }),
     ],
   };
 });

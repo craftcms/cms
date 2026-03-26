@@ -109,13 +109,6 @@ class AppServiceProvider extends ServiceProvider
                 'report' => false,
             ],
         ]);
-
-        // Configure Inertia
-        Config::set('inertia.ssr.enabled', false);
-        Config::set('inertia.use_script_element_for_initial_page', true);
-        Config::set('inertia.page_paths', [
-            resource_path('js/pages'),
-        ]);
     }
 
     private function registerMacros(): void

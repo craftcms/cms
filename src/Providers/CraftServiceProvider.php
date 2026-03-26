@@ -28,12 +28,14 @@ use CraftCms\Cms\Update\UpdatesServiceProvider;
 use CraftCms\Cms\User\UserServiceProvider;
 use CraftCms\Cms\View\ViewServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
+use Inertia\ServiceProvider as InertiaServiceProvider;
 use Override;
 
 class CraftServiceProvider extends AggregateServiceProvider
 {
     #[Override]
     protected $providers = [
+        // InertiaServiceProvider::class,
         ConfigServiceProvider::class,
         AuthServiceProvider::class,
         FilesystemServiceProvider::class,
