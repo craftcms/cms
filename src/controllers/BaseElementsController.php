@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\InvalidTypeException;
+use craft\helpers\Component;
 use craft\services\ElementSources;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -88,6 +89,10 @@ abstract class BaseElementsController extends Controller
             return null;
         }
 
+        if (is_array($conditionConfig)) {
+            $conditionConfig = Component::cleanseConfig($conditionConfig);
+        }
+
         $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
 
         if ($condition instanceof ElementCondition) {
@@ -107,6 +112,7 @@ abstract class BaseElementsController extends Controller
             }
         }
 
+        /** @var ElementConditionInterface $condition */
         return $condition;
     }
 }
