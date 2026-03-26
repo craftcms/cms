@@ -33,6 +33,10 @@ export default Base.extend(
 
       this.setSettings(settings, Garnish.Modal.defaults);
 
+      if (!this.settings.triggerElement) {
+        this.settings.triggerElement = Garnish.getFocusedElement();
+      }
+
       // Create the shade
       this.$shade = $('<div class="' + this.settings.shadeClass + '"/>');
 
@@ -50,10 +54,6 @@ export default Base.extend(
         if (this.settings.autoShow) {
           this.show();
         }
-      }
-
-      if (!this.settings.triggerElement) {
-        this.settings.triggerElement = Garnish.getFocusedElement();
       }
 
       Garnish.Modal.instances.push(this);
@@ -243,7 +243,7 @@ export default Base.extend(
         if ($focusTarget?.length) {
           $focusTarget.focus();
         } else {
-          console.error(
+          console.warn(
             'There is no trigger element set for this modal. Set one with modal.$triggerElement = $(...)'
           );
         }
