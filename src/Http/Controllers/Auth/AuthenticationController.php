@@ -69,7 +69,7 @@ abstract readonly class AuthenticationController
                     throw new RuntimeException('User requires two-step verification, but the loginPath config setting is disabled.');
                 }
 
-                return redirect(\CraftCms\Cms\Support\URL::siteUrl($loginPath, array_filter([
+                return redirect(\CraftCms\Cms\Support\Url::siteUrl($loginPath, array_filter([
                     'verify' => 1,
                     'returnUrl' => $this->getPostedRedirectUrl($user) ?? URL::returnUrl(),
                 ])));
@@ -158,7 +158,7 @@ abstract readonly class AuthenticationController
         if (! $request->isCpRequest()) {
             $url = Cms::config()->getInvalidUserTokenPath() ?? Cms::config()->getLoginPath();
 
-            return redirect(\CraftCms\Cms\Support\URL::siteUrl($url));
+            return redirect(\CraftCms\Cms\Support\Url::siteUrl($url));
         }
 
         return redirect(CpAuthPath::Login->value);
@@ -193,7 +193,7 @@ abstract readonly class AuthenticationController
         }
 
         $postCpLoginRedirect = Cms::config()->getPostCpLoginRedirect();
-        $url = \CraftCms\Cms\Support\URL::cpUrl($postCpLoginRedirect);
+        $url = \CraftCms\Cms\Support\Url::cpUrl($postCpLoginRedirect);
 
         return redirect($url);
     }
@@ -201,7 +201,7 @@ abstract readonly class AuthenticationController
     protected function redirectUserAfterAccountActivation(User $user): Response
     {
         $activateAccountSuccessPath = Cms::config()->getActivateAccountSuccessPath();
-        $url = \CraftCms\Cms\Support\URL::siteUrl($activateAccountSuccessPath);
+        $url = \CraftCms\Cms\Support\Url::siteUrl($activateAccountSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);
     }
@@ -209,7 +209,7 @@ abstract readonly class AuthenticationController
     protected function redirectUserAfterEmailVerification(User $user): Response
     {
         $verifyEmailSuccessPath = Cms::config()->getVerifyEmailSuccessPath();
-        $url = \CraftCms\Cms\Support\URL::siteUrl($verifyEmailSuccessPath);
+        $url = \CraftCms\Cms\Support\Url::siteUrl($verifyEmailSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);
     }

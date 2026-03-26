@@ -15,7 +15,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -203,7 +203,7 @@ readonly class ActionController
             ]);
         }
 
-        $uri = Str::start(URL::prependCpTrigger($sourcePath[0]['uri']), '/');
+        $uri = Str::start(Url::prependCpTrigger($sourcePath[0]['uri']), '/');
 
         return Uri::of($uri)
             ->withQuery([

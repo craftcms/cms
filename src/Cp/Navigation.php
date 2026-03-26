@@ -11,7 +11,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Volumes;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Http\Request;
@@ -198,7 +198,7 @@ readonly class Navigation
                 $item['id'] = 'nav-'.preg_replace('/[^\w\-_]/', '', (string) $item['url']);
             }
 
-            $item['url'] = URL::url($item['url']);
+            $item['url'] = Url::url($item['url']);
 
             if (! isset($item['external'])) {
                 $item['external'] = false;

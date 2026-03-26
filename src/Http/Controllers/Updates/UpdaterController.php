@@ -15,7 +15,7 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
@@ -75,7 +75,7 @@ class UpdaterController extends BaseUpdaterController
             'title' => $this->pageTitle(),
             'initialState' => $state,
             'actionPrefix' => 'updater',
-            'returnUrl' => URL::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect()),
+            'returnUrl' => Url::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect()),
         ])->toResponse($this->request);
     }
 
@@ -309,7 +309,7 @@ class UpdaterController extends BaseUpdaterController
     #[Override]
     protected function returnUrl(): string
     {
-        return URL::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
+        return Url::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect());
     }
 
     #[Override]

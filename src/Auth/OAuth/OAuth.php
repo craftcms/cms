@@ -25,7 +25,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserGroups;
 use Illuminate\Container\Attributes\Scoped;
@@ -156,12 +156,12 @@ class OAuth
     {
         $path = sprintf('oauth/%s/redirect', $provider->handle);
 
-        return $isCpRequest ? URL::cpUrl($path) : URL::siteUrl($path);
+        return $isCpRequest ? Url::cpUrl($path) : Url::siteUrl($path);
     }
 
     public function callbackPath(ProviderDefinition $provider, bool $isCpRequest = false): string
     {
-        return URL::siteUrl(
+        return Url::siteUrl(
             sprintf('oauth/%s/callback', $provider->handle),
             $isCpRequest ? ['context' => self::CP_CONTEXT_VALUE] : [],
         );

@@ -42,7 +42,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -539,7 +539,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return null;
         }
 
-        return URL::cpUrl("settings/fields/edit/$this->id");
+        return Url::cpUrl("settings/fields/edit/$this->id");
     }
 
     public function getActionMenuItems(): array

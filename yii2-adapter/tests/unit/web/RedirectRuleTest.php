@@ -9,7 +9,7 @@ namespace crafttests\unit\web;
 
 use craft\test\TestCase;
 use craft\web\RedirectRule;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Psr\Http\Message\UriInterface;
 use UnitTester;
 
@@ -48,7 +48,7 @@ class RedirectRuleTest extends TestCase
             [
                 null,
                 'nope',
-                URL::url('nope'),
+                Url::url('nope'),
                 [
                     'from' => 'redirect/from',
                     'to' => 'redirect/to',
@@ -57,7 +57,7 @@ class RedirectRuleTest extends TestCase
             [
                 'redirect/to',
                 'redirect/from',
-                URL::url('redirect/from'),
+                Url::url('redirect/from'),
                 [
                     'from' => 'redirect/from',
                     'to' => 'redirect/to',
@@ -66,7 +66,7 @@ class RedirectRuleTest extends TestCase
             [
                 'redirect/to',
                 'redirect/from/$special.chars',
-                URL::url('redirect/from/$special.chars'),
+                Url::url('redirect/from/$special.chars'),
                 [
                     'from' => 'redirect/from/$special.chars',
                     'to' => 'redirect/to',
@@ -78,7 +78,7 @@ class RedirectRuleTest extends TestCase
             [
                 'redirect/to/abc123',
                 'redirect/from/foo/abc123',
-                URL::url('redirect/from/foo/abc123'),
+                Url::url('redirect/from/foo/abc123'),
                 [
                     'from' => 'redirect/from/foo/<bar:{handle}>',
                     'to' => 'redirect/to/<bar>',
@@ -87,7 +87,7 @@ class RedirectRuleTest extends TestCase
             [
                 'redirect/to/abc-123',
                 'redirect/from/foo/abc-123',
-                URL::url('redirect/from/foo/abc-123'),
+                Url::url('redirect/from/foo/abc-123'),
                 [
                     'from' => 'redirect/from/foo/<bar:{slug}>',
                     'to' => 'redirect/to/<bar>',
@@ -96,7 +96,7 @@ class RedirectRuleTest extends TestCase
             [
                 'redirect/to/55a89943-19a6-4f5e-8db7-8950f7f66e98',
                 'redirect/from/foo/55a89943-19a6-4f5e-8db7-8950f7f66e98',
-                URL::url('redirect/from/foo/55a89943-19a6-4f5e-8db7-8950f7f66e98'),
+                Url::url('redirect/from/foo/55a89943-19a6-4f5e-8db7-8950f7f66e98'),
                 [
                     'from' => 'redirect/from/foo/<bar:{uid}>',
                     'to' => 'redirect/to/<bar>',
@@ -107,7 +107,7 @@ class RedirectRuleTest extends TestCase
             [
                 'https://redirect.to/2025/01',
                 'redirect/FROM/2025/01',
-                URL::url('redirect/FROM/2025/01'),
+                Url::url('redirect/FROM/2025/01'),
                 [
                     'from' => 'redirect/FROM/<year:\d{4}>/<month>',
                     'to' => 'https://redirect.to/<year>/<month>',
@@ -117,7 +117,7 @@ class RedirectRuleTest extends TestCase
             [
                 null,
                 'redirect/from/2025/01',
-                URL::url('redirect/from/2025/01'),
+                Url::url('redirect/from/2025/01'),
                 [
                     'from' => 'redirect/FROM/<year:\d{4}>/<month>',
                     'to' => 'https://redirect.to/<year>/<month>',
@@ -129,7 +129,7 @@ class RedirectRuleTest extends TestCase
             [
                 'redirect/to/abc123',
                 'redirect/from',
-                URL::url('redirect/from', ['bar' => 'abc123']),
+                Url::url('redirect/from', ['bar' => 'abc123']),
                 [
                     'match' => function(UriInterface $url): ?string {
                         parse_str($url->getQuery(), $params);

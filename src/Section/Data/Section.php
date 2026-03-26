@@ -21,7 +21,7 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -214,7 +214,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
             return null;
         }
 
-        return URL::cpUrl("settings/sections/$this->id");
+        return Url::cpUrl("settings/sections/$this->id");
     }
 
     /**

@@ -9,7 +9,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\UserGroups;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\OAuth\CustomIdentityResolver;
 use CraftCms\Cms\Tests\TestClasses\OAuth\CustomUserGroupResolver;
 use CraftCms\Cms\Tests\TestClasses\OAuth\CustomUserPopulator;
@@ -66,7 +66,7 @@ function oauthControllerLoginUrl(bool $isCpRequest): string
 {
     return $isCpRequest
         ? cp_url('login')
-        : URL::siteUrl(app(GeneralConfig::class)->getLoginPath());
+        : Url::siteUrl(app(GeneralConfig::class)->getLoginPath());
 }
 
 function completeOAuthControllerCallback(
