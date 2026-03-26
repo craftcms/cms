@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Validation\Concerns;
 
 use BadMethodCallException;
+use CraftCms\Cms\Component\Exceptions\InvalidCallException;
+use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
@@ -40,7 +42,11 @@ trait Validates
         Typecast::properties(static::class, $values);
 
         foreach ($values as $name => $value) {
-            $this->$name = $value;
+            try {
+                $this->$name = $value;
+            } catch (UnknownPropertyException|InvalidCallException|\yii\base\UnknownPropertyException) {
+                // Property or setter doesn't exist
+            }
         }
     }
 
