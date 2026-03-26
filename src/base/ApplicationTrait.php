@@ -1585,11 +1585,13 @@ trait ApplicationTrait
         $this->getRequest();
         $this->getLog();
 
+        $isCpRequest = $this->getRequest()->getIsCpRequest();
+
         // Set the timezone
-        $this->_setTimeZone();
+        $this->_setTimeZone($isCpRequest);
 
         // Set the language
-        $this->updateTargetLanguage();
+        $this->updateTargetLanguage($isCpRequest);
 
         // Register the variable dumper
         VarDumper::setHandler(function($var) {
@@ -1644,9 +1646,24 @@ trait ApplicationTrait
     /**
      * Sets the system timezone.
      */
-    private function _setTimeZone(): void
+    private function _setTimeZone(bool $useUserTz): void
     {
-        $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
+        $timeZone = null;
+
+        if ($useUserTz) {
+            // If the user is logged in *and* has a preferred time zone, use that
+            // (don't actually try to fetch the user, as plugins haven't been loaded yet)
+            /** @var UserSession $user */
+            $user = $this->getUser();
+            $id = Session::get($user->idParam);
+            if ($id) {
+                $timeZone = $this->getUsers()->getUserPreference($id, 'timeZone');
+            }
+        }
+
+        if (!$timeZone) {
+            $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
+        }
 
         if ($timeZone) {
             $this->setTimeZone(App::parseEnv($timeZone));

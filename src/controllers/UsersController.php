@@ -51,6 +51,7 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
+use DateTimeZone;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -1361,10 +1362,17 @@ class UsersController extends Controller
             $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
         }
 
+        // time zone
+        $timeZone = new DateTimeZone(Craft::$app->getTimeZone());
+        $offsetDate = (new DateTime())->setTimezone(new DateTimeZone('UTC'));
+        $transition = $timeZone->getTransitions($offsetDate->getTimestamp(), $offsetDate->getTimestamp());
+        $timeZoneAbbr = $transition[0]['abbr'];
+
         $response->action('users/save-preferences');
         $response->contentTemplate('users/_preferences', compact(
             'userLanguage',
             'userLocale',
+            'timeZoneAbbr',
         ));
 
         return $response;
@@ -1385,10 +1393,15 @@ class UsersController extends Controller
         if ($preferredLocale === '__blank__') {
             $preferredLocale = null;
         }
+        $timeZone = $this->request->getBodyParam('timeZone', $user->getPreference('timezone')) ?: null;
+        if ($timeZone === '__blank__') {
+            $timeZone = null;
+        }
         $preferences = [
             'language' => $this->request->getBodyParam('preferredLanguage', $user->getPreference('language')),
             'locale' => $preferredLocale,
             'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
+            'timeZone' => $timeZone,
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
             'disableAutofocus' => $this->request->getBodyParam('disableAutofocus', $user->getPreference('disableAutofocus')),

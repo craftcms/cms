@@ -1664,6 +1664,7 @@ return [
     'System Name' => 'System Name',
     'System Report' => 'System Report',
     'System Status' => 'System Status',
+    'System time zone ({abbr})' => 'System time zone ({abbr})',
     'System' => 'System',
     'Table Columns' => 'Table Columns',
     'Table' => 'Table',

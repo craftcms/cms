@@ -33,6 +33,17 @@
     options: craft.app.locale.getWeekDayNames(),
     value: currentUser.getPreference('weekStartDay', craft.app.config.general.defaultWeekStartDay)
   }) }}
+
+  {{ forms.timeZoneField({
+    label: 'Time Zone'|t('app'),
+    id: 'time-zone',
+    name: 'timeZone',
+    options: [
+      {label: 'System time zone ({abbr})'|t('app', {abbr: timeZoneAbbr}), value: '__blank__'},
+      ...craft.cp.getTimeZoneOptions(offsetDate ?? null),
+    ],
+    value: currentUser.getPreference('timeZone'),
+  }) }}
 </div>
 
 <hr>

@@ -15,6 +15,7 @@
 - Entries’ “Entry type settings” and “Section settings” action menu items are now only shown for element edit screens’ primary action menus.
 - Category indexes can now have “Group” columns. ([#18553](https://github.com/craftcms/cms/discussions/18553))
 - Element slideouts now automatically refresh when the same element is updated in another tab/slideout. ([#18625](https://github.com/craftcms/cms/pull/18625))
+- Added the “Time Zone” user preference. ([#8518](https://github.com/craftcms/cms/discussions/8518))
 
 ### Administration
 - Time fields’ “Max Time” settings can now be set to an earlier time than “Min Time”, for overnight time ranges. ([#18575](https://github.com/craftcms/cms/pull/18575))
