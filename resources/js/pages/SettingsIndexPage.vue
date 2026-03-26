@@ -46,7 +46,8 @@
                           style="font-size: calc(40rem / 16)"
                         ></craft-icon>
                       </div>
-                      {{ item.label }}<span class="sr-only"> - {{ t('Settings') }}</span>
+                      {{ item.label
+                      }}<span class="sr-only"> - {{ t('Settings') }}</span>
                     </div>
                   </a>
                 </li>
