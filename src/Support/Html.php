@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support;
 
-use Craft;
-use craft\helpers\FileHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Image\SvgAllowedAttributes;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -36,7 +34,7 @@ use function CraftCms\Cms\template;
 /**
  * @mixin YiiHtml
  */
-final class Html
+class Html
 {
     public const string TITLE_TAG_RE = '/<title(\s+([\s\S]*?))?>.*?<\/title>\s*/is';
 
@@ -175,18 +173,17 @@ final class Html
      */
     public static function csrfInput(array $options = []): string
     {
-        $request = Craft::$app->getRequest();
         $async = Arr::pull($options, 'async')
-            ?? ($request->getIsSiteRequest() && Cms::config()->asyncCsrfInputs);
+            ?? (request()->isSiteRequest() && Cms::config()->asyncCsrfInputs);
 
         if (! $async) {
-            Craft::$app->getResponse()->setNoCacheHeaders();
+            SetHeaders::noCache();
 
-            return self::hiddenInput($request->csrfParam, csrf_token(), $options)->render();
+            return (string) csrf_field();
         }
 
         HtmlStack::html(template('_special/async-csrf-input', [
-            'url' => UrlHelper::actionUrl('users/session-info'),
+            'url' => Url::actionUrl('users/session-info'),
         ], templateMode: TemplateMode::Cp));
 
         return self::tag('craft-csrf-input');
@@ -295,13 +292,13 @@ final class Html
             ->render();
     }
 
-    /** {@see \Yiisoft\Html\Html::openTag} */
+    /** {@see YiiHtml::openTag} */
     public static function beginTag($name, $options = []): string
     {
         return YiiHtml::openTag($name, self::normalizeTagAttributes($options));
     }
 
-    /** {@see \Yiisoft\Html\Html::closeTag} */
+    /** {@see YiiHtml::closeTag} */
     public static function endTag(string $name): string
     {
         return YiiHtml::closeTag($name);
@@ -311,7 +308,7 @@ final class Html
     {
         if ($url !== null) {
             // Use UrlHelper::url() instead of Url::to()
-            $options['href'] = UrlHelper::url($url);
+            $options['href'] = Url::url($url);
         }
 
         return self::tag('a', $text, $options);
@@ -1112,10 +1109,10 @@ final class Html
             throw new InvalidArgumentException("Invalid file path: $file");
         }
 
-        $file = FileHelper::absolutePath(Aliases::get($file), '/');
+        $file = File::absolutePath(Aliases::get($file), '/');
 
         // make sure it's contained within the project rot
-        $rootPath = FileHelper::absolutePath(Aliases::get('@root'), '/');
+        $rootPath = File::absolutePath(Aliases::get('@root'), '/');
         if (! str_starts_with($file, "$rootPath/")) {
             throw new InvalidArgumentException(sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));
         }
@@ -1131,7 +1128,7 @@ final class Html
 
         if ($mimeType === null) {
             try {
-                $mimeType = FileHelper::getMimeType($file);
+                $mimeType = File::getMimeType($file);
             } catch (Throwable $e) {
                 Log::warning("Unable to determine the MIME type for $file: ".$e->getMessage(), [__METHOD__]);
                 report($e);
@@ -1266,7 +1263,7 @@ final class Html
 
                 return '';
             }
-            if (! is_file($svg) || ! FileHelper::isSvg($svg)) {
+            if (! is_file($svg) || ! File::isSvg($svg)) {
                 if ($throwException) {
                     throw new InvalidArgumentException("Invalid SVG path: $svg");
                 }

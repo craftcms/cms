@@ -23,7 +23,7 @@ use Override;
  *
  * @see \CraftCms\Cms\User\UserPermissions
  */
-final class UserPermissions extends Facade
+class UserPermissions extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

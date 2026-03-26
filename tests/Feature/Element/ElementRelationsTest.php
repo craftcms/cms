@@ -52,10 +52,10 @@ describe('updateRelations', function () {
     });
 
     it('creates relations for a new element', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntry = EntryModel::factory()->create();
@@ -76,10 +76,10 @@ describe('updateRelations', function () {
     });
 
     it('creates multiple relations with correct sort order', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntries = EntryModel::factory(3)->create();
@@ -106,10 +106,10 @@ describe('updateRelations', function () {
     });
 
     it('updates existing relations when element is resaved', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntries = EntryModel::factory(2)->create();
@@ -132,10 +132,10 @@ describe('updateRelations', function () {
     });
 
     it('removes relations when cleared', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntry = EntryModel::factory()->create();
@@ -154,10 +154,10 @@ describe('updateRelations', function () {
     });
 
     it('reorders relations when sort order changes', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntries = EntryModel::factory(3)->create();
@@ -197,10 +197,10 @@ describe('updateRelations', function () {
     });
 
     it('handles duplicate target ids by using first occurrence', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntry = EntryModel::factory()->create();
@@ -242,10 +242,10 @@ describe('deleteSiteRelations', function () {
     });
 
     it('deletes site-specific relations', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntry = EntryModel::factory()->create();
@@ -271,10 +271,10 @@ describe('deleteSiteRelations', function () {
     });
 
     it('only deletes relations for the specific site', function () {
-        $sourceEntry = EntryModel::factory()->create([
-            'sectionId' => $this->section->id,
-            'typeId' => $this->entryType->id,
-        ]);
+        $sourceEntry = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->create();
         $sourceEntry->element->update(['fieldLayoutId' => $this->fieldLayout->id]);
 
         $targetEntry = EntryModel::factory()->create();
@@ -367,10 +367,10 @@ describe('relationalFields', function () {
             'fieldLayoutId' => $fieldLayout->id,
         ]);
 
-        $entry = EntryModel::factory()->create([
-            'sectionId' => $section->id,
-            'typeId' => $entryType->id,
-        ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->create();
         $entry->element->update(['fieldLayoutId' => $fieldLayout->id]);
 
         $element = entryQuery()->id($entry->id)->firstOrFail();
@@ -399,10 +399,10 @@ describe('relationalFields', function () {
         app(Fields::class)->invalidateCaches();
         app(Fields::class)->refreshFields();
 
-        $entry = EntryModel::factory()->create([
-            'sectionId' => $section->id,
-            'typeId' => $entryType->id,
-        ]);
+        $entry = EntryModel::factory()
+            ->forSection($section)
+            ->forEntryType($entryType)
+            ->create();
         $entry->element->update(['fieldLayoutId' => $fieldLayout->id]);
 
         $element = entryQuery()->id($entry->id)->firstOrFail();

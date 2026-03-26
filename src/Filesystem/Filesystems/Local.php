@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Filesystem\Filesystems;
 
 use Closure;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Security;
+use CraftCms\Cms\Support\File;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -135,17 +135,15 @@ class Local extends Filesystem
         // If the folder doesn't exist yet, create it with a .gitignore file
         $path = $this->getRootPath();
 
-        if (! is_dir($path)) {
-            FileHelper::createDirectory($path);
-            FileHelper::writeGitignoreFile($path);
-        }
+        File::ensureDirectoryExists($path);
+        File::writeGitignoreFile($path);
 
         parent::afterSave($isNew);
     }
 
     public function getRootPath(): string
     {
-        $path = FileHelper::normalizePath(Env::parse($this->path) ?? '');
+        $path = File::normalizePath(Env::parse($this->path) ?? '');
 
         // Pass it through realpath() in case the path is symlinked
         return realpath($path) ?: $path;

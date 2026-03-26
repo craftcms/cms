@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
-use craft\helpers\Cp;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
@@ -16,6 +16,7 @@ use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -25,7 +26,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\t;
 
-final readonly class MoveEntryToSectionController
+readonly class MoveEntryToSectionController
 {
     use EnforcesPermissions;
     use RespondsWithFlash;
@@ -98,7 +99,7 @@ final readonly class MoveEntryToSectionController
         } else {
             $listHtml = '';
             foreach ($compatibleSections as $section) {
-                $listHtml .= Cp::chipHtml($section, [
+                $listHtml .= app(ElementHtml::class)->chipHtml($section, [
                     'selectable' => true,
                     'class' => 'fullwidth',
                 ]);
@@ -125,7 +126,7 @@ final readonly class MoveEntryToSectionController
 
         $this->requirePermission("viewEntries:$section->uid");
 
-        /** @var \Illuminate\Support\Collection<Entry> $entries */
+        /** @var Collection<Entry> $entries */
         $entries = Entry::find()
             ->id($entryIds)
             ->status(null)

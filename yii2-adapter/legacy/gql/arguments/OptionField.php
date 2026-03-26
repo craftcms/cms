@@ -1,34 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\arguments;
 
-use craft\gql\base\Arguments;
-use GraphQL\Type\Definition\Type;
-
 /**
- * Class OptionField
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4.6
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Arguments\OptionField} instead.
  */
-class OptionField extends Arguments
+class OptionField extends \CraftCms\Cms\Gql\Arguments\OptionField
 {
-    /**
-     * @inheritdoc
-     */
-    public static function getArguments(): array
-    {
-        return [
-            'label' => [
-                'name' => 'label',
-                'type' => Type::boolean(),
-                'description' => 'If set to true, will return label instead of the value',
-            ],
-        ];
-    }
 }

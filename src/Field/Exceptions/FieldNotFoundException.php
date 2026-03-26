@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field\Exceptions;
 use Exception;
 use Throwable;
 
-final class FieldNotFoundException extends Exception
+class FieldNotFoundException extends Exception
 {
     public function __construct(
         public string $fieldUid,

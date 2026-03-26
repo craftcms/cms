@@ -6,6 +6,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\LegacyEventConstants;
 use craft\elements\db\TagQuery;
 use craft\elements\Tag;
 use craft\gql\arguments\elements\Tag as TagArguments;
@@ -13,11 +14,11 @@ use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\GqlSchema;
 use craft\models\TagGroup;
 use craft\services\Gql as GqlService;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Gql\Data\GqlSchema;
 use DOMElement;
 use GraphQL\Type\Definition\Type;
 use Override;
@@ -30,8 +31,10 @@ use function CraftCms\Cms\template;
  *
  * @deprecated in 6.0.0
  */
-final class Tags extends \CraftCms\Cms\Field\BaseRelationField
+class Tags extends \CraftCms\Cms\Field\BaseRelationField
 {
+    use LegacyEventConstants;
+
     /**
      * {@inheritdoc}
      */

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use Override;
@@ -15,7 +16,7 @@ use yii\base\InvalidConfigException;
  */
 abstract class BaseTextConditionRule extends BaseConditionRule
 {
-    #[\Override]
+    #[Override]
     public string $operator = self::OPERATOR_EQ;
 
     /**
@@ -23,7 +24,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      */
     public string $value = '';
 
-    #[\Override]
+    #[Override]
     protected bool $reloadOnOperatorChange = true;
 
     #[Override]
@@ -68,7 +69,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
 
         return
             Html::hiddenLabel(Html::encode($this->getLabel()), 'value').
-            Cp::textHtml($this->inputOptions());
+            FormFields::textHtml($this->inputOptions());
     }
 
     /**
@@ -86,7 +87,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function getRules(): array
     {
         return array_merge(parent::getRules(), [
@@ -95,7 +96,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     }
 
     /**
-     * Returns the rule’s value, prepped for {@see \CraftCms\Cms\Database\QueryParam::parse()} based on the selected operator.
+     * Returns the rule’s value, prepped for {@see QueryParam::parse()} based on the selected operator.
      */
     protected function paramValue(): ?string
     {

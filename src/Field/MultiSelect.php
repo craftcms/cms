@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use Illuminate\Support\Collection;
@@ -15,7 +15,7 @@ use function CraftCms\Cms\t;
 /**
  * MultiSelect represents a Multi-select field.
  */
-final class MultiSelect extends BaseOptionsField
+class MultiSelect extends BaseOptionsField
 {
     #[\Override]
     protected static bool $multi = true;
@@ -49,7 +49,7 @@ final class MultiSelect extends BaseOptionsField
             DeltaRegistry::setInitialValue($this->handle, null);
         }
 
-        return Cp::selectizeHtml([
+        return FormFields::selectizeHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'class' => 'selectize',
@@ -63,7 +63,7 @@ final class MultiSelect extends BaseOptionsField
     #[\Override]
     public function getStaticHtml(mixed $value, ?ElementInterface $element = null): string
     {
-        return Cp::selectizeHtml([
+        return FormFields::selectizeHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'class' => 'selectize',

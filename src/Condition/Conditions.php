@@ -16,7 +16,7 @@ use ReflectionException;
 use ReflectionProperty;
 
 #[Singleton]
-final readonly class Conditions
+readonly class Conditions
 {
     /**
      * Creates a condition instance.

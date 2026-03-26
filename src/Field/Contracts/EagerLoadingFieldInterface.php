@@ -11,7 +11,7 @@ use craft\base\ElementInterface;
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
-interface EagerLoadingFieldInterface
+interface EagerLoadingFieldInterface extends FieldInterface
 {
     /**
      * Returns an array that maps source-to-target element IDs based on this custom field.

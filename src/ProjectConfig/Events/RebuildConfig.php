@@ -19,7 +19,7 @@ namespace CraftCms\Cms\ProjectConfig\Events;
  * });
  * ```
  */
-final class RebuildConfig
+class RebuildConfig
 {
     public function __construct(
         public array $config,

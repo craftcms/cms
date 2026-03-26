@@ -29,6 +29,7 @@ describe('filter parity', function () {
         'array filter' => 'group',
         'text filter' => 'truncate',
         'html filter' => 'parseRefs',
+        'html sanitize filter' => 'sanitize',
     ]);
 });
 

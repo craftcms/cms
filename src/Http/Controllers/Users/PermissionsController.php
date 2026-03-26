@@ -26,7 +26,7 @@ use Throwable;
 
 use function CraftCms\Cms\t;
 
-final readonly class PermissionsController
+readonly class PermissionsController
 {
     use ConfirmsPasswords;
     use EditUserTrait;
@@ -65,6 +65,10 @@ final readonly class PermissionsController
             'admin' => ['nullable', 'boolean'],
             'sendActivationMail' => ['nullable', 'boolean'],
         ]);
+
+        if (! $this->showPermissionsScreen()) {
+            abort(403, 'User not authorized to perform this action.');
+        }
 
         $currentUser = $request->user();
         $user = $this->editedUser($request->integer('userId'));
@@ -112,6 +116,10 @@ final readonly class PermissionsController
 
     private function saveUserGroups(Request $request, UserElement $user, UserElement $currentUser): void
     {
+        if (! $currentUser->canAssignUserGroups()) {
+            return;
+        }
+
         $groupIds = $request->input('groups');
 
         if ($groupIds === null) {

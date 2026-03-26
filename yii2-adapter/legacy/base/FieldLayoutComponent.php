@@ -16,8 +16,10 @@ use Illuminate\Support\Facades\Event;
  * @since 4.0.0
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\FieldLayout\FieldLayoutComponent} instead.
  */
-class FieldLayoutComponent extends \CraftCms\Cms\FieldLayout\FieldLayoutComponent
+abstract class FieldLayoutComponent extends \CraftCms\Cms\FieldLayout\FieldLayoutComponent
 {
+    use \craft\base\LegacyEventConstants;
+
     /**
      * @event DefineShowFieldLayoutComponentInFormEvent The event that is triggered when determining whether the component should be shown in a field layout.
      * @see showInForm()

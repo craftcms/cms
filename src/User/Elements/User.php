@@ -13,15 +13,13 @@ use craft\elements\actions\UnsuspendUsers;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\NestedElementManager;
-use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Template;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\Concerns\ConfirmsPasswords;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
@@ -40,6 +38,7 @@ use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -49,6 +48,8 @@ use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Template;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -65,6 +66,7 @@ use DateTimeZone;
 use Deprecated;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
@@ -464,7 +466,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[Override]
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
-        /** @var \CraftCms\Cms\Element\Queries\UserQuery $elementQuery */
+        /** @var UserQuery $elementQuery */
         if ($attribute === 'groups') {
             $elementQuery->withGroups();
         } else {
@@ -514,7 +516,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             ],
             'isCredentialed' => [
                 'label' => t('Credentialed'),
-                'placeholder' => fn () => Template::raw(Cp::statusLabelHtml([
+                'placeholder' => fn () => Template::raw(app(StatusHtml::class)->statusLabelHtml([
                     'color' => Color::Teal,
                     'label' => t('Credentialed'),
                     'icon' => 'check',
@@ -526,7 +528,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             ],
             'is2faEnabled' => [
                 'label' => t('Two-Step Verification'),
-                'placeholder' => fn () => Template::raw(Cp::statusLabelHtml([
+                'placeholder' => fn () => Template::raw(app(StatusHtml::class)->statusLabelHtml([
                     'color' => Color::Teal,
                     'label' => t('Two-Step Verification'),
                     'icon' => 'check',
@@ -772,9 +774,20 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
     }
 
+    public function markEmailAsUnverified(): bool
+    {
+        try {
+            Users::unverifyEmailForUser($this);
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
     public function sendEmailVerificationNotification(): void
     {
-        /** @var \Illuminate\Auth\Passwords\PasswordBroker $broker */
+        /** @var PasswordBroker $broker */
         $broker = Password::broker('craft');
 
         $this->notify(new VerifyEmailNotification($broker->createToken($this)));
@@ -1002,11 +1015,11 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     #[AllowedInSandbox]
     public function getHasSsoIdentity(): bool
     {
-        if (Edition::get()->value < Edition::Enterprise->value) {
+        if (! OAuth::isAvailable()) {
             return false;
         }
 
-        return Craft::$app->getSso()->identityExists($this->id);
+        return app(OAuth::class)->hasIdentity($this->id);
     }
 
     #[Override]
@@ -1105,7 +1118,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * Sets an array of user groups on the user.
      *
-     * @param  UserGroup[]|\CraftCms\Cms\User\Data\UserGroup[]  $groups  An array of UserGroup objects.
+     * @param  UserGroup[]|UserGroup[]  $groups  An array of UserGroup objects.
      */
     public function setGroups(array $groups): void
     {
@@ -1117,7 +1130,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * Returns whether the user is in a specific group.
      *
-     * @param  int|string|\CraftCms\Cms\User\Data\UserGroup  $group  The user group model, its handle, or ID.
+     * @param  int|string|UserGroup  $group  The user group model, its handle, or ID.
      */
     #[AllowedInSandbox]
     public function isInGroup(UserGroup|int|string $group): bool
@@ -1381,7 +1394,7 @@ XML;
             return true;
         }
 
-        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+        foreach (UserGroups::getAllGroups() as $group) {
             if ($this->can("assignUserGroup:$group->uid")) {
                 return true;
             }
@@ -1407,14 +1420,18 @@ XML;
      */
     public function getCooldownEndTime(): ?DateTime
     {
-        // There was an old bug that where a user’s lockoutDate could be null if they’ve
-        // passed their cooldownDuration already, but there account status is still locked.
-        // If that’s the case, just let it return null as if they are past the cooldownDuration.
+        // There was an old bug where a user's lockoutDate could be null if they've
+        // passed their cooldownDuration already, but their account status is still locked.
+        // If that's the case, just let it return null as if they are past the cooldownDuration.
         if ($this->locked && $this->lockoutDate) {
             $generalConfig = Cms::config();
-            $interval = DateTimeHelper::secondsToInterval($generalConfig->cooldownDuration);
+            $cooldownDuration = (int) $generalConfig->cooldownDuration;
             $cooldownEnd = clone $this->lockoutDate;
-            $cooldownEnd->add($interval);
+
+            if ($cooldownDuration !== 0) {
+                $sign = $cooldownDuration < 0 ? '-' : '+';
+                $cooldownEnd->modify(sprintf('%s%s seconds', $sign, abs($cooldownDuration)));
+            }
 
             return $cooldownEnd;
         }
@@ -1441,15 +1458,15 @@ XML;
 
     protected function cpEditUrl(): ?string
     {
-        if (Craft::$app->getRequest()->getIsCpRequest() && $this->getIsCurrent()) {
-            return UrlHelper::cpUrl('myaccount');
+        if (request()->isCpRequest() && $this->getIsCurrent()) {
+            return Url::cpUrl('myaccount');
         }
 
         if (Edition::get() === Edition::Solo) {
             return null;
         }
 
-        return UrlHelper::cpUrl("users/$this->id");
+        return Url::cpUrl("users/$this->id");
     }
 
     #[Override]
@@ -1907,7 +1924,7 @@ JS, [
             case 'is2faEnabled':
                 $enabled = app(\CraftCms\Cms\Auth\Auth::class)->hasActiveMethod($this);
                 if ($this->viewMode === 'cards') {
-                    return Cp::statusLabelHtml([
+                    return app(StatusHtml::class)->statusLabelHtml([
                         'color' => $enabled ? Color::Teal : Color::Gray,
                         'label' => t('Two-Step Verification'),
                         'icon' => $enabled ? 'check' : 'xmark',
@@ -1930,7 +1947,7 @@ JS, [
             case 'isCredentialed':
                 $value = $this->getIsCredentialed();
                 if ($this->viewMode === 'cards') {
-                    return Cp::statusLabelHtml([
+                    return app(StatusHtml::class)->statusLabelHtml([
                         'color' => $value ? Color::Teal : Color::Gray,
                         'label' => t('Credentialed'),
                         'icon' => $value ? 'check' : 'xmark',

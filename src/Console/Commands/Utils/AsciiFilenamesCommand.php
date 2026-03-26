@@ -5,29 +5,31 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Console\Commands\Utils;
 
 use Craft;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Support\File;
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Override;
 use Throwable;
 
 use function Laravel\Prompts\confirm;
 
-final class AsciiFilenamesCommand extends Command
+class AsciiFilenamesCommand extends Command
 {
     use CraftCommand;
 
-    #[\Override]
+    #[Override]
     protected $signature = 'craft:utils:ascii-filenames';
 
-    #[\Override]
+    #[Override]
     protected $description = 'Converts all non-ASCII asset filenames to ASCII.';
 
-    #[\Override]
+    #[Override]
     protected $aliases = ['utils/ascii-filenames'];
 
     public function handle(GeneralConfig $generalConfig): int
@@ -51,7 +53,7 @@ final class AsciiFilenamesCommand extends Command
             default => throw new Exception('Invalid driver name: '.DB::connection()->getDriverName().'.')
         };
 
-        /** @var \Illuminate\Support\Collection<Asset> $assets */
+        /** @var Collection<Asset> $assets */
         $assets = $query->get();
         $total = $assets->count();
 
@@ -75,7 +77,7 @@ final class AsciiFilenamesCommand extends Command
         $failCount = 0;
 
         foreach ($assets as $asset) {
-            $asset->newFilename = FileHelper::sanitizeFilename($asset->getFilename(), [
+            $asset->newFilename = File::sanitizeFilename($asset->getFilename(), [
                 'asciiOnly' => true,
             ]);
 

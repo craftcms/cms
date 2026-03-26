@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Element;
 
 use craft\base\ElementInterface;
 use craft\db\CoalesceColumnsExpression;
-use craft\helpers\Cp;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Events\DefineSourceSortOptions;
@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Auth;
 use function CraftCms\Cms\t;
 
 #[Scoped]
-final class ElementSources
+class ElementSources
 {
     public const string TYPE_HEADING = 'heading';
 
@@ -221,7 +221,6 @@ final class ElementSources
 
                     try {
                         return Sites::getSiteByUid($siteId)->id;
-                        /** @phpstan-ignore catch.neverThrown */
                     } catch (SiteNotFoundException) {
                         return null;
                     }
@@ -425,7 +424,7 @@ final class ElementSources
             }
 
             if (isset($attributes[$key]['icon']) && in_array($attributes[$key]['icon'], ['world', 'earth'])) {
-                $attributes[$key]['icon'] = Cp::earthIcon();
+                $attributes[$key]['icon'] = Icons::earth();
             }
         }
 
@@ -479,7 +478,7 @@ final class ElementSources
      * Returns all the field layouts available for the given element source.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @return Collection<\CraftCms\Cms\FieldLayout\FieldLayout>
+     * @return Collection<FieldLayout>
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): Collection
     {
@@ -553,7 +552,7 @@ final class ElementSources
      * Returns additional sort options that should be available for an element index source that includes the given
      * field layouts.
      *
-     * @param  \CraftCms\Cms\FieldLayout\FieldLayout[]|Collection<\CraftCms\Cms\FieldLayout\FieldLayout>  $fieldLayouts
+     * @param  FieldLayout[]|Collection<FieldLayout>  $fieldLayouts
      * @return Collection<array>
      */
     public function getSortOptionsForFieldLayouts(array|Collection $fieldLayouts): Collection

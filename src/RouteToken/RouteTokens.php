@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 #[Singleton]
-final class RouteTokens
+class RouteTokens
 {
     private bool $deletedExpiredTokens = false;
 

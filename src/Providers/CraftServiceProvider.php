@@ -10,9 +10,11 @@ use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Console\ConsoleServiceProvider;
 use CraftCms\Cms\Database\DatabaseServiceProvider;
 use CraftCms\Cms\Deprecator\DeprecatorServiceProvider;
+use CraftCms\Cms\Email\EmailServiceProvider;
 use CraftCms\Cms\Entry\EntryServiceProvider;
 use CraftCms\Cms\Field\FieldsServiceProvider;
 use CraftCms\Cms\FieldLayout\FieldLayoutServiceProvider;
+use CraftCms\Cms\Gql\GqlServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
 use CraftCms\Cms\ProjectConfig\ProjectConfigServiceProvider;
@@ -22,13 +24,13 @@ use CraftCms\Cms\Section\SectionServiceProvider;
 use CraftCms\Cms\Structure\StructureServiceProvider;
 use CraftCms\Cms\Translation\TranslationServiceProvider;
 use CraftCms\Cms\Twig\TwigServiceProvider;
-use CraftCms\Cms\Updates\UpdatesServiceProvider;
+use CraftCms\Cms\Update\UpdatesServiceProvider;
 use CraftCms\Cms\User\UserServiceProvider;
 use CraftCms\Cms\View\ViewServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
 use Override;
 
-final class CraftServiceProvider extends AggregateServiceProvider
+class CraftServiceProvider extends AggregateServiceProvider
 {
     #[Override]
     protected $providers = [
@@ -46,6 +48,8 @@ final class CraftServiceProvider extends AggregateServiceProvider
         AppServiceProvider::class,
         IconServiceProvider::class,
         ConsoleServiceProvider::class,
+        EmailServiceProvider::class,
+        GqlServiceProvider::class,
         PluginServiceProvider::class,
         AssetServiceProvider::class,
         UpdatesServiceProvider::class,

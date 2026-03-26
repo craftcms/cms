@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use Craft;
-use craft\helpers\Assets;
+use craft\services\Path;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Filesystem\Filesystems as FilesystemsService;
@@ -15,10 +16,16 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Security;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Translation\Locale;
+use CraftCms\Cms\View\TemplateMode;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use RecursiveCallbackFilterIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 
 use function CraftCms\Cms\t;
 
@@ -274,7 +281,7 @@ class SelectOptions
     public static function getFsOptions(): array
     {
         $craftFilesystemOptions = Filesystems::getAllFilesystems()
-            ->reject(fn (FsInterface $fs): bool => Assets::isTempUploadFs($fs))
+            ->reject(fn (FsInterface $fs): bool => AssetsHelper::isTempUploadFs($fs))
             ->map(fn (FsInterface $fs) => [
                 'label' => t($fs->name, category: 'site'),
                 'value' => $fs->handle,
@@ -379,6 +386,108 @@ class SelectOptions
                 'type' => 'optgroup',
                 'label' => t('Environment Variables'),
                 'options' => Collection::make($options)->sortBy('value')->values()->all(),
+            ],
+        ];
+    }
+
+    /**
+     * Returns the available template path suggestions for template inputs.
+     *
+     * @return array[]
+     *
+     * @phpstan-return array{array{label: string, type: 'optgroup', options: list<array{label: string, value: string, data: array{hint: string|null}}>}}
+     *
+     * @since 6.0.0
+     */
+    public static function getTemplateSuggestions(): array
+    {
+        // Get all the template files sorted by path length
+        $roots = Arr::merge([
+            '' => [app(Path::class)->getSiteTemplatesPath()],
+        ], TemplateMode::Site->templateRoots());
+
+        $suggestions = [];
+        $templates = [];
+        $sites = [];
+
+        foreach (Sites::getAllSites() as $site) {
+            $sites[$site->handle] = t($site->getName(), category: 'site');
+        }
+
+        foreach ($roots as $root => $basePaths) {
+            foreach ($basePaths as $basePath) {
+                if (! is_dir($basePath)) {
+                    continue;
+                }
+
+                $directory = new RecursiveDirectoryIterator($basePath);
+
+                $filter = new RecursiveCallbackFilterIterator($directory, function ($current) {
+                    // Skip hidden files and directories, as well as node_modules/ folders
+                    if ($current->getFilename()[0] === '.' || $current->getFilename() === 'node_modules') {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                $iterator = new RecursiveIteratorIterator($filter);
+                /** @var SplFileInfo[] $files */
+                $files = [];
+                $pathLengths = [];
+
+                foreach ($iterator as $file) {
+                    /** @var SplFileInfo $file */
+                    if (! $file->isDir() && $file->getFilename()[0] !== '.') {
+                        $files[] = $file;
+                        $pathLengths[] = strlen($file->getRealPath());
+                    }
+                }
+
+                array_multisort($pathLengths, SORT_NUMERIC, $files);
+
+                $basePathLength = strlen((string) $basePath);
+
+                foreach ($files as $file) {
+                    $template = substr($file->getRealPath(), $basePathLength + 1);
+                    $hint = null;
+
+                    // Is it in a site template directory?
+                    foreach ($sites as $handle => $name) {
+                        if (str_starts_with($template, $handle.DIRECTORY_SEPARATOR)) {
+                            $hint = $name;
+                            $template = substr($template, strlen((string) $handle) + 1);
+                            break;
+                        }
+                    }
+
+                    // Prepend the template root path
+                    if ($root !== '') {
+                        $template = sprintf('%s/%s', $root, $template);
+                    }
+
+                    // Avoid listing the same template path twice (considering localized templates)
+                    if (isset($templates[$template])) {
+                        continue;
+                    }
+
+                    $templates[$template] = true;
+                    $suggestions[] = [
+                        'label' => $template,
+                        'value' => $template,
+                        'data' => [
+                            'hint' => $hint,
+                        ],
+                    ];
+                }
+            }
+        }
+
+        return [
+            [
+                'label' => t('Templates'),
+                'type' => 'optgroup',
+                'options' => array_values(Arr::sort($suggestions, 'name')),
             ],
         ];
     }

@@ -14,7 +14,7 @@ use Override;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final class Feed extends Widget
+class Feed extends Widget
 {
     public ?string $url = null;
 

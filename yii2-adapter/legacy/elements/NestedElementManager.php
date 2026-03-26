@@ -16,9 +16,11 @@ use craft\elements\actions\MoveDown;
 use craft\elements\actions\MoveUp;
 use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\ElementIndexHtml;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -448,7 +450,7 @@ class NestedElementManager extends Component
 
                 if (!empty($elements)) {
                     $html .= Html::ul()->items(...array_map(
-                        fn(ElementInterface $element) => Html::li(Cp::elementCardHtml($element, [
+                        fn(ElementInterface $element) => Html::li(app(ElementHtml::class)->elementCardHtml($element, [
                             'context' => 'field',
                             'showActionMenu' => true,
                             'selectable' => $config['selectable'],
@@ -562,7 +564,7 @@ class NestedElementManager extends Component
                     $settings['indexSettings']['actions'][] = $actionConfig;
                 }
 
-                return Cp::elementIndexHtml($this->elementType, [
+                return app(ElementIndexHtml::class)->html($this->elementType, [
                     'class' => [$config['prevalidate'] ? 'prevalidate' : ''],
                     'context' => 'embedded-index',
                     'defaultSort' => $config['defaultSort'],
@@ -651,7 +653,7 @@ class NestedElementManager extends Component
                     } else {
                         $settings['createAttributes'] = array_map(function(array $attributes) {
                             if (isset($attributes['icon'])) {
-                                $attributes['icon'] = Cp::iconSvg($attributes['icon']);
+                                $attributes['icon'] = Icons::svg($attributes['icon']);
                             }
                             if (isset($attributes['color']) && $attributes['color'] instanceof Color) {
                                 $attributes['color'] = $attributes['color']->value;
@@ -696,8 +698,7 @@ JS, [
             // If this is a draft, its nested element ownership will be duplicated by Drafts::createDraft()
             if ($owner->getIsRevision()) {
                 $this->createRevisions($owner->duplicateOf, $owner);
-            // getIsUnpublishedDraft is needed for "save as new" duplication
-            } elseif (!$owner->getIsDraft() || $owner->getIsUnpublishedDraft()) {
+            } elseif ($owner->getIsCanonical()) {
                 $this->duplicateNestedElements($owner->duplicateOf, $owner, true, !$isNew);
             }
             $resetValue = true;
@@ -849,7 +850,9 @@ JS, [
                 if ($saveAll || !$element->id || $element->forceSave) {
                     $element->setOwner($owner);
                     $element->setSortOrder($sortOrder);
-                    $element->resaving = $owner->resaving;
+                    // Only set $resaving=true if the element isn’t new.
+                    // Otherwise NestedElementTrait::saveOwnership() won’t do its thing.
+                    $element->resaving = $owner->resaving && $element->id;
                     $elementsService->saveElement($element, false);
 
                     // If this element's primary owner is $owner, and it’s a draft of another element whose owner is

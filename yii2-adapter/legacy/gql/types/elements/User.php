@@ -1,49 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\types\elements;
 
-use craft\gql\interfaces\elements\User as UserInterface;
-use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\User\Elements\User as UserElement;
-use GraphQL\Type\Definition\ResolveInfo;
-
 /**
- * Class User
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Types\Elements\User} instead.
  */
-class User extends Element
+class User extends \CraftCms\Cms\Gql\Types\Elements\User
 {
-    /**
-     * @inheritdoc
-     */
-    public function __construct(array $config)
-    {
-        $config['interfaces'] = [
-            UserInterface::getType(),
-        ];
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
-    {
-        /** @var UserElement $source */
-        $fieldName = $resolveInfo->fieldName;
-
-        return match ($fieldName) {
-            'preferences' => Json::encode($source->getPreferences()),
-            'affiliatedSiteHandle' => $source->getAffiliatedSite()?->handle,
-            default => parent::resolve($source, $arguments, $context, $resolveInfo),
-        };
-    }
 }

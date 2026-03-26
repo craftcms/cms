@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\Log;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final readonly class Addresses implements FieldLayoutProviderInterface
+readonly class Addresses implements FieldLayoutProviderInterface
 {
     private FormatterInterface $formatter;
 

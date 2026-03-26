@@ -102,23 +102,23 @@
   }
 
   .diff-line--add {
-    background-color: var(--c-color-success-bg-normal);
+    background-color: var(--c-color-success-fill-normal);
     color: var(--c-color-success-on-normal);
   }
 
   .diff-line--remove {
-    background-color: var(--c-color-danger-bg-normal);
+    background-color: var(--c-color-danger-fill-normal);
     color: var(--c-color-danger-on-normal);
   }
 
   .diff-line--info {
-    background-color: var(--c-color-info-bg-subtle);
-    color: var(--c-color-info-on-subtle);
+    background-color: var(--c-color-info-fill-quiet);
+    color: var(--c-color-info-on-quiet);
   }
 
   .diff-show-all {
     padding: var(--c-spacing-md);
     text-align: center;
-    border-top: 1px solid var(--c-color-neutral-border-subtle);
+    border-top: 1px solid var(--c-color-neutral-border-quiet);
   }
 </style>

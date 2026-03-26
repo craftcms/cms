@@ -9,7 +9,7 @@ use Override;
 /**
  * Phone number link type.
  */
-final class Sms extends BaseTextLinkType
+class Sms extends BaseTextLinkType
 {
     public static function id(): string
     {

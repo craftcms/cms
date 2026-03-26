@@ -1,57 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\directives;
 
-use Craft;
-use craft\gql\base\Directive;
-use craft\gql\GqlEntityRegistry;
-use GraphQL\Language\DirectiveLocation;
-use GraphQL\Type\Definition\Directive as GqlDirective;
-use GraphQL\Type\Definition\ResolveInfo;
-
 /**
- * ParseRefs GraphQL Directive
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.1
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Directives\ParseRefs} instead.
  */
-class ParseRefs extends Directive
+class ParseRefs extends \CraftCms\Cms\Gql\Directives\ParseRefs
 {
-    /**
-     * @inheritdoc
-     */
-    public static function create(): GqlDirective
-    {
-        $typeName = static::name();
-
-        return GqlEntityRegistry::getOrCreate($typeName, fn() => new self([
-            'name' => $typeName,
-            'locations' => [
-                DirectiveLocation::FIELD,
-            ],
-            'description' => 'Parses the element references on the field.',
-            'args' => [],
-        ]));
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function name(): string
-    {
-        return 'parseRefs';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
-    {
-        return Craft::$app->getElements()->parseRefs((string)$value);
-    }
 }

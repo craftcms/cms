@@ -218,10 +218,10 @@
   .config-viewer {
     max-height: 500px;
     overflow: auto;
-    background-color: var(--c-color-neutral-bg-subtle);
+    background-color: var(--c-color-neutral-fill-quiet);
     padding: var(--c-spacing-md);
     border-radius: var(--c-radius-md);
-    border: 1px solid var(--c-color-neutral-border-subtle);
+    border: 1px solid var(--c-color-neutral-border-quiet);
     white-space: pre-wrap;
     word-break: break-word;
     font-size: 0.9rem;

@@ -25,8 +25,8 @@ it('is a singleton', function () {
 });
 
 it('can get entry types by section id', function () {
-    $section = Section::factory()->create();
-    $entryType = $section->entryTypes()->save(EntryType::factory()->create(), ['sortOrder' => 1]);
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create();
 
     expect($this->entryTypes->getEntryTypesBySectionId($section->id))->toHaveCount(1);
     expect($this->entryTypes->getEntryTypesBySectionId($section->id)->first()->id)->toBe($entryType->id);

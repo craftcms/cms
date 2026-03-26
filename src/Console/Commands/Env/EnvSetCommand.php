@@ -12,7 +12,7 @@ use Illuminate\Foundation\Application;
 
 use function Laravel\Prompts\text;
 
-final class EnvSetCommand extends Command implements PromptsForMissingInput
+class EnvSetCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
 

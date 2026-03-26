@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\gql\types\Money as MoneyType;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Gql\Types\Money as MoneyType;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Money as MoneyHelper;
@@ -38,7 +38,7 @@ use function CraftCms\Cms\template;
  * @property-read null $elementConditionRuleType
  * @property-read mixed $contentGqlType
  */
-final class Money extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Money extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -306,7 +306,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
             $defaultValue = MoneyHelper::toNumber(new MoneyLibrary($this->defaultValue, new Currency($this->currency)));
         }
 
-        return Cp::moneyInputHtml([
+        return FormFields::moneyInputHtml([
             'id' => $this->getInputId(),
             'name' => $this->handle,
             'size' => $this->size,

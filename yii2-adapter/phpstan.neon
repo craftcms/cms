@@ -46,7 +46,8 @@ parameters:
         - '#PHPDoc tag @mixin contains invalid type craft\\base\\+[a-zA-Z0-9]#'
         - '#^Dead catch#'
         - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'
-        - '#is never assigned craft\\base\\MemoizableArray#'
+        - '#is never assigned CraftCms\\Cms\\Support\\MemoizableArray#'
+        - '#does not accept CraftCms\\Cms\\Support\\MemoizableArray#'
         -
             identifier: parameter.implicitlyNullable
         -

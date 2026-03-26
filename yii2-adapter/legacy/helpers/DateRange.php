@@ -7,40 +7,44 @@
 
 namespace craft\helpers;
 
+use CraftCms\Cms\Shared\Enums\DateRangePeriod;
+use CraftCms\Cms\Shared\Enums\DateRangeType;
 use DateInterval;
 use DateTime;
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Class DateRange
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.3.0
+ * @deprecated 6.0.0 use {@see DateRangeType} and {@see DateRangePeriod} directly.
  */
 class DateRange
 {
-    public const TYPE_TODAY = 'today';
-    public const TYPE_THIS_WEEK = 'thisWeek';
-    public const TYPE_THIS_MONTH = 'thisMonth';
-    public const TYPE_THIS_YEAR = 'thisYear';
-    public const TYPE_PAST_7_DAYS = 'past7Days';
-    public const TYPE_PAST_30_DAYS = 'past30Days';
-    public const TYPE_PAST_90_DAYS = 'past90Days';
-    public const TYPE_PAST_YEAR = 'pastYear';
-    public const TYPE_BEFORE = 'before';
-    public const TYPE_AFTER = 'after';
-    public const TYPE_RANGE = 'range';
+    public const string TYPE_TODAY = DateRangeType::Today->value;
+    public const string TYPE_THIS_WEEK = DateRangeType::ThisWeek->value;
+    public const string TYPE_THIS_MONTH = DateRangeType::ThisMonth->value;
+    public const string TYPE_THIS_YEAR = DateRangeType::ThisYear->value;
+    public const string TYPE_PAST_7_DAYS = DateRangeType::Past7Days->value;
+    public const string TYPE_PAST_30_DAYS = DateRangeType::Past30Days->value;
+    public const string TYPE_PAST_90_DAYS = DateRangeType::Past90Days->value;
+    public const string TYPE_PAST_YEAR = DateRangeType::PastYear->value;
+    public const string TYPE_BEFORE = DateRangeType::Before->value;
+    public const string TYPE_AFTER = DateRangeType::After->value;
+    public const string TYPE_RANGE = DateRangeType::Range->value;
 
-    public const PERIOD_SECONDS_AGO = 'secondsAgo';
-    public const PERIOD_MINUTES_AGO = 'minutesAgo';
-    public const PERIOD_HOURS_AGO = 'hoursAgo';
-    public const PERIOD_DAYS_AGO = 'daysAgo';
-    public const PERIOD_WEEKS_AGO = 'weeksAgo';
-    public const PERIOD_SECONDS_FROM_NOW = 'secondsFromNow';
-    public const PERIOD_MINUTES_FROM_NOW = 'minutesFromNow';
-    public const PERIOD_HOURS_FROM_NOW = 'hoursFromNow';
-    public const PERIOD_DAYS_FROM_NOW = 'daysFromNow';
-    public const PERIOD_WEEKS_FROM_NOW = 'weeksFromNow';
+    public const string PERIOD_SECONDS_AGO = DateRangePeriod::SecondsAgo->value;
+    public const string PERIOD_MINUTES_AGO = DateRangePeriod::MinutesAgo->value;
+    public const string PERIOD_HOURS_AGO = DateRangePeriod::HoursAgo->value;
+    public const string PERIOD_DAYS_AGO = DateRangePeriod::DaysAgo->value;
+    public const string PERIOD_WEEKS_AGO = DateRangePeriod::WeeksAgo->value;
+    public const string PERIOD_SECONDS_FROM_NOW = DateRangePeriod::SecondsFromNow->value;
+    public const string PERIOD_MINUTES_FROM_NOW = DateRangePeriod::MinutesFromNow->value;
+    public const string PERIOD_HOURS_FROM_NOW = DateRangePeriod::HoursFromNow->value;
+    public const string PERIOD_DAYS_FROM_NOW = DateRangePeriod::DaysFromNow->value;
+    public const string PERIOD_WEEKS_FROM_NOW = DateRangePeriod::WeeksFromNow->value;
 
     /**
      * Returns the start and end dates for a date range by its type.
@@ -52,41 +56,13 @@ class DateRange
      */
     public static function dateRangeByType(string $rangeType): array
     {
-        return match ($rangeType) {
-            self::TYPE_TODAY => [
-                DateTimeHelper::today(),
-                DateTimeHelper::tomorrow(),
-            ],
-            self::TYPE_THIS_WEEK => [
-                DateTimeHelper::thisWeek(),
-                DateTimeHelper::nextWeek(),
-            ],
-            self::TYPE_THIS_MONTH => [
-                DateTimeHelper::thisMonth(),
-                DateTimeHelper::nextMonth(),
-            ],
-            self::TYPE_THIS_YEAR => [
-                DateTimeHelper::thisYear(),
-                DateTimeHelper::nextYear(),
-            ],
-            self::TYPE_PAST_7_DAYS => [
-                DateTimeHelper::today()->modify('-7 days'),
-                DateTimeHelper::now(),
-            ],
-            self::TYPE_PAST_30_DAYS => [
-                DateTimeHelper::today()->modify('-30 days'),
-                DateTimeHelper::now(),
-            ],
-            self::TYPE_PAST_90_DAYS => [
-                DateTimeHelper::today()->modify('-90 days'),
-                DateTimeHelper::now(),
-            ],
-            self::TYPE_PAST_YEAR => [
-                DateTimeHelper::today()->modify('-1 year'),
-                DateTimeHelper::now(),
-            ],
-            default => throw new InvalidArgumentException("Invalid range type: $rangeType"),
-        };
+        $rangeType = DateRangeType::from($rangeType);
+
+        try {
+            return $rangeType->range();
+        } catch (RuntimeException $e) {
+            throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**
@@ -98,56 +74,12 @@ class DateRange
      */
     public static function dateIntervalByTimePeriod(float|int $length, string $periodType): DateInterval
     {
-        // Cannot support months or years as they are variable in length
-        if (!in_array($periodType, [
-            DateRange::PERIOD_SECONDS_AGO,
-            DateRange::PERIOD_MINUTES_AGO,
-            DateRange::PERIOD_HOURS_AGO,
-            DateRange::PERIOD_DAYS_AGO,
-            DateRange::PERIOD_WEEKS_AGO,
-            DateRange::PERIOD_SECONDS_FROM_NOW,
-            DateRange::PERIOD_MINUTES_FROM_NOW,
-            DateRange::PERIOD_HOURS_FROM_NOW,
-            DateRange::PERIOD_DAYS_FROM_NOW,
-            DateRange::PERIOD_WEEKS_FROM_NOW,
-        ], true)) {
-            throw new InvalidArgumentException("Invalid period type: $periodType");
+        $periodType = DateRangePeriod::from($periodType);
+
+        try {
+            return $periodType->interval($length);
+        } catch (RuntimeException $e) {
+            throw new InvalidArgumentException($e->getMessage(), $e->getCode(), $e);
         }
-
-        if (in_array($periodType, [DateRange::PERIOD_SECONDS_AGO, DateRange::PERIOD_SECONDS_FROM_NOW])) {
-            $length = $intLength = round($length);
-        } else {
-            $intLength = floor($length);
-        }
-
-        $pos = in_array($periodType, [
-            DateRange::PERIOD_WEEKS_FROM_NOW,
-            DateRange::PERIOD_DAYS_FROM_NOW,
-            DateRange::PERIOD_HOURS_FROM_NOW,
-            DateRange::PERIOD_MINUTES_FROM_NOW,
-            DateRange::PERIOD_SECONDS_FROM_NOW,
-        ]);
-
-        $str = sprintf('%s%s %s', $pos ? '' : '-', $intLength, match ($periodType) {
-            DateRange::PERIOD_WEEKS_AGO, DateRange::PERIOD_WEEKS_FROM_NOW => 'weeks',
-            DateRange::PERIOD_DAYS_AGO, DateRange::PERIOD_DAYS_FROM_NOW => 'days',
-            DateRange::PERIOD_HOURS_AGO, DateRange::PERIOD_HOURS_FROM_NOW => 'hours',
-            DateRange::PERIOD_MINUTES_AGO, DateRange::PERIOD_MINUTES_FROM_NOW => 'minutes',
-            DateRange::PERIOD_SECONDS_AGO, DateRange::PERIOD_SECONDS_FROM_NOW => 'seconds',
-        });
-
-        $rem = $length - $intLength;
-
-        if ($rem) {
-            $str .= sprintf(" %s %s", $pos ? '+' : '-', match ($periodType) {
-                DateRange::PERIOD_WEEKS_AGO, DateRange::PERIOD_WEEKS_FROM_NOW => sprintf('%s days', round($rem * 7)),
-                DateRange::PERIOD_DAYS_AGO, DateRange::PERIOD_DAYS_FROM_NOW => sprintf('%s hours', round($rem * 24)),
-                DateRange::PERIOD_HOURS_AGO, DateRange::PERIOD_HOURS_FROM_NOW => sprintf('%s minutes', round($rem * 60)),
-                DateRange::PERIOD_MINUTES_AGO, DateRange::PERIOD_MINUTES_FROM_NOW => sprintf('%s seconds', round($rem * 60)),
-                DateRange::PERIOD_SECONDS_AGO, DateRange::PERIOD_SECONDS_FROM_NOW => sprintf('%s seconds', round($rem)),
-            });
-        }
-
-        return DateInterval::createFromDateString($str);
     }
 }

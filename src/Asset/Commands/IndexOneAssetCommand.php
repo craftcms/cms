@@ -13,7 +13,7 @@ use Illuminate\Container\Attributes\Give;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Symfony\Component\Console\Input\InputOption;
 
-final class IndexOneAssetCommand extends Command implements PromptsForMissingInput
+class IndexOneAssetCommand extends Command implements PromptsForMissingInput
 {
     use CraftCommand;
     use IndexesAssets;

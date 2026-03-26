@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 
 use function CraftCms\Cms\t;
 
-final class DependentLocalityConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
+class DependentLocalityConditionRule extends BaseTextConditionRule implements ElementConditionRuleInterface
 {
     public function getLabel(): string
     {

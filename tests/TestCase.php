@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Tests;
 use Craft;
 use craft\test\TestSetup;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
@@ -50,6 +51,9 @@ class TestCase extends Orchestra
     #[Override]
     protected function setUp(): void
     {
+        // This is so route registration in tests work
+        $_SERVER['CRAFT_EDITION'] = Edition::Pro->handle();
+
         parent::setUp();
 
         app()->setLocale('en-US');
@@ -61,8 +65,7 @@ class TestCase extends Orchestra
         Config::set('app.timezone', 'America/Los_Angeles');
         date_default_timezone_set('America/Los_Angeles');
 
-        // Tests run in Pro and Cp by default
-        Edition::set(Edition::Pro);
+        // Tests run in Cp by default
         TemplateMode::set(TemplateMode::Cp);
 
         File::cleanDirectory(config_path('craft/project'));
@@ -192,6 +195,7 @@ class TestCase extends Orchestra
             Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 
             $migration->up();
+            app(LaravelMigrations::class)->ensureSessionsTable();
 
             // Mark all existing migrations as applied
             $migrator = app(Migrator::class)->track('craft');

@@ -87,7 +87,7 @@ describe('edit', function () {
 
 describe('destroy', function () {
     test('destroy deletes a user', function () {
-        $user = \CraftCms\Cms\User\Models\User::factory()->create();
+        $user = CraftCms\Cms\User\Models\User::factory()->create();
 
         expect(new UserQuery()->count())->toBe(2);
 
@@ -104,7 +104,7 @@ describe('destroy', function () {
     });
 
     test('destroy can transfer content to another user', function () {
-        $user = \CraftCms\Cms\User\Models\User::factory()->create();
+        $user = CraftCms\Cms\User\Models\User::factory()->create();
         $transferTo = User::findOne();
 
         postJson(action([UsersController::class, 'destroy']), [
@@ -131,7 +131,7 @@ describe('destroy', function () {
             return null;
         });
 
-        $user = \CraftCms\Cms\User\Models\User::factory()->create();
+        $user = CraftCms\Cms\User\Models\User::factory()->create();
 
         postJson(action([UsersController::class, 'destroy']), [
             'userId' => $user->id,
@@ -169,7 +169,7 @@ describe('contentSummary', function () {
             return null;
         });
 
-        $otherUser = \CraftCms\Cms\User\Models\User::factory()->create();
+        $otherUser = CraftCms\Cms\User\Models\User::factory()->create();
 
         postJson(action([UsersController::class, 'contentSummary']), [
             'userId' => $otherUser->id,
@@ -177,7 +177,7 @@ describe('contentSummary', function () {
     });
 
     test('contentSummary returns content summary for other user with permission', function () {
-        $otherUser = \CraftCms\Cms\User\Models\User::factory()->create();
+        $otherUser = CraftCms\Cms\User\Models\User::factory()->create();
 
         postJson(action([UsersController::class, 'contentSummary']), [
             'userId' => $otherUser->id,

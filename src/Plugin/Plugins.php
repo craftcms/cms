@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin;
 
-use Craft;
-use craft\base\Plugin;
-use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -21,9 +18,11 @@ use CraftCms\Cms\Plugin\Events\LoadingPlugins;
 use CraftCms\Cms\Plugin\Events\PluginDisabled;
 use CraftCms\Cms\Plugin\Events\PluginEnabled;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
+use CraftCms\Cms\Plugin\Events\PluginRegistered;
 use CraftCms\Cms\Plugin\Events\PluginSettingsSaved;
 use CraftCms\Cms\Plugin\Events\PluginsLoaded;
 use CraftCms\Cms\Plugin\Events\PluginUninstalled;
+use CraftCms\Cms\Plugin\Events\PluginUnregistered;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
 use CraftCms\Cms\Plugin\Exceptions\InvalidLicenseKeyException;
@@ -31,9 +30,9 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
-use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
@@ -51,12 +50,11 @@ use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
-use yii\base\Module;
 
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Plugins
+class Plugins
 {
     /**
      * @var array[] Custom plugin configurations.
@@ -135,7 +133,7 @@ final class Plugins
             // Normalize the base path (and find the actual path, not a possibly-symlinked path)
             if (isset($plugin['basePath'])) {
                 if (($basePath = realpath($plugin['basePath'])) !== false) {
-                    $plugin['basePath'] = FileHelper::normalizePath($basePath);
+                    $plugin['basePath'] = File::normalizePath($basePath);
                 } else {
                     Log::warning("Invalid plugin base path: {$plugin['basePath']}", [__METHOD__]);
                     unset($plugin['basePath']);
@@ -309,7 +307,7 @@ final class Plugins
         // Figure out the path to the folder that contains this class
         try {
             // Add a trailing slash so we don't get false positives
-            $classPath = Str::finish(FileHelper::normalizePath(dirname(new ReflectionClass($class)->getFileName())), '/');
+            $classPath = Str::finish(File::normalizePath(dirname(new ReflectionClass($class)->getFileName())), '/');
         } catch (ReflectionException) {
             return $this->classPluginHandles[$class] = null;
         }
@@ -849,7 +847,6 @@ final class Plugins
                 Aliases::set($alias, $path);
             }
 
-            // Unset them so we don't end up calling Module::setAliases()
             unset($config['aliases']);
         }
 
@@ -1071,7 +1068,7 @@ final class Plugins
 
         $iconPath = ($basePath !== false) ? $basePath.'/icon.svg' : false;
 
-        if ($iconPath === false || ! is_file($iconPath) || ! FileHelper::isSvg($iconPath)) {
+        if ($iconPath === false || ! is_file($iconPath) || ! File::isSvg($iconPath)) {
             $iconPath = Aliases::get('@appicons/default-plugin.svg');
         }
 
@@ -1252,10 +1249,7 @@ final class Plugins
     {
         $this->plugins[$plugin->handle] = $plugin;
 
-        if ($plugin instanceof Module) {
-            /** @var Plugin $plugin */
-            app('Craft')->setModule($plugin->handle, $plugin);
-        }
+        event(new PluginRegistered($plugin));
     }
 
     /**
@@ -1267,9 +1261,7 @@ final class Plugins
     {
         unset($this->plugins[$plugin->handle]);
 
-        if ($plugin instanceof Module) {
-            app('Craft')->setModule($plugin->handle, null);
-        }
+        event(new PluginUnregistered($plugin));
     }
 
     /**

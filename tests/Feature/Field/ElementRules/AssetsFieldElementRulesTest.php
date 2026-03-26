@@ -21,7 +21,7 @@ test('assets field validates allowed file kinds', function () {
     $validResult = EntryModel::factory()
         ->withField('allowedAssets', Assets::class, ['restrictFiles' => true, 'allowedKinds' => ['image']], value: AssetElement::find()->id($image->id))
         ->withScenario(Element::SCENARIO_LIVE)
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
     $validResult->element->validate();
 
     expect($validResult->element->errors()->has('allowedAssets'))->toBeFalse();
@@ -29,7 +29,7 @@ test('assets field validates allowed file kinds', function () {
     $invalidResult = EntryModel::factory()
         ->withField('blockedAssets', Assets::class, ['restrictFiles' => true, 'allowedKinds' => ['image']], value: AssetElement::find()->id($pdf->id))
         ->withScenario(Element::SCENARIO_LIVE)
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
     $invalidResult->element->validate();
 
     expect($invalidResult->element->errors()->has('blockedAssets'))->toBeTrue();

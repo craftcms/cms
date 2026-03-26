@@ -9,6 +9,7 @@
 
 namespace craft\elements;
 
+use craft\base\ElementEventConstants;
 use craft\base\Event as YiiEvent;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
@@ -23,6 +24,8 @@ use Illuminate\Support\Facades\Event;
  */
 class User extends UserElement
 {
+    use ElementEventConstants;
+
     /**
      * @event DefineValueEvent The event that is triggered when defining the user’s name, as returned by [[getName()]] or [[__toString()]].
      *

@@ -31,7 +31,7 @@ use Override;
  *
  * @extends ElementQuery<T>
  */
-final class EntryQuery extends ElementQuery
+class EntryQuery extends ElementQuery
 {
     use QueriesAuthors;
     use QueriesEntryDates;

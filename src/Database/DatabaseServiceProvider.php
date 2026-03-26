@@ -5,7 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database;
 
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Database\Commands\BackupCommand;
+use CraftCms\Cms\Database\Commands\ConvertCharsetCommand;
+use CraftCms\Cms\Database\Commands\DropAllTablesCommand;
+use CraftCms\Cms\Database\Commands\DropTablePrefixCommand;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
+use CraftCms\Cms\Database\Commands\RepairCommand;
+use CraftCms\Cms\Database\Commands\RestoreCommand;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;
@@ -22,7 +28,7 @@ use Illuminate\Support\ServiceProvider;
 use Override;
 use ReflectionProperty;
 
-final class DatabaseServiceProvider extends ServiceProvider
+class DatabaseServiceProvider extends ServiceProvider
 {
     #[Override]
     public function register(): void
@@ -36,6 +42,12 @@ final class DatabaseServiceProvider extends ServiceProvider
         Connection::macro('isMaria', fn () => $this->getDriverName() === 'mariadb');
         Connection::macro('isPgsql', fn () => $this->getDriverName() === 'pgsql');
         Connection::macro('isSqlite', fn () => $this->getDriverName() === 'sqlite');
+        Connection::macro('driverLabel', fn () => match (true) {
+            $this->isMaria() => 'MariaDB',
+            $this->isMysql() => 'MySQL',
+            $this->isSqlite() => 'SQLite',
+            default => 'PostgreSQL',
+        });
 
         Builder::macro('whereBool', fn ($column, bool $value) => $this->where($column, new QueryExpression(var_export($value, true))));
         Builder::macro('orWhereBool', fn ($column, bool $value) => $this->orWhere($column, new QueryExpression(var_export($value, true))));
@@ -49,7 +61,13 @@ final class DatabaseServiceProvider extends ServiceProvider
         Aliases::set('@migrations', '@package/Database/Migrations');
 
         $this->commands([
+            BackupCommand::class,
+            ConvertCharsetCommand::class,
+            DropAllTablesCommand::class,
+            DropTablePrefixCommand::class,
             MigrateCommand::class,
+            RepairCommand::class,
+            RestoreCommand::class,
         ]);
 
         if ($db->getDriverName() === 'sqlite') {

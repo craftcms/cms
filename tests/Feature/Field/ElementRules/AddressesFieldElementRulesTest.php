@@ -17,7 +17,7 @@ test('addresses field reports nested address validation errors', function () {
     $result = EntryModel::factory()
         ->withField('addressesField', Addresses::class, [], value: $value)
         ->withScenario(Element::SCENARIO_LIVE)
-        ->createElementWithFields();
+        ->createElementWithFields(save: false);
 
     $result->element->validate();
 

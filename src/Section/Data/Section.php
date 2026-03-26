@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Section\Data;
 
 use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
@@ -22,6 +21,7 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +30,7 @@ use Stringable;
 use function CraftCms\Cms\t;
 
 #[Ruleset(SectionRules::class)]
-final class Section extends Component implements Chippable, CpEditable, Iconic, Stringable
+class Section extends Component implements Chippable, CpEditable, Iconic, Stringable
 {
     /**
      * @see getPage()
@@ -96,7 +96,7 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
         ];
     }
 
-    public static function get(int|string $id): ?static
+    public static function get(int|string $id): ?self
     {
         return Sections::getSectionById($id);
     }
@@ -122,7 +122,7 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
     /**
      * Returns the section's site-specific settings, indexed by site ID.
      *
-     * @return \CraftCms\Cms\Section\Data\SectionSiteSettings[]
+     * @return SectionSiteSettings[]
      */
     public function getSiteSettings(): array
     {
@@ -143,7 +143,7 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
     /**
      * Sets the section's site-specific settings.
      *
-     * @param  \CraftCms\Cms\Section\Data\SectionSiteSettings[]  $siteSettings  Array of SectionSiteSettings objects.
+     * @param  SectionSiteSettings[]  $siteSettings  Array of SectionSiteSettings objects.
      */
     public function setSiteSettings(array $siteSettings): void
     {
@@ -214,7 +214,7 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
             return null;
         }
 
-        return UrlHelper::cpUrl("settings/sections/$this->id");
+        return Url::cpUrl("settings/sections/$this->id");
     }
 
     /**
@@ -276,7 +276,7 @@ final class Section extends Component implements Chippable, CpEditable, Iconic, 
         }
 
         /**
-         * @var \CraftCms\Cms\Section\Data\SectionSiteSettings $siteSettings
+         * @var SectionSiteSettings $siteSettings
          */
         foreach ($this->getSiteSettings() as $siteId => $siteSettings) {
             $siteUid = DB::table(Table::SITES)->uidById($siteId);

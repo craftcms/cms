@@ -6,8 +6,6 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
 use craft\helpers\App;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
 use craft\services\ElementSources;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -18,6 +16,7 @@ use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Filesystem\Contracts\FsInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Data\ProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
@@ -36,15 +35,19 @@ use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Data\SiteGroup;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\Facades\Gql;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
@@ -57,6 +60,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use SplFileInfo;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Application;
@@ -66,8 +71,10 @@ use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
 
+use function Illuminate\Filesystem\join_paths;
+
 #[Singleton]
-final class ProjectConfig
+class ProjectConfig
 {
     /**
      * The cache key that is used to store the modified time of the project config files, at the time they were last applied.
@@ -592,7 +599,7 @@ final class ProjectConfig
      */
     public function getDoesExternalConfigExist(): bool
     {
-        return file_exists(Craft::$app->getPath()->getProjectConfigFilePath());
+        return file_exists(Path::projectConfigFile());
     }
 
     /**
@@ -1250,7 +1257,7 @@ final class ProjectConfig
      */
     private function _getConfigFileModifiedTime(): int
     {
-        $path = Craft::$app->getPath()->getProjectConfigFilePath();
+        $path = Path::projectConfigFile();
 
         if (! file_exists($path)) {
             return 0;
@@ -1271,7 +1278,7 @@ final class ProjectConfig
 
         $fileList = $this->_getConfigFileList();
         $generatedConfig = [];
-        $projectConfigPathLength = strlen((string) Craft::$app->getPath()->getProjectConfigPath(false));
+        $projectConfigPathLength = strlen((string) Path::projectConfig(create: false));
 
         foreach ($fileList as $filePath) {
             $yamlConfig = Yaml::parse(file_get_contents($filePath));
@@ -1409,16 +1416,25 @@ final class ProjectConfig
     private function _findConfigFiles(?string $path = null): array
     {
         if ($path === null) {
-            $path = Craft::$app->getPath()->getProjectConfigPath(false);
+            $path = Path::projectConfig(create: false);
         }
         if (! is_dir($path)) {
             return [];
         }
 
-        return FileHelper::findFiles($path, [
-            'only' => ['*.yaml'],
-            'caseSensitive' => false,
-        ]);
+        $finder = Finder::create()
+            ->ignoreDotFiles(false)
+            ->ignoreVCS(false)
+            ->files()
+            ->in($path)
+            ->filter(fn (SplFileInfo $file): bool => fnmatch('*.yaml', $file->getFilename(), FNM_CASEFOLD));
+
+        $list = [];
+        foreach ($finder as $file) {
+            $list[] = $file->getPathname();
+        }
+
+        return $list;
     }
 
     /**
@@ -1444,7 +1460,7 @@ final class ProjectConfig
      */
     private function storeYamlHistory(array $configData): void
     {
-        $basePath = Craft::$app->getPath()->getConfigDeltaPath().'/'.self::CONFIG_DELTA_FILENAME;
+        $basePath = Path::configDelta(self::CONFIG_DELTA_FILENAME);
 
         // Go through all of them and move them forward.
         for ($i = $this->maxDeltas; $i > 0; $i--) {
@@ -1487,12 +1503,10 @@ final class ProjectConfig
         $config = $this->getCurrentWorkingConfig();
 
         try {
-            $basePath = Craft::$app->getPath()->getProjectConfigPath();
+            $basePath = Path::projectConfig();
 
             // Delete everything except hidden files/folders
-            FileHelper::clearDirectory($basePath, [
-                'except' => ['.*', '.*/'],
-            ]);
+            File::cleanDirectory($basePath, except: ['.*', '.*/']);
 
             $projectConfigNames = $config->get(self::PATH_META_NAMES);
 
@@ -1510,21 +1524,19 @@ final class ProjectConfig
             foreach ($splitConfig as $relativeFile => $configData) {
                 $configData = ProjectConfigHelper::cleanupConfig($configData);
                 ksort($configData);
-                $filePath = $basePath.DIRECTORY_SEPARATOR.$relativeFile;
+                $filePath = join_paths($basePath, $relativeFile);
                 $yamlContent = Yaml::dump($configData, 20, 2);
                 if (! empty($uids)) {
                     $yamlContent = preg_replace($uids, $replacements, $yamlContent);
                 }
-                FileHelper::writeToFile($filePath, $yamlContent);
+                File::writeToFile($filePath, $yamlContent);
             }
         } catch (Throwable $e) {
             Cache::put(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
             if (isset($basePath)) {
                 // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
                 try {
-                    FileHelper::clearDirectory($basePath, [
-                        'except' => ['.*', '.*/'],
-                    ]);
+                    File::cleanDirectory($basePath, except: ['.*', '.*/']);
                 } catch (Throwable) {
                     // oh well
                 }
@@ -1885,7 +1897,7 @@ final class ProjectConfig
      */
     private function _getTransformData(): array
     {
-        return app(\CraftCms\Cms\Image\ImageTransforms::class)->getAllTransforms()
+        return app(ImageTransforms::class)->getAllTransforms()
             ->mapWithKeys(fn (ImageTransform $transform) => [$transform->uid => $transform->getConfig()])
             ->all();
     }
@@ -1895,8 +1907,7 @@ final class ProjectConfig
      */
     private function _getGqlData(): array
     {
-        $gqlService = Craft::$app->getGql();
-        $publicToken = $gqlService->getPublicToken();
+        $publicToken = Gql::getPublicToken();
 
         $data = [
             'schemas' => [],
@@ -1906,7 +1917,7 @@ final class ProjectConfig
             ],
         ];
 
-        foreach ($gqlService->getSchemas() as $schema) {
+        foreach (Gql::getSchemas() as $schema) {
             $data['schemas'][$schema->uid] = $schema->getConfig();
         }
 

@@ -29,6 +29,9 @@ use CraftCms\Cms\Http\Controllers\Entries\CreateEntryController;
 use CraftCms\Cms\Http\Controllers\Entries\MoveEntryToSectionController;
 use CraftCms\Cms\Http\Controllers\Entries\StoreEntryController;
 use CraftCms\Cms\Http\Controllers\FieldsController;
+use CraftCms\Cms\Http\Controllers\Gql\ApiController as GqlApiController;
+use CraftCms\Cms\Http\Controllers\Gql\SchemasController as GqlSchemasController;
+use CraftCms\Cms\Http\Controllers\Gql\TokensController as GqlTokensController;
 use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
@@ -76,22 +79,8 @@ use CraftCms\Cms\Http\Middleware\RequireAdmin;
 use CraftCms\Cms\Http\Middleware\RequireAdminChanges;
 use CraftCms\Cms\Http\Middleware\RequireEdition;
 use CraftCms\Cms\Http\Middleware\RequireToken;
-use CraftCms\Cms\Support\Str;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
-
-/**
- * Actions that should not have CSRF token verification. These are automatically
- * mapped to `/{cpTrigger}/{actionTrigger}/route` and `/{actionTrigger}/{route}`
- */
-VerifyCsrfToken::except(collect([
-    'preview/preview',
-])->flatMap(fn (string $route) => [
-    $route,
-    Cms::config()->actionTrigger.Str::start($route, '/'),
-    Cms::config()->cpTrigger.'/'.Cms::config()->actionTrigger.Str::start($route, '/'),
-])->all());
 
 /**
  * Actions that are accessible both with and without CP can be registered here.
@@ -127,12 +116,13 @@ foreach ([
  * Actions that are accessible without CP can be registered here.
  */
 Route::prefix(Cms::config()->actionTrigger)->group(function () {
+    Route::any('graphql/api', GqlApiController::class);
     Route::post('migrate', MigrateController::class);
 
     Route::middleware(['auth:craft'])->group(function () {
         Route::post('entries/save-entry', StoreEntryController::class);
-        Route::post('users/save-address', [\CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'store']);
-        Route::post('users/delete-address', [\CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'destroy']);
+        Route::post('users/save-address', [CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'store']);
+        Route::post('users/delete-address', [CraftCms\Cms\Http\Controllers\Users\AddressesController::class, 'destroy']);
     });
 
     Route::middleware([RequireToken::class])->group(function () {
@@ -253,6 +243,26 @@ Route::prefix(implode('/', [
 
         // FindAndReplace
         Route::post('utilities/find-and-replace-perform-action', FindAndReplaceController::class);
+
+        // GraphQL
+        Route::middleware([RequireAdmin::class])->group(function () {
+            Route::post('graphql/delete-token', [GqlTokensController::class, 'destroy']);
+            Route::post('graphql/generate-token', [GqlTokensController::class, 'generate']);
+
+            Route::middleware('password.confirm')->group(function () {
+                Route::post('graphql/save-token', [GqlTokensController::class, 'store']);
+                Route::post('graphql/fetch-token', [GqlTokensController::class, 'fetch']);
+            });
+        });
+
+        Route::middleware([RequireAdminChanges::class])->group(function () {
+            Route::post('graphql/delete-schema', [GqlSchemasController::class, 'destroy']);
+
+            Route::middleware('password.confirm')->group(function () {
+                Route::post('graphql/save-schema', [GqlSchemasController::class, 'save']);
+                Route::post('graphql/save-public-schema', [GqlSchemasController::class, 'savePublic']);
+            });
+        });
 
         // Migrations
         Route::post('utilities/apply-new-migrations', MigrationsController::class);

@@ -17,10 +17,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Uri;
 
 use function CraftCms\Cms\t;
 
-final readonly class PreviewController
+readonly class PreviewController
 {
     use EnforcesPermissions;
 
@@ -99,7 +100,7 @@ final readonly class PreviewController
             Craft::$app->getElements()->setPlaceholderElement($element);
         }
 
-        /** @var \Illuminate\Support\Uri $originalUri */
+        /** @var Uri $originalUri */
         $originalUri = Context::pullHidden(HandleTokenRequest::ORIGINAL_URI_KEY);
 
         $response = $kernel->handle($request->duplicateWithUri(

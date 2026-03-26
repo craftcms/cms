@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use craft\base\ElementInterface;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 
@@ -130,7 +130,7 @@ trait Revisionable
             $params['site'] = $this->getSite()->handle;
         }
 
-        return UrlHelper::cpUrl($cpEditUrl, $params);
+        return Url::cpUrl($cpEditUrl, $params);
     }
 
     /**

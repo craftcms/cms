@@ -12,20 +12,20 @@ use Override;
 
 use function CraftCms\Cms\t;
 
-final class JobProgress extends BaseModel
+class JobProgress extends BaseModel
 {
     use HasUid;
 
-    #[\Override]
+    #[Override]
     protected $primaryKey = 'uid';
 
-    #[\Override]
+    #[Override]
     public $incrementing = false;
 
-    #[\Override]
+    #[Override]
     protected $table = Table::JOBPROGRESS;
 
-    #[\Override]
+    #[Override]
     protected $casts = [
         'status' => JobStatus::class,
     ];

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use Craft;
-use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db as DbHelper;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Data\AssetIndexEntry;
 use CraftCms\Cms\Asset\Data\IndexingSession;
 use CraftCms\Cms\Asset\Data\Volume;
@@ -25,6 +23,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Image\ImageTransformHelper;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -43,7 +42,7 @@ use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
 #[Singleton]
-final class AssetIndexer
+class AssetIndexer
 {
     public Collection $existingIndexingSessions {
         get => $this->getExistingIndexingSessions();
@@ -663,7 +662,7 @@ final class AssetIndexer
                         AssetsHelper::downloadFile($volume->sourceDisk(), $indexEntry->uri, $tempPath);
                         $dimensions = ImageHelper::imageSize($tempPath);
 
-                        $asset->setMimeType(FileHelper::getMimeType($tempPath));
+                        $asset->setMimeType(File::getMimeType($tempPath));
                     }
                 }
 
@@ -679,7 +678,7 @@ final class AssetIndexer
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();
                     ImageTransformHelper::storeLocalSource($tempPath, $targetPath);
-                    FileHelper::unlink($tempPath);
+                    File::delete($tempPath);
                 }
             } else {
                 $asset->dateModified = $timeModified;

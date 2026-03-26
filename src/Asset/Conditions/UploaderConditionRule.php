@@ -14,7 +14,7 @@ use CraftCms\Cms\User\Elements\User;
 
 use function CraftCms\Cms\t;
 
-final class UploaderConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
+class UploaderConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
     public function getLabel(): string
     {

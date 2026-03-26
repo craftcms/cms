@@ -11,12 +11,10 @@ use Carbon\CarbonInterval;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\NestedElementQueryInterface;
+use craft\helpers\App;
 use craft\helpers\Component;
-use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
-use craft\helpers\Session;
-use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume as LegacyVolume;
@@ -24,6 +22,9 @@ use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Cp\Alerts;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -34,9 +35,14 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use DateInterval;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Uri;
+use InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
@@ -97,17 +103,35 @@ class AppController extends Controller
      */
     public function actionResourceJs(string $url): Response
     {
-        if (!str_starts_with($url, Craft::$app->getAssetManager()->baseUrl)) {
+        $assetManager = Craft::$app->getAssetManager();
+        $baseUrl = Str::finish($assetManager->baseUrl, '/');
+
+        if (!str_starts_with($url, $baseUrl)) {
             throw new BadRequestHttpException("$url does not appear to be a resource URL");
         }
 
-        // Close the PHP session in case this takes a while
-        \Illuminate\Support\Facades\Session::save();
+        $resourceUri = preg_replace('/^(.*)\?.*/', '$1', substr($url, strlen($baseUrl)));
 
-        $response = Http::create()->get($url);
-        $this->response->setCacheHeaders();
-        $this->response->getHeaders()->set('content-type', 'application/javascript');
-        return $this->asRaw($response->getBody());
+        if (!$assetManager->cacheSourcePaths) {
+            // Close the PHP session in case this takes a while
+            Session::save();
+
+            $response = Http::create()->get($url);
+            $this->response->setCacheHeaders();
+            $this->response->getHeaders()->set('content-type', 'application/javascript');
+
+            return $this->asRaw($response->getBody());
+        }
+
+        try {
+            $publishedPath = App::resourcePathByUri($resourceUri);
+        } catch (InvalidArgumentException $exception) {
+            throw new BadRequestHttpException($exception->getMessage(), previous: $exception);
+        }
+
+        return $this->response->sendFile($publishedPath, null, [
+            'inline' => true,
+        ]);
     }
 
     /**
@@ -123,7 +147,7 @@ class AppController extends Controller
         $path = $this->request->getRequiredBodyParam('path');
 
         return $this->asJson([
-            'alerts' => Cp::alerts($path, true),
+            'alerts' => app(Alerts::class)->get($path, true),
         ]);
     }
 
@@ -161,9 +185,9 @@ class AppController extends Controller
         $this->requireCpRequest();
 
         $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
-        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
-            'items' => array_map(fn($issue) => $issue[2], $issues),
-        ]);
+        $cartUrl = Uri::of("$consoleUrl/cart/new")
+            ->withQuery(['items' => array_map(fn($issue) => $issue[2], $issues)])
+            ->value();
 
         $cookie = $this->request->getCookies()->get(app(License::class)->shunCookieName());
         $data = $cookie ? Json::decode($cookie->value) : null;
@@ -414,8 +438,8 @@ class AppController extends Controller
                     /** @var 'chip'|'card' $ui */
                     $ui = $instance['ui'] ?? 'chip';
                     $elementHtml[$id][$key] = match ($ui) {
-                        'chip' => Cp::elementChipHtml($element, $instance),
-                        'card' => Cp::elementCardHtml($element, $instance),
+                        'chip' => app(ElementHtml::class)->elementChipHtml($element, $instance),
+                        'card' => app(ElementHtml::class)->elementCardHtml($element, $instance),
                     };
                 }
             }
@@ -465,13 +489,13 @@ class AppController extends Controller
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
                     if (!empty($config['overrides'])) {
-                        Craft::configure($component, Component::cleanseConfig($config['overrides']));
+                        Typecast::configure($component, $config['overrides']);
                     }
-                    $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
+                    $componentHtml[$componentType][$id][] = app(ElementHtml::class)->chipHtml($component, $config);
                 }
 
                 if ($withMenuItems) {
-                    $menuItemHtml[$componentType][$id] = Cp::menuItem([
+                    $menuItemHtml[$componentType][$id] = app(MenuHtml::class)->menuItem([
                         'label' => $component->getUiLabel(),
                         'icon' => $component instanceof Iconic ? $component->getIcon() : null,
                         'attributes' => [

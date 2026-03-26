@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -7,18 +8,11 @@
 
 namespace craft\widgets;
 
-use craft\base\MissingComponentInterface;
-use craft\base\Widget;
-
-/** @phpstan-ignore-next-line */
-if (false) {
-    /**
-     * @since 3.0.0
-     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\MissingWidget` instead.
-     */
-    class MissingWidget extends Widget implements MissingComponentInterface
-    {
-    }
+/**
+ * @since 3.0.0
+ * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\MissingWidget` instead.
+ */
+class MissingWidget extends \CraftCms\Cms\Dashboard\Widgets\MissingWidget
+{
+    use \craft\base\LegacyEventConstants;
 }
-
-class_alias(\CraftCms\Cms\Dashboard\Widgets\MissingWidget::class, MissingWidget::class);

@@ -33,8 +33,40 @@
   gap: 1em;
 }
 
+.stack--horizontal {
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+}
+
 .list {
   list-style: disc;
   padding-inline-start: 1.5em;
   margin: 0;
+}
+
+.stage {
+  padding: 2rem;
+}
+
+.swatch {
+  width: 40px;
+  aspect-ratio: 4/3;
+  border-radius: var(--c-radius-md);
+  display: inline-grid;
+  place-items: center;
+}
+
+.swatch--border {
+  box-shadow: var(--c-shadow-raised);
+}
+
+.swatch--large {
+  width: auto;
+  max-width: 180px;
+  padding: var(--c-spacing-lg);
+}
+
+.label {
+  font-family: monospace;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.5);
 }

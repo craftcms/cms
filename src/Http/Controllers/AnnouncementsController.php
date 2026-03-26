@@ -9,7 +9,7 @@ use CraftCms\Cms\Http\RespondsWithFlash;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class AnnouncementsController
+readonly class AnnouncementsController
 {
     use RespondsWithFlash;
 

@@ -225,9 +225,9 @@ class ElementQueryMixin
     /**
      * Removes [[isEmpty()|empty operands]] from the given query condition.
      *
-     * @param array $condition the original condition
-     *
+     * @param  array  $condition  the original condition
      * @return array the condition with [[isEmpty()|empty operands]] removed.
+     *
      * @throws NotSupportedException if the condition operator is not supported
      */
     private static function filterCondition(array $condition): array
@@ -293,7 +293,6 @@ class ElementQueryMixin
      * - a string containing only whitespace characters,
      * - or an empty array.
      *
-     * @param mixed $value
      * @return bool if the value is empty
      */
     private static function isEmpty(mixed $value): bool

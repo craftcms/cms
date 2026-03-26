@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 
 use function CraftCms\Cms\t;
 
-final readonly class UnlockController
+readonly class UnlockController
 {
     use AuthorizesRequests;
     use RespondsWithFlash;

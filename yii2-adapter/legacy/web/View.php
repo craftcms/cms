@@ -15,6 +15,7 @@ use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\Cp;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -2144,10 +2145,10 @@ class View extends \yii\web\View
             return null;
         }
 
-        if (isset($context['size']) && in_array($context['size'], [Cp::CHIP_SIZE_SMALL, Cp::CHIP_SIZE_LARGE], true)) {
+        if (isset($context['size']) && in_array($context['size'], [ElementHtml::CHIP_SIZE_SMALL, ElementHtml::CHIP_SIZE_LARGE], true)) {
             $size = $context['size'];
         } else {
-            $size = (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') ? Cp::CHIP_SIZE_LARGE : Cp::CHIP_SIZE_SMALL;
+            $size = (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') ? ElementHtml::CHIP_SIZE_LARGE : ElementHtml::CHIP_SIZE_SMALL;
         }
 
         return Cp::elementHtml(

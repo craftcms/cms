@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
-use craft\gql\interfaces\Element as ElementGqlType;
+use CraftCms\Cms\Gql\Interfaces\Element as ElementGqlType;
 use GraphQL\Type\Definition\Type;
 use ReflectionClass;
 

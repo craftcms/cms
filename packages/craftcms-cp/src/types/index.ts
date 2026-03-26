@@ -9,10 +9,10 @@ export const Variant = {
 export type VariantKey = (typeof Variant)[keyof typeof Variant];
 
 export const Appearance = {
-  Outline: 'outline',
-  Fill: 'fill',
-  OutlineFill: 'outline-fill',
   Accent: 'accent',
+  OutlineFill: 'outline-fill',
+  Fill: 'fill',
+  Outline: 'outline',
   Plain: 'plain',
 } as const;
 

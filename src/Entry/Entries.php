@@ -28,7 +28,7 @@ use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 
 #[Scoped]
-final class Entries
+class Entries
 {
     /**
      * @var array<int,array<string,Entry|false>>

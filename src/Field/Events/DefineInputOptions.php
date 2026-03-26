@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Field\Events;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 
-final class DefineInputOptions
+class DefineInputOptions
 {
     public function __construct(
         /** @var FieldInterface the current field */

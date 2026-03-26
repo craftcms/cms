@@ -9,12 +9,15 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\ElementRelationParamParser;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Element;
@@ -38,23 +41,25 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use Override;
 use Tpetry\QueryExpressions\Language\Alias;
-use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Schema;
 
@@ -228,9 +233,9 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     ): Builder {
         $ns = sprintf('%s_%s', $field->handle, Str::random(5));
 
-        $query = DB::table(\CraftCms\Cms\Database\Table::RELATIONS, "relations_$ns")
-            ->join(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "relations_$ns.targetId")
-            ->leftJoin(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS_SITES, "elements_sites_$ns"), "elements_sites_$ns.elementId", '=', "elements_$ns.id")
+        $query = DB::table(Table::RELATIONS, "relations_$ns")
+            ->join(new Alias(Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "relations_$ns.targetId")
+            ->leftJoin(new Alias(Table::ELEMENTS_SITES, "elements_sites_$ns"), "elements_sites_$ns.elementId", '=', "elements_$ns.id")
             ->whereColumn("relations_$ns.sourceId", 'elements.id')
             ->where("relations_$ns.fieldId", $field->id)
             ->whereNull("elements_$ns.dateDeleted")
@@ -693,7 +698,7 @@ JS, [
     #[Override]
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var \CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection $value */
+        /** @var ElementQuery|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
             return ! $this->_all($value, $element)->exists();
         }
@@ -748,7 +753,7 @@ JS, [
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
-                    Craft::configure($query, $source['criteria']);
+                    Typecast::configure($query, $source['criteria']);
                 }
             }
 
@@ -765,10 +770,10 @@ JS, [
                 // the criteria. Otherwise, if the query ends up A) getting executed normally, then B) getting
                 // eager-loaded with eagerly(), the `orderBy` value referencing the join table will get applied
                 // to the eager-loading query and cause a SQL error.
-                /** @var \Illuminate\Database\Query\Builder $q */
+                /** @var Builder $q */
                 foreach ([$elementQuery->getQuery(), $elementQuery->getSubQuery()] as $q) {
                     $q->join(
-                        new Alias(\CraftCms\Cms\Database\Table::RELATIONS, $relationsAlias),
+                        new Alias(Table::RELATIONS, $relationsAlias),
                         function (JoinClause $join) use ($element, $relationsAlias) {
                             $join->whereColumn("$relationsAlias.targetId", 'elements.id')
                                 ->where("$relationsAlias.sourceId", $element->id)
@@ -874,7 +879,7 @@ JS, [
             $criteria['siteId'] = '*';
             $criteria['unique'] = true;
             // Just to be safe...
-            /** @var \CraftCms\Cms\Element\Queries\ElementQuery $query */
+            /** @var ElementQuery $query */
             if (is_numeric($query->siteId)) {
                 $criteria['preferSites'] = [$query->siteId];
             }
@@ -1004,7 +1009,7 @@ JS, [
         $mockup = new (static::elementType());
         $mockup->title = t('Related {type} Title', ['type' => $mockup->displayName()]);
 
-        return Cp::chipHtml($mockup);
+        return app(ElementHtml::class)->chipHtml($mockup);
     }
 
     /**
@@ -1012,7 +1017,7 @@ JS, [
      */
     protected function previewHtml(ElementCollection $elements): string
     {
-        return Cp::elementPreviewHtml($elements->all());
+        return app(PreviewHtml::class)->elementPreviewHtml($elements->all());
     }
 
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
@@ -1056,7 +1061,7 @@ JS, [
 
         // Are there any source elements that don't have hardcoded relation IDs yet?
         if (! empty($missingSourceElementIds)) {
-            $missingMappingsQuery = DB::table(\CraftCms\Cms\Database\Table::RELATIONS)
+            $missingMappingsQuery = DB::table(Table::RELATIONS)
                 ->select(['sourceId as source', 'targetId as target'])
                 ->where([
                     'fieldId' => $this->id,
@@ -1113,7 +1118,6 @@ JS, [
     protected function gqlFieldArguments(): array
     {
         $elementSourcesService = resolve(ElementSources::class);
-        $gqlService = Craft::$app->getGql();
         $fieldLayouts = [];
         $arguments = [];
 
@@ -1125,7 +1129,7 @@ JS, [
         }
 
         foreach ($fieldLayouts as $fieldLayout) {
-            $arguments += $gqlService->getFieldLayoutArguments($fieldLayout);
+            $arguments += Gql::getFieldLayoutArguments($fieldLayout);
         }
 
         return $arguments;
@@ -1160,7 +1164,7 @@ JS, [
 
     public function getRelationTargetIds(ElementInterface $element): array
     {
-        /** @var \CraftCms\Cms\Element\Queries\ElementQuery|ElementCollection $value */
+        /** @var ElementQuery|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
 
         // $value will be an element query and its $id will be set if we're saving new relations
@@ -1237,11 +1241,11 @@ JS, [
                 );
                 $siteIds = Arr::where($siteIds, fn ($siteId) => $siteId !== $element->siteId);
                 if (! empty($siteIds)) {
-                    $userId = Craft::$app->getUser()->getId();
+                    $userId = Auth::id();
                     $timestamp = now();
 
                     foreach ($siteIds as $siteId) {
-                        DB::table(\CraftCms\Cms\Database\Table::CHANGEDFIELDS)
+                        DB::table(Table::CHANGEDFIELDS)
                             ->upsert([
                                 'elementId' => $element->id,
                                 'siteId' => $siteId,
@@ -1300,14 +1304,14 @@ JS, [
         }
 
         $html =
-            Cp::checkboxFieldHtml([
+            FormFields::checkboxFieldHtml([
                 'checkboxLabel' => t('Relate {type} from a specific site?', ['type' => $pluralType]),
                 'name' => 'useTargetSite',
                 'checked' => $showTargetSite,
                 'toggle' => 'target-site-field',
                 'reverseToggle' => 'show-site-menu-field',
             ]).
-            Cp::selectFieldHtml([
+            FormFields::selectFieldHtml([
                 'fieldClass' => ! $showTargetSite ? ['hidden'] : null,
                 'label' => t('Which site should {type} be related from?', ['type' => $pluralType]),
                 'id' => 'target-site',
@@ -1317,7 +1321,7 @@ JS, [
             ]);
 
         if (static::canShowSiteMenu()) {
-            $html .= Cp::checkboxFieldHtml([
+            $html .= FormFields::checkboxFieldHtml([
                 'fieldset' => true,
                 'fieldClass' => $showTargetSite ? ['hidden'] : null,
                 'checkboxLabel' => t('Show the site menu'),
@@ -1383,7 +1387,7 @@ JS, [
                 $viewModeOptions[] = ['label' => $label, 'value' => $key];
             }
 
-            $html = Cp::selectHtml([
+            $html = FormFields::selectHtml([
                 'id' => 'viewMode',
                 'name' => 'viewMode',
                 'options' => $viewModeOptions,
@@ -1391,7 +1395,7 @@ JS, [
             ]);
         }
 
-        return Cp::fieldHtml($html, [
+        return FormFields::fieldHtml($html, [
             'label' => t('View Mode'),
             'instructions' => t('Choose how the field should look for authors.'),
             'id' => 'viewMode',
@@ -1419,7 +1423,7 @@ JS, [
             $selectionCondition->forProjectConfig = true;
             $selectionCondition->queryParams[] = 'site';
 
-            $selectionConditionHtml = Cp::fieldHtml($selectionCondition->getBuilderHtml(), [
+            $selectionConditionHtml = FormFields::fieldHtml($selectionCondition->getBuilderHtml(), [
                 'label' => t('Selectable {type} Condition', [
                     'type' => $elementType::pluralDisplayName(),
                 ]),

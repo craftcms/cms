@@ -5,13 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use Craft;
-use craft\assetpreviews\Image as ImagePreview;
-use craft\assetpreviews\Pdf;
-use craft\assetpreviews\Text;
-use craft\assetpreviews\Video;
-use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Asset\Contracts\AssetPreviewHandlerInterface;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
@@ -19,8 +12,13 @@ use CraftCms\Cms\Asset\Events\AfterReplaceAsset;
 use CraftCms\Cms\Asset\Events\BeforeReplaceAsset;
 use CraftCms\Cms\Asset\Events\DefineThumbUrl;
 use CraftCms\Cms\Asset\Events\RegisterPreviewHandler;
+use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
 use CraftCms\Cms\Asset\Exceptions\AssetOperationException;
 use CraftCms\Cms\Asset\Exceptions\VolumeException;
+use CraftCms\Cms\Asset\PreviewHandlers\Image as ImagePreview;
+use CraftCms\Cms\Asset\PreviewHandlers\Pdf;
+use CraftCms\Cms\Asset\PreviewHandlers\Text;
+use CraftCms\Cms\Asset\PreviewHandlers\Video;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -29,9 +27,14 @@ use CraftCms\Cms\Filesystem\Filesystems\Temp;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\FallbackTransformer;
 use CraftCms\Cms\Image\ImageHelper;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Filesystems;
+use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -42,12 +45,11 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
 
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Assets
+class Assets
 {
     /** @var VolumeFolder[] */
     private array $userTempFolders = [];
@@ -70,7 +72,7 @@ final class Assets
         $query = Asset::find();
 
         if ($criteria) {
-            Craft::configure($query, $criteria);
+            Typecast::configure($query, $criteria);
         }
 
         return $query->count();
@@ -88,7 +90,7 @@ final class Assets
 
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
-        $asset->setMimeType(FileHelper::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
+        $asset->setMimeType(File::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
         $asset->uploaderId = Auth::user()?->id;
         $asset->avoidFilenameConflicts = true;
         $asset->setScenario(Asset::SCENARIO_REPLACE);
@@ -140,7 +142,9 @@ final class Assets
         $extension = $asset->getExtension();
 
         if (! ImageHelper::canManipulateAsImage($extension)) {
-            return $iconFallback ? AssetsHelper::iconUrl($extension) : null;
+            return $iconFallback ? Url::actionUrl('assets/icon', [
+                'extension' => $extension,
+            ]) : null;
         }
 
         $transform = Craft::createObject(ImageTransform::class, [
@@ -157,14 +161,16 @@ final class Assets
         }
 
         if ($url === null) {
-            return $iconFallback ? AssetsHelper::iconUrl($extension) : null;
+            return $iconFallback ? Url::actionUrl('assets/icon', [
+                'extension' => $extension,
+            ]) : null;
         }
 
         return AssetsHelper::revUrl($url, $asset, fsOnly: true);
     }
 
     /**
-     * @throws NotSupportedException if the asset's volume doesn't have a filesystem with public URLs
+     * @throws AssetNotPreviewableException if a preview URL can't be generated for the asset
      */
     public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
     {
@@ -190,7 +196,7 @@ final class Assets
         }
 
         if (! $url = $asset->getUrl($transform, true)) {
-            throw new NotSupportedException('A preview URL couldn’t be generated for the asset.');
+            throw new AssetNotPreviewableException("A preview URL couldn't be generated for the asset.");
         }
 
         return AssetsHelper::revUrl($url, $asset, fsOnly: true);
@@ -318,7 +324,7 @@ final class Assets
         if (! $handle) {
             return Storage::build([ // @phpstan-ignore return.type
                 'driver' => 'local',
-                'root' => Craft::$app->getPath()->getTempAssetUploadsPath(),
+                'root' => Path::tempAssetUploads(),
             ]);
         }
 

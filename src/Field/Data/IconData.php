@@ -9,7 +9,7 @@ use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Stringable;
 
 #[AllowedInSandbox]
-final class IconData implements Serializable, Stringable
+class IconData implements Serializable, Stringable
 {
     /**
      * Constructor

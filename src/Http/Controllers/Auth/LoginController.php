@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Auth;
 
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Auth\Auth;
 use CraftCms\Cms\Auth\Enums\AuthError;
 use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Impersonation;
+use CraftCms\Cms\Auth\UserProvider;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\View\View;
@@ -16,13 +16,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Timebox;
-use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\template;
 
-final readonly class LoginController extends AuthenticationController
+readonly class LoginController extends AuthenticationController
 {
     public function showLogin(Request $request): Response|View
     {
@@ -79,7 +78,7 @@ final readonly class LoginController extends AuthenticationController
         ]);
 
         /**
-         * @var \CraftCms\Cms\Auth\UserProvider $provider
+         * @var UserProvider $provider
          *
          * @phpstan-ignore method.notFound
          */
@@ -87,7 +86,7 @@ final readonly class LoginController extends AuthenticationController
 
         $user = $provider->retrieveByCredentials($request->only('loginName', 'password'));
 
-        return new Timebox()->call(function () use ($request, $auth, $provider, $user, $impersonation) {
+        return new Timebox()->call(function () use ($request, $provider, $user, $impersonation) {
             if (! $user || $user->password === null) {
                 return $this->handleLoginFailure($request, AuthError::InvalidCredentials);
             }
@@ -101,32 +100,12 @@ final readonly class LoginController extends AuthenticationController
                 $provider->rehashPasswordIfRequired($user, ['password' => $request->input('password')]);
             }
 
-            if (! $this->generalConfig->disable2fa && $auth->hasActiveMethod($user)) {
-                $auth->setUser($user);
-
-                if (! $request->isCpRequest() && ! $request->wantsJson()) {
-                    $loginPath = $this->generalConfig->getLoginPath();
-
-                    if (! $loginPath) {
-                        $request->session()->forget('user.id');
-                        throw new RuntimeException('User requires two-step verification, but the loginPath config setting is disabled.');
-                    }
-
-                    return redirect(UrlHelper::siteUrl($loginPath, array_filter([
-                        'verify' => 1,
-                        'returnUrl' => $this->getPostedRedirectUrl($user),
-                    ])));
-                }
-
-                return redirect()->action([TwoFactorAuthenticationController::class, 'showForm']);
-            }
-
             // if we're impersonating, pass the user we're impersonating to the complete method
             if ($impersonation->isImpersonating()) {
                 $user = $request->user() ?? $user;
             }
 
-            return $this->completeLogin($request, $user, $request->boolean('rememberMe'));
+            return $this->finalizeLogin($request, $user, $request->boolean('rememberMe'));
         }, 30_000);
     }
 

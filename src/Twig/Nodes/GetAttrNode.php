@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\Nodes;
 
-use craft\helpers\Template as TemplateHelper;
+use CraftCms\Cms\Support\Template as TemplateHelper;
 use Override;
 use Twig\Compiler;
 use Twig\Extension\SandboxExtension;
@@ -16,7 +16,7 @@ use Twig\Template;
  * GetAttrNode is an alternative to [[\Twig\Node\Expression\GetAttrExpression]], which sends attribute calls to
  * [[TemplateHelper::attribute()]] rather than CoreExtension::getAttribute().
  */
-final class GetAttrNode extends GetAttrExpression
+class GetAttrNode extends GetAttrExpression
 {
     /**
      * @param  array  $nodes  An array of named nodes

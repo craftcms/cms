@@ -14,7 +14,7 @@ use CraftCms\Cms\Shared\Concerns\HandleableEvent;
  * Set `handled` to `true` to prevent the elements from getting stored to the
  * private `$_eagerLoadedElements` array.
  */
-final class SetEagerLoadedElements
+class SetEagerLoadedElements
 {
     use HandleableEvent;
 

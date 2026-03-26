@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\Section\Sections
  */
-final class Sections extends Facade
+class Sections extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

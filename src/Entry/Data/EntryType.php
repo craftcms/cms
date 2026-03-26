@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry\Data;
 
-use craft\base\GqlInlineFragmentInterface;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Actionable;
@@ -21,6 +19,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\Concerns\HasFieldLayout;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Facades\EntryTypes;
@@ -28,6 +27,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
 use Illuminate\Support\Facades\Auth;
 use Stringable;
@@ -35,7 +35,7 @@ use Stringable;
 use function CraftCms\Cms\t;
 
 #[Ruleset(EntryTypeRules::class)]
-final class EntryType extends Component implements Actionable, Chippable, Colorable, CpEditable, Describable, FieldLayoutProviderInterface, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
+class EntryType extends Component implements Actionable, Chippable, Colorable, CpEditable, Describable, FieldLayoutProviderInterface, GqlInlineFragmentInterface, Iconic, Indicative, Stringable
 {
     use HasFieldLayout;
 
@@ -97,7 +97,7 @@ final class EntryType extends Component implements Actionable, Chippable, Colora
         }
     }
 
-    public static function get(int|string $id): ?static
+    public static function get(int|string $id): ?self
     {
         return EntryTypes::getEntryTypeById($id);
     }
@@ -224,7 +224,7 @@ JS, [
             return null;
         }
 
-        return UrlHelper::cpUrl("settings/entry-types/$this->id");
+        return Url::cpUrl("settings/entry-types/$this->id");
     }
 
     /**

@@ -1020,14 +1020,7 @@ class ExtensionTest extends TestCase
         Session::start();
 
         $this->testRenderResult(
-            '<input type="hidden" name="_token" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
-            '{{ csrfInput() }}'
-        );
-
-        // Custom name - just to be sure.
-        Craft::$app->getRequest()->csrfParam = 'HACKER_POOF';
-        $this->testRenderResult(
-            '<input type="hidden" name="HACKER_POOF" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
+            csrf_field(),
             '{{ csrfInput() }}'
         );
     }

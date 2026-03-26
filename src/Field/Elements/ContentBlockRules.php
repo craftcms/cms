@@ -10,7 +10,7 @@ use Override;
 /**
  * @extends ElementRules<ContentBlock>
  */
-final class ContentBlockRules extends ElementRules
+class ContentBlockRules extends ElementRules
 {
     #[Override]
     protected function defineRules(): array

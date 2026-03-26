@@ -5,8 +5,7 @@
   import IndexingSessions from '@/components/utilities/AssetIndexes/IndexingSessions.vue';
   import {reactive} from 'vue';
   import {useAssetIndexer} from '@/composables/useAssetIndexer';
-  import Pane from '@/components/Pane.vue';
-  import type {IndexingSession} from '@craftcms/cp/src/services/AssetIndexer.js';
+  import type {IndexingSession} from '@craftcms/cp/services/AssetIndexer.ts.mjs';
 
   const props = withDefaults(
     defineProps<{

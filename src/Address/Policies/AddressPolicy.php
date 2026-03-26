@@ -9,7 +9,7 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Policies\ElementPolicy;
 use CraftCms\Cms\User\Elements\User;
 
-final class AddressPolicy extends ElementPolicy
+class AddressPolicy extends ElementPolicy
 {
     public function view(User $user, Address $address): bool
     {

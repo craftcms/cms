@@ -13,6 +13,7 @@ use Override;
  * @method static \CraftCms\Cms\User\Data\UserGroup|null getGroupById(int $groupId)
  * @method static \CraftCms\Cms\User\Data\UserGroup|null getGroupByUid(string $uid)
  * @method static \CraftCms\Cms\User\Data\UserGroup|null getGroupByHandle(string $groupHandle)
+ * @method static \CraftCms\Cms\User\Data\UserGroup|null resolveGroup(mixed $group)
  * @method static \CraftCms\Cms\User\Data\UserGroup getTeamGroup()
  * @method static \Illuminate\Support\Collection getGroupsByUserId(int $userId)
  * @method static void eagerLoadGroups(\CraftCms\Cms\User\Elements\User[] $users)
@@ -24,7 +25,7 @@ use Override;
  *
  * @see \CraftCms\Cms\User\UserGroups
  */
-final class UserGroups extends Facade
+class UserGroups extends Facade
 {
     #[Override]
     protected static function getFacadeAccessor(): string

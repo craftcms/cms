@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\gql\types\generators\IconDataType;
-use craft\helpers\Cp;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Data\IconData;
+use CraftCms\Cms\Gql\Types\Generators\IconDataType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
@@ -26,7 +27,7 @@ use function CraftCms\Cms\t;
 /**
  * Icon represents an icon picker field.
  */
-final class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, ThumbableFieldInterface
+class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, ThumbableFieldInterface
 {
     /**
      * @var array Info about the available icons
@@ -108,7 +109,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         return $this->settingsHtml(false);
     }
 
-    #[\Override]
+    #[Override]
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -116,7 +117,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
 
     private function settingsHtml(bool $readOnly): string
     {
-        $html = Cp::lightswitchFieldHtml([
+        $html = FormFields::lightswitchFieldHtml([
             'label' => t('Include Pro icons'),
             'instructions' => t('Should icons that are exclusive to Font Awesome Pro be selectable? (<a href="{url}">View pricing</a>)', [
                 'url' => 'https://fontawesome.com/plans',
@@ -138,7 +139,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
             ]);
 
             $html .=
-                Cp::selectFieldHtml([
+                FormFields::selectFieldHtml([
                     'label' => t('GraphQL Mode'),
                     'id' => 'graphql-mode',
                     'name' => 'graphqlMode',
@@ -174,7 +175,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var IconData|null $value */
-        return Cp::iconPickerHtml([
+        return FormFields::iconPickerHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
@@ -187,7 +188,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         /** @var IconData|null $value */
-        return Cp::iconPickerHtml([
+        return FormFields::iconPickerHtml([
             'static' => true,
             'value' => $value?->name,
         ]);
@@ -197,7 +198,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var IconData|null $value */
-        return $value ? Html::tag('div', Cp::iconSvg($value->name), ['class' => 'cp-icon']) : '';
+        return $value ? Html::tag('div', Icons::svg($value->name), ['class' => 'cp-icon']) : '';
     }
 
     #[Override]
@@ -210,7 +211,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size): ?string
     {
         /** @var IconData|null $value */
-        return $value ? Html::tag('div', Cp::iconSvg($value->name), ['class' => 'cp-icon']) : null;
+        return $value ? Html::tag('div', Icons::svg($value->name), ['class' => 'cp-icon']) : null;
     }
 
     #[Override]

@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Search;
 
 use CraftCms\Cms\Support\Str;
 
-final class SearchQuery
+class SearchQuery
 {
     /**
      * @var array{subLeft:bool,subRight:bool,exclude:bool,exact:bool}

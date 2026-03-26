@@ -15,7 +15,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 #[Singleton]
-final readonly class ElementRelations
+readonly class ElementRelations
 {
     /**
      * Updates relation data for the given element after save.

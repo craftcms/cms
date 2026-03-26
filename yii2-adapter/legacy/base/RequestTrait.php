@@ -49,6 +49,6 @@ trait RequestTrait
      */
     public function getIsWebRequest(): bool
     {
-        return !$this->getIsConsoleRequest();
+        return !app()->runningInConsole();
     }
 }

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig\TokenParsers;
 
-use Craft;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Twig\Nodes\RegisterResourceNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 use Twig\TokenStream;
 
-final class RegisterResourceTokenParser extends AbstractTokenParser
+class RegisterResourceTokenParser extends AbstractTokenParser
 {
     /**
      * @var bool Whether the tag supports a tag pair mode for capturing the JS/CSS
@@ -45,7 +45,7 @@ final class RegisterResourceTokenParser extends AbstractTokenParser
     public function __construct(public string $tag, public string $method, array $config = [])
     {
         if (! empty($config)) {
-            Craft::configure($this, $config);
+            Typecast::configure($this, $config);
         }
     }
 

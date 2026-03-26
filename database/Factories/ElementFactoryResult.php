@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 /**
  * @template TElement of Element
  */
-final readonly class ElementFactoryResult
+readonly class ElementFactoryResult
 {
     /**
      * @param  Collection<string, Field>  $fields

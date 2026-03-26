@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -10,13 +12,15 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpSettingsEvent;
-use craft\helpers\Cp as CpHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Alerts;
 use CraftCms\Cms\Cp\Events\RegisterCpNavItems;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
 use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
+use CraftCms\Cms\Cp\FieldLayoutDesigner\FieldLayoutDesigner;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
@@ -27,32 +31,29 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
-use CraftCms\Cms\View\TemplateMode;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Uri;
 use InvalidArgumentException;
-use RecursiveCallbackFilterIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+
 use function CraftCms\Cms\t;
 
 /**
  * Control panel functions
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class Cp extends Component
@@ -160,6 +161,7 @@ class Cp extends Component
     /**
      * @event RegisterCpSettingsEvent The event that is triggered when registering links that should render on the
      * Settings page in the control panel, when admin changes are disallowed.
+     *
      * @see EVENT_REGISTER_CP_SETTINGS
      * @since 5.6.0
      */
@@ -169,17 +171,16 @@ class Cp extends Component
      * Returns the site the control panel is currently working with, via a `site` query string param if sent.
      *
      * @return Site|null The site, or `null` if the user doesn’t have permission to edit any sites.
+     *
      * @since 4.0.4
      */
     public function getRequestedSite(): ?Site
     {
-        return CpHelper::requestedSite();
+        return app(RequestedSite::class)->get();
     }
 
     /**
      * Returns the Craft Console account URL.
-     *
-     * @return string
      */
     public function craftIdAccountUrl(): string
     {
@@ -225,7 +226,6 @@ class Cp extends Component
      * {% set selectedSubnavItem = 'orders' %}
      * ```
      *
-     * @return array
      * @throws InvalidConfigException
      */
     public function nav(): array
@@ -390,7 +390,7 @@ class Cp extends Component
                 $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', Str::ascii(str_replace('/', '-', $item['url'])));
             }
 
-            $item['url'] = UrlHelper::url($item['url']);
+            $item['url'] = Url::url($item['url']);
 
             if (!isset($item['external'])) {
                 $item['external'] = false;
@@ -406,8 +406,6 @@ class Cp extends Component
 
     /**
      * Returns whether the control panel alerts are cached.
-     *
-     * @return bool
      */
     public function areAlertsCached(): bool
     {
@@ -417,18 +415,15 @@ class Cp extends Component
 
     /**
      * Returns an array of alerts to display in the control panel.
-     *
-     * @return array
      */
     public function getAlerts(): array
     {
-        return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
+        return app(Alerts::class)->get(request()->path());
     }
 
     /**
      * Returns info about the active trials.
      *
-     * @return array|null
      * @internal
      */
     public function trialInfo(): ?array
@@ -476,9 +471,9 @@ class Cp extends Component
         ]);
 
         $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
-        $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
-            'items' => $issues->map(fn($issue) => $issue[2])->all(),
-        ]);
+        $cartUrl = Uri::of("$consoleUrl/cart/new")
+            ->withQuery(['items' => $issues->map(fn($issue) => $issue[2])->all()])
+            ->value();
 
         return [
             'message' => $message,
@@ -490,12 +485,16 @@ class Cp extends Component
      * Returns the available environment variable and alias suggestions for
      * inputs that support them.
      *
-     * @param bool $includeAliases Whether aliases should be included in the list
-     * (only enable this if the setting defines a URL or file path)
-     * @param callable|null $filter A function that returns whether a given value should be included
+     * @param  bool  $includeAliases  Whether aliases should be included in the list
+     *                                (only enable this if the setting defines a URL or file path)
+     * @param  callable|null  $filter  A function that returns whether a given value should be included
+     *
      * @phpstan-param callable(scalar):bool|null $filter
+     *
      * @return array[]
+     *
      * @phpstan-return array{label:string,data:array}[]
+     *
      * @deprecated in 6.0.0.  [[\CraftCms\Cms\Cp\SelectOptions::getEnvSuggestions]] should be used instead.
      * @since 3.1.0
      */
@@ -507,8 +506,6 @@ class Cp extends Component
     /**
      * Returns environment variable options for a select input.
      *
-     * @param array|null $allowedValues
-     * @return array
      * @since 3.7.22
      * @deprecated in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getEnvOptions] should be used instead.
      */
@@ -520,7 +517,6 @@ class Cp extends Component
     /**
      * Returns environment variable options for a boolean menu.
      *
-     * @return array
      * @since 3.7.22
      * @deprecated  in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getBooleanEnvOptions] should be used instead.
      */
@@ -532,8 +528,8 @@ class Cp extends Component
     /**
      * Returns environment variable options for a language menu.
      *
-     * @param bool $appOnly Whether to limit the env options to those that match available app locales
-     * @return array
+     * @param  bool  $appOnly  Whether to limit the env options to those that match available app locales
+     *
      * @since 5.0.0
      * @deprecated  in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getLanguageEnvOptions]] shoudl be used instead.
      */
@@ -545,8 +541,8 @@ class Cp extends Component
     /**
      * Returns all known time zones for a time zone input.
      *
-     * @param DateTime|null $offsetDate The [[DateTime]] object that contains the date/time to compute time zone offsets from
-     * @return array
+     * @param  DateTime|null  $offsetDate  The [[DateTime]] object that contains the date/time to compute time zone offsets from
+     *
      * @since 3.7.0
      * @deprecated in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getTimezoneOptions]] should be used instead.
      */
@@ -558,10 +554,10 @@ class Cp extends Component
     /**
      * Returns all known language options for a language input.
      *
-     * @param bool $showLocaleIds Whether to show the hint as locale id; e.g. en, en-GB
-     * @param bool $showLocalizedNames Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
-     * @param bool $appLocales Whether to limit the returned locales to just app locales (cp translation options) or show them all
-     * @return array
+     * @param  bool  $showLocaleIds  Whether to show the hint as locale id; e.g. en, en-GB
+     * @param  bool  $showLocalizedNames  Whether to show the hint as localizes names; e.g. English, English (United Kingdom)
+     * @param  bool  $appLocales  Whether to limit the returned locales to just app locales (cp translation options) or show them all
+     *
      * @since 5.0.0
      * @deprecated in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getLanguageOptions]] should be used instead.
      */
@@ -588,7 +584,6 @@ class Cp extends Component
     /**
      * Returns all options for a filesystem input.
      *
-     * @return array
      * @since 4.0.0
      * @deprecated in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getFsOptions]] should be used instead.
      */
@@ -600,7 +595,6 @@ class Cp extends Component
     /**
      * Returns all options for a volume input.
      *
-     * @return array
      * @since 4.0.0
      * @deprecated in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getVolumeOptions]] should be used instead.
      */
@@ -612,8 +606,6 @@ class Cp extends Component
     /**
      * Returns ASCII character mappings for the given language, if it differs from the application language.
      *
-     * @param string $language
-     * @return array|null
      * @since 3.1.9
      */
     public function getAsciiCharMap(string $language): ?array
@@ -629,102 +621,22 @@ class Cp extends Component
      * Returns the available template path suggestions for template inputs.
      *
      * @return array[]
+     *
      * @phpstan-return array{label:string,data:array}[]
+     *
      * @since 3.1.0
+     * @deprecated in 6.0.0. [[\CraftCms\Cms\Cp\SelectOptions::getTemplateSuggestions]] should be used instead.
      */
     public function getTemplateSuggestions(): array
     {
-        // Get all the template files sorted by path length
-        $roots = Arr::merge([
-            '' => [Craft::$app->getPath()->getSiteTemplatesPath()],
-        ], TemplateMode::Site->templateRoots());
+        $suggestions = SelectOptions::getTemplateSuggestions();
 
-        $suggestions = [];
-        $templates = [];
-        $sites = [];
-
-        foreach (Sites::getAllSites() as $site) {
-            $sites[$site->handle] = t($site->getName(), category: 'site');
-        }
-
-        foreach ($roots as $root => $basePaths) {
-            foreach ($basePaths as $basePath) {
-                if (!is_dir($basePath)) {
-                    continue;
-                }
-
-                $directory = new RecursiveDirectoryIterator($basePath);
-
-                $filter = new RecursiveCallbackFilterIterator($directory, function($current) {
-                    // Skip hidden files and directories, as well as node_modules/ folders
-                    if ($current->getFilename()[0] === '.' || $current->getFilename() === 'node_modules') {
-                        return false;
-                    }
-                    return true;
-                });
-
-                $iterator = new RecursiveIteratorIterator($filter);
-                /** @var SplFileInfo[] $files */
-                $files = [];
-                $pathLengths = [];
-
-                foreach ($iterator as $file) {
-                    /** @var SplFileInfo $file */
-                    if (!$file->isDir() && $file->getFilename()[0] !== '.') {
-                        $files[] = $file;
-                        $pathLengths[] = strlen($file->getRealPath());
-                    }
-                }
-
-                array_multisort($pathLengths, SORT_NUMERIC, $files);
-
-                $basePathLength = strlen($basePath);
-
-                foreach ($files as $file) {
-                    $template = substr($file->getRealPath(), $basePathLength + 1);
-                    $hint = null;
-
-                    // Is it in a site template directory?
-                    foreach ($sites as $handle => $name) {
-                        if (str_starts_with($template, $handle . DIRECTORY_SEPARATOR)) {
-                            $hint = $name;
-                            $template = substr($template, strlen($handle) + 1);
-                            break;
-                        }
-                    }
-
-                    // Prepend the template root path
-                    if ($root !== '') {
-                        $template = sprintf('%s/%s', $root, $template);
-                    }
-
-                    // Avoid listing the same template path twice (considering localized templates)
-                    if (isset($templates[$template])) {
-                        continue;
-                    }
-
-                    $templates[$template] = true;
-                    $suggestions[] = [
-                        'name' => $template,
-                        'hint' => $hint,
-                    ];
-                }
-            }
-        }
-
-        return [
-            [
-                'label' => t('Templates'),
-                'data' => array_values(Arr::sort($suggestions, 'name')),
-            ],
-        ];
+        return $this->formatLegacySuggestions($suggestions);
     }
 
     /**
      * Prepares form actions
      *
-     * @param array|null $formActions
-     * @return array|null
      * @since 3.6.10
      */
     public function prepFormActions(?array $formActions): ?array
@@ -735,6 +647,7 @@ class Cp extends Component
                 'formActions' => $formActions ?? [],
             ]);
             $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
+
             return $event->formActions ?: null;
         }
 
@@ -744,32 +657,28 @@ class Cp extends Component
     /**
      * Renders a field’s HTML, for the given input HTML or a template.
      *
-     * @param string $input The input HTML or template path. If passing a template path, it must begin with `template:`.
-     * @param array $config
+     * @param  string  $input  The input HTML or template path. If passing a template path, it must begin with `template:`.
      *
-     * @return string
      * @throws \CraftCms\Cms\Twig\Exceptions\TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     *
      * @since 3.7.24
      */
     public function field(string $input, array $config = []): string
     {
-        return CpHelper::fieldHtml($input, $config);
+        return FormFields::fieldHtml($input, $config);
     }
 
     /**
      * Renders a field layout designer’s HTML.
      *
-     * @param \CraftCms\Cms\FieldLayout\FieldLayout $fieldLayout
-     * @param array $config
      *
-     * @return string
      * @since 4.0.0
      * @deprecated in 5.5.0. The `fieldLayoutDesigner()` global CP function should be used instead.
      */
     public function fieldLayoutDesigner(FieldLayout $fieldLayout, array $config = []): string
     {
-        return CpHelper::fieldLayoutDesignerHtml($fieldLayout, $config);
+        return app(FieldLayoutDesigner::class)->html($fieldLayout, $config);
     }
 
     public static function registerEvents(): void

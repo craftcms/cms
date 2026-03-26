@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Component;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Exceptions\InvalidCallException;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
+use CraftCms\Cms\Support\Concerns\MacroableMagicMethods;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Validation\Concerns\Validates;
 use CraftCms\Cms\Validation\Contracts\Validatable;
@@ -18,6 +19,8 @@ use Yiisoft\Arrays\ArrayableTrait;
 abstract class Component implements Arrayable, ArrayableInterface, ComponentInterface, Validatable
 {
     use ArrayableTrait;
+    use Macroable;
+    use MacroableMagicMethods;
     use Validates;
 
     public function __construct(array|object $config = [])
@@ -38,13 +41,7 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
      */
     final public static function configure(self $component, array $properties = []): self
     {
-        Typecast::properties(static::class, $properties);
-
-        foreach ($properties as $name => $value) {
-            $component->$name = $value;
-        }
-
-        return $component;
+        return Typecast::configure($component, $properties);
     }
 
     /**
@@ -119,52 +116,5 @@ abstract class Component implements Arrayable, ArrayableInterface, ComponentInte
         }
 
         throw new InvalidCallException('Unsetting an unknown or read-only property: '.static::class.'::'.$name);
-    }
-
-    private function resolveMagicMethod(string $prefix, string $name): ?string
-    {
-        $method = $prefix.$name;
-
-        if (method_exists($this, $method)) {
-            return $method;
-        }
-
-        if (! self::supportsMacroableMagicMethods()) {
-            return null;
-        }
-
-        if (self::macroMethodExists($method)) {
-            return $method;
-        }
-
-        $normalizedMethod = $prefix.ucfirst($name);
-
-        if ($normalizedMethod !== $method && self::macroMethodExists($normalizedMethod)) {
-            return $normalizedMethod;
-        }
-
-        return null;
-    }
-
-    private static function supportsMacroableMagicMethods(): bool
-    {
-        static $supports = [];
-
-        $class = static::class;
-
-        if (array_key_exists($class, $supports)) {
-            return $supports[$class];
-        }
-
-        $usesRecursive = class_uses_recursive($class);
-
-        $supports[$class] = in_array(Macroable::class, $usesRecursive, true) && is_callable([$class, 'hasMacro']);
-
-        return $supports[$class];
-    }
-
-    private static function macroMethodExists(string $method): bool
-    {
-        return (bool) call_user_func([static::class, 'hasMacro'], $method);
     }
 }

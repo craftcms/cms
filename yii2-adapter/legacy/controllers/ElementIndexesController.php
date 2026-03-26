@@ -19,7 +19,6 @@ use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
-use craft\helpers\Component;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
@@ -34,6 +33,7 @@ use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -467,7 +467,6 @@ class ElementIndexesController extends BaseElementsController
         }
 
         if ($conditionConfig) {
-            $conditionConfig = Component::cleanseConfig($conditionConfig);
             /** @var ElementConditionInterface $condition */
             $condition = Conditions::createCondition($conditionConfig);
         } else {
@@ -477,7 +476,7 @@ class ElementIndexesController extends BaseElementsController
         if (!empty($fieldLayouts)) {
             $condition->setFieldLayouts(array_map(
                 fn(array $config) => FieldLayout::createFromConfig($config),
-                Component::cleanseConfig($fieldLayouts),
+                $fieldLayouts,
             ));
         }
 
@@ -717,7 +716,7 @@ class ElementIndexesController extends BaseElementsController
             // Remove unsupported criteria attributes
             $criteria = ElementHelper::cleanseQueryCriteria($criteria);
 
-            Craft::configure($query, Component::cleanseConfig($criteria));
+            Typecast::configure($query, $criteria);
 
             return true;
         };
@@ -749,7 +748,7 @@ class ElementIndexesController extends BaseElementsController
         }
         if ($filterConditionConfig) {
             /** @var ElementConditionInterface $filterCondition */
-            $filterCondition = Conditions::createCondition(Component::cleanseConfig($filterConditionConfig));
+            $filterCondition = Conditions::createCondition($filterConditionConfig);
             $filterCondition->modifyQuery($query);
             $hasFilters = true;
         }

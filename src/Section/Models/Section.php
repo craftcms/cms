@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-final class Section extends BaseModel
+class Section extends BaseModel
 {
     use HasFactory;
     use HasUid;

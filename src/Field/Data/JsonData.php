@@ -16,7 +16,7 @@ use Stringable;
 use Traversable;
 
 #[AllowedInSandbox]
-final class JsonData extends Component implements ArrayAccess, IteratorAggregate, Serializable, Stringable
+class JsonData extends Component implements ArrayAccess, IteratorAggregate, Serializable, Stringable
 {
     public function __construct(
         private mixed $value,

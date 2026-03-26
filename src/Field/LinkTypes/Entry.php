@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Section\Enums\SectionType;
@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
 /**
  * Entry link type.
  */
-final class Entry extends BaseElementLinkType
+class Entry extends BaseElementLinkType
 {
     /**
      * @var bool Whether to show input sources for sections the user doesn’t have permission to view
@@ -56,14 +56,14 @@ final class Entry extends BaseElementLinkType
     {
         return
             parent::getSettingsHtml().
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Show unpermitted sections'),
                 'instructions' => t('Whether to show sections that the user doesn’t have permission to view.'),
                 'id' => 'showUnpermittedSections',
                 'name' => 'showUnpermittedSections',
                 'on' => $this->showUnpermittedSections,
             ]).
-            Cp::lightswitchFieldHtml([
+            FormFields::lightswitchFieldHtml([
                 'label' => t('Show unpermitted entries'),
                 'instructions' => t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'),
                 'id' => 'showUnpermittedEntries',

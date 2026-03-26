@@ -13,10 +13,10 @@ use function CraftCms\Cms\t;
 
 class LabelField extends TitleField
 {
-    #[\Override]
+    #[Override]
     public bool $requirable = true;
 
-    #[\Override]
+    #[Override]
     public bool $translatable = false;
 
     public function __construct($config = [])

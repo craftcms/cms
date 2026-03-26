@@ -10,7 +10,7 @@ use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 /**
  * @event WidgetDeleting The event that is triggered before a widget is deleted.
  */
-final class WidgetDeleting
+class WidgetDeleting
 {
     use ValidatableEvent;
 

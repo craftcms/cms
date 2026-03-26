@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\RouteToken\Data;
 
+use craft\base\ElementInterface;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Validation\Rule;
 
-final class RouteToken extends Component
+class RouteToken extends Component
 {
-    /** @var class-string<\craft\base\ElementInterface> */
+    /** @var class-string<ElementInterface> */
     public string $elementType;
 
     public int $siteId;

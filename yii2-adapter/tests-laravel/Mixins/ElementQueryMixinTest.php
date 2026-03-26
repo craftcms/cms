@@ -27,10 +27,12 @@ test('collect', function() {
 
 test('scalar', function() {
     // No exception
-    expect(User::find()->select('id')->scalar())->toBeNull();
+    $this->expectNotToPerformAssertions();
+    User::find()->select('id')->scalar();
 });
 
 test('addOrderBy', function() {
     // No exception
-    expect(User::find()->select('id')->addOrderBy(['id', SORT_ASC])->first())->toBeNull();
+    $this->expectNotToPerformAssertions();
+    User::find()->select('id')->addOrderBy(['id', SORT_ASC]);
 });

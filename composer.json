@@ -46,8 +46,9 @@
     "enshrined/svg-sanitize": "~0.22.0",
     "guzzlehttp/guzzle": "^7.2.0",
     "inertiajs/inertia-laravel": "^2.0",
-    "laravel/framework": "^12.21.0",
+    "laravel/framework": "^13.0.0",
     "laravel/wayfinder": "^0.1.12",
+    "league/commonmark": "^2.8",
     "league/flysystem-path-prefixing": "^3.31",
     "league/uri": "^7.0",
     "moneyphp/money": "^4.0",
@@ -56,18 +57,19 @@
     "pixelandtonic/imagine": "~1.3.3.1",
     "pragmarx/google2fa": "^8.0",
     "pragmarx/recovery": "^0.2.1",
-    "symfony/css-selector": "^6.0|^7.0",
-    "symfony/dom-crawler": "^6.0|^7.0",
-    "symfony/filesystem": "^6.3|^7.0",
-    "symfony/http-client": "^6.0.3|^7.0",
-    "symfony/property-access": "^7.0",
-    "symfony/property-info": "^7.0",
-    "symfony/serializer": "^6.4",
-    "symfony/yaml": "^7.0",
+    "symfony/css-selector": "^7.0|^8.0",
+    "symfony/dom-crawler": "^7.0|^8.0",
+    "symfony/filesystem": "^7.0|^8.0",
+    "symfony/html-sanitizer": "^7.0|^8.0",
+    "symfony/property-access": "^7.0|^8.0",
+    "symfony/property-info": "^7.0|^8.0",
+    "symfony/serializer": "^6.4|^7.0|^8.0",
+    "symfony/yaml": "^7.0|^8.0",
     "theiconic/name-parser": "^1.2",
     "tpetry/laravel-query-expressions": "^1.5",
     "twig/twig": "~3.21.1",
-    "web-auth/webauthn-lib": "~4.9.0",
+    "voku/portable-ascii": "^2.0",
+    "web-auth/webauthn-lib": "~5.2.4",
     "webonyx/graphql-php": "~14.11.10",
     "yiisoft/arrays": "^3.2",
     "yiisoft/html": "^3.11",
@@ -80,7 +82,8 @@
     "fakerphp/faker": "^1.19.0",
     "larastan/larastan": "^3.4",
     "laravel/pint": "^1.22",
-    "orchestra/testbench": "^10.3",
+    "laravel/socialite": "^5.23",
+    "orchestra/testbench": "^11.0",
     "pestphp/pest": "^4.0",
     "pestphp/pest-plugin-arch": "^4.0",
     "pestphp/pest-plugin-laravel": "^4.0",
@@ -96,7 +99,8 @@
   "suggest": {
     "ext-exif": "Adds support for parsing image EXIF data.",
     "ext-imagick": "Adds support for more image processing formats and options.",
-    "ext-iconv": "Adds support for more character encodings than PHP’s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8."
+    "ext-iconv": "Adds support for more character encodings than PHP\u2019s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8.",
+    "laravel/socialite": "Adds OAuth login support for providers configured with `GeneralConfig::oauthProviders()`."
   },
   "autoload": {
     "psr-4": {
@@ -138,6 +142,13 @@
       "@php vendor/bin/testbench package:sync-skeleton --ansi",
       "@build",
       "@php vendor/bin/testbench serve --ansi"
+    ],
+    "ci": [
+      "@php pint",
+      "@rector",
+      "@phpstan",
+      "@tests",
+      "@tests-adapter"
     ]
   },
   "config": {

@@ -9,7 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -177,7 +177,7 @@ class ElementIndexSettingsController extends BaseElementsController
         unset($source);
 
         $viewModes = array_map(fn(array $viewMode) => array_merge($viewMode, [
-            'iconSvg' => Cp::iconSvg($viewMode['icon'] ?? 'table'),
+            'iconSvg' => Icons::svg($viewMode['icon'] ?? 'table'),
         ]), $elementType::indexViewModes());
 
         // Get the default sort options for custom sources

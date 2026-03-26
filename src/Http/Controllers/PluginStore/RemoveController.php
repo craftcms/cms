@@ -11,7 +11,7 @@ use function CraftCms\Cms\t;
 /**
  * @internal
  */
-final class RemoveController extends BaseUpdaterController
+class RemoveController extends BaseUpdaterController
 {
     #[\Override]
     protected function pageTitle(): string

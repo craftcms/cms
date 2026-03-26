@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use craft\helpers\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
@@ -96,7 +97,7 @@ trait QueriesAssetProperties
                 $assetQuery->subQuery->where(function (Builder $query) use ($assetQuery) {
                     $query->whereParam('assets.kind', $assetQuery->kind);
 
-                    $kinds = Assets::getFileKinds();
+                    $kinds = AssetsHelper::getFileKinds();
 
                     foreach ((array) $assetQuery->kind as $kind) {
                         if (! isset($kinds[$kind])) {

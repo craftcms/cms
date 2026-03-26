@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image;
 
 use Craft;
-use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\FileHelper;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Database\Table;
@@ -24,6 +23,8 @@ use CraftCms\Cms\Image\Models\ImageTransform as ImageTransformModel;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -34,7 +35,7 @@ use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
 #[Singleton]
-final class ImageTransforms
+class ImageTransforms
 {
     /** @var Collection<int, ImageTransform>|null */
     private ?Collection $transforms = null;
@@ -322,17 +323,15 @@ final class ImageTransforms
         $this->deleteResizedAssetVersion($asset);
         $this->deleteCreatedTransformsForAsset($asset);
 
-        $file = Craft::$app->getPath()->getAssetSourcesPath().DIRECTORY_SEPARATOR.$asset->id.'.'.pathinfo($asset->getFilename(), PATHINFO_EXTENSION);
+        $file = Path::assetSources($asset->id.'.'.pathinfo($asset->getFilename(), PATHINFO_EXTENSION));
 
-        if (file_exists($file)) {
-            FileHelper::unlink($file);
-        }
+        File::delete($file);
     }
 
     public function deleteResizedAssetVersion(Asset $asset): void
     {
         $dirs = [
-            Craft::$app->getPath()->getImageEditorSourcesPath().'/'.$asset->id,
+            Path::imageEditorSources((string) $asset->id),
         ];
 
         foreach ($dirs as $dir) {
@@ -346,7 +345,7 @@ final class ImageTransforms
                 }
 
                 foreach ($files as $path) {
-                    if (! FileHelper::unlink($path)) {
+                    if (! File::delete($path)) {
                         Log::warning("Unable to delete the asset thumbnail \"$path\".", [__METHOD__]);
                     }
                 }

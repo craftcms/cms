@@ -35,7 +35,7 @@ use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
 #[Singleton]
-final readonly class Dashboard
+readonly class Dashboard
 {
     /**
      * @return Collection<class-string<WidgetInterface>>

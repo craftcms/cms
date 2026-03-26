@@ -1,5 +1,5 @@
 // line 1
 Craft::$app->getSession()->setError("Something went wrong");
 Craft::$app->getSession()->setNotice("But here is a notice");
-Craft::$app->getResponse()->redirect(craft\helpers\UrlHelper::url("/somewhere"), 302);
+Craft::$app->getResponse()->redirect(CraftCms\Cms\Support\URL::url("/somewhere"), 302);
 Craft::$app->end();

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Entry;
 
 use Craft;
-use craft\base\MemoizableArray;
 use craft\helpers\AdminTable;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -31,9 +31,11 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -46,10 +48,9 @@ use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
-use yii\helpers\Markdown;
 
 #[Singleton]
-final class EntryTypes
+class EntryTypes
 {
     /**
      * @var bool Whether entries should be resaved after an entry type has been updated.
@@ -82,7 +83,7 @@ final class EntryTypes
      * ```
      *
      *
-     * @return \Illuminate\Support\Collection<EntryType>
+     * @return Collection<EntryType>
      */
     public function getEntryTypesBySectionId(int $sectionId): Collection
     {
@@ -161,7 +162,7 @@ final class EntryTypes
      */
     public function getAllEntryTypes(): Collection
     {
-        return collect($this->entryTypes()->all());
+        return $this->entryTypes()->collect();
     }
 
     /**
@@ -594,14 +595,14 @@ final class EntryTypes
         foreach ($entryTypes as $entryType) {
             $label = Html::encode($entryType->getUiLabel());
             $chipCellContent = Html::beginTag('div', ['class' => 'inline-chips']).
-                Cp::chipHtml($entryType, [
+                app(ElementHtml::class)->chipHtml($entryType, [
                     'labelHtml' => Html::a($label, $entryType->getCpEditUrl(), [
                         'class' => ['chip-label', 'cell-bold'],
                     ]),
                 ]);
             if ($entryType->description) {
                 $chipCellContent .= Html::tag('span',
-                    Html::decodeDoubles(Markdown::process(Html::encodeInvalidTags(Html::encode($entryType->description)),
+                    Html::decodeDoubles(Markdown::parse(Html::encodeInvalidTags(Html::encode($entryType->description)),
                         'gfm-comment')),
                     ['class' => 'info']);
             }
@@ -612,7 +613,7 @@ final class EntryTypes
                 'title' => $label,
                 'chip' => $chipCellContent,
                 'handle' => $entryType->handle,
-                'usages' => Cp::componentPreviewHtml($usages[$entryType->id] ?? []),
+                'usages' => app(PreviewHtml::class)->componentPreviewHtml($usages[$entryType->id] ?? []),
             ];
         }
 

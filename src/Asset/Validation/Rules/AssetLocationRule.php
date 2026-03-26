@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Validation\Rules;
 
 use Closure;
-use craft\helpers\Assets;
-use craft\helpers\Assets as AssetsHelper;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
@@ -18,7 +17,7 @@ use function CraftCms\Cms\t;
 /**
  * Validates an asset's location (folder + filename).
  */
-final readonly class AssetLocationRule implements ValidationRule
+readonly class AssetLocationRule implements ValidationRule
 {
     public function __construct(
         private Asset $asset,
@@ -38,7 +37,7 @@ final readonly class AssetLocationRule implements ValidationRule
             return;
         }
 
-        [$folderId, $filename] = Assets::parseFileLocation($value);
+        [$folderId, $filename] = AssetsHelper::parseFileLocation($value);
 
         $hasNewFolderId = $folderId !== $this->asset->{$this->folderIdAttribute};
         $hasNewFilename = $filename !== $this->asset->{$this->filenameAttribute};

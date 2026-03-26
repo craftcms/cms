@@ -3,14 +3,15 @@
 ## Table of Contents
 
 1. Test directory structure and base classes
-2. CP URLs
-3. Elements
-4. Creating test elements
-5. Creating an entry with a custom field
-6. Testing element concerns (traits)
-7. Pest data providers
-8. Database best practices
-9. Testing Laravel events
+2. No comments in tests
+3. CP URLs
+4. Elements
+5. Creating test elements
+6. Creating an entry with a custom field
+7. Testing element concerns (traits)
+8. Pest data providers
+9. Database best practices
+10. Testing Laravel events
 
 ## Test directory structure and base classes
 
@@ -52,6 +53,15 @@ Use this for:
 - Tests that save elements or interact with project config
 - Tests that require an authenticated user (`actingAs`)
 - HTTP/route tests
+
+## No comments in tests
+
+Do not add comments in test files. This includes:
+- Section separator comments (e.g., `// -- validateComponentClass tests --`)
+- Inline explanations of what the code does
+- Docblocks on test functions
+
+Test names should be descriptive enough to convey intent without comments. Use `describe()` blocks to group related tests instead of comments.
 
 ## CP URLs
 

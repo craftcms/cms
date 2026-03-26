@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\Controllers\Users\SaveUserController;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 
@@ -142,7 +143,7 @@ it('properly handles email with leading/trailing spaces when editing another use
 
 it('can upload a photo for another user', function () {
     // @TODO: Bulk ops cause issues
-    if (\Illuminate\Support\Facades\DB::isMysql()) {
+    if (DB::isMysql()) {
         $this->markTestSkipped('Bulk ops cause issues with MySQL');
     }
 

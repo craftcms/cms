@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -23,7 +23,7 @@ use function CraftCms\Cms\template;
 /**
  * Email represents an Email field.
  */
-final class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
+class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -75,7 +75,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
 
     private function settingsHtml(bool $readOnly): string
     {
-        return Cp::textFieldHtml([
+        return FormFields::textFieldHtml([
             'label' => t('Placeholder Text'),
             'instructions' => t('The text that will be shown if the field doesn’t have a value.'),
             'id' => 'placeholder',

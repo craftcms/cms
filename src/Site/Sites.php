@@ -28,7 +28,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
@@ -44,7 +44,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use function CraftCms\Cms\maxPowerCaptain;
 
 #[Scoped]
-final class Sites
+class Sites
 {
     /**
      * This value can be configured as needed, but exists as a safeguard against performance issues.
@@ -170,7 +170,7 @@ final class Sites
      *
      * > [!NOTE]
      * > This will always return the primary site for control panel requests. To fetch the site the control panel
-     * > is currently working with, based on the `site` query string param, use [[\craft\helpers\Cp::requestedSite()]].
+     * > is currently working with, based on the `site` query string param, use [[\CraftCms\Cms\Cp\RequestedSite::get()]].
      *
      * @return Site the current site
      *
@@ -857,10 +857,7 @@ final class Sites
     private function allSites(?bool $withDisabled = null): Collection
     {
         if ($withDisabled === null) {
-            $withDisabled = (
-                app()->runningInConsole() ||
-                (request()->isCpRequest() && Auth::check())
-            );
+            $withDisabled = ! request()->isSiteRequest() || request()->isActionRequest();
         }
 
         return $withDisabled ? $this->allSitesById : $this->enabledSitesById;

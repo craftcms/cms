@@ -27,7 +27,6 @@ return [
     'myaccount/preferences' => 'users/preferences',
     'myaccount/password' => 'users/password',
     'myaccount/passkeys' => 'users/passkeys',
-    'settings/email' => 'system-settings/edit-email-settings',
     'settings/fields/new' => 'fields/edit-field',
     'settings/fields/edit/<fieldId:\d+>' => 'fields/edit-field',
     'settings/general' => 'system-settings/general-settings',

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp;
 
-use craft\helpers\Cp as CpHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Events\RegisterCpSettings;
 use CraftCms\Cms\Cp\Events\RegisterReadonlyCpSettings;
@@ -13,16 +12,13 @@ use Illuminate\Support\Facades\Event;
 
 use function CraftCms\Cms\t;
 
-final readonly class Settings
+readonly class Settings
 {
     public function __construct(
         private GeneralConfig $generalConfig,
         private Plugins $pluginsService
     ) {}
 
-    /**
-     * Returns the list of settings.
-     */
     public function all(): array
     {
         $readOnly = ! $this->generalConfig->allowAdminChanges;
@@ -37,7 +33,7 @@ final readonly class Settings
         ];
 
         $settings[$label]['sites'] = [
-            'icon' => sprintf('light/%s', CpHelper::earthIcon()),
+            'icon' => sprintf('light/%s', Icons::earth()),
             'label' => t('Sites'),
         ];
 
@@ -59,11 +55,14 @@ final readonly class Settings
                 'icon' => 'light/map-location',
                 'label' => t('Addresses'),
             ];
+
+            $settings[$label]['email'] = [
+                'url' => route('craft.cp.settings.email.index'),
+                'icon' => 'light/envelope',
+                'label' => t('Email'),
+            ];
         }
-        $settings[$label]['email'] = [
-            'icon' => 'light/envelope',
-            'label' => t('Email'),
-        ];
+
         $settings[$label]['plugins'] = [
             'icon' => 'light/plug',
             'label' => t('Plugins'),

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\View\TemplateHooks
  */
-final class TemplateHooks extends Facade
+class TemplateHooks extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

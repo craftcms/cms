@@ -9,7 +9,7 @@ use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Shared\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final class ContentBlock extends BaseModel
+class ContentBlock extends BaseModel
 {
     #[\Override]
     protected $table = Table::CONTENTBLOCKS;

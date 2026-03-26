@@ -2,16 +2,17 @@ import {css} from 'lit';
 
 export const baseInputStyles = css`
   font: inherit;
-  color: var(--c-input-fg, var(--c-fg-text));
+  color: var(--c-input-text, var(--c-text-default));
   position: relative;
   min-height: var(--c-input-height, var(--c-size-control-md));
-  border: var(--c-input-border, 1px solid var(--c-form-control-border));
+  border-width: var(--c-input-border-width, var(--c-form-control-border-width));
+  border-style: var(--c-input-border-style, var(--c-form-control-border-style));
+  border-color: var(--c-input-border-color, var(--c-form-control-border-color));
   border-radius: var(--c-input-radius, var(--c-radius-sm));
   padding-block: 0;
   width: 100%;
   flex: 1 1 auto;
-  padding-inline: var(--c-input-spacing-inline);
-  background-color: var(--c-input-bg, var(--c-form-control-bg));
+  background-color: var(--c-input-fill, var(--c-form-control-fill));
   box-shadow: var(--c-input-shadow);
 
   /* Detect mobile devices and up the font size of inputs to avoid zoom on focus */
@@ -29,7 +30,7 @@ export const baseFieldStyles = css`
     color: var(--c-color-danger-on-normal);
 
     ::slotted([slot='input']) {
-      border-color: var(--c-color-danger-border-emphasis);
+      border-color: var(--c-color-danger-border-loud);
     }
   }
 
@@ -41,11 +42,7 @@ export const baseFieldStyles = css`
 
   .form-field__help-text {
     font-size: 1em;
-    color: var(--c-fg-muted);
-  }
-
-  .form-field__group-one {
-    margin-block-end: var(--c-spacing-sm);
+    color: var(--c-text-quiet);
   }
 
   .input-group__after {
@@ -57,13 +54,35 @@ export const inputStyles = css`
   ${baseFieldStyles}
 
   ::slotted([slot='input']) {
+    font: inherit;
+    padding-block: 0;
+    border: none;
+    appearance: none;
+    padding-inline: var(--c-input-spacing-inline);
+    background-color: transparent;
+  }
+
+  .input-group__container {
     ${baseInputStyles}
   }
 
-  :host([small]) ::slotted([slot='input']) {
+  .input-group__prefix,
+  .input-group__suffix {
+    padding-inline: var(--c-input-spacing-inline);
+    display: grid;
+    place-items: center;
+  }
+
+  .input-group__prefix + .input-group__input {
+    border-radius-start-start: 0;
+    border-radius-start-end: 0;
+  }
+
+  :host([size~='small']) ::slotted([slot='input']) {
     --c-input-height: var(--c-size-control-sm);
     --c-input-spacing-inline: var(--c-spacing-sm);
   }
+
   :host([center]) ::slotted([slot='input']) {
     text-align: center;
   }

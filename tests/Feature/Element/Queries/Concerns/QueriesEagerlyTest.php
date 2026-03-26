@@ -10,6 +10,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\DB;
 
 use function Pest\Laravel\actingAs;
 
@@ -34,10 +35,7 @@ beforeEach(function () {
     app(Fields::class)->invalidateCaches();
     app(Fields::class)->refreshFields();
 
-    $entryModels = EntryModel::factory(10)->create([
-        'sectionId' => $section->id,
-        'typeId' => $entryType->id,
-    ]);
+    $entryModels = EntryModel::factory(10)->forSection($section)->forEntryType($entryType)->create();
 
     foreach ($entryModels as $model) {
         $model->element->update([
@@ -73,7 +71,7 @@ test('eagerly', function () {
     $queryCountWithoutEagerly = 0;
     $queryCountWithEagerly = 0;
 
-    \Illuminate\Support\Facades\DB::listen(function ($query) use (&$queryCountWithoutEagerly, &$queryCountWithEagerly) {
+    DB::listen(function ($query) use (&$queryCountWithoutEagerly, &$queryCountWithEagerly) {
         $queryCountWithoutEagerly++;
         $queryCountWithEagerly++;
     });

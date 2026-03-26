@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Facade;
  *
  * @see \CraftCms\Cms\Site\SiteGroups
  */
-final class SiteGroups extends Facade
+class SiteGroups extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

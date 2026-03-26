@@ -7,23 +7,15 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use craft\gql\arguments\elements\Asset as AssetArguments;
-use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\gql\resolvers\elements\Asset as AssetResolver;
-use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\helpers\FileHelper;
-use craft\helpers\Gql;
-use craft\helpers\Gql as GqlHelper;
-use craft\models\GqlSchema;
-use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\PreviewHtml;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
@@ -35,25 +27,35 @@ use CraftCms\Cms\Filesystem\Exceptions\FsObjectNotFoundException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Filesystem\Filesystems\Temp;
+use CraftCms\Cms\Gql\Arguments\Elements\Asset as AssetArguments;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Gql as GqlService;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Gql\GqlHelper as Gql;
+use CraftCms\Cms\Gql\Interfaces\Elements\Asset as AssetInterface;
+use CraftCms\Cms\Gql\Resolvers\Elements\Asset as AssetResolver;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use Override;
+use Symfony\Component\Mime\MimeTypes;
 
 use function CraftCms\Cms\t;
 
 /**
  * Assets represents an Assets field.
  */
-final class Assets extends BaseRelationField
+class Assets extends BaseRelationField
 {
     public const string PREVIEW_MODE_FULL = 'full';
 
@@ -170,16 +172,16 @@ final class Assets extends BaseRelationField
      */
     public string $previewMode = self::PREVIEW_MODE_FULL;
 
-    #[\Override]
+    #[Override]
     protected bool $allowLargeThumbsView = true;
 
-    #[\Override]
+    #[Override]
     protected string $settingsTemplate = '_components/fieldtypes/Assets/settings.twig';
 
-    #[\Override]
+    #[Override]
     protected string $inputTemplate = '_components/fieldtypes/Assets/input.twig';
 
-    #[\Override]
+    #[Override]
     protected ?string $inputJsClass = 'Craft.AssetSelectInput';
 
     /**
@@ -418,7 +420,7 @@ final class Assets extends BaseRelationField
     #[Override]
     protected function previewHtml(ElementCollection $elements): string
     {
-        return Cp::elementPreviewHtml(
+        return app(PreviewHtml::class)->elementPreviewHtml(
             $elements->all(),
             showLabel: $this->previewMode === self::PREVIEW_MODE_FULL,
         );
@@ -474,7 +476,7 @@ final class Assets extends BaseRelationField
                         $tempPath = AssetsHelper::tempFilePath($file['filename']);
                         switch ($file['type']) {
                             case 'data':
-                                FileHelper::writeToFile($tempPath, $file['data']);
+                                File::writeToFile($tempPath, $file['data']);
                                 break;
                             case 'file':
                                 rename($file['path'], $tempPath);
@@ -488,10 +490,10 @@ final class Assets extends BaseRelationField
                         $asset = new Asset;
                         $asset->tempFilePath = $tempPath;
                         $asset->setFilename($file['filename']);
-                        $asset->setMimeType(FileHelper::getMimeType($tempPath, checkExtension: false) ?? $file['mimeType']);
+                        $asset->setMimeType(File::getMimeType($tempPath, checkExtension: false) ?? $file['mimeType']);
                         $asset->newFolderId = $uploadFolderId;
                         $asset->setVolumeId($uploadFolder->volumeId);
-                        $asset->uploaderId = Craft::$app->getUser()->getId();
+                        $asset->uploaderId = Auth::id();
                         $asset->avoidFilenameConflicts = true;
                         $asset->setScenario(Asset::SCENARIO_CREATE);
 
@@ -585,7 +587,7 @@ final class Assets extends BaseRelationField
                             } catch (FsObjectNotFoundException $e) {
                                 // Don't freak out about that.
                                 Log::warning('Couldn’t move asset because the file doesn’t exist: '.$e->getMessage());
-                                Craft::$app->getErrorHandler()->logException($e);
+                                report($e);
                             }
                         }
                     }
@@ -782,7 +784,7 @@ final class Assets extends BaseRelationField
                     if (! empty($this->_uploadedDataFiles['filename'][$index])) {
                         $filename = $this->_uploadedDataFiles['filename'][$index];
                     } else {
-                        $extensions = FileHelper::getExtensionsByMimeType($mimeType);
+                        $extensions = MimeTypes::getDefault()->getExtensions(strtolower($mimeType));
 
                         if (empty($extensions)) {
                             continue;

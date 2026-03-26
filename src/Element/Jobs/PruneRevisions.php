@@ -11,7 +11,7 @@ use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
 use Override;
 
-final class PruneRevisions extends Job
+class PruneRevisions extends Job
 {
     /**
      * Creates a new PruneRevisions job.

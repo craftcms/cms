@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Middleware;
 
-use craft\helpers\Cp;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\Rebrand;
 use CraftCms\Cms\Edition;
@@ -13,7 +13,7 @@ use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Override;
@@ -30,7 +30,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @var string
      */
-    #[\Override]
+    #[Override]
     protected $rootView = 'app';
 
     /**
@@ -69,7 +69,7 @@ class HandleInertiaRequests extends Middleware
             $currentUser = $request->user();
         }
 
-        $systemIcon = Cp::iconSvg('c-outline');
+        $systemIcon = Icons::svg('c-outline');
 
         if (Edition::isAtLeast(Edition::Pro) && $rebrand = app(Rebrand::class)) {
             $systemIcon = $rebrand->getImage('icon');

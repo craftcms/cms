@@ -5,26 +5,28 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Assets;
 
 use Craft;
-use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\UrlHelper;
 use CraftCms\Cms\Asset\Assets;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Concerns\EnforcesVolumePermissions;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Http\RespondsWithFlash;
+use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Uri;
 use Symfony\Component\HttpFoundation\Response;
 use ZipArchive;
 
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\t;
 
-final readonly class ActionController
+readonly class ActionController
 {
     use EnforcesVolumePermissions;
     use RespondsWithFlash;
@@ -158,7 +160,7 @@ final readonly class ActionController
         }
 
         // Otherwise create a zip of all the selected assets
-        $zipPath = Craft::$app->getPath()->getTempPath().'/'.Str::uuid()->toString().'.zip';
+        $zipPath = Path::temp(Str::uuid()->toString().'.zip');
         $zip = new ZipArchive;
 
         abort_if($zip->open($zipPath, ZipArchive::CREATE) !== true, 500, 'Cannot create zip at '.$zipPath);
@@ -201,14 +203,15 @@ final readonly class ActionController
             ]);
         }
 
-        $uri = Str::start(UrlHelper::prependCpTrigger($sourcePath[0]['uri']), '/');
-        $url = UrlHelper::urlWithParams($uri, [
-            'search' => $asset->filename,
-            'includeSubfolders' => '0',
-            'sourcePathStep' => "folder:$folder->uid",
-        ]);
+        $uri = Str::start(Url::prependCpTrigger($sourcePath[0]['uri']), '/');
 
-        return redirect($url);
+        return Uri::of($uri)
+            ->withQuery([
+                'search' => $asset->filename,
+                'includeSubfolders' => '0',
+                'sourcePathStep' => "folder:$folder->uid",
+            ])
+            ->redirect();
     }
 
     public function moveInfo(Request $request): Response

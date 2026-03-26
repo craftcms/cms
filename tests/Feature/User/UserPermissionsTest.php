@@ -54,7 +54,7 @@ test('getAssignablePermissions', function () {
     expect($this->userPermissions->getAllPermissions()->toArray())
         ->toEqualCanonicalizing($this->userPermissions->getAssignablePermissions()->toArray());
 
-    $user = \CraftCms\Cms\User\Models\User::factory()->create();
+    $user = CraftCms\Cms\User\Models\User::factory()->create();
 
     actingAs($user->asElement());
 
@@ -82,7 +82,7 @@ test('getPermissionsByGroupId & doesGroupHavePermission', function () {
 test('getGroupPermissionsByUserId', function () {
     $group = UserGroup::factory()->create();
 
-    $user = \CraftCms\Cms\User\Models\User::firstOrFail();
+    $user = CraftCms\Cms\User\Models\User::firstOrFail();
     $user->userGroups()->attach($group->id);
 
     expect($this->userPermissions->getGroupPermissionsByUserId($user->id))->toBeEmpty();
@@ -95,7 +95,7 @@ test('getGroupPermissionsByUserId', function () {
 test('getPermissionsByUserId & doesUserHavePermission', function () {
     $group = UserGroup::factory()->create();
 
-    $user = \CraftCms\Cms\User\Models\User::firstOrFail();
+    $user = CraftCms\Cms\User\Models\User::firstOrFail();
     $user->userGroups()->attach($group->id);
 
     expect($this->userPermissions->getPermissionsByUserId($user->id))->toBeEmpty();

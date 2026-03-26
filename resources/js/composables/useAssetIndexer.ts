@@ -6,7 +6,7 @@ import {
   type FinishIndexingParams,
   type IndexingSession,
   type StartIndexingParams,
-} from '@craftcms/cp/src/services/AssetIndexer.js';
+} from '@craftcms/cp/services/AssetIndexer.ts.mjs';
 
 interface UseAssetIndexerOptions {
   existingSessions?: IndexingSession[];

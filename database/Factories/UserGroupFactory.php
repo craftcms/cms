@@ -8,8 +8,9 @@ use CraftCms\Cms\User\Models\UserGroup;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Override;
 
-final class UserGroupFactory extends Factory
+class UserGroupFactory extends Factory
 {
+    #[Override]
     protected $model = UserGroup::class;
 
     #[Override]

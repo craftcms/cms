@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
-use craft\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -21,7 +21,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 #[Scoped]
-final readonly class TemplateGlobals
+readonly class TemplateGlobals
 {
     public function __construct(
         private Application $app,
@@ -74,9 +74,9 @@ final readonly class TemplateGlobals
             'devMode' => $this->app->hasDebugModeEnabled(),
             'isInstalled' => $isInstalled,
             'isUpdateInfoCached' => $this->updates->isUpdateInfoCached(),
-            'loginUrl' => UrlHelper::siteUrl($this->generalConfig->getLoginPath()),
-            'logoutUrl' => UrlHelper::siteUrl($this->generalConfig->getLogoutPath()),
-            'setPasswordUrl' => $setPasswordRequestPath !== null ? UrlHelper::siteUrl($setPasswordRequestPath) : null,
+            'loginUrl' => Url::siteUrl($this->generalConfig->getLoginPath()),
+            'logoutUrl' => Url::siteUrl($this->generalConfig->getLogoutPath()),
+            'setPasswordUrl' => $setPasswordRequestPath !== null ? Url::siteUrl($setPasswordRequestPath) : null,
             'now' => now(),
             'today' => today(),
             'tomorrow' => today()->addDay(),

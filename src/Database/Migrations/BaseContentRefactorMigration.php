@@ -8,6 +8,7 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -46,7 +47,7 @@ class BaseContentRefactorMigration extends Migration
      *
      * @param  int[]|Builder  $ids  The element IDs to update, or a query that selects them.
      *                              If a query is passed but `select` is not set, it will default to `'id'`.
-     * @param  \CraftCms\Cms\FieldLayout\FieldLayout|null  $fieldLayout  The field layout that the elements use, if any
+     * @param  FieldLayout|null  $fieldLayout  The field layout that the elements use, if any
      * @param  string  $contentTable  The table that the elements stored their field values in.
      * @param  string  $fieldColumnPrefix  The column prefix that the content table used for these elements’ fields.
      */
@@ -123,7 +124,7 @@ class BaseContentRefactorMigration extends Migration
                 $content = [];
 
                 foreach ($fieldColumns as $layoutElementUid => $column) {
-                    /** @var \CraftCms\Cms\Field\Field $field */
+                    /** @var Field $field */
                     $field = $fieldsByUid[$layoutElementUid];
 
                     if ($field instanceof MissingField) {

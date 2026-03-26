@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Route\Data;
 
 use CraftCms\Cms\Support\Html;
 
-final class Route
+class Route
 {
     public function __construct(
         /**

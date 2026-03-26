@@ -13,7 +13,7 @@ use Twig\Node\Node;
 use Twig\Node\NodeCaptureInterface;
 
 #[YieldReady]
-final class RegisterResourceNode extends Node implements NodeCaptureInterface
+class RegisterResourceNode extends Node implements NodeCaptureInterface
 {
     #[Override]
     public function compile(Compiler $compiler): void

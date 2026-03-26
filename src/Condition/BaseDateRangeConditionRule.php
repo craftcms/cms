@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Condition;
 
-use craft\helpers\Cp;
-use craft\helpers\DateRange;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cp\FormFields;
+use CraftCms\Cms\Database\QueryParam;
+use CraftCms\Cms\Shared\Enums\DateRangePeriod;
+use CraftCms\Cms\Shared\Enums\DateRangeType;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Url;
 use DateTime;
 use Exception;
 use Illuminate\Validation\Rule;
@@ -25,14 +27,14 @@ use function CraftCms\Cms\t;
 abstract class BaseDateRangeConditionRule extends BaseConditionRule
 {
     /**
-     * @phpstan-var DateRange::TYPE_*
+     * @var value-of<DateRangeType>
      */
-    public string $rangeType = DateRange::TYPE_TODAY;
+    public string $rangeType = DateRangeType::Today->value;
 
     /**
-     * @phpstan-var DateRange::PERIOD_*
+     * @var value-of<DateRangePeriod>
      */
-    public string $periodType = DateRange::PERIOD_DAYS_AGO;
+    public string $periodType = DateRangePeriod::DaysAgo->value;
 
     public ?float $periodValue = null;
 
@@ -60,15 +62,15 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
             ! isset($config['attributes']['rangeType']) &&
             (! empty($config['attributes']['startDate']) || ! empty($config['attributes']['endDate']))
         ) {
-            $config['attributes']['rangeType'] = DateRange::TYPE_RANGE;
+            $config['attributes']['rangeType'] = DateRangeType::Range->value;
         }
 
         if (isset($config['attributes']['periodType'])) {
             // Maintain BC with older periodType values
             $config['attributes']['periodType'] = match ($config['attributes']['periodType']) {
-                TimePeriod::Minutes->value => DateRange::PERIOD_MINUTES_AGO,
-                TimePeriod::Hours->value => DateRange::PERIOD_HOURS_AGO,
-                TimePeriod::Days->value => DateRange::PERIOD_DAYS_AGO,
+                TimePeriod::Minutes->value => DateRangePeriod::MinutesAgo->value,
+                TimePeriod::Hours->value => DateRangePeriod::HoursAgo->value,
+                TimePeriod::Days->value => DateRangePeriod::DaysAgo->value,
                 default => $config['attributes']['periodType'],
             };
         }
@@ -118,9 +120,9 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
 
         foreach ($this->rangeTypeOptions() as $value => $label) {
             if (in_array($value, [
-                DateRange::TYPE_BEFORE,
-                DateRange::TYPE_AFTER,
-                DateRange::TYPE_RANGE,
+                DateRangeType::Before->value,
+                DateRangeType::After->value,
+                DateRangeType::Range->value,
             ])) {
                 $index = 1;
             } elseif (in_array($value, [self::OPERATOR_NOT_EMPTY, self::OPERATOR_EMPTY])) {
@@ -183,17 +185,17 @@ JS,
             Html::hiddenInput('rangeType', $this->rangeType, [
                 'id' => $inputId,
                 'hx' => [
-                    'post' => UrlHelper::actionUrl('conditions/render'),
+                    'post' => Url::actionUrl('conditions/render'),
                 ],
             ]);
 
-        if ($this->rangeType === DateRange::TYPE_RANGE) {
+        if ($this->rangeType === DateRangeType::Range->value) {
             $html .= Html::tag(
                 'div',
                 attributes: ['class' => ['flex', 'flex-nowrap']],
                 content: Html::label(t('From'), 'start-date-date').
                 Html::tag('div',
-                    Cp::dateHtml([
+                    FormFields::dateHtml([
                         'id' => 'start-date',
                         'name' => 'startDate',
                         'value' => $this->getStartDate(),
@@ -205,14 +207,14 @@ JS,
                     attributes: ['class' => ['flex', 'flex-nowrap']],
                     content: Html::label(t('To'), 'end-date-date').
                     Html::tag('div',
-                        Cp::dateHtml([
+                        FormFields::dateHtml([
                             'id' => 'end-date',
                             'name' => 'endDate',
                             'value' => $this->getEndDate(),
                         ])
                     )
                 );
-        } elseif (in_array($this->rangeType, [DateRange::TYPE_BEFORE, DateRange::TYPE_AFTER])) {
+        } elseif (in_array($this->rangeType, [DateRangeType::Before->value, DateRangeType::After->value])) {
             $periodValueId = 'period-value';
             $periodTypeId = 'period-type';
 
@@ -220,14 +222,14 @@ JS,
                 Html::tag(
                     'div',
                     attributes: ['class' => ['flex', 'flex-nowrap']],
-                    content: Cp::textHtml([
+                    content: FormFields::textHtml([
                         'id' => $periodValueId,
                         'name' => 'periodValue',
                         'value' => $this->periodValue,
                         'size' => '5',
                     ]).
                     Html::hiddenLabel(t('Period Type'), $periodTypeId).
-                    Cp::selectHtml([
+                    FormFields::selectHtml([
                         'id' => $periodTypeId,
                         'name' => 'periodType',
                         'value' => $this->periodType,
@@ -245,17 +247,17 @@ JS,
     protected function rangeTypeOptions(): array
     {
         return [
-            DateRange::TYPE_TODAY => t('Today'),
-            DateRange::TYPE_THIS_WEEK => t('This week'),
-            DateRange::TYPE_THIS_MONTH => t('This month'),
-            DateRange::TYPE_THIS_YEAR => t('This year'),
-            DateRange::TYPE_PAST_7_DAYS => t('Past {num} days', ['num' => 7]),
-            DateRange::TYPE_PAST_30_DAYS => t('Past {num} days', ['num' => 30]),
-            DateRange::TYPE_PAST_90_DAYS => t('Past {num} days', ['num' => 90]),
-            DateRange::TYPE_PAST_YEAR => t('Past year'),
-            DateRange::TYPE_BEFORE => t('Before…'),
-            DateRange::TYPE_AFTER => t('After…'),
-            DateRange::TYPE_RANGE => t('Range…'),
+            DateRangeType::Today->value => DateRangeType::Today->label(),
+            DateRangeType::ThisWeek->value => DateRangeType::ThisWeek->label(),
+            DateRangeType::ThisMonth->value => DateRangeType::ThisMonth->label(),
+            DateRangeType::ThisYear->value => DateRangeType::ThisYear->label(),
+            DateRangeType::Past7Days->value => DateRangeType::Past7Days->label(),
+            DateRangeType::Past30Days->value => DateRangeType::Past30Days->label(),
+            DateRangeType::Past90Days->value => DateRangeType::Past90Days->label(),
+            DateRangeType::PastYear->value => DateRangeType::PastYear->label(),
+            DateRangeType::Before->value => DateRangeType::Before->label(),
+            DateRangeType::After->value => DateRangeType::After->label(),
+            DateRangeType::Range->value => DateRangeType::Range->label(),
             self::OPERATOR_NOT_EMPTY => t('has a value'),
             self::OPERATOR_EMPTY => t('is empty'),
         ];
@@ -267,12 +269,12 @@ JS,
     protected function periodTypeOptions(): array
     {
         return [
-            DateRange::PERIOD_MINUTES_AGO => t('minutes ago'),
-            DateRange::PERIOD_HOURS_AGO => t('hours ago'),
-            DateRange::PERIOD_DAYS_AGO => t('days ago'),
-            DateRange::PERIOD_MINUTES_FROM_NOW => t('minutes from now'),
-            DateRange::PERIOD_HOURS_FROM_NOW => t('hours from now'),
-            DateRange::PERIOD_DAYS_FROM_NOW => t('days from now'),
+            DateRangePeriod::MinutesAgo->value => DateRangePeriod::MinutesAgo->label(),
+            DateRangePeriod::HoursAgo->value => DateRangePeriod::HoursAgo->label(),
+            DateRangePeriod::DaysAgo->value => DateRangePeriod::DaysAgo->label(),
+            DateRangePeriod::MinutesFromNow->value => DateRangePeriod::MinutesFromNow->label(),
+            DateRangePeriod::HoursFromNow->value => DateRangePeriod::HoursFromNow->label(),
+            DateRangePeriod::DaysFromNow->value => DateRangePeriod::DaysFromNow->label(),
         ];
     }
 
@@ -291,12 +293,14 @@ JS,
     }
 
     /**
-     * Returns the rule’s value, prepped for {@see \CraftCms\Cms\Database\QueryParam::parse()}.
+     * Returns the rule’s value, prepped for {@see QueryParam::parse()}.
      */
     protected function queryParamValue(): array|string|null
     {
+        $periodType = DateRangePeriod::from($this->periodType);
+
         switch ($this->rangeType) {
-            case DateRange::TYPE_RANGE:
+            case DateRangeType::Range->value:
                 if (! $this->_startDate && ! $this->_endDate) {
                     return null;
                 }
@@ -307,15 +311,15 @@ JS,
                     $this->_endDate ? '< '.DateTimeHelper::toIso8601($this->_inclusiveEndDate()) : null,
                 ]);
 
-            case DateRange::TYPE_BEFORE:
-            case DateRange::TYPE_AFTER:
+            case DateRangeType::Before->value:
+            case DateRangeType::After->value:
                 if (! $this->periodValue) {
                     return null;
                 }
 
-                $dateInterval = DateRange::dateIntervalByTimePeriod($this->periodValue, $this->periodType);
+                $dateInterval = $periodType->interval($this->periodValue);
 
-                return ($this->rangeType === DateRange::TYPE_AFTER ? '>=' : '<').' '.
+                return ($this->rangeType === DateRangeType::After->value ? '>=' : '<').' '.
                     DateTimeHelper::toIso8601(DateTimeHelper::now()->add($dateInterval));
 
             case self::OPERATOR_EMPTY:
@@ -325,7 +329,7 @@ JS,
                 return 'not :empty:';
 
             default:
-                [$startDate, $endDate] = DateRange::dateRangeByType($this->rangeType);
+                [$startDate, $endDate] = DateRangeType::from($this->rangeType)->range();
                 $startDate = DateTimeHelper::toIso8601($startDate);
                 $endDate = DateTimeHelper::toIso8601($endDate);
 
@@ -341,20 +345,20 @@ JS,
     protected function matchValue(?DateTime $value): bool
     {
         switch ($this->rangeType) {
-            case DateRange::TYPE_RANGE:
+            case DateRangeType::Range->value:
                 return
                     (! $this->_startDate || ($value && $value >= DateTimeHelper::toDateTime($this->_startDate))) &&
                     (! $this->_endDate || ($value && $value < $this->_inclusiveEndDate()));
 
-            case DateRange::TYPE_BEFORE:
-            case DateRange::TYPE_AFTER:
+            case DateRangeType::Before->value:
+            case DateRangeType::After->value:
                 if (! $this->periodValue) {
                     return true;
                 }
 
-                $date = DateTimeHelper::now()->add(DateRange::dateIntervalByTimePeriod($this->periodValue, $this->periodType));
+                $date = DateTimeHelper::now()->add(DateRangePeriod::from($this->periodType)->interval($this->periodValue));
 
-                if ($this->rangeType === DateRange::TYPE_AFTER) {
+                if ($this->rangeType === DateRangeType::After->value) {
                     return $value && $value >= $date;
                 }
 
@@ -367,7 +371,7 @@ JS,
                 return (bool) $value;
 
             default:
-                [$startDate, $endDate] = DateRange::dateRangeByType($this->rangeType);
+                [$startDate, $endDate] = DateRangeType::from($this->rangeType)->range();
 
                 return $value && $value >= $startDate && $value < $endDate;
         }

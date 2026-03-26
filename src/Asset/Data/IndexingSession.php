@@ -6,12 +6,9 @@ namespace CraftCms\Cms\Asset\Data;
 
 use CraftCms\Cms\Component\Component;
 use DateTime;
-use Illuminate\Support\Traits\Macroable;
 
-final class IndexingSession extends Component
+class IndexingSession extends Component
 {
-    use Macroable;
-
     public ?string $uid = null;
 
     public ?int $id = null;

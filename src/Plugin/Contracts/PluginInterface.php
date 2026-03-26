@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Contracts;
 
+use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Validation\Contracts\Validatable;
@@ -225,7 +226,7 @@ interface PluginInterface
      * ```
      *
      * @see PluginTrait::$hasCpSection
-     * @see Cp::nav()
+     * @see Navigation::getItems()
      */
     public function getCpNavItem(): ?array;
 
@@ -267,6 +268,14 @@ interface PluginInterface
      * @return string the root directory of the plugin.
      */
     public function getBasePath(): string;
+
+    /**
+     * Returns the plugin migrations directory.
+     *
+     * Prefers the package root's `database/migrations` directory, and falls
+     * back to the plugin class directory's `migrations`.
+     */
+    public function getMigrationsPath(): string;
 
     /**
      * Creates and returns a new plugin instance based on a passed config

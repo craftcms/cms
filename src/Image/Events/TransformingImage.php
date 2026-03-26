@@ -8,7 +8,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 
-final class TransformingImage
+class TransformingImage
 {
     public ?string $tempPath = null;
 

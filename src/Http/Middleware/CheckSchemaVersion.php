@@ -7,13 +7,13 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Models\Info;
-use CraftCms\Cms\Updates\Updates;
+use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
 use RuntimeException;
 
 use function CraftCms\Cms\t;
 
-final readonly class CheckSchemaVersion
+readonly class CheckSchemaVersion
 {
     public function __construct(
         private GeneralConfig $generalConfig,

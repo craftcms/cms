@@ -8,12 +8,14 @@ use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Structure\Models\StructureElement;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Override;
 
-final class StructureFactory extends Factory
+class StructureFactory extends Factory
 {
+    #[Override]
     protected $model = Structure::class;
 
-    #[\Override]
+    #[Override]
     public function definition(): array
     {
         return [
@@ -22,7 +24,7 @@ final class StructureFactory extends Factory
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function configure(): self
     {
         return $this->afterCreating(function (Structure $structure) {

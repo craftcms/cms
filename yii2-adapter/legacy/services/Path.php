@@ -7,14 +7,8 @@
 
 namespace craft\services;
 
-use Craft;
-use craft\helpers\FileHelper;
-use CraftCms\Aliases\Aliases;
-use CraftCms\Cms\License\License;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Path as LaravelPath;
 use yii\base\Component;
-use yii\base\Exception;
 
 /**
  * The Path service provides APIs for getting server paths that are used by Craft.
@@ -23,536 +17,260 @@ use yii\base\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path} instead.
  */
 class Path extends Component
 {
     /**
-     * @var string
-     */
-    private string $_configPath;
-
-    /**
-     * @var string
-     */
-    private string $_storagePath;
-
-    /**
-     * @var string
-     */
-    private string $_testsPath;
-
-    /**
-     * @var string
-     */
-    private string $_siteTranslationsPath;
-
-    /**
-     * @var string
-     */
-    private string $_vendorPath;
-
-    /**
-     * Returns the path to the `config/` directory.
-     *
-     * @return string
-     * @throws Exception
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::config()} instead.
      */
     public function getConfigPath(): string
     {
-        return $this->_configPath ?? $this->_configPath = FileHelper::normalizePath(config_path('craft'));
+        return $this->service()->config();
     }
 
     /**
-     * Returns the path to `config/project/project.yaml`.
-     *
-     * @return string
-     * @since 3.1.2
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::projectConfigFile()} instead.
      */
     public function getProjectConfigFilePath(): string
     {
-        return $this->getProjectConfigPath(false) . DIRECTORY_SEPARATOR . ProjectConfig::CONFIG_FILENAME;
+        return $this->service()->projectConfigFile();
     }
 
     /**
-     * Returns the path to `config/project/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
-     * @throws Exception
-     * @since 3.5.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::projectConfig()} instead.
      */
     public function getProjectConfigPath(bool $create = true): string
     {
-        $path = $this->getConfigPath() . DIRECTORY_SEPARATOR . app(ProjectConfig::class)->folderName;
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->projectConfig(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
-     * @throws Exception
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::storage()} instead.
      */
     public function getStoragePath(bool $create = true): string
     {
-        if (!isset($this->_storagePath)) {
-            $this->_storagePath = FileHelper::normalizePath(Aliases::get('@storage'));
-        }
-
-        if ($create) {
-            FileHelper::createDirectory($this->_storagePath);
-        }
-
-        return $this->_storagePath;
+        return $this->service()->storage(create: $create);
     }
 
     /**
-     * Returns the path to the `tests/` directory.
-     *
-     * @return string
-     * @throws Exception
-     * @since 3.4.29
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::tests()} instead.
      */
     public function getTestsPath(): string
     {
-        return $this->_testsPath ?? $this->_testsPath = FileHelper::normalizePath(Aliases::get('@tests'));
+        return $this->service()->tests();
     }
 
     /**
-     * Returns the path to the `storage/composer-backups/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
-     * @throws Exception
-     * @since 3.0.38
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::composerBackups()} instead.
      */
     public function getComposerBackupsPath(bool $create = true): string
     {
-        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'composer-backups';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-            FileHelper::writeGitignoreFile($path);
-        }
-
-        return $path;
+        return $this->service()->composerBackups(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/config-backups/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
-     * @throws Exception
-     * @since 3.1.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::configBackup()} instead.
      */
     public function getConfigBackupPath(bool $create = true): string
     {
-        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'config-backups';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-            FileHelper::writeGitignoreFile($path);
-        }
-
-        return $path;
+        return $this->service()->configBackup(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/config-deltas/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
-     * @throws Exception
-     * @since 3.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::configDelta()} instead.
      */
     public function getConfigDeltaPath(bool $create = true): string
     {
-        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'config-deltas';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-            FileHelper::writeGitignoreFile($path);
-        }
-
-        return $path;
+        return $this->service()->configDelta(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/rebrand/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
-     * @throws Exception
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::rebrand()} instead.
      */
     public function getRebrandPath(bool $create = true): string
     {
-        $path = Env::get('CRAFT_REBRAND_PATH')
-            ? Env::parse('$CRAFT_REBRAND_PATH')
-            : $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'rebrand';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->rebrand(create: $create);
     }
 
     /**
-     * Returns the path to the `vendor/` directory.
-     *
-     * @return string
-     * @throws Exception
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::vendor()} instead.
      */
     public function getVendorPath(): string
     {
-        return $this->_vendorPath ?? $this->_vendorPath = FileHelper::normalizePath(Aliases::get('@vendor'));
+        return $this->service()->vendor();
     }
 
     /**
-     * Returns the path to the `storage/runtime/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
-     * @throws Exception
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::runtime()} instead.
      */
     public function getRuntimePath(bool $create = true): string
     {
-        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'runtime';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-            FileHelper::writeGitignoreFile($path);
-        }
-
-        return $path;
+        return $this->service()->runtime(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/backups/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
-     * @throws Exception
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::dbBackup()} instead.
      */
     public function getDbBackupPath(bool $create = true): string
     {
-        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'backups';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->dbBackup(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/runtime/temp/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::temp()} instead.
      */
     public function getTempPath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'temp';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->temp(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/runtime/assets/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::assets()} instead.
      */
     public function getAssetsPath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'assets';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->assets(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/runtime/assets/tempuploads/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::tempAssetUploads()} instead.
      */
     public function getTempAssetUploadsPath(bool $create = true): string
     {
-        $path = $this->getAssetsPath($create) . DIRECTORY_SEPARATOR . 'tempuploads';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->tempAssetUploads(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/runtime/assets/sources/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::assetSources()} instead.
      */
     public function getAssetSourcesPath(bool $create = true): string
     {
-        $path = $this->getAssetsPath($create) . DIRECTORY_SEPARATOR . 'sources';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->assetSources(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/runtime/assets/imageeditor/` folder.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::imageEditorSources()} instead.
      */
     public function getImageEditorSourcesPath(bool $create = true): string
     {
-        $path = $this->getAssetsPath($create) . DIRECTORY_SEPARATOR . 'imageeditor';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->imageEditorSources(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/runtime/assets/icons/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::assetsIcons()} instead.
      */
     public function getAssetsIconsPath(bool $create = true): string
     {
-        $path = $this->getAssetsPath($create) . DIRECTORY_SEPARATOR . 'icons';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->assetsIcons(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/runtime/assets/imagetransforms/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
-     * @since 4.4.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::imageTransforms()} instead.
      */
     public function getImageTransformsPath(bool $create = true): string
     {
-        $path = $this->getAssetsPath($create) . DIRECTORY_SEPARATOR . 'imagetransforms';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->imageTransforms(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/runtime/pluginicons/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::pluginIcons()} instead.
      */
     public function getPluginIconsPath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'pluginicons';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->pluginIcons(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/logs/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
-     * @throws Exception
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::logs()} instead.
      */
     public function getLogPath(bool $create = true): string
     {
-        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'logs';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->logs(create: $create);
     }
 
     /**
-     * Returns the path to the `resources/translations/` directory.
-     *
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::cpTranslations()} instead.
      */
     public function getCpTranslationsPath(): string
     {
-        return Aliases::get('@craftcms/resources/translations');
+        return $this->service()->cpTranslations();
     }
 
     /**
-     * Returns the path to the `translations/` directory.
-     *
-     * @return string
-     * @throws Exception
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::siteTranslations()} instead.
      */
     public function getSiteTranslationsPath(): string
     {
-        return $this->_siteTranslationsPath ?? $this->_siteTranslationsPath = Aliases::get('@translations');
+        return $this->service()->siteTranslations();
     }
 
     /**
-     * Returns the path to the `app/templates/` directory.
-     *
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::cpTemplates()} instead.
      */
     public function getCpTemplatesPath(): string
     {
-        return Aliases::get('@craftcms/resources/templates');
+        return $this->service()->cpTemplates();
     }
 
     /**
-     * Returns the path to the `templates/` directory.
-     *
-     * @return string
-     * @throws Exception
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::siteTemplates()} instead.
      */
     public function getSiteTemplatesPath(): string
     {
-        return FileHelper::normalizePath(Aliases::get('@templates'));
+        return $this->service()->siteTemplates();
     }
 
     /**
-     * Returns the path to the `storage/runtime/compiled_classes/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::compiledClasses()} instead.
      */
     public function getCompiledClassesPath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'compiled_classes';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->compiledClasses(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/runtime/compiled_templates/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::compiledTemplates()} instead.
      */
     public function getCompiledTemplatesPath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'compiled_templates';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->compiledTemplates(create: $create);
     }
 
     /**
-     * Returns the path to the `storage/runtime/sessions/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::sessions()} instead.
      */
     public function getSessionPath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'sessions';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->sessions(create: $create);
     }
 
     /**
-     * Returns the path to the file cache directory.
-     *
-     * This will be located at `storage/runtime/cache/` by default, but that can be overridden with the 'cachePath'
-     * config setting in `config/filecache.php`.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::cache()} instead.
      */
     public function getCachePath(bool $create = true): string
     {
-        $path = $this->getRuntimePath($create) . DIRECTORY_SEPARATOR . 'cache';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
+        return $this->service()->cache(create: $create);
     }
 
     /**
-     * Returns the path to the license key file.
-     *
-     * @return string
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::licenseKey()} instead.
      */
     public function getLicenseKeyPath(): string
     {
-        return app(License::class)->keyPath();
+        return $this->service()->licenseKey();
     }
 
     /**
-     * Returns an array of all system directories.
-     *
-     * @return string[]
-     * @since 3.7.17
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Path::system()} instead.
      */
     public function getSystemPaths(): array
     {
-        return [
-            Aliases::get('@contentMigrations'),
-            Aliases::get('@lib'),
-            $this->getComposerBackupsPath(false),
-            $this->getConfigBackupPath(false),
-            $this->getConfigDeltaPath(false),
-            $this->getConfigPath(),
-            $this->getDbBackupPath(false),
-            $this->getLogPath(false),
-            $this->getRebrandPath(false),
-            $this->getRuntimePath(false),
-            $this->getSiteTemplatesPath(),
-            $this->getSiteTranslationsPath(),
-            $this->getTestsPath(),
-            $this->getVendorPath(),
-        ];
+        return $this->service()->system();
+    }
+
+    private function service(): LaravelPath
+    {
+        return app(LaravelPath::class);
     }
 }

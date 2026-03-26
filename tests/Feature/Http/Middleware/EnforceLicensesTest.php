@@ -6,6 +6,7 @@ use CraftCms\Cms\Http\Middleware\EnforceLicenses;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 beforeEach(function () {
     $this->middleware = app(EnforceLicenses::class);
@@ -63,9 +64,9 @@ it('shows licensing screen when license issues exist', function () {
     $request = Request::create('foo');
     $request->setUserResolver(fn () => new class {});
 
-    $result = $middleware->handle($request, fn () => new \Illuminate\Http\Response);
+    $result = $middleware->handle($request, fn () => new Response);
 
-    expect($result)->toBeInstanceOf(\Illuminate\Http\Response::class);
+    expect($result)->toBeInstanceOf(Response::class);
     expect($result->getStatusCode())->toBe(402);
     expect($result->headers->has('Cache-Control'))->toBeTrue();
 

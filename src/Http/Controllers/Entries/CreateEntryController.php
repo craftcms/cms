@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Entries;
 
 use Craft;
-use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
@@ -20,7 +18,9 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Users;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +28,7 @@ use Symfony\Component\HttpFoundation\Response;
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
 
-final readonly class CreateEntryController
+readonly class CreateEntryController
 {
     use RespondsWithFlash;
 
@@ -113,9 +113,7 @@ final readonly class CreateEntryController
         ]));
 
         if (! $this->request->wantsJson()) {
-            $response->headers->set('Location', UrlHelper::urlWithParams($editUrl, [
-                'fresh' => 1,
-            ]));
+            $response->headers->set('Location', Url::urlWithParams($editUrl, ['fresh' => 1]));
         }
 
         return $response;
@@ -146,7 +144,7 @@ final readonly class CreateEntryController
             $site = $this->sites->getSiteById($siteId);
             abort_if(is_null($site), 400, "Invalid site ID: $siteId");
         } else {
-            $site = Cp::requestedSite();
+            $site = app(RequestedSite::class)->get();
             abort_if(is_null($site), 403, 'User not authorized to edit content in any sites.');
         }
 

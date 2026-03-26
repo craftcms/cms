@@ -10,7 +10,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\User\Elements\User;
 
-final class EntryPolicy extends ElementPolicy
+class EntryPolicy extends ElementPolicy
 {
     public function view(User $user, Entry $entry): bool
     {

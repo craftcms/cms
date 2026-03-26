@@ -23,6 +23,13 @@ use yii\test\Fixture;
  */
 class TestCase extends Unit
 {
+    protected function _before(): void
+    {
+        parent::_before();
+
+        error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+    }
+
     /**
      * @return array[]
      * @phpstan-return array{class:class-string<Fixture>}[]

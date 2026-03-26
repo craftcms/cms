@@ -7,22 +7,15 @@ namespace CraftCms\Cms\Field;
 use Closure;
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\GqlInlineFragmentFieldInterface;
-use craft\base\GqlInlineFragmentInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\NestedElementManager;
 use craft\events\BulkElementsEvent;
-use craft\gql\arguments\elements\Entry as EntryArguments;
-use craft\gql\resolvers\elements\Entry as EntryResolver;
-use craft\gql\types\generators\EntryType as EntryTypeGenerator;
-use craft\gql\types\input\Matrix as MatrixInputType;
-use craft\helpers\Cp;
-use craft\helpers\Gql;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
@@ -44,9 +37,17 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
+use CraftCms\Cms\Gql\Arguments\Elements\Entry as EntryArguments;
+use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentFieldInterface;
+use CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
+use CraftCms\Cms\Gql\Types\Generators\EntryType as EntryTypeGenerator;
+use CraftCms\Cms\Gql\Types\Input\Matrix as MatrixInputType;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -59,6 +60,7 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
@@ -76,7 +78,7 @@ use function CraftCms\Cms\template;
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
  */
-final class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
+class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
 {
     /**
      * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
@@ -597,7 +599,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             $namespace = InputNamespace::get();
             $entryTypeSelectHtml = InputNamespace::with(
                 namespace: null,
-                callback: fn () => InputNamespace::namespaceInputs(fn () => Cp::entryTypeSelectHtml([
+                callback: fn () => InputNamespace::namespaceInputs(fn () => FormFields::entryTypeSelectHtml([
                     ...$entryTypeSelectConfig,
                     'id' => 'TEMP_ID',
                 ]), $namespace),
@@ -654,7 +656,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             $query->setResultOverride($query->all());
         } elseif ($element && is_array($value)) {
             $query->setResultOverride($this->_createEntriesFromSerializedData($value, $element, $fromRequest));
-        } elseif (Craft::$app->getRequest()->getIsPreview()) {
+        } elseif (request()->isPreview()) {
             $query->withProvisionalDrafts();
         }
 
@@ -1481,18 +1483,17 @@ JS,
         $typeName = $this->handle.'_MatrixField';
 
         $arguments = EntryArguments::getArguments();
-        $gqlService = Craft::$app->getGql();
 
         foreach ($this->_entryTypes as $entryType) {
-            $arguments += $gqlService->getFieldLayoutArguments($entryType->getFieldLayout());
+            $arguments += Gql::getFieldLayoutArguments($entryType->getFieldLayout());
         }
 
         return [
             'name' => $this->handle,
-            'type' => Type::nonNull(Type::listOf(Gql::getUnionType($typeName, $typeArray))),
+            'type' => Type::nonNull(Type::listOf(GqlHelper::getUnionType($typeName, $typeArray))),
             'args' => $arguments,
             'resolve' => EntryResolver::class.'::resolve',
-            'complexity' => Gql::eagerLoadComplexity(),
+            'complexity' => GqlHelper::eagerLoadComplexity(),
         ];
     }
 
@@ -1500,7 +1501,7 @@ JS,
     public function getEagerLoadingGqlConditions(): array
     {
         return [
-            'withProvisionalDrafts' => Craft::$app->getRequest()->getIsPreview(),
+            'withProvisionalDrafts' => request()->isPreview(),
         ];
     }
 
@@ -1594,7 +1595,7 @@ JS,
     public function afterSaveEntries(BulkElementsEvent $event): void
     {
         if (
-            ! Craft::$app->getRequest()->getIsConsoleRequest() &&
+            ! app()->runningInConsole() &&
             ! Craft::$app->getResponse()->isSent
         ) {
             // Tell the browser to collapse any new entry IDs
@@ -1723,10 +1724,10 @@ JS,
         }
 
         // Should we ignore disabled entries?
-        $request = Craft::$app->getRequest();
-        $hideDisabledEntries = ! $request->getIsConsoleRequest() && (
+        $request = request();
+        $hideDisabledEntries = ! app()->runningInConsole() && (
             $request->getToken() !== null ||
-            $request->getIsLivePreview()
+            $request->isPreview()
         );
 
         $entries = [];
@@ -1778,7 +1779,6 @@ JS,
                 $forceSave = ! empty($entryData);
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
-                $request = Craft::$app->getRequest();
                 if (
                     $forceSave &&
                     $element->getIsDerivative() &&
@@ -1786,12 +1786,12 @@ JS,
                     // this is so that extra drafts don't get created for matrix in matrix scenario
                     // where both are set to inline-editable blocks view mode
                     (
-                        $request->getIsConsoleRequest() ||
-                        $request->getActionSegments() !== ['elements', 'update-field-layout']
+                        app()->runningInConsole() ||
+                        request()->actionSegments() !== ['elements', 'update-field-layout']
                     )
                 ) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
-                    $entry = app(Drafts::class)->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [
+                    $entry = app(Drafts::class)->createDraft($entry, Auth::id(), null, null, [
                         'canonicalId' => $entry->id,
                         'primaryOwnerId' => $element->id,
                         'owner' => $element,

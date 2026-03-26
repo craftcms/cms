@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Auth\Events;
 
 use CraftCms\Cms\User\Elements\User;
 
-final readonly class InvalidUserToken
+readonly class InvalidUserToken
 {
     public function __construct(
         public ?User $user,

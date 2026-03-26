@@ -10,11 +10,11 @@ it('can query for admins', function () {
 });
 
 it('can query for permissions', function () {
-    \CraftCms\Cms\User\Models\User::factory()->create([
+    CraftCms\Cms\User\Models\User::factory()->create([
         'admin' => false,
     ]);
 
-    $user = \CraftCms\Cms\User\Models\User::factory()->create([
+    $user = CraftCms\Cms\User\Models\User::factory()->create([
         'admin' => false,
     ]);
 

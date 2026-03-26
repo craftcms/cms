@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
@@ -19,7 +19,7 @@ use function CraftCms\Cms\t;
 /**
  * Dropdown represents a Dropdown field.
  */
-final class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface, SortableFieldInterface
+class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface, SortableFieldInterface
 {
     #[\Override]
     protected static bool $optgroups = true;
@@ -106,7 +106,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
             }
         }
 
-        return Cp::selectizeHtml([
+        return FormFields::selectizeHtml([
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,

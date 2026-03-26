@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements\entries;
 
 use craft\base\ElementInterface;
-use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\TitleField;
@@ -16,10 +16,10 @@ use Override;
 
 class EntryTitleField extends TitleField
 {
-    #[\Override]
+    #[Override]
     public bool $mandatory = false;
 
-    #[\Override]
+    #[Override]
     public bool $requirable = true;
 
     public function __construct($config = [])
@@ -72,7 +72,7 @@ class EntryTitleField extends TitleField
         }
 
         if ($entryType->allowLineBreaksInTitles) {
-            return Cp::textareaHtml([
+            return FormFields::textareaHtml([
                 'class' => 'nicetext',
                 'id' => $this->id(),
                 'describedBy' => $this->describedBy($element, $static),

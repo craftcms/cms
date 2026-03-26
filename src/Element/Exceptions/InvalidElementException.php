@@ -13,7 +13,7 @@ use function CraftCms\Cms\t;
 /*
  * InvalidElementException represents an exception caused by setting an invalid element.
  */
-final class InvalidElementException extends ElementException
+class InvalidElementException extends ElementException
 {
     public function __construct(
         public ElementInterface $element,

@@ -13,7 +13,9 @@ use CraftCms\Cms\Asset\Exceptions\AssetNotIndexableException;
 use CraftCms\Cms\Asset\Exceptions\MissingAssetException;
 use CraftCms\Cms\Asset\Exceptions\MissingVolumeFolderException;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Filesystem\Data\FsListing;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Facades\AssetIndexer;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Str;
@@ -41,7 +43,7 @@ trait IndexesAssets
     }
 
     /**
-     * @param  \CraftCms\Cms\Asset\Data\Volume[]  $volumes
+     * @param  Volume[]  $volumes
      */
     protected function indexAssets(Application $craft, array $volumes, string $path = '', int $startAt = 0): void
     {
@@ -107,11 +109,11 @@ trait IndexesAssets
             $this->components->task(
                 'Deleting the'.($totalMissingFiles > 1 ? ' '.$totalMissingFiles : '').' missing asset record'.Str::plural('record', $totalMissingFiles),
                 function () use ($craft, $assetIds) {
-                    /** @var \CraftCms\Cms\Element\ElementCollection<Asset> $assets */
+                    /** @var ElementCollection<Asset> $assets */
                     $assets = Asset::find()->id($assetIds)->get();
 
                     foreach ($assets as $asset) {
-                        app(\CraftCms\Cms\Image\ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
+                        app(ImageTransforms::class)->deleteCreatedTransformsForAsset($asset);
                         $asset->keepFileOnDelete = true;
                         $craft->getElements()->deleteElement($asset);
                     }

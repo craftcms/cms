@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset;
 
 use Craft;
-use craft\helpers\Assets as AssetsHelper;
 use CraftCms\Cms\Asset\Data\FolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -27,7 +26,7 @@ use Throwable;
 use function CraftCms\Cms\t;
 
 #[Singleton]
-final class Folders
+class Folders
 {
     /** @var array<int, VolumeFolder|null> */
     private array $foldersById = [];

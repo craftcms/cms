@@ -12,7 +12,7 @@ use function CraftCms\Cms\t;
 /**
  * Validates that a username does not contain whitespace.
  */
-final class UsernameRule implements ValidationRule
+class UsernameRule implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {

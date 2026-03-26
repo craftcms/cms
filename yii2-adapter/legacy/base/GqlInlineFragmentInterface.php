@@ -1,31 +1,20 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\base;
 
-/**
- * GqlInlineFragmentInterface defines the common interface to be implemented by GraphQL inline fragments contained by fields.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
- */
-interface GqlInlineFragmentInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Get the field context for all subfields in this fragment.
+     * GqlInlineFragmentInterface defines the common interface to be implemented by GraphQL inline fragments contained by fields.
      *
-     * @return string
+     * @since 3.3.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface} instead.
      */
-    public function getFieldContext(): string;
-
-    /**
-     * Get the eager loading prefix for all subfields in this fragment.
-     *
-     * @return string
-     */
-    public function getEagerLoadingPrefix(): string;
+    interface GqlInlineFragmentInterface
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Gql\Contracts\GqlInlineFragmentInterface::class, GqlInlineFragmentInterface::class);

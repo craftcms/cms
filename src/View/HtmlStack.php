@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\View;
 
-use craft\helpers\Cp;
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -24,7 +24,7 @@ use Stringable;
  * assets registered during a block of code without them appearing in the final output.
  */
 #[Scoped]
-final class HtmlStack
+class HtmlStack
 {
     /** @var array<int, array<string, string>> */
     private array $js = [];
@@ -348,7 +348,7 @@ final class HtmlStack
 
         if (! empty($this->icons)) {
             $icons = collect($this->icons)
-                ->mapWithKeys(fn (string $icon) => [$icon => Cp::iconSvg($icon)])
+                ->mapWithKeys(fn (string $icon) => [$icon => Icons::svg($icon)])
                 ->all();
 
             $iconsJs = Json::encode($icons);

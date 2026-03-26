@@ -1,64 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
+
+declare(strict_types=1);
 
 namespace craft\gql\base;
 
-use Craft;
-use craft\behaviors\FieldLayoutBehavior;
-use craft\errors\GqlException;
-use CraftCms\Cms\Field\Field;
-use CraftCms\Cms\FieldLayout\FieldLayout;
-use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Facades\Log;
-
 /**
- * Class Generator
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.6.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Gql\Types\Generators\Generator} instead.
  */
-abstract class Generator
+abstract class Generator extends \CraftCms\Cms\Gql\Types\Generators\Generator
 {
-    /**
-     * Get content fields for a given context.
-     *
-     * @param mixed $context
-     * @return array
-     */
-    protected static function getContentFields(mixed $context): array
-    {
-        /** @var FieldLayoutBehavior|FieldLayout $context */
-        try {
-            $schema = Craft::$app->getGql()->getActiveSchema();
-        } catch (GqlException $e) {
-            Log::warning("Could not get the active GraphQL schema: {$e->getMessage()}", [__METHOD__]);
-            Craft::$app->getErrorHandler()->logException($e);
-            return [];
-        }
-
-        $contentFieldGqlTypes = [];
-        $layout = $context instanceof FieldLayout ? $context : $context->getFieldLayout();
-
-        if ($layout) {
-            foreach ($layout->getCustomFields() as $contentField) {
-                /** @var Field $contentField */
-                if ($contentField->includeInGqlSchema($schema)) {
-                    $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
-                }
-            }
-
-            foreach ($layout->getGeneratedFields() as $generatedField) {
-                $handle = $generatedField['handle'] ?? '';
-                if ($handle !== '' && !isset($contentFieldGqlTypes[$handle])) {
-                    $contentFieldGqlTypes[$handle] = Type::string();
-                }
-            }
-        }
-
-        return $contentFieldGqlTypes;
-    }
 }

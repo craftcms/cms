@@ -13,7 +13,7 @@ use Illuminate\Support\ServiceProvider;
 use Override;
 use Throwable;
 
-final class ConfigServiceProvider extends ServiceProvider
+class ConfigServiceProvider extends ServiceProvider
 {
     private array $configFiles = [
         'general',
@@ -69,10 +69,12 @@ final class ConfigServiceProvider extends ServiceProvider
             Config::set('craft.general', $generalConfig);
         }
 
-        // Get any environment value overrides
-        $envConfig = Env::config(GeneralConfig::class, 'CRAFT_');
+        $configClass = $generalConfig::class;
 
-        Typecast::properties(GeneralConfig::class, $envConfig);
+        // Get any environment value overrides
+        $envConfig = Env::config($configClass, 'CRAFT_');
+
+        Typecast::properties($configClass, $envConfig);
 
         foreach ($envConfig as $name => $value) {
             // Use the fluent methods when possible, in case it has any value normalization logic

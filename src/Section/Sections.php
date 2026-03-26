@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Section;
 
 use Craft;
-use craft\base\MemoizableArray;
 use craft\helpers\AdminTable;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Jobs\ApplyNewPropagationMethod;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
@@ -39,6 +39,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Container\Attributes\Scoped;
@@ -54,7 +55,7 @@ use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 
 #[Scoped]
-final class Sections
+class Sections
 {
     /**
      * @var bool Whether entries should be resaved after a section has been updated.
@@ -213,7 +214,7 @@ final class Sections
      */
     public function getAllSections(): Collection
     {
-        return collect($this->_sections()->all());
+        return $this->_sections()->collect();
     }
 
     /**
@@ -266,7 +267,7 @@ final class Sections
      */
     public function getSectionsByType(SectionType $type): Collection
     {
-        return collect($this->_sections()->where('type', $type, true)->all());
+        return $this->_sections()->where('type', $type, true)->collect();
     }
 
     /**
@@ -713,7 +714,7 @@ final class Sections
         $this->refreshSections();
 
         if ($wasTrashed) {
-            /** @var \CraftCms\Cms\Element\ElementCollection<Entry> $entries */
+            /** @var ElementCollection<Entry> $entries */
             $entries = Entry::find()
                 ->sectionId($sectionModel->id)
                 ->drafts(null)

@@ -11,7 +11,7 @@ use CraftCms\Cms\Structure\Commands\RepairCommand;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use yii\db\Expression;
 
-final class RepairCategoryGroupStructureCommand extends RepairCommand implements PromptsForMissingInput
+class RepairCategoryGroupStructureCommand extends RepairCommand implements PromptsForMissingInput
 {
     use CraftCommand;
 

@@ -11,7 +11,7 @@ use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
-final readonly class IndexController
+readonly class IndexController
 {
     use RespondsWithFlash;
 

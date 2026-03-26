@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use Craft;
 use craft\base\ElementInterface;
-use craft\gql\types\Number as NumberType;
 use craft\helpers\Localization;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\NumberFieldConditionRule;
@@ -14,10 +12,12 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Gql\Types\Number as NumberType;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
@@ -29,7 +29,6 @@ use InvalidArgumentException;
 use Override;
 use Throwable;
 use yii\db\Schema;
-use yii\helpers\Markdown;
 
 use function CraftCms\Cms\t;
 use function CraftCms\Cms\template;
@@ -37,7 +36,7 @@ use function CraftCms\Cms\template;
 /**
  * Number represents a Number field.
  */
-final class Number extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Number extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     public const string FORMAT_DECIMAL = 'decimal';
 
@@ -320,7 +319,7 @@ JS;
             return Schema::TYPE_INTEGER;
         }
 
-        if (Craft::$app->getDb()->getIsMysql()) {
+        if (DB::isMysql()) {
             return sprintf('%s(65,%s)', Schema::TYPE_DECIMAL, $this->decimals);
         }
 
@@ -341,11 +340,11 @@ JS;
         };
 
         if ($this->prefix) {
-            $formatted = Markdown::processParagraph(Html::encode($this->prefix)).$formatted;
+            $formatted = Markdown::parseParagraph(Html::encode($this->prefix)).$formatted;
         }
 
         if ($this->suffix) {
-            $formatted .= Markdown::processParagraph(Html::encode($this->suffix));
+            $formatted .= Markdown::parseParagraph(Html::encode($this->suffix));
         }
 
         return $formatted;

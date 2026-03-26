@@ -8,9 +8,6 @@ use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\MissingComponentInterface;
-use craft\helpers\Gql;
-use craft\helpers\Template as TemplateHelper;
-use craft\helpers\UrlHelper;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Aliases\Aliases;
@@ -25,15 +22,20 @@ use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
+use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Money as MoneyHelper;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Sequence;
+use CraftCms\Cms\Support\Template as TemplateHelper;
+use CraftCms\Cms\Support\Typecast;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Nodes\Expressions\Binaries\HasEveryBinary;
 use CraftCms\Cms\Twig\Nodes\Expressions\Binaries\HasSomeBinary;
 use CraftCms\Cms\Twig\NodeVisitors\EventTagAdder;
@@ -85,7 +87,7 @@ use yii\db\QueryInterface;
 use function CraftCms\Cms\renderObjectTemplate;
 use function CraftCms\Cms\t;
 
-final class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
+class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
 {
     public function __construct(
         private readonly PageLifecycle $pageLifecycle,
@@ -245,16 +247,16 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
     {
         return [
             new TwigFunction('app', $this->appFunction(...)),
-            new TwigFunction('actionUrl', UrlHelper::actionUrl(...)),
+            new TwigFunction('actionUrl', Url::actionUrl(...)),
             new TwigFunction('alias', Aliases::get(...)),
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', $this->cloneFunction(...)),
-            new TwigFunction('configure', [Craft::class, 'configure']),
-            new TwigFunction('cpUrl', UrlHelper::cpUrl(...)),
+            new TwigFunction('configure', Typecast::configure(...)),
+            new TwigFunction('cpUrl', Url::cpUrl(...)),
             new TwigFunction('create', $this->createFunction(...)),
             new TwigFunction('dump', $this->dumpFunction(...), ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
-            new TwigFunction('encodeUrl', UrlHelper::encodeUrl(...)),
+            new TwigFunction('encodeUrl', Url::encodeUrl(...)),
             new TwigFunction('entryType', $this->entryTypeFunction(...)),
             new TwigFunction('expression', $this->expressionFunction(...)),
             new TwigFunction('fieldValueSql', $this->fieldValueSqlFunction(...)),
@@ -269,8 +271,8 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
             new TwigFunction('renderObjectTemplate', $this->renderObjectTemplate(...)),
             new TwigFunction('seq', $this->seqFunction(...)),
             new TwigFunction('session', $this->sessionFunction(...)),
-            new TwigFunction('siteUrl', UrlHelper::siteUrl(...)),
-            new TwigFunction('url', UrlHelper::url(...)),
+            new TwigFunction('siteUrl', Url::siteUrl(...)),
+            new TwigFunction('url', Url::url(...)),
 
             new TwigFunction('addresses', fn (array $config = []) => new AddressQuery($config)),
             new TwigFunction('assets', fn (array $config = []) => new AssetQuery($config)),
@@ -383,8 +385,8 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
     {
         if ($options === null) {
             if (
-                ! Craft::$app->getRequest()->getIsConsoleRequest() &&
-                in_array(Craft::$app->getResponse()->getContentType(), ['text/html', 'application/xhtml+xml'], true)
+                ! app()->runningInConsole() &&
+                ! request()->wantsJson()
             ) {
                 $options = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT;
             } else {
@@ -479,9 +481,9 @@ final class CoreTwigExtension extends AbstractExtension implements GlobalsInterf
 
     public function gqlFunction(string $query, ?array $variables = null, ?string $operationName = null): array
     {
-        $schema = Gql::createFullAccessSchema();
+        $schema = GqlHelper::createFullAccessSchema();
 
-        return Craft::$app->getGql()->executeQuery($schema, $query, $variables, $operationName);
+        return Gql::executeQuery($schema, $query, $variables, $operationName);
     }
 
     public function oldFunction(?string $key = null, mixed $default = null): mixed

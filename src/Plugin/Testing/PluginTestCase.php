@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Plugin\Testing;
 
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Providers\CraftServiceProvider;
 use CraftCms\Cms\Site\Data\Site;
@@ -42,6 +43,7 @@ abstract class PluginTestCase extends BaseTestCase
         );
 
         $migration->up();
+        app(LaravelMigrations::class)->ensureSessionsTable();
     }
 
     #[Override]

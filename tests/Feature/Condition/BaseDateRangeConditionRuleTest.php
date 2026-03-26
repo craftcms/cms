@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-use craft\helpers\DateRange;
-use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Element\Conditions\DateCreatedConditionRule;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Entry\Conditions\ExpiryDateConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Shared\Enums\DateRangePeriod;
+use CraftCms\Cms\Shared\Enums\DateRangeType;
+use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\User\Elements\User;
 
 use function Pest\Laravel\actingAs;
@@ -53,7 +54,7 @@ describe('matchElement', function () {
         $entry = createEntryWithDate($createDate());
 
         $rule = createDateRangeRule([
-            'rangeType' => DateRange::TYPE_TODAY,
+            'rangeType' => DateRangeType::Today->value,
         ]);
 
         expect($rule->matchElement($entry))->toBe($expected);
@@ -66,7 +67,7 @@ describe('matchElement', function () {
         $entry = createEntryWithDate(new DateTime($entryDate));
 
         $rule = createDateRangeRule([
-            'rangeType' => DateRange::TYPE_RANGE,
+            'rangeType' => DateRangeType::Range->value,
             ...$ruleAttributes,
         ]);
 
@@ -121,11 +122,11 @@ describe('matchElement', function () {
 
         expect($rule->matchElement($entry))->toBe($expected);
     })->with([
-        'before 1 day from now' => [DateRange::TYPE_BEFORE, ['periodValue' => 1, 'periodType' => DateRange::PERIOD_DAYS_FROM_NOW], true],
-        'before 1 day ago' => [DateRange::TYPE_BEFORE, ['periodValue' => 1, 'periodType' => DateRange::PERIOD_DAYS_AGO], false],
-        'before with no periodValue' => [DateRange::TYPE_BEFORE, ['periodValue' => null], true],
-        'after 1 day ago' => [DateRange::TYPE_AFTER, ['periodValue' => 1, 'periodType' => DateRange::PERIOD_DAYS_AGO], true],
-        'after 1 day from now' => [DateRange::TYPE_AFTER, ['periodValue' => 1, 'periodType' => DateRange::PERIOD_DAYS_FROM_NOW], false],
+        'before 1 day from now' => [DateRangeType::Before->value, ['periodValue' => 1, 'periodType' => DateRangePeriod::DaysFromNow->value], true],
+        'before 1 day ago' => [DateRangeType::Before->value, ['periodValue' => 1, 'periodType' => DateRangePeriod::DaysAgo->value], false],
+        'before with no periodValue' => [DateRangeType::Before->value, ['periodValue' => null], true],
+        'after 1 day ago' => [DateRangeType::After->value, ['periodValue' => 1, 'periodType' => DateRangePeriod::DaysAgo->value], true],
+        'after 1 day from now' => [DateRangeType::After->value, ['periodValue' => 1, 'periodType' => DateRangePeriod::DaysFromNow->value], false],
     ]);
 });
 
@@ -134,7 +135,7 @@ describe('modifyQuery', function () {
         $entry = createEntryWithDate(new DateTime('2024-06-15'));
 
         $rule = createDateRangeRule([
-            'rangeType' => DateRange::TYPE_RANGE,
+            'rangeType' => DateRangeType::Range->value,
             'startDate' => '2024-06-01',
             'endDate' => '2024-06-30',
         ]);
@@ -152,7 +153,7 @@ describe('modifyQuery', function () {
         createEntryWithDate(new DateTime('2024-06-15'));
 
         $rule = createDateRangeRule([
-            'rangeType' => DateRange::TYPE_RANGE,
+            'rangeType' => DateRangeType::Range->value,
             'startDate' => '2020-01-01',
             'endDate' => '2020-01-02',
         ]);
@@ -170,7 +171,7 @@ describe('modifyQuery', function () {
         createEntryWithDate(new DateTime('2023-01-01'));
 
         $rule = createDateRangeRule([
-            'rangeType' => DateRange::TYPE_RANGE,
+            'rangeType' => DateRangeType::Range->value,
         ]);
 
         $query = Entry::find();
@@ -222,15 +223,15 @@ describe('getConfig', function () {
         }
     })->with([
         'rangeType' => [
-            ['rangeType' => DateRange::TYPE_RANGE],
-            ['rangeType' => DateRange::TYPE_RANGE],
+            ['rangeType' => DateRangeType::Range->value],
+            ['rangeType' => DateRangeType::Range->value],
         ],
         'periodType and periodValue' => [
-            ['rangeType' => DateRange::TYPE_BEFORE, 'periodType' => DateRange::PERIOD_HOURS_AGO, 'periodValue' => 5.0],
-            ['periodType' => DateRange::PERIOD_HOURS_AGO, 'periodValue' => 5.0],
+            ['rangeType' => DateRangeType::Before->value, 'periodType' => DateRangePeriod::HoursAgo->value, 'periodValue' => 5.0],
+            ['periodType' => DateRangePeriod::HoursAgo->value, 'periodValue' => 5.0],
         ],
         'startDate and endDate' => [
-            ['rangeType' => DateRange::TYPE_RANGE, 'startDate' => '2024-01-01', 'endDate' => '2024-12-31'],
+            ['rangeType' => DateRangeType::Range->value, 'startDate' => '2024-01-01', 'endDate' => '2024-12-31'],
             ['startDate' => null, 'endDate' => null], // null means "key exists and is not null"
         ],
         'class and uid' => [
@@ -257,11 +258,11 @@ describe('config round-trip', function () {
         }
     })->with([
         'TYPE_RANGE with dates' => [
-            ['rangeType' => DateRange::TYPE_RANGE, 'startDate' => '2024-06-01', 'endDate' => '2024-06-30'],
+            ['rangeType' => DateRangeType::Range->value, 'startDate' => '2024-06-01', 'endDate' => '2024-06-30'],
             ['rangeType', 'startDate', 'endDate'],
         ],
         'TYPE_BEFORE with period' => [
-            ['rangeType' => DateRange::TYPE_BEFORE, 'periodType' => DateRange::PERIOD_HOURS_AGO, 'periodValue' => 12.0],
+            ['rangeType' => DateRangeType::Before->value, 'periodType' => DateRangePeriod::HoursAgo->value, 'periodValue' => 12.0],
             ['rangeType', 'periodType', 'periodValue'],
         ],
     ]);
