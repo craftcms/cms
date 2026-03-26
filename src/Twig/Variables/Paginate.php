@@ -8,7 +8,7 @@ use Craft;
 use craft\db\Paginator;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 
 class Paginate extends Component
 {
@@ -92,15 +92,15 @@ class Paginate extends Component
         }
 
         // Build the URL with the same query string as the current request
-        $url = URL::url($path, Craft::$app->getRequest()->getQueryStringWithoutPath());
+        $url = Url::url($path, Craft::$app->getRequest()->getQueryStringWithoutPath());
 
         // If using a query param, append or remove it
         if ($useQueryParam) {
             $param = trim($this->pageTrigger, '?=');
             if ($page !== 1) {
-                $url = URL::urlWithParams($url, [$param => $page]);
+                $url = Url::urlWithParams($url, [$param => $page]);
             } else {
-                $url = URL::removeParam($url, $param);
+                $url = Url::removeParam($url, $param);
             }
         }
 

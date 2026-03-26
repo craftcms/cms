@@ -17,7 +17,7 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Auth\AuthManager;
@@ -268,7 +268,7 @@ readonly class License
                         'name' => $licenseData->name,
                         'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseData->id}",
                         'buyUrl' => $this->auth->user()?->isAdmin() && $this->generalConfig->allowAdminChanges
-                            ? URL::cpUrl("plugin-store/buy/$licenseData->handle/$licenseData->currentEdition")
+                            ? Url::cpUrl("plugin-store/buy/$licenseData->handle/$licenseData->currentEdition")
                             : "https://plugins.craftcms.com/$licenseData->handle",
                     ]),
                 null,

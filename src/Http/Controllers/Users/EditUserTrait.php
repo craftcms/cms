@@ -9,7 +9,7 @@ use CraftCms\Cms\Cp\Html\ContentHtml;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\DefineEditUserScreens;
 use Illuminate\Http\Request;
@@ -199,6 +199,6 @@ trait EditUserTrait
             default => "$basePath/$screen",
         };
 
-        return URL::cpUrl($path);
+        return Url::cpUrl($path);
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Collection;
 
 readonly class Cp
@@ -26,9 +26,9 @@ readonly class Cp
             ])
             ->merge([
                 'csrfTokenValue' => csrf_token(),
-                'actionUrl' => URL::actionUrl(),
-                'cpUrl' => URL::cpUrl(),
-                'baseUrl' => URL::url(),
+                'actionUrl' => Url::actionUrl(),
+                'cpUrl' => Url::cpUrl(),
+                'baseUrl' => Url::url(),
             ]);
     }
 }

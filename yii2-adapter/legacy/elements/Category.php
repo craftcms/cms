@@ -31,7 +31,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Auth;
@@ -488,11 +488,11 @@ class Category extends Element
         $crumbs = [
             [
                 'label' => t('Categories'),
-                'url' => URL::url('categories'),
+                'url' => Url::url('categories'),
             ],
             [
                 'label' => t($group->name, category: 'site'),
-                'url' => URL::url('categories/' . $group->handle),
+                'url' => Url::url('categories/' . $group->handle),
             ],
         ];
 
@@ -642,7 +642,7 @@ class Category extends Element
             $path .= sprintf('-%s', str_replace('/', '-', $this->slug));
         }
 
-        return URL::cpUrl($path);
+        return Url::cpUrl($path);
     }
 
     /**
@@ -650,7 +650,7 @@ class Category extends Element
      */
     public function getPostEditUrl(): ?string
     {
-        return URL::cpUrl('categories');
+        return Url::cpUrl('categories');
     }
 
     /**

@@ -22,7 +22,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
@@ -446,7 +446,7 @@ class Application extends \yii\web\Application
 
             // Redirect to the installer if Dev Mode is enabled
             if (app()->hasDebugModeEnabled()) {
-                $url = URL::url('install');
+                $url = Url::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
             }

@@ -11,7 +11,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Data\Update;
 use CraftCms\Cms\Update\Data\Updates as UpdatesData;
 use CraftCms\Cms\Update\Enums\UpdateStatus;
@@ -115,7 +115,7 @@ readonly class UpdatesController
                 'price' => I18N::getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
             ]);
 
-            $arr['ctaUrl'] = URL::url($update->renewalUrl);
+            $arr['ctaUrl'] = Url::url($update->renewalUrl);
 
             if ($allowUpdates && Edition::canTest()) {
                 $arr['altCtaText'] = t('Update anyway');
@@ -133,7 +133,7 @@ readonly class UpdatesController
 
             if ($update->replacementName) {
                 if (Auth::user()?->isAdmin() && $this->generalConfig->allowAdminChanges) {
-                    $replacementUrl = URL::url("plugin-store/$update->replacementHandle");
+                    $replacementUrl = Url::url("plugin-store/$update->replacementHandle");
                 } else {
                     $replacementUrl = $update->replacementUrl;
                 }

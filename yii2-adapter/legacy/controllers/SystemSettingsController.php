@@ -12,7 +12,7 @@ use craft\elements\GlobalSet;
 use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -72,7 +72,7 @@ class SystemSettingsController extends Controller
             'crumbs' => [
                 [
                     'label' => t('Settings'),
-                    'url' => URL::cpUrl('settings'),
+                    'url' => Url::cpUrl('settings'),
                 ],
             ],
             'globalSets' => Craft::$app->getGlobals()->getAllSets(),
@@ -124,11 +124,11 @@ class SystemSettingsController extends Controller
         $crumbs = [
             [
                 'label' => t('Settings'),
-                'url' => URL::url('settings'),
+                'url' => Url::url('settings'),
             ],
             [
                 'label' => t('Globals', category: 'yii2-adapter'),
-                'url' => URL::url('settings/globals'),
+                'url' => Url::url('settings/globals'),
             ],
         ];
 

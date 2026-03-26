@@ -70,7 +70,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
@@ -4590,7 +4590,7 @@ class Elements extends Component
             $siteElement->canSave($user)
         ) {
             $queryParams = Arr::except(Craft::$app->getRequest()->getQueryParams(), 'site');
-            $url = URL::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
+            $url = Url::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
             $message = Html::beginTag('a', [
                     'href' => $url,
                     'class' => 'cross-site-validate',

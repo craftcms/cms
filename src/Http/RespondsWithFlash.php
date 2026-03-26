@@ -7,7 +7,7 @@ namespace CraftCms\Cms\Http;
 use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
@@ -131,7 +131,7 @@ trait RespondsWithFlash
         }
 
         if (request()->isCpRequest()) {
-            return URL::cpUrl($url);
+            return Url::cpUrl($url);
         }
 
         return $url;

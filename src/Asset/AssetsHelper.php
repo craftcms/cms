@@ -26,7 +26,7 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use DateTime;
 use Exception;
 use Illuminate\Contracts\Filesystem\Filesystem as LaravelFilesystem;
@@ -134,7 +134,7 @@ class AssetsHelper
         $revParams = static::revParams($asset, $dateUpdated);
 
         if (! $fsOnly) {
-            return URL::urlWithParams($url, $revParams);
+            return Url::urlWithParams($url, $revParams);
         }
 
         /** @var Collection<int, string> $baseUrls */
@@ -157,7 +157,7 @@ class AssetsHelper
             return $url;
         }
 
-        return URL::urlWithParams($url, $revParams);
+        return Url::urlWithParams($url, $revParams);
     }
 
     private static function diskBaseUrl(FilesystemAdapter $disk): ?string

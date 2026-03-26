@@ -18,7 +18,7 @@ use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\TemplateResolver;
 use Illuminate\Support\Facades\Log;
 use yii\web\UrlRule as YiiUrlRule;
@@ -159,7 +159,7 @@ class UrlManager extends \yii\web\UrlManager
         $route = trim($params[0], '/');
         unset($params[0]);
 
-        return URL::actionUrl($route, $params, null, false);
+        return Url::actionUrl($route, $params, null, false);
     }
 
     /**
@@ -180,7 +180,7 @@ class UrlManager extends \yii\web\UrlManager
         // Create the action URL manually here, so it doesn't get treated as a control panel request
         $path = Cms::config()->actionTrigger . '/' . $route;
 
-        return URL::siteUrl($path, $params, $scheme);
+        return Url::siteUrl($path, $params, $scheme);
     }
 
     /**

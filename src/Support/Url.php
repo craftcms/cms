@@ -14,7 +14,7 @@ use CraftCms\Cms\Update\Updates;
 use Exception;
 use Illuminate\Support\Uri;
 
-class URL extends \Illuminate\Support\Facades\URL
+class Url extends \Illuminate\Support\Facades\URL
 {
     /**
      * Returns whether a given string appears to be an absolute URL.
