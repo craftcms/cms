@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Validation\Concerns;
 
 use BadMethodCallException;
+use CraftCms\Cms\Component\Exceptions\InvalidCallException;
+use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
@@ -14,7 +16,6 @@ use CraftCms\Cms\Validation\Ruleset;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use ReflectionClass;
-use Throwable;
 
 /**
  * @mixin Validatable
@@ -43,7 +44,7 @@ trait Validates
         foreach ($values as $name => $value) {
             try {
                 $this->$name = $value;
-            } catch (Throwable) {
+            } catch (UnknownPropertyException|InvalidCallException) {
                 // Property or setter doesn't exist
             }
         }

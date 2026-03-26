@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\TemplateResolver;
 use CraftCms\Cms\View\TemplateMode;
@@ -50,7 +51,7 @@ class DynamicRoute
 
         abort_if(Cms::config()->headlessMode && $request->isSiteRequest(), 404);
 
-        if (view()->exists($template)) {
+        if (Path::ensurePathIsContained($template) && view()->exists($template)) {
             return view($template, $variables)->render();
         }
 

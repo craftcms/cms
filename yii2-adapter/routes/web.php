@@ -10,7 +10,6 @@ Route::any('{any}', function() {
     abort(404);
 })
     ->middleware([
-        'web',
         'craft',
         'craft.web',
         LegacyMiddleware::class,

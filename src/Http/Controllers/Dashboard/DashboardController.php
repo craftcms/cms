@@ -15,6 +15,8 @@ use CraftCms\Cms\View\HtmlStack;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 
+use function CraftCms\Cms\cp_url;
+
 readonly class DashboardController
 {
     use InteractsWithWidgets;
@@ -101,6 +103,10 @@ readonly class DashboardController
 
     public function redirect(): RedirectResponse
     {
-        return redirect(Cms::config()->getPostCpLoginRedirect() ?: route('craft.cp.dashboard'));
+        if ($path = Cms::config()->getPostCpLoginRedirect()) {
+            return redirect(cp_url($path));
+        }
+
+        return redirect(route('craft.cp.dashboard'));
     }
 }

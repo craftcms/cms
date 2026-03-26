@@ -89,6 +89,10 @@ class TemplatesController extends Controller
      */
     public function actionRender(string $template, array $variables = []): Response
     {
+        $routeParams = Craft::$app->getUrlManager()->getRouteParams();
+        unset($routeParams['template']);
+        $variables = array_merge($variables, $routeParams);
+
         $this->response->content = new DynamicRoute('templates/render', [
             'template' => $template,
             'variables' => $variables,

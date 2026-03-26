@@ -38,6 +38,6 @@ class RedirectNode extends Node
             ->subcompile($this->getNode('path'))
             ->raw('), ')
             ->subcompile($this->getNode('httpStatusCode'))
-            ->raw(')->send();');
+            ->raw(')->send(); exit;'."\n");
     }
 }

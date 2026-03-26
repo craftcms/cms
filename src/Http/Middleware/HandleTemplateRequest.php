@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Route\DynamicRoute;
+use CraftCms\Cms\Support\Path;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\TemplateResolver;
 use Illuminate\Http\Request;
@@ -26,6 +27,10 @@ readonly class HandleTemplateRequest
             return $response;
         }
 
+        if ($request->isActionRequest()) {
+            return $response;
+        }
+
         /**
          * Template routing is considered a fallback, so we should
          * only try this once the original response is a 404.
@@ -37,7 +42,7 @@ readonly class HandleTemplateRequest
         $path = $request->decodedPath();
 
         if ($request->isCpRequest()) {
-            $path = Str::after($path, Cms::config()->cpTrigger);
+            $path = ltrim(Str::after($path, Cms::config()->cpTrigger), '/');
         }
 
         if (! $this->isPublicTemplatePath($request, $path)) {
@@ -57,10 +62,15 @@ readonly class HandleTemplateRequest
         if (str_starts_with($path, Cms::config()->privateTemplateTrigger)) {
             return false;
         }
-        if (view()->exists($path)) {
+
+        if ($this->templateResolver->exists($path, publicOnly: true)) {
             return true;
         }
 
-        return $this->templateResolver->exists($path, publicOnly: true);
+        if (! Path::ensurePathIsContained($path)) {
+            return false;
+        }
+
+        return view()->exists($path);
     }
 }
