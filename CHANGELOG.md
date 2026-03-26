@@ -19,6 +19,9 @@
 - Fixed a JavaScript error that could occur when opening a modal. ([#18612](https://github.com/craftcms/cms/pull/18612))
 - Fixed a bug where element chips and cards weren’t getting refreshed when a provisional draft’s changes were discarded in a different tab.
 - Fixed a bug where element attributes weren’t always updating when content changes were made.
+- Fixed a bug where successive edits to nested elements were forgotten. ([#18624](https://github.com/craftcms/cms/issues/18624))
+- Fixed a bug where nested elements weren’t getting duplicated when a new site was added to the owner element. ([#18621](https://github.com/craftcms/cms/issues/18621))
+- Fixed a bug where nested entries were getting assigned new IDs if they were edited multiple times for the same owner element draft. ([#18461](https://github.com/craftcms/cms/issues/18461))
 
 ## 5.9.17 - 2026-03-17
 
