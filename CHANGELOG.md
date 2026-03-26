@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Improved error logging when logging in with passkeys. ([#18627](https://github.com/craftcms/cms/pull/18627))
 - Added `craft\controllers\ElementIndexesController::$fieldLayouts`.
 - `craft\services\ElementSources::getTableAttributes()` now has a `$fieldLayouts` argument.
 - Fixed a bug where GraphQL results were getting cached even if they contained transform generation URLs. ([#18581](https://github.com/craftcms/cms/issues/18581))
