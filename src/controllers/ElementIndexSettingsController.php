@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
@@ -307,9 +308,13 @@ class ElementIndexSettingsController extends BaseElementsController
                 }
 
                 if ($isCustom) {
+                    $conditionConfig = $postedSettings['condition'];
+                    if (is_array($conditionConfig)) {
+                        $conditionConfig = Component::cleanseConfig($conditionConfig);
+                    }
                     $sourceConfig += [
                         'label' => $postedSettings['label'],
-                        'condition' => $conditionsService->createCondition($postedSettings['condition'])->getConfig(),
+                        'condition' => $conditionsService->createCondition($conditionConfig)->getConfig(),
                     ];
 
                     if (isset($postedSettings['sites']) && $postedSettings['sites'] !== '*') {

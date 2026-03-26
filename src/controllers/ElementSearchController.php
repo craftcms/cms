@@ -67,7 +67,7 @@ class ElementSearchController extends Controller
         }
 
         if ($conditionConfig) {
-            $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
+            $condition = Craft::$app->getConditions()->createCondition(Component::cleanseConfig($conditionConfig));
 
             if ($condition instanceof ElementCondition) {
                 $referenceElementId = $this->request->getBodyParam('referenceElementId');
