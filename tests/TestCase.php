@@ -190,7 +190,7 @@ class TestCase extends Orchestra
                 password: 'craftcms2018!!',
                 email: 'support@craftcms.com',
                 site: $site,
-            );
+            )->silent();
 
             Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 
