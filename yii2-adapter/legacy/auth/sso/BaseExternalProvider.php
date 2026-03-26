@@ -20,7 +20,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -111,7 +111,7 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     protected function getRequestUrl(): ?string
     {
-        return URL::actionUrl('sso/request', ['provider' => $this->handle], null, false);
+        return Url::actionUrl('sso/request', ['provider' => $this->handle], null, false);
     }
 
     /**
@@ -121,7 +121,7 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     protected function getResponseUrl(): ?string
     {
-        return URL::actionUrl('sso/response', ['provider' => $this->handle], null, false);
+        return Url::actionUrl('sso/response', ['provider' => $this->handle], null, false);
     }
 
     /**

@@ -14,7 +14,7 @@ use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -49,14 +49,14 @@ readonly class SitesController
             : $this->sites->getAllSites()->values();
 
         $crumbs = array_filter([
-            ['label' => t('Settings'), 'url' => URL::cpUrl('settings')],
-            ['label' => t('Sites'), 'url' => isset($group) ? URL::cpUrl('settings/sites') : null],
+            ['label' => t('Settings'), 'url' => Url::cpUrl('settings')],
+            ['label' => t('Sites'), 'url' => isset($group) ? Url::cpUrl('settings/sites') : null],
             (isset($group) ? ['label' => $group->getName()] : null),
         ]);
 
         return Inertia::render('SettingsSitesIndex', [
             'crumbs' => $crumbs,
-            'newSiteUrl' => URL::cpUrl('settings/sites/new'),
+            'newSiteUrl' => Url::cpUrl('settings/sites/new'),
             'nameSuggestions' => Inertia::defer(fn () => SelectOptions::getEnvSuggestions()),
             'group' => $group ?? null,
             'groups' => $this->siteGroups->getAllGroups()->sortBy(['id', 'asc'])->values(),
@@ -84,15 +84,15 @@ readonly class SitesController
             'crumbs' => [
                 [
                     'label' => t('Settings'),
-                    'url' => URL::url('settings'),
+                    'url' => Url::url('settings'),
                 ],
                 [
                     'label' => t('Sites'),
-                    'url' => URL::url('settings/sites'),
+                    'url' => Url::url('settings/sites'),
                 ],
                 [
                     'label' => t('Create site'),
-                    'url' => URL::url('settings/sites/new'),
+                    'url' => Url::url('settings/sites/new'),
                     'active' => true,
                 ],
             ],
@@ -127,15 +127,15 @@ readonly class SitesController
             'crumbs' => [
                 [
                     'label' => t('Settings'),
-                    'url' => URL::url('settings'),
+                    'url' => Url::url('settings'),
                 ],
                 [
                     'label' => t('Sites'),
-                    'url' => URL::url('settings/sites'),
+                    'url' => Url::url('settings/sites'),
                 ],
                 [
                     'label' => $siteData->getGroup()->getName(),
-                    'url' => URL::url('settings/sites', ['groupId' => $siteGroup->id]),
+                    'url' => Url::url('settings/sites', ['groupId' => $siteGroup->id]),
                 ],
                 [
                     'label' => $siteData->getName(),

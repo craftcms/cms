@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Gql\IndexController;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -33,12 +33,12 @@ it('redirects the graphql cp index to schemas when admin changes are allowed', f
     Cms::config()->allowAdminChanges = true;
 
     get(action(IndexController::class))
-        ->assertRedirect(URL::cpUrl('graphql/schemas'));
+        ->assertRedirect(Url::cpUrl('graphql/schemas'));
 });
 
 it('redirects the graphql cp index to tokens when admin changes are disabled', function () {
     Cms::config()->allowAdminChanges = false;
 
     get(action(IndexController::class))
-        ->assertRedirect(URL::cpUrl('graphql/tokens'));
+        ->assertRedirect(Url::cpUrl('graphql/tokens'));
 });

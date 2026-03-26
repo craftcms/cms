@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Twig\Nodes;
 
 use Craft;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Override;
 use Twig\Attribute\YieldReady;
 use Twig\Compiler;
@@ -34,7 +34,7 @@ class RedirectNode extends Node
         }
 
         $compiler
-            ->write(Craft::class.'::$app->getResponse()->redirect('.URL::class.'::url(')
+            ->write(Craft::class.'::$app->getResponse()->redirect('.Url::class.'::url(')
             ->subcompile($this->getNode('path'))
             ->raw('), ')
             ->subcompile($this->getNode('httpStatusCode'))

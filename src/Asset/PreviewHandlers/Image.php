@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Asset\PreviewHandlers;
 
 use CraftCms\Cms\Asset\Exceptions\AssetNotPreviewableException;
 use CraftCms\Cms\Support\Facades\Assets;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 
 use function CraftCms\Cms\template;
 
@@ -17,7 +17,7 @@ class Image extends AssetPreviewHandler
         try {
             $url = Assets::getImagePreviewUrl($this->asset, 1000, 1000);
         } catch (AssetNotPreviewableException) {
-            $url = URL::actionUrl('assets/edit-image', [
+            $url = Url::actionUrl('assets/edit-image', [
                 'assetId' => $this->asset->id,
                 'size' => 1000,
             ]);

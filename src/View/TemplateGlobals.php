@@ -9,7 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Site\Sites;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Foundation\Application;
@@ -74,9 +74,9 @@ readonly class TemplateGlobals
             'devMode' => $this->app->hasDebugModeEnabled(),
             'isInstalled' => $isInstalled,
             'isUpdateInfoCached' => $this->updates->isUpdateInfoCached(),
-            'loginUrl' => URL::siteUrl($this->generalConfig->getLoginPath()),
-            'logoutUrl' => URL::siteUrl($this->generalConfig->getLogoutPath()),
-            'setPasswordUrl' => $setPasswordRequestPath !== null ? URL::siteUrl($setPasswordRequestPath) : null,
+            'loginUrl' => Url::siteUrl($this->generalConfig->getLoginPath()),
+            'logoutUrl' => Url::siteUrl($this->generalConfig->getLogoutPath()),
+            'setPasswordUrl' => $setPasswordRequestPath !== null ? Url::siteUrl($setPasswordRequestPath) : null,
             'now' => now(),
             'today' => today(),
             'tomorrow' => today()->addDay(),

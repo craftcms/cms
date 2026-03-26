@@ -6,7 +6,7 @@ namespace CraftCms\Cms\Element\Concerns;
 
 use CraftCms\Cms\Element\Events\RegisterPreviewTargets;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\renderObjectTemplate;
@@ -55,7 +55,7 @@ trait HasPreviewTargets
                     return null;
                 }
 
-                $previewTarget['url'] = URL::siteUrl($previewTarget['url'], siteId: $this->siteId);
+                $previewTarget['url'] = Url::siteUrl($previewTarget['url'], siteId: $this->siteId);
 
                 if (! isset($previewTarget['refresh'])) {
                     $previewTarget['refresh'] = true;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User\Notifications;
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
@@ -22,7 +23,9 @@ class VerifyEmailNotification extends Notification implements ShouldQueue
     public function __construct(
         #[SensitiveParameter]
         public string $token,
-    ) {}
+    ) {
+        $this->queue = Cms::config()->queueName;
+    }
 
     public function via(mixed $notifiable): array
     {

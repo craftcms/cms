@@ -45,7 +45,7 @@
     "elvanto/litemoji": "~4.3.0",
     "enshrined/svg-sanitize": "~0.22.0",
     "guzzlehttp/guzzle": "^7.2.0",
-    "inertiajs/inertia-laravel": "^2.0",
+    "inertiajs/inertia-laravel": "^3.0",
     "laravel/framework": "^13.0.0",
     "laravel/wayfinder": "^0.1.12",
     "league/commonmark": "^2.8",

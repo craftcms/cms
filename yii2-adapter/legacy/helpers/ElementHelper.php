@@ -27,7 +27,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use DateTime;
@@ -964,7 +964,7 @@ class ElementHelper
             return static::addElementEditorUrlParams($url, $element);
         }
 
-        return URL::cpUrl($url);
+        return Url::cpUrl($url);
     }
 
     /**
@@ -990,7 +990,7 @@ class ElementHelper
             $params['revisionId'] = $element->revisionId;
         }
 
-        return URL::cpUrl($url, $params);
+        return Url::cpUrl($url, $params);
     }
 
     /**
@@ -1029,7 +1029,7 @@ class ElementHelper
             $url .= "-$element->slug";
         }
 
-        return URL::cpUrl($url);
+        return Url::cpUrl($url);
     }
 
     /**

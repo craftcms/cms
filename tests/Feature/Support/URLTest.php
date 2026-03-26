@@ -5,7 +5,7 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\RouteToken\RouteTokens;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 
 beforeEach(function () {
     Aliases::set('@web', 'https://localhost');
@@ -15,7 +15,7 @@ beforeEach(function () {
 
 describe('buildQuery', function () {
     test('builds query strings', function (string $expected, array $params) {
-        expect(URL::buildQuery($params))->toBe($expected);
+        expect(Url::buildQuery($params))->toBe($expected);
     })->with([
         ['', []],
         ['', ['foo' => null]],
@@ -37,7 +37,7 @@ describe('buildQuery', function () {
 
 describe('URL detection', function () {
     test('detects absolute URLs', function (bool $expected, string $url) {
-        expect(URL::isAbsoluteUrl($url))->toBe($expected);
+        expect(Url::isAbsoluteUrl($url))->toBe($expected);
     })->with([
         [true, 'http://craftcms.com/'],
         [true, 'https://craftcms.com/'],
@@ -52,7 +52,7 @@ describe('URL detection', function () {
     ]);
 
     test('detects protocol-relative URLs', function (bool $expected, string $url) {
-        expect(URL::isProtocolRelativeUrl($url))->toBe($expected);
+        expect(Url::isProtocolRelativeUrl($url))->toBe($expected);
     })->with([
         'protocol-relative' => [true, '//cdn.craftcms.com/assets/app.css'],
         'root-relative' => [false, '/assets/app.css'],
@@ -61,7 +61,7 @@ describe('URL detection', function () {
     ]);
 
     test('detects full URLs', function (bool $expected, string $url) {
-        expect(URL::isFullUrl($url))->toBe($expected);
+        expect(Url::isFullUrl($url))->toBe($expected);
     })->with([
         [true, 'http://craftcms.com/'],
         [true, 'https://craftcms.com/'],
@@ -77,7 +77,7 @@ describe('URL detection', function () {
     ]);
 
     test('detects root-relative URLs', function (bool $expected, string $url) {
-        expect(URL::isRootRelativeUrl($url))->toBe($expected);
+        expect(Url::isRootRelativeUrl($url))->toBe($expected);
     })->with([
         [true, '/22'],
         [false, '//cdn.craftcms.com/22'],
@@ -88,7 +88,7 @@ describe('URL detection', function () {
 
 describe('query and encoding helpers', function () {
     test('adds query params to a URL', function (string $expected, string $url, array|string $params) {
-        expect(URL::urlWithParams($url, $params))->toBe($expected);
+        expect(Url::urlWithParams($url, $params))->toBe($expected);
     })->with([
         'with-fragment' => [
             'https://craftcms.com/?param1=entry1#some-hashtag',
@@ -183,7 +183,7 @@ describe('query and encoding helpers', function () {
     ]);
 
     test('removes query params from a URL', function (string $expected, string $url, string $param) {
-        expect(URL::removeParam($url, $param))->toBe($expected);
+        expect(Url::removeParam($url, $param))->toBe($expected);
     })->with([
         'removes-middle-param' => [
             'https://craftcms.com/?bar=2#anchor',
@@ -205,7 +205,7 @@ describe('query and encoding helpers', function () {
     test('adds token params to a URL', function (string $expected, string $url, string $token) {
         Cms::config()->useSslOnTokenizedUrls = true;
 
-        expect(URL::urlWithToken($url, $token))->toBe($expected);
+        expect(Url::urlWithToken($url, $token))->toBe($expected);
     })->with([
         ['https://craftcms.com/?token=value', 'https://craftcms.com/', 'value'],
         ['https://craftcms.com/?token=value2', 'https://craftcms.com/?token=value1', 'value2'],
@@ -215,7 +215,7 @@ describe('query and encoding helpers', function () {
     ]);
 
     test('replaces URL schemes', function (string $expected, string $url, string $scheme) {
-        expect(URL::urlWithScheme($url, $scheme))->toBe($expected);
+        expect(Url::urlWithScheme($url, $scheme))->toBe($expected);
     })->with([
         'no-scheme' => ['imaurl', 'imaurl', ''],
         'empty-string' => ['', '', ''],
@@ -229,7 +229,7 @@ describe('query and encoding helpers', function () {
     ]);
 
     test('strips query strings', function (string $expected, string $url) {
-        expect(URL::stripQueryString($url))->toBe($expected);
+        expect(Url::stripQueryString($url))->toBe($expected);
     })->with([
         'invalid-query-string' => ['https://www.craftcms.com/', 'https://www.craftcms.com/&query=string'],
         'no-query-string' => ['https://www.craftcms.com/', 'https://www.craftcms.com/'],
@@ -238,7 +238,7 @@ describe('query and encoding helpers', function () {
     ]);
 
     test('encodes query params', function (string $expected, string $url) {
-        expect(URL::encodeParams($url))->toBe($expected);
+        expect(Url::encodeParams($url))->toBe($expected);
     })->with([
         ['http://example.test', 'http://example.test?'],
         ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar baz'],
@@ -248,7 +248,7 @@ describe('query and encoding helpers', function () {
     ]);
 
     test('encodes URLs', function (string $expected, string $url) {
-        expect(URL::encodeUrl($url))->toBe($expected);
+        expect(Url::encodeUrl($url))->toBe($expected);
     })->with([
         ['https://domain/fr/offices/gen%C3%AAve', rawurldecode('https://domain/fr/offices/gen%C3%AAve')],
         ['https://domain/fr/offices/gen%C3%AAve?foo=bar', rawurldecode('https://domain/fr/offices/gen%C3%AAve').'?foo=bar'],
@@ -259,7 +259,7 @@ describe('query and encoding helpers', function () {
 
 describe('path helpers', function () {
     test('creates root-relative URLs', function (string $expected, string $url) {
-        expect(URL::rootRelativeUrl($url))->toBe($expected);
+        expect(Url::rootRelativeUrl($url))->toBe($expected);
     })->with([
         ['/', ''],
         ['/foo/bar', 'foo/bar'],
@@ -278,7 +278,7 @@ describe('path helpers', function () {
     ]);
 
     test('extracts host info', function (string $expected, string $url) {
-        expect(URL::hostInfo($url))->toBe($expected);
+        expect(Url::hostInfo($url))->toBe($expected);
     })->with([
         ['https://google.com', 'https://google.com'],
         ['http://facebook.com', 'http://facebook.com'],
@@ -290,17 +290,17 @@ describe('path helpers', function () {
 
     it('uses the configured tokenized URL scheme', function () {
         Cms::config()->useSslOnTokenizedUrls = true;
-        expect(URL::getSchemeForTokenizedUrl())->toBe('https');
+        expect(Url::getSchemeForTokenizedUrl())->toBe('https');
 
         Cms::config()->useSslOnTokenizedUrls = false;
-        expect(URL::getSchemeForTokenizedUrl())->toBe('http');
+        expect(Url::getSchemeForTokenizedUrl())->toBe('http');
 
         Cms::config()->useSslOnTokenizedUrls = 'auto';
         Cms::config()->baseCpUrl = 'https://cms.example.test';
-        expect(URL::getSchemeForTokenizedUrl(cp: true))->toBe('https');
+        expect(Url::getSchemeForTokenizedUrl(cp: true))->toBe('https');
 
         Cms::config()->baseCpUrl = 'http://cms.example.test';
-        expect(URL::getSchemeForTokenizedUrl(cp: true))->toBe('http');
+        expect(Url::getSchemeForTokenizedUrl(cp: true))->toBe('http');
     });
 });
 
@@ -308,18 +308,18 @@ describe('base and control panel helpers', function () {
     it('returns base URLs and hosts', function () {
         swapUrlRequest('https://localhost/news');
 
-        expect(URL::baseUrl())->toBe('https://localhost/')
-            ->and(URL::baseSiteUrl())->toBe('https://localhost/')
-            ->and(URL::host())->toBe('https://localhost')
-            ->and(URL::siteHost())->toBe('https://localhost');
+        expect(Url::baseUrl())->toBe('https://localhost/')
+            ->and(Url::baseSiteUrl())->toBe('https://localhost/')
+            ->and(Url::host())->toBe('https://localhost')
+            ->and(Url::siteHost())->toBe('https://localhost');
 
         Cms::config()->baseCpUrl = 'https://cms.example.test';
         swapUrlRequest('https://localhost/admin/dashboard');
 
-        expect(URL::baseUrl())->toBe('https://cms.example.test/')
-            ->and(URL::baseCpUrl())->toBe('https://cms.example.test/')
-            ->and(URL::host())->toBe('https://cms.example.test')
-            ->and(URL::cpHost())->toBe('https://cms.example.test');
+        expect(Url::baseUrl())->toBe('https://cms.example.test/')
+            ->and(Url::baseCpUrl())->toBe('https://cms.example.test/')
+            ->and(Url::host())->toBe('https://cms.example.test')
+            ->and(Url::cpHost())->toBe('https://cms.example.test');
     });
 
     test('returns control panel referral URLs', function (?string $expected, ?string $referrer) {
@@ -329,7 +329,7 @@ describe('base and control panel helpers', function () {
             request()->headers->set('referer', $referrer);
         }
 
-        expect(URL::cpReferralUrl())->toBe($expected);
+        expect(Url::cpReferralUrl())->toBe($expected);
     })->with([
         'missing-referrer' => [null, null],
         'self-referrer' => [null, 'https://localhost/admin/dashboard'],
@@ -340,7 +340,7 @@ describe('base and control panel helpers', function () {
     test('prepends the control panel trigger', function (string $expected, ?string $cpTrigger, string $path) {
         Cms::config()->cpTrigger = $cpTrigger;
 
-        expect(URL::prependCpTrigger($path))->toBe($expected);
+        expect(Url::prependCpTrigger($path))->toBe($expected);
     })->with([
         'default-trigger' => ['admin/settings', 'admin', 'settings'],
         'empty-path' => ['admin', 'admin', ''],
@@ -352,8 +352,8 @@ describe('generated URLs', function () {
     test('creates control panel URLs', function (string $expected, string $path, array $params, string $scheme) {
         swapUrlRequest('https://localhost/admin/dashboard');
 
-        expect(URL::cpUrl($path, $params, $scheme))->toBe(buildExpectedUrl($expected, $scheme))
-            ->and(URL::url($path, $params, $scheme))->toBe(buildExpectedUrl($expected, $scheme));
+        expect(Url::cpUrl($path, $params, $scheme))->toBe(buildExpectedUrl($expected, $scheme))
+            ->and(Url::url($path, $params, $scheme))->toBe(buildExpectedUrl($expected, $scheme));
     })->with([
         'empty-path' => ['{cpUrl}', '', [], 'https'],
         'with-params' => ['{cpUrl}/nav?param1=entry1&param2=entry2', 'nav', ['param1' => 'entry1', 'param2' => 'entry2'], 'https'],
@@ -364,7 +364,7 @@ describe('generated URLs', function () {
     test('creates site and absolute URLs', function (string $expected, string $path, ?array $params, string $scheme, ?bool $showScriptName) {
         swapUrlRequest('https://localhost/news');
 
-        expect(URL::url($path, $params, $scheme, $showScriptName))
+        expect(Url::url($path, $params, $scheme, $showScriptName))
             ->toBe(buildExpectedUrl($expected, $scheme));
     })->with([
         ['{siteUrl}endpoint', 'endpoint', null, 'https', null],
@@ -373,7 +373,7 @@ describe('generated URLs', function () {
     ]);
 
     test('creates site URLs', function (string $expected, string $path, array|string|null $params, string $scheme, ?int $siteId) {
-        expect(URL::siteUrl($path, $params, $scheme, $siteId))
+        expect(Url::siteUrl($path, $params, $scheme, $siteId))
             ->toBe(buildExpectedUrl($expected, $scheme));
     })->with([
         ['{siteUrl}endpoint', 'endpoint', null, 'https', null],
@@ -383,19 +383,19 @@ describe('generated URLs', function () {
     it('creates action URLs', function () {
         swapUrlRequest('https://localhost/news');
 
-        expect(URL::actionUrl('endpoint', null, null, false))
+        expect(Url::actionUrl('endpoint', null, null, false))
             ->toBe('https://localhost/actions/endpoint');
     });
 
     it('creates control panel action URLs', function () {
         swapUrlRequest('https://localhost/admin/dashboard');
 
-        expect(URL::actionUrl('endpoint', null, null, false))
+        expect(Url::actionUrl('endpoint', null, null, false))
             ->toBe(buildExpectedUrl('{cpUrl}/actions/endpoint', 'https'));
     });
 
     it('throws for invalid site IDs', function () {
-        expect(fn () => URL::siteUrl('', null, null, 12892))
+        expect(fn () => Url::siteUrl('', null, null, 12892))
             ->toThrow(Exception::class, 'Invalid site ID: 12892');
     });
 });
@@ -406,8 +406,8 @@ it('appends active site tokens to site URLs', function () {
 
     swapUrlRequest('https://localhost/news', parameters: [$siteTokenParam => $siteToken]);
 
-    expect(URL::url('endpoint'))->toBe("https://localhost/endpoint?$siteTokenParam=$siteToken")
-        ->and(URL::siteUrl('endpoint'))->toBe("https://localhost/endpoint?$siteTokenParam=$siteToken");
+    expect(Url::url('endpoint'))->toBe("https://localhost/endpoint?$siteTokenParam=$siteToken")
+        ->and(Url::siteUrl('endpoint'))->toBe("https://localhost/endpoint?$siteTokenParam=$siteToken");
 });
 
 it('appends active route tokens to site URLs', function () {
@@ -416,6 +416,6 @@ it('appends active route tokens to site URLs', function () {
     app(RouteTokens::class)->createToken('token/route', 2, token: $token);
     swapUrlRequest('https://localhost/news', parameters: [Cms::config()->tokenParam => $token]);
 
-    expect(URL::url('endpoint'))->toBe("https://localhost/endpoint?token=$token")
-        ->and(URL::siteUrl('endpoint'))->toBe("https://localhost/endpoint?token=$token");
+    expect(Url::url('endpoint'))->toBe("https://localhost/endpoint?token=$token")
+        ->and(Url::siteUrl('endpoint'))->toBe("https://localhost/endpoint?token=$token");
 });

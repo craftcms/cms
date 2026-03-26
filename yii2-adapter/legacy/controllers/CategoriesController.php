@@ -21,7 +21,7 @@ use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -95,11 +95,11 @@ class CategoriesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => t('Settings'),
-                'url' => URL::url('settings'),
+                'url' => Url::url('settings'),
             ],
             [
                 'label' => t('Categories'),
-                'url' => URL::url('settings/categories'),
+                'url' => Url::url('settings/categories'),
             ],
         ];
 
@@ -321,7 +321,7 @@ class CategoriesController extends Controller
         ]));
 
         if (!$this->request->getAcceptsJson()) {
-            $response->redirect(URL::urlWithParams($editUrl, ['fresh' => 1]));
+            $response->redirect(Url::urlWithParams($editUrl, ['fresh' => 1]));
         }
 
         return $response;
