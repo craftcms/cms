@@ -3,50 +3,33 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Twig\TemplateRenderer;
-use Twig\Error\RuntimeError;
 
 beforeEach(function () {
     $this->renderer = app(TemplateRenderer::class);
 });
 
-it('redirects with default 302 status', function () {
-    try {
-        $this->renderer->renderString('{% redirect "/foo" %}');
-        $this->fail('Expected RuntimeError to be thrown');
-    } catch (RuntimeError) {
-        $response = Craft::$app->getResponse();
+it('renders a redirect response for the default status', function () {
+    $result = $this->renderer->renderString('{% redirect "/foo" %}');
 
-        expect($response->getStatusCode())->toBe(302);
-        expect($response->getHeaders()->get('Location'))->toContain('/foo');
-    }
+    expect($result)->toContain('Redirecting to');
+    expect($result)->toContain('/foo');
 });
 
-it('redirects with custom 301 status', function () {
-    try {
-        $this->renderer->renderString('{% redirect "/bar" 301 %}');
-        $this->fail('Expected RuntimeError to be thrown');
-    } catch (RuntimeError) {
-        $response = Craft::$app->getResponse();
+it('renders a redirect response for a custom status', function () {
+    $result = $this->renderer->renderString('{% redirect "/bar" 301 %}');
 
-        expect($response->getStatusCode())->toBe(301);
-        expect($response->getHeaders()->get('Location'))->toContain('/bar');
-    }
+    expect($result)->toContain('Redirecting to');
+    expect($result)->toContain('/bar');
 });
 
 it('sets flash notice on redirect', function () {
-    try {
-        $this->renderer->renderString('{% redirect "/foo" with notice "Saved!" %}');
-        $this->fail('Expected RuntimeError to be thrown');
-    } catch (RuntimeError) {
-        expect(Craft::$app->getSession()->getNotice())->toBe('Saved!');
-    }
+    $this->renderer->renderString('{% redirect "/foo" with notice "Saved!" %}');
+
+    expect(Craft::$app->getSession()->getNotice())->toBe('Saved!');
 });
 
 it('sets flash error on redirect', function () {
-    try {
-        $this->renderer->renderString('{% redirect "/foo" with error "Oops" %}');
-        $this->fail('Expected RuntimeError to be thrown');
-    } catch (RuntimeError) {
-        expect(Craft::$app->getSession()->getError())->toBe('Oops');
-    }
+    $this->renderer->renderString('{% redirect "/foo" with error "Oops" %}');
+
+    expect(Craft::$app->getSession()->getError())->toBe('Oops');
 });

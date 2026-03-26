@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Tests\HtmlPurifier;
 
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Yii2Adapter\HtmlPurifier\HtmlPurifierSanitizer;
 use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
 use CraftCms\Yii2Adapter\Tests\TestCase;
-use Illuminate\Support\Facades\File;
 
 class LegacyHtmlPurifierConfigRegistrarTest extends TestCase
 {
@@ -23,7 +24,7 @@ class LegacyHtmlPurifierConfigRegistrarTest extends TestCase
     public function test_register_imports_legacy_json_config(): void
     {
         File::ensureDirectoryExists(config_path('craft/htmlpurifier'));
-        File::put(config_path('craft/htmlpurifier/test.json'), json_encode([
+        File::put(config_path('craft/htmlpurifier/test.json'), Json::encode([
             'Attr.EnableID' => true,
             'Attr.AllowedFrameTargets' => ['_blank'],
         ], JSON_THROW_ON_ERROR));

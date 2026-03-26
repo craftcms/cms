@@ -10,7 +10,7 @@ use CraftCms\Cms\Route\DynamicRoute;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Twig\TemplateResolver;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 readonly class HandleTemplateRequest
 {
