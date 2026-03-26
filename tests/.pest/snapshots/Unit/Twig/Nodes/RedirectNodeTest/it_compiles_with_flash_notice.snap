@@ -1,4 +1,4 @@
 // line 1
 Craft::$app->getSession()->setNotice("Redirected successfully");
-Craft::$app->getResponse()->redirect(CraftCms\Cms\Support\URL::url("/home"), 301);
+Craft::$app->getResponse()->redirect(CraftCms\Cms\Support\Url::url("/home"), 301);
 Craft::$app->end();
