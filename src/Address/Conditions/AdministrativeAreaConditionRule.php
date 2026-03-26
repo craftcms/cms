@@ -13,7 +13,7 @@ use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Addresses;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Override;
 
 use function CraftCms\Cms\t;
@@ -83,7 +83,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
             'value' => $this->countryCode,
             'inputAttributes' => [
                 'hx' => [
-                    'post' => URL::actionUrl('conditions/render'),
+                    'post' => Url::actionUrl('conditions/render'),
                 ],
             ],
         ]);

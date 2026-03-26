@@ -154,13 +154,13 @@ class TestPlugin extends Plugin
     #[Override]
     public function createInstallMigration(): ?object
     {
-        $installMigrationPath = $this->getBasePath().'/migrations/Install.php';
+        $path = $this->getMigrationsPath().'/Install.php';
 
-        if (! is_file($installMigrationPath)) {
+        if (! is_file($path)) {
             return null;
         }
 
-        $migration = require $installMigrationPath;
+        $migration = require $path;
 
         if ($migration instanceof Migration) {
             return $migration;

@@ -15,7 +15,7 @@ use craft\web\Controller;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Search;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -91,11 +91,11 @@ class TagsController extends Controller
         $crumbs = [
             [
                 'label' => t('Settings'),
-                'url' => URL::url('settings'),
+                'url' => Url::url('settings'),
             ],
             [
                 'label' => t('Tags', category: 'yii2-adapter'),
-                'url' => URL::url('settings/tags'),
+                'url' => Url::url('settings/tags'),
             ],
         ];
 

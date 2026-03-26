@@ -141,8 +141,8 @@ readonly class OAuthController extends AuthenticationController
     private function defaultReturnUrl(bool $isCpRequest): string
     {
         return $isCpRequest
-            ? \CraftCms\Cms\Support\URL::cpUrl($this->generalConfig->getPostCpLoginRedirect())
-            : \CraftCms\Cms\Support\URL::siteUrl($this->generalConfig->getPostLoginRedirect());
+            ? \CraftCms\Cms\Support\Url::cpUrl($this->generalConfig->getPostCpLoginRedirect())
+            : \CraftCms\Cms\Support\Url::siteUrl($this->generalConfig->getPostLoginRedirect());
     }
 
     private function loginUrl(bool $isCpRequest): string
@@ -155,7 +155,7 @@ readonly class OAuthController extends AuthenticationController
             throw new RuntimeException('The loginPath config setting is disabled.');
         }
 
-        return \CraftCms\Cms\Support\URL::siteUrl($loginPath);
+        return \CraftCms\Cms\Support\Url::siteUrl($loginPath);
     }
 
     private function getAuthError(User $user, bool $isCpRequest): ?AuthError

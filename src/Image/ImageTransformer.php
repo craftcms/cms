@@ -25,7 +25,7 @@ use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Database\Query\Builder;
@@ -106,7 +106,7 @@ class ImageTransformer implements EagerImageTransformerInterface, ImageEditorTra
                 }
 
                 // Return the temporary transform URL
-                return URL::actionUrl('assets/generate-transform', [
+                return Url::actionUrl('assets/generate-transform', [
                     'transformId' => $index->id,
                 ], showScriptName: false);
             }

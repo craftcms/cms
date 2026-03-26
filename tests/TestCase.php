@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Tests;
 use Craft;
 use craft\test\TestSetup;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
@@ -189,11 +190,12 @@ class TestCase extends Orchestra
                 password: 'craftcms2018!!',
                 email: 'support@craftcms.com',
                 site: $site,
-            );
+            )->silent();
 
             Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 
             $migration->up();
+            app(LaravelMigrations::class)->ensureSessionsTable();
 
             // Mark all existing migrations as applied
             $migrator = app(Migrator::class)->track('craft');

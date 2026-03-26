@@ -33,7 +33,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use DateTime;
@@ -390,7 +390,7 @@ class Cp extends Component
                 $item['id'] = 'nav-' . preg_replace('/[^\w\-_]/', '', Str::ascii(str_replace('/', '-', $item['url'])));
             }
 
-            $item['url'] = URL::url($item['url']);
+            $item['url'] = Url::url($item['url']);
 
             if (!isset($item['external'])) {
                 $item['external'] = false;

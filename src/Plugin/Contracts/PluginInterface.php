@@ -270,6 +270,14 @@ interface PluginInterface
     public function getBasePath(): string;
 
     /**
+     * Returns the plugin migrations directory.
+     *
+     * Prefers the package root's `database/migrations` directory, and falls
+     * back to the plugin class directory's `migrations`.
+     */
+    public function getMigrationsPath(): string;
+
+    /**
      * Creates and returns a new plugin instance based on a passed config
      */
     public static function create(array $config): self;

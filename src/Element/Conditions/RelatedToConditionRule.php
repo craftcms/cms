@@ -13,7 +13,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 
 use function CraftCms\Cms\t;
 
@@ -82,7 +82,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
                     'value' => $this->elementType,
                     'inputAttributes' => [
                         'hx' => [
-                            'post' => URL::actionUrl('conditions/render'),
+                            'post' => Url::actionUrl('conditions/render'),
                         ],
                     ],
                 ]).

@@ -16,7 +16,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\Contracts\FieldLayoutProviderInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Log;
 use yii\base\InvalidConfigException;
@@ -275,7 +275,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     protected function cpEditUrl(): ?string
     {
-        return URL::cpUrl('globals/' . $this->handle);
+        return Url::cpUrl('globals/' . $this->handle);
     }
 
     /**

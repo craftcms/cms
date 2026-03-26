@@ -142,7 +142,7 @@ class Template
 
     public static function css(string $css, array $options = [], ?string $key = null): void
     {
-        if (preg_match('/^[^\r\n]+\.css(\.gz)?$/i', $css) || URL::isAbsoluteUrl($css)) {
+        if (preg_match('/^[^\r\n]+\.css(\.gz)?$/i', $css) || Url::isAbsoluteUrl($css)) {
             HtmlStack::cssFile($css, $options, $key);
 
             return;
@@ -163,7 +163,7 @@ class Template
     /** @throws InvalidConfigException */
     public static function js(string $js, array $options = [], ?string $key = null): void
     {
-        if (preg_match('/^[^\r\n]+\.js(\.gz)?$/i', $js) || URL::isAbsoluteUrl($js)) {
+        if (preg_match('/^[^\r\n]+\.js(\.gz)?$/i', $js) || Url::isAbsoluteUrl($js)) {
             HtmlStack::jsFile($js, $options, $key);
 
             return;

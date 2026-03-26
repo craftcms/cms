@@ -10,7 +10,7 @@ use CraftCms\Cms\Auth\Enums\CpAuthPath;
 use CraftCms\Cms\Auth\Events\SettingPassword;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use Illuminate\Contracts\View\View;
@@ -127,11 +127,11 @@ readonly class SetPasswordController extends AuthenticationController
 
         if ($request->isCpRequest()) {
             // Send them to the control panel login page by default
-            $url = URL::cpUrl(CpAuthPath::Login->value);
+            $url = Url::cpUrl(CpAuthPath::Login->value);
         } else {
             // Send them to the 'setPasswordSuccessPath' by default
             $setPasswordSuccessPath = Cms::config()->getSetPasswordSuccessPath();
-            $url = URL::siteUrl($setPasswordSuccessPath);
+            $url = Url::siteUrl($setPasswordSuccessPath);
         }
 
         return $this->redirectToPostedUrl($user, $url);

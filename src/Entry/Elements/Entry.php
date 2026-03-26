@@ -76,7 +76,7 @@ use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\Validation\Attributes\Ruleset;
@@ -1838,7 +1838,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
     public function getPostEditUrl(): string
     {
-        return URL::cpUrl('entries');
+        return Url::cpUrl('entries');
     }
 
     protected function cpRevisionsUrl(): string

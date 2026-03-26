@@ -9,7 +9,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Contracts\ImageTransformerInterface;
 use CraftCms\Cms\Image\Data\ImageTransform;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use Illuminate\Support\Facades\Crypt;
 
 readonly class FallbackTransformer implements ImageTransformerInterface
@@ -26,7 +26,7 @@ readonly class FallbackTransformer implements ImageTransformerInterface
             $transformString = 'original';
         }
 
-        return URL::actionUrl('assets/generate-fallback-transform', [
+        return Url::actionUrl('assets/generate-fallback-transform', [
             'transform' => Crypt::encrypt(sprintf('%s,%s', $asset->id, $transformString)),
         ] + AssetsHelper::revParams($asset), showScriptName: false);
     }

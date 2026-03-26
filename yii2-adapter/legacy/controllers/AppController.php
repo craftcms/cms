@@ -432,15 +432,14 @@ class AppController extends Controller
             // See if there are any provisional changes we should show
             ElementHelper::loadProvisionalChanges($elements);
 
-            $elementHtml = app(ElementHtml::class);
             foreach ($elements as $element) {
                 foreach ($instances as $key => $instance) {
                     $id = $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id;
                     /** @var 'chip'|'card' $ui */
                     $ui = $instance['ui'] ?? 'chip';
                     $elementHtml[$id][$key] = match ($ui) {
-                        'chip' => $elementHtml->elementChipHtml($element, $instance),
-                        'card' => $elementHtml->elementCardHtml($element, $instance),
+                        'chip' => app(ElementHtml::class)->elementChipHtml($element, $instance),
+                        'card' => app(ElementHtml::class)->elementCardHtml($element, $instance),
                     };
                 }
             }

@@ -31,7 +31,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Events\ActivatingUser;
@@ -1226,25 +1226,25 @@ class Users
         $cp = (
             Edition::get()->value < Edition::Pro->value ||
             ($isCpRequest && $user->can('accessCp')) ||
-            (Cms::config()->headlessMode && ! URL::isAbsoluteUrl($fePath))
+            (Cms::config()->headlessMode && ! Url::isAbsoluteUrl($fePath))
         );
-        $scheme = URL::getSchemeForTokenizedUrl($cp);
+        $scheme = Url::getSchemeForTokenizedUrl($cp);
         $siteId = $isCpRequest ? $user->affiliatedSiteId : null;
 
         if (! $cp) {
-            return URL::siteUrl($fePath, $params, $scheme, siteId: $siteId);
+            return Url::siteUrl($fePath, $params, $scheme, siteId: $siteId);
         }
 
         // Only use cpUrl() if this is a control panel request, or the base control panel URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
         if (Cms::config()->baseCpUrl || $isCpRequest) {
-            $url = URL::cpUrl($cpPath, $params, $scheme);
+            $url = Url::cpUrl($cpPath, $params, $scheme);
         } else {
-            $path = URL::prependCpTrigger($cpPath);
-            $url = URL::siteUrl($path, $params, $scheme, siteId: $siteId);
+            $path = Url::prependCpTrigger($cpPath);
+            $url = Url::siteUrl($path, $params, $scheme, siteId: $siteId);
         }
 
-        if (URL::isRootRelativeUrl($url)) {
+        if (Url::isRootRelativeUrl($url)) {
             $request = request();
             if (! app()->runningInConsole()) {
                 $url = rtrim($request->getSchemeAndHttpHost().$request->getBaseUrl(), '/').$url;

@@ -7,15 +7,15 @@
 
 namespace craft\helpers;
 
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 
 /**
  * Class Url
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated 6.0.0 use {@see URL} instead.
+ * @deprecated 6.0.0 use {@see Url} instead.
  */
-class UrlHelper extends URL
+class UrlHelper extends Url
 {
 }

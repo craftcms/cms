@@ -49,7 +49,7 @@ use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
-use CraftCms\Cms\Support\URL;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Formatter;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Data\UserGroup;
@@ -1459,14 +1459,14 @@ XML;
     protected function cpEditUrl(): ?string
     {
         if (request()->isCpRequest() && $this->getIsCurrent()) {
-            return URL::cpUrl('myaccount');
+            return Url::cpUrl('myaccount');
         }
 
         if (Edition::get() === Edition::Solo) {
             return null;
         }
 
-        return URL::cpUrl("users/$this->id");
+        return Url::cpUrl("users/$this->id");
     }
 
     #[Override]

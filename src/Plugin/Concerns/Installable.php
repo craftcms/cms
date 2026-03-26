@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Plugin\Concerns;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\File;
+use ReflectionClass;
 
 /**
  * @mixin Plugin
@@ -45,10 +46,12 @@ trait Installable
     {
         $this->beforeUninstall();
 
-        if (File::exists($this->getBasePath().'/migrations/Install.php')) {
+        $installPath = $this->getMigrationsPath().'/Install.php';
+
+        if (File::exists($installPath)) {
             $this->getMigrator()->resetMigrations(
-                [$this->getBasePath().'/migrations/Install.php'],
-                [$this->getBasePath().'/migrations'],
+                [$installPath],
+                [dirname($installPath)],
             );
         }
 
@@ -57,23 +60,47 @@ trait Installable
 
     public function createInstallMigration(): ?object
     {
-        if (! File::exists($this->getBasePath().'/migrations/Install.php')) {
+        $path = $this->getMigrationsPath().'/Install.php';
+
+        if (! File::exists($path)) {
             return null;
         }
 
-        $namespace = substr(static::class, 0, strrpos(static::class, '\\'));
-        $class = $namespace.'\migrations\Install';
+        $realPath = realpath($path);
 
-        return app()->make($class);
+        $migration = $this->findMigrationClassByFile($realPath);
+
+        if ($migration !== null) {
+            return $migration;
+        }
+
+        $migration = require $path;
+
+        if (is_object($migration)) {
+            return $migration;
+        }
+
+        return $this->findMigrationClassByFile($realPath);
+    }
+
+    private function findMigrationClassByFile(string $realPath): ?object
+    {
+        foreach (array_reverse(get_declared_classes()) as $class) {
+            if ($realPath !== new ReflectionClass($class)->getFileName()) {
+                continue;
+            }
+
+            return app()->make($class);
+        }
+
+        return null;
     }
 
     public function getMigrator(): Migrator
     {
         return $this->migrator ?? $this->migrator = app(Migrator::class)
             ->track("plugin:$this->handle")
-            ->setPaths([
-                $this->getBasePath().'/migrations',
-            ]);
+            ->setPaths([$this->getMigrationsPath()]);
     }
 
     /**

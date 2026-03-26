@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Plugin;
 
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Support\File;
 use Illuminate\Support\ServiceProvider;
 use Override;
 use ReflectionClass;
@@ -158,6 +159,23 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
 
             return dirname($class->getFileName());
         });
+    }
+
+    public function getMigrationsPath(): string
+    {
+        $conventionalPath = dirname($this->getBasePath()).'/database/migrations';
+
+        if (File::isDirectory($conventionalPath)) {
+            return $conventionalPath;
+        }
+
+        $fallbackPath = $this->getBasePath().'/migrations';
+
+        if (File::isDirectory($fallbackPath)) {
+            return $fallbackPath;
+        }
+
+        return $conventionalPath;
     }
 
     #[Override]
