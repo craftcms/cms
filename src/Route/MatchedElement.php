@@ -24,12 +24,12 @@ class MatchedElement
         return Context::getHidden('craft.matchedElementRoute', false);
     }
 
-    public static function set(ElementInterface|false|null $element): void
+    public static function set(ElementInterface|false|null $element, ?array $route = null): void
     {
         $matchedElement = false;
         $matchedRoute = false;
 
-        if ($element instanceof ElementInterface && $route = $element->getRoute()) {
+        if ($element instanceof ElementInterface && $route ??= $element->getRoute()) {
             $matchedElement = $element;
             $matchedRoute = is_string($route) ? [$route, []] : $route;
         }

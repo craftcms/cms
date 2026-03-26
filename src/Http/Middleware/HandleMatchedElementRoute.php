@@ -45,7 +45,7 @@ readonly class HandleMatchedElementRoute
 
         $routeParams = is_array($route[1] ?? null) ? $route[1] : [];
 
-        MatchedElement::set($element);
+        MatchedElement::set($element, $route);
 
         return new DynamicRoute($route[0], $routeParams)->handle($request);
     }
