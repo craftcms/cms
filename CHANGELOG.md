@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.18 - 2026-03-26
 
 - Improved error logging when logging in with passkeys. ([#18627](https://github.com/craftcms/cms/pull/18627))
 - Added `craft\controllers\ElementIndexesController::$fieldLayouts`.
