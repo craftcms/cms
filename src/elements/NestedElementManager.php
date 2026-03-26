@@ -1316,8 +1316,6 @@ JS, [
                 ->indexBy('canonicalId')
                 ->all();
 
-            $newOwnershipData = [];
-
             foreach ($canonicalElements as $canonicalElement) {
                 if (isset($derivativeElements[$canonicalElement->id])) {
                     $derivativeElement = $derivativeElements[$canonicalElement->id];
@@ -1334,20 +1332,10 @@ JS, [
                     }
                 } elseif (!$canonicalElement->trashed && $canonicalElement->dateCreated > $owner->dateCreated) {
                     // This is a new nested element, so duplicate its ownership into the derivative
-                    $newOwnershipData[] = [
-                        $canonicalElement->id,
-                        $owner->id,
-                        $canonicalElement->getSortOrder(),
-                    ];
-                }
-            }
-
-            if (!empty($newOwnershipData)) {
-                foreach ($newOwnershipData as $row) {
                     Db::upsert(Table::ELEMENTS_OWNERS, [
-                        'elementId' => $row[0],
-                        'ownerId' => $row[1],
-                        'sortOrder' => $row[2],
+                        'elementId' => $canonicalElement->id,
+                        'ownerId' => $owner->id,
+                        'sortOrder' => $canonicalElement->getSortOrder(),
                     ], false);
                 }
             }
