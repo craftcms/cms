@@ -127,14 +127,16 @@ export class CraftGraphiQL extends React.Component {
   // On everything ready, make explorer update its schema, too.
   componentDidMount() {
     // Make sure we're aware of the query.
-    this.state.query = this.graphiql.current.state.query;
+    console.log(this.graphiql);
+    this.state.query = this.graphiql.current?.state?.query ?? '';
+    console.log('state query', this.state.query);
     if (this.state.loadingSchema) {
       this.graphiql.current.setState({isWaitingForResponse: true});
     }
 
-    parameters.query = this.graphiql.current.getQueryEditor().options.value;
+    parameters.query = this.graphiql.current.getQueryEditor()?.options.value;
     parameters.variables =
-      this.graphiql.current.getVariableEditor().options.value;
+      this.graphiql.current.getVariableEditor()?.options.value;
 
     this.props
       .fetcher({
