@@ -22,7 +22,7 @@
 - Fixed a bug where successive edits to nested elements were forgotten. ([#18624](https://github.com/craftcms/cms/issues/18624))
 - Fixed a bug where nested elements weren’t getting duplicated when a new site was added to the owner element. ([#18621](https://github.com/craftcms/cms/issues/18621))
 - Fixed a bug where nested entries were getting assigned new IDs if they were edited multiple times for the same owner element draft. ([#18461](https://github.com/craftcms/cms/issues/18461))
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-33m5-hqp9-97pw)
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-gj2p-p9m4-c8gw, GHSA-33m5-hqp9-97pw)
 
 ## 5.9.17 - 2026-03-17
 
