@@ -32,7 +32,7 @@
 - Added `craft\base\DefaultableFieldInterface`. ([#18522](https://github.com/craftcms/cms/pull/18522))
 - Added `craft\elements\PopulateElementEvent::$content`.
 - Added `craft\validators\TimeValidator::$outOfRange`. ([#18575](https://github.com/craftcms/cms/pull/18575))
-- Added `Craft.CpScreenSlideout::refresh()`. ([#18625](https://github.com/craftcms/cms/pull/18625))
+- Added `Craft.CpScreenSlideout::reload()`. ([#18625](https://github.com/craftcms/cms/pull/18625))
 - `craft\elements\PopulateElementEvent::$row` no longer includes `fieldValues` or `generatedFieldValues` keys.
 
 ### System
