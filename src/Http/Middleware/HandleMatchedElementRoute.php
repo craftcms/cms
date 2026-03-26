@@ -9,9 +9,9 @@ use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Route\DynamicRoute;
+use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Context;
 
 readonly class HandleMatchedElementRoute
 {
@@ -45,8 +45,7 @@ readonly class HandleMatchedElementRoute
 
         $routeParams = is_array($route[1] ?? null) ? $route[1] : [];
 
-        Context::addHidden('craft.matchedElement', $element);
-        Context::addHidden('craft.matchedElementRoute', $route);
+        MatchedElement::set($element);
 
         return new DynamicRoute($route[0], $routeParams)->handle($request);
     }

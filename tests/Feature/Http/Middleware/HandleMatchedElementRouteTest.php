@@ -8,12 +8,12 @@ use CraftCms\Cms\Element\Events\SetRoute;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Middleware\HandleMatchedElementRoute;
+use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\View\Events\RegisterSiteTemplateRoots;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
@@ -28,7 +28,7 @@ beforeEach(function () {
     });
 
     Route::middleware(['web', 'craft'])->any('actions/custom/route', fn () => new JsonResponse([
-        'matchedElementId' => Context::getHidden('craft.matchedElement')?->id,
+        'matchedElementId' => MatchedElement::get()->id,
     ]));
 
     Route::middleware(['web', 'craft', 'craft.web'])->any('{path?}', fn () => new JsonResponse([
@@ -56,7 +56,7 @@ it('renders matched element template routes directly', function () {
 
     expect($response->getStatusCode())->toBe(200)
         ->and(trim((string) $response->getContent()))->toBe("entry-template:{$entry->id}:test-entry")
-        ->and(Context::getHidden('craft.matchedElement')?->id)->toBe($entry->id);
+        ->and(MatchedElement::get()->id)->toBe($entry->id);
 });
 
 it('dispatches matched element string routes through an action request', function () {

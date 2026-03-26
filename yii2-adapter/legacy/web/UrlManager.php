@@ -14,12 +14,12 @@ use craft\web\UrlRule as CraftUrlRule;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Route\MatchedElement;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\URL;
 use CraftCms\Cms\Twig\TemplateResolver;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 use yii\web\UrlRule as YiiUrlRule;
 use function CraftCms\Cms\backTraceAsString;
@@ -217,10 +217,11 @@ class UrlManager extends \yii\web\UrlManager
      * ```
      *
      * @return ElementInterface|false
+     * @deprecated 6.0.0 use {@see MatchedElement::get()} instead.
      */
     public function getMatchedElement(): ElementInterface|false
     {
-        return Context::getHidden('craft.matchedElement', false);
+        return MatchedElement::get();
     }
 
     /**
@@ -228,26 +229,11 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @param ElementInterface|false|null $element
      * @since 3.2.3
+     * @deprecated 6.0.0 use {@see MatchedElement::set()} instead.
      */
     public function setMatchedElement(ElementInterface|false|null $element): void
     {
-        if ($element instanceof ElementInterface) {
-            if ($route = $element->getRoute()) {
-                if (is_string($route)) {
-                    $route = [$route, []];
-                }
-
-                Context::addHidden('craft.matchedElement', $element);
-                Context::addHidden('craft.matchedElementRoute', $route);
-                return;
-            }
-
-            // Element doesn't have a route so ignore it
-            $element = false;
-        }
-
-        Context::addHidden('craft.matchedElement', $element ?? false);
-        Context::addHidden('craft.matchedElementRoute', $element);
+        MatchedElement::set($element);
     }
 
     /**
@@ -340,11 +326,6 @@ class UrlManager extends \yii\web\UrlManager
             return $route;
         }
 
-        // Is this an element request?
-        if (($route = $this->_getMatchedElementRoute($request)) !== false) {
-            return $route;
-        }
-
         // Do we have a URL route that matches?
         if (($route = $this->_getMatchedUrlRoute($request)) !== false) {
             return $route;
@@ -352,17 +333,6 @@ class UrlManager extends \yii\web\UrlManager
 
         // Does it look like they're trying to access a public template path?
         return $this->_getTemplateRoute($request);
-    }
-
-    /**
-     * Attempts to match a path with an element in the database.
-     *
-     * @param Request $request
-     * @return mixed
-     */
-    private function _getMatchedElementRoute(Request $request): mixed
-    {
-        return Context::getHidden('craft.matchedElementRoute', false);
     }
 
     /**
