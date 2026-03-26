@@ -29,39 +29,39 @@
     "@craftcms/playwright": "file:packages/craftcms-playwright",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
     "@laravel/vite-plugin-wayfinder": "^0.1.7",
-    "@playwright/test": "^1.58.0",
-    "@tailwindcss/vite": "^4.1.18",
+    "@playwright/test": "^1.58.2",
+    "@tailwindcss/vite": "^4.2.2",
     "@total-typescript/tsconfig": "^1.0.4",
-    "@vitejs/plugin-vue": "^6.0.3",
+    "@vitejs/plugin-vue": "^6.0.5",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
+    "lint-staged": "^16.4.0",
     "npm-run-all": "^4.1.5",
     "prettier": "3.8.1",
-    "stylelint": "^17.0.0",
+    "stylelint": "^17.6.0",
     "stylelint-config-standard": "^40.0.0",
     "stylelint-config-standard-scss": "^17.0.0",
     "stylelint-prettier": "^5.0.3",
     "stylelint-use-logical-spec": "^5.0.1",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.0",
-    "vue-tsc": "^3.2.4"
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3",
+    "vue-tsc": "^3.2.6"
   },
   "optionalDependencies": {
     "@awesome.me/kit-ddaed3f5c5": "^1.0.74"
   },
   "dependencies": {
-    "@atlaskit/pragmatic-drag-and-drop": "^1.7.7",
+    "@atlaskit/pragmatic-drag-and-drop": "^1.7.9",
     "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
     "@craftcms/cp": "file:packages/craftcms-cp",
     "@headlessui/vue": "^1.7.23",
     "@inertiajs/vite": "^3.0.0",
     "@inertiajs/vue3": "^3.0.0",
     "@tanstack/vue-table": "^8.21.3",
-    "@vueuse/core": "^14.1.0",
-    "axios": "^1.13.3",
+    "@vueuse/core": "^14.2.1",
+    "axios": "^1.13.6",
     "laravel-vite-plugin": "^3.0.0",
     "lit": "^3.3.2",
-    "tailwindcss": "^4.1.18",
-    "vue": "^3.5.27"
+    "tailwindcss": "^4.2.2",
+    "vue": "^3.5.31"
   }
 }
