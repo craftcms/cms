@@ -248,6 +248,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             'id' => 'elements.id',
             'slug' => 'elements_sites.slug',
             'uid' => 'elements.uid',
+            'siteId' => 'elements_sites.siteId',
         ];
 
         if ($this->elementType::hasTitles()) {
