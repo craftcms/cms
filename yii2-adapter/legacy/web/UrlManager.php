@@ -15,7 +15,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Route\MatchedElement;
-use CraftCms\Cms\RouteToken\RouteTokens;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\URL;
@@ -321,11 +320,6 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getRequestRoute(Request $request): mixed
     {
-        // Is there a token in the URL?
-        if (($route = $this->_getTokenRoute($request)) !== false) {
-            return $route;
-        }
-
         // Do we have a URL route that matches?
         if (($route = $this->_getMatchedUrlRoute($request)) !== false) {
             return $route;
@@ -412,34 +406,5 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         return ['templates/render', ['template' => $path]];
-    }
-
-    /**
-     * Checks if the request has a token in it.
-     *
-     * @param Request $request
-     * @return array|false
-     */
-    private function _getTokenRoute(Request $request): array|false
-    {
-        if (!$this->checkToken) {
-            return false;
-        }
-
-        $token = $request->getToken();
-
-        if (app()->hasDebugModeEnabled()) {
-            Log::debug(Json::encode([
-                'rule' => 'Token' . ($token !== null ? ': ' . $token : ''),
-                'match' => $token !== null,
-                'parent' => null,
-            ]), [__METHOD__]);
-        }
-
-        if ($token === null) {
-            return false;
-        }
-
-        return app(RouteTokens::class)->getTokenRoute($token);
     }
 }
