@@ -19,21 +19,7 @@
   import {index} from '@routes/cp/settings/sites';
   import InputCombobox from '@/components/InputCombobox.vue';
   import IndexLayout from '@/layout/IndexLayout.vue';
-  // Add refs for the two elements we need to control
-  const siteGroupActionsMenu = ref<HTMLElement & {opened: boolean}>();
-  const renameGroupModal = ref<HTMLElement & {opened: boolean}>();
-
-  async function openRenameModal() {
-    // Close the action menu first — modal is no longer nested inside it
-    if (siteGroupActionsMenu.value) {
-      siteGroupActionsMenu.value.opened = false;
-    }
-    // Wait one tick for the hide to begin before showing the modal
-    await nextTick();
-    if (renameGroupModal.value) {
-      renameGroupModal.value.opened = true;
-    }
-  }
+  const renameGroupModal = ref<HTMLElement & {open(): Promise<void>}>();
 
   const props = defineProps<{
     readOnly: boolean;
@@ -250,7 +236,7 @@
           </craft-button>
 
           <div slot="content">
-            <craft-action-item @click="openRenameModal">
+            <craft-action-item @click="renameGroupModal!.open()">
               {{ MODAL_ACTIONS.rename.label }}
             </craft-action-item>
 

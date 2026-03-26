@@ -1,6 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
 import {uuid} from '@lion/ui/core.js';
+import type CraftActionItem from '@src/components/action-item/action-item';
 
 /**
  * @slot - Items to be rendered in the menu.
@@ -31,11 +32,36 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
 
   private uid: string;
 
+  get actionItems(): NodeListOf<CraftActionItem> {
+    return (
+      this._overlayContentNode?.querySelectorAll('craft-action-item') ??
+      ([] as unknown as NodeListOf<CraftActionItem>)
+    );
+  }
+
   // @ts-ignore
   _defineOverlayConfig() {
     return {
       ...withDropdownConfig(),
     };
+  }
+
+  /**
+   * Adds functionality to close the overlay on click
+   * To maintain focus management, a focus listener is added on the target so that when it gets re-focused, it triggers a close event on the overlay.
+   * @private
+   */
+  private __addAutoCloseOnSelect() {
+    this._overlayContentNode.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      target.addEventListener(
+        'focus',
+        () => {
+          target.dispatchEvent(new Event('close-overlay', {bubbles: true}));
+        },
+        {once: true}
+      );
+    });
   }
 
   private __setupInvoker() {
@@ -62,6 +88,7 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
 
   override firstUpdated() {
     this.uid = uuid();
+    this.__addAutoCloseOnSelect();
   }
 
   protected override render(): unknown {

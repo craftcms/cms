@@ -36,18 +36,18 @@ export default class CraftModal extends OverlayMixin(LitElement) {
     }
   }
 
-  override firstUpdated(c: PropertyValues<this>) {
-    super.firstUpdated(c);
+  override firstUpdated(changed: PropertyValues<this>) {
+    super.firstUpdated(changed);
 
-    if (c.has('name')) {
+    if (changed.has('name')) {
       this.__setAccessibleName();
     }
   }
 
-  override updated(c: PropertyValues<this>) {
-    super.updated(c);
+  override updated(changed: PropertyValues<this>) {
+    super.updated(changed);
 
-    if (c.has('name')) {
+    if (changed.has('name')) {
       this.__setAccessibleName();
     }
   }

@@ -3,7 +3,7 @@ import {css} from 'lit';
 export default css`
   ::slotted([slot='content']) {
     display: block;
-    background-color: white;
+    background-color: var(--c-modal-fill);
     border-radius: var(--c-modal-radius);
     border-width: var(--c-modal-border-width);
     border-style: var(--c-modal-border-style);
