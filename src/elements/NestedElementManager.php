@@ -1081,7 +1081,7 @@ JS, [
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
                 $newAttributes = [
-                    'canonicalId' => $setCanonicalId ? $element->id : null,
+                    'canonicalId' => $setCanonicalId ? ($element->getCanonical()->getCanonicalId() ?? $element->id) : null,
                     'primaryOwner' => $target,
                     'owner' => $target,
                     'propagating' => false,
