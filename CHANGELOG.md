@@ -1,7 +1,8 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.9.18 - 2026-03-26
 
+- Improved error logging when logging in with passkeys. ([#18627](https://github.com/craftcms/cms/pull/18627))
 - Added `craft\controllers\ElementIndexesController::$fieldLayouts`.
 - `craft\services\ElementSources::getTableAttributes()` now has a `$fieldLayouts` argument.
 - Fixed a bug where GraphQL results were getting cached even if they contained transform generation URLs. ([#18581](https://github.com/craftcms/cms/issues/18581))
@@ -20,6 +21,12 @@
 - Fixed a bug where element chips and cards weren’t getting refreshed when a provisional draft’s changes were discarded in a different tab.
 - Fixed a bug where element attributes weren’t always updating when content changes were made.
 - Fixed a bug where successive edits to nested elements were forgotten. ([#18624](https://github.com/craftcms/cms/issues/18624))
+- Fixed a bug where nested elements weren’t getting duplicated when a new site was added to the owner element. ([#18621](https://github.com/craftcms/cms/issues/18621))
+- Fixed a bug where nested entries were getting assigned new IDs if they were edited multiple times for the same owner element draft. ([#18461](https://github.com/craftcms/cms/issues/18461))
+- Fixed a SQL error that could occur when editing an element draft that had upstream changes. ([#18626](https://github.com/craftcms/cms/pull/18626))
+- Fixed a bug where custom sources’ labels weren’t being translated within the document title. ([#18629](https://github.com/craftcms/cms/issues/18629))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-gj2p-p9m4-c8gw, GHSA-33m5-hqp9-97pw)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-qrgm-p9w5-rrfw)
 
 ## 5.9.17 - 2026-03-17
 

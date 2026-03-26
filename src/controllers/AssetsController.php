@@ -1445,6 +1445,9 @@ class AssetsController extends Controller
             throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
+        $this->requireVolumePermissionByAsset('viewAssets', $asset);
+        $this->requirePeerVolumePermissionByAsset('viewPeerAssets', $asset);
+
         // get the folder for selected asset
         $folder = $asset->getFolder();
         $sourcePath[] = $folder->getSourcePathInfo();

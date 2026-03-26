@@ -969,7 +969,7 @@ JS, [
                         } else {
                             // Duplicate the elements, but **don't track** the duplications, so the edit page doesn’t think
                             // its elements have been replaced by the other sites’ nested elements
-                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner)) {
+                            if ($owner->propagateAll || $this->propagateRequired($owner, $localizedOwner) || !empty($owner->newSiteIds)) {
                                 $this->duplicateNestedElements($owner, $localizedOwner, force: true);
                             }
                         }
@@ -1076,15 +1076,15 @@ JS, [
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
+            // Only set the canonicalId if the target owner element is a derivative
+            // and if the target's canonical element is not the same as target element, see
+            // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
             $setCanonicalId = $target->getIsDerivative() && $target->getCanonical()->id !== $target->id;
 
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
                 $newAttributes = [
-                    // Only set the canonicalId if the target owner element is a derivative
-                    // and if the target's canonical element is not the same as target element, see
-                    // https://app.frontapp.com/open/msg_ukaoki1?key=U6zkE_S6_ApMXn3ntPMwUxSLe0sUPsmY for more info
-                    'canonicalId' => $setCanonicalId ? $element->id : null,
+                    'canonicalId' => $setCanonicalId ? ($element->getCanonical()->getCanonicalId() ?? $element->id) : null,
                     'primaryOwner' => $target,
                     'owner' => $target,
                     'propagating' => false,
@@ -1319,8 +1319,6 @@ JS, [
                 ->indexBy('canonicalId')
                 ->all();
 
-            $newOwnershipData = [];
-
             foreach ($canonicalElements as $canonicalElement) {
                 if (isset($derivativeElements[$canonicalElement->id])) {
                     $derivativeElement = $derivativeElements[$canonicalElement->id];
@@ -1337,16 +1335,12 @@ JS, [
                     }
                 } elseif (!$canonicalElement->trashed && $canonicalElement->dateCreated > $owner->dateCreated) {
                     // This is a new nested element, so duplicate its ownership into the derivative
-                    $newOwnershipData[] = [
-                        $canonicalElement->id,
-                        $owner->id,
-                        $canonicalElement->getSortOrder(),
-                    ];
+                    Db::upsert(Table::ELEMENTS_OWNERS, [
+                        'elementId' => $canonicalElement->id,
+                        'ownerId' => $owner->id,
+                        'sortOrder' => $canonicalElement->getSortOrder(),
+                    ], false);
                 }
-            }
-
-            if (!empty($newOwnershipData)) {
-                Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $newOwnershipData);
             }
 
             // Keep track of the sites we've already covered
