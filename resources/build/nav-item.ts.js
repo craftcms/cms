@@ -1,1 +1,1 @@
-import{t as e}from"./nav-item-D3exy0bq.js";export{e as default};
+import"./lit.js";import"./decorators.js";import{t as e}from"./nav-item-D3exy0bq.js";export{e as default};
