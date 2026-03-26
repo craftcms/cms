@@ -1,3 +1,3 @@
 // line 1
 Craft::$app->getSession()->setNotice("Redirected successfully");
-redirect(CraftCms\Cms\Support\URL::url("/home"), 301)->send(); exit;
+redirect(CraftCms\Cms\Support\URL::url("/home"), 301)->throwResponse();
