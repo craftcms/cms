@@ -113,6 +113,27 @@
   - `CraftCms\Cms\Asset\Commands\CleanupAssetIndexesCommand` => `php craft index-assets:cleanup`
   - `CraftCms\Cms\Asset\Commands\IndexAllAssetsCommand` => `php craft index-assets:all`
   - `CraftCms\Cms\Asset\Commands\IndexOneAssetCommand` => `php craft index-assets:one`
+- `craft\console\controllers\BaseSystemStatusController`, `craft\console\controllers\OnController`, and `craft\console\controllers\OffController` have been removed in favor of the classes below:
+  - `CraftCms\Cms\Console\Commands\System\OnCommand` => `php craft on`
+  - `CraftCms\Cms\Console\Commands\System\OffCommand` => `php craft off`
+- `craft\console\controllers\ElementsController` has been removed in favor of the classes below:
+  - `CraftCms\Cms\Element\Commands\DeleteCommand` => `php craft elements:delete`
+  - `CraftCms\Cms\Element\Commands\DeleteAllOfTypeCommand` => `php craft elements:delete-all-of-type`
+  - `CraftCms\Cms\Element\Commands\RestoreCommand` => `php craft elements:restore`
+- `craft\console\controllers\UpdateStatusesController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Entry\Commands\UpdateStatusesCommand` => `php craft update-statuses`
+- `craft\console\controllers\utils\FixElementUidsController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\FixElementUidsCommand` => `php craft utils:fix-element-uids`
+- `craft\console\controllers\utils\FixFieldLayoutUidsController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\FixFieldLayoutUidsCommand` => `php craft utils:fix-field-layout-uids`
+- `craft\console\controllers\utils\PruneOrphanedEntriesController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\PruneOrphanedEntriesCommand` => `php craft utils:prune-orphaned-entries`
+- `craft\console\controllers\utils\PruneProvisionalDraftsController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\PruneProvisionalDraftsCommand` => `php craft utils:prune-provisional-drafts`
+- `craft\console\controllers\utils\PruneRevisionsController` has been removed in favor of the class below:
+  - `CraftCms\Cms\Console\Commands\Utils\PruneRevisionsCommand` => `php craft utils:prune-revisions`
+- `craft\console\controllers\utils\RepairController::actionProjectConfig()` has been removed in favor of the class below:
+  - `CraftCms\Cms\ProjectConfig\Commands\RepairCommand` => `php craft project-config:repair`
 
 ### Mutex
 

@@ -9,41 +9,38 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\Event as YiiEvent;
 use craft\console\Controller;
 use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\Tag;
+use craft\events\DefineConsoleActionsEvent;
 use craft\events\MultiElementActionEvent;
 use craft\helpers\Console;
 use craft\helpers\ElementHelper;
 use craft\models\CategoryGroup;
 use craft\models\TagGroup;
 use craft\services\Elements;
-use CraftCms\Cms\Address\Addresses;
-use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Asset\Data\Volume;
-use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Element\Commands\Resave\ResaveCommand;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Events\DefineResaveCommands;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Jobs\ResaveElements;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
-use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Support\Collection;
-use ReflectionClass;
+use Illuminate\Support\Facades\Event;
 use Throwable;
-use yii\console\Exception;
 use yii\console\ExitCode;
+
 use function CraftCms\Cms\normalizeValue;
-use function CraftCms\Cms\renderObjectTemplate;
 
 /**
  * Allows you to bulk-save elements.
@@ -52,6 +49,7 @@ use function CraftCms\Cms\renderObjectTemplate;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.15
+ * @deprecated in 6.0.0. Use the `craft:resave:*` Artisan commands instead.
  */
 class ResaveController extends Controller
 {
@@ -65,31 +63,7 @@ class ResaveController extends Controller
      */
     final public static function normalizeTo(?string $to): callable
     {
-        // empty
-        if ($to === ':empty:') {
-            return fn() => '';
-        }
-
-        // object template
-        if (str_starts_with($to, '=')) {
-            $template = substr($to, 1);
-            return fn(ElementInterface $element) => renderObjectTemplate($template, $element);
-        }
-
-        // PHP arrow function
-        if (preg_match('/^fn\s*\(\s*(?:\$(\w+)\s*)?\)\s*=>\s*(.+)/', $to, $match)) {
-            $var = $match[1];
-            $php = sprintf('return %s;', Str::chopStart(rtrim($match[2], ';'), 'return '));
-            return function(ElementInterface $element) use ($var, $php) {
-                if ($var) {
-                    ${$var} = $element;
-                }
-                return eval($php);
-            };
-        }
-
-        // attribute name
-        return static fn(ElementInterface $element) => $element->$to;
+        return ResaveCommand::normalizeTo($to);
     }
 
     /**
@@ -368,137 +342,6 @@ class ResaveController extends Controller
     }
 
     /**
-     * Runs all other `resave/*` commands.
-     *
-     * @return int
-     */
-    public function actionAll(): int
-    {
-        $actions = [];
-        $ref = new ReflectionClass($this);
-        foreach ($ref->getMethods() as $method) {
-            if (
-                $method->name !== 'actionAll' &&
-                $method->isPublic() &&
-                !$method->isStatic() &&
-                !$method->isAbstract() &&
-                $method->getDeclaringClass()->name === self::class &&
-                str_starts_with($method->name, 'action')
-            ) {
-                $actions[] = Str::kebab(substr($method->name, 6));
-            }
-        }
-        array_push($actions, ...array_keys($this->actions()));
-
-        $params = $this->getPassedOptionValues();
-        $actionsToSkip = [];
-
-        // check if all actions support all the params
-        foreach ($actions as $key => $id) {
-            if (!$this->doesActionSupportsAllOptions($id, $params)) {
-                $actionsToSkip[] = $id;
-                unset($actions[$key]);
-            }
-        }
-
-        // ask for confirmation
-        if ($this->interactive && !empty($actionsToSkip)) {
-            $this->output('The following commands don’t support the provided options, and will be skipped:', Console::FG_YELLOW);
-            foreach ($actionsToSkip as $id) {
-                $invalidParams = array_map(
-                    fn($param) => sprintf('`--%s`', Str::kebab($param)),
-                    $this->getUnsupportedOptions($id, $params)
-                );
-                $this->output(' ' . $this->markdownToAnsi(sprintf(
-                    '- `resave/%s` doesn’t support %s',
-                    $id,
-                    collect($invalidParams)->sentence(),
-                )));
-            }
-            Console::outdent();
-            if (!$this->confirm('Continue?', true)) {
-                return ExitCode::OK;
-            }
-        }
-
-        // run the actions which support all the params
-        foreach ($actions as $id) {
-            try {
-                $this->output();
-                $this->do("Running `resave/$id`", function() use ($id, $params) {
-                    Console::indent();
-                    try {
-                        $this->runAction($id, $params);
-                    } finally {
-                        Console::outdent();
-                    }
-                });
-            } catch (Exception) {
-            }
-        }
-
-        return ExitCode::OK;
-    }
-
-    /**
-     * Re-saves user addresses.
-     *
-     * @return int
-     * @since 4.5.6
-     */
-    public function actionAddresses(): int
-    {
-        $criteria = [];
-        if (isset($this->ownerId)) {
-            $criteria['ownerId'] = array_map(fn(string $id) => (int)$id, explode(',', (string)$this->ownerId));
-        }
-        if (isset($this->countryCode)) {
-            $criteria['countryCode'] = explode(',', (string)$this->countryCode);
-        }
-
-        if (!empty($this->withFields)) {
-            $fieldLayout = app(Addresses::class)->getFieldLayout();
-            if (!$this->hasTheFields($fieldLayout)) {
-                $this->output($this->markdownToAnsi('The address field layout doesn’t satisfy `--with-fields`.'));
-                return ExitCode::UNSPECIFIED_ERROR;
-            }
-        }
-
-        return $this->resaveElements(Address::class, $criteria);
-    }
-
-    /**
-     * Re-saves assets.
-     *
-     * @return int
-     */
-    public function actionAssets(): int
-    {
-        $criteria = [];
-        if (isset($this->volume)) {
-            $criteria['volume'] = explode(',', $this->volume);
-        }
-
-        if (!empty($this->withFields)) {
-            $handles = app(Volumes::class)->getAllVolumes()
-                ->filter(fn(Volume $volume) => $this->hasTheFields($volume->getFieldLayout()))
-                ->map(fn(Volume $volume) => $volume->handle)
-                ->all();
-            if (isset($criteria['volume'])) {
-                $criteria['volume'] = array_intersect($criteria['volume'], $handles);
-            } else {
-                $criteria['volume'] = $handles;
-            }
-            if (empty($criteria['volume'])) {
-                $this->output($this->markdownToAnsi('No volumes satisfy `--with-fields`.'));
-                return ExitCode::UNSPECIFIED_ERROR;
-            }
-        }
-
-        return $this->resaveElements(Asset::class, $criteria);
-    }
-
-    /**
      * Re-saves categories.
      *
      * @return int
@@ -506,6 +349,11 @@ class ResaveController extends Controller
      */
     public function actionCategories(): int
     {
+        if (!DeprecatedConcepts::supportsCategories()) {
+            $this->stderr('Categories are not supported.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         $criteria = [];
         if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
@@ -531,48 +379,6 @@ class ResaveController extends Controller
     }
 
     /**
-     * Re-saves entries.
-     *
-     * @return int
-     */
-    public function actionEntries(): int
-    {
-        $criteria = [];
-        if ($this->allSections) {
-            $criteria['section'] = '*';
-        } elseif (isset($this->section)) {
-            $criteria['section'] = explode(',', $this->section);
-        }
-        if (isset($this->field)) {
-            $criteria['field'] = explode(',', $this->field);
-        }
-        if (isset($this->ownerId)) {
-            $criteria['ownerId'] = array_map(fn(string $id) => (int)$id, explode(',', (string)$this->ownerId));
-        }
-        if (isset($this->type)) {
-            $criteria['type'] = explode(',', $this->type);
-        }
-
-        if (!empty($this->withFields)) {
-            $handles = EntryTypes::getAllEntryTypes()
-                ->filter(fn(EntryType $entryType) => $this->hasTheFields($entryType->getFieldLayout()))
-                ->pluck('handle')
-                ->all();
-            if (isset($criteria['type'])) {
-                $criteria['type'] = array_intersect($criteria['type'], $handles);
-            } else {
-                $criteria['type'] = $handles;
-            }
-            if (empty($criteria['type'])) {
-                $this->output($this->markdownToAnsi('No entry types satisfy `--with-fields`.'));
-                return ExitCode::UNSPECIFIED_ERROR;
-            }
-        }
-
-        return $this->resaveElements(Entry::class, $criteria);
-    }
-
-    /**
      * Re-saves tags.
      *
      * @return int
@@ -580,6 +386,11 @@ class ResaveController extends Controller
      */
     public function actionTags(): int
     {
+        if (!DeprecatedConcepts::supportsTags()) {
+            $this->stderr('Tags are not supported.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         $criteria = [];
         if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
@@ -604,35 +415,6 @@ class ResaveController extends Controller
         return $this->resaveElements(Tag::class, $criteria);
     }
 
-    /**
-     * Re-saves users.
-     *
-     * @return int
-     */
-    public function actionUsers(): int
-    {
-        $criteria = [];
-        if (isset($this->group)) {
-            $criteria['group'] = explode(',', $this->group);
-        }
-
-        if (!empty($this->withFields)) {
-            $fieldLayout = app(Fields::class)->getLayoutByType(User::class);
-            if (!$this->hasTheFields($fieldLayout)) {
-                $this->output($this->markdownToAnsi('The user field layout doesn’t satisfy `--with-fields`.'));
-                return ExitCode::UNSPECIFIED_ERROR;
-            }
-        }
-
-        return $this->resaveElements(User::class, $criteria);
-    }
-
-    /**
-     * Returns whether a field layout has any of the fields specified by [[$withFields]].
-     * @param FieldLayout $fieldLayout
-     * @return bool
-     * @since 5.5.0
-     */
     public function hasTheFields(FieldLayout $fieldLayout): bool
     {
         $fieldsService = app(Fields::class);
@@ -692,6 +474,40 @@ class ResaveController extends Controller
 
         Typecast::configure($query, $this->_baseCriteria());
         return $this->_resaveElements($query);
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(DefineResaveCommands::class, function(DefineResaveCommands $event) {
+            if (DeprecatedConcepts::supportsCategories()) {
+                $event->commands['craft:resave:categories'] = [
+                    'description' => 'Re-saves categories.',
+                ];
+            }
+
+            if (DeprecatedConcepts::supportsTags()) {
+                $event->commands['craft:resave:tags'] = [
+                    'description' => 'Re-saves tags.',
+                ];
+            }
+
+            if (!YiiEvent::hasHandlers(self::class, Controller::EVENT_DEFINE_ACTIONS)) {
+                return;
+            }
+
+            $yiiEvent = new DefineConsoleActionsEvent();
+            YiiEvent::trigger(self::class, Controller::EVENT_DEFINE_ACTIONS, $yiiEvent);
+
+            foreach ($yiiEvent->actions as $id => $action) {
+                if (!isset($action['action'])) {
+                    continue;
+                }
+
+                $event->commands["craft:resave:$id"] = [
+                    'description' => $action['helpSummary'] ?? '',
+                ];
+            }
+        });
     }
 
     /**
@@ -847,45 +663,5 @@ class ResaveController extends Controller
         $label = isset($this->propagateTo) ? 'propagating' : 'resaving';
         $this->output("Done $label $elementsText.", Console::FG_YELLOW);
         return $fail ? ExitCode::UNSPECIFIED_ERROR : ExitCode::OK;
-    }
-
-    /**
-     * Returns whether all options passed to an action are supported.
-     * Used by resave/all command.
-     *
-     * @param string $actionId
-     * @param array $params
-     * @return bool
-     */
-    private function doesActionSupportsAllOptions(string $actionId, array $params): bool
-    {
-        $options = $this->options($actionId);
-        foreach ($params as $param => $value) {
-            if (!in_array($param, $options)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns an array of options that are not supported by the action.
-     *
-     * @param string $actionId
-     * @param array $params
-     * @return array
-     */
-    private function getUnsupportedOptions(string $actionId, array $params): array
-    {
-        $unsupportedParams = [];
-        $options = $this->options($actionId);
-        foreach ($params as $param => $value) {
-            if (!in_array($param, $options)) {
-                $unsupportedParams[] = $param;
-            }
-        }
-
-        return $unsupportedParams;
     }
 }

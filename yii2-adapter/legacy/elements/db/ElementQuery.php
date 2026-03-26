@@ -7,6 +7,7 @@
 
 namespace craft\elements\db;
 
+use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
@@ -3989,5 +3990,29 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function whereIn($column, $values, $boolean = 'and', $not = false): static
     {
         return $this->andWhere(['in', $column, $values]);
+    }
+
+    /**
+     * Re-implement each as a supported call similar
+     * to Laravel's ->each on query builder.
+     * @return ?\yii\db\BatchQueryResult
+     */
+    public function each($batchSize = 100, $db = null)
+    {
+        if (is_int($batchSize)) {
+            return parent::each($batchSize, $db);
+        }
+
+        if ($batchSize instanceof Closure) {
+            $count = is_int($db) ? $db : 100;
+
+            foreach (Db::each($this, $count) as $element) {
+                $batchSize($element);
+            }
+
+            return null;
+        }
+
+        throw new InvalidArgumentException('Invalid call to ->each');
     }
 }
