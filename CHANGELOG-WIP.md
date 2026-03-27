@@ -16,6 +16,7 @@
 - Category indexes can now have “Group” columns. ([#18553](https://github.com/craftcms/cms/discussions/18553))
 - Element slideouts now automatically refresh when the same element is updated in another tab/slideout. ([#18625](https://github.com/craftcms/cms/pull/18625))
 - Added the “Time Zone” user preference. ([#8518](https://github.com/craftcms/cms/discussions/8518))
+- Element indexes now automatically refresh after duplicating elements and the queue is completed, if there’s an active search term. ([#18636](https://github.com/craftcms/cms/issues/18636))
 
 ### Administration
 - Time fields’ “Max Time” settings can now be set to an earlier time than “Min Time”, for overnight time ranges. ([#18575](https://github.com/craftcms/cms/pull/18575))
@@ -35,6 +36,7 @@
 - Added `craft\validators\TimeValidator::$outOfRange`. ([#18575](https://github.com/craftcms/cms/pull/18575))
 - Added `Craft.CpScreenSlideout::reload()`. ([#18625](https://github.com/craftcms/cms/pull/18625))
 - `craft\elements\PopulateElementEvent::$row` no longer includes `fieldValues` or `generatedFieldValues` keys.
+- `Craft.CP` now triggers a `queueCompleted` event when the last queue job is completed.
 
 ### System
 - Updated Twig to 3.24. ([#18259](https://github.com/craftcms/cms/discussions/18259), [#18454](https://github.com/craftcms/cms/issues/18454))
