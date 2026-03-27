@@ -1664,6 +1664,7 @@ return [
     'System Name' => 'Όνομα συστήματος',
     'System Report' => 'Αναφορά συστήματος',
     'System Status' => 'Κατάσταση συστήματος',
+    'System time zone ({abbr})' => 'System time zone ({abbr})',
     'System' => 'Σύστημα',
     'Table Columns' => 'Στήλες πίνακα',
     'Table' => 'Πίνακας',
