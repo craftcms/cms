@@ -1664,6 +1664,7 @@ return [
     'System Name' => '시스템 이름',
     'System Report' => '시스템 보고서',
     'System Status' => '시스템 상태',
+    'System time zone ({abbr})' => 'System time zone ({abbr})',
     'System' => '시스템',
     'Table Columns' => '테이블 칼럼',
     'Table' => '테이블',
