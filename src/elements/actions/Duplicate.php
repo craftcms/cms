@@ -69,10 +69,10 @@ class Duplicate extends ElementAction
       return elementIndex.settings.canDuplicateElements(selectedItems);
     },
     beforeActivate: async (selectedItems, elementIndex) => {
-      await elementIndex.settings.onBeforeDuplicateElements(selectedItems);
+      await elementIndex.onBeforeDuplicateElements(selectedItems);
     },
     afterActivate: async (selectedItems, elementIndex) => {
-      await elementIndex.settings.onDuplicateElements(selectedItems);
+      await elementIndex.onDuplicateElements(selectedItems);
     },
   });
 })();

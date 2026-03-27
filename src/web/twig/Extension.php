@@ -65,10 +65,14 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
+use DirectoryIterator;
+use GuzzleHttp\Psr7\FnStream;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 use Money\Money;
+use SimpleXMLElement;
+use Symfony\Component\Process\Process;
 use Throwable;
 use Traversable;
 use Twig\DeprecatedCallableInfo;
@@ -84,6 +88,7 @@ use Twig\TwigTest;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\behaviors\AttributeTypecastBehavior;
 use yii\db\Exception;
 use yii\db\Expression;
 use yii\db\QueryInterface;
@@ -1483,11 +1488,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function createFunction(string|array $type, array $params = []): object
     {
         $class = is_string($type) ? $type : ($type['__class'] ?? $type['class'] ?? null);
-        if (
-            !is_subclass_of($class, BaseObject::class) &&
-            !str_starts_with($class, 'craft\\helpers\\')
-        ) {
-            throw new InvalidArgumentException(sprintf('create() can only be used to create instances of %s.', BaseObject::class));
+        if (!$class) {
+            throw new InvalidArgumentException('No class specified for create().');
+        }
+
+        $blocklist = [
+            AttributeTypecastBehavior::class,
+            DirectoryIterator::class,
+            FnStream::class,
+            Process::class,
+            SimpleXMLElement::class,
+        ];
+
+        foreach ($blocklist as $c) {
+            if (is_a($class, $c, true)) {
+                throw new InvalidArgumentException(sprintf('create() cannot be used to create instances of %s.', $class));
+            }
         }
 
         /** @var BaseObject */

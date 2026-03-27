@@ -2408,12 +2408,14 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (!empty($content)) {
             $fieldLayout = $element->getFieldLayout();
             if ($fieldLayout) {
+                $element->setDirtyFieldTracking(false);
                 foreach ($fieldLayout->getCustomFields() as $field) {
                     if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
                         $handle = $field->layoutElement->handle ?? $field->handle;
                         $element->setFieldValue($handle, $content[$field->layoutElement->uid]);
                     }
                 }
+                $element->setDirtyFieldTracking();
 
                 $generatedFieldValues = [];
                 foreach ($fieldLayout->getGeneratedFields() as $field) {

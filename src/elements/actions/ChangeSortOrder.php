@@ -86,7 +86,7 @@ class ChangeSortOrder extends ElementAction
   
   async function moveToPage(selectedItems, elementIndex, page, button, hud) {
     button.addClass('loading');
-    await elementIndex.settings.onBeforeMoveElementsToPage(selectedItems, page);
+    await elementIndex.onBeforeMoveElementsToPage(selectedItems, page);
 
     const data = Object.assign($params, {
       elementIds: elementIndex.getSelectedElementIds(),
@@ -111,7 +111,7 @@ class ChangeSortOrder extends ElementAction
 
     hud.hide();
     Craft.cp.displayNotice(response.data.message);
-    await elementIndex.settings.onMoveElementsToPage(selectedItems, page);
+    await elementIndex.onMoveElementsToPage(selectedItems, page);
     elementIndex.setPage(page);
     elementIndex.updateElements(true, true)
   }

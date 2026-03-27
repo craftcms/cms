@@ -87,10 +87,10 @@ class Delete extends ElementAction implements DeleteActionInterface
       return elementIndex.settings.canDeleteElements(selectedItems);
     },
     beforeActivate: async (selectedItems, elementIndex) => {
-      await elementIndex.settings.onBeforeDeleteElements(selectedItems);
+      await elementIndex.onBeforeDeleteElements(selectedItems);
     },
     afterActivate: async (selectedItems, elementIndex) => {
-      await elementIndex.settings.onDeleteElements(selectedItems);
+      await elementIndex.onDeleteElements(selectedItems);
     },
   });
 })();
