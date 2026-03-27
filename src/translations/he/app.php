@@ -1664,6 +1664,7 @@ return [
     'System Name' => 'שם מערכת',
     'System Report' => 'דוח מערכת',
     'System Status' => 'מצב מערכת',
+    'System time zone ({abbr})' => 'System time zone ({abbr})',
     'System' => 'מערכת',
     'Table Columns' => 'עמודות טבלה',
     'Table' => 'טבלה',
