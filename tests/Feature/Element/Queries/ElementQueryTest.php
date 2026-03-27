@@ -44,3 +44,12 @@ test('trashed', function () {
     expect(entryQuery()->trashed(true)->count())->toBe(2);
     expect(entryQuery()->trashed(null)->count())->toBe(4);
 });
+
+it('ignores inner query pagination when getting a pagination count', function () {
+    EntryModel::factory(5)->create();
+
+    $query = entryQuery()->offset(2)->limit(2);
+
+    expect($query->getCountForPagination())->toBe(5);
+    expect($query->get())->toHaveCount(2);
+});
