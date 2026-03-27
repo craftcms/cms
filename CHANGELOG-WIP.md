@@ -40,6 +40,7 @@
 - `Craft.CP` now triggers a `queueCompleted` event when the last queue job is completed.
 
 ### System
+- Improve the image quality of WEBP transforms, when `optimizeImageFilesize` is disabled. ([#18635](https://github.com/craftcms/cms/pull/18635))
 - Updated Twig to 3.24. ([#18259](https://github.com/craftcms/cms/discussions/18259), [#18454](https://github.com/craftcms/cms/issues/18454))
 - Fixed a bug where nested entries weren’t getting loaded with their content, if they had an entry type that was no longer allowed by their Matrix field.
 - Fixed the wording of the validation error when saving a nested entry with an invalid entry type. ([#18506](https://github.com/craftcms/cms/issues/18506))
