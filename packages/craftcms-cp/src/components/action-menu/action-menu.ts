@@ -57,7 +57,9 @@ export default class CraftActionMenu extends OverlayMixin(LitElement) {
       target.addEventListener(
         'focus',
         () => {
-          target.dispatchEvent(new Event('close-overlay', {bubbles: true}));
+          setTimeout(() => {
+            target.dispatchEvent(new Event('close-overlay', {bubbles: true}));
+          }, 300);
         },
         {once: true}
       );
