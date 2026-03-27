@@ -560,8 +560,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             return (clone $value)
                 ->status(null)
                 ->siteId($owner->siteId)
-                ->limit(null)
-                ->count();
+                ->getCountForPagination();
         }
 
         return $value->count();
