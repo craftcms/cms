@@ -45,8 +45,8 @@
   function saveGroup() {
     form.clearErrors().submit(store(), {
       onSuccess: () => {
-        form.reset();
         modalActive.value = false;
+        form.reset();
       },
     });
   }
