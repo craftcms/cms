@@ -1664,6 +1664,7 @@ return [
     'System Name' => 'A rendszer neve',
     'System Report' => 'Rendszerjelentés',
     'System Status' => 'Rendszer Állapota',
+    'System time zone ({abbr})' => 'System time zone ({abbr})',
     'System' => 'Rendszer',
     'Table Columns' => 'Tábla oszlopok',
     'Table' => 'Tábla',
