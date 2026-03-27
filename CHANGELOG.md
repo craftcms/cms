@@ -2,7 +2,20 @@
 
 ## Unreleased
 
+- Fixed a bug where element search query caches weren’t getting invalidated when elements’ search keywords were indexed. ([#18275](https://github.com/craftcms/cms/issues/18275))
+
+## 4.17.12 - 2026-03-26
+
+- Fixed a bug where GraphQL results were getting cached even if they contained transform generation URLs. ([#18581](https://github.com/craftcms/cms/issues/18581))
+- Fixed a bug where `aria-activedescendant`, `aria-flowto`, and `aria-owns` attributes weren’t getting namespaced by `{% namespace %}` tags. ([#18577](https://github.com/craftcms/cms/issues/18577))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerability. (GHSA-gj2p-p9m4-c8gw)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-qrgm-p9w5-rrfw)
+
+## 4.17.11 - 2026-03-17
+
 - Fixed an error that could occur after running the `utils/fix-field-layout-uids` command. ([#18516](https://github.com/craftcms/cms/issues/18516))
+- Fixed a JavaScript error that could occur if any field layout elements were configured with unsupported widths. ([#18552](https://github.com/craftcms/cms/issues/18552))
+- Fixed an error that could occur when user impersonation failed. ([#18569](https://github.com/craftcms/cms/issues/18569))
 
 ## 4.17.10 - 2026-03-11
 
@@ -24,22 +37,21 @@
 ## 4.17.8 - 2026-02-25
 
 - The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is no longer set by default for database connections. ([#18474](https://github.com/craftcms/cms/issues/18474))
-- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-44px-qjjc-xrhq, GHSA-vgjg-248p-rfm2, GHSA-x76w-8c62-48mg)
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) access control vulnerability. (GHSA-6mrr-q3pj-h53w)
-- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. (GHSA-3pvf-vxrv-hh9c, GHSA-5pgf-h923-m958)
+- Fixed [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. ([GHSA-44px-qjjc-xrhq](https://github.com/craftcms/cms/security/advisories/GHSA-44px-qjjc-xrhq), [GHSA-vgjg-248p-rfm2](https://github.com/craftcms/cms/security/advisories/GHSA-vgjg-248p-rfm2), [GHSA-x76w-8c62-48mg](https://github.com/craftcms/cms/security/advisories/GHSA-x76w-8c62-48mg))
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) access control vulnerability. ([GHSA-6mrr-q3pj-h53w](https://github.com/craftcms/cms/security/advisories/GHSA-6mrr-q3pj-h53w))
+- Fixed [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) information disclosure vulnerabilities. ([GHSA-3pvf-vxrv-hh9c](https://github.com/craftcms/cms/security/advisories/GHSA-3pvf-vxrv-hh9c), [GHSA-5pgf-h923-m958](https://github.com/craftcms/cms/security/advisories/GHSA-5pgf-h923-m958))
 
 ## 4.17.7 - 2026-02-24
 
 - The `PDO::MYSQL_ATTR_MULTI_STATEMENTS` attribute is now set to `false` by default for database connections.
 - Fixed a bug where `searchindex` and `searchindexqueue` rows weren’t being deleted when an element was deleted for a site. ([#18394](https://github.com/craftcms/cms/issues/18394))
 - Fixed a bug where multi-select condition rules weren’t applying their “has a value” and “is empty” operators correctly. ([#18470](https://github.com/craftcms/cms/pull/18470))
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-472v-j2g4-g9h2)
 
 ## 4.17.6 - 2026-02-18
 
 - Added `craft\serviceokens::getRemainingTokenUsages()`.
 - Added `craft\web\Request::getTokenRoute()`.
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. (GHSA-cc7p-2j3x-x7xf)
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) permission escalation vulnerability. ([GHSA-cc7p-2j3x-x7xf](https://github.com/craftcms/cms/security/advisories/GHSA-cc7p-2j3x-x7xf))
 
 ## 4.17.5 - 2026-02-17
 
@@ -48,8 +60,8 @@
 - Added `craft\web\Request::wants()`.
 - Fixed a bug where the control panel requests could trigger an infinite browser redirect loop. ([#18420](https://github.com/craftcms/cms/issues/18420))
 - Fixed a bug where 404 responses could be set to an image based on the `brokenImagePath` config setting for Chrome. ([#18438](https://github.com/craftcms/cms/issues/18438))
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. (GHSA-4484-8v2f-5748)
-- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. (GHSA-472v-j2g4-g9h2)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability. ([GHSA-4484-8v2f-5748](https://github.com/craftcms/cms/security/advisories/GHSA-4484-8v2f-5748))
+- Fixed a [low-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) path traversal vulnerability. ([GHSA-472v-j2g4-g9h2](https://github.com/craftcms/cms/security/advisories/GHSA-472v-j2g4-g9h2))
 
 ## 4.17.4 - 2026-02-11
 

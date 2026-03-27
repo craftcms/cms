@@ -517,6 +517,10 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
+        if (is_array($conditionConfig)) {
+            $conditionConfig = Component::cleanseConfig($conditionConfig);
+        }
+
         $condition = Craft::$app->getConditions()->createCondition($conditionConfig);
 
         if ($condition instanceof ElementCondition) {
@@ -536,6 +540,7 @@ class ElementIndexesController extends BaseElementsController
             }
         }
 
+        /** @var ElementConditionInterface $condition */
         return $condition;
     }
 

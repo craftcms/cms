@@ -2273,7 +2273,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     * @defaultAlt 1 day
      * @since 3.7.0
      */
     public mixed $previewTokenDuration = null;
@@ -5773,7 +5772,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @defaultAlt 1 day
      * @param mixed $value
      * @return self
      * @see $previewTokenDuration

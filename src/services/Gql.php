@@ -534,7 +534,7 @@ class Gql extends Component
 
                 [$dep, $duration] = $elementsService->stopCollectingCacheInfo();
 
-                if (empty($event->result['errors']) && $cacheKey) {
+                if (empty($event->result['errors']) && $cacheKey && $this->shouldCache($event->result)) {
                     $this->setCachedResult($cacheKey, $event->result, $dep, $duration);
                 }
             }
@@ -543,6 +543,23 @@ class Gql extends Component
         $this->trigger(self::EVENT_AFTER_EXECUTE_GQL_QUERY, $event);
 
         return $event->result ?? [];
+    }
+
+    private function shouldCache(array $result): bool
+    {
+        foreach ($result as $value) {
+            if (is_string($value)) {
+                if (str_contains(stripslashes($value), 'assets/generate-transform')) {
+                    return false;
+                }
+            } elseif (is_array($value)) {
+                if (!$this->shouldCache($value)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**

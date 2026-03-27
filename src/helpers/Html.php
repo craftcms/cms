@@ -817,7 +817,7 @@ class Html extends \yii\helpers\Html
 
         // normal HTML attributes
         $html = preg_replace_callback(
-            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\"))([^'\"]+)\\3/i",
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|aria\\-activedescendant|aria\\-flowto|aria\\-owns|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\"))([^'\"]+)\\3/i",
             function(array $match) use ($namespace, $ids): string {
                 $matchIds = preg_split('/([,\s+]+)/', $match[4], flags: PREG_SPLIT_DELIM_CAPTURE);
                 $namespacedIds = '';
