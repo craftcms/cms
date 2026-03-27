@@ -1664,6 +1664,7 @@ return [
     'System Name' => 'Názov systému',
     'System Report' => 'Systémová správa',
     'System Status' => 'Stav Systému',
+    'System time zone ({abbr})' => 'System time zone ({abbr})',
     'System' => 'Systém',
     'Table Columns' => 'Stĺpce Tabuľky',
     'Table' => 'Tabuľka',
