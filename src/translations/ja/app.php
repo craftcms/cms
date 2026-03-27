@@ -1664,6 +1664,7 @@ return [
     'System Name' => 'システム名',
     'System Report' => 'システム情報',
     'System Status' => 'システムのステータス',
+    'System time zone ({abbr})' => 'System time zone ({abbr})',
     'System' => 'システム',
     'Table Columns' => 'テーブルの欄',
     'Table' => 'テーブル',
