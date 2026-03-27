@@ -1664,6 +1664,7 @@ return [
     'System Name' => 'Kerfisheiti',
     'System Report' => 'Kerfisskýrsla',
     'System Status' => 'Kerfisstaða',
+    'System time zone ({abbr})' => 'System time zone ({abbr})',
     'System' => 'Kerfi',
     'Table Columns' => 'Tafla dálkar',
     'Table' => 'Tafla',
