@@ -1664,6 +1664,7 @@ return [
     'System Name' => 'Назва системи',
     'System Report' => 'Звіт системи',
     'System Status' => 'Статус системи',
+    'System time zone ({abbr})' => 'System time zone ({abbr})',
     'System' => 'Система',
     'Table Columns' => 'Стовпці таблиці',
     'Table' => 'Таблиця',
