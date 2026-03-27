@@ -1664,6 +1664,7 @@ return [
     'System Name' => '系统名称',
     'System Report' => '系统报告',
     'System Status' => '系统状态',
+    'System time zone ({abbr})' => 'System time zone ({abbr})',
     'System' => '系统',
     'Table Columns' => '表格列',
     'Table' => '表格',
