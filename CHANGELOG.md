@@ -4,6 +4,7 @@
 
 - Most classes can now be instantiated via the `create()` Twig function. ([#18376](https://github.com/craftcms/cms/discussions/18376))
 - Fixed a bug where element search query caches weren’t getting invalidated when elements’ search keywords were indexed. ([#18275](https://github.com/craftcms/cms/issues/18275))
+- Fixed a bug where disabled sites weren’t getting loaded when running Codeception tests. ([#18638](https://github.com/craftcms/cms/issues/18638))
 
 ## 5.9.18 - 2026-03-26
 

@@ -26,6 +26,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue;
+use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
@@ -1275,7 +1276,10 @@ class Sites extends Component
     {
         if ($withDisabled === null) {
             $request = Craft::$app->getRequest();
-            $withDisabled = !$request->getIsSiteRequest() || $request->getIsActionRequest();
+            $withDisabled = (
+                $request->getIsConsoleRequest() ||
+                ($request->getIsCpRequest() && Session::has(Craft::$app->getUser()->idParam))
+            );
         }
 
         return $withDisabled ? $this->_allSitesById : $this->_enabledSitesById;
