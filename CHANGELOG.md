@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where element search query caches weren’t getting invalidated when elements’ search keywords were indexed. ([#18275](https://github.com/craftcms/cms/issues/18275))
+
 ## 5.9.18 - 2026-03-26
 
 - Improved error logging when logging in with passkeys. ([#18627](https://github.com/craftcms/cms/pull/18627))
