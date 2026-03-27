@@ -46,8 +46,14 @@
     form.clearErrors().submit(store(), {
       onSuccess: () => {
         form.reset();
+        modalActive.value = false;
       },
     });
+  }
+
+  function handleFormClose() {
+    form.reset();
+    modalActive.value = false;
   }
 
   function openModal(mode: 'create' | 'update') {
@@ -343,7 +349,7 @@
     <div slot="content">
       <ModalForm
         :title="modalName"
-        @close="form.reset()"
+        @close="handleFormClose"
         @submit="saveGroup"
         :loading="form.processing"
       >
