@@ -10,6 +10,7 @@
     (currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
     "notifications--#{currentUser.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start'}",
     requestedSite ? "site--#{requestedSite.handle}",
+    'cp-legacy-reset'
 ])|filter -%}
 
 {% set bodyAttributes = {

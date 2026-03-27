@@ -1,3 +1,3 @@
-@scope (.slideout-container, .menu--disclosure) {
+@scope (.cp-legacy-reset, .slideout-container, .menu--disclosure) {
   @tailwind base;
 }
