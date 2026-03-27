@@ -235,7 +235,7 @@
           {{ pageTitle }}
         </h1>
 
-        <craft-action-menu ref="siteGroupActionsMenu" v-if="group?.id">
+        <craft-action-menu v-if="group?.id">
           <craft-button type="button" icon size="small" slot="invoker">
             <craft-icon
               name="gear"
@@ -244,10 +244,9 @@
           </craft-button>
 
           <div slot="content">
-            <craft-action-item @click="openModal('update')">
+            <craft-action-item @click.prevent="openModal('update')">
               {{ t('Rename Group') }}
             </craft-action-item>
-
             <craft-action-item
               variant="danger"
               :disabled="sites.length > 0"
