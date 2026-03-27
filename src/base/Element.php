@@ -2399,7 +2399,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @var bool
      */
-    private bool $_initialized = false;
+    private bool $_trackDirtyFields = false;
 
     /**
      * @var string|null
@@ -2716,7 +2716,7 @@ abstract class Element extends Component implements ElementInterface
             $this->_savedTitle = $this->title;
         }
 
-        $this->_initialized = true;
+        $this->_trackDirtyFields = true;
 
         // Stop allowing setting custom field values directly on the behavior
         /** @var CustomFieldBehavior $behavior */
@@ -5299,7 +5299,7 @@ JS, [
         unset($this->_normalizedFieldValues[$fieldHandle]);
 
         // If the element is fully initialized, mark the value as dirty
-        if ($this->_initialized) {
+        if ($this->_trackDirtyFields) {
             $this->_dirtyFields[$fieldHandle] = true;
         }
 
@@ -5327,6 +5327,14 @@ JS, [
         $value = $field->normalizeValueFromRequest($value, $this);
         $this->setFieldValue($field->handle, $value);
         $this->_normalizedFieldValues[$field->handle] = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDirtyFieldTracking(bool $enabled = true): void
+    {
+        $this->_trackDirtyFields = $enabled;
     }
 
     /**
