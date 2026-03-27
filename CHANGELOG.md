@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where element search query caches weren’t getting invalidated when elements’ search keywords were indexed. ([#18275](https://github.com/craftcms/cms/issues/18275))
+
 ## 4.17.12 - 2026-03-26
 
 - Fixed a bug where GraphQL results were getting cached even if they contained transform generation URLs. ([#18581](https://github.com/craftcms/cms/issues/18581))
