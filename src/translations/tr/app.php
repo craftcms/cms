@@ -1664,6 +1664,7 @@ return [
     'System Name' => 'Sistem Adı',
     'System Report' => 'Sistem Raporu',
     'System Status' => 'Sistem Durumu',
+    'System time zone ({abbr})' => 'System time zone ({abbr})',
     'System' => 'Sistem',
     'Table Columns' => 'Tablo Kolonları',
     'Table' => 'Tablo',
