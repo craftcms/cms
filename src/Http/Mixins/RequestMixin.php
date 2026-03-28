@@ -189,37 +189,6 @@ class RequestMixin
         };
     }
 
-    public function pageNumber(): Closure
-    {
-        return function (): int {
-            /**
-             * @var Request $request
-             *
-             * @phpstan-ignore-next-line
-             */
-            $request = $this;
-            $pageTrigger = $request->isCpRequest() ? 'p' : Cms::config()->getPageTrigger();
-
-            if (str_starts_with($pageTrigger, '?')) {
-                return max(1, (int) $request->query(trim($pageTrigger, '?='), '1'));
-            }
-
-            $path = trim($request->decodedPath(), '/');
-
-            if ($path === '') {
-                return 1;
-            }
-
-            $pageTriggerPattern = preg_quote($pageTrigger, '/');
-
-            if (preg_match("/^(?:(.*)\\/)?{$pageTriggerPattern}(\\d+)$/", $path, $matches)) {
-                return max(1, (int) $matches[2]);
-            }
-
-            return 1;
-        };
-    }
-
     public function duplicateWithUri(): Closure
     {
         return function (string $newUri, ?array $query = null, array $server = []): Request {

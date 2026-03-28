@@ -3990,4 +3990,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         return $this->andWhere(['in', $column, $values]);
     }
+
+    public function getCountForPagination($columns = ['*'])
+    {
+        return $this
+            ->select(new Expression('1'))
+            ->count();
+    }
 }

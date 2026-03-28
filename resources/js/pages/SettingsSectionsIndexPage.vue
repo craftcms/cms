@@ -88,6 +88,7 @@
   const pageIndex = computed(() =>
     props.pagination.current_page ? props.pagination.current_page - 1 : 0
   );
+  const pageParam = window.Craft?.pageTrigger ?? 'page';
   const tablePagination = ref<PaginationState>({
     pageIndex: pageIndex.value,
     pageSize: props.pagination.per_page,
@@ -143,7 +144,7 @@
           query: {
             ...Object.fromEntries(currentQuery),
             sort: sortQueryParams,
-            page: 1,
+            [pageParam]: 1,
           },
         }),
         {
@@ -165,7 +166,7 @@
         index({
           query: {
             ...Object.fromEntries(currentQuery),
-            page: next.pageIndex + 1,
+            [pageParam]: next.pageIndex + 1,
             per_page: next.pageSize,
           },
         }),

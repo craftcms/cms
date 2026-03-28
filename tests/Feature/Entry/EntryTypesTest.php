@@ -152,3 +152,22 @@ it('can delete an entry type', function () {
 it('can get table data', function () {
     expect($this->entryTypes->getTableData(1, 100))->not()->toBeEmpty();
 });
+
+it('returns laravel-style pagination metadata for table data', function () {
+    EntryType::factory()->count(3)->create();
+    $this->entryTypes->refreshEntryTypes();
+
+    [$pagination] = $this->entryTypes->getTableData(2, 2);
+
+    expect($pagination)
+        ->toMatchArray([
+            'total' => 3,
+            'per_page' => 2,
+            'current_page' => 2,
+            'last_page' => 2,
+            'from' => 3,
+            'to' => 3,
+        ])
+        ->and($pagination['prev_page_url'])->toContain('p=1')
+        ->and($pagination['next_page_url'])->toBeNull();
+});

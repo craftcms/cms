@@ -131,26 +131,6 @@ describe('isPreview', function () {
     });
 });
 
-describe('pageNumber', function () {
-    it('returns 1 when the request is not paginated', function () {
-        expect(Request::create('/news')->pageNumber())->toBe(1);
-    });
-
-    it('returns the page number for site pagination paths', function () {
-        expect(Request::create('/news/p3')->pageNumber())->toBe(3);
-    });
-
-    it('returns the page number for control panel pagination paths', function () {
-        expect(Request::create('/admin/news/p2')->pageNumber())->toBe(2);
-    });
-
-    it('returns the page number for query-string pagination', function () {
-        Cms::config()->pageTrigger = '?page=';
-
-        expect(Request::create('/news?page=4')->pageNumber())->toBe(4);
-    });
-});
-
 describe('duplicateWithUri', function () {
     it('duplicates the request with a new uri and keeps query params by default', function () {
         $request = Request::create('/news?foo=bar');

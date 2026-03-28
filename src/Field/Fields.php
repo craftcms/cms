@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\AdminTable;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\ComponentHelper;
 use CraftCms\Cms\Component\Contracts\Iconic;
@@ -1245,8 +1244,7 @@ class Fields
         int $sortDir = SORT_ASC,
     ): array {
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
-
-        $offset = ($page - 1) * $limit;
+        $pageParam = Cms::config()->getPageTriggerParam();
         $query = $this->_createFieldQuery()
             ->where('context', 'global');
 
@@ -1280,12 +1278,12 @@ class Fields
             }
         }
 
-        $total = $query->count();
-
-        $query->limit($limit);
-        $query->offset($offset);
-
-        $result = $query->get();
+        $paginator = $query->paginate(
+            perPage: $limit,
+            pageName: $pageParam,
+            page: $page,
+        );
+        $result = $paginator->getCollection();
 
         $tableData = [];
         $usages = $this->allFieldUsages();
@@ -1315,7 +1313,18 @@ class Fields
             ];
         }
 
-        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+        $paginator->appends(request()->except($pageParam));
+
+        $pagination = Arr::only($paginator->toArray(), [
+            'total',
+            'per_page',
+            'current_page',
+            'last_page',
+            'next_page_url',
+            'prev_page_url',
+            'from',
+            'to',
+        ]);
 
         return [$pagination, $tableData];
     }

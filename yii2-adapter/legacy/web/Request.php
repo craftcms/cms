@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
@@ -111,11 +112,6 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      * @var string[]
      */
     private array $_segments;
-
-    /**
-     * @var int
-     */
-    private int $_pageNum = 1;
 
     /**
      * @var bool|null
@@ -304,28 +300,6 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
                 $this->_path = ltrim(substr($this->_path, strlen($basePath)), '/');
             }
         }
-
-        // Is this a paginated request?
-        $pageTrigger = $this->_isCpRequest ? 'p' : $this->generalConfig->getPageTrigger();
-
-        // Is this query string-based pagination?
-        if (str_starts_with($pageTrigger, '?')) {
-            $this->_pageNum = (int)$this->getQueryParam(trim($pageTrigger, '?='), '1');
-        } elseif ($this->_path !== '') {
-            // Match against the entire path string as opposed to just the last segment so that we can support
-            // "/page/2"-style pagination URLs
-            $pageTrigger = preg_quote($pageTrigger, '/');
-
-            if (preg_match("/^(?:(.*)\/)?$pageTrigger(\d+)$/", $this->_path, $match)) {
-                // Capture the page num
-                $this->_pageNum = (int)$match[2];
-
-                // Sanitize
-                $this->_path = $match[1];
-            }
-        }
-
-        $this->_pageNum = min($this->_pageNum, $this->maxPageNum);
     }
 
     /**
@@ -484,7 +458,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function getPageNum(): int
     {
-        return $this->_pageNum;
+        return AbstractPaginator::resolveCurrentPage(Cms::config()->getPageTriggerParam());
     }
 
     /**

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use craft\config\GeneralConfig as LegacyGeneralConfig;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -69,15 +68,20 @@ it('does not expose moved deprecated members on the new class', function () {
         ->and(method_exists($config, 'enableCsrfProtection'))->toBeFalse()
         ->and(method_exists($config, 'securityKey'))->toBeFalse()
         ->and(property_exists($config, 'allowedGraphqlOrigins'))->toBeFalse()
-        ->and(property_exists($config, 'userSessionDuration'))->toBeFalse();
+        ->and(property_exists($config, 'userSessionDuration'))->toBeFalse()
+        ->and(method_exists($config, 'pageTrigger'))->toBeTrue()
+        ->and(property_exists($config, 'pageTrigger'))->toBeTrue();
 });
 
-it('keeps moved deprecated members on the legacy class', function () {
-    $config = LegacyGeneralConfig::create();
+it('normalizes pageTrigger on the main config class', function () {
+    $config = GeneralConfig::create();
 
-    expect(method_exists($config, 'devMode'))->toBeTrue()
-        ->and(method_exists($config, 'enableCsrfProtection'))->toBeTrue()
-        ->and(method_exists($config, 'securityKey'))->toBeTrue()
-        ->and(property_exists($config, 'allowedGraphqlOrigins'))->toBeTrue()
-        ->and(property_exists($config, 'userSessionDuration'))->toBeTrue();
+    expect($config->pageTrigger('page')->getPageTrigger())->toBe('?page=')
+        ->and($config->getPageTriggerParam())->toBe('page')
+        ->and($config->pageTrigger('?page')->getPageTrigger())->toBe('?page=')
+        ->and($config->pageTrigger('?page=')->getPageTrigger())->toBe('?page=')
+        ->and($config->pageTrigger('p')->getPageTrigger())->toBe('?p=')
+        ->and($config->pageTrigger('?p=')->getPageTrigger())->toBe('?p=')
+        ->and($config->pageTrigger('page/')->getPageTrigger())->toBe('?page=')
+        ->and($config->pageTrigger('')->getPageTrigger())->toBe('?p=');
 });
