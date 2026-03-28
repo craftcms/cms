@@ -239,15 +239,33 @@ class DateTimeHelper
     /**
      * Returns the timezone abbreviation for a given timezone name.
      *
-     * @param string $timeZone
+     * @param string|DateTimeZone $timeZone
+     * @param DateTime|null $date
      * @return string
-     * @deprecated in 4.3.7
      */
-    public static function timeZoneAbbreviation(string $timeZone): string
-    {
-        return (new DateTime())
-            ->setTimezone(new DateTimeZone($timeZone))
-            ->format('T');
+    public static function timeZoneAbbreviation(
+        string|DateTimeZone $timeZone,
+        ?DateTime $date = null,
+    ): string {
+        if (is_string($timeZone)) {
+            $normalized = static::normalizeTimeZone($timeZone);
+            if ($normalized === false) {
+                throw new InvalidArgumentException("Invalid time zone: $timeZone");
+            }
+            $timeZone = new DateTimeZone($normalized);
+        }
+
+        $utc = new DateTimeZone('UTC');
+        $date = $date ? (clone $date)->setTimezone($utc) : static::now($utc);
+        $timestamp = $date->getTimestamp();
+        $transition = $timeZone->getTransitions($timestamp, $timestamp);
+
+        if ($transition === false) {
+            // a type 1/2 time zone must have been passed into $timeZone, e.g. "-08:00" or "CDT"
+            return $timeZone->getName();
+        }
+
+        return $transition[0]['abbr'];
     }
 
     /**

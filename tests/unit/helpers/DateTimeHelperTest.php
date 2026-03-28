@@ -18,6 +18,7 @@ use DateTimeInterface;
 use DateTimeZone;
 use Exception;
 use UnitTester;
+use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the DateTime Helper class.
@@ -387,6 +388,26 @@ class DateTimeHelperTest extends TestCase
     public function testNormalizeTimeZone(string|false $expected, string $timeZone): void
     {
         self::assertSame($expected, DateTimeHelper::normalizeTimeZone($timeZone));
+    }
+
+    /**
+     * @dataProvider timeZoneAbbreviationProvider
+     * @param string|false $expected
+     * @param string|DateTimeZone $timeZone
+     * @param DateTime|null $date
+     */
+    public function testTimeZoneAbbreviation(
+        string|false $expected,
+        string|DateTimeZone $timeZone,
+        ?DateTimeInterface $date = null,
+    ): void {
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            DateTimeHelper::timeZoneAbbreviation($timeZone);
+            return;
+        }
+
+        self::assertSame($expected, DateTimeHelper::timeZoneAbbreviation($timeZone, $date));
     }
 
     /**
@@ -843,6 +864,22 @@ class DateTimeHelperTest extends TestCase
             ['UTC', 'GMT'],
             ['Europe/Amsterdam', 'Europe/Amsterdam'],
             [false, 'NotATz'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function timeZoneAbbreviationProvider(): array
+    {
+        return [
+            ['UTC', 'UTC'],
+            ['UTC', new DateTimeZone('UTC')],
+            ['PST', 'America/Los_Angeles', new DateTime('2026-03-08 01:00:00-08:00')],
+            ['PDT', 'America/Los_Angeles', new DateTime('2026-03-08 02:00:00-08:00')],
+            ['-08:00', '-08:00'],
+            ['CDT', 'CDT'],
+            [false, 'InvalidTimeZone'],
         ];
     }
 

@@ -37,6 +37,7 @@
 - Added `craft\validators\TimeValidator::$outOfRange`. ([#18575](https://github.com/craftcms/cms/pull/18575))
 - Added `Craft.CpScreenSlideout::reload()`. ([#18625](https://github.com/craftcms/cms/pull/18625))
 - `craft\elements\PopulateElementEvent::$row` no longer includes `fieldValues` or `generatedFieldValues` keys.
+- `craft\helpers\DateTimeHelper::timeZoneAbbreviation()` is no longer deprecated, and now has a `$date` argument.
 - `Craft.CP` now triggers a `queueCompleted` event when the last queue job is completed.
 
 ### System

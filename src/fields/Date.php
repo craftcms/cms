@@ -359,7 +359,7 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
                 $html = sprintf(
                     '%s %s',
                     $formatter->asDatetime($value, Locale::LENGTH_SHORT),
-                    $value->format('T')
+                    DateTimeHelper::timeZoneAbbreviation($value->getTimezone(), $value),
                 );
                 $formatter->timeZone = $timeZone;
                 return $html;

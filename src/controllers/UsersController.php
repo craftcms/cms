@@ -29,6 +29,7 @@ use craft\filters\IpRateLimitIdentity;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -51,7 +52,6 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
-use DateTimeZone;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -1341,6 +1341,7 @@ class UsersController extends Controller
         $response = $this->asEditUserScreen($user, self::SCREEN_PREFERENCES);
 
         $i18n = Craft::$app->getI18n();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         // user language
         $userLanguage = $user->getPreferredLanguage();
@@ -1359,14 +1360,13 @@ class UsersController extends Controller
             !$userLocale ||
             !ArrayHelper::contains($i18n->getAllLocales(), fn(Locale $locale) => $locale->id === App::parseEnv($userLocale))
         ) {
-            $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
+            $userLocale = $generalConfig->defaultCpLocale;
         }
 
         // time zone
-        $timeZone = new DateTimeZone(Craft::$app->getTimeZone());
-        $offsetDate = (new DateTime())->setTimezone(new DateTimeZone('UTC'));
-        $transition = $timeZone->getTransitions($offsetDate->getTimestamp(), $offsetDate->getTimestamp());
-        $timeZoneAbbr = $transition[0]['abbr'];
+        // (can't call `Craft::$app->getTimeZone()` here because that could be set to the user preference)
+        $timeZone = $generalConfig->timezone ?? Craft::$app->getProjectConfig()->get('system.timeZone');
+        $timeZoneAbbr = $timeZone ? DateTimeHelper::timeZoneAbbreviation(App::parseEnv($timeZone)) : 'UTC';
 
         $response->action('users/save-preferences');
         $response->contentTemplate('users/_preferences', compact(
