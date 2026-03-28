@@ -9,7 +9,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\ElementRelationParamParser;
-use craft\helpers\ElementHelper;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
 use CraftCms\Cms\Cp\FormFields;
@@ -20,9 +19,10 @@ use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\DefineElementCriteria;
 use CraftCms\Cms\Element\Jobs\LocalizeRelations;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -35,12 +35,14 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -425,9 +427,9 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         }
 
         if (isset($config['localizeRelations'])) {
-            $config['translationMethod'] = $config['localizeRelations'] ? self::TRANSLATION_METHOD_SITE : self::TRANSLATION_METHOD_NONE;
+            $config['translationMethod'] = $config['localizeRelations'] ? TranslationMethod::Site : TranslationMethod::None;
         } else {
-            $config['localizeRelations'] = ($config['translationMethod'] ?? self::TRANSLATION_METHOD_NONE) !== self::TRANSLATION_METHOD_NONE;
+            $config['localizeRelations'] = ($config['translationMethod'] ?? TranslationMethod::None) !== TranslationMethod::None;
         }
 
         $config['viewMode'] ??= self::VIEW_MODE_LIST;
@@ -472,8 +474,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             $inputSources = [$inputSources];
         }
 
-        $elementSources = resolve(ElementSources::class)
-            ->getSources(static::elementType())
+        $elementSources = ElementSources::getSources(static::elementType())
             ->whereIn('key', $inputSources);
 
         if (count($elementSources) > 1) {
@@ -749,7 +750,7 @@ JS, [
             // if this is the first instance of the field that was ever added to the field layout
             // and none of the other instances (which would have been added later on) have a value.
             if (! $this->allowMultipleSources && $this->source) {
-                $source = ElementHelper::findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
+                $source = ElementSources::findSource($class, $this->source, ElementSources::CONTEXT_FIELD);
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
@@ -1117,12 +1118,11 @@ JS, [
      */
     protected function gqlFieldArguments(): array
     {
-        $elementSourcesService = resolve(ElementSources::class);
         $fieldLayouts = [];
         $arguments = [];
 
         foreach ((array) $this->getInputSources() as $source) {
-            $sourceFieldLayouts = $elementSourcesService->getFieldLayoutsForSource(static::elementType(), $source);
+            $sourceFieldLayouts = ElementSources::getFieldLayoutsForSource(static::elementType(), $source);
             foreach ($sourceFieldLayouts as $fieldLayout) {
                 $fieldLayouts[$fieldLayout->uid] = $fieldLayout;
             }
@@ -1457,7 +1457,7 @@ JS, [
             $value = [];
         }
 
-        ElementHelper::loadProvisionalChanges($value);
+        app(Drafts::class)->loadProvisionalChanges($value);
 
         if ($this->validateRelatedElements && $element !== null) {
             // Pre-validate related elements
@@ -1500,7 +1500,7 @@ JS, [
         $searchCriteria = null;
 
         if ($this->showSearchInput($element)) {
-            $source = ElementHelper::findSource($elementType, reset($sources), 'field');
+            $source = ElementSources::findSource($elementType, reset($sources), ElementSources::CONTEXT_FIELD);
             if (! empty($source['criteria'])) {
                 $searchCriteria = $source['criteria'];
             }
@@ -1710,8 +1710,7 @@ JS, [
      */
     protected function availableSources(): array
     {
-        return resolve(ElementSources::class)
-            ->getSources(static::elementType(), 'modal')
+        return ElementSources::getSources(static::elementType(), ElementSources::CONTEXT_MODAL)
             ->where('type', '!=', ElementSources::TYPE_HEADING)
             ->values()
             ->all();

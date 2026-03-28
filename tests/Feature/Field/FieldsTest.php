@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
@@ -125,6 +126,17 @@ it('can create a field with a config', function () {
     expect($this->fields->createField([
         'type' => PlainText::class,
     ]))->toBeInstanceOf(PlainText::class);
+});
+
+it('normalizes translation methods to enums for src fields', function () {
+    $field = $this->fields->createField([
+        'type' => PlainText::class,
+        'translationMethod' => 'site',
+    ]);
+
+    expect($field->translationMethod)->toBe('site')
+        ->and($field->translationMethodValue)->toBe('site')
+        ->and($field->getTranslationDescription(null))->toBe(TranslationMethod::Site->description());
 });
 
 it('creates a missing field if the field isnt recognized', function () {

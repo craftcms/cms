@@ -6,11 +6,11 @@ namespace CraftCms\Cms\Element\Concerns;
 
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
-use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
@@ -183,12 +183,12 @@ trait Localizable
 
     public function getTitleTranslationDescription(): ?string
     {
-        return ElementHelper::translationDescription(Field::TRANSLATION_METHOD_SITE);
+        return TranslationMethod::Site->description();
     }
 
     public function getTitleTranslationKey(): string
     {
-        return ElementHelper::translationKey($this, Field::TRANSLATION_METHOD_SITE);
+        return TranslationMethod::Site->elementKey($this);
     }
 
     public function getIsSlugTranslatable(): bool
@@ -198,11 +198,11 @@ trait Localizable
 
     public function getSlugTranslationDescription(): ?string
     {
-        return ElementHelper::translationDescription(Field::TRANSLATION_METHOD_SITE);
+        return TranslationMethod::Site->description();
     }
 
     public function getSlugTranslationKey(): string
     {
-        return ElementHelper::translationKey($this, Field::TRANSLATION_METHOD_SITE);
+        return TranslationMethod::Site->elementKey($this);
     }
 }

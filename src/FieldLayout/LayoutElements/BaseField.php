@@ -6,9 +6,9 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\FieldLayout\Events\DefineActionMenuItems;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Support\Arr;
@@ -436,7 +436,7 @@ abstract class BaseField extends FieldLayoutElement
     {
         $attribute = $this->attribute();
 
-        return ElementHelper::attributeHtml($element->$attribute);
+        return app(ElementAttributeRenderer::class)->attributeHtml($element->$attribute);
     }
 
     /**

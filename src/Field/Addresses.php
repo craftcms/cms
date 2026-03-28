@@ -23,6 +23,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\Gql\Arguments\Elements\Address as AddressArguments;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
@@ -79,7 +80,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     {
         // Don't ever automatically propagate values to other sites.
         return [
-            self::TRANSLATION_METHOD_SITE,
+            TranslationMethod::Site,
         ];
     }
 

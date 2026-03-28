@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Data;
 
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Validation\SectionRules;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -238,7 +238,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
     {
         if (! isset($this->page)) {
             $sourceKey = $this->type === SectionType::Single ? 'singles' : "section:$this->uid";
-            $source = ElementHelper::findSource(Entry::class, $sourceKey);
+            $source = ElementSources::findSource(Entry::class, $sourceKey);
             $this->page = $source['page'] ?? false;
         }
 

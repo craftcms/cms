@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Concerns;
 
 use craft\base\NestedElementInterface;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Events\BeforeDefineUrl;
 use CraftCms\Cms\Element\Events\DefineUrl;
 use CraftCms\Cms\Element\Events\SetRoute;

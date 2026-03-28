@@ -106,13 +106,13 @@
             { value: 'language', label: 'Translate for each language'|t('app') },
             { value: 'custom', label: 'Custom…'|t('app') },
         ]|filter,
-        value: volume.titleTranslationMethod,
+        value: volume.titleTranslationMethod.value,
         toggle: true,
         targetPrefix: 'title-translation-method-',
         disabled: readOnly,
     }) }}
 
-    <div id="title-translation-method-custom" {% if volume.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+    <div id="title-translation-method-custom" {% if volume.titleTranslationMethod.value != 'custom' %}class="hidden"{% endif %}>
         {{ forms.textField({
             label: '{name} Translation Key Format'|t('app', {
                 name: 'Title'|t('app'),
@@ -145,13 +145,13 @@
             { value: 'language', label: 'Translate for each language'|t('app') },
             { value: 'custom', label: 'Custom…'|t('app') },
         ]|filter,
-        value: volume.altTranslationMethod,
+        value: volume.altTranslationMethod.value,
         toggle: true,
         targetPrefix: 'alt-translation-method-',
         disabled: readOnly,
     }) }}
 
-    <div id="alt-translation-method-custom" {% if volume.altTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+    <div id="alt-translation-method-custom" {% if volume.altTranslationMethod.value != 'custom' %}class="hidden"{% endif %}>
         {{ forms.textField({
             label: '{name} Translation Key Format'|t('app', {
                 name: 'Alternative Text'|t('app'),

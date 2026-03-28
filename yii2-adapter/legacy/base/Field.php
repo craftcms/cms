@@ -22,6 +22,17 @@ abstract class Field extends \CraftCms\Cms\Field\Field
 {
     use LegacyEventConstants;
 
+    public string $translationMethod {
+        get {
+            return $this->_translationMethod->value;
+        }
+    set(string | \CraftCms\Cms\Field\Enums\TranslationMethod $value) {
+            $this->_translationMethod = $value instanceof \CraftCms\Cms\Field\Enums\TranslationMethod
+                ? $value
+                : \CraftCms\Cms\Field\Enums\TranslationMethod::from($value);
+        }
+    }
+
     public function __construct($config = [])
     {
         parent::__construct(Arr::except($config, ['fieldLimit', 'limitUnit']));

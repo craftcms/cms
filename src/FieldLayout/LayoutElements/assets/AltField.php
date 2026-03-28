@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\LayoutElements\assets;
 
 use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextareaField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -83,7 +82,7 @@ class AltField extends TextareaField
             throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', self::class));
         }
 
-        return $element->getVolume()->altTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
+        return $element->getVolume()->altTranslationMethod !== TranslationMethod::None;
     }
 
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
@@ -92,7 +91,7 @@ class AltField extends TextareaField
             throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', self::class));
         }
 
-        return ElementHelper::translationDescription($element->getVolume()->altTranslationMethod);
+        return $element->getVolume()->altTranslationMethod->description();
     }
 
     #[Override]

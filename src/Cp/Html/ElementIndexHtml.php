@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Html;
 
 use craft\base\ElementInterface;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -90,7 +89,7 @@ readonly class ElementIndexHtml
                 // Did we miss any source keys? (This could happen if some are nested)
                 if (! empty($indexedSourceKeys)) {
                     foreach (array_keys($indexedSourceKeys) as $key) {
-                        $source = ElementHelper::findSource($elementType, $key, $config['context']);
+                        $source = $this->elementSources->findSource($elementType, $key, $config['context']);
                         if ($source !== null) {
                             // If it was listed after another source key that made it in, insert it there
                             $pos = array_search($key, $config['sources']);

@@ -7,10 +7,10 @@ namespace CraftCms\Cms\Element\Concerns;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\db\ExcludeDescendantIdsExpression;
-use craft\helpers\ElementHelper;
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\ElementAttributeRenderer;
 use CraftCms\Cms\Element\Events\PrepQueryForTableAttribute;
 use CraftCms\Cms\Element\Events\RegisterCardAttributes;
 use CraftCms\Cms\Element\Events\RegisterDefaultCardAttributes;
@@ -22,6 +22,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Structures;
@@ -147,7 +148,7 @@ trait DisplayedInIndex
         if (! empty($viewState['order'])) {
             // Special case for sorting by structure
             if ($viewState['order'] === 'structure') {
-                $source = ElementHelper::findSource(static::class, $sourceKey, $context);
+                $source = ElementSources::findSource(static::class, $sourceKey, $context);
 
                 if (isset($source['structureId'])) {
                     $elementQuery
@@ -190,7 +191,7 @@ trait DisplayedInIndex
 
         if ($viewState['mode'] === 'table') {
             // Get the table columns
-            $variables['attributes'] = app(ElementSources::class)->getTableAttributes(
+            $variables['attributes'] = ElementSources::getTableAttributes(
                 static::class,
                 $sourceKey,
                 $viewState['tableColumns'] ?? null,
@@ -229,7 +230,7 @@ trait DisplayedInIndex
         }
 
         // See if there are any provisional changes we should show
-        ElementHelper::loadProvisionalChanges($elements);
+        app(Drafts::class)->loadProvisionalChanges($elements);
 
         if (request()->boolean('prevalidate')) {
             foreach ($elements as $element) {
@@ -417,7 +418,7 @@ trait DisplayedInIndex
     protected static function defineSortOptions(): array
     {
         // Default to the available table attributes
-        $tableAttributes = app(ElementSources::class)->getAvailableTableAttributes(static::class);
+        $tableAttributes = ElementSources::getAvailableTableAttributes(static::class);
         $sortOptions = [];
 
         foreach ($tableAttributes as $key => $labelInfo) {
@@ -560,7 +561,7 @@ trait DisplayedInIndex
             return array_merge($attributes, [
                 'link' => [
                     'label' => t('Link'),
-                    'placeholder' => fn () => ElementHelper::linkAttributeHtml('#'),
+                    'placeholder' => fn () => app(ElementAttributeRenderer::class)->linkAttributeHtml('#'),
                 ],
                 'slug' => [
                     'label' => t('Slug'),
@@ -568,7 +569,7 @@ trait DisplayedInIndex
                 ],
                 'uri' => [
                     'label' => t('URI'),
-                    'placeholder' => fn () => ElementHelper::uriAttributeHtml(t('link/to/something'), '#'),
+                    'placeholder' => fn () => app(ElementAttributeRenderer::class)->uriAttributeHtml(t('link/to/something'), '#'),
                 ],
             ]);
         }
@@ -588,7 +589,7 @@ trait DisplayedInIndex
     {
         return match ($attribute['value']) {
             'link', 'uri' => $attribute['placeholder'],
-            default => ElementHelper::attributeHtml(is_callable($attribute['placeholder'] ?? null)
+            default => app(ElementAttributeRenderer::class)->attributeHtml(is_callable($attribute['placeholder'] ?? null)
                 ? $attribute['placeholder']()
                 : $attribute['placeholder'] ?? $attribute['label'],
             ),
@@ -751,7 +752,7 @@ trait DisplayedInIndex
      */
     private static function resolveSourceSortOption(string $sourceKey, string $attribute, int $dir): ExpressionInterface|bool
     {
-        $sourceSortOptions = app(ElementSources::class)->getSourceSortOptions(static::class, $sourceKey);
+        $sourceSortOptions = ElementSources::getSourceSortOptions(static::class, $sourceKey);
 
         foreach ($sourceSortOptions as $sortOption) {
             if ($sortOption['attribute'] !== $attribute) {
