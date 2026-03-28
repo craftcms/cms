@@ -6,6 +6,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Elements\ContentBlock;
+use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedDraftsAndRevisions;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedFieldLayouts;
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedNestedElements;
 use CraftCms\Cms\GarbageCollection\Actions\DeletePartialElements;
@@ -17,6 +18,7 @@ use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Lottery;
+use Symfony\Component\Console\Output\NullOutput;
 
 arch('All actions extend GarbageCollectionAction')
     ->expect('CraftCms\Cms\GarbageCollection\Actions')
@@ -137,6 +139,13 @@ it('calls hard delete', function (string|array $tables) {
         Table::SITES,
     ]],
 ]);
+
+it('uses null output by default for garbage collection actions', function () {
+    $action = app(DeleteOrphanedDraftsAndRevisions::class);
+    $output = new ReflectionProperty($action, 'output')->getValue($action);
+
+    expect($output->getOutput())->toBeInstanceOf(NullOutput::class);
+});
 
 function findActionCall(array $actions, string $action): Collection
 {

@@ -11,7 +11,6 @@ use Illuminate\Console\OutputStyle;
 use Illuminate\Console\View\Components\Factory;
 use Illuminate\Database\Query\Builder;
 use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\NullOutput;
 
 abstract class GarbageCollectionAction
@@ -23,9 +22,17 @@ abstract class GarbageCollectionAction
         protected readonly GeneralConfig $generalConfig,
     ) {
         $this->input = new ArrayInput([]);
-        $this->output = $this->garbageCollection->silent
-            ? new NullOutput
-            : new OutputStyle($this->input, new ConsoleOutput);
+        $output = $this->garbageCollection->output;
+
+        if ($this->garbageCollection->silent) {
+            $output = new NullOutput;
+        }
+
+        $this->output = new OutputStyle(
+            $this->input,
+            $output ?? new NullOutput,
+        );
+
         $this->components = new Factory($this->output);
     }
 
