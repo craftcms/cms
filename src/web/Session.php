@@ -82,4 +82,17 @@ class Session extends \yii\web\Session
     {
         return parent::hasFlash($key);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function has($key): bool
+    {
+        // don't open the session if the headers were already sent
+        if (!$this->getIsActive() && headers_sent()) {
+            return isset($_SESSION[$key]);
+        }
+
+        return parent::has($key);
+    }
 }
