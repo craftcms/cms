@@ -338,16 +338,12 @@ new Vue({
       switch (status) {
         case 1:
           return Craft.t('app', 'Pending');
-          break;
         case 2:
           return Craft.t('app', 'Reserved');
-          break;
         case 3:
           return Craft.t('app', 'Finished');
-          break;
         case 4:
           return Craft.t('app', 'Failed');
-          break;
         default:
           return '';
       }
@@ -359,19 +355,16 @@ new Vue({
      * @returns {string}
      */
     jobStatusIconClass(status) {
-      let c = 'status';
       switch (status) {
-        case 1:
-          c += ' orange';
-          break;
-        case 2:
-          c += ' green';
-          break;
-        case 4:
-          c += ' red';
-          break;
+        case 1: // pending
+          return 'status orange';
+        case 2: // reserved
+          return 'status green';
+        case 4: // failed
+          return 'status red';
+        default:
+          return '';
       }
-      return c;
     },
 
     /**
