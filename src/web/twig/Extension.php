@@ -657,7 +657,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function timestampFilter(mixed $value, ?string $format = null, bool $withPreposition = false): string
     {
         if ($value === null || $value === '') {
-            return '';
+            $value = DateTimeHelper::now();
         }
 
         try {
