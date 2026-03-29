@@ -29,6 +29,7 @@
 - Added the `heading()`/`h()` and `h1()`…`h6()` Twig functions. ([#18524](https://github.com/craftcms/cms/pull/18524))
 - The `tag()` function now accepts a string for its second argument. ([#18524](https://github.com/craftcms/cms/pull/18524))
 - The `|time` and `|datetime` Twig filters now have `$withTimeZone` arguments. ([#18639](https://github.com/craftcms/cms/pull/18639))
+- The `|timestamp` filter now returns the current time, if applied to a `null`/empty string value. ([#18642](https://github.com/craftcms/cms/pull/18642))
 - `delete` GraphQL queries now have a `hardDelete` argument. ([#18511](https://github.com/craftcms/cms/pull/18511))
 - Entry `postDate` values are now `null` on creation, rather than set to the `dateCreated` value. ([#18642](https://github.com/craftcms/cms/pull/18642))
 - Assets’ `url` GraphQL fields’ `immediately` arguments are no longer deprecated. ([#18581](https://github.com/craftcms/cms/issues/18581))
