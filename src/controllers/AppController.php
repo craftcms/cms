@@ -22,9 +22,6 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\Path;
-use craft\helpers\Session;
-use craft\helpers\StringHelper;
 use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
@@ -34,7 +31,6 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use DateInterval;
 use Throwable;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
@@ -60,7 +56,6 @@ class AppController extends Controller
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'health-check' => self::ALLOW_ANONYMOUS_LIVE,
-        'resource-js' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
@@ -101,55 +96,6 @@ class AppController extends Controller
         $this->response->format = Response::FORMAT_RAW;
         $this->response->data = '';
         return $this->response;
-    }
-
-    /**
-     * Loads the given JavaScript resource URL and returns it.
-     *
-     * Kept for compatibility with older CP assets that still proxy cross-domain
-     * resource requests through `app/resource-js`.
-     *
-     * @param string $url
-     * @return Response
-     * @deprecated in 4.x. CP asset appends no longer rely on this proxy.
-     */
-    public function actionResourceJs(string $url): Response
-    {
-        $this->requireCpRequest();
-
-        $assetManager = Craft::$app->getAssetManager();
-        $baseUrl = StringHelper::ensureRight($assetManager->baseUrl, '/');
-        if (!str_starts_with($url, $baseUrl)) {
-            throw new BadRequestHttpException("$url does not appear to be a resource URL");
-        }
-
-        $resourceUri = preg_replace('/^(.*)\?.*/', '$1', substr($url, strlen($baseUrl)));
-
-        if (!Path::ensurePathIsContained($resourceUri)) {
-            throw new BadRequestHttpException("Invalid resource: $resourceUri");
-        }
-
-        // If we aren’t caching source paths in the resourcepaths table,
-        // then we’re going to have to fetch the file over HTTP
-        if (!$assetManager->cacheSourcePaths) {
-            // Close the PHP session in case this takes a while
-            Session::close();
-
-            $response = Craft::createGuzzleClient()->get($url);
-            $this->response->setCacheHeaders();
-            $this->response->getHeaders()->set('content-type', 'application/javascript');
-            return $this->asRaw($response->getBody());
-        }
-
-        try {
-            $publishedPath = App::resourcePathByUri($resourceUri);
-        } catch (InvalidArgumentException $e) {
-            throw new BadRequestHttpException($e->getMessage(), previous: $e);
-        }
-
-        return $this->response->sendFile($publishedPath, null, [
-            'inline' => true,
-        ]);
     }
 
     /**
