@@ -106,8 +106,12 @@ class AppController extends Controller
     /**
      * Loads the given JavaScript resource URL and returns it.
      *
+     * Kept for compatibility with older CP assets that still proxy cross-domain
+     * resource requests through `app/resource-js`.
+     *
      * @param string $url
      * @return Response
+     * @deprecated in 4.x. CP asset appends no longer rely on this proxy.
      */
     public function actionResourceJs(string $url): Response
     {
