@@ -175,8 +175,6 @@ class EntriesController extends BaseEntriesController
         // Post & expiry dates
         if (($postDate = $this->request->getParam('postDate')) !== null) {
             $entry->postDate = DateTimeHelper::toDateTime($postDate);
-        } else {
-            $entry->postDate = DateTimeHelper::now();
         }
 
         if (($expiryDate = $this->request->getParam('expiryDate')) !== null) {
