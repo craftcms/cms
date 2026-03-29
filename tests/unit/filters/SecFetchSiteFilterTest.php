@@ -59,7 +59,7 @@ class SecFetchSiteFilterTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $this->request->getHeaders()->remove('Sec-Fetch-Site');
 
-        $this->filter->strict = false;
+        $this->filter->originOnly = false;
         self::assertTrue($this->filter->beforeAction($this->action));
     }
 
@@ -68,7 +68,7 @@ class SecFetchSiteFilterTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'cross-site');
 
-        $this->filter->strict = true;
+        $this->filter->originOnly = true;
 
         $this->expectException(BadRequestHttpException::class);
         $this->filter->beforeAction($this->action);
@@ -83,7 +83,7 @@ class SecFetchSiteFilterTest extends TestCase
         $this->request->enableCsrfValidation = false;
 
         try {
-            $this->filter->strict = true;
+            $this->filter->originOnly = true;
             $this->expectException(BadRequestHttpException::class);
             $this->filter->beforeAction($this->action);
         } finally {
@@ -96,7 +96,7 @@ class SecFetchSiteFilterTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'cross-site');
 
-        $this->filter->strict = true;
+        $this->filter->originOnly = true;
         self::assertTrue($this->filter->beforeAction($this->action));
     }
 
@@ -105,7 +105,7 @@ class SecFetchSiteFilterTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $this->request->getHeaders()->set('Sec-Fetch-Site', 'cross-site');
 
-        $this->filter->strict = false;
+        $this->filter->originOnly = false;
         self::assertTrue($this->filter->beforeAction($this->action));
     }
 }
