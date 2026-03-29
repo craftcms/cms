@@ -169,9 +169,6 @@ class EntriesController extends BaseEntriesController
             $entry->slug = ElementHelper::tempSlug();
         }
 
-        // Pause time so postDate will definitely be equal to dateCreated, if not explicitly defined
-        DateTimeHelper::pause();
-
         // Post & expiry dates
         if (($postDate = $this->request->getParam('postDate')) !== null) {
             $entry->postDate = DateTimeHelper::toDateTime($postDate);
@@ -191,9 +188,6 @@ class EntriesController extends BaseEntriesController
         // Save it
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         $success = Craft::$app->getDrafts()->saveElementAsDraft($entry, $user->id, markAsSaved: false);
-
-        // Resume time
-        DateTimeHelper::resume();
 
         if (!$success) {
             return $this->asModelFailure($entry, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t create {type}.', [
